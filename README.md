@@ -82,11 +82,11 @@ These are early prerelease features and controls that we are still working on.
 
 They will be available in prerelease NuGet packages but not in the stable package versions until they are ready. They are subject to change without notice and may be removed.
 
-* [LayoutPanel](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.layoutpanel) and related classes
-* [Repeater](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.repeater) and related classes
-* [Scroller](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scroller) and related classes
-* [ScrollerView](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollerview) and related classes
-* [ScrollBar2](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollbar2)
+* LayoutPanel and related classes
+* Repeater and related classes
+* Scroller and related classes
+* ScrollerView and related classes
+* ScrollBar2
 
 ### Middleware Support APIs
 
