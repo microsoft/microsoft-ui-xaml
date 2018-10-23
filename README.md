@@ -47,6 +47,8 @@ This repo provides information and issue tracking for the following NuGet packag
 
 Note some features may have a reduced or slightly different user experience on older versions, particularly on builds before 15063. This should not impact overall usability.
 
+Microsoft.UI.Xaml nuget package requires TargetPlatformVersion &gt;= 10.0.17134.0 and TargetPlatformMinVersion &gt;= 10.0.14393.0 for your project.
+
 ## Features
 
 The prerelease preview packages contain the following features. 
