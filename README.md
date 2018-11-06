@@ -39,7 +39,7 @@ This repo provides information and issue tracking for the following NuGet packag
 | [Microsoft.UI.Xaml.Core.Direct](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct) | Low-level APIs that can enable better performance when creating middleware components. Not intended or required for general application use |
 
 ## Supported OS versions
-* Windows Insider Preview (17764+)
+* Windows Insider Preview
 * October 2018 Update (17763)
 * April 2018 Update (17134)
 * Fall Creators Update (16299)
