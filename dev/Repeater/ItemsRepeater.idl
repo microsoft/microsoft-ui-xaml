@@ -1,0 +1,568 @@
+runtimeclass ItemsSourceView;
+runtimeclass ItemsRepeater;
+runtimeclass ElementFactory;
+runtimeclass LayoutContext;
+runtimeclass VirtualizingLayoutContext;
+runtimeclass Layout;
+runtimeclass VirtualizingLayout;
+runtimeclass ElementAnimator;
+runtimeclass ScrollAnchorProvider;
+runtimeclass ItemsRepeaterElementPreparedEventArgs;
+runtimeclass ItemsRepeaterElementClearingEventArgs;
+runtimeclass ItemsRepeaterElementIndexChangedEventArgs;
+runtimeclass UniformGridLayoutState;
+runtimeclass UniformGridLayout;
+runtimeclass StackLayoutState;
+runtimeclass StackLayout;
+runtimeclass FlowLayoutState;
+runtimeclass FlowLayout;
+runtimeclass RecyclePool;
+runtimeclass SelectTemplateEventArgs;
+runtimeclass RecyclingElementFactory;
+runtimeclass IndexPath;
+runtimeclass SelectionModelSelectionChangedEventArgs;
+runtimeclass SelectionModelChildrenRequestedEventArgs;
+runtimeclass SelectionModel;
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[flags]
+enum AnimationContext
+{
+    None = 0,
+    CollectionChangeAdd = 1,
+    CollectionChangeRemove = 2,
+    CollectionChangeReset = 4,
+    LayoutTransition = 8,
+};
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+[flags]
+enum ElementRealizationOptions
+{
+    None = 0,
+    ForceCreate = 1,
+    SuppressAutoRecycle = 2
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum FlowLayoutLineAlignment
+{
+    Start = 0,
+    Center = 1,
+    End = 2,
+    SpaceAround = 3,
+    SpaceBetween = 4
+    // SpaceEvenly = 5 Pending support
+};
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+enum UniformGridLayoutItemsJustification
+{
+    Start = 0,
+    Center = 1,
+    End = 2,
+    SpaceAround = 3,
+    SpaceBetween = 4
+    // SpaceEvenly = 5 Pending support
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+delegate void ElementAnimationCompleted(ElementAnimator sender, Windows.UI.Xaml.UIElement element);
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+interface IKeyIndexMapping
+{
+    String KeyFromIndex(Int32 index);
+    Int32 IndexFromKey(String key);
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass ItemsSourceView: Windows.UI.Xaml.Interop.INotifyCollectionChanged
+{
+    ItemsSourceView(Object source);
+
+    Int32 Count{ get; };
+    Object GetAt(Int32 index);
+
+    Boolean HasKeyIndexMapping{ get; };
+    String KeyFromIndex(Int32 index);
+    Int32 IndexFromKey(String key);
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+[contentproperty("ItemTemplate")]
+unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
+{
+    ItemsRepeater();
+
+    Object ItemsSource { get; set; };
+    ItemsSourceView ItemsSourceView { get; };
+
+#ifdef BUILD_WINDOWS
+    Windows.UI.Xaml.IElementFactory ItemTemplate { get; set; };
+ #else
+    Object ItemTemplate { get; set; };
+ #endif
+
+    VirtualizingLayout Layout { get; set; };
+    
+    [WUXC_VERSION_PREVIEW]
+    {
+        ElementAnimator Animator{ get; set; };
+    }
+    
+    Double HorizontalCacheLength { get; set; };
+    Double VerticalCacheLength { get; set; };
+    Int32 GetElementIndex(Windows.UI.Xaml.UIElement element);
+    Windows.UI.Xaml.UIElement TryGetElement(Int32 index);
+    Windows.UI.Xaml.UIElement GetOrCreateElement(Int32 index);
+    event Windows.Foundation.TypedEventHandler<ItemsRepeater, ItemsRepeaterElementPreparedEventArgs> ElementPrepared;
+    event Windows.Foundation.TypedEventHandler<ItemsRepeater, ItemsRepeaterElementClearingEventArgs> ElementClearing;
+    event Windows.Foundation.TypedEventHandler<ItemsRepeater, ItemsRepeaterElementIndexChangedEventArgs> ElementIndexChanged;
+
+    static Windows.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ItemTemplateProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty LayoutProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty AnimatorProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty HorizontalCacheLengthProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty VerticalCacheLengthProperty { get; };
+}
+
+#ifndef BUILD_WINDOWS
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+runtimeclass ElementFactoryGetArgs
+{
+    ElementFactoryGetArgs();
+    Object Data;
+    Windows.UI.Xaml.UIElement Parent;
+};
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+runtimeclass ElementFactoryRecycleArgs
+{
+    ElementFactoryRecycleArgs();
+    Windows.UI.Xaml.UIElement Element;
+    Windows.UI.Xaml.UIElement Parent;
+};
+
+[WUXC_VERSION_INTERNAL]
+[webhosthidden]
+interface IElementFactoryShim
+{
+    Windows.UI.Xaml.UIElement GetElement(ElementFactoryGetArgs args);
+    void RecycleElement(ElementFactoryRecycleArgs args);
+}
+
+#endif
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass ElementFactory : Windows.UI.Xaml.DependencyObject
+#ifndef BUILD_WINDOWS
+, IElementFactoryShim
+#else
+, Windows.UI.Xaml.IElementFactory
+#endif
+{
+    ElementFactory();
+
+#ifdef BUILD_WINDOWS
+    overridable Windows.UI.Xaml.UIElement GetElementCore(Windows.UI.Xaml.ElementFactoryGetArgs args);
+    overridable void RecycleElementCore(Windows.UI.Xaml.ElementFactoryRecycleArgs args);
+#else
+    overridable Windows.UI.Xaml.UIElement GetElementCore(ElementFactoryGetArgs args);
+    overridable void RecycleElementCore(ElementFactoryRecycleArgs args);
+#endif
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass LayoutContext : Windows.UI.Xaml.DependencyObject
+{
+    Object LayoutState{ get; set; };
+    overridable Object LayoutStateCore{ get; set; };
+}
+
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass NonVirtualizingLayoutContext : LayoutContext
+{
+    NonVirtualizingLayoutContext();
+
+    Windows.Foundation.Collections.IVectorView<Windows.UI.Xaml.UIElement> Children { get; };
+    overridable Windows.Foundation.Collections.IVectorView<Windows.UI.Xaml.UIElement> ChildrenCore { get; };
+}
+
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass VirtualizingLayoutContext : LayoutContext
+{
+    VirtualizingLayoutContext();
+
+    Int32 ItemCount{ get; };
+    Object GetItemAt(Int32 index);
+
+    Windows.Foundation.Rect RealizationRect{ get; };
+
+    Windows.UI.Xaml.UIElement GetOrCreateElementAt(Int32 index);
+    Windows.UI.Xaml.UIElement GetOrCreateElementAt(Int32 index, ElementRealizationOptions options);
+    void RecycleElement(Windows.UI.Xaml.UIElement element);
+
+    Int32 RecommendedAnchorIndex{ get; };
+
+    Windows.Foundation.Point LayoutOrigin{ get; set; };
+
+    overridable Int32 ItemCountCore();
+    overridable Object GetItemAtCore(Int32 index);
+
+    overridable Windows.Foundation.Rect RealizationRectCore();
+
+    overridable Windows.UI.Xaml.UIElement GetElementAtCore(Int32 index, ElementRealizationOptions options);
+    overridable void RecycleElementCore(Windows.UI.Xaml.UIElement element);
+
+    overridable Int32 RecommendedAnchorIndexCore{ get; };
+
+    overridable Windows.Foundation.Point LayoutOriginCore{ get; set; };
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass Layout : Windows.UI.Xaml.DependencyObject
+{
+    void InitializeForContext(LayoutContext context);
+    void UninitializeForContext(LayoutContext context);
+    Windows.Foundation.Size Measure(LayoutContext context, Windows.Foundation.Size availableSize);
+    Windows.Foundation.Size Arrange(LayoutContext context, Windows.Foundation.Size finalSize);
+
+    event Windows.Foundation.TypedEventHandler<Layout, Object> MeasureInvalidated;
+    event Windows.Foundation.TypedEventHandler<Layout, Object> ArrangeInvalidated;
+
+    protected void InvalidateMeasure();
+    protected void InvalidateArrange();
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass NonVirtualizingLayout : Layout
+{
+    NonVirtualizingLayout();
+
+    overridable void InitializeForContextCore(NonVirtualizingLayoutContext context);
+    overridable void UninitializeForContextCore(NonVirtualizingLayoutContext context);
+    overridable Windows.Foundation.Size MeasureOverride(NonVirtualizingLayoutContext context, Windows.Foundation.Size availableSize);
+    overridable Windows.Foundation.Size ArrangeOverride(NonVirtualizingLayoutContext context, Windows.Foundation.Size finalSize);
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass VirtualizingLayout : Layout
+{
+    VirtualizingLayout();
+
+    overridable void InitializeForContextCore(VirtualizingLayoutContext context);
+    overridable void UninitializeForContextCore(VirtualizingLayoutContext context);
+    overridable Windows.Foundation.Size MeasureOverride(VirtualizingLayoutContext context, Windows.Foundation.Size availableSize);
+    overridable Windows.Foundation.Size ArrangeOverride(VirtualizingLayoutContext context, Windows.Foundation.Size finalSize);
+
+    overridable void OnItemsChangedCore(VirtualizingLayoutContext context, IInspectable source, Windows.UI.Xaml.Interop.NotifyCollectionChangedEventArgs args);
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass ElementAnimator
+{
+    ElementAnimator();
+
+    event ElementAnimationCompleted ShowAnimationCompleted;
+    event ElementAnimationCompleted HideAnimationCompleted;
+    event ElementAnimationCompleted BoundsChangeAnimationCompleted;
+    void OnElementShown(Windows.UI.Xaml.UIElement element, AnimationContext context);
+    void OnElementHidden(Windows.UI.Xaml.UIElement element, AnimationContext context);
+    void OnElementBoundsChanged(Windows.UI.Xaml.UIElement element, AnimationContext context, Windows.Foundation.Rect oldBounds, Windows.Foundation.Rect newBounds);
+    Boolean HasShowAnimation(Windows.UI.Xaml.UIElement element, AnimationContext context);
+    Boolean HasHideAnimation(Windows.UI.Xaml.UIElement element, AnimationContext context);
+    Boolean HasBoundsChangeAnimation(Windows.UI.Xaml.UIElement element, AnimationContext context, Windows.Foundation.Rect oldBounds, Windows.Foundation.Rect newBounds);
+
+    overridable Boolean HasShowAnimationCore(Windows.UI.Xaml.UIElement element, AnimationContext context);
+    overridable Boolean HasHideAnimationCore(Windows.UI.Xaml.UIElement element, AnimationContext context);
+    overridable Boolean HasBoundsChangeAnimationCore(Windows.UI.Xaml.UIElement element, AnimationContext context, Windows.Foundation.Rect oldBounds, Windows.Foundation.Rect newBounds);
+    overridable void StartShowAnimation(Windows.UI.Xaml.UIElement element, AnimationContext context);
+    overridable void StartHideAnimation(Windows.UI.Xaml.UIElement element, AnimationContext context);
+    overridable void StartBoundsChangeAnimation(Windows.UI.Xaml.UIElement element, AnimationContext context, Windows.Foundation.Rect oldBounds, Windows.Foundation.Rect newBounds);
+
+    protected Boolean HasShowAnimationsPending { get; };
+    protected Boolean HasHideAnimationsPending { get; };
+    protected Boolean HasBoundsChangeAnimationsPending { get; };
+    protected AnimationContext SharedContext { get; };
+    protected void OnShowAnimationCompleted(Windows.UI.Xaml.UIElement element);
+    protected void OnHideAnimationCompleted(Windows.UI.Xaml.UIElement element);
+    protected void OnBoundsChangeAnimationCompleted(Windows.UI.Xaml.UIElement element);
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollAnchorProvider : Windows.UI.Xaml.Controls.ContentControl
+{
+    ScrollAnchorProvider();
+
+    Double HorizontalAnchorRatio { get; set; };
+    Double VerticalAnchorRatio { get; set; };
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+runtimeclass ItemsRepeaterElementPreparedEventArgs
+{
+    Windows.UI.Xaml.UIElement Element { get; };
+    Int32 Index { get; };
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+runtimeclass ItemsRepeaterElementClearingEventArgs
+{
+    Windows.UI.Xaml.UIElement Element { get; };
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+runtimeclass ItemsRepeaterElementIndexChangedEventArgs
+{
+    Windows.UI.Xaml.UIElement Element { get; };
+    Int32 OldIndex { get; };
+    Int32 NewIndex { get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+struct FlowLayoutAnchorInfo
+{
+    Int32 Index;
+    Double Offset;
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass UniformGridLayoutState
+{
+    UniformGridLayoutState();
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass UniformGridLayout : VirtualizingLayout
+{
+    UniformGridLayout();
+
+    Windows.UI.Xaml.Controls.Orientation Orientation { get; set; };
+    Double MinItemWidth { get; set; };
+    Double MinItemHeight { get; set; };
+    Double MinRowSpacing { get; set; };
+    Double MinColumnSpacing { get; set; };
+    UniformGridLayoutItemsJustification ItemsJustification{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MinItemWidthProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MinItemHeightProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MinRowSpacingProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MinColumnSpacingProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ItemsJustificationProperty { get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass StackLayoutState
+{
+    StackLayoutState();
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass StackLayout : VirtualizingLayout
+{
+    StackLayout();
+
+    Windows.UI.Xaml.Controls.Orientation Orientation { get; set; };
+    Double Spacing { get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty SpacingProperty { get; };
+
+   // Removing until we are ready to expose.
+   // overridable FlowLayoutAnchorInfo GetAnchorForRealizationRect(Windows.Foundation.Size availableSize, VirtualizingLayoutContext context);
+   // overridable Windows.Foundation.Rect GetExtent(Windows.Foundation.Size availableSize, VirtualizingLayoutContext context, Windows.UI.Xaml.UIElement firstRealized, Int32 firstRealizedItemIndex, Windows.Foundation.Rect firstRealizedLayoutBounds, Windows.UI.Xaml.UIElement lastRealized, Int32 lastRealizedItemIndex, Windows.Foundation.Rect lastRealizedLayoutBounds);
+   // overridable void OnElementMeasured(Windows.UI.Xaml.UIElement element, Int32 index, Windows.Foundation.Size availableSize, Windows.Foundation.Size measureSize, Windows.Foundation.Size desiredSize, Windows.Foundation.Size provisionalArrangeSize, VirtualizingLayoutContext context);
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass FlowLayoutState
+{
+    FlowLayoutState();
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass FlowLayout : VirtualizingLayout
+{
+    FlowLayout();
+
+    Windows.UI.Xaml.Controls.Orientation Orientation { get; set; };
+    Double MinRowSpacing { get; set; };
+    Double MinColumnSpacing { get; set; };
+    FlowLayoutLineAlignment LineAlignment { get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MinRowSpacingProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MinColumnSpacingProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty LineAlignmentProperty { get; };
+
+    overridable Windows.Foundation.Size GetMeasureSize(Int32 index, Windows.Foundation.Size availableSize);
+    overridable Windows.Foundation.Size GetProvisionalArrangeSize(Int32 index, Windows.Foundation.Size measureSize, Windows.Foundation.Size desiredSize);
+    overridable Boolean ShouldBreakLine(Int32 index, Double remainingSpace);
+    overridable FlowLayoutAnchorInfo GetAnchorForRealizationRect(Windows.Foundation.Size availableSize, VirtualizingLayoutContext context);
+    overridable FlowLayoutAnchorInfo GetAnchorForTargetElement(Int32 targetIndex, Windows.Foundation.Size availableSize, VirtualizingLayoutContext context);
+    overridable Windows.Foundation.Rect GetExtent(Windows.Foundation.Size availableSize, VirtualizingLayoutContext context, Windows.UI.Xaml.UIElement firstRealized, Int32 firstRealizedItemIndex, Windows.Foundation.Rect firstRealizedLayoutBounds, Windows.UI.Xaml.UIElement lastRealized, Int32 lastRealizedItemIndex, Windows.Foundation.Rect lastRealizedLayoutBounds);
+    overridable void OnElementMeasured(Windows.UI.Xaml.UIElement element, Int32 index, Windows.Foundation.Size availableSize, Windows.Foundation.Size measureSize, Windows.Foundation.Size desiredSize, Windows.Foundation.Size provisionalArrangeSize, VirtualizingLayoutContext context);
+    overridable void OnLineArranged(Int32 startIndex, Int32 countInLine, Double lineSize, VirtualizingLayoutContext context);
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass RecyclePool
+{
+    RecyclePool();
+
+    [method_name("PutElement")]
+    void PutElement(Windows.UI.Xaml.UIElement element, String key);
+    [method_name("PutElementWithOwner")]
+    void PutElement(Windows.UI.Xaml.UIElement element, String key, Windows.UI.Xaml.UIElement owner);
+    [method_name("TryGetElement")]
+    Windows.UI.Xaml.UIElement TryGetElement(String key);
+    [method_name("TryGetElementWithOwner")]
+    Windows.UI.Xaml.UIElement TryGetElement(String key, Windows.UI.Xaml.UIElement owner);
+
+    static Windows.UI.Xaml.DependencyProperty PoolInstanceProperty{ get; };
+    static RecyclePool GetPoolInstance(Windows.UI.Xaml.DataTemplate dataTemplate);
+    static void SetPoolInstance(Windows.UI.Xaml.DataTemplate dataTemplate, RecyclePool value);
+
+    overridable void PutElementCore(Windows.UI.Xaml.UIElement element, String key, Windows.UI.Xaml.UIElement owner);
+    overridable Windows.UI.Xaml.UIElement TryGetElementCore(String key, Windows.UI.Xaml.UIElement owner);
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass SelectTemplateEventArgs
+{
+    String TemplateKey{ get; set; };
+    Object DataContext { get; };
+    Windows.UI.Xaml.UIElement Owner { get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[contentproperty("Templates")]
+unsealed runtimeclass RecyclingElementFactory : ElementFactory
+{
+    RecyclingElementFactory();
+
+    RecyclePool RecyclePool { get; set; };
+    Windows.Foundation.Collections.IMap<String, Windows.UI.Xaml.DataTemplate> Templates { get; set; };
+    event Windows.Foundation.TypedEventHandler<RecyclingElementFactory, SelectTemplateEventArgs> SelectTemplateKey;
+
+    overridable String OnSelectTemplateKeyCore(Object dataContext, Windows.UI.Xaml.UIElement owner);
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass IndexPath : Windows.Foundation.IStringable
+{
+    Int32 GetSize();
+    Int32 GetAt(Int32 index);
+    Int32 CompareTo(IndexPath other);
+
+    [default_overload] [method_name("CreateFrom")]
+    static IndexPath CreateFrom(Int32 index);
+    [method_name("CreateFromGroupAndItemIndex")]
+    static IndexPath CreateFrom(Int32 groupIndex, Int32 itemIndex);
+    static IndexPath CreateFromIndices(Windows.Foundation.Collections.IVector<Int32> indices);
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[default_interface]
+runtimeclass SelectionModelSelectionChangedEventArgs
+{
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass SelectionModelChildrenRequestedEventArgs
+{
+    Object Source { get; };
+    Object Children { get; set; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass SelectionModel : Windows.UI.Xaml.Data.INotifyPropertyChanged
+{
+    SelectionModel();
+
+    event Windows.Foundation.TypedEventHandler<SelectionModel, SelectionModelSelectionChangedEventArgs> SelectionChanged;
+    event Windows.Foundation.TypedEventHandler<SelectionModel, SelectionModelChildrenRequestedEventArgs> ChildrenRequested;
+    Object Source { get; set; };
+    Boolean SingleSelect { get; set; };
+    IndexPath AnchorIndex { get; set; };
+    IndexPath SelectedIndex { get; set; };
+    Object SelectedItem { get; };
+    Windows.Foundation.Collections.IVectorView<Object> SelectedItems { get; };
+    Windows.Foundation.Collections.IVectorView<IndexPath> SelectedIndices { get; };
+    [method_name("SetAnchorIndex")]
+    void SetAnchorIndex(Int32 index);
+    [method_name("SetAnchorIndexWithGroup")]
+    void SetAnchorIndex(Int32 groupIndex, Int32 itemIndex);
+    [default_overload] [method_name("Select")]
+    void Select(Int32 index);
+    [method_name("SelectWithGroup")]
+    void Select(Int32 groupIndex, Int32 itemIndex);
+    void SelectAt(IndexPath index);
+    [default_overload] [method_name("Deselect")]
+    void Deselect(Int32 index);
+    [method_name("DeselectWithGroup")]
+    void Deselect(Int32 groupIndex, Int32 itemIndex);
+    void DeselectAt(IndexPath index);
+    [default_overload] [method_name("IsSelected")]
+    Windows.Foundation.IReference<Boolean> IsSelected(Int32 index);
+    [method_name("IsSelectedWithGroup")]
+    Windows.Foundation.IReference<Boolean> IsSelected(Int32 groupIndex, Int32 itemIndex);
+    Windows.Foundation.IReference<Boolean> IsSelectedAt(IndexPath index);
+    [default_overload] [method_name("SelectRangeFromAnchor")]
+    void SelectRangeFromAnchor(Int32 index);
+    [method_name("SelectRangeFromAnchorWithGroup")]
+    void SelectRangeFromAnchor(Int32 groupIndex, Int32 itemIndex);
+    void SelectRangeFromAnchorTo(IndexPath index);
+    [default_overload] [method_name("DeselectRangeFromAnchor")]
+    void DeselectRangeFromAnchor(Int32 index);
+    [method_name("DeselectRangeFromAnchorWithGroup")]
+    void DeselectRangeFromAnchor(Int32 groupIndex, Int32 itemIndex);
+    void DeselectRangeFromAnchorTo(IndexPath index);
+    void SelectRange(IndexPath start, IndexPath end);
+    void DeselectRange(IndexPath start, IndexPath end);
+    void SelectAll();
+    void ClearSelection();
+
+    protected void OnPropertyChanged(String propertyName);
+}

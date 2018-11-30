@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <SDKVersionRS2>10.0.15063.0</SDKVersionRS2>
+	<SDKVersionRS3>10.0.16299.0</SDKVersionRS3>
+	<SDKVersionRS4>10.0.17134.0</SDKVersionRS4>
+	<SDKVersionRS5>10.0.17763.0</SDKVersionRS5>
+	<SDKVersion19H1Insider>10.0.18283.0</SDKVersion19H1Insider>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- By default we use the publicly shipped SDK version which is RS5 now -->
+    <MuxSdkVersion Condition="$(UseInsiderSDK) != 'true'">$(SDKVersionRS5)</MuxSdkVersion>
+
+    <!-- Setting UseInsiderSDK will allow the code to build to the newest RS6 SDK 
+         In order to get this from a cmd prompt run 
+         set UseInsiderSDK=true and then launch muxcontrols.sln from that cmd prompt-->
+    <MuxSdkVersion Condition="$(UseInsiderSDK)=='true'">$(SDKVersion19H1Insider)</MuxSdkVersion>
+  </PropertyGroup>
+</Project>

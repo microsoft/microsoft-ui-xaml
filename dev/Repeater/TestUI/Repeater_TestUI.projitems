@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>2ed883f5-20db-4445-8c96-517a21e5e657</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Repeater_TestUI</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)RepeaterTestUIPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\ActivityFeedDemo\ActivityFeedSamplePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\AnimationsDemoPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\BasicDemo.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\CircleLayoutDemo\CircleLayoutSamplePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\CollectionChangeDemo.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\ItemsViewWithDataPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\ItemTemplateSamples\ItemTemplateDemo.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Selection\Flat\FlatSample.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Selection\Grouped\GroupedSample.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Selection\TreeView\TreeViewSample.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\NonVirtual\NonVirtualStackLayoutSamplePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\Virtual\PinterestLayoutSamplePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\Virtual\VirtualizingStackLayoutSamplePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\Virtual\VirtualizingUniformStackLayoutSamplePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\StoreDemo\StoreDemoPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)RepeaterTestUIPage.xaml.cs">
+      <DependentUpon>RepeaterTestUIPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\ActivityFeedDemo\ActivityFeedLayout.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\ActivityFeedDemo\ActivityFeedSamplePage.xaml.cs">
+      <DependentUpon>ActivityFeedSamplePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\AnimationsDemoPage.xaml.cs">
+      <DependentUpon>AnimationsDemoPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\BasicDemo.xaml.cs">
+      <DependentUpon>BasicDemo.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\CircleLayoutDemo\CircleLayout.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\ItemTemplateSamples\ItemTemplateDemo.xaml.cs">
+      <DependentUpon>ItemTemplateDemo.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\NonVirtual\NonVirtualStackLayoutSamplePage.xaml.cs">
+      <DependentUpon>NonVirtualStackLayoutSamplePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\Virtual\PinterestLayout.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\Virtual\PinterestLayoutSamplePage.xaml.cs">
+      <DependentUpon>PinterestLayoutSamplePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\Virtual\VirtualizingStackLayout.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\Virtual\VirtualizingStackLayoutSamplePage.xaml.cs">
+      <DependentUpon>VirtualizingStackLayoutSamplePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\Virtual\VirtualizingUniformStackLayout.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\CircleLayoutDemo\RadialElementAnimator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\CircleLayoutDemo\CircleLayoutSamplePage.xaml.cs">
+      <DependentUpon>CircleLayoutSamplePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\NonVirtual\NonVIrtualStackLayout.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\CollectionChangeDemo.xaml.cs">
+      <DependentUpon>CollectionChangeDemo.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\DelegatingItemsSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\ItemsViewWithDataPage.xaml.cs">
+      <DependentUpon>ItemsViewWithDataPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\LayoutHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Model\Recipe.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Model\RecipeGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Model\Year.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\RecipeViewGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Selection\Common\BoolToBrushConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Selection\Common\BoolToVisibilityConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Selection\Common\Data.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Selection\Flat\FlatSample.xaml.cs">
+      <DependentUpon>FlatSample.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Selection\Flat\RepeaterItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Selection\Flat\RepeaterItemAutomationPeer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Selection\Grouped\GroupedRepeaterItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Selection\Grouped\GroupedRepeaterItemAutomationPeer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Selection\Grouped\GroupedSample.xaml.cs">
+      <DependentUpon>GroupedSample.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Selection\Common\SelectionContainer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Selection\Common\SelectionContainerAutomationPeer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Selection\TreeView\TreeViewItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Selection\TreeView\TreeViewItemAutomationPeer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Selection\TreeView\TreeViewSample.xaml.cs">
+      <DependentUpon>TreeViewSample.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\Virtual\VirtualizingUniformStackLayoutSamplePage.xaml.cs">
+      <DependentUpon>VirtualizingUniformStackLayoutSamplePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\StoreDemo\StoreDemoPage.xaml.cs">
+      <DependentUpon>StoreDemoPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\StoreDemo\StoreMockData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\DefaultElementAnimator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\ResetableCollection.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Images\recipe1.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Images\recipe2.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Images\recipe3.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Images\recipe4.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Images\recipe5.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Images\recipe6.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Images\recipe7.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Images\recipe8.png" />
+  </ItemGroup>
+</Project>

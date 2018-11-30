@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>MiniWindowsSDK</id>
+    <version>0.0.0-SpecifyVersionOnCommandline</version>
+    <title>Mini Windows SDK</title>
+    <authors>jevansa</authors>
+    <owners>jevansa</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Headers, IDL and WinMD necessary to build native dlls without installing full Windows SDK. Helper for prerelease packages.</description>
+    <releaseNotes>Test.</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+  </metadata>
+  <files>
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\shared\inc\wtypes.idl"/>
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\shared\inc\wtypesbase.idl"/>
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\shared\inc\basetsd.h"/>
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\shared\inc\guiddef.h"/>
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\shared\inc\sdkddkver.h"/>
+
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\sdk\inc\inspectable.idl"/>
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\sdk\inc\hstring.idl"/>
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\sdk\inc\asyncinfo.idl"/>
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\sdk\inc\eventtoken.idl"/>
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\sdk\inc\unknwn.idl"/>
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\sdk\inc\unknwnbase.idl"/>
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\sdk\inc\oaidl.idl"/>
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\sdk\inc\oaidl.acf"/>
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\sdk\inc\objidl.idl"/>
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\sdk\inc\objidlbase.idl"/>
+
+    <file target="lib\native\include" src="$PUBLIC_ROOT$\sdk\inc\abi\*.idl"/>
+
+    <file target="lib\native\include\metadata" src="$PUBLIC_ROOT$\sdk\winmetadata\contractmetadata\*.winmd"/>
+
+    <file target="lib\unionmetadata" src="$PUBLIC_ROOT$\sdk\winmetadata\windows.winmd"/>
+
+    <file target="lib\netcore50" src="MiniWindowsSDK_Dummy.dll"/>
+
+    <file target="build" src="MiniWindowsSDK.targets"/>
+  </files>
+</package>

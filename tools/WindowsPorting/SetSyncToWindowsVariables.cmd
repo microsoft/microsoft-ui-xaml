@@ -1,0 +1,4 @@
+set PARENT_SOURCEBRANCH=%BUILD_SOURCEBRANCH:refs/heads/=%
+
+set
+exit /b %ERRORLEVEL%

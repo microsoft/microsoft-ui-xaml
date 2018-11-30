@@ -1,0 +1,32 @@
+[WUXC_VERSION_RS5]
+[webhosthidden]
+unsealed runtimeclass MenuBarItemFlyout : Windows.UI.Xaml.Controls.MenuFlyout
+{
+    MenuBarItemFlyout();
+}
+
+[WUXC_VERSION_RS5]
+[webhosthidden]
+[contentproperty("Items")]
+unsealed runtimeclass MenuBarItem : Windows.UI.Xaml.Controls.Control
+{
+    MenuBarItem();
+
+    String Title { get; set; };
+    Windows.Foundation.Collections.IVector<Windows.UI.Xaml.Controls.MenuFlyoutItemBase> Items { get; };
+
+    static Windows.UI.Xaml.DependencyProperty TitleProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ItemsProperty { get; };
+}
+
+[WUXC_VERSION_RS5]
+[webhosthidden]
+[contentproperty("Items")]
+unsealed runtimeclass MenuBar : Windows.UI.Xaml.Controls.Control
+{
+    MenuBar();
+
+    Windows.Foundation.Collections.IVector<MenuBarItem> Items { get; };
+
+    static Windows.UI.Xaml.DependencyProperty ItemsProperty { get; };
+}

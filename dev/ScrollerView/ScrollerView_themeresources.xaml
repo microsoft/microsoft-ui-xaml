@@ -1,0 +1,31 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <SolidColorBrush x:Key="ScrollerViewScrollControllersSeparatorBackground" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
+            <x:String x:Key="ScrollerViewScrollControllersSeparatorExpandDuration">00:00:00.1</x:String>
+            <x:String x:Key="ScrollerViewScrollControllersSeparatorContractDelay">00:00:02</x:String>
+            <x:String x:Key="ScrollerViewScrollControllersSeparatorContractDuration">00:00:00.1</x:String>
+            <x:String x:Key="ScrollerViewScrollControllersSeparatorContractFinalKeyframe">00:00:02.1</x:String>
+            <x:String x:Key="ScrollerViewScrollControllersNoTouchDuration">00:00:00.5</x:String>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="ScrollerViewScrollControllersSeparatorBackground" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
+            <x:String x:Key="ScrollerViewScrollControllersSeparatorExpandDuration">00:00:00.1</x:String>
+            <x:String x:Key="ScrollerViewScrollControllersSeparatorContractDelay">00:00:02</x:String>
+            <x:String x:Key="ScrollerViewScrollControllersSeparatorContractDuration">00:00:00.1</x:String>
+            <x:String x:Key="ScrollerViewScrollControllersSeparatorContractFinalKeyframe">00:00:02.1</x:String>
+            <x:String x:Key="ScrollerViewScrollControllersNoTouchDuration">00:00:00.5</x:String>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <StaticResource x:Key="ScrollerViewScrollControllersSeparatorBackground" ResourceKey="SystemControlPageBackgroundChromeLowBrush" />
+            <x:String x:Key="ScrollerViewScrollControllersSeparatorExpandDuration">00:00:00.1</x:String>
+            <x:String x:Key="ScrollerViewScrollControllersSeparatorContractDelay">00:00:02</x:String>
+            <x:String x:Key="ScrollerViewScrollControllersSeparatorContractDuration">00:00:00.1</x:String>
+            <x:String x:Key="ScrollerViewScrollControllersSeparatorContractFinalKeyframe">00:00:02.1</x:String>
+            <x:String x:Key="ScrollerViewScrollControllersNoTouchDuration">00:00:00.5</x:String>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

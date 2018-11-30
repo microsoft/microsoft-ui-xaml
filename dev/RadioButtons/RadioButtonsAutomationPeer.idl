@@ -1,0 +1,6 @@
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass RadioButtonsListViewItemAutomationPeer : Windows.UI.Xaml.Automation.Peers.ListViewItemAutomationPeer
+{
+    RadioButtonsListViewItemAutomationPeer(MU_XCP_NAMESPACE.RadioButtonsListViewItem owner);
+}

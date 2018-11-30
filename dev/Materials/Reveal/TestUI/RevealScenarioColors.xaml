@@ -1,0 +1,51 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.RevealScenarioColors"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winUI="using:Microsoft.UI.Xaml.Controls"
+    xmlns:coll="using:System.Collections"
+    mc:Ignorable="d">
+
+    <ScrollViewer>
+        <StackPanel Margin="24">
+            <ListView x:Name="ColorList" SelectionChanged="ColorList_SelectionChanged">
+                <ListView.Items>
+                    <local:ColorItem Title="Dark Hover Plate Color">
+                        <local:ColorItem.ColorBrush>
+                            <SolidColorBrush Color="{x:Bind DarkHoverPlateColor, Mode=TwoWay}"/>
+                        </local:ColorItem.ColorBrush>
+                    </local:ColorItem>
+                    <local:ColorItem Title="Dark Border Color">
+                        <local:ColorItem.ColorBrush>
+                            <SolidColorBrush Color="{x:Bind DarkBorderColor, Mode=TwoWay}"/>
+                        </local:ColorItem.ColorBrush>
+                    </local:ColorItem>
+                    <local:ColorItem Title="Light Hover Plate Color">
+                        <local:ColorItem.ColorBrush>
+                        <SolidColorBrush Color="{x:Bind LightHoverPlateColor, Mode=TwoWay}"/>
+                        </local:ColorItem.ColorBrush>
+                    </local:ColorItem>
+                    <local:ColorItem Title="Light Border Color">
+                        <local:ColorItem.ColorBrush>
+                            <SolidColorBrush Color="{x:Bind LightBorderColor, Mode=TwoWay}"/>
+                        </local:ColorItem.ColorBrush>
+                    </local:ColorItem>
+                </ListView.Items>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:ColorItem">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Name="SwatchBlock" Background="{x:Bind ColorBrush}" Margin="10" Width="20" Height="20"/>
+                            <TextBlock Name="HeaderBlock" Text="{x:Bind Title}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <winUI:ColorPicker x:Name="ColorPicker" IsAlphaEnabled="True" Margin="0,0,0,24" ColorChanged="ColorPicker_ColorChanged" Visibility="Collapsed"/>
+        </StackPanel>
+    </ScrollViewer>
+</local:TestPage>

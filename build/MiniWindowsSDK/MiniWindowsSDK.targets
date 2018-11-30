@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MiniWindowsSDKIncludePath>$(MSBuildThisFileDirectory)..\lib\native\include</MiniWindowsSDKIncludePath>
+    <MiniWindowsSDKWinMDPath>$(MSBuildThisFileDirectory)..\lib\native\include\metadata</MiniWindowsSDKWinMDPath>
+    <MiniWindowsSDKUnionWinMDPath>$(MSBuildThisFileDirectory)..\lib\unionmetadata</MiniWindowsSDKUnionWinMDPath>
+    <MiniWindowsSDKSdkDir>$(MSBuildThisFileDirectory)..\lib</MiniWindowsSDKSdkDir>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <SdkMetadataPath>$(MiniWindowsSDKWinMDPath)</SdkMetadataPath>
+  </PropertyGroup>
+
+<!-- Override assembly reference target to get the override winmds passed through to the XamlCompiler in the native project. -->
+  <Target Name="_PrepareForReferenceResolution">
+    <ItemGroup>
+      <ReferencePath Include="$(MiniWindowsSDKWinMDPath)\*.winmd">
+        <IsWinMDFile>true</IsWinMDFile>
+        <CopyLocal>false</CopyLocal>
+        <IsSystemReference>True</IsSystemReference>
+        <Implicit>true</Implicit>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
+
+  <!-- Sneak our override winmds into the reference list for C# projects. NOTE: Commented out for now as it breaks incremental build -->
+  <!--<Target Name="ImplicitlyExpandTargetPlatformOverride">
+    <Message Text="Override ImplicitlyExpandTargetPlatform"/>
+
+    <Message Text="Override ImplicitlyExpandTargetPlatform"/>
+
+    <ItemGroup>
+      <ReferencePath Include="$(MiniWindowsSDKWinMDPath)\*.winmd">
+        <WinMDFile>true</WinMDFile>
+        <CopyLocal>true</CopyLocal>
+        <ReferenceGrouping>$(TargetPlatformMoniker)</ReferenceGrouping>
+        <ReferenceGroupingDisplayName>$(TargetPlatformDisplayName)</ReferenceGroupingDisplayName>
+        <ResolvedFrom>ImplicitlyExpandTargetPlatform</ResolvedFrom>
+        <IsSystemReference>True</IsSystemReference>
+      </ReferencePath>
+    </ItemGroup>
+
+    <Message Importance="Low" Text="OVERRIDE: Including @(ReferencePath)"
+      Condition="'%(ReferencePath.ResolvedFrom)' == 'ImplicitlyExpandTargetPlatform'"/>
+
+    <ItemGroup>
+      <_ResolveAssemblyReferenceResolvedFiles Include="@(ReferencePath)"
+        Condition="'%(ReferencePath.ResolvedFrom)' == 'ImplicitlyExpandTargetPlatform'"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="OverrideTargetPlatformSdkDir" AfterTargets="_GetAppxManifestSchemaItems">
+    <PropertyGroup>
+      <_TargetPlatformSdkDir>$(MiniWindowsSDKSdkDir)</_TargetPlatformSdkDir>
+    </PropertyGroup>
+  </Target>-->
+</Project>

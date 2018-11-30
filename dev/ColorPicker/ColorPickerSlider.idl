@@ -1,0 +1,14 @@
+[WUXC_VERSION_RS3]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("IColorPickerSlider", 94394d83-e0df-4c5f-bbcd-8155f4020440)]
+[WUXC_STATIC_NAME("IColorPickerSliderStatics", 22eafc6a-9fe3-4eee-8734-a1398ec4413a)]
+[WUXC_CONSTRUCTOR_NAME("IColorPickerSliderFactory", 06d879a2-8c07-4b1e-a940-9fbce8f49639)]
+unsealed runtimeclass ColorPickerSlider : Windows.UI.Xaml.Controls.Slider
+{
+    ColorPickerSlider();
+
+    [MUX_DEFAULT_VALUE("winrt::ColorPickerHsvChannel::Value")]
+    MU_XC_NAMESPACE.ColorPickerHsvChannel ColorChannel { get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty ColorChannelProperty { get; };
+}

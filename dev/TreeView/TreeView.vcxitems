@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{EEB38379-3A5C-439F-BB5E-535D75F2B6C1}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewCollapsedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewDragItemsCompletedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewDragItemsStartingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewExpandingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewItemTemplateSettings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewNode.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TreeView.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewListAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewItem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewItemAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewItemInvokedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewList.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ViewModel.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TreeView.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TreeViewItem.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TreeViewItemTemplateSettings.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TreeViewNode.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewCollapsedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewDragItemsCompletedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewDragItemsStartingEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewExpandingEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewItemTemplateSettings.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewNode.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TreeView.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewListAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewItem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewItemAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewItemInvokedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewList.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ViewModel.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)TreeView.idl" />
+    <None Include="$(MSBuildThisFileDirectory)TreeViewAutomationPeers.idl" />
+  </ItemGroup>
+  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Page Include="$(MSBuildThisFileDirectory)TreeView.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TreeViewItem_rs1.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TreeViewItem.xaml">
+      <Version>RS2</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TreeView_rs1_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TreeView_rs2_themeresources.xaml">
+      <Version>RS2</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TreeView_rs5_themeresources.xaml">
+      <Version>RS5</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-US\Resources.resw" />
+  </ItemGroup>
+</Project>

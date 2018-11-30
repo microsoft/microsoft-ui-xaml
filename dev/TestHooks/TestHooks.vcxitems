@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{848448d5-f717-4f88-8f99-311cd60587fa}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)MUXControlsTestHooks.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MUXControlsTestHooksFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MUXControlsTestHooksLoggingMessageEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterTestHooksFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerTestHooks.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerTestHooksFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerTestHooksAnchorEvaluatedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerTestHooksInteractionSourcesChangedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerViewTestHooks.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerViewTestHooksFactory.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SwipeTestHooks.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SwipeTestHooksFactory.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MUXControlsTestHooks.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MUXControlsTestHooksFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MUXControlsTestHooksLoggingMessageEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterTestHooksFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerTestHooks.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerTestHooksFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerTestHooksAnchorEvaluatedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerTestHooksInteractionSourcesChangedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerViewTestHooks.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerViewTestHooksFactory.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SwipeTestHooks.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SwipeTestHooksFactory.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)MUXControlsTestHooks.idl" />
+    <None Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.idl" />
+    <None Include="$(MSBuildThisFileDirectory)ScrollerTestHooks.idl" />
+    <None Include="$(MSBuildThisFileDirectory)ScrollerViewTestHooks.idl" />
+    <None Include="$(MSBuildThisFileDirectory)SwipeTestHooks.idl" />
+  </ItemGroup>
+</Project>

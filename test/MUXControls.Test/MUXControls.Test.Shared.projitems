@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildThisFileDirectory)\..\..\mux.controls.props') And $(BuildingWithBuildExe) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\environment.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\SdkVersion.props" Condition="$(BuildingWithBuildExe) == 'true'" />
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>c86d3f1a-cd11-406d-abee-ae4c9f23b8fe</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>MUXControls.Test</Import_RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{83ABD4F6-10C9-433D-A4C4-486983FE13BE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MUXControls.Test</RootNamespace>
+    <TargetPlatformVersion Condition="'$(TargetPlatformVersion)' == '' And $(BuildingWithBuildExe) != 'true'">$(MuxSdkVersion)</TargetPlatformVersion>
+    <TargetPlatformVersion Condition="$(BuildingWithBuildExe) == 'true'">10</TargetPlatformVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <LangVersion>5</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(BuildingWithBuildExe) != 'true'">
+    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10</UniversalCRTSdkDir>
+    <WindowsMetadataPath>$(UniversalCRTSdkDir)\UnionMetadata\$(TargetPlatformVersion)</WindowsMetadataPath>
+    <AssemblyName>MUXControls.Test</AssemblyName>
+    <!-- We are using .NetCore because we are targetting CoreCLR but with Windows UAP support. It maps to netcore50 in the project.json file. 
+         If you don't need UAP support, for example you are just driving UI with Microsoft.Windows.Apps.Test, you should build with .NETPlatform,Version=5.4. This maps to dotnet54 in the project.json file.
+         We are using this setting since we are calling a WinRT API in one test case. 
+         These are the only two options that you should be using. -->
+    <!--<NuGetTargetMoniker>.NETCore,Version=v5.0</NuGetTargetMoniker>-->
+    <DependenciesPath>$(USERPROFILE)\.nuget\packages</DependenciesPath>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(BuildingWithBuildExe) == 'true'">
+    <!-- CatGates requires that all test assemblies begin with "Windows.UI.Xaml.Tests",
+         so we'll add that to our assembly name in Windows builds to ensure that we get picked up. -->
+    <AssemblyName>Windows.UI.Xaml.Tests.MUXControls</AssemblyName>
+    <TargetDestination>NTTEST\WINDOWSTEST\dxaml\controls\test\MUXControls.Test</TargetDestination>
+    <TestCode>true</TestCode>
+    <TestNetVersion>v2.0</TestNetVersion>
+    <WindowsMetadataPath>$(ProjectSdkMetadataPath)</WindowsMetadataPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>$(DefineConstants);TRACE;DEBUG;X86</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <DefineConstants>$(DefineConstants);TRACE;X86</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>$(DefineConstants);TRACE;DEBUG;X64</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <DefineConstants>$(DefineConstants);TRACE;X64</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>$(DefineConstants);TRACE;DEBUG;ARM</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM'">
+    <DefineConstants>$(DefineConstants);TRACE;ARM</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRles.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|arm64'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>$(DefineConstants);TRACE;DEBUG;ARM</DefineConstants>
+    <DebugType>full</DebugType>
+    <!-- VS15.6 build doesn't support arm64 for .NET yet. This project is excluded in solution build, but need "arm" here to satisfy "nuget restore". -->
+    <PlatformTarget>arm</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|arm64'">
+    <DefineConstants>$(DefineConstants);TRACE;ARM</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <!-- VS15.6 build doesn't support arm64 for .NET yet. This project is excluded in solution build, but need "arm" here to satisfy "nuget restore". -->
+    <PlatformTarget>arm</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(BuildLeanMuxForTheStoreApp) == 'true'">
+    <DefineConstants>$(DefineConstants);BUILD_LEAN_MUX_FOR_THE_STORE_APP</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Windows.winmd">
+      <HintPath>$(WindowsMetadataPath)\windows.winmd</HintPath>
+      <IsWinMDFile>true</IsWinMDFile>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)\Common\AppsTestExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Common\FindElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Common\FocusHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Common\GamepadHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Common\InputHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Common\KeyboardHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Common\ScrollChangedEventWaiter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Common\ScrollerUIObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Common\ScrollHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Common\TestHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Common\ValueChangedEventWaiter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Common\WaitHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Infra\Application.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Infra\TestEnvironment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Infra\TestHelpers.cs" />
+  </ItemGroup>
+</Project>

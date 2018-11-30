@@ -1,0 +1,19 @@
+#include <windows.h>
+#include <ntverp.h>
+
+#define VER_FILETYPE                VFT_DLL
+#define VER_FILESUBTYPE             VFT_UNKNOWN
+#define VER_FILEDESCRIPTION_STR     "Windows.UI.Xaml.Controls"
+#define VER_INTERNALNAME_STR        "Windows.UI.Xaml.Controls"
+#define VER_ORIGINALFILENAME_STR    "Windows.UI.Xaml.Controls.dll"
+
+#include <common.ver>
+
+STRINGTABLE
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+{
+#include "Microsoft.UI.Xaml.Strings.g.rc"
+}
+
+#include "Microsoft.UI.Xaml.Images.g.rc"
+#include "XamlTypeInfo.g.rc"

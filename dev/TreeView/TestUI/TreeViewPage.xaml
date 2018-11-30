@@ -1,0 +1,137 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:muxcontrols="using:Microsoft.UI.Xaml.Controls"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    x:Class="MUXControlsTestApp.TreeViewPage"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <ScrollViewer>
+            <StackPanel>
+                <TextBlock x:Name="Results" AutomationProperties.Name="Results"/>
+                <TextBlock x:Name="Mode" AutomationProperties.Name="Mode"/>
+                <Button x:Name="SetContentMode" AutomationProperties.Name="SetContentMode" Content="SetContentMode" Click="SetContentMode_Click"/>
+                <Button x:Name="GetSelected" AutomationProperties.Name="GetSelected" Content="GetSelected" Click="GetSelected_Click"/>
+                <Button x:Name="DisableClickToExpand" AutomationProperties.Name="DisableClickToExpand" Content="DisableClickToExpand" Click="DisableClickToExpand_Click"/>
+                <Button x:Name="ChangeFlowDirection" AutomationProperties.Name="ChangeFlowDirection" Content="ChangeFlowDirection" Click="ChangeFlowDirection_Click"/>
+                <Button x:Name="MoveNodesToNewTreeView" AutomationProperties.Name="MoveNodesToNewTreeView" Content="MoveNodesToNewTreeView" Click="MoveNodesToNewTreeView_Click"/>
+                <Button x:Name="SetUpExpandingNodeEvent" AutomationProperties.Name="SetUpExpandingNodeEvent" Content="SetUpExpandingNodeEvent" Click="SetupExpandingNodeEvent_Click"/>
+                <Button x:Name="LabelItems" AutomationProperties.Name="LabelItems" Content="LabelItems" Click="LabelItems_Click"/>
+                <Button x:Name="GetChildrenOrder" AutomationProperties.Name="GetChildrenOrder" Content="GetChildrenOrder" Click="GetChildrenOrder_Click"/>
+                <Button x:Name="ToggleSelectionMode" AutomationProperties.Name="ToggleSelectionMode" Content="ToggleSelectionMode" Click="ToggleSelectionMode_Click"/>
+                <Button x:Name="TreeViewInFlyout"  AutomationProperties.Name="TreeViewInFlyout" Content="TreeViewInFlyout"  Click="TreeViewInFlyout_Click">
+                    <FlyoutBase.AttachedFlyout>
+                        <Flyout>
+                            <StackPanel>
+                                <Button x:Name="GetFlyoutItemCount" AutomationProperties.Name="GetFlyoutItemCount" Content="GetFlyoutItemCount" Click="GetFlyoutTreeViewItemCount_Click"/>
+                                <muxcontrols:TreeView x:Name="FlyoutTreeView"
+                        Width="345" MaxHeight="500"/>
+                            </StackPanel>
+                        </Flyout>
+                    </FlyoutBase.AttachedFlyout>
+                </Button>
+                <Button x:Name="ChangeSelectionAfterFlyout" AutomationProperties.Name="ChangeSelectionAfterFlyout" Content="ChangeSelectionAfterFlyout" Click="ChangeSelectionAfterFlyout_Click"/>
+                <Button x:Name="GetItemCount" AutomationProperties.Name="GetItemCount" Content="GetItemCount" Click="GetItemCount_Click"/>
+                <Button x:Name="GetTree2ItemCount" AutomationProperties.Name="GetTree2ItemCount" Content="GetTree2ItemCount" Click="GetTree2ItemCount_Click"/>
+                <Button x:Name="GetItemCommonStates" AutomationProperties.Name="GetItemCommonStates" Content="GetItemCommonStates" Click="GetItemCommonStates_Click" />
+                <Button x:Name="SetupNoReorderNodes" AutomationProperties.Name="SetupNoReorderNodes" Content="SetupNoReorderNodes" Click="SetupNoReorderNodes_Click"/>
+                <Button x:Name="SizeTreeViewsForDrags" AutomationProperties.Name="SizeTreeViewsForDrags" Content="SizeTreeViewsForDrags" Click="SizeTreeViewsForDrags_Click"/>
+                <Button x:Name="AddSecondLevelOfNodes" AutomationProperties.Name="AddSecondLevelOfNodes" Content="AddSecondLevelOfNodes" Click="AddSecondLevelOfNodes_Click"/>
+                <Button x:Name="ModifySecondLevelOfNode" AutomationProperties.Name="ModifySecondLevelOfNode" Content="ModifySecondLevelOfNode" Click="ModifySecondLevelOfNode_Click"/>
+                <Button x:Name="RemoveSecondLevelOfNode" AutomationProperties.Name="RemoveSecondLevelOfNode" Content="RemoveSecondLevelOfNode" Click="RemoveSecondLevelOfNode_Click"/>
+                <Button x:Name="SetRoot1HasUnrealizedChildren" AutomationProperties.Name="SetRoot1HasUnrealizedChildren" Content="SetRoot1HasUnrealizedChildren" Click="SetRoot1HasUnrealizedChildren_Click"/>
+                <Button x:Name="SetupDragToDropTarget" AutomationProperties.Name="SetupDragToDropTarget" Content="SetupDragToDropTarget" Click="SetupDragToDropTarget_Click"/>
+                <Button x:Name="SetupCustomDragUIOverride" AutomationProperties.Name="SetupCustomDragUIOverride" Content="SetupCustomDragUIOverride" />
+                <Button x:Name="SetupDragDropHandlersForApiTest" AutomationProperties.Name="SetupDragDropHandlersForApiTest" Content="SetupDragDropHandlersForApiTest" Click="SetupDragDropHandlersForApiTest_Click"/>
+                <Button x:Name="DisableItemDrag" AutomationProperties.Name="DisableItemDrag" Content="DisableItemDrag" Click="DisableItemDrag_Click"/>
+                <Button x:Name="DisableItemReorder" AutomationProperties.Name="DisableItemReorder" Content="DisableItemReorder" Click="DisableItemReorder_Click"/>
+                <Button x:Name="ItemTemplateSelectorTestPage" AutomationProperties.Name="ItemTemplateSelectorTestPage" Content="ItemTemplateSelectorTestPage" Click="ItemTemplateSelectorTestPage_Click"/>
+                <Button x:Name="AddNodeWithEmpyUnrealizedChildren" AutomationProperties.Name="AddNodeWithEmpyUnrealizedChildren" Content="AddNodeWithEmpyUnrealizedChildren" Click="AddNodeWithEmpyUnrealizedChildren_Click"/>
+                <Button x:Name="GetMultiSelectCheckBoxStates" AutomationProperties.Name="GetMultiSelectCheckBoxStates" Content="GetMultiSelectCheckBoxStates" Click="GetMultiSelectCheckBoxStates_Click"/>
+                <Button x:Name="ToggleSelectedNodes" AutomationProperties.Name="ToggleSelectedNodes" Content="ToggleSelectedNodes" Click="ToggleSelectedNodes_Click"/>
+                <Button x:Name="AddInheritedTreeViewNode" AutomationProperties.Name="AddInheritedTreeViewNode" Content="AddInheritedTreeViewNode" Click="AddInheritedTreeViewNode_Click"/>
+                <Button x:Name="AddExtraNodes" AutomationProperties.Name="AddExtraNodes" Content="AddExtraNodes" Click="AddExtraNodes_Click"/>
+            </StackPanel>
+        </ScrollViewer>
+        <ScrollViewer Grid.Column="1">
+            <StackPanel x:Name="TestStackPanel">
+
+                <muxcontrols:TreeView
+                    x:Name="TestTreeView"
+                    AutomationProperties.Name="TestTreeView"
+                    HorizontalAlignment="Left"
+                    Width="400" Height="400"
+                    ItemInvoked="TestTreeView_ItemInvoked"/>
+
+                <muxcontrols:TreeView x:Name="TestTreeView2"
+                                AutomationProperties.Name="TestTreeView2"
+                                HorizontalAlignment="Left"
+                                Width="400" Height="400"/>
+                <Border x:Name="DropTarget" HorizontalAlignment="Left" Width="400" Height="40" Background="Silver" AllowDrop="True" Drop="DropTarget_Drop" DragOver="DropTarget_DragOver" AutomationProperties.Name="DropTarget" >
+                    <TextBlock x:Name="DropTargetTextBlock" AutomationProperties.Name="DropTargetTextBlock" />
+                </Border>
+                <Border x:Name="DraggableElement" Background="LightBlue" HorizontalAlignment="Left" Width="400" Height="40" CanDrag="True" AutomationProperties.Name="DraggableElement"  >
+                    <TextBlock Text="Drag Me" />
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <ScrollViewer Grid.Column="2">
+            <StackPanel x:Name="ContentModeTestStackPanel">
+
+                <muxcontrols:TreeView 
+                    x:Name="ContentModeTestTreeView"
+                    AutomationProperties.Name="ContentModeTestTreeView"
+                    HorizontalAlignment="Left"
+                    Width="400" Height="400"
+                    ItemInvoked="TestTreeViewContentMode_ItemInvoked"
+                    ItemsSource="{x:Bind TestTreeViewItemsSource}">
+                    <muxcontrols:TreeView.ItemTemplate>
+                        <DataTemplate x:DataType="local:TreeViewItemSource">
+                            <muxcontrols:TreeViewItem 
+                                ItemsSource="{x:Bind Children}"
+                                Content="{x:Bind Content}"
+                                IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
+                                IsSelected="{x:Bind IsSelected, Mode=TwoWay}"
+                                HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"/>
+                            </DataTemplate>
+                    </muxcontrols:TreeView.ItemTemplate>
+                </muxcontrols:TreeView>
+
+                <muxcontrols:TreeView 
+                    x:Name="ContentModeTestTreeView2"
+                    AutomationProperties.Name="ContentModeTestTreeView2"
+                    HorizontalAlignment="Left"
+                    Width="400" Height="400"
+                    ItemsSource="{Binding TestTreeView2ItemsSource}">
+                    <muxcontrols:TreeView.ItemTemplate>
+                        <DataTemplate>
+                            <muxcontrols:TreeViewItem 
+                                ItemsSource="{Binding Children}"
+                                Content="{Binding Content}"
+                                IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
+                                IsSelected="{Binding IsSelected, Mode=TwoWay}"/>
+                        </DataTemplate>
+                    </muxcontrols:TreeView.ItemTemplate>
+                </muxcontrols:TreeView>
+
+                <Border x:Name="DropTarget2" HorizontalAlignment="Left" Width="400" Height="40" Background="Silver" AllowDrop="True" Drop="DropTarget_Drop" DragOver="DropTarget_DragOver" AutomationProperties.Name="DropTarget2" >
+                    <TextBlock x:Name="DropTargetTextBlock2" AutomationProperties.Name="DropTargetTextBlock2" />
+                </Border>
+                <Border x:Name="DraggableElement2" Background="LightBlue" HorizontalAlignment="Left" Width="400" Height="40" CanDrag="True" AutomationProperties.Name="DraggableElement2"  >
+                    <TextBlock Text="Drag Me" />
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+    </Grid>
+</local:TestPage>

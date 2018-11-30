@@ -1,0 +1,45 @@
+[WUXC_VERSION_RS5]
+[webhosthidden]
+[default_interface]
+runtimeclass SplitButtonClickEventArgs
+{
+}
+
+[WUXC_VERSION_RS5]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+unsealed runtimeclass SplitButton : Windows.UI.Xaml.Controls.ContentControl
+{
+    SplitButton();
+
+    Windows.UI.Xaml.Controls.Primitives.FlyoutBase Flyout { get; set; };
+    Windows.UI.Xaml.Input.ICommand Command { get; set; };
+    Object CommandParameter { get; set; };
+
+    event Windows.Foundation.TypedEventHandler<SplitButton, SplitButtonClickEventArgs> Click;
+
+    static Windows.UI.Xaml.DependencyProperty FlyoutProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty CommandProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty CommandParameterProperty { get; };
+}
+
+[WUXC_VERSION_RS5]
+[webhosthidden]
+[marshaling_behavior(agile)]
+[default_interface]
+runtimeclass ToggleSplitButtonIsCheckedChangedEventArgs
+{
+}
+
+[WUXC_VERSION_RS5]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+unsealed runtimeclass ToggleSplitButton : SplitButton
+{
+    ToggleSplitButton();
+
+    [MUX_PROPERTY_NEEDS_DP_FIELD]
+    Boolean IsChecked{ get; set; };
+
+    event Windows.Foundation.TypedEventHandler<ToggleSplitButton, ToggleSplitButtonIsCheckedChangedEventArgs> IsCheckedChanged;
+}

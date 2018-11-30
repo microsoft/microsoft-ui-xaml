@@ -1,0 +1,98 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.SplitButtonPage"
+    x:Name="SplitButtonTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:util="using:MUXControlsTestApp.Utilities"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <local:MyCommand x:Key="TestExecuteCommand" />
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <ScrollViewer Grid.Column="0" Height="Auto">
+            <StackPanel Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Center" Width="Auto" Height="Auto">
+                <CheckBox x:Name="SimulateTouchCheckBox" AutomationProperties.Name="SimulateTouchCheckBox" Content="Simulate Touch" Checked="SimulateTouchCheckBox_Checked" Unchecked="SimulateTouchCheckBox_Unchecked"/>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock>Click count:</TextBlock>
+                    <TextBlock x:Name="ClickCountTextBlock" AutomationProperties.Name="ClickCountTextBlock" Margin="4,0,0,0" Text="0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock>Flyout opened:</TextBlock>
+                    <TextBlock x:Name="FlyoutOpenedCountTextBlock" AutomationProperties.Name="FlyoutOpenedCountTextBlock" Margin="4,0,0,0" Text="0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock>Flyout closed:</TextBlock>
+                    <TextBlock x:Name="FlyoutClosedCountTextBlock" AutomationProperties.Name="FlyoutClosedCountTextBlock" Margin="4,0,0,0" Text="0"/>
+                </StackPanel>
+
+                <controls:SplitButton x:Name="TestSplitButton" AutomationProperties.Name="TestSplitButton" Margin="0,12,0,0" Content="Test Button" Click="TestSplitButton_Click">
+                    <controls:SplitButton.Flyout>
+                        <Flyout x:Name="TestFlyout" AutomationProperties.Name="TestFlyout" Opened="TestSplitButtonFlyout_Opened" Closed="TestSplitButtonFlyout_Closed">
+                            <TextBlock Text="Hello"/>
+                        </Flyout>
+                    </controls:SplitButton.Flyout>
+                </controls:SplitButton>
+
+                <util:ControlStateViewer x:Name="ControlStateViewer" Margin="0,16,0,0"/>
+
+                <util:ControlStateViewer x:Name="ToggleControlStateViewer" Margin="0,6,0,0"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="12,0,0,0">
+            <StackPanel Orientation="Horizontal">
+                <controls:ToggleSplitButton x:Name="ToggleSplitButton" AutomationProperties.Name="ToggleSplitButton" Content="Toggle" IsCheckedChanged="ToggleSplitButton_IsCheckedChanged" Click="ToggleSplitButton_Click">
+                    <controls:SplitButton.Flyout>
+                        <Flyout>
+                            <TextBlock Text="Hello"/>
+                        </Flyout>
+                    </controls:SplitButton.Flyout>
+                </controls:ToggleSplitButton>
+
+                <ToggleButton Content="For Comparison" Margin="6,0,0,0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock>Toggle State:</TextBlock>
+                <TextBlock x:Name="ToggleStateTextBlock" AutomationProperties.Name="ToggleStateTextBlock" Margin="4,0,0,0" Text="Unchecked"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock>Toggle State on Click:</TextBlock>
+                <TextBlock x:Name="ToggleStateOnClickTextBlock" AutomationProperties.Name="ToggleStateOnClickTextBlock" Margin="4,0,0,0" Text="Unchecked"/>
+            </StackPanel>
+
+            <controls:ToggleSplitButton Content="Initially Checked" IsChecked="True"/>
+
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <controls:SplitButton x:Name="DisabledSplitButton" Content="Disabled" IsEnabled="False"/>
+                <CheckBox x:Name="EnableCheckBox" Content="Enable" Checked="EnableCheckBox_Checked" Unchecked="EnableCheckBox_Unchecked" Margin="12,0,0,0"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <controls:SplitButton x:Name="CommandSplitButton" AutomationProperties.Name="CommandSplitButton" Content="Command" Command="{x:Bind TestExecuteCommand}"/>
+                <CheckBox x:Name="CanExecuteCheckBox" AutomationProperties.Name="CanExecuteCheckBox" Content="CanExecute" Checked="CanExecuteCheckBox_Checked" Unchecked="CanExecuteCheckBox_Unchecked" IsChecked="True" Margin="12,0,0,0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock>Execute Count:</TextBlock>
+                <TextBlock x:Name="ExecuteCountTextBlock" AutomationProperties.Name="ExecuteCountTextBlock" Margin="4,0,0,0" Text="0"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <controls:SplitButton x:Name="FlyoutSetSplitButton" Content="Flyout"/>
+                <CheckBox x:Name="SetFlyoutCheckBox" Content="Set Flyout" Checked="SetFlyoutCheckBox_Checked" Unchecked="SetFlyoutCheckBox_Unchecked" IsChecked="False" Margin="12,0,0,0"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</local:TestPage>

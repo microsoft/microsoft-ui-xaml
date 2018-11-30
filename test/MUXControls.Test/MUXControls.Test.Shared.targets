@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\dev\ColorPicker\InteractionTests\ColorPicker_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\RatingControl\InteractionTests\RatingControl_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\ParallaxView\InteractionTests\ParallaxView_InteractionTests.projitems" Label="Shared" />
+  <Import Project="..\..\dev\Scroller\InteractionTests\Scroller_InteractionTests.projitems" Label="Shared" />
+  <Import Project="..\..\dev\ScrollBar2\InteractionTests\ScrollBar2_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\ScrollerView\InteractionTests\ScrollerView_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\PersonPicture\InteractionTests\PersonPicture_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\TreeView\InteractionTests\TreeView_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\NavigationView\NavigationView_InteractionTests\NavigationView_InteractionTests.projitems" Label="Shared" />
+  <Import Project="..\..\dev\Materials\Acrylic\InteractionTests\AcrylicBrush_InteractionTests.projitems" Label="Shared" />
+  <Import Project="..\..\dev\CommonManaged\CommonManaged.projitems" Label="Shared" />
+  <Import Project="..\..\dev\Materials\Reveal\InteractionTests\Reveal_InteractionTests\Reveal_InteractionTests.projitems" Label="Shared" />
+  <Import Project="..\..\dev\SwipeControl\SwipeControl_InteractionTests\SwipeControl_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\PullToRefresh\RefreshContainer\InteractionTests\RefreshContainer_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\InteractionTests\ScrollViewerAdapter_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\TwoPaneView\InteractionTests\TwoPaneView_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\MenuBar\MenuBar_InteractionTests\MenuBar_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\SplitButton\InteractionTests\SplitButton_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\DropDownButton\InteractionTests\DropDownButton_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\CommandBarFlyout\InteractionTests\CommandBarFlyout_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\CommonStyles\InteractionTests\CommonStyles_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\RadioButtons\InteractionTests\RadioButtons_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\RadioMenuFlyoutItem\InteractionTests\RadioMenuFlyoutItem_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <!-- These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
+       We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
+       to non-public types.  So for now we'll just exclude these from the OS repo. -->
+  <Import Project="..\..\dev\Interactions\ButtonInteraction\InteractionTests\ButtonInteraction_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true'" />
+  <Import Project="..\..\dev\Interactions\SliderInteraction\InteractionTests\SliderInteraction_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true'" />
+</Project>

@@ -1,0 +1,32 @@
+[WUXC_VERSION_RS3]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("IPersonPicture", 6c230b6d-0d75-4059-91bc-7b174d1d7315)]
+[WUXC_STATIC_NAME("IPersonPictureStatics", dbec0982-3c10-4639-9614-aa5b7cdc32ca)]
+[WUXC_CONSTRUCTOR_NAME("IPersonPictureFactory", 4f18330d-0416-4b92-bfd3-bf5780b46ab2)]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+unsealed runtimeclass PersonPicture : Windows.UI.Xaml.Controls.Control
+{
+    PersonPicture();
+
+    Int32 BadgeNumber { get; set; };
+    String BadgeGlyph { get; set; };
+    Windows.UI.Xaml.Media.ImageSource BadgeImageSource { get; set; };
+    String BadgeText { get; set; };
+    Boolean IsGroup { get; set; };
+    Windows.ApplicationModel.Contacts.Contact Contact { get; set; };
+    String DisplayName { get; set; };
+    String Initials { get; set; };
+    Boolean PreferSmallImage { get; set; };
+    Windows.UI.Xaml.Media.ImageSource ProfilePicture { get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty BadgeNumberProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty BadgeGlyphProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty BadgeImageSourceProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty BadgeTextProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsGroupProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ContactProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty DisplayNameProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty InitialsProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty PreferSmallImageProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ProfilePictureProperty { get; };
+}

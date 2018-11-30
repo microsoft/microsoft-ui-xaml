@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{ED7DBA65-8F09-44F3-8D25-7BB5A7A89609}</ItemsProjectGuid>
+    <ItemsProjectName>RefreshVisualizer</ItemsProjectName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Generated\RefreshVisualizer.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PullToRefreshHelperTestApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)PullToRefreshHelperTestApiFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RefreshInteractionRatioChangedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RefreshVisualizer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RefreshVisualizerEventArgs.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)PullToRefreshHelperTestApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PullToRefreshHelperTestApiFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RefreshInteractionRatioChangedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RefreshVisualizer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RefreshVisualizerEventArgs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)RefreshVisualizer.idl" />
+  </ItemGroup>
+  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Page Include="$(MSBuildThisFileDirectory)RefreshVisualizer.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RefreshVisualizer_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)PullToRefreshHelperTestAPI.idl" />
+    <None Include="$(MSBuildThisFileDirectory)RefreshVisualizerPrivate.idl" />
+  </ItemGroup>
+</Project>

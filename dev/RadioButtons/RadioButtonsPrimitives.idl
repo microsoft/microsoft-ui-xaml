@@ -1,0 +1,14 @@
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass RadioButtonsListView : Windows.UI.Xaml.Controls.ListView
+{
+    RadioButtonsListView();
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[default_interface]
+unsealed runtimeclass RadioButtonsListViewItem : Windows.UI.Xaml.Controls.ListViewItem
+{
+    RadioButtonsListViewItem();
+}

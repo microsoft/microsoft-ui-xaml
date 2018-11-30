@@ -1,0 +1,326 @@
+[WUXC_VERSION_RS3]
+[webhosthidden]
+enum NavigationViewDisplayMode
+{
+    Minimal = 0,
+    Compact = 1,
+    Expanded = 2,
+};
+
+[WUXC_VERSION_RS4]
+[webhosthidden]
+enum NavigationViewBackButtonVisible
+{
+    Collapsed = 0,
+    Visible = 1,
+    Auto = 2,
+};
+
+[WUXC_VERSION_RS5]
+[webhosthidden]
+enum NavigationViewPaneDisplayMode
+{
+    Auto = 0,
+    Left = 1,
+    Top = 2,
+    LeftCompact = 3,
+    LeftMinimal = 4
+};
+
+[WUXC_VERSION_RS5]
+[webhosthidden]
+enum NavigationViewSelectionFollowsFocus
+{
+    Disabled = 0,
+    Enabled = 1
+};
+
+[WUXC_VERSION_RS5]
+[webhosthidden]
+enum NavigationViewShoulderNavigationEnabled
+{
+    WhenSelectionFollowsFocus = 0,
+    Always = 1,
+    Never = 2
+};
+
+[WUXC_VERSION_RS5]
+[webhosthidden]
+enum NavigationViewOverflowLabelMode
+{
+    MoreLabel = 0,
+    NoLabel = 1
+};
+
+[WUXC_VERSION_RS3]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("INavigationViewDisplayModeChangedEventArgs", b7c1ad35-5544-40c1-9b33-acfe1d6c8094)]
+runtimeclass NavigationViewDisplayModeChangedEventArgs
+{
+    NavigationViewDisplayMode DisplayMode { get; };
+}
+
+[WUXC_VERSION_RS3]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("INavigationViewSelectionChangedEventArgs", 5aa509a0-3a5e-4f54-896c-98b85f819508)]
+runtimeclass NavigationViewSelectionChangedEventArgs
+{
+    Object SelectedItem { get; };
+    Boolean IsSettingsSelected { get; };
+
+    [WUXC_VERSION_RS5]
+    {
+        NavigationViewItemBase SelectedItemContainer { get; };
+        Windows.UI.Xaml.Media.Animation.NavigationTransitionInfo RecommendedNavigationTransitionInfo { get; };
+    }
+}
+
+[WUXC_VERSION_RS3]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("INavigationViewItemInvokedEventArgs", 29496822-55d2-49fa-964b-f1dbafef85c4)]
+runtimeclass NavigationViewItemInvokedEventArgs
+{
+    NavigationViewItemInvokedEventArgs();
+
+    Object InvokedItem { get; };
+    Boolean IsSettingsInvoked { get; };
+
+    [WUXC_VERSION_RS5]
+    {
+        NavigationViewItemBase InvokedItemContainer { get; };
+        Windows.UI.Xaml.Media.Animation.NavigationTransitionInfo RecommendedNavigationTransitionInfo { get; };
+    }
+}
+
+[WUXC_VERSION_RS4]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("INavigationViewPaneClosingEventArgs", 955575ba-75f5-432d-b49b-60e47552d5ee)]
+runtimeclass NavigationViewPaneClosingEventArgs
+{
+    Boolean Cancel { get; set; };
+}
+
+[WUXC_VERSION_RS4]
+[webhosthidden]
+[default_interface]
+[WUXC_INTERFACE_NAME("INavigationViewBackRequestedEventArgs", 446700e1-9a9d-4500-a71d-25c15809b879)]
+runtimeclass NavigationViewBackRequestedEventArgs
+{
+}
+
+[WUXC_VERSION_RS5]
+[webhosthidden]
+unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    NavigationViewTemplateSettings();
+
+    [MUX_DEFAULT_VALUE("0.0")]
+    Double TopPadding { get; };
+    [MUX_DEFAULT_VALUE("winrt::Visibility::Collapsed")]
+    Windows.UI.Xaml.Visibility OverflowButtonVisibility { get; };
+    [MUX_DEFAULT_VALUE("winrt::Visibility::Visible")]
+    Windows.UI.Xaml.Visibility PaneToggleButtonVisibility { get; };
+    [MUX_DEFAULT_VALUE("winrt::Visibility::Collapsed")]
+    Windows.UI.Xaml.Visibility BackButtonVisibility { get; };
+    [MUX_DEFAULT_VALUE("winrt::Visibility::Collapsed")]
+    Windows.UI.Xaml.Visibility TopPaneVisibility { get; };
+    [MUX_DEFAULT_VALUE("winrt::Visibility::Visible")]
+    Windows.UI.Xaml.Visibility LeftPaneVisibility { get; };
+    Boolean SingleSelectionFollowsFocus { get; };
+
+    static Windows.UI.Xaml.DependencyProperty TopPaddingProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty OverflowButtonVisibilityProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty PaneToggleButtonVisibilityProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty BackButtonVisibilityProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty TopPaneVisibilityProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty LeftPaneVisibilityProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty SingleSelectionFollowsFocusProperty { get; };
+}
+
+[WUXC_VERSION_RS3]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("INavigationView", f209ce15-391a-42ca-9fc6-f79da65aca32)]
+[WUXC_STATIC_NAME("INavigationViewStatics", 363a86c7-72da-4420-b871-15d9d0d45756)]
+[WUXC_CONSTRUCTOR_NAME("INavigationViewFactory", e50687c1-b7c2-4975-ad7a-5f4fe6a514c9)]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
+{
+    NavigationView();
+
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsPaneOpen { get; set; };
+    [MUX_DEFAULT_VALUE("641.0")]
+    [MUX_PROPERTY_VALIDATION_CALLBACK("CoerceToGreaterThanZero")]
+    Double CompactModeThresholdWidth { get; set; };
+    [MUX_DEFAULT_VALUE("1008.0")]
+    [MUX_PROPERTY_VALIDATION_CALLBACK("CoerceToGreaterThanZero")]
+    Double ExpandedModeThresholdWidth { get; set; };
+    Windows.UI.Xaml.UIElement PaneFooter { get; set; };
+    Object Header { get; set; };
+    Windows.UI.Xaml.DataTemplate HeaderTemplate { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::NavigationViewDisplayMode::Minimal")]
+    NavigationViewDisplayMode DisplayMode { get; };
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsSettingsVisible { get; set; };
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsPaneToggleButtonVisible { get; set; };
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean AlwaysShowHeader { get; set; };
+    [MUX_DEFAULT_VALUE("48.0")]
+    [MUX_PROPERTY_VALIDATION_CALLBACK("CoerceToGreaterThanZero")]
+    Double CompactPaneLength { get; set; };
+    [MUX_DEFAULT_VALUE("320.0")]
+    [MUX_PROPERTY_VALIDATION_CALLBACK("CoerceToGreaterThanZero")]
+    Double OpenPaneLength { get; set; };
+    Windows.UI.Xaml.Style PaneToggleButtonStyle { get; set; };
+    Object SelectedItem { get; set; };
+    Windows.Foundation.Collections.IVector<Object> MenuItems { get; };
+    Object MenuItemsSource { get; set; };
+    Object SettingsItem { get; };
+    Windows.UI.Xaml.Controls.AutoSuggestBox AutoSuggestBox { get; set; };
+    Windows.UI.Xaml.DataTemplate MenuItemTemplate { get; set; };
+    Windows.UI.Xaml.Controls.DataTemplateSelector MenuItemTemplateSelector { get; set; };
+    Windows.UI.Xaml.Style MenuItemContainerStyle { get; set; };
+    Windows.UI.Xaml.Controls.StyleSelector MenuItemContainerStyleSelector { get; set; };
+    Object MenuItemFromContainer(Windows.UI.Xaml.DependencyObject container);
+    Windows.UI.Xaml.DependencyObject ContainerFromMenuItem(Object item);
+    event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewSelectionChangedEventArgs> SelectionChanged;
+    event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewItemInvokedEventArgs> ItemInvoked;
+    event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewDisplayModeChangedEventArgs> DisplayModeChanged;
+
+    static Windows.UI.Xaml.DependencyProperty IsPaneOpenProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty CompactModeThresholdWidthProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ExpandedModeThresholdWidthProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty PaneFooterProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty HeaderProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty DisplayModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsSettingsVisibleProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsPaneToggleButtonVisibleProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty AlwaysShowHeaderProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty CompactPaneLengthProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty OpenPaneLengthProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty PaneToggleButtonStyleProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MenuItemsProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MenuItemsSourceProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty SelectedItemProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty SettingsItemProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty AutoSuggestBoxProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MenuItemTemplateProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MenuItemTemplateSelectorProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MenuItemContainerStyleProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MenuItemContainerStyleSelectorProperty { get; };
+
+    [WUXC_VERSION_RS4]
+    [WUXC_INTERFACE_NAME("INavigationView2", 2be49737-7c13-4c44-86c3-8b25e697a80e)]
+    [WUXC_STATIC_NAME("INavigationViewStatics2", 8cc50d74-1a42-4852-ab5a-6dc82f28a4ba)]
+    {
+    [MUX_DEFAULT_VALUE("winrt::NavigationViewBackButtonVisible::Auto")]
+    NavigationViewBackButtonVisible IsBackButtonVisible { get; set; };
+    Boolean IsBackEnabled { get; set; };
+    String PaneTitle { get; set; };
+    event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewBackRequestedEventArgs> BackRequested;
+    event Windows.Foundation.TypedEventHandler<NavigationView, Object> PaneClosed;
+    event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewPaneClosingEventArgs> PaneClosing;
+    event Windows.Foundation.TypedEventHandler<NavigationView, Object> PaneOpened;
+    event Windows.Foundation.TypedEventHandler<NavigationView, Object> PaneOpening;
+
+    static Windows.UI.Xaml.DependencyProperty IsBackButtonVisibleProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsBackEnabledProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty PaneTitleProperty { get; };
+    }
+
+    [WUXC_VERSION_RS5]
+    {
+        [MUX_DEFAULT_VALUE("winrt::NavigationViewPaneDisplayMode::Auto")]
+        NavigationViewPaneDisplayMode PaneDisplayMode { get; set; };
+        [MUX_PROPERTY_CHANGED_CALLBACK(FALSE)]
+        Windows.UI.Xaml.UIElement PaneHeader { get; set; };
+        [MUX_PROPERTY_CHANGED_CALLBACK(FALSE)]
+        Windows.UI.Xaml.UIElement PaneCustomContent { get; set; };
+        [MUX_PROPERTY_CHANGED_CALLBACK(FALSE)]
+        Windows.UI.Xaml.UIElement ContentOverlay { get; set; };
+        [MUX_DEFAULT_VALUE("true")]
+        Boolean IsPaneVisible { get; set; };
+        [MUX_DEFAULT_VALUE("winrt::NavigationViewSelectionFollowsFocus::Disabled")]
+        NavigationViewSelectionFollowsFocus SelectionFollowsFocus { get; set; };
+        [MUX_PROPERTY_CHANGED_CALLBACK(FALSE)]
+        NavigationViewTemplateSettings TemplateSettings { get; };
+        [MUX_DEFAULT_VALUE("winrt::NavigationViewShoulderNavigationEnabled::Never")]
+        NavigationViewShoulderNavigationEnabled ShoulderNavigationEnabled { get; set; };
+        [MUX_DEFAULT_VALUE("winrt::NavigationViewOverflowLabelMode::MoreLabel")]
+        NavigationViewOverflowLabelMode OverflowLabelMode { get; set; };
+
+        static Windows.UI.Xaml.DependencyProperty PaneDisplayModeProperty { get; };
+        static Windows.UI.Xaml.DependencyProperty PaneHeaderProperty { get; };
+        static Windows.UI.Xaml.DependencyProperty PaneCustomContentProperty { get; };
+        static Windows.UI.Xaml.DependencyProperty ContentOverlayProperty { get; };
+        static Windows.UI.Xaml.DependencyProperty IsPaneVisibleProperty { get; };
+        static Windows.UI.Xaml.DependencyProperty SelectionFollowsFocusProperty { get; };
+        static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty { get; };
+        static Windows.UI.Xaml.DependencyProperty ShoulderNavigationEnabledProperty { get; };
+        static Windows.UI.Xaml.DependencyProperty OverflowLabelModeProperty { get; };
+    }
+}
+
+[WUXC_VERSION_RS3]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("INavigationViewList", 4f726f85-5ce0-48cd-8ef2-1a29458a3404)]
+[WUXC_CONSTRUCTOR_NAME("INavigationViewListFactory", faee9541-c3bf-47bf-b904-6155f4df6b4f)]
+unsealed runtimeclass NavigationViewList : Windows.UI.Xaml.Controls.ListView
+{
+    NavigationViewList();
+}
+
+[WUXC_VERSION_RS3]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("INavigationViewItemBase", edf04eb1-37d1-471f-8570-3829ee5b2bc6)]
+[WUXC_CONSTRUCTOR_NAME("INavigationViewItemBaseFactory", eb014cef-7890-4ebb-8245-02e8510f321d)]
+[default_interface]
+unsealed runtimeclass NavigationViewItemBase : Windows.UI.Xaml.Controls.ListViewItem
+{
+}
+
+[WUXC_VERSION_RS3]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("INavigationViewItem", 8614be0f-b7b6-4851-960a-f5e3f69f624a)]
+[WUXC_STATIC_NAME("INavigationViewItemStatics", 803c0081-fda5-4b90-aace-3f2306dbe5c4)]
+[WUXC_CONSTRUCTOR_NAME("INavigationViewItemFactory", 973bdb4a-7e08-4f76-923c-f12bd685e86e)]
+unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
+{
+    NavigationViewItem();
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Windows.UI.Xaml.Controls.IconElement Icon { get; set; };
+    [MUX_DEFAULT_VALUE("48.0")]
+    Double CompactPaneLength { get; };
+
+    static Windows.UI.Xaml.DependencyProperty IconProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty CompactPaneLengthProperty { get; };
+
+    [WUXC_VERSION_RS5]
+    {
+        [MUX_DEFAULT_VALUE("true")]
+        Boolean SelectsOnInvoked { get; set; };
+
+        static Windows.UI.Xaml.DependencyProperty SelectsOnInvokedProperty { get; };
+    }
+}
+
+[WUXC_VERSION_RS3]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("INavigationViewItemSeparator", de62c951-bb9b-471e-83e3-af4791e7096a)]
+[WUXC_CONSTRUCTOR_NAME("INavigationViewItemSeparatorFactory", 71cf3a66-db86-49e0-8154-5fd356aedec0)]
+unsealed runtimeclass NavigationViewItemSeparator : NavigationViewItemBase
+{
+    NavigationViewItemSeparator();
+}
+
+[WUXC_VERSION_RS3]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("INavigationViewItemHeader", e21df22c-da4a-4e74-9ffc-b163bd7adacd)]
+[WUXC_CONSTRUCTOR_NAME("INavigationViewItemHeaderFactory", f3105988-7768-45d3-8bb0-6ded9e43a98b)]
+unsealed runtimeclass NavigationViewItemHeader : NavigationViewItemBase
+{
+    NavigationViewItemHeader();
+}

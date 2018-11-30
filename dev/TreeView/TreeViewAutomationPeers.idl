@@ -1,0 +1,23 @@
+[WUXC_VERSION_RS4]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("ITreeViewListAutomationPeer", 71c1b5bc-bb29-4479-a8a8-606be6b823ae)]
+[WUXC_CONSTRUCTOR_NAME("ITreeViewListAutomationPeerFactory", 00f597e2-f811-475a-bfe6-290fe707fa88)]
+unsealed runtimeclass TreeViewListAutomationPeer : 
+// Remove once the public sdk has fix for midl 4048 error
+#ifdef USE_INSIDER_SDK 
+Windows.UI.Xaml.Automation.Peers.SelectorAutomationPeer
+#else
+Windows.UI.Xaml.Automation.Peers.ListViewAutomationPeer
+#endif
+{
+    [method_name("CreateInstanceWithOwner")] TreeViewListAutomationPeer(MU_XC_NAMESPACE.TreeViewList owner);
+}
+
+[WUXC_VERSION_RS4]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("ITreeViewItemAutomationPeer", 2331d648-b617-437f-920c-71d450503e65)]
+[WUXC_CONSTRUCTOR_NAME("ITreeViewItemAutomationPeerFactory", 73d388bf-1d01-4159-82c0-2b2996dbfdce)]
+unsealed runtimeclass TreeViewItemAutomationPeer : Windows.UI.Xaml.Automation.Peers.ListViewItemAutomationPeer, Windows.UI.Xaml.Automation.Provider.IExpandCollapseProvider
+{
+    [method_name("CreateInstanceWithOwner")] TreeViewItemAutomationPeer(MU_XC_NAMESPACE.TreeViewItem owner);
+}

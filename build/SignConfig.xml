@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SignConfigXML>
+  <job platform="" configuration="" dest="__INPATHROOT__" jobname="dep.controls" approvers="">
+    <!-- Overwrite the input files to simplify downstream things like nuget and framework package generation. -->
+    <file src="__INPATHROOT__\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll" signType="AuthenticodeFormer" dest="__INPATHROOT__\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll" />
+    <file src="__INPATHROOT__\Microsoft.UI.Xaml\Microsoft.UI.Xaml.winmd" signType="AuthenticodeFormer" dest="__INPATHROOT__\Microsoft.UI.Xaml\Microsoft.UI.Xaml.winmd" />
+  </job>
+</SignConfigXML>

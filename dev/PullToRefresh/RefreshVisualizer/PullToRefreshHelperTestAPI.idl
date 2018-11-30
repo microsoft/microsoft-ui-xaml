@@ -1,0 +1,9 @@
+[WUXC_VERSION_INTERNAL]
+[webhosthidden]
+[default_interface]
+runtimeclass PullToRefreshHelperTestApi
+{
+    static MU_XC_NAMESPACE.RefreshInteractionRatioChangedEventArgs CreateRefreshInteractionRatioChangedEventArgsInstance(Double value);
+    static MU_XC_NAMESPACE.RefreshStateChangedEventArgs CreateRefreshStateChangedEventArgsInstance(MU_XC_NAMESPACE.RefreshVisualizerState oldValue, MU_XC_NAMESPACE.RefreshVisualizerState newValue);
+    static MU_XC_NAMESPACE.RefreshRequestedEventArgs CreateRefreshRequestedEventArgsInstance(Windows.Foundation.Deferral handler);
+}

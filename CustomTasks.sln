@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomTasks", "tools\CustomTasks\CustomTasks.csproj", "{BFC20F72-5AAE-4271-AD74-AD423A365528}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomTasksTool", "tools\CustomTasksTool\CustomTasksTool.csproj", "{6565DE44-A8B8-4D89-B445-96CC8E100FE3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BFC20F72-5AAE-4271-AD74-AD423A365528}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFC20F72-5AAE-4271-AD74-AD423A365528}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFC20F72-5AAE-4271-AD74-AD423A365528}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFC20F72-5AAE-4271-AD74-AD423A365528}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6565DE44-A8B8-4D89-B445-96CC8E100FE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6565DE44-A8B8-4D89-B445-96CC8E100FE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6565DE44-A8B8-4D89-B445-96CC8E100FE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6565DE44-A8B8-4D89-B445-96CC8E100FE3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D24018BE-5931-4187-948B-A322DBA39960}
+	EndGlobalSection
+EndGlobal

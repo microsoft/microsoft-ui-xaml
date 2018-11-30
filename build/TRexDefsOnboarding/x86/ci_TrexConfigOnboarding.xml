@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TReXRunConfigurations>
+  <!-- Atlas jobs for onboarding, run 10 times (https://osgwiki.com/wiki/Package_ES_TReX_XML_Files) -->
+
+  <!-- Desktop RS3 -->
+  <TReXRunConfiguration>
+    <BuildLogName>RS3_RELEASE Desktop X86 Test Run </BuildLogName>
+    <TemplateId>140336</TemplateId>
+    <Owner>jevansa</Owner>
+    <PrivateRun>true</PrivateRun>
+    <JobMultiplier>10</JobMultiplier>
+    <CopyFirstJobSettingWithJobOverride>true</CopyFirstJobSettingWithJobOverride>
+    <JobIds>
+      <JobId>320693</JobId>
+    </JobIds>
+  </TReXRunConfiguration>
+
+  <!-- Phone RS2 -->
+  <TReXRunConfiguration>
+    <BuildLogName>RS2_RELEASE Phone X86 Test Run </BuildLogName>
+    <TemplateId>131259</TemplateId>
+    <Owner>jevansa</Owner>
+    <PrivateRun>true</PrivateRun>
+    <JobMultiplier>10</JobMultiplier>
+    <CopyFirstJobSettingWithJobOverride>true</CopyFirstJobSettingWithJobOverride>
+    <JobIds>
+      <JobId>319423</JobId>
+    </JobIds>
+  </TReXRunConfiguration>
+
+  <!-- Desktop RS1 -->
+  <TReXRunConfiguration>
+    <BuildLogName>RS1_RELEASE Desktop X86 Test Run </BuildLogName>
+    <TemplateId>128254</TemplateId>
+    <Owner>jevansa</Owner>
+    <PrivateRun>true</PrivateRun>
+    <JobMultiplier>10</JobMultiplier>
+    <CopyFirstJobSettingWithJobOverride>true</CopyFirstJobSettingWithJobOverride>
+    <JobIds>
+      <JobId>320693</JobId>
+    </JobIds>
+  </TReXRunConfiguration>
+</TReXRunConfigurations>

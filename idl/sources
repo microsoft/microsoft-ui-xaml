@@ -1,0 +1,25 @@
+#*******************************************************************************
+#
+#  Copyright (c) Microsoft Corporation.  All rights reserved.
+#
+#*******************************************************************************
+
+!include $(PROJECT_ROOT)\dxaml\common.inc
+
+TARGETNAME=
+TARGETTYPE=notarget
+IDL_TYPE=winrt
+MIDL_TARGET=NT62
+NTTARGETFILE1=$(OBJ_PATH)\$O\TestMergedWindowsMetadata\windows.winmd
+
+INCLUDES= \
+    $(INTERNAL_SDK_INC_PATH); \
+    ..\dev; \
+
+SOURCES= \
+    Microsoft.UI.Xaml.idl \
+    Effects.idl \
+
+PASS0_PUBLISH= \
+    {$(OBJ_PATH)\$(O)\Microsoft.UI.Xaml.h=$(INTERNAL_SDK_INC_PATH)\DEPControls.h} \
+    {$(OBJ_PATH)\$(O)\Microsoft.UI.Xaml.winmd=$(PROJECT_INTERIM_METADATA_PATH)\DEPControls.winmd} \

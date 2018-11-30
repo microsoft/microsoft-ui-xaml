@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{8613ED91-ADE3-4C5C-A09A-041187841EB3}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)DropDownButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)DropDownButtonAutomationPeer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)DropDownButton.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)DropDownButtonAutomationPeer.cpp" />
+  </ItemGroup>
+  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" >
+    <Page Include="$(MSBuildThisFileDirectory)DropDownButton_rs1.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)DropDownButton.xaml">
+      <Version>RS2</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)DropDownButton.idl" />
+    <None Include="$(MSBuildThisFileDirectory)DropDownButtonAutomationPeer.idl" />
+  </ItemGroup>
+</Project>

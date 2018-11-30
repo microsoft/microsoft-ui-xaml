@@ -1,0 +1,47 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.VirtualizingStackPanelPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:muxcontrols="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="40">
+        <TextBlock Text="Vertical ListView using VirtualizingStackPanel, with parallaxed background Image" Margin="4"/>
+        <Grid Background="Azure">
+            <muxcontrols:ParallaxView Width="600" Height="500" Margin="25" HorizontalAlignment="Left" 
+                VerticalShift="100" Source="{Binding ElementName=IngredientList}">
+                <Image x:Name="img" Source="Assets/ingredient7.png" Opacity="0.5"/>
+            </muxcontrols:ParallaxView>
+            <ListView x:Name="IngredientList" AutomationProperties.Name="IngredientList" Width="600" Height="500" HorizontalAlignment="Left" Margin="25">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:Ingredient">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Image Source="{x:Bind Photo}" Width="100" Height="100"/>
+                            <TextBlock Text="{x:Bind Name}" Foreground="DarkRed" VerticalAlignment="Center" Grid.Column="1"/>
+                            <TextBlock Text="{x:Bind Amount}" Foreground="DarkGreen" VerticalAlignment="Center" Grid.Column="2"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel/>
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+            </ListView>
+        </Grid>
+    </StackPanel>
+</local:TestPage>

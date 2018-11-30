@@ -1,0 +1,355 @@
+<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="System.Runtime.InteropServices.WindowsRuntime" #>
+<#@ output extension=".cs" #> 
+<#@ include file="CommonHelpers.tt" #>
+//////////////////////////////////////////////////////////////
+/// WARNING: Generated File: Please do not modify manually ///
+//////////////////////////////////////////////////////////////
+using OM;
+using System;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Markup;
+using XamlOM;
+using XamlOM.NewBuilders;
+
+namespace Windows.ApplicationModel.Contacts
+{
+    [Imported]
+    [WindowsTypePattern]
+    [TypeTable(IsExcludedFromDXaml = true)]
+    public sealed class Contact
+    {
+    }
+}
+
+namespace Windows.Foundation
+{
+    [Imported]
+    [WindowsTypePattern]
+    [TypeTable(IsExcludedFromDXaml = true)]
+    public sealed class IAsyncOperation<T>
+    {
+    }
+}
+
+namespace Windows.Foundation.Numerics
+{
+    [Imported]
+    [WindowsTypePattern]
+    [TypeTable(IsExcludedFromDXaml = true)]
+    public struct Vector2
+    {
+    }
+
+    [Imported]
+    [WindowsTypePattern]
+    [TypeTable(IsExcludedFromDXaml = true)]
+    public struct Vector4
+    {
+    }
+}
+
+namespace Windows.UI.Composition
+{
+    [Imported]
+    [WindowsTypePattern]
+    [TypeTable(IsExcludedFromDXaml = true)]
+    public sealed class SpotLight
+    {
+    }
+
+    [Imported]
+    [WindowsTypePattern]
+    [TypeTable(IsExcludedFromDXaml = true)]
+    public sealed class CompositionAnimation
+    {
+    }
+}
+
+namespace Windows.UI.Composition.Interactions
+{
+    [Imported]
+    [WindowsTypePattern]
+    [TypeTable(IsExcludedFromDXaml = true)]
+    public sealed class CompositionInteractionSourceCollection
+    {
+    }    
+}
+
+namespace Windows.UI.Input
+{
+    [Imported]
+    [WindowsTypePattern]
+    [TypeTable(IsExcludedFromDXaml = true)]
+    public sealed class PointerPoint
+    {
+    }
+}
+
+namespace Windows.UI.Xaml.Controls
+{
+    [Imported]
+    [WindowsTypePattern]
+    [TypeTable(IsExcludedFromDXaml = true)]
+    public sealed class IconSource
+    {
+    }
+}
+
+namespace Windows.Graphics.Display
+{
+    [Imported]
+    [WindowsTypePattern]
+    [TypeTable(IsExcludedFromDXaml = true)]
+    public enum DisplayOrientations
+    {
+    }
+}
+
+<#
+
+    string winmdPaths = Host.ResolveParameterValue(".", ".", "MetadataWinmdPaths");
+    string referenceWinmds = Host.ResolveParameterValue(".", ".", "ReferenceWinmds");
+    string typeHintWinmds = Host.ResolveParameterValue(".", ".", "TypeHintWinmds");
+
+    // For debugging purposes
+    //WriteLine(winmdPaths); 
+    //WriteLine(referenceWinmds);
+    //WriteLine(typeHintWinmds);
+    // System.Diagnostics.Debugger.Launch();
+
+    var metadataTypes = GetWindowsTypesFromList(winmdPaths, referenceWinmds, typeHintWinmds);
+
+    foreach (Type type in metadataTypes)
+    {
+        string typeNs = MakeWindowsNamespace(type.Namespace);
+
+////// ENUM //////
+        if (type.IsEnum)
+        {
+#>
+namespace <#= typeNs #>
+{
+    [FrameworkTypePattern]
+    [DXamlIdlGroup("Phone")]
+    <#= GetContractString(type).Replace("][", "]" + Environment.NewLine + "    [") #>
+    [EnumFlags(HasTypeConverter = true, IsExcludedFromNative = true)]
+    public enum <#= type.Name #>
+    {
+<#
+            foreach (var field in type.GetFields())
+            {
+                if (field.Name.Equals("value__")) continue;
+
+                WriteLine("        {0} = {1},", field.Name, field.GetRawConstantValue());
+            }
+#>
+    }
+}
+
+<#
+////// STRUCT //////
+        }
+        else if (type.IsValueType)
+        {
+#>
+namespace <#= typeNs #>
+{
+    [TypeTable(IsExcludedFromDXaml = true)]
+    [DXamlIdlGroup("Phone")]
+    public struct <#= type.Name #>
+    {
+<#
+        foreach (var field in type.GetFields())
+        {
+#>
+        public <#= MakeWindowsTypeFullName(field.FieldType) #> <#= field.Name #> { get; set; }
+<#
+        }
+#>
+    }
+}
+
+<#
+
+////// RUNTIMECLASS //////
+        }
+        else if (!type.IsInterface)
+        {
+//[Guids(InterfaceGuid = "B9E6FB9B-8FC1-4042-AC34-A61B38BB751F", ClassGuid = "E70FC560-8843-4D9B-9B06-CE220F503B8F", OverrideGuid = "8577BFC1-49B5-47B4-A80F-539BBA1949BF", ProtectedGuid = "606613E7-B0A5-4EEC-810F-33CBE877372F", StaticsGuid = "8BA98FA1-D163-4656-81C4-50F6834C7B6F", FactoryGuid = "C9BA0C7A-ADC5-4CCC-9B1F-3CA12502FEFF")]
+            List<string> guids = new List<string> {
+                "InterfaceGuid = \"" +GetDefaultInterfaceUUID(type)+"\"",
+                "ClassGuid = \"" +Guid.Empty+"\"",
+                "OverrideGuid = \"" +Guid.Empty+"\"",
+                "ProtectedGuid = \"" +Guid.Empty+"\"",
+                "StaticsGuid = \"" +GetStaticsInterfaceUUID(type)+"\"",
+                "FactoryGuid = \"" +GetFactoryInterfaceUUID(type)+"\"",
+                };
+            string propChangeType = "OnPropertyChangeCallback";
+
+            if (!IsDependencyObject(type))
+            {
+                propChangeType = "NoCallback";
+            }
+
+            string baseTypeName = MakeWindowsTypeFullName(type.BaseType);
+            if (type.BaseType.Name == "RuntimeClass")
+            {
+                baseTypeName = "";
+            }
+
+            bool isSealed = !HasComposableAttribute(type);
+
+            string guidAttributeString = "    [Guids(" + Environment.NewLine + String.Join("," + Environment.NewLine + "        ", guids) + ")]" + Environment.NewLine;
+            if (GetContractVersion(type) >= 7)
+            {
+                // For RS5 and newer types (UAP contract 7) the guids are unnecessary and xamlcodegen actually rejects them.
+                guidAttributeString = "";
+            }
+
+    // TODO: Implements interfaces
+
+            //foreach (var customAttributes )
+#>
+namespace <#= typeNs #>
+{
+    [TypeFlags(IsCreateableFromXAML = true)]
+    <#= GetContractString(type).Replace("][", "]" + Environment.NewLine + "    [") #>
+    [DXamlIdlGroup("Phone")]
+    [PropertyChange(PropertyChangeCallbackType.<#= propChangeType #>)]
+<#= guidAttributeString #><#
+    var winRtType = new WinRtType(type);
+    if(winRtType.IsList)
+    {
+#>
+    [Implements(typeof(Windows.Foundation.Collections.IVector<<#= MakeWindowsNamespace(winRtType.ListWinRtTypes[0].WinRtFullName) #>>))]
+<#
+    }
+    
+    if(winRtType.IsMap)
+    {
+#>
+    [Implements(typeof(Windows.Foundation.Collections.IMap<<#= winRtType.MapWinRtTypes[0].WinRtFullName #>, <#= winRtType.MapWinRtTypes[1].WinRtFullName #>>))]
+<#
+    }
+
+    var contentPropertyName = GetContentPropertyName(type);
+    if(contentPropertyName != string.Empty)
+    {
+#>    [ContentProperty("<#= contentPropertyName #>")]
+<#
+    }
+#>
+    public <#= isSealed ? "sealed " : "" #>class <#= type.Name #><#= !String.IsNullOrEmpty(baseTypeName) ? " : "+baseTypeName : ""  #>
+    {
+<#
+            // generate constructors 
+            var constructors = type.GetConstructors();
+            if (constructors.Length > 0)
+            {
+                foreach (var constructor in constructors)
+                {
+                    string parameterDeclList = "";
+                    string parameterList = "";
+                    foreach (var parameter in constructor.GetParameters())
+                    {
+                        if (parameterDeclList != "") parameterDeclList += ", ";
+                        if (parameterList != "") parameterList += ", ";
+                        parameterDeclList += MakeWindowsTypeFullName(parameter.ParameterType) + " " + parameter.Name;
+                        parameterList +=  parameter.Name;
+                    }
+
+                    string baseTypeInitializer = "";
+                    if (type.Name.Contains("AutomationPeer"))
+                    {
+                        baseTypeInitializer = string.Format(" : base({0})", parameterList);
+                    }
+
+                    WriteLine(string.Format("        public {0}({1}){2} {{ }}", type.Name, parameterDeclList, baseTypeInitializer));
+                }
+            }
+
+            // MEMBERS
+            foreach (var property in GetInstanceProperties(type).Concat(GetStaticProperties(type)))
+            {
+                bool isStatic = property.GetGetMethod().IsStatic;
+
+                string propertyName = property.Name;
+                bool hasGetter = property.CanRead;
+                bool hasSetter = property.CanWrite;
+                Type propertyType = property.PropertyType;
+
+                // Skip dependency properties as there will be a corresponding instance property that we
+                // emit for them. But use this opportunity to check if there's a GetXXX and/or SetXXX static method
+                // which would indicate that it's an attached property, in which case we need to emit a property for it.
+                if (isStatic && property.PropertyType.FullName.Contains("DependencyProperty"))
+                {
+                    propertyName = propertyName.Replace("Property", "");
+                    var attachedGetterMethod = type.GetMethod("Get" + propertyName, BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Static);
+                    var attachedSetterMethod = type.GetMethod("Set" + propertyName, BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Static);
+                    hasGetter = (attachedGetterMethod != null);
+                    hasSetter = (attachedSetterMethod != null);
+                    if (hasGetter)
+                    {
+                        propertyType = attachedGetterMethod.ReturnType;
+                        Type attachType = attachedGetterMethod.GetParameters()[0].ParameterType;
+                        WriteLine(string.Format("        [Attached(TargetType = typeof({0}))]", MakeWindowsTypeFullName(attachType)));
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+
+                // We need to special-case floats, as the property system only supports doubles in terms of declaration.
+                // There's a special flag we can attach to tell it that the native storage type is actually a float.
+                if (propertyType.FullName.Contains("Single"))
+                {
+#>
+        [NativeStorageType(OM.ValueType.valueFloat)]
+        public <#= isStatic ? "static ": "" #>Double <#= propertyName #> { <#= hasGetter ? "get;" : "" #><#= hasSetter ? " set;" : "" #> }
+<#
+                }
+                else
+                {
+#>
+        public <#= isStatic ? "static ": "" #><#= MakeWindowsTypeFullName(propertyType) #> <#= propertyName #> { <#= hasGetter ? "get;" : "" #><#= hasSetter ? " set;" : "" #> }
+<#
+                }
+            }
+// Close the open class/namespace
+#>
+    }
+}
+
+<#
+        }
+        else // type.IsInterface
+        {
+            // If it's an interface and isn't exclusive to then we will emit it as a stub for now.
+            if (GetCustomAttributeFirstTypeParam(type, "ExclusiveToAttribute", hasVersion: false) == null)
+            {
+#>
+namespace <#= typeNs #>
+{
+    [DXamlIdlGroup("Phone")]
+    [TypeTable(IsExcludedFromDXaml = true)]
+    [Guids(InterfaceGuid = "<#= GetDefaultInterfaceUUID(type) #>")]
+    public interface <#= type.Name #>
+    {
+    }
+}
+
+<#
+            }
+        } // if
+    } // foreach
+
+#>

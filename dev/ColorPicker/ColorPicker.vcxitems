@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{248CC96D-67A2-4359-A4E3-AB0DAD110A1E}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ColorPicker.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ColorPickerSlider.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ColorSpectrum.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\SpectrumBrush.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ColorChangedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ColorHelpers.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ColorPicker.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ColorPickerSlider.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ColorPickerSliderAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ColorSpectrum.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ColorSpectrumAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SpectrumBrush.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ColorChangedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ColorHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ColorPicker.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ColorPickerSlider.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ColorPickerSliderAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ColorSpectrum.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ColorSpectrumAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SpectrumBrush.h" />
+  </ItemGroup>
+  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Page Include="$(MSBuildThisFileDirectory)ColorPicker.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ColorPicker_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ColorSpectrum.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Common.idl" />
+    <None Include="$(MSBuildThisFileDirectory)ColorPicker.idl" />
+    <None Include="$(MSBuildThisFileDirectory)ColorPickerSlider.idl" />
+    <None Include="$(MSBuildThisFileDirectory)ColorPickerSliderAutomationPeer.idl" />
+    <None Include="$(MSBuildThisFileDirectory)ColorSpectrum.idl" />
+    <None Include="$(MSBuildThisFileDirectory)ColorSpectrumAutomationPeer.idl" />
+    <None Include="$(MSBuildThisFileDirectory)SpectrumBrush.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+</Project>

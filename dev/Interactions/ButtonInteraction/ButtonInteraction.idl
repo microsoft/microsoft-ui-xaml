@@ -1,0 +1,33 @@
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum ButtonInteractionInvokeMode
+{
+    Release = 0,
+    Press = 1,
+    Hover = 2,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass ButtonInteractionInvokedEventArgs
+{
+    Windows.UI.Xaml.UIElement Target { get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass ButtonInteraction :
+#ifdef USE_INSIDER_SDK
+Windows.UI.Xaml.InteractionBase, 
+#else
+Windows.UI.Xaml.DependencyObject,
+#endif 
+Windows.UI.Xaml.Data.INotifyPropertyChanged
+{
+    ButtonInteraction();
+
+    ButtonInteractionInvokeMode InvokeMode { get; set; };
+    Boolean IsHovering { get; };
+    Boolean IsPressing { get; };
+    event Windows.Foundation.TypedEventHandler<ButtonInteraction, ButtonInteractionInvokedEventArgs> Invoked;
+}

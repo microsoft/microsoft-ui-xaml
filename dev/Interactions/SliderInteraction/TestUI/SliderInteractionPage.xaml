@@ -1,0 +1,81 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.SliderInteractionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <Border Width="200" Height="200" BorderBrush="Black" BorderThickness="1">
+            <Grid>
+                <Rectangle Height="1" Fill="DarkGray"/>
+
+                <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Position: "/>
+                        <TextBlock x:Name="horizontalElementPosition" AutomationProperties.AutomationId="HorizontalElementPositionTextBlock" Text="{x:Bind HorizontalSliderInteraction.Position, Mode=OneWay}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Min: "/>
+                        <TextBlock x:Name="horizontalElementMinimum" AutomationProperties.AutomationId="HorizontalElementMinimumTextBlock" Text="{x:Bind HorizontalSliderInteraction.Minimum}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Max: "/>
+                        <TextBlock x:Name="horizontalElementMaximum" AutomationProperties.AutomationId="HorizontalElementMaximumTextBlock" Text="{x:Bind HorizontalSliderInteraction.Maximum}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="SmallChng: "/>
+                        <TextBlock x:Name="horizontalElementSmallIncr" AutomationProperties.AutomationId="HorizontalElementSmallChangeTextBlock" Text="{x:Bind HorizontalSliderInteraction.SmallChange}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="LargeChng: "/>
+                        <TextBlock x:Name="horizontalElementLargeInc" AutomationProperties.AutomationId="HorizontalElementLargeChangeTextBlock" Text="{x:Bind HorizontalSliderInteraction.LargeChange}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <local:TargetElement x:Name="horizontalElement" AutomationProperties.AutomationId="HorizontalElement" HorizontalAlignment="Left">
+                    <Rectangle Width="20" Height="40" Fill="Orange"/>
+                </local:TargetElement>
+            </Grid>
+        </Border>
+
+        <Border Width="200" Height="200" Grid.Row="1" BorderBrush="Black" BorderThickness="1">
+            <Grid>
+                <Rectangle Width="1" Fill="DarkGray"/>
+
+                <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Position: "/>
+                        <TextBlock x:Name="verticalElementPosition" AutomationProperties.AutomationId="VerticalElementPositionTextBlock" Text="{x:Bind VerticalSliderInteraction.Position, Mode=OneWay}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Min: "/>
+                        <TextBlock x:Name="verticalElementMinimum" AutomationProperties.AutomationId="VerticalElementMinimumTextBlock" Text="{x:Bind VerticalSliderInteraction.Minimum}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Max: "/>
+                        <TextBlock x:Name="verticalElementMaximum" AutomationProperties.AutomationId="VerticalElementMaximumTextBlock" Text="{x:Bind VerticalSliderInteraction.Maximum}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="SmallChng: "/>
+                        <TextBlock x:Name="verticalElementSmallIncr" AutomationProperties.AutomationId="VerticalElementSmallChangeTextBlock" Text="{x:Bind VerticalSliderInteraction.SmallChange}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="LargeChng: "/>
+                        <TextBlock x:Name="verticalElementLargeInc" AutomationProperties.AutomationId="VerticalElementLargeChangeTextBlock" Text="{x:Bind VerticalSliderInteraction.LargeChange}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <local:TargetElement x:Name="verticalElement" AutomationProperties.AutomationId="VerticalElement" VerticalAlignment="top">
+                    <Rectangle Width="40" Height="20" Fill="YellowGreen"/>
+                </local:TargetElement>
+            </Grid>
+        </Border>
+
+    </Grid>
+</local:TestPage>

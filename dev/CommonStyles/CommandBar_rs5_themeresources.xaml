@@ -1,0 +1,100 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <StaticResource x:Key="CommandBarOverflowPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
+            <StaticResource x:Key="CommandBarOverflowPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
+            <Thickness x:Key="CommandBarOverflowPresenterBorderThickness">1</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderDownThickness">0,0,0,1</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderUpThickness">0,1,0,0</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderPadding">0</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderDownPadding">0</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderUpPadding">0</Thickness>
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="HighContrast">
+            <StaticResource x:Key="CommandBarOverflowPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
+            <Thickness x:Key="CommandBarOverflowPresenterBorderThickness">1</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderDownThickness">0,0,0,1</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderUpThickness">0,1,0,0</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderPadding">0</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderDownPadding">0</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderUpPadding">0</Thickness>
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Light">
+            <StaticResource x:Key="CommandBarOverflowPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
+            <StaticResource x:Key="CommandBarOverflowPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
+            <Thickness x:Key="CommandBarOverflowPresenterBorderThickness">1</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderDownThickness">0,0,0,1</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderUpThickness">0,1,0,0</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderPadding">0</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderDownPadding">0</Thickness>
+            <Thickness x:Key="CommandBarOverflowPresenterBorderUpPadding">0</Thickness>
+        </ResourceDictionary>
+
+    </ResourceDictionary.ThemeDictionaries>
+
+    <Thickness x:Key="CommandBarOverflowPresenterMargin">0,4,0,4</Thickness>
+
+    <Style TargetType="CommandBarOverflowPresenter">
+        <Setter Property="Background" Value="{ThemeResource CommandBarOverflowPresenterBackground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CommandBarOverflowPresenterBorderBrush}" />
+        <Setter Property="Padding" Value="{ThemeResource CommandBarOverflowPresenterBorderPadding}" />
+        <Setter Property="MaxWidth" Value="{ThemeResource CommandBarOverflowMaxWidth}" />
+        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
+        <Setter Property="AllowFocusOnInteraction" Value="False" />
+        <Setter Property="TabNavigation" Value="Once" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CommandBarOverflowPresenter">
+                    <Grid x:Name="LayoutRoot"
+                        Background="{TemplateBinding Background}"
+                        BackgroundSizing="OuterBorderEdge"
+                        Padding="{TemplateBinding Padding}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{ThemeResource CommandBarOverflowPresenterBorderThickness}">
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="DisplayModeStates">
+                                <VisualState x:Name="DisplayModeDefault" />
+                                <VisualState x:Name="FullWidthOpenDown">
+                                    <VisualState.Setters>
+                                        <Setter Target="LayoutRoot.Padding" Value="{ThemeResource CommandBarOverflowPresenterBorderDownPadding}" />
+                                        <Setter Target="LayoutRoot.BorderThickness" Value="{ThemeResource CommandBarOverflowPresenterBorderDownThickness}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="FullWidthOpenUp">
+                                    <VisualState.Setters>
+                                        <Setter Target="LayoutRoot.Padding" Value="{ThemeResource CommandBarOverflowPresenterBorderUpPadding}" />
+                                        <Setter Target="LayoutRoot.BorderThickness" Value="{ThemeResource CommandBarOverflowPresenterBorderUpThickness}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                            </VisualStateGroup>
+
+                        </VisualStateManager.VisualStateGroups>
+                        <ScrollViewer HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                            VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                            ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
+                            AutomationProperties.AccessibilityView="Raw">
+                            <ItemsPresenter x:Name="ItemsPresenter" Margin="{ThemeResource CommandBarOverflowPresenterMargin}" />
+                        </ScrollViewer>
+
+                    </Grid>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>
+
+

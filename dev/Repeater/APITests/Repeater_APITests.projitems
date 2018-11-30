@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>a14ad8e7-ae46-447b-b593-2dbf1e2db369</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Repeater_APITests</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AccessibilityTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\CollectionChangeEventArgsConverters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\CustomItemsSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\CustomItemsSourceView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ElementAnimatorDerived.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\LayoutExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\FlowLayoutDerived.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NamedGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\OrientationBasedMeasures.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\RecyclingViewGeneratorDerived.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockItemsSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockViewGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockVirtualizingLayout.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\SharedHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\TestsBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\WinRTCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EffectiveViewportScrollerTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EffectiveViewportScrollViewerTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ElementAnimatorTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FlowLayoutCollectionChangeTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FlowLayoutTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IndexPathTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InspectingDataSourceTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LayoutTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PhasingTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RecyclePoolTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RepeaterFocusTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RepeaterTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SelectionModelTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ElementFactoryTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewManagerTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewportTests.cs" />
+  </ItemGroup>
+</Project>

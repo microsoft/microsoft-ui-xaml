@@ -1,0 +1,13 @@
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+unsealed runtimeclass RadioMenuFlyoutItem : Windows.UI.Xaml.Controls.MenuFlyoutItem
+{
+    RadioMenuFlyoutItem();
+
+    Boolean IsChecked;
+    String GroupName;
+
+    static Windows.UI.Xaml.DependencyProperty IsCheckedProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty GroupNameProperty{ get; };
+}

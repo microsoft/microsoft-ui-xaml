@@ -1,0 +1,67 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.RevealFallbackPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:media="using:Microsoft.UI.Xaml.Media"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <!-- Local overrides of Reveal brushes for testing AlwaysUseFallback-->
+        <media:RevealBackgroundBrush
+                x:Key="ButtonRevealBackground"
+                TargetTheme="Light"
+                Color="{StaticResource SystemRevealBaseLowColor}"
+                FallbackColor="Orange"/>   <!-- Default is {StaticResource SystemBaseLowColor} -->
+        <media:RevealBackgroundBrush
+                x:Key="ButtonRevealBackgroundPointerOver"
+                TargetTheme="Light"
+                Color="{StaticResource SystemRevealBaseLowColor}"
+                FallbackColor="{StaticResource SystemBaseLowColor}"/>
+        <media:RevealBackgroundBrush
+                x:Key="ButtonRevealBackgroundPressed"
+                TargetTheme="Light"
+                Color="{StaticResource SystemRevealBaseMediumLowColor}"
+                FallbackColor="{StaticResource SystemBaseMediumLowColor}"/>
+        <media:RevealBorderBrush
+                x:Key="ButtonRevealBorderBrush"
+                TargetTheme="Light"
+                Color="Transparent"
+                FallbackColor="Transparent"/>
+        <media:RevealBorderBrush
+                x:Key="ButtonRevealBorderBrushPointerOver"
+                TargetTheme="Light"
+                Color="{StaticResource SystemRevealBaseMediumLowColor}"
+                FallbackColor="{StaticResource SystemBaseMediumLowColor}"/>
+        <media:RevealBorderBrush
+                x:Key="ButtonRevealBorderBrushPressed"
+                TargetTheme="Light"
+                Color="Transparent"
+                FallbackColor="Transparent"/>
+    </Page.Resources>
+
+    <StackPanel Orientation="Vertical" Width="800" Height="600" Name="RootCanvas">
+        <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Vertical">
+                <ComboBox x:Name="TestNameComboBox" AutomationProperties.AutomationId="TestNameComboBox">
+                    <ComboBoxItem AutomationProperties.Name="RevealAlwaysUseFallback">RevealAlwaysUseFallback</ComboBoxItem>
+                </ComboBox>
+                <TextBox x:Name="TestResult" AutomationProperties.AutomationId="TestResult" IsReadOnly="true" Width="200"/>
+                <Button x:Name="RunTestButton" AutomationProperties.AutomationId="RunTestButton" AutomationProperties.Name="RunTestButton" Content="Run Test" Click="RunTestButton_Clicked"/>
+            </StackPanel>
+            <ToggleButton x:Name="AlwaysUseFallbackButton" Content="Force Fallback" Checked="AlwaysUseFallbackButton_Checked" Unchecked="AlwaysUseFallbackButton_Unchecked" HorizontalAlignment="Center" Margin="5"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <StackPanel VerticalAlignment="Center">
+                <Button x:Name="RevealButton" Content="Button" Margin="5" Width="130" />
+                <RepeatButton x:Name="RevealRepeatButton" Content="Repeat" Margin="5" Width="130" />
+                <ToggleButton x:Name="RevealToggleButton" Content="Toggle" Margin="5" Width="130" IsThreeState="True" />
+            </StackPanel>
+            <Button x:Name="LargeButton" Content="Large Button" MinWidth="100" MinHeight="100" Margin="5" />
+            <Button x:Name="NarrowButton" Content="Narrow" MaxWidth="50" MinHeight="100" Margin="5" />
+        </StackPanel>
+    </StackPanel>
+</local:TestPage>

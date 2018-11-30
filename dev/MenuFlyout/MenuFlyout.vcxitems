@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{D5C2B2A0-50AF-4ACE-939D-17D1ED79FD6F}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_rs1_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <Priority>2</Priority>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_rs2_themeresources.xaml">
+      <Version>RS2</Version>
+      <Type>ThemeResources</Type>
+      <Priority>2</Priority>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_rs4_themeresources.xaml">
+      <Version>RS4</Version>
+      <Type>ThemeResources</Type>
+      <Priority>2</Priority>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_rs5_themeresources.xaml">
+      <Version>RS5</Version>
+      <Type>ThemeResources</Type>
+      <Priority>5</Priority>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_19h1_themeresources.xaml">
+      <Version>19H1</Version>
+      <Type>ThemeResources</Type>
+      <Priority>5</Priority>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+</Project>

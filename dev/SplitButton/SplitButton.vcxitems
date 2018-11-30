@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{faf114dd-af1f-4d9f-a511-354c19912aad}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SplitButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SplitButtonAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SplitButtonEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SplitButtonTestApi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SplitButtonTestHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ToggleSplitButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ToggleSplitButtonAutomationPeer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\SplitButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ToggleSplitButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SplitButton.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SplitButtonAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SplitButtonTestApi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SplitButtonTestHelper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ToggleSplitButton.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ToggleSplitButtonAutomationPeer.cpp" />
+  </ItemGroup>
+  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Page Include="$(MSBuildThisFileDirectory)SplitButton.xaml">
+      <Version>RS2</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)SplitButton_rs1.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)SplitButton_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)SplitButton.idl" />
+    <None Include="$(MSBuildThisFileDirectory)SplitButtonAutomationPeer.idl" />
+    <None Include="$(MSBuildThisFileDirectory)SplitButtonTestApi.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,6 @@
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass RepeaterAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    RepeaterAutomationPeer(ItemsRepeater owner);
+}

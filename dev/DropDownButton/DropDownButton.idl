@@ -1,0 +1,6 @@
+[WUXC_VERSION_RS5]
+[webhosthidden]
+unsealed runtimeclass DropDownButton : Windows.UI.Xaml.Controls.Button
+{
+    DropDownButton();
+}

@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{80AD7F51-8997-47B9-BB41-078B81CFF9B0}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ColorConversion.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)LifetimeHandler.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AutoHandle.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ColorConversion.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)LifetimeHandler.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Common_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <Priority>1</Priority>
+    </Page>
+  </ItemGroup>
+</Project>

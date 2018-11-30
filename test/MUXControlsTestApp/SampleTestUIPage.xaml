@@ -1,0 +1,34 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.SampleTestUIPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top">
+            <TextBlock Text="Sample Test UI"/>
+            <Button Content="CanClickButton" AutomationProperties.Name="Button"/>
+            <ComboBox SelectedIndex="0" AutomationProperties.Name="ComboBox">
+                <ComboBoxItem>item 1</ComboBoxItem>
+                <ComboBoxItem>item 2</ComboBoxItem>
+                <ComboBoxItem>item 3</ComboBoxItem>
+                <ComboBoxItem>item 4</ComboBoxItem>
+                <ComboBoxItem>item 5</ComboBoxItem>
+                <ComboBoxItem>item 6</ComboBoxItem>
+                <ComboBoxItem>item 7</ComboBoxItem>
+                <ComboBoxItem>item 8</ComboBoxItem>
+                <ComboBoxItem>item 9</ComboBoxItem>
+                <ComboBoxItem>item 10</ComboBoxItem>
+                <ComboBoxItem>item 11</ComboBoxItem>
+                <ComboBoxItem>item 12</ComboBoxItem>
+                <ComboBoxItem>item 13</ComboBoxItem>
+                <ComboBoxItem>item 14</ComboBoxItem>
+                <ComboBoxItem>item 15</ComboBoxItem>
+            </ComboBox>
+        </StackPanel>
+    </Grid>
+</local:TestPage>

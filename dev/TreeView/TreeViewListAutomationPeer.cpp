@@ -1,0 +1,47 @@
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#include "pch.h"
+#include "common.h"
+#include "TreeViewList.h"
+#include "TreeViewListAutomationPeer.h"
+
+CppWinRTActivatableClassWithBasicFactory(TreeViewListAutomationPeer);
+
+TreeViewListAutomationPeer::TreeViewListAutomationPeer(winrt::TreeViewList const& owner)
+    : ReferenceTracker(owner)
+{
+}
+
+//IItemsControlAutomationPeerOverrides2
+winrt::ItemAutomationPeer TreeViewListAutomationPeer::OnCreateItemAutomationPeer(winrt::IInspectable const& item)
+{
+    winrt::ItemAutomationPeer itemPeer{ item, *this };
+    return itemPeer;
+}
+
+//DropTargetProvider
+winrt::hstring TreeViewListAutomationPeer::DropEffect()
+{
+    return winrt::get_self<TreeViewList>(Owner().as<winrt::TreeViewList>())->GetDropTargetDropEffect();
+}
+
+winrt::com_array<winrt::hstring> TreeViewListAutomationPeer::DropEffects()
+{
+    throw winrt::hresult_not_implemented();
+}
+
+winrt::IInspectable TreeViewListAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
+{
+    if (patternInterface == winrt::PatternInterface::DropTarget)
+    {
+        return *this;
+    }
+
+    return __super::GetPatternCore(patternInterface);
+}
+
+winrt::AutomationControlType TreeViewListAutomationPeer::GetAutomationControlTypeCore()
+{
+    return winrt::AutomationControlType::Tree;
+}

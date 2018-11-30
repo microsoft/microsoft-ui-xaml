@@ -1,0 +1,25 @@
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+interface IRefreshInfoProviderAdapter
+{
+    IRefreshInfoProvider AdaptFromTree(Windows.UI.Xaml.UIElement root, Windows.Foundation.Size visualizerSize);
+    void SetAnimations(Windows.UI.Xaml.UIElement refreshVisualizerAnimatableContainer);
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+interface IAdapterAnimationHandler
+{
+    void InteractionTrackerAnimation(Windows.UI.Xaml.UIElement refreshVisualizer, Windows.UI.Xaml.UIElement infoProvider, Windows.UI.Composition.Interactions.InteractionTracker interactionTracker);
+    void RefreshRequestedAnimation(Windows.UI.Xaml.UIElement refreshVisualizer, Windows.UI.Xaml.UIElement infoProvider, Double executionRatio);
+    void RefreshCompletedAnimation(Windows.UI.Xaml.UIElement refreshVisualizer, Windows.UI.Xaml.UIElement infoProvider);
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollViewerIRefreshInfoProviderAdapter : IRefreshInfoProviderAdapter
+{
+    ScrollViewerIRefreshInfoProviderAdapter(MU_XC_NAMESPACE.RefreshPullDirection refreshPullDirection, IAdapterAnimationHandler animationHandler);
+
+    IRefreshInfoProvider Adapt(Windows.UI.Xaml.Controls.ScrollViewer adaptee, Windows.Foundation.Size visualizerSize);
+}

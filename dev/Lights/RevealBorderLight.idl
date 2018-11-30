@@ -1,0 +1,6 @@
+[WUXC_VERSION_INTERNAL]
+[webhosthidden]
+unsealed runtimeclass RevealBorderLight : Windows.UI.Xaml.Media.XamlLight
+{
+    RevealBorderLight();
+}

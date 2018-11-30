@@ -1,0 +1,27 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.ScrollBar2LeakDetectionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="grid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Button x:Name="btnCreateScrollBar2" Content="Create ScrollBar2" Grid.Row="0" Margin="10" Click="BtnCreateScrollBar2_Click"/>
+        <Button x:Name="btnAddScrollBar2" Content="Parent ScrollBar2" Grid.Row="1" Margin="10" IsEnabled="false" Click="BtnAddScrollBar2_Click"/>
+        <Button x:Name="btnRemoveScrollBar2" Content="Unparent ScrollBar2" Grid.Row="2" Margin="10" IsEnabled="false" Click="BtnRemoveScrollBar2_Click"/>
+        <Button x:Name="btnDeleteScrollBar2" Content="Delete ScrollBar2" Grid.Row="3" Margin="10" IsEnabled="false" Click="BtnDeleteScrollBar2_Click"/>
+        <Button x:Name="btnGarbageCollect" Content="Garbage Collect" Grid.Row="4" Margin="10" Click="BtnGarbageCollect_Click"/>
+    </Grid>
+</local:TestPage>

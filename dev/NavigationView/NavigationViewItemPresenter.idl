@@ -1,0 +1,9 @@
+[WUXC_VERSION_RS5]
+[webhosthidden]
+unsealed runtimeclass NavigationViewItemPresenter : Windows.UI.Xaml.Controls.ContentControl
+{
+    NavigationViewItemPresenter();
+
+    Windows.UI.Xaml.Controls.IconElement Icon { get; set; };
+    static Windows.UI.Xaml.DependencyProperty IconProperty { get; };
+}

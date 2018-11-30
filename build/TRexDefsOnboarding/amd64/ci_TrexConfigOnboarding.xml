@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TReXRunConfigurations>
+  <!-- Atlas jobs for onboarding, run 10 times (https://osgwiki.com/wiki/Package_ES_TReX_XML_Files) -->
+
+  <!-- RS3 DESKTOP X86 -->
+  <TReXRunConfiguration>
+    <BuildLogName>RS3_RELEASE Desktop X64 Test Run </BuildLogName>
+    <TemplateId>140338</TemplateId>
+    <Owner>jevansa</Owner>
+    <PrivateRun>true</PrivateRun>
+    <JobMultiplier>10</JobMultiplier>
+    <CopyFirstJobSettingWithJobOverride>true</CopyFirstJobSettingWithJobOverride>
+    <JobIds>
+      <JobId>320693</JobId>
+    </JobIds>
+  </TReXRunConfiguration>
+
+  <!-- RS2 -->
+  <TReXRunConfiguration>
+    <BuildLogName>RS2_RELEASE Desktop X64 Test Run </BuildLogName>
+    <TemplateId>131256</TemplateId>
+    <Owner>jevansa</Owner>
+    <PrivateRun>true</PrivateRun>
+    <JobMultiplier>10</JobMultiplier>
+    <CopyFirstJobSettingWithJobOverride>true</CopyFirstJobSettingWithJobOverride>
+    <JobIds>
+      <JobId>320693</JobId>
+    </JobIds>
+  </TReXRunConfiguration>
+</TReXRunConfigurations>

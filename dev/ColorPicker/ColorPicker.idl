@@ -1,0 +1,67 @@
+[WUXC_VERSION_RS3]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("IColorPicker", 6232e371-5c64-43cb-8b35-7f82dde36740)]
+[WUXC_STATIC_NAME("IColorPickerStatics", 67ca9be7-1574-451a-b6df-fe57d9d07b46)]
+[WUXC_CONSTRUCTOR_NAME("IColorPickerFactory", abae07ff-aecf-481d-9204-201c3894cd1b)]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+unsealed runtimeclass ColorPicker : Windows.UI.Xaml.Controls.Control
+{
+    ColorPicker();
+
+    [MUX_DEFAULT_VALUE("{ 255, 255, 255, 255 }")]
+    Windows.UI.Color Color { get; set; };
+    Windows.Foundation.IReference<Windows.UI.Color> PreviousColor { get; set; };
+    Boolean IsAlphaEnabled { get; set; };
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsColorSpectrumVisible { get; set; };
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsColorPreviewVisible { get; set; };
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsColorSliderVisible { get; set; };
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsAlphaSliderVisible { get; set; };
+    Boolean IsMoreButtonVisible { get; set; };
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsColorChannelTextInputVisible { get; set; };
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsAlphaTextInputVisible { get; set; };
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsHexInputVisible { get; set; };
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 MinHue { get; set; };
+    [MUX_DEFAULT_VALUE("359")]
+    Int32 MaxHue { get; set; };
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 MinSaturation { get; set; };
+    [MUX_DEFAULT_VALUE("100")]
+    Int32 MaxSaturation { get; set; };
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 MinValue { get; set; };
+    [MUX_DEFAULT_VALUE("100")]
+    Int32 MaxValue { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::ColorSpectrumShape::Box")]
+    ColorSpectrumShape ColorSpectrumShape { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::ColorSpectrumComponents::HueSaturation")]
+    ColorSpectrumComponents ColorSpectrumComponents { get; set; };
+    event Windows.Foundation.TypedEventHandler<ColorPicker, ColorChangedEventArgs> ColorChanged;
+
+    static Windows.UI.Xaml.DependencyProperty ColorProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty PreviousColorProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsAlphaEnabledProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsColorSpectrumVisibleProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsColorPreviewVisibleProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsColorSliderVisibleProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsAlphaSliderVisibleProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsMoreButtonVisibleProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsColorChannelTextInputVisibleProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsAlphaTextInputVisibleProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsHexInputVisibleProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MinHueProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MaxHueProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MinSaturationProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MaxSaturationProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MinValueProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MaxValueProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ColorSpectrumShapeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ColorSpectrumComponentsProperty { get; };
+}

@@ -1,0 +1,43 @@
+[WUXC_VERSION_RS3]
+[webhosthidden]
+[WUXC_INTERFACE_NAME("IColorSpectrum", ce46f271-f509-4f98-8288-e4942fb385df)]
+[WUXC_STATIC_NAME("IColorSpectrumStatics", 906bee7c-2cee-4e90-968b-f0a5bd691b4a)]
+[WUXC_CONSTRUCTOR_NAME("IColorSpectrumFactory", 90c7e61e-904d-42ab-b44f-e68dbf0cdee9)]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+unsealed runtimeclass ColorSpectrum : Windows.UI.Xaml.Controls.Control
+{
+    ColorSpectrum();
+
+    [MUX_DEFAULT_VALUE("{ 255, 255, 255, 255 }")]
+    Windows.UI.Color Color { get; set; };
+    [MUX_DEFAULT_VALUE("{ 0, 0, 1, 1 }")]
+    Windows.Foundation.Numerics.Vector4 HsvColor { get; set; };
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 MinHue { get; set; };
+    [MUX_DEFAULT_VALUE("359")]
+    Int32 MaxHue { get; set; };
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 MinSaturation { get; set; };
+    [MUX_DEFAULT_VALUE("100")]
+    Int32 MaxSaturation { get; set; };
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 MinValue { get; set; };
+    [MUX_DEFAULT_VALUE("100")]
+    Int32 MaxValue { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::ColorSpectrumShape::Box")]
+    MU_XC_NAMESPACE.ColorSpectrumShape Shape { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::ColorSpectrumComponents::HueSaturation")]
+    MU_XC_NAMESPACE.ColorSpectrumComponents Components { get; set; };
+    event Windows.Foundation.TypedEventHandler<ColorSpectrum, MU_XC_NAMESPACE.ColorChangedEventArgs> ColorChanged;
+
+    static Windows.UI.Xaml.DependencyProperty ColorProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty HsvColorProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MinHueProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MaxHueProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MinSaturationProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MaxSaturationProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MinValueProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MaxValueProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ShapeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ComponentsProperty { get; };
+}

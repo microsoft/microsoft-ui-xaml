@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\SdkVersion.props" />
+  
+  <Target Name="MUXControlsReleaseTestPropsInfoTask">
+    <Message Text="Including $(MSBuildThisFileDirectory)MUXControlsReleaseTest.props"/>
+  </Target>
+
+  <!-- Global Properties -->
+  <PropertyGroup>
+    <GenerateProjectSpecificOutputFolder>True</GenerateProjectSpecificOutputFolder>   
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)local.props" Condition="Exists('$(MSBuildThisFileDirectory)local.props')"/>
+
+  <!-- MUXControls.ReleaseTest Project-specific Properties -->
+  <PropertyGroup Label="MUXControls.ReleaseTest" Condition="'$(MSBuildProjectName)' == 'MUXControls.ReleaseTest'">
+  </PropertyGroup>
+
+  <!-- NugetPackageTestApp Project-specific Properties -->
+  <PropertyGroup Label="NugetPackageTestApp" Condition="'$(MSBuildProjectName)' == 'NugetPackageTestApp'">
+    <GenerateAppxPackageOnBuild>True</GenerateAppxPackageOnBuild>
+  </PropertyGroup>
+
+  <!-- NugetPackageTestAppCX Project-specific Properties -->
+  <PropertyGroup Label="NugetPackageTestAppCX" Condition="'$(MSBuildProjectName)' == 'NugetPackageTestAppCX'">
+    <GenerateAppxPackageOnBuild>True</GenerateAppxPackageOnBuild>
+  </PropertyGroup>
+    
+</Project>

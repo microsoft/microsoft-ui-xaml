@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>CppWinRT_SDK</id>
+    <version>0.0.0-SpecifyVersionOnCommandline</version>
+    <title>C++/WinRT SDK</title>
+    <authors>jevansa</authors>
+    <owners>jevansa</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Headers and tool to use C++/WinRT in a native project</description>
+    <releaseNotes>Test.</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+  </metadata>
+  <files>
+    <file target="tools\" src="$CppWinRTPath$\**\*.*"/>
+
+    <file target="build\native" src="CppWinRT_SDK.targets"/>
+  </files>
+</package>

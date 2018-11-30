@@ -1,0 +1,53 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    x:Class="MUXControlsTestApp.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    AutomationProperties.AutomationId="MainPage">
+
+    <Page.Resources>
+        <local:NavigateToTestCommand x:Key="NavigateToTestCommand"/>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="0">
+            <TextBlock Text="Languages:"/>
+            <ComboBox x:Name="LanguageChooser" AutomationProperties.AutomationId="LanguageChooser" VerticalAlignment="Center" Margin="0,0,0,5" SelectionChanged="LanguageChooser_SelectionChanged"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" HorizontalAlignment="Center" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{x:Bind Tests}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button
+                        Content="{Binding Name}"
+                        CommandParameter="{Binding}"
+                        Command="{StaticResource NavigateToTestCommand}"
+                        AutomationProperties.Name="{Binding Name}"
+                        MinWidth="250"
+                        Margin="2"
+                        />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center">
+            <Button Content="Magic Scale Change" Click="Button_Click"/>
+            <CheckBox x:Name="LongAnimationsDisabled" AutomationProperties.AutomationId="LongAnimationsDisabled" Content="Long Animations Disabled" Checked="LongAnimationsDisabled_Checked" Unchecked="LongAnimationsDisabled_Unchecked" Margin="10,0,0,0"/>
+
+        </StackPanel>
+    </Grid>
+</Page>

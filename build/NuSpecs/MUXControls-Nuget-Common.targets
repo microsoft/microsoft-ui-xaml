@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Check TargetPlatformMinVersion during build to block unsupported configurations. -->
+  <Target Name="MicrosoftUIXamlCheckTargetPlatformVersion" BeforeTargets="PrepareForBuild" Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'==''">
+    <PropertyGroup>
+      <MicrosoftUIXamlTargetPlatformMinCheckValue>$([System.Version]::Parse('$(TargetPlatformMinVersion)').Build)</MicrosoftUIXamlTargetPlatformMinCheckValue>
+    </PropertyGroup>
+    <Error 
+        Text="Microsoft.UI.Xaml nuget package requires TargetPlatformMinVersion &gt;= 10.0.14393.0 (current project is $(MicrosoftUIXamlTargetPlatformMinCheckValue))" 
+        Condition="$(MicrosoftUIXamlTargetPlatformMinCheckValue) &lt; 14393" />
+    <PropertyGroup>
+      <MicrosoftUIXamlTargetPlatformCheckValue>$([System.Version]::Parse('$(TargetPlatformVersion)').Build)</MicrosoftUIXamlTargetPlatformCheckValue>
+    </PropertyGroup>
+    <Error 
+        Text="Microsoft.UI.Xaml nuget package requires TargetPlatformVersion &gt;= 10.0.17763.0 (current project is $(MicrosoftUIXamlTargetPlatformCheckValue))" 
+        Condition="$(MicrosoftUIXamlTargetPlatformCheckValue) &lt; 17763" />
+  </Target>
+</Project>

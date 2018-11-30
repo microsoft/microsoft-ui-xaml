@@ -1,0 +1,23 @@
+[WUXC_VERSION_INTERNAL]
+[webhosthidden]
+interface IRefreshInfoProvider
+{
+    void OnRefreshStarted();
+    void OnRefreshCompleted();
+    Boolean IsInteractingForRefresh { get; };
+    Windows.UI.Composition.CompositionPropertySet CompositionProperties { get; };
+    String InteractionRatioCompositionProperty { get; };
+    Double ExecutionRatio { get; };
+    event Windows.Foundation.TypedEventHandler<IRefreshInfoProvider, Object> IsInteractingForRefreshChanged;
+    event Windows.Foundation.TypedEventHandler<IRefreshInfoProvider, MU_XC_NAMESPACE.RefreshInteractionRatioChangedEventArgs> InteractionRatioChanged;
+    event Windows.Foundation.TypedEventHandler<IRefreshInfoProvider, Object> RefreshStarted;
+    event Windows.Foundation.TypedEventHandler<IRefreshInfoProvider, Object> RefreshCompleted;
+}
+
+[WUXC_VERSION_INTERNAL]
+[webhosthidden]
+interface IRefreshVisualizerPrivate
+{
+    IRefreshInfoProvider InfoProvider { get; set; };
+    void SetInternalPullDirection(MU_XC_NAMESPACE.RefreshPullDirection value);
+}

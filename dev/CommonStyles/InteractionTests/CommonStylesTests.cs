@@ -1,0 +1,137 @@
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using Common;
+using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
+using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
+
+#if USING_TAEF
+using WEX.TestExecution;
+using WEX.TestExecution.Markup;
+using WEX.Logging.Interop;
+#else
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
+#endif
+
+#if BUILD_WINDOWS
+using System.Windows.Automation;
+using MS.Internal.Mita.Foundation;
+using MS.Internal.Mita.Foundation.Controls;
+using MS.Internal.Mita.Foundation.Patterns;
+using MS.Internal.Mita.Foundation.Waiters;
+#else
+using Microsoft.Windows.Apps.Test.Automation;
+using Microsoft.Windows.Apps.Test.Foundation;
+using Microsoft.Windows.Apps.Test.Foundation.Controls;
+using Microsoft.Windows.Apps.Test.Foundation.Patterns;
+using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+#endif
+
+namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
+{
+    [TestClass]
+    public class CommonStylesTests
+    { 
+        [ClassInitialize]
+        [TestProperty("RunAs", "User")]
+        [TestProperty("Classification", "Integration")]
+        [TestProperty("Platform", "Any")]
+        [TestProperty("MUXControlsTestSuite", "SuiteB")]
+        public static void ClassInitialize(TestContext testContext)
+        {
+            TestEnvironment.Initialize(testContext);
+        }
+
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            TestCleanupHelper.Cleanup();
+        }
+
+        [TestMethod]
+        public void SliderDensityTest()
+        {
+            RunDensityTests("SliderDensityTest");
+        }
+
+        [TestMethod]
+        public void ToggleSwitchDensityTest()
+        {
+            RunDensityTests("ToggleSwitchDensityTest");
+        }
+
+        public void DatePickerDensityTest()
+        {
+            RunDensityTests("DatePickerDensityTest");
+        }
+
+        [TestMethod]
+        public void TimePickerDensityTest()
+        {
+            RunDensityTests("TimePickerDensityTest");
+        }
+
+        [TestMethod]
+        public void AutoSuggestBoxDensityTest()
+        {
+            RunDensityTests("AutoSuggestBoxDensityTest");
+        }
+
+        [TestMethod]
+        public void ListViewItemDensityTest()
+        {
+            RunDensityTests("ListViewItemDensityTest");
+        }
+
+        [TestMethod]
+        public void TextBoxDensityTest()
+        {
+            RunDensityTests("TextBoxDensityTest");
+        }
+
+        [TestMethod]
+        public void PasswordBoxDensityTest()
+        {
+            RunDensityTests("PasswordBoxDensityTest");
+        }
+
+        [TestMethod]
+        public void ComboBoxDensityTest()
+        {
+            RunDensityTests("ComboBoxDensityTest");
+        }
+
+        [TestMethod]
+        public void RichEditBoxDensityTest()
+        {
+            RunDensityTests("RichEditBoxDensityTest");
+        }
+
+        [TestMethod]
+        public void AppBarToggleButtonDensityTest()
+        {
+            RunDensityTests("AppBarToggleButtonDensityTest");
+        }
+
+        [TestMethod]
+        public void AppBarButtonDensityTest()
+        {
+            RunDensityTests("AppBarButtonDensityTest");
+        }
+        private void RunDensityTests(string buttonName)
+        
+        {
+            using (var setup = new TestSetupHelper("CommonStyles Tests"))
+            {
+                Log.Comment("Click on " + buttonName);
+                var button = new Button(FindElement.ByName(buttonName));
+                button.Invoke();
+                Wait.ForIdle();
+
+                var densityTestResult = new TextBlock(FindElement.ByName("DensityTestResult")).GetText();
+                Verify.AreEqual(densityTestResult, "Pass", "We expect density test result is Pass");
+            }
+        }
+    }
+}

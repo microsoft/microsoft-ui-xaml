@@ -1,0 +1,60 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.RevealSimpleListPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <SolidColorBrush x:Key="BGColorBrush" Color="Transparent" />
+        <ImageBrush x:Key="BGImageBrush" ImageSource="ms-appx:///Assets/SMPTE_WallpaperHD.png" Stretch="UniformToFill" />
+        <DataTemplate x:Key="SettingsItemStyle" x:DataType="local:RevealItem">
+            <RelativePanel Margin="12">
+                <TextBlock Name="IconBlock" Text="{x:Bind Icon}" FontFamily="Segoe MDL2 Assets" FontSize="24" VerticalAlignment="Center" Margin="0,0,12,0" RelativePanel.AlignVerticalCenterWithPanel="True" RelativePanel.AlignLeftWithPanel="True"/>
+                <TextBlock Name="HeaderBlock" Text="{x:Bind Header}" FontWeight="Bold" RelativePanel.RightOf="IconBlock" RelativePanel.AlignTopWithPanel="True"/>
+                <TextBlock Name="SubHeaderBlock" Text="{x:Bind SubHeader}" RelativePanel.RightOf="IconBlock" RelativePanel.Below="HeaderBlock"/>
+            </RelativePanel>
+        </DataTemplate>
+        <DataTemplate x:Key="SimpleItemStyle" x:DataType="local:RevealItem">
+            <TextBlock Name="HeaderBlock" Text="{x:Bind Header}"/>
+        </DataTemplate>
+
+        <Style x:Key="Reveal" TargetType="ListViewItem" BasedOn="{StaticResource ListViewItemRevealStyle}" />
+        <Style x:Key="NonReveal" TargetType="ListViewItem"/>
+    </Page.Resources>
+
+    <Canvas Name="RootCanvas">
+        <Grid Width="800">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="0">
+                <Button x:Name="BorderColorButton" Content="Change Background" Click="BorderColorButton_Click" HorizontalAlignment="Center" Margin="5"/>
+                <Button x:Name="BackgroundColorButton" Content="Change Theme" Click="BackgroundColorButton_Click" HorizontalAlignment="Center" Margin="5"/>
+                <ComboBox x:Name="StyleChooser" Margin="5" SelectedIndex="0" SelectionChanged="StyleChooser_SelectionChanged">
+                    <ComboBox.Items>
+                        <x:String>SettingsItemStyle</x:String>
+                        <x:String>SimpleItemStyle</x:String>
+                    </ComboBox.Items>
+                </ComboBox>
+                <ComboBox x:Name="RevealStyleChooser"  Margin="5" SelectedIndex="0" SelectionChanged="StyleChooser_SelectionChanged">
+                    <ComboBox.Items>
+                        <x:String>Reveal</x:String>
+                        <x:String>NonReveal</x:String>
+                    </ComboBox.Items>
+                </ComboBox>
+                <CheckBox x:Name="MakeListDrag" Content="Can Drag?"/>
+            </StackPanel>
+            <ListView x:Name="RevealList" Grid.Column="0" Grid.Row="1" CanDragItems="{x:Bind MakeListDrag.IsChecked.Value, Mode=OneWay}" AllowDrop="{x:Bind MakeListDrag.IsChecked.Value, Mode=OneWay}" CanReorderItems="{x:Bind MakeListDrag.IsChecked.Value, Mode=OneWay}">
+            </ListView>
+        </Grid>
+    </Canvas>
+</local:TestPage>

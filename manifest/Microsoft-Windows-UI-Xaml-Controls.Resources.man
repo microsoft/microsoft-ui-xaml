@@ -1,0 +1,62 @@
+﻿<?xml version='1.0' encoding='utf-8' standalone='yes'?>
+<assembly
+    xmlns="urn:schemas-microsoft-com:asm.v3"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    manifestVersion="1.0"
+    >
+  <assemblyIdentity
+      buildType="$(build.buildType)"
+      language="en-US"
+      name="Microsoft-Windows-UI-Xaml-Controls.Resources"
+      processorArchitecture="$(build.arch)"
+      publicKeyToken="$(Build.WindowsPublicKeyToken)"
+      version="$(build.version)"
+      versionScope="nonSxS"
+      />
+  <file
+      buildFilter="not build.isWow"
+      destinationPath="$(runtime.system32)\$(build.cultureNameString)\"
+      importPath="$(build.locsrc)"
+      name="Windows.UI.Xaml.Controls.dll.mui"
+      sourceName="Windows.UI.Xaml.Controls.dll.mui"
+      sourcePath=".\"
+      >
+    <resfile
+        xmlns="urn:schemas-microsoft-com:rescache.v1"
+        cached="true"
+        />
+    <signatureInfo>
+      <signatureDescriptor
+          PETrust="true"
+          pageHash="true"
+          />
+    </signatureInfo>
+  </file>
+  <memberships>
+    <categoryMembership>
+      <id
+          buildType="$(build.buildType)"
+          language="neutral"
+          name="Microsoft.Windows.Multilingual_Components_All"
+          processorArchitecture="$(build.arch)"
+          publicKeyToken="$(Build.WindowsPublicKeyToken)"
+          version="$(build.version)"
+          />
+    </categoryMembership>
+  </memberships>
+  <localization>
+    <resources culture="en-US">
+      <stringTable>
+        <string
+            id="description"
+            value="Windows.UI.Xaml.Controls MUI resource DLLs"
+            />
+        <string
+            id="displayName"
+            value="Windows.UI.Xaml.Controls MUI resource DLLs"
+            />
+      </stringTable>
+    </resources>
+  </localization>
+</assembly>

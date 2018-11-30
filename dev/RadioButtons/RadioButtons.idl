@@ -1,0 +1,33 @@
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[contentproperty("Items")]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+unsealed runtimeclass RadioButtons : Windows.UI.Xaml.Controls.Control
+{
+    RadioButtons();
+
+    Object ItemsSource;
+    Windows.Foundation.Collections.IVector<Object> Items{ get; };
+    Windows.UI.Xaml.DataTemplate ItemTemplate;
+
+    Windows.UI.Xaml.DependencyObject ContainerFromItem(Object item);
+    Windows.UI.Xaml.DependencyObject ContainerFromIndex(Int32 index);
+
+    [MUX_DEFAULT_VALUE("-1")]
+    Int32 SelectedIndex;
+    Object SelectedItem;
+    event Windows.UI.Xaml.Controls.SelectionChangedEventHandler SelectionChanged;
+
+    [MUX_DEFAULT_VALUE("1")]
+    Int32 MaximumColumns;
+    Object Header;
+
+    static Windows.UI.Xaml.DependencyProperty ItemsSourceProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ItemsProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ItemTemplateProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SelectedIndexProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SelectedItemProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty MaximumColumnsProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
+}
+

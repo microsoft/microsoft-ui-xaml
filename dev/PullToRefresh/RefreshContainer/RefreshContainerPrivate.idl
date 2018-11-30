@@ -1,0 +1,6 @@
+[WUXC_VERSION_INTERNAL]
+[webhosthidden]
+interface IRefreshContainerPrivate
+{
+    IRefreshInfoProviderAdapter RefreshInfoProviderAdapter { get; set; };
+}

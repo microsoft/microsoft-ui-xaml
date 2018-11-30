@@ -1,0 +1,6 @@
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass ScrollerAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    ScrollerAutomationPeer(Scroller owner);
+}

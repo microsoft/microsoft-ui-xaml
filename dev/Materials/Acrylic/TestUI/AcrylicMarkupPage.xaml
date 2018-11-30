@@ -1,0 +1,44 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.AcrylicMarkupPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:xamlMedia="using:Microsoft.UI.Xaml.Media"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="RootGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Orientation="Vertical">
+            <TextBox x:Name="TestResult" AutomationProperties.AutomationId="TestResult" AutomationProperties.Name="TestResult" IsReadOnly="True"/>
+            <TextBlock x:Name="CompositionBrushPointer" AutomationProperties.AutomationId="CompositionBrushPointer"/>
+            <TextBlock x:Name="NoiseBrushPointer" AutomationProperties.AutomationId="NoiseBrushPointer"/>
+            <TextBlock x:Name="IsUsingAcrylicBrush" AutomationProperties.AutomationId="IsUsingAcrylicBrush"/>
+            <Button x:Name="RunTestButton" AutomationProperties.AutomationId="RunTestButton" Content="Run Test" Click="RunTestButton_Clicked"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <Rectangle x:Name="Rectangle1" Width="200" Height="400">
+                <Rectangle.Fill>
+                    <xamlMedia:AcrylicBrush x:Name="AcrylicBrush1"  BackgroundSource="Backdrop" FallbackColor="White" TintOpacity="0.6" TintColor="MistyRose"/>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle x:Name="Rectangle2" Width="200" Height="400">
+                <Rectangle.Fill>
+                    <xamlMedia:AcrylicBrush x:Name="AcrylicBrush2" BackgroundSource="HostBackdrop" FallbackColor="White" TintOpacity="0.6" TintColor="MistyRose"/>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle x:Name="Rectangle3" Width="200" Height="400">
+                <Rectangle.Fill>
+                    <xamlMedia:AcrylicBrush x:Name="AcrylicBrush3" BackgroundSource="HostBackdrop" AlwaysUseFallback="True" FallbackColor="White" TintOpacity="0.6" TintColor="MistyRose"/>
+                </Rectangle.Fill>
+            </Rectangle>
+        </StackPanel>
+    </Grid>
+</local:TestPage>

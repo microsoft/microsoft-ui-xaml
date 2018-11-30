@@ -1,0 +1,16 @@
+[WUXC_VERSION_INTERNAL]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+runtimeclass SpectrumBrush : Windows.UI.Xaml.Media.XamlCompositionBrushBase
+{
+    SpectrumBrush();
+
+    Windows.UI.Xaml.Media.LoadedImageSurface MinSurface { get; set; };
+    Windows.UI.Xaml.Media.LoadedImageSurface MaxSurface { get; set; };
+    [MUX_DEFAULT_VALUE("1.0")]
+    Double MaxSurfaceOpacity { get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty MinSurfaceProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MaxSurfaceProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MaxSurfaceOpacityProperty { get; };
+}

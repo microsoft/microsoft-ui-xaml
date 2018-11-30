@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{e770a6d3-7252-4e8a-bd10-fa8524df8c83}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsListView.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsListViewItem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsListViewItemAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtons.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\RadioButtons.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtonsListView.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtonsListViewItem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtonsListViewItemAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtons.cpp" />
+  </ItemGroup>
+  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtons.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtons_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)RadioButtons.idl" />
+    <None Include="$(MSBuildThisFileDirectory)RadioButtonsPrimitives.idl" />
+    <None Include="$(MSBuildThisFileDirectory)RadioButtonsAutomationPeer.idl" />
+  </ItemGroup>
+</Project>

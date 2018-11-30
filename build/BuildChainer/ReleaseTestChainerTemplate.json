@@ -1,0 +1,18 @@
+[
+  {   
+      "ChainedJobName": "<CHAINED_JOB_NAME>",
+      "SourceBranch": "<SOURCE_BRANCH>",
+      "Parameters": 
+      {           
+         "PARENT_SOURCESDIRECTORY": "$env:PARENT_SOURCESDIRECTORY",
+         "PARENT_CPPWINRTDIRECTORY": "$env:PARENT_CPPWINRTDIRECTORY",
+         "PARENT_BINARIESDIRECTORY": "$env:PARENT_BINARIESDIRECTORY",
+         "PARENT_SOURCEBRANCH":"$env:PARENT_SOURCEBRANCH",
+         "PARENT_COMMITTOSYNCTO": "$env:BUILD_SOURCEVERSION",
+         "PARENT_XES_DROPSHARE": "$env:XES_DROPSHARE"
+      },
+      "ApplicableWhen": {
+         "XES_SERIALPOSTBUILDREADY": "True"
+      }
+  }
+]

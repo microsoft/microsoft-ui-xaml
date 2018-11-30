@@ -1,0 +1,491 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildThisFileDirectory)\..\..\mux.controls.props') And $(BuildingWithBuildExe) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\environment.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\SdkVersion.props" Condition="$(BuildingWithBuildExe) == 'true'" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props') And $(BuildingWithBuildExe) != 'true'" />
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>c86d3f1a-cd11-406d-abee-ae4c9f23b8fe</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>MUXControlsTestApp.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{FBC396F5-26DD-4CA3-981E-C7BC9FEA4546}</ProjectGuid>
+    <OutputType>AppContainerExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MUXControlsTestApp</RootNamespace>
+    <AssemblyName>MUXControlsTestApp</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">$(MuxSdkVersion)</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
+    <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <PackageCertificateKeyFile>$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx</PackageCertificateKeyFile>
+    <AppxPackageName>MUXControlsTestApp</AppxPackageName>
+    <!-- needed to work with TDP -->
+    <GenerateAppxPackageOnBuild Condition="'$(IsTDPConfiguration)' == 'true'">true</GenerateAppxPackageOnBuild>
+    <!-- Override appx version for PackageES build -->
+    <XefAppxManifestVersion>1.1.0.0</XefAppxManifestVersion>
+    <LangVersion>5</LangVersion>
+    <!-- Supress xaml warnings of type foo is defined under contract 'Windows.Foundation.UniversalApiContract' version '4.0.0.0', but the contract version for the targeted min version is '3.0.0.0'! -->
+    <SuppressXamlWarnings>0151</SuppressXamlWarnings>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(BuildingWithBuildExe) == 'true'">
+    <TargetDestination>NTTEST\WINDOWSTEST\dxaml\controls\test\MUXControlsTestApp</TargetDestination>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <!-- The PropertyGroup below seems to be required even though we have 
+       IsTDPConfiguration flag and modified the Configuration property in mux.controls.props file -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_test|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <DefineConstants>$(DefineConstants);TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+    <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM'">
+    <DefineConstants>$(DefineConstants);TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+    <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <DefineConstants>$(DefineConstants);TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+    <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|arm64'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <!-- VS15.6 build doesn't support arm64 for .NET yet. This project is excluded in solution build, but need "arm" here to satisfy "nuget restore". -->
+    <PlatformTarget>arm</PlatformTarget>
+    <PlatformTarget Condition="$(BuildingWithBuildExe) == 'true'">ARM64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|arm64'">
+    <DefineConstants>$(DefineConstants);TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <!-- VS15.6 build doesn't support arm64 for .NET yet. This project is excluded in solution build, but need "arm" here to satisfy "nuget restore". -->
+    <PlatformTarget>arm</PlatformTarget>
+    <PlatformTarget Condition="$(BuildingWithBuildExe) == 'true'">ARM64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+    <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);0105;8305</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(BuildLeanMuxForTheStoreApp) == 'true'">
+    <DefineConstants>$(DefineConstants);BUILD_LEAN_MUX_FOR_THE_STORE_APP</DefineConstants>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Page>
+      <IncludeInWindowsAppx>true</IncludeInWindowsAppx>
+    </Page>
+  </ItemDefinitionGroup>
+  <!-- We're going to include the .vcxitems in order to get their <Page> includes -
+       everything else is ignored, since this is a C# project. -->
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\**\*.vcxitems" />
+  <ItemGroup>
+    <PageToTest Include="@(Page)" />
+  </ItemGroup>
+  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\dev\dll\Microsoft.UI.Xaml.vcxproj">
+      <Project>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</Project>
+      <Name>Microsoft.UI.Xaml</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup Condition="'$(IsTDPConfiguration)' == 'true'">
+    <AppxPackageName Condition="'$(AppxPackageName)'==''">$(TargetName)</AppxPackageName>
+    <AppxPackageExtension Condition="'$(AppxPackageExtension)'==''">.appx</AppxPackageExtension>
+    <AppxPackageTestDir Condition="'$(AppxPackageTestDir)'==''">$(AppxPackageDir)$(AppxPackageName)_Test\</AppxPackageTestDir>
+    <AppxPackageOutput Condition="'$(AppxPackageOutput)'==''">$(AppxPackageTestDir)$(AppxPackageName)$(AppxPackageExtension)</AppxPackageOutput>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+      <DependentUpon>LeakTestPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)\MainPage.xaml.cs">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)\App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)\SampleTestUIPage.xaml.cs">
+      <DependentUpon>SampleTestUIPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)\Properties\AssemblyInfo.cs" Condition="$(BuildingWithBuildExe) != 'true'" />
+    <Compile Include="$(MSBuildThisFileDirectory)\TestInventory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\BiDirectionalScrollController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\CompositionPropertyLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\CompositionPropertySpy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\CompositionScrollController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\ControlStateViewer\ControlStateViewer.xaml.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\IdleSynchronizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\MaterialHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\PrivateLoggingHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\ScrollerTestHooksHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\RunOnUIThread.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\SemanticZoomTemplateItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\SemanticZoomTemplateSelector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TabControl\TabControl.xaml.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TestHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TilePanel\TilePanel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\ViewHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ThemeResourcesTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\VisualTreeUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\WaitForDebugger.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\LeakTests.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LocalizationTests.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertiesControl.xaml.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertyControlDiscardedEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertyControlGeneratedEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertyControlNeededEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\TypeConverters.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\file.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\folder.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\LargeWisteria.jpg" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_disabled.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\ingredient1.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\ingredient2.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\ingredient3.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\ingredient4.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\ingredient5.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\ingredient6.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\ingredient7.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\ingredient8.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_mouseoverplaceholder.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_mouseoverset.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_placeholder.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_set.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_unset.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\SMPTE_WallpaperHD.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Properties\App.rd.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\SplashScreen.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\StoreLogo.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AppContent Include="@(Content)" />
+  </ItemGroup>
+  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+    <!-- In non Razzle environment, themeresource is packaged as .xaml other than .xbf, it's the same way as .png -->
+    <Content Include="@(PageToTest)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)\MainPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)\SampleTestUIPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)\Themes\AdditionalStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStylesOutsideStore_rs2.xaml" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)\Utilities\TabControl\TabControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)\Utilities\ControlStateViewer\ControlStateViewer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+    <Page Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertiesControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="$(MSBuildThisFileDirectory)\App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(OutDir)ThemeResourcesTests.g.cs" Condition="$(BuildingWithBuildExe) != 'true'" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0' ">
+    <VisualStudioVersion>15.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="$(CSharpTargetsFilePath)" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\CustomInlineTasks.targets" />
+  <Target Name="RemovePagesToTest" BeforeTargets="MarkupCompilePass1">
+    <ItemGroup>
+      <Page Remove="@(PageToTest)" />
+    </ItemGroup>
+  </Target>
+  <!-- There's no way to have a conditional statement in XAML akin to #ifdef BUILD_WINDOWS, so in order
+       to use the correct namespace when building WUXC, we copy all of the XAML files to a temp folder,
+       edit their namespaces to be the correct namespaces, and then use those XAML files as our XAML compilation source
+       instead of the ones in the project. -->
+  <Target Name="EditXamlFiles" BeforeTargets="MarkupCompilePass1" Condition="$(BuildingWithBuildExe) == 'true'">
+    <PropertyGroup>
+      <EditedXamlFilesDir>$(OutDir)\EditedXamlFiles</EditedXamlFilesDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(EditedXamlFilesDir)" />
+    <CopyWithReplacements SourceFiles="%(Page.Identity)" DestinationFiles="$(EditedXamlFilesDir)\%(Page.Filename)%(Page.Extension)" Patterns="Microsoft.UI.Xaml;Microsoft.UI.Private.Controls;Microsoft.UI.Private.Media" Replacements="Windows.UI.Xaml;Windows.UI.Xaml.Controls;Windows.UI.Xaml.Media" />
+    <ItemGroup>
+      <EditedPage Include="$(EditedXamlFilesDir)\%(Page.Filename)%(Page.Extension)" />
+      <Page Remove="@(Page)" />
+      <Page Include="@(EditedPage)" />
+    </ItemGroup>
+    <CopyWithReplacements SourceFiles="%(ApplicationDefinition.Identity)" DestinationFiles="$(EditedXamlFilesDir)\%(ApplicationDefinition.Filename)%(ApplicationDefinition.Extension)" Patterns="Microsoft.UI.Xaml;Microsoft.UI.Private.Controls;Microsoft.UI.Private.Media;&lt;controls:XamlControlsResources/&gt;" Replacements="Windows.UI.Xaml;Windows.UI.Xaml.Controls;Windows.UI.Xaml.Media;&lt;ResourceDictionary/&gt;" />
+    <ItemGroup>
+      <EditedApplicationDefinition Include="$(EditedXamlFilesDir)\%(ApplicationDefinition.Filename)%(ApplicationDefinition.Extension)" />
+      <ApplicationDefinition Remove="@(ApplicationDefinition)" />
+      <ApplicationDefinition Include="@(EditedApplicationDefinition)" />
+    </ItemGroup>
+    <ItemGroup>
+      <FileWrites Include="@(EditedPage)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="CustomAfterGenerateAppPackages" AfterTargets="_GenerateAppxPackage" Condition="$(BuildingWithBuildExe) != 'true'">
+    <RunPowershellScript Path="$(MSBuildThisFileDirectory)\..\..\tools\ExtractPackageDependencies.ps1" Parameters="-sourceFile $(OutDir)\$(MSBuildProjectName).build.appxrecipe -platform $(PlatformName) -outputFile $(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" />
+  </Target>
+  <Target Name="DefineThemePages" BeforeTargets="OutputPagesToTest">
+    <ItemGroup>
+      <RS1StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS1' And '%(Type)' == 'DefaultStyle'" />
+      <RS2StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS2' And '%(Type)' == 'DefaultStyle'" />
+      <RS3StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS3' And '%(Type)' == 'DefaultStyle'" />
+      <RS4StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS4' And '%(Type)' == 'DefaultStyle'" />
+      <RS5StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS5' And '%(Type)' == 'DefaultStyle'" />
+      <NineteenH1StylePage Include="@(PageToTest)" Condition="'%(Version)' == '19H1' And '%(Type)' == 'DefaultStyle'" />
+      <RS1ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS1' And '%(Type)' == 'ThemeResources'" />
+      <RS2ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS2' And '%(Type)' == 'ThemeResources'" />
+      <RS3ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS3' And '%(Type)' == 'ThemeResources'" />
+      <RS4ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS4' And '%(Type)' == 'ThemeResources'" />
+      <RS5ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS5' And '%(Type)' == 'ThemeResources'" />
+      <NineteenH1ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == '19H1' And '%(Type)' == 'ThemeResources'" />
+    </ItemGroup>
+  </Target>
+  <!-- We want to test to make sure that our merged dictionaries resolve keys in the same way that our unmerged dictionaries do.
+       In order to automate that process so we don't need to add anything or change any tests if we add more unmerged dictionaries,
+       we pull in all our unmerged dictionaries via the .vcxitems files included above, and then output a file listing dictionaries
+       to test in our automated test.  That file provides four methods that allow our automated tests to know which unmerged dictionaries
+       should be compared against which merged dictionaries.  Our automated tests will then test every key found in the unmerged dictionaries
+       and verify that the same element is returned from the merged dictionary. -->
+  <Target Name="OutputPagesToTest" BeforeTargets="XamlPreCompile" Inputs="@(PageToTest)" Outputs="$(OutDir)ThemeResourcesTests.g.cs">
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="using System%3B" Overwrite="true" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="using System.Collections.Generic%3B" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0Anamespace Windows.UI.Xaml.Tests.MUXControls.ApiTests" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20partial class ThemeResourcesTests" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS1DefaultStyleDictionaries()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS1StylePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS2DefaultStyleDictionaries()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS2StylePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS3DefaultStyleDictionaries()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS3StylePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS4DefaultStyleDictionaries()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS4StylePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS5DefaultStyleDictionaries()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS5StylePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; Get19H1DefaultStyleDictionaries()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(NineteenH1StylePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS1ThemeResourceDictionaries()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS1ThemeResourcePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS2ThemeResourceDictionaries()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS2ThemeResourcePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS3ThemeResourceDictionaries()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS3ThemeResourcePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS4ThemeResourceDictionaries()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS4ThemeResourcePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; GetRS5ThemeResourceDictionaries()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(RS5ThemeResourcePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%0D%0A%20%20%20%20%20%20%20%20public static List&lt;string&gt; Get19H1ThemeResourceDictionaries()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20return new List&lt;string&gt;()" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20{" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="@(NineteenH1ThemeResourcePage -> '%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&quot;%(Filename)%(Extension)&quot;,')" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20%20%20%20%20}%3B" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20%20%20%20%20}" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="%20%20%20%20}" />
+    <WriteLinesToFile File="$(OutDir)\ThemeResourcesTests.g.cs" Lines="}" />
+    <ItemGroup>
+      <FileWrites Include="$(OutDir)ThemeResourcesTests.g.cs" />
+    </ItemGroup>
+  </Target>
+  <!-- For the purposes of code coverage, we need to know where the intermediates directory is,
+       since we need to re-pack MUXControlsTestApp.appx for code coverage.
+       We can't get it from any environment variable, so let's write it to a text file as a workaround. -->
+  <Target Name="AfterBuild" Condition="!Exists('$(OutDir)IntermediateDirectoryLocation.txt') And $(BuildingWithBuildExe) != 'true'">
+    <WriteLinesToFile File="$(OutDir)IntermediateDirectoryLocation.txt" Lines="$(IntermediateOutputPath)" Overwrite="true" Encoding="Ascii" />
+    <ItemGroup>
+      <FileWrites Include="$(OutDir)IntermediateDirectoryLocation.txt" />
+    </ItemGroup>
+  </Target>
+  <Target Name="GenerateAppxSources" AfterTargets="AfterBuild" Inputs="@(Page);@(AppContent)" Outputs="$(OutDir)AppxSources.g.targets" Condition="$(BuildingWithBuildExe) == 'true'">
+    <ItemGroup>
+        <AppContentRelativeToPath Include="@(AppContent)">
+            <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildThisFileDirectory)\', %(Identity)))</RelativePath>
+        </AppContentRelativeToPath>
+    </ItemGroup>
+    <!-- %xx escapes an ASCII character.  %0D%0A is CR LF, whereas %20 is a space.  We need to escape them like this to make sure the file is formatted correctly. -->
+    <WriteLinesToFile File="$(OutDir)AppxSources.g.targets" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;" Overwrite="true" Encoding="Ascii" />
+    <WriteLinesToFile File="$(OutDir)AppxSources.g.targets" Lines="&lt;Project DefaultTargets=&quot;ProductBuild&quot; ToolsVersion=&quot;4.0&quot; xmlns=&quot;http://schemas.microsoft.com/developer/msbuild/2003&quot;&gt;" Encoding="Ascii" />
+    <WriteLinesToFile File="$(OutDir)AppxSources.g.targets" Lines="  &lt;ItemGroup&gt;" Encoding="Ascii" />
+    <WriteLinesToFile File="$(OutDir)AppxSources.g.targets" Lines="@(AppContentRelativeToPath -> '%20%20%20%20&lt;PackageItems Include=&quot;$(MSBuildThisFileDirectory)\%(RelativePath)&quot;&gt;%0D%0A%20%20%20%20%20%20&lt;Dst&gt;%(RelativePath)&lt;/Dst&gt;%0D%0A%20%20%20%20&lt;/PackageItems&gt;')" Encoding="Ascii" />
+    <WriteLinesToFile File="$(OutDir)AppxSources.g.targets" Lines="@(Page -> '%20%20%20%20&lt;PackageItems Include=&quot;%24(PathToTestObjectRoot)\MUXControlsTestApp\TAEF\%24(ObjectDirectory)\%(Filename).xbf&quot;&gt;%0D%0A%20%20%20%20%20%20&lt;Dst&gt;%(Filename).xbf&lt;/Dst&gt;%0D%0A%20%20%20%20&lt;/PackageItems&gt;')" Encoding="Ascii" Condition="'%(IncludeInWindowsAppx)' == 'true'" />
+    <WriteLinesToFile File="$(OutDir)AppxSources.g.targets" Lines="  &lt;/ItemGroup&gt;" Encoding="Ascii" />
+    <WriteLinesToFile File="$(OutDir)AppxSources.g.targets" Lines="&lt;/Project&gt;" Encoding="Ascii" />
+    <ItemGroup>
+      <FileWrites Include="$(OutDir)AppxSources.g.targets" />
+    </ItemGroup>
+  </Target>
+</Project>

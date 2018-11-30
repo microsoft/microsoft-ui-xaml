@@ -1,0 +1,5 @@
+TARGETTYPE      = NOTARGET
+TARGETNAME      = CppWinRTCodeGen
+
+NTTARGETFILE0 = \
+    $(OBJ_PATH)\$O\CppWinRTCodeGen

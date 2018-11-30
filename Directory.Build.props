@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- This is a special MSBuild file that is parsed before everything else when MSBuild detects it in our directory structure.
+     Adding Sdk="Microsoft.NET.Sdk" to a project causes NuGet files to be generated very early on, so we need these defines to be here
+     to ensure that all of our build output files end up in the same location.  This is parsed too late when put in mux.controls.props. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="$(BuildingWithBuildExe) != 'true'">
+    <IsTDPConfiguration>false</IsTDPConfiguration>
+    <IsTDPConfiguration Condition="'$(Configuration)' == 'Debug_test'">true</IsTDPConfiguration>
+    <Configuration Condition="'$(Configuration)' == 'Debug_test'">Debug</Configuration>
+    
+    <BaseOutputPath>$(MSBuildThisFileDirectory)BuildOutput\$(Configuration)\</BaseOutputPath>
+	<BaseOutputPath Condition="'$(Configuration)' == 'Debug_test'">$(MSBuildThisFileDirectory)BuildOutput\Debug\</BaseOutputPath>
+    <OutDir>$(BaseOutputPath)\$(Platform)\</OutDir>
+
+    <!-- For native projects that use Win32 to mean x86, override the OutDir
+         property to provide consistency between projects. -->
+    <OutDir Condition="'$(Platform)' == 'Win32'">$(BaseOutputPath)\x86\</OutDir>
+
+    <OutputPath>$(OutDir)\$(MSBuildProjectName)\</OutputPath>
+
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)BuildOutput\Intermediates\$(MSBuildProjectName)\obj\</BaseIntermediateOutputPath>
+    <IntDir>$(BaseIntermediateOutputPath)</IntDir>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <GeneratedFilesDir>$(BaseIntermediateOutputPath)Generated Files\</GeneratedFilesDir>
+    <GenerateProjectSpecificOutputFolder>True</GenerateProjectSpecificOutputFolder>
+  </PropertyGroup>
+</Project>

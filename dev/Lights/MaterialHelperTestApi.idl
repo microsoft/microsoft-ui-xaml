@@ -1,0 +1,10 @@
+[WUXC_VERSION_INTERNAL]
+[webhosthidden]
+[default_interface]
+runtimeclass MaterialHelperTestApi : Windows.UI.Xaml.DependencyObject
+{
+    MaterialHelperTestApi();
+
+    static Boolean SimulateDisabledByPolicy { get; set; };
+    static Boolean IgnoreAreEffectsFast { get; set; };
+}
