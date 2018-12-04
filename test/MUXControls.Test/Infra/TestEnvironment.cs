@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
@@ -123,6 +124,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         [TestProperty("MUXControlsTestEnabledForPhone", "False")]
         public static void AssemblyInitialize(TestContext testContext)
         {
+            // We need to make the process DPI aware so it properly handles scale factors other than 100%.
+            // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 only existed RS2 and up, so we'll fall back to
+            // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE below RS2.
+            if (SetProcessDpiAwarenessContext(
+                PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2) ?
+                    DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 :
+                    DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) < 0)
+            {
+                throw new Exception("Failed to set process DPI awareness context!  Error = " + Marshal.GetLastWin32Error());
+            }
+
 #if USING_TAEF
             Log.Comment("TestContext.TestDeploymentDir    = {0}", testContext.TestDeploymentDir);
             Log.Comment("TestContext.TestDir              = {0}", testContext.TestDir);
@@ -345,5 +357,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 }
             }
         }
+        
+        private static UIntPtr DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = new UIntPtr(0xfffffffd);
+        private static UIntPtr DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 = new UIntPtr(0xfffffffc);
+
+        [DllImport("user32.dll")]
+        private static extern int SetProcessDpiAwarenessContext([In] UIntPtr value);
     }
 }
