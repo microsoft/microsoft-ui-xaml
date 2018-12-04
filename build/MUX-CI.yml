@@ -3,20 +3,12 @@ jobs:
 - job: Build
   pool:
     vmImage: 'VS2017-Win2016'
+  timeoutInMinutes: 120
   strategy:
     maxParallel: 10
     matrix:
       Debug_x86:
         buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
-      Debug_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Debug'
-      Debug_Arm:
-        buildPlatform: 'arm'
-        buildConfiguration: 'Debug'
-      Debug_Arm64:
-        buildPlatform: 'arm64'
         buildConfiguration: 'Debug'
       Release_x86:
         buildPlatform: 'x86'
