@@ -255,7 +255,7 @@ double ItemsRepeater::HorizontalCacheLength()
 
 void ItemsRepeater::HorizontalCacheLength(double value)
 {
-    SetValue(s_HorizontalCacheLengthProperty, box_value(value));
+    SetValue(s_horizontalCacheLengthProperty, box_value(value));
 }
 
 double ItemsRepeater::VerticalCacheLength()
@@ -265,7 +265,17 @@ double ItemsRepeater::VerticalCacheLength()
 
 void ItemsRepeater::VerticalCacheLength(double value)
 {
-    SetValue(s_VerticalCacheLengthProperty, box_value(value));
+    SetValue(s_verticalCacheLengthProperty, box_value(value));
+}
+
+winrt::Brush ItemsRepeater::Background()
+{
+    return ValueHelper<winrt::Brush>::CastOrUnbox((this)->GetValue(BackgroundProperty()));
+}
+
+void ItemsRepeater::Background(winrt::Brush const& value)
+{
+    SetValue(BackgroundProperty(), value);
 }
 
 int32_t ItemsRepeater::GetElementIndex(winrt::UIElement const& element)
@@ -458,11 +468,11 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     {
         OnAnimatorChanged(safe_cast<winrt::ElementAnimator>(args.OldValue()), safe_cast<winrt::ElementAnimator>(args.NewValue()));
     }
-    else if (property == s_HorizontalCacheLengthProperty)
+    else if (property == s_horizontalCacheLengthProperty)
     {
         m_viewportManager.HorizontalCacheLength(unbox_value<double>(args.NewValue()));
     }
-    else if (property == s_VerticalCacheLengthProperty)
+    else if (property == s_verticalCacheLengthProperty)
     {
         m_viewportManager.VerticalCacheLength(unbox_value<double>(args.NewValue()));
     }

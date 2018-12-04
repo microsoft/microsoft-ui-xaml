@@ -9,6 +9,7 @@
 CppWinRTActivatableClassWithDPFactory(ItemsRepeater)
 
 GlobalDependencyProperty ItemsRepeaterProperties::s_AnimatorProperty{ nullptr };
+GlobalDependencyProperty ItemsRepeaterProperties::s_BackgroundProperty{ nullptr };
 GlobalDependencyProperty ItemsRepeaterProperties::s_HorizontalCacheLengthProperty{ nullptr };
 GlobalDependencyProperty ItemsRepeaterProperties::s_ItemsSourceProperty{ nullptr };
 GlobalDependencyProperty ItemsRepeaterProperties::s_ItemTemplateProperty{ nullptr };
@@ -34,6 +35,17 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ElementAnimator>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_BackgroundProperty)
+    {
+        s_BackgroundProperty =
+            InitializeDependencyProperty(
+                L"Background",
+                winrt::name_of<winrt::Brush>(),
+                winrt::name_of<winrt::ItemsRepeater>(),
+                false /* isAttached */,
+                ValueHelper<winrt::Brush>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_HorizontalCacheLengthProperty)
@@ -96,6 +108,7 @@ void ItemsRepeaterProperties::EnsureProperties()
 void ItemsRepeaterProperties::ClearProperties()
 {
     s_AnimatorProperty = nullptr;
+    s_BackgroundProperty = nullptr;
     s_HorizontalCacheLengthProperty = nullptr;
     s_ItemsSourceProperty = nullptr;
     s_ItemTemplateProperty = nullptr;
@@ -111,6 +124,16 @@ void ItemsRepeaterProperties::Animator(winrt::ElementAnimator const& value)
 winrt::ElementAnimator ItemsRepeaterProperties::Animator()
 {
     return ValueHelper<winrt::ElementAnimator>::CastOrUnbox(static_cast<ItemsRepeater*>(this)->GetValue(s_AnimatorProperty));
+}
+
+void ItemsRepeaterProperties::Background(winrt::Brush const& value)
+{
+    static_cast<ItemsRepeater*>(this)->SetValue(s_BackgroundProperty, ValueHelper<winrt::Brush>::BoxValueIfNecessary(value));
+}
+
+winrt::Brush ItemsRepeaterProperties::Background()
+{
+    return ValueHelper<winrt::Brush>::CastOrUnbox(static_cast<ItemsRepeater*>(this)->GetValue(s_BackgroundProperty));
 }
 
 void ItemsRepeaterProperties::HorizontalCacheLength(double value)

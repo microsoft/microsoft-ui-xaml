@@ -1,4 +1,4 @@
-runtimeclass ItemsSourceView;
+﻿runtimeclass ItemsSourceView;
 runtimeclass ItemsRepeater;
 runtimeclass ElementFactory;
 runtimeclass LayoutContext;
@@ -121,6 +121,9 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     
     Double HorizontalCacheLength { get; set; };
     Double VerticalCacheLength { get; set; };
+
+    Windows.UI.Xaml.Media.Brush Background{ get; set; };
+
     Int32 GetElementIndex(Windows.UI.Xaml.UIElement element);
     Windows.UI.Xaml.UIElement TryGetElement(Int32 index);
     Windows.UI.Xaml.UIElement GetOrCreateElement(Int32 index);
@@ -134,6 +137,7 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     static Windows.UI.Xaml.DependencyProperty AnimatorProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalCacheLengthProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalCacheLengthProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty BackgroundProperty{ get; };
 }
 
 #ifndef BUILD_WINDOWS
