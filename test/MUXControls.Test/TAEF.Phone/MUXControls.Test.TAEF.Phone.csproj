@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- NB: This project relies on an internal version of .NET to support running tests on an RS2 phone VM.
+     It should *not* be part of MUXControls.sln, because anyone without access to that version of .NET will not be able to build it. -->
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{6859520B-86D6-453F-AB84-DD36FA9D01B1}</ProjectGuid>
+    <DefineConstants>$(DefineConstants);USING_TAEF;USING_TESTNET</DefineConstants>
+    <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm;win-arm64</RuntimeIdentifiers>
+    <NuGetTargetMoniker>.NETCore,Version=v5.0</NuGetTargetMoniker>
+    <!-- The binaries we're building against are managed, so which platform's folder they come out of is immaterial.
+         For simplicity's sake, we'll always get them from the x86 folder, but the CoreClr binaries are the same everywhere. -->
+    <TaefRootDirectory>$(NuGetPackageRoot)taef.redist.wlk\10.31.180822002\build\Binaries\x86\CoreClr\</TaefRootDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="TE.Managed">
+      <HintPath>$(TaefRootDirectory)TE.Managed.dll</HintPath>
+    </Reference>
+    <Reference Include="TE.ManagedTestMode">
+      <HintPath>$(TaefRootDirectory)TE.ManagedTestMode.dll</HintPath>
+    </Reference>
+    <Reference Include="Wex.Common.Managed">
+      <HintPath>$(TaefRootDirectory)Wex.Common.Managed.dll</HintPath>
+    </Reference>
+    <Reference Include="Wex.Logger.Interop">
+      <HintPath>$(TaefRootDirectory)Wex.Logger.Interop.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Import Project="..\MUXControls.Test.Shared.projitems" />
+  <ItemGroup>
+    <Compile Include="..\TestAppInstallHelper.cs" />
+  </ItemGroup>
+  <Import Project="..\MUXControls.Test.Shared.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

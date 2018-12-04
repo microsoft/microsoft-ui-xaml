@@ -23,7 +23,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
+#if BUILD_WINDOWS || USING_TESTNET
 using System.Windows.Automation;
 using MS.Internal.Mita.Foundation;
 using MS.Internal.Mita.Foundation.Controls;
@@ -39,7 +39,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
-#if BUILD_WINDOWS
+#if BUILD_WINDOWS || USING_TESTNET
     using Window = MS.Internal.Mita.Foundation.Controls.Window;
 #else
     using Window = Microsoft.Windows.Apps.Test.Foundation.Controls.Window;
@@ -417,7 +417,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
         }
 
-#if !BUILD_WINDOWS
+#if !BUILD_WINDOWS && !USING_TESTNET
         private void BuildAndInstallTestAppIfNeeded()
         {
             string[] architectures = { "x86", "x64", "ARM" };

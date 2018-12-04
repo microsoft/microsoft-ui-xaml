@@ -1,0 +1,15 @@
+{
+  "frameworks": {
+    "netcore50": {}
+  },
+  "runtimes": {
+    "win10-x86": {},
+    "win10-x64": {},
+    "win10-arm": {}
+  },
+  "dependencies": {
+    "MITALite": "1.0.170202001",
+    "Taef.Redist.Wlk": "10.31.180822002",
+    "Test.Net.Redist": "2.0.1"
+  }
+}

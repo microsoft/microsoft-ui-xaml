@@ -20,7 +20,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
+#if BUILD_WINDOWS || USING_TESTNET
 using System.Windows.Automation;
 using MS.Internal.Mita.Foundation;
 using MS.Internal.Mita.Foundation.Controls;

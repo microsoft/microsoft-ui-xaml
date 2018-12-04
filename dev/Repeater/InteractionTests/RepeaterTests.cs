@@ -11,7 +11,7 @@ using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using Windows.Foundation.Metadata;
 
-#if BUILD_WINDOWS
+#if BUILD_WINDOWS || USING_TESTNET
 using System.Windows.Automation;
 using MS.Internal.Mita.Foundation;
 using MS.Internal.Mita.Foundation.Controls;
