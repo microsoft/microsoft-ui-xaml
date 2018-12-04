@@ -109,7 +109,7 @@ if (!$NoDeploy)
     $nugetPackagesDir = "$env:USERPROFILE\.nuget\packages"
     $binplaceDir = "C:\data\test\bin\"
 
-    putd "$nugetPackagesDir\microsoft.windows.apps.test\1.0.181128014\lib\netcoreapp2.1\*.dll" $binplaceDir
+    putd "$nugetPackagesDir\microsoft.windows.apps.test\1.0.181203002\lib\netcoreapp2.1\*.dll" $binplaceDir
     putd "$nugetPackagesDir\taef.redist.wlk\10.31.180822002\build\Binaries\$platform\*" $binplaceDir
     putd "$nugetPackagesDir\taef.redist.wlk\10.31.180822002\build\Binaries\$platform\CoreClr\*" $binplaceDir
     putd "$nugetPackagesDir\runtime.win-$platform.microsoft.netcore.app\2.1.0\runtimes\win-$platform\lib\netcoreapp2.1\*" $binplaceDir

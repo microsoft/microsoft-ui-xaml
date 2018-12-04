@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
-    <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181128014" />
+    <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181203002" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.3.2" />
     <PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
     <PackageReference Include="System.Diagnostics.Process" Version="4.3.0" />
