@@ -1,0 +1,424 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.UI.Xaml.Controls"
+    xmlns:media="using:Microsoft.UI.Xaml.Media">
+
+    <Style TargetType="local:TeachingTip">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:TeachingTip">
+                    <Grid HorizontalAlignment="Left"
+                          VerticalAlignment="Top"
+                          MinHeight="{ThemeResource TeachingTipTotalMinHeight}" 
+                          MinWidth="{ThemeResource TeachingTipTotalMinWidth}"
+                          MaxHeight="{ThemeResource TeachingTipTotalMaxHeight}"
+                          MaxWidth="{ThemeResource TeachingTipTotalMaxWidth}"
+                          Background="Transparent">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="ButtonsStates">
+                                <VisualState x:Name="NoButtonsVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
+
+                                        <Setter Target="ActionButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="ActionButtonVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
+
+                                        <Setter Target="ActionButton.Visibility" Value="Visible"/>
+                                        <Setter Target="ActionButton.(Grid.Column)" Value="1"/>
+                                        <Setter Target="ActionButton.Margin" Value="6,12,0,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="CloseButtonVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="CloseButton.Visibility" Value="Visible"/>
+                                        <Setter Target="CloseButton.Margin" Value="6,12,0,0"/>
+
+                                        <Setter Target="ActionButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="BothButtonsVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="CloseButton.Visibility" Value="Visible"/>
+                                        <Setter Target="CloseButton.Margin" Value="6,12,0,0"/>
+
+                                        <Setter Target="ActionButton.Visibility" Value="Visible"/>
+                                        <Setter Target="ActionButton.(Grid.Column)" Value="0"/>
+                                        <Setter Target="ActionButton.Margin" Value="0,12,6,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="ContentStates">
+                                <VisualState x:Name="Content">
+                                    <VisualState.Setters>
+                                        <Setter Target="MainContentPresenter.Margin" Value="0,12,0,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="NoContent">
+                                    <VisualState.Setters>
+                                        <Setter Target="MainContentPresenter.Margin" Value="0,0,0,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="CloseButtonLocations">
+                                <VisualState x:Name="HeaderCloseButton">
+                                    <VisualState.Setters>
+                                        <Setter Target="TitlesStackPanel.Margin" Value="0,0,28,0"/>
+                                        <Setter Target="XCloseButton.Visibility" Value="Visible"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="FooterCloseButton">
+                                    <VisualState.Setters>
+                                        <Setter Target="TitlesStackPanel.Margin" Value="0,0,0,0"/>
+                                        <Setter Target="XCloseButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="IconStates">
+                                <VisualState x:Name="Icon">
+                                    <VisualState.Setters>
+                                        <Setter Target="IconContentPresenter.Margin" Value="0,0,12,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="NoIcon">
+                                    <VisualState.Setters>
+                                        <Setter Target="IconContentPresenter.Margin" Value="0,0,0,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="BleedingContentPlacementStates">
+                                <VisualState x:Name="BleedingContentTop">
+                                    <VisualState.Setters>
+                                        <Setter Target="BleedingImageContentPresenter.(Grid.Row)" Value="0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="BleedingContentBottom">
+                                    <VisualState.Setters>
+                                        <Setter Target="BleedingImageContentPresenter.(Grid.Row)" Value="2"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="PlacementStates">
+                                <VisualState x:Name="Top">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Margin" Value="0,0,0,8"/>
+                                        <Setter Target="RootGrid.BorderThickness" Value="1,1,1,0"/>
+                                        <Setter Target="ContentRootGrid.BorderThickness" Value="0,0,0,1"/>
+                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakEdgeBorder.Margin" Value="1,0,1,8"/>
+                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="BeakEdgeBorder.Height" Value="1.0"/>
+                                        <Setter Target="BeakEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Points" Value="0,0 10,10, 20,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Bottom">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Margin" Value="0,8,0,0"/>
+                                        <Setter Target="RootGrid.BorderThickness" Value="1,0,1,1"/>
+                                        <Setter Target="ContentRootGrid.BorderThickness" Value="0,1,0,0"/>
+                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakEdgeBorder.Margin" Value="1,8,1,0"/>
+                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="BeakEdgeBorder.Height" Value="1.0"/>
+                                        <Setter Target="BeakEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Visible"/>
+                                        <Setter Target="TopHighlightRight.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Points" Value="0,10 10,0 20,10"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Left">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Margin" Value="0,0,8,0"/>
+                                        <Setter Target="RootGrid.BorderThickness" Value="1,1,0,1"/>
+                                        <Setter Target="ContentRootGrid.BorderThickness" Value="0,0,1,0"/>
+                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakEdgeBorder.Margin" Value="0,1,8,1"/>
+                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="BeakEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="BeakEdgeBorder.Width" Value="1.0"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Points" Value="0,0 10,10 0,20"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Right">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Margin" Value="8,0,0,0"/>
+                                        <Setter Target="RootGrid.BorderThickness" Value="0,1,1,1"/>
+                                        <Setter Target="ContentRootGrid.BorderThickness" Value="1,0,0,0"/>
+                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakEdgeBorder.Margin" Value="8,1,0,1"/>
+                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="BeakEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="BeakEdgeBorder.Width" Value="1.0"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Points" Value="10,0 0,10 10,20"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="TopEdgeAlignedRight">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Margin" Value="0,0,0,8"/>
+                                        <Setter Target="RootGrid.BorderThickness" Value="1,1,1,0"/>
+                                        <Setter Target="ContentRootGrid.BorderThickness" Value="0,0,0,1"/>
+                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakEdgeBorder.Margin" Value="1,0,1,8"/>
+                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="BeakEdgeBorder.Height" Value="1.0"/>
+                                        <Setter Target="BeakEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Points" Value="0,0 10,10 20,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="TopEdgeAlignedLeft">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Margin" Value="0,0,0,8"/>
+                                        <Setter Target="RootGrid.BorderThickness" Value="1,1,1,0"/>
+                                        <Setter Target="ContentRootGrid.BorderThickness" Value="0,0,0,1"/>
+                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakEdgeBorder.Margin" Value="1,0,1,8"/>
+                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="BeakEdgeBorder.Height" Value="1.0"/>
+                                        <Setter Target="BeakEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Points" Value="0,0 10,10 20,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="BottomEdgeAlignedRight">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Margin" Value="0,8,0,0"/>
+                                        <Setter Target="RootGrid.BorderThickness" Value="1,0,1,1"/>
+                                        <Setter Target="ContentRootGrid.BorderThickness" Value="0,1,0,0"/>
+                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakEdgeBorder.Margin" Value="1,8,1,0"/>
+                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="BeakEdgeBorder.Height" Value="1.0"/>
+                                        <Setter Target="BeakEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Visible"/>
+                                        <Setter Target="TopHighlightRight.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Points" Value="0,10 10,0 20,10"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="BottomEdgeAlignedLeft">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Margin" Value="0,8,0,0"/>
+                                        <Setter Target="RootGrid.BorderThickness" Value="1,0,1,1"/>
+                                        <Setter Target="ContentRootGrid.BorderThickness" Value="0,1,0,0"/>
+                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakEdgeBorder.Margin" Value="1,8,1,0"/>
+                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="BeakEdgeBorder.Height" Value="1.0"/>
+                                        <Setter Target="BeakEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Visible"/>
+                                        <Setter Target="TopHighlightRight.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Points" Value="0,10 10,0 20,10"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="LeftEdgeAlignedTop">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Margin" Value="0,0,8,0"/>
+                                        <Setter Target="RootGrid.BorderThickness" Value="1,1,0,1"/>
+                                        <Setter Target="ContentRootGrid.BorderThickness" Value="0,0,1,0"/>
+                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakEdgeBorder.Margin" Value="0,1,8,1"/>
+                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="BeakEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="BeakEdgeBorder.Width" Value="1.0"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Points" Value="0,0 10,10 0,20"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="LeftEdgeAlignedBottom">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Margin" Value="0,0,8,0"/>
+                                        <Setter Target="RootGrid.BorderThickness" Value="1,1,0,1"/>
+                                        <Setter Target="ContentRootGrid.BorderThickness" Value="0,0,1,0"/>
+                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakEdgeBorder.Margin" Value="0,1,8,1"/>
+                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="BeakEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="BeakEdgeBorder.Width" Value="1.0"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Points" Value="0,0 10,10 0,20"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="RightEdgeAlignedTop">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Margin" Value="8,0,0,0"/>
+                                        <Setter Target="RootGrid.BorderThickness" Value="0,1,1,1"/>
+                                        <Setter Target="ContentRootGrid.BorderThickness" Value="1,0,0,0"/>
+                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakEdgeBorder.Margin" Value="8,1,0,1"/>
+                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="BeakEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="BeakEdgeBorder.Width" Value="1.0"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Points" Value="10,0 0,10 10,20"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="RightEdgeAlignedBottom">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Margin" Value="8,0,0,0"/>
+                                        <Setter Target="RootGrid.BorderThickness" Value="0,1,1,1"/>
+                                        <Setter Target="ContentRootGrid.BorderThickness" Value="1,0,0,0"/>
+                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakEdgeBorder.Margin" Value="8,1,0,1"/>
+                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="BeakEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="BeakEdgeBorder.Width" Value="1.0"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="BeakPolygon.Points" Value="10,0 0,10 10,20"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Untargeted">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootGrid.Margin" Value="0,0,0,0"/>
+                                        <Setter Target="RootGrid.BorderThickness" Value="1,1,1,1"/>
+                                        <Setter Target="ContentRootGrid.BorderThickness" Value="0,0,0,0"/>
+                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="BeakPolygon.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Grid x:Name="ShadowTarget" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" Margin="-100"/>
+                        <Grid x:Name="BeakEdgeBorder" Background="{TemplateBinding Background}">
+                            <Grid Background="{ThemeResource TeachingTipBorderBrush}"/>
+                        </Grid>
+                        <Polygon x:Name="BeakPolygon"
+                                 Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.BeakMargin}"
+                                 Fill="{TemplateBinding Background}"
+                                 HorizontalAlignment="Left"
+                                 VerticalAlignment="Top"
+                                 Stroke="{ThemeResource TeachingTipBorderBrush}"
+                                 StrokeThickness="1"/>
+                        <Grid x:Name="RootGrid" 
+                              HorizontalAlignment="Left" 
+                              VerticalAlignment="Top" 
+                              MinHeight="{ThemeResource TeachingTipMinHeight}" 
+                              MinWidth="{ThemeResource TeachingTipMinWidth}"
+                              MaxHeight="{ThemeResource TeachingTipMaxHeight}"
+                              MaxWidth="{ThemeResource TeachingTipMaxWidth}"
+                              BorderBrush="{ThemeResource TeachingTipBorderBrush}">
+                            <Polygon x:Name="TopBeakPolygonHighlight"
+                                     Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopBeakHighlightMargin}"
+                                     Fill="{TemplateBinding Background}"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Top"
+                                     Stroke="{ThemeResource TeachingTipTopHighlightBrush}"
+                                     StrokeThickness="1"
+                                     Points="0,10 10,0 20,10"/>
+                            <Grid x:Name="ContentRootGrid" Background="{TemplateBinding Background}" BorderBrush="Transparent">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <ContentPresenter x:Name="BleedingImageContentPresenter" Grid.Row="0" Content="{TemplateBinding BleedingImageContent}" Background="{TemplateBinding Background}"/>
+                                <Grid x:Name="NonBleedingContentRootGrid" Grid.Row="1">
+                                    <ScrollViewer>
+                                        <Grid Margin="12">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <ContentPresenter x:Name="IconContentPresenter" Grid.Column="0"/>
+                                                <StackPanel x:Name="TitlesStackPanel" Grid.Column="1">
+                                                    <TextBlock x:Name="TitleTextBlock" Grid.Column="0" Text="{TemplateBinding Title}" TextWrapping="WrapWholeWords" FontWeight="SemiBold"/>
+                                                    <TextBlock x:Name="SubtextTextBlock" Grid.Row="1" Text="{TemplateBinding Subtext}" TextWrapping="WrapWholeWords"/>
+                                                </StackPanel>
+
+                                            </Grid>
+                                            <ContentPresenter x:Name="MainContentPresenter" Grid.Row="1" Content="{TemplateBinding Content}"/>
+                                            <Grid Grid.Row="2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Button x:Name="ActionButton"
+                                                        Content="{TemplateBinding ActionButtonText}"
+                                                        Style="{TemplateBinding ActionButtonStyle}" 
+                                                        Command="{TemplateBinding ActionButtonCommand}"
+                                                        CommandParameter="{TemplateBinding ActionButtonCommandParameter}"/>
+                                                <Button x:Name="CloseButton"
+                                                        Content="{TemplateBinding CloseButtonText}"
+                                                        Style="{TemplateBinding CloseButtonStyle}"
+                                                        Command="{TemplateBinding CloseButtonCommand}"
+                                                        CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
+                                                        Grid.Column="1"/>
+                                            </Grid>
+                                        </Grid>
+                                    </ScrollViewer>
+                                    <Button x:Name="XCloseButton" Width="40" Height="40" Background="Transparent" VerticalAlignment="Top" HorizontalAlignment="Right" BorderThickness="0">
+                                        <Viewbox Width="12" Height="12">
+                                            <SymbolIcon Symbol="Cancel"/>
+                                        </Viewbox>
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            <Grid x:Name="TopHighlightLeft"
+                                  Height="1"
+                                  VerticalAlignment="Top"
+                                  HorizontalAlignment="Stretch" 
+                                  Background="{ThemeResource TeachingTipTopHighlightBrush}"
+                                  Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopLeftHighlightMargin}"/>
+                            <Grid x:Name="TopHighlightRight"
+                                  Height="1"
+                                  VerticalAlignment="Top"
+                                  HorizontalAlignment="Stretch"
+                                  Background="{ThemeResource TeachingTipTopHighlightBrush}"
+                                  Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopRightHighlightMargin}"/>
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

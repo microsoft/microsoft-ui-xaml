@@ -606,6 +606,48 @@ namespace CustomTasks
             // SymbolIconSource -- DefaultValueMetadata
             DefaultValueMetadata["SymbolIconSource.Symbol"] = @"winrt::Symbol::Emoji";
 
+            IncludedTypesMetadata["TeachingTip"] = true;
+            // TeachingTip -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonCommand"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonCommandParameter"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonStyle"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonText"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.Attach"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.BleedingImageContent"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.BleedingImagePlacement"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonCommand"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonCommandParameter"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonKind"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonStyle"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonText"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.IconSource"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.IsLightDismissEnabled"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.IsOpen"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.Placement"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.Subtext"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.TargetOffset"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.TemplateSettings"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.Title"] = true;
+            // TeachingTip -- DefaultValueMetadata
+            DefaultValueMetadata["TeachingTip.BleedingImagePlacement"] = @"winrt::TeachingTipBleedingImagePlacementMode::Auto";
+            DefaultValueMetadata["TeachingTip.CloseButtonKind"] = @"winrt::TeachingTipCloseButtonKind::Auto";
+            DefaultValueMetadata["TeachingTip.IsLightDismissEnabled"] = @"false";
+            DefaultValueMetadata["TeachingTip.IsOpen"] = @"false";
+            DefaultValueMetadata["TeachingTip.Placement"] = @"winrt::TeachingTipPlacementMode::Auto";
+            DefaultValueMetadata["TeachingTip.TargetOffset"] = @"winrt::Thickness{0.0}";
+
+            IncludedTypesMetadata["TeachingTipTemplateSettings"] = true;
+            // TeachingTipTemplateSettings -- NeedsPropChangedCallbackMetadata
+            // TeachingTipTemplateSettings -- DefaultValueMetadata
+            DefaultValueMetadata["TeachingTipTemplateSettings.BeakMargin"] = @"winrt::Thickness{0.0}";
+            DefaultValueMetadata["TeachingTipTemplateSettings.TopBeakHighlightMargin"] = @"winrt::Thickness{0.0}";
+            DefaultValueMetadata["TeachingTipTemplateSettings.TopLeftHighlightMargin"] = @"winrt::Thickness{0.0}";
+            DefaultValueMetadata["TeachingTipTemplateSettings.TopRightHighlightMargin"] = @"winrt::Thickness{0.0}";
+
+            IncludedTypesMetadata["TeachingTipTestHooks"] = true;
+            // TeachingTipTestHooks -- NeedsPropChangedCallbackMetadata
+            // TeachingTipTestHooks -- DefaultValueMetadata
+
             IncludedTypesMetadata["ToggleSplitButton"] = true;
             // ToggleSplitButton -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["ToggleSplitButton.IsChecked"] = true;

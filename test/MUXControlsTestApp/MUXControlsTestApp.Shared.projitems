@@ -218,6 +218,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\TypeConverters.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Assets\AutoSave.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\file.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\folder.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\LargeWisteria.jpg" />
@@ -472,9 +473,9 @@
   </Target>
   <Target Name="GenerateAppxSources" AfterTargets="AfterBuild" Inputs="@(Page);@(AppContent)" Outputs="$(OutDir)AppxSources.g.targets" Condition="$(BuildingWithBuildExe) == 'true'">
     <ItemGroup>
-        <AppContentRelativeToPath Include="@(AppContent)">
-            <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildThisFileDirectory)\', %(Identity)))</RelativePath>
-        </AppContentRelativeToPath>
+      <AppContentRelativeToPath Include="@(AppContent)">
+        <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildThisFileDirectory)\', %(Identity)))</RelativePath>
+      </AppContentRelativeToPath>
     </ItemGroup>
     <!-- %xx escapes an ASCII character.  %0D%0A is CR LF, whereas %20 is a space.  We need to escape them like this to make sure the file is formatted correctly. -->
     <WriteLinesToFile File="$(OutDir)AppxSources.g.targets" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;" Overwrite="true" Encoding="Ascii" />

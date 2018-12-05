@@ -20,6 +20,7 @@ namespace MUXControlsTestApp
             Tests.Add(new TestDeclaration("RatingControl Tests", typeof(RatingControlPage)));
             Tests.Add(new TestDeclaration("SwipeControl Tests", typeof(SwipePage)));
             Tests.Add(new TestDeclaration("TreeView Tests", typeof(TreeViewPage)));
+            Tests.Add(new TestDeclaration("TeachingTip Tests", typeof(TeachingTipPage)));
             Tests.Add(new TestDeclaration("TwoPaneView Tests", typeof(TwoPaneViewPage)));
             Tests.Add(new TestDeclaration("PTR Tests", typeof(PTRPage)));
             Tests.Add(new TestDeclaration("MenuBar Tests", typeof(MenuBarPage)));
