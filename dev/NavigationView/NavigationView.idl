@@ -108,6 +108,20 @@ runtimeclass NavigationViewBackRequestedEventArgs
 {
 }
 
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+runtimeclass NavigationViewExpandingEventArgs
+{
+	NavigationViewItemBase ExpandingItemContainer { get; };
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+runtimeclass NavigationViewCollapsedEventArgs
+{
+	NavigationViewItemBase CollapsedItemContainer { get; };
+}
+
 [WUXC_VERSION_RS5]
 [webhosthidden]
 unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.DependencyObject
@@ -136,6 +150,20 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
     static Windows.UI.Xaml.DependencyProperty LeftPaneVisibilityProperty { get; };
     static Windows.UI.Xaml.DependencyProperty SingleSelectionFollowsFocusProperty { get; };
 }
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass NavigationViewItemTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+	NavigationViewItemTemplateSettings();
+	
+	Double CompactWidth{ get; };
+	Boolean IsChildSelected { get; };
+
+	static Windows.UI.Xaml.DependencyProperty CompactWidthProperty{ get; };
+	static Windows.UI.Xaml.DependencyProperty IsChildSelectedProperty { get; };
+}
+
 
 [WUXC_VERSION_RS3]
 [webhosthidden]
@@ -261,6 +289,19 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
         static Windows.UI.Xaml.DependencyProperty ShoulderNavigationEnabledProperty { get; };
         static Windows.UI.Xaml.DependencyProperty OverflowLabelModeProperty { get; };
     }
+
+	[WUXC_VERSION_MUXONLY]
+	{
+		event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewExpandingEventArgs> Expanding;
+		event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewCollapsedEventArgs> Collapsed;
+
+		void Expand(NavigationViewItemGroup item);
+		void Collapse(NavigationViewItemGroup item);
+		
+		Boolean AllowMultipleExpandedItemGroups { get; set; };
+
+		static Windows.UI.Xaml.DependencyProperty AllowMultipleExpandedItemGroupsProperty{ get; };
+	}
 }
 
 [WUXC_VERSION_RS3]
@@ -279,6 +320,11 @@ unsealed runtimeclass NavigationViewList : Windows.UI.Xaml.Controls.ListView
 [default_interface]
 unsealed runtimeclass NavigationViewItemBase : Windows.UI.Xaml.Controls.ListViewItem
 {
+	[WUXC_VERSION_MUXONLY]
+	{
+		NavigationViewItemTemplateSettings NavigationViewItemTemplateSettings { get; };
+		static Windows.UI.Xaml.DependencyProperty NavigationViewItemTemplateSettingsProperty { get; };
+	}
 }
 
 [WUXC_VERSION_RS3]
@@ -323,4 +369,22 @@ unsealed runtimeclass NavigationViewItemSeparator : NavigationViewItemBase
 unsealed runtimeclass NavigationViewItemHeader : NavigationViewItemBase
 {
     NavigationViewItemHeader();
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass NavigationViewItemGroup : NavigationViewItemBase
+{
+	NavigationViewItemGroup();
+
+	Windows.UI.Xaml.Controls.IconElement Icon { get; set; };
+	Boolean IsExpanded { get; set; };
+
+	Windows.Foundation.Collections.IVector<Object> MenuItems{ get; };
+	Object MenuItemsSource{ get; set; };
+
+	static Windows.UI.Xaml.DependencyProperty IconProperty{ get; };
+	static Windows.UI.Xaml.DependencyProperty IsExpandedProperty{ get; };
+	static Windows.UI.Xaml.DependencyProperty MenuItemsProperty{ get; };
+	static Windows.UI.Xaml.DependencyProperty MenuItemsSourceProperty{ get; };
 }

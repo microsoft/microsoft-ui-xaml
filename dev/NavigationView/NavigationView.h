@@ -78,6 +78,9 @@ public:
 
     void CoerceToGreaterThanZero(double& value);
 
+	void Expand(winrt::NavigationViewItemGroup const& value);
+	void Collapse(winrt::NavigationViewItemGroup const& value);
+
 private:
     bool ShouldIgnoreMeasureOverride();
     bool NeedTopPaddingForRS5OrHigher(winrt::CoreApplicationViewTitleBar const& coreTitleBar);

@@ -20,6 +20,10 @@ public:
     NavigationViewItem();
     virtual ~NavigationViewItem();
 
+	// These functions are ambiguous with NavigationViewItemBase, disambiguate 
+	using NavigationViewItemProperties::EnsureProperties;
+	using NavigationViewItemProperties::ClearProperties;
+
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;
 
