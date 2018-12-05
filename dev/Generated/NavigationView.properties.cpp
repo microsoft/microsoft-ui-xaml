@@ -8,6 +8,7 @@
 
 CppWinRTActivatableClassWithDPFactory(NavigationView)
 
+GlobalDependencyProperty NavigationViewProperties::s_AllowMultipleExpandedItemGroupsProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_AlwaysShowHeaderProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_AutoSuggestBoxProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_CompactModeThresholdWidthProperty{ nullptr };
@@ -45,7 +46,9 @@ GlobalDependencyProperty NavigationViewProperties::s_TemplateSettingsProperty{ n
 
 NavigationViewProperties::NavigationViewProperties()
     : m_backRequestedEventSource{static_cast<NavigationView*>(this)}
+    , m_collapsedEventSource{static_cast<NavigationView*>(this)}
     , m_displayModeChangedEventSource{static_cast<NavigationView*>(this)}
+    , m_expandingEventSource{static_cast<NavigationView*>(this)}
     , m_itemInvokedEventSource{static_cast<NavigationView*>(this)}
     , m_paneClosedEventSource{static_cast<NavigationView*>(this)}
     , m_paneClosingEventSource{static_cast<NavigationView*>(this)}
@@ -58,6 +61,17 @@ NavigationViewProperties::NavigationViewProperties()
 
 void NavigationViewProperties::EnsureProperties()
 {
+    if (!s_AllowMultipleExpandedItemGroupsProperty)
+    {
+        s_AllowMultipleExpandedItemGroupsProperty =
+            InitializeDependencyProperty(
+                L"AllowMultipleExpandedItemGroups",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::NavigationView>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
+    }
     if (!s_AlwaysShowHeaderProperty)
     {
         s_AlwaysShowHeaderProperty =
@@ -436,6 +450,7 @@ void NavigationViewProperties::EnsureProperties()
 
 void NavigationViewProperties::ClearProperties()
 {
+    s_AllowMultipleExpandedItemGroupsProperty = nullptr;
     s_AlwaysShowHeaderProperty = nullptr;
     s_AutoSuggestBoxProperty = nullptr;
     s_CompactModeThresholdWidthProperty = nullptr;
@@ -495,6 +510,16 @@ void NavigationViewProperties::OnPropertyChanged_CoerceToGreaterThanZero(
     }
 
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
+}
+
+void NavigationViewProperties::AllowMultipleExpandedItemGroups(bool value)
+{
+    static_cast<NavigationView*>(this)->SetValue(s_AllowMultipleExpandedItemGroupsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool NavigationViewProperties::AllowMultipleExpandedItemGroups()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<NavigationView*>(this)->GetValue(s_AllowMultipleExpandedItemGroupsProperty));
 }
 
 void NavigationViewProperties::AlwaysShowHeader(bool value)
@@ -851,6 +876,16 @@ void NavigationViewProperties::BackRequested(winrt::event_token const& token)
     m_backRequestedEventSource.remove(token);
 }
 
+winrt::event_token NavigationViewProperties::Collapsed(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewCollapsedEventArgs> const& value)
+{
+    return m_collapsedEventSource.add(value);
+}
+
+void NavigationViewProperties::Collapsed(winrt::event_token const& token)
+{
+    m_collapsedEventSource.remove(token);
+}
+
 winrt::event_token NavigationViewProperties::DisplayModeChanged(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewDisplayModeChangedEventArgs> const& value)
 {
     return m_displayModeChangedEventSource.add(value);
@@ -859,6 +894,16 @@ winrt::event_token NavigationViewProperties::DisplayModeChanged(winrt::TypedEven
 void NavigationViewProperties::DisplayModeChanged(winrt::event_token const& token)
 {
     m_displayModeChangedEventSource.remove(token);
+}
+
+winrt::event_token NavigationViewProperties::Expanding(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewExpandingEventArgs> const& value)
+{
+    return m_expandingEventSource.add(value);
+}
+
+void NavigationViewProperties::Expanding(winrt::event_token const& token)
+{
+    m_expandingEventSource.remove(token);
 }
 
 winrt::event_token NavigationViewProperties::ItemInvoked(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewItemInvokedEventArgs> const& value)

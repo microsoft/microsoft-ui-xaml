@@ -17,9 +17,16 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationView.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItem.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItemBase.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItemGroup.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItemPresenter.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItemTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewTemplateSettings.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewCollapsedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewExpandingEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemGroup.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemTemplateSettings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewTemplateSettings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewBackRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewDisplayModeChangedEventArgs.cpp" />
@@ -36,8 +43,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TopNavigationViewDataProvider.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewCollapsedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewExpandingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemGroup.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewBackRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewDisplayModeChangedEventArgs.h" />

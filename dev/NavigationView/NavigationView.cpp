@@ -3303,3 +3303,13 @@ bool NavigationView::IsFullScreenOrTabletMode()
 
     return isFullScreenMode || isTabletMode;
 }
+
+void NavigationView::Expand(winrt::NavigationViewItemGroup const& value)
+{
+
+}
+
+void NavigationView::Collapse(winrt::NavigationViewItemGroup const& value)
+{
+
+}

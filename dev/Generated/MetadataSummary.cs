@@ -215,6 +215,7 @@ namespace CustomTasks
 
             IncludedTypesMetadata["NavigationView"] = true;
             // NavigationView -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["NavigationView.AllowMultipleExpandedItemGroups"] = true;
             NeedsPropChangedCallbackMetadata["NavigationView.AlwaysShowHeader"] = true;
             NeedsPropChangedCallbackMetadata["NavigationView.AutoSuggestBox"] = true;
             NeedsPropChangedCallbackMetadata["NavigationView.CompactModeThresholdWidth"] = true;
@@ -273,9 +274,21 @@ namespace CustomTasks
             DefaultValueMetadata["NavigationViewItem.CompactPaneLength"] = @"48.0";
             DefaultValueMetadata["NavigationViewItem.SelectsOnInvoked"] = @"true";
 
+            IncludedTypesMetadata["NavigationViewItemBase"] = true;
+            // NavigationViewItemBase -- NeedsPropChangedCallbackMetadata
+            // NavigationViewItemBase -- DefaultValueMetadata
+
+            IncludedTypesMetadata["NavigationViewItemGroup"] = true;
+            // NavigationViewItemGroup -- NeedsPropChangedCallbackMetadata
+            // NavigationViewItemGroup -- DefaultValueMetadata
+
             IncludedTypesMetadata["NavigationViewItemPresenter"] = true;
             // NavigationViewItemPresenter -- NeedsPropChangedCallbackMetadata
             // NavigationViewItemPresenter -- DefaultValueMetadata
+
+            IncludedTypesMetadata["NavigationViewItemTemplateSettings"] = true;
+            // NavigationViewItemTemplateSettings -- NeedsPropChangedCallbackMetadata
+            // NavigationViewItemTemplateSettings -- DefaultValueMetadata
 
             IncludedTypesMetadata["NavigationViewTemplateSettings"] = true;
             // NavigationViewTemplateSettings -- NeedsPropChangedCallbackMetadata
