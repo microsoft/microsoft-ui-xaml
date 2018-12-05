@@ -20,8 +20,8 @@
         <Grid Grid.Column="0" Margin="5" MinWidth="500">
             <ScrollViewer x:Name="ContentScrollViewer">
                 <StackPanel>
-                    <Grid Background="Transparent" Width="100" Height="1000"/>
-                    <Button x:Name="targetButton" HorizontalAlignment="Center" VerticalAlignment="Center" Click="OnShowButtonClicked">Enable AutoSave
+                    <Grid Background="Green" Width="100" Height="1000"/>
+                    <Button x:Name="targetButton" HorizontalAlignment="Center" VerticalAlignment="Center" Click="OnShowButtonClicked" Height="300">Enable AutoSave
                         <muxc:TeachingTip.Attach>
                             <muxc:TeachingTip x:Name="TeachingTip" 
                                           AutomationProperties.Name="TeachingTip"
