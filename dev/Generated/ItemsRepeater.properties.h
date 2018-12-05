@@ -12,6 +12,9 @@ public:
     void Animator(winrt::ElementAnimator const& value);
     winrt::ElementAnimator Animator();
 
+    void Background(winrt::Brush const& value);
+    winrt::Brush Background();
+
     void HorizontalCacheLength(double value);
     double HorizontalCacheLength();
 
@@ -28,6 +31,7 @@ public:
     double VerticalCacheLength();
 
     static winrt::DependencyProperty AnimatorProperty() { return s_AnimatorProperty; }
+    static winrt::DependencyProperty BackgroundProperty() { return s_BackgroundProperty; }
     static winrt::DependencyProperty HorizontalCacheLengthProperty() { return s_HorizontalCacheLengthProperty; }
     static winrt::DependencyProperty ItemsSourceProperty() { return s_ItemsSourceProperty; }
     static winrt::DependencyProperty ItemTemplateProperty() { return s_ItemTemplateProperty; }
@@ -35,6 +39,7 @@ public:
     static winrt::DependencyProperty VerticalCacheLengthProperty() { return s_VerticalCacheLengthProperty; }
 
     static GlobalDependencyProperty s_AnimatorProperty;
+    static GlobalDependencyProperty s_BackgroundProperty;
     static GlobalDependencyProperty s_HorizontalCacheLengthProperty;
     static GlobalDependencyProperty s_ItemsSourceProperty;
     static GlobalDependencyProperty s_ItemTemplateProperty;

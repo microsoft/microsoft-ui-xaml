@@ -88,6 +88,9 @@ public:
     double VerticalCacheLength();
     void VerticalCacheLength(double value);
 
+    winrt::Brush Background();
+    void Background(winrt::Brush const& value);
+
     // Mapping APIs
     int32_t GetElementIndex(winrt::UIElement const& element);
     winrt::UIElement TryGetElement(int index);
@@ -156,15 +159,17 @@ public:
     static winrt::DependencyProperty LayoutProperty() { return s_layoutProperty; }
     static winrt::DependencyProperty AnimatorProperty() { return s_animatorProperty; }
 
-    static winrt::DependencyProperty HorizontalCacheLengthProperty() { return s_HorizontalCacheLengthProperty; }
-    static winrt::DependencyProperty VerticalCacheLengthProperty() { return s_VerticalCacheLengthProperty; }
+    static winrt::DependencyProperty HorizontalCacheLengthProperty() { return s_horizontalCacheLengthProperty; }
+    static winrt::DependencyProperty VerticalCacheLengthProperty() { return s_verticalCacheLengthProperty; }
+
+    static winrt::DependencyProperty BackgroundProperty() { return winrt::Panel::BackgroundProperty(); }
 
     static GlobalDependencyProperty s_itemsSourceProperty;
     static GlobalDependencyProperty s_itemTemplateProperty;
     static GlobalDependencyProperty s_layoutProperty;
     static GlobalDependencyProperty s_animatorProperty;
-    static GlobalDependencyProperty s_HorizontalCacheLengthProperty;
-    static GlobalDependencyProperty s_VerticalCacheLengthProperty;
+    static GlobalDependencyProperty s_horizontalCacheLengthProperty;
+    static GlobalDependencyProperty s_verticalCacheLengthProperty;
 
     static void EnsureProperties();
     static void ClearProperties();

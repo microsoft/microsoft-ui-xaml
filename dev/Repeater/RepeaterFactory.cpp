@@ -12,8 +12,8 @@ GlobalDependencyProperty ItemsRepeater::s_itemsSourceProperty{ nullptr };
 GlobalDependencyProperty ItemsRepeater::s_itemTemplateProperty{ nullptr };
 GlobalDependencyProperty ItemsRepeater::s_layoutProperty{ nullptr };
 GlobalDependencyProperty ItemsRepeater::s_animatorProperty{ nullptr };
-GlobalDependencyProperty ItemsRepeater::s_HorizontalCacheLengthProperty{ nullptr };
-GlobalDependencyProperty ItemsRepeater::s_VerticalCacheLengthProperty{ nullptr };
+GlobalDependencyProperty ItemsRepeater::s_horizontalCacheLengthProperty{ nullptr };
+GlobalDependencyProperty ItemsRepeater::s_verticalCacheLengthProperty{ nullptr };
 
 /* static */
 void ItemsRepeater::EnsureProperties()
@@ -78,9 +78,9 @@ void ItemsRepeater::EnsureProperties()
                 winrt::PropertyChangedCallback(&ItemsRepeater::OnPropertyChanged));
     }
 
-    if (!s_HorizontalCacheLengthProperty)
+    if (!s_horizontalCacheLengthProperty)
     {
-        s_HorizontalCacheLengthProperty =
+        s_horizontalCacheLengthProperty =
             InitializeDependencyProperty(
                 L"HorizontalCacheLength",
                 winrt::name_of<winrt::IReference<double>>(),
@@ -90,9 +90,9 @@ void ItemsRepeater::EnsureProperties()
                 winrt::PropertyChangedCallback(&ItemsRepeater::OnPropertyChanged));
     }
 
-    if (!s_VerticalCacheLengthProperty)
+    if (!s_verticalCacheLengthProperty)
     {
-        s_VerticalCacheLengthProperty =
+        s_verticalCacheLengthProperty =
             InitializeDependencyProperty(
                 L"VerticalCacheLength",
                 winrt::name_of<winrt::IReference<double>>(),
@@ -110,8 +110,8 @@ void ItemsRepeater::ClearProperties()
     s_itemTemplateProperty = nullptr;
     s_layoutProperty = nullptr;
     s_animatorProperty = nullptr;
-    s_HorizontalCacheLengthProperty = nullptr;
-    s_VerticalCacheLengthProperty = nullptr;
+    s_horizontalCacheLengthProperty = nullptr;
+    s_verticalCacheLengthProperty = nullptr;
 }
 
 void ItemsRepeater::OnPropertyChanged(

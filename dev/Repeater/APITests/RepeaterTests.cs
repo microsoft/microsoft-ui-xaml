@@ -8,6 +8,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Markup;
 using Common;
+using Windows.UI.Xaml.Media;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -116,6 +117,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater.SetValue(ItemsRepeater.ItemsSourceProperty, dataSource);
                 Verify.AreSame(dataSource, repeater.GetValue(ItemsRepeater.ItemsSourceProperty) as ItemsSourceView);
                 Verify.AreSame(dataSource, repeater.ItemsSourceView);
+            });
+        }
+
+        [TestMethod]
+        public void ValidateGetSetBackground()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                ItemsRepeater repeater = new ItemsRepeater();
+                var redBrush = new SolidColorBrush(Colors.Red);
+                repeater.SetValue(ItemsRepeater.BackgroundProperty, redBrush);
+                Verify.AreSame(redBrush, repeater.GetValue(ItemsRepeater.BackgroundProperty) as Brush);
+                Verify.AreSame(redBrush, repeater.Background);
+
+                var blueBrush = new SolidColorBrush(Colors.Blue);
+                repeater.Background = blueBrush;
+                Verify.AreSame(blueBrush, repeater.Background);
             });
         }
     }
