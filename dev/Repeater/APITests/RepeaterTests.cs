@@ -82,6 +82,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void ValidateRepeaterDefaults()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater() 
+                {
+                    ItemsSource = Enumerable.Range(0, 10).Select(i => string.Format("Item #{0}", i)),
+                };
+
+                Content = new ScrollAnchorProvider() {
+                    Width = 400,
+                    Height = 800,
+                    Content = new ScrollViewer {
+                        Content = repeater
+                    }
+                };
+
+                Content.UpdateLayout();
+
+                for (int i = 0; i < 10; i++)
+                {
+                    var element = repeater.TryGetElement(i);
+                    Verify.IsNotNull(element);
+                    Verify.AreEqual(string.Format("Item #{0}", i), ((TextBlock)element).Text);
+                    Verify.AreEqual(i, repeater.GetElementIndex(element));
+                }
+
+                Verify.IsNull(repeater.TryGetElement(20));
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Bug", "12042052")]
         public void CanSetItemsSource()
         {
