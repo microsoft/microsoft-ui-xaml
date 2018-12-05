@@ -220,7 +220,7 @@
       </AdditionalDependencies>
       <AppContainer Condition="$(BuildingWithBuildExe) == 'true'">no</AppContainer>
       <GenerateMapFile>true</GenerateMapFile>
-      <LinkTimeCodeGeneration Condition="'$(Configuration)'=='Release'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <LinkTimeCodeGeneration Condition="'$(Configuration)'=='Release'">Default</LinkTimeCodeGeneration>
     </Link>
     <ClCompile>
       <DisableSpecificWarnings>4100;4189;4467;4702;6326;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -282,10 +282,10 @@
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">DEBUG;DBG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(BuildingWithBuildExe) == 'true'">_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE;WIN32_LEAN_AND_MEAN;UNICODE;_UNICODE;__WRL_STRICT__;__WRL_FORCE_INSPECTABLE_CLASS_MACRO__;_WCTYPE_INLINE_DEFINED;_STL140_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(BuildingWithBuildExe) != 'true'">DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Disabled</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Disabled</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Disabled</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">Disabled</Optimization>
     </ClCompile>
     <ResourceCompile Condition="$(BuildingWithBuildExe) == 'true'">
       <AdditionalIncludeDirectories>
