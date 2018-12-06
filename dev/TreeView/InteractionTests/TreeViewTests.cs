@@ -2419,7 +2419,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     ClickButton("InitializeItemsSource");
                     Wait.ForIdle();
-                    UIObject node1 = FindElement.ByName("Root.0");
+                    UIObject node1 = FindElement.ByName("Root");
                     Verify.IsNotNull(node1, "Verify data binding");
                 }
             }
