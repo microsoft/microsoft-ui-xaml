@@ -20,7 +20,7 @@ namespace MUXControlsTestApp
                 if (m_testTreeViewItemsSource != value)
                 {
                     m_testTreeViewItemsSource = value;
-                    NotifyPropertyChanged("TestTreeViewItemsSource");
+                    NotifyPropertyChanged(nameof(TestTreeViewItemsSource));
                 }
             }
         }

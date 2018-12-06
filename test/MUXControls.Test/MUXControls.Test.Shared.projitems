@@ -23,7 +23,7 @@
     <TargetPlatformVersion Condition="$(BuildingWithBuildExe) == 'true'">10</TargetPlatformVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <LangVersion>5</LangVersion>
+    <LangVersion>$(CSLangVersion)</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="$(BuildingWithBuildExe) != 'true'">
     <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10</UniversalCRTSdkDir>

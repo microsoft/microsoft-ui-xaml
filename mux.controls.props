@@ -29,6 +29,10 @@
     <MinSDKVersionRequiredForRS5ThemeResource>$(MuxSdkVersion)</MinSDKVersionRequiredForRS5ThemeResource>
     <MinSDKVersionRequiredFor19H1ThemeResource>$(MuxSdkVersion)</MinSDKVersionRequiredFor19H1ThemeResource>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <CSLangVersion>7</CSLangVersion>
+  </PropertyGroup>
   
   <!-- MUXControls Project-specific Properties -->
   <PropertyGroup Label="MUXControls" Condition="'$(MSBuildProjectName)' == 'MUXControls'">
