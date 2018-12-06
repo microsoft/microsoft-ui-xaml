@@ -190,6 +190,12 @@ void TreeView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs
             m_itemItemsSourceViewChangedRevoker = m_itemsDataSource.CollectionChanged(winrt::auto_revoke, { this, &TreeView::OnItemsSourceChanged });
         }
 
+        if (auto listControl = ListControl())
+        {
+            auto viewModel = listControl->ListViewModel();
+            viewModel->IsContentMode(true);
+        }
+
         SyncRootNodesWithItemsSource();
     }
 }
@@ -246,8 +252,7 @@ void TreeView::OnItemsRemoved(int index, int count)
 
 void TreeView::SyncRootNodesWithItemsSource()
 {
-    bool isContentMode = m_itemsDataSource != nullptr;
-    winrt::get_self<TreeViewNode>(m_rootNode.get())->IsContentMode(isContentMode);
+    winrt::get_self<TreeViewNode>(m_rootNode.get())->IsContentMode(true);
 
     auto children = winrt::get_self<TreeViewNodeVector>(RootNodes());
     children->ClearCore();
