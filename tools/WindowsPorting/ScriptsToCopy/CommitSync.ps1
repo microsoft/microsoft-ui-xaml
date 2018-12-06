@@ -2,18 +2,18 @@ Param(
     [Parameter(Mandatory = $true)]
     [string]$SyncedToCommitId,
     [Parameter(Mandatory = $true)]
-    [string]$PersonalAccessToken,
-
-    [string]$DEPControlsBranch = "master",
-    [string]$PortingBranch = "user/uxpc/DEPControlsPortingBranch"
+    [string]$PersonalAccessToken
 )
 
 $env:ERRORLEVEL = "0"
 $LASTEXITCODE = 0
 
-$global:depControlsSourceBranch = $DEPControlsBranch
-$global:osPortingBranch = $PortingBranch
+$global:osPortingBranch = "user/uxpc/DEPControlsPortingBranch"
 $global:osOfficialBranch = "user/uxpc/DEPControlsPortStagingBranch"
+
+$global:githubRestApiHeaders = @{
+    "Accept"="application/vnd.github.v3+json"
+}
 
 # For usage in a basic authorization header, a personal access token must be encoded in base 64 and used as a password with an empty username.
 $global:vstsRestApiHeaders = @{
@@ -28,13 +28,13 @@ function Get-Commit
         [string]$commitId
     )
 
-    $apiCallString = "https://microsoft.visualstudio.com/defaultcollection/os/_apis/git/repositories/dep.controls/commits?api-version=1.0&commitId=$commitId"
+    $apiCallString = "https://api.github.com/repos/Microsoft/microsoft-ui-xaml/commits/$commitId"
     
     Write-Host "Getting commit $commitId..."
     Write-Host
     Write-Host "API call: $apiCallString"
     Write-Host
-    $result = Invoke-RestMethod -Uri $apiCallString -Method Get -Headers $global:vstsRestApiHeaders
+    $result = Invoke-RestMethod -Uri $apiCallString -Method Get -Headers $global:githubRestApiHeaders
     Write-Host "Result:"
     Write-Host
     Write-Host ($result | Out-String)
@@ -51,16 +51,16 @@ function Get-CommitsBetween
         [Parameter(Mandatory = $true)]
         [string]$lastCommitId
     )
-    $syncFromDate = (Get-Commit $firstCommitId).committer.date
-    $syncToDate = (Get-Commit $lastCommitId).committer.date
+    $syncFromDate = (Get-Commit $firstCommitId).commit.committer.date
+    $syncToDate = (Get-Commit $lastCommitId).commit.committer.date
 
-    $apiCallString = "https://microsoft.visualstudio.com/defaultcollection/os/_apis/git/repositories/dep.controls/commits?api-version=1.0&branch=$($global:depControlsSourceBranch)&fromDate=$syncFromDate&toDate=$syncToDate"
+    $apiCallString = "https://api.github.com/repos/Microsoft/microsoft-ui-xaml/commits?since=$syncFromDate&until=$syncToDate"
     
     Write-Host "Getting commits between $firstCommitId and $lastCommitId..."
     Write-Host
     Write-Host "API call: $apiCallString"
     Write-Host
-    $result = Invoke-RestMethod -Uri $apiCallString -Method Get -Headers $global:vstsRestApiHeaders
+    $result = Invoke-RestMethod -Uri $apiCallString -Method Get -Headers $global:githubRestApiHeaders
     Write-Host "Result:"
     Write-Host
     Write-Host ($result | Out-String)
@@ -88,7 +88,7 @@ function Get-PortingBranchPullRequests
 
 function Get-PullRequestTitle
 {
-    return "DEPControls to Windows port ($((Get-Date -Format F)))"
+    return "Microsoft.UI.Xaml to Windows port ($((Get-Date -Format F)))"
 }
 
 function New-PortingBranchPullRequest
@@ -268,8 +268,8 @@ $commitList = (Get-CommitsBetween $lastSyncedToCommit $SyncedToCommitId)
 Write-Host "Retrieving sync-from and sync-to dates..."
 Write-Host
 
-$syncFromDate = (Get-Commit $lastSyncedToCommit).committer.date
-$syncToDate = (Get-Commit $SyncedToCommitId).committer.date
+$syncFromDate = (Get-Commit $lastSyncedToCommit).commit.committer.date
+$syncToDate = (Get-Commit $SyncedToCommitId).commit.committer.date
 
 if ($syncFromDate.Length -eq 0)
 {
@@ -287,14 +287,14 @@ Write-Host
 Write-Host "Syncing $($commitList.count) commit(s)..."
 Write-Host
 
-if ($commitList.count -eq 0)
+if ($commitList.Count -eq 0)
 {
     Write-Host "No commits to sync.  Exiting."
     exit 0
 }
-elseif ($commitList.count -gt 2)
+elseif ($commitList.Count -gt 2)
 {
-    # If we have more than one DEPControls commit that we're porting over
+    # If we have more than one MUXControls commit that we're porting over
     # (we check count > 2 since we're ignore the last-synced to commit),
     # then we don't want to attach a name to the accompanying OS repo commit.
     # We'll use the generic name in that case.
@@ -308,19 +308,19 @@ elseif ($commitList.count -gt 2)
 [string]$commitSeparator = [Environment]::NewLine + [Environment]::NewLine + "----------" + [Environment]::NewLine + [Environment]::NewLine
 [System.Collections.Generic.List[string]]$workItemList = @()
 
-$commitList.value | ForEach-Object {
+$commitList | ForEach-Object {
     # We'll want to ignore the last-synced to commit, since that's already been accounted for.
-    if ($_.commitId -ne $lastSyncedToCommit)
+    if ($_.sha -ne $lastSyncedToCommit)
     {
         if ($commitMessage.Length -gt 0)
         {
             $commitMessage += $commitSeparator
         }
 
-        $commitComment = (Get-Commit $_.commitId).comment
+        $commitComment = (Get-Commit $_.sha).commit.message
         $commitMessage += $commitComment
         $commitMessage += [Environment]::NewLine + [Environment]::NewLine
-        $commitMessage += "DEPControls commit $($_.commitId) by $($_.author.name) ($($_.author.email)) on $((Get-Date $_.author.date -Format F))"
+        $commitMessage += "Microsoft.UI.Xaml commit $($_.sha) by $($_.commit.committer.name) ($($_.commit.committer.email)) on $((Get-Date $_.commit.committer.date -Format F))"
 
         # There appears to be no API to extract work items attached to a commit (pull requests yes; commits no),
         # so we'll use a simple regex to pull that information out of the commit message, since it has a consistent form.
@@ -371,7 +371,7 @@ $commitMessage | & git commit --file -
 if (Get-WasError) { Report-FailedStep "Commit" }
 
 # The metadata-tracking file updates aren't related to the change we're porting itself,
-# so we don't want to attribute that commit to the person who made the DEPControls checkin.
+# so we don't want to attribute that commit to the person who made the Microsoft.UI.Xaml checkin.
 Write-Host "user.name -> `"UXP Controls Automated Porting System`""
 & git config --global user.name "UXP Controls Automated Porting System"
 Write-Host "user.email -> `"uxpc@microsoft.com`""
@@ -383,7 +383,7 @@ Write-Host "user.email -> `"uxpc@microsoft.com`""
 & git add .expectedEnlistmentFileHashes
 if (Get-WasError) { Report-FailedStep "Adding metadata files" }
 
-"Updated metadata files after syncing to dep.controls commit ID $SyncedToCommitId." | & git commit --file -
+"Updated metadata files after syncing to Microsoft.UI.Xaml commit ID $SyncedToCommitId." | & git commit --file -
 if (Get-WasError) { Report-FailedStep "Committing metadata files" }
 
 Write-Host "Pushing changes..."
