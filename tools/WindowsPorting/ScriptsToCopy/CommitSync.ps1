@@ -320,7 +320,7 @@ $commitList | ForEach-Object {
         $commitComment = (Get-Commit $_.sha).commit.message
         $commitMessage += $commitComment
         $commitMessage += [Environment]::NewLine + [Environment]::NewLine
-        $commitMessage += "Microsoft.UI.Xaml commit $($_.sha) by $($_.commit.committer.name) ($($_.commit.committer.email)) on $((Get-Date $_.commit.committer.date -Format F))"
+        $commitMessage += "Microsoft.UI.Xaml commit $($_.sha) by $($_.commit.author.name) ($($_.commit.author.email)) on $((Get-Date $_.commit.committer.date -Format F))"
 
         # There appears to be no API to extract work items attached to a commit (pull requests yes; commits no),
         # so we'll use a simple regex to pull that information out of the commit message, since it has a consistent form.
