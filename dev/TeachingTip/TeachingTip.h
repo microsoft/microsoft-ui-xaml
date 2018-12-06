@@ -177,34 +177,6 @@ private:
     static inline double UntargetedTipCenterPlacementOffset(const float windowSize, const double tipSize, const double nearOffset, const double farOffset) { return (windowSize / 2) - (tipSize / 2) + nearOffset - farOffset; }
     static inline double UntargetedTipNearPlacementOffset(const double offset) { return s_untargetedTipWindowEdgeMargin + offset; }
 
-    static constexpr inline bool isPlacementBottom(const winrt::TeachingTipPlacementMode& placement)
-    {
-        return placement == winrt::TeachingTipPlacementMode::Bottom ||
-            placement == winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft ||
-            placement == winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight;
-    }
-
-    static constexpr inline bool isPlacementTop(const winrt::TeachingTipPlacementMode& placement)
-    {
-        return placement == winrt::TeachingTipPlacementMode::Top ||
-            placement == winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft ||
-            placement == winrt::TeachingTipPlacementMode::TopEdgeAlignedRight;
-    }
-
-    static constexpr inline bool isPlacementRight(const winrt::TeachingTipPlacementMode& placement)
-    {
-        return placement == winrt::TeachingTipPlacementMode::Right ||
-            placement == winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom ||
-            placement == winrt::TeachingTipPlacementMode::RightEdgeAlignedTop;
-    }
-
-    static constexpr inline bool isPlacementLeft(const winrt::TeachingTipPlacementMode& placement)
-    {
-        return placement == winrt::TeachingTipPlacementMode::Left ||
-            placement == winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom ||
-            placement == winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop;
-    }
-
     static constexpr winrt::TimeSpan s_expandAnimationDuration{ 300ms };
     static constexpr winrt::TimeSpan s_contractAnimationDuration{ 200ms };
 
@@ -244,7 +216,7 @@ private:
 
     static constexpr float s_defaultTipHeightAndWidth = 320;
 
-    //The beak is designed as an 8x16 pixel shape, however it is actual a 10x20 shape which is partially occulded by the tip content.
+    //The beak is designed as an 8x16 pixel shape, however it is actual a 10x20 shape which is partially occluded by the tip content.
     //This is done to get the border of the tip to follow the beak shape without drawing the border on the tip edge of the beak.
     static constexpr float s_minimumTipEdgeToBeakEdgeMargin = 12;
     static constexpr float s_minimumActualTipEdgeToBeakEdgeMargin = 10;
