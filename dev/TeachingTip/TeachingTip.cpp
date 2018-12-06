@@ -423,8 +423,8 @@ void TeachingTip::PositionUntargetedPopup()
     {
     case winrt::TeachingTipPlacementMode::Auto:
     case winrt::TeachingTipPlacementMode::Bottom:
-        m_popup.get().VerticalOffset(UntargettedTipFarPlacementOffset(windowBounds.Height, finalTipHeight, offset.Bottom));
-        m_popup.get().HorizontalOffset(UntargettedTipCenterPlacementOffset(windowBounds.Width, finalTipWidth, offset.Left, offset.Right));
+        m_popup.get().VerticalOffset(UntargetedTipFarPlacementOffset(windowBounds.Height, finalTipHeight, offset.Bottom));
+        m_popup.get().HorizontalOffset(UntargetedTipCenterPlacementOffset(windowBounds.Width, finalTipWidth, offset.Left, offset.Right));
         break;
 
     case winrt::TeachingTipPlacementMode::Top:
@@ -505,7 +505,7 @@ void TeachingTip::UpdateSizeBasedTemplateSettings()
     case winrt::TeachingTipPlacementMode::Bottom:
         templateSettings->BeakMargin(BottomBeakMargin(width, height));
         templateSettings->TopBeakHighlightMargin(BottomBeakHightlightMargin(width, height));
-        templateSettings->TopRightHighlightMargin(BottomPlacementTopRightHightMargin(width, height));
+        templateSettings->TopRightHighlightMargin(BottomPlacementTopRightHighlightMargin(width, height));
         templateSettings->TopLeftHighlightMargin(BottomPlacementTopLeftHightMargin(width, height));
         break;
     case winrt::TeachingTipPlacementMode::Left:
