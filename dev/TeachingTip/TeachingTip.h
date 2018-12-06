@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "pch.h"
 #include "common.h"
@@ -75,12 +75,11 @@ private:
     void OnIsLightDismissEnabledChanged();
     void OnBleedingImagePlacementChanged();
 
-    void OnXCloseButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnCloseButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnActionButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnPopupClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args);
 
-    void RaiseClosingEvent(const winrt::TeachingTipCloseReason& reason);
+    void RaiseClosingEvent();
     void ClosePopupWithAnimation();
     void ClosePopup();
 
@@ -92,7 +91,7 @@ private:
     void CreateContractAnimation();
 
     void StartExpandAnimation();
-    void StartContractAnimation();
+    void StartContractToCloseAnimation();
 
     winrt::TeachingTipPlacementMode DetermineEffectivePlacement();
     void EstablishShadows();
@@ -171,9 +170,9 @@ private:
     static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(const double width, const double height) { return { 0, 0, 1, 0 }; }
     static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(const double width, const double height) { return { 1, 0, 0, 0 }; }
 
-    static inline double UntargettedTipFarPlacementOffset(const float windowSize, const double tipSize, const double offset) { return windowSize - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
-    static inline double UntargettedTipCenterPlacementOffset(const float windowSize, const double tipSize, const double nearOffset, const double farOffset) { return (windowSize / 2) - (tipSize / 2) + nearOffset - farOffset; }
-    static inline double UntargettedTipNearPlacementOffset(const double offset) { return s_untargetedTipWindowEdgeMargin + offset; }
+    static inline double UntargetedTipFarPlacementOffset(const float windowSize, const double tipSize, const double offset) { return windowSize - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
+    static inline double UntargetedTipCenterPlacementOffset(const float windowSize, const double tipSize, const double nearOffset, const double farOffset) { return (windowSize / 2) - (tipSize / 2) + nearOffset - farOffset; }
+    static inline double UntargetedTipNearPlacementOffset(const double offset) { return s_untargetedTipWindowEdgeMargin + offset; }
 
     static constexpr inline bool isPlacementBottom(const winrt::TeachingTipPlacementMode& placement)
     {
