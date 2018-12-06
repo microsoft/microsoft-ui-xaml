@@ -294,7 +294,7 @@ if ($commitList.Count -eq 0)
 }
 elseif ($commitList.Count -gt 2)
 {
-    # If we have more than one MUXControls commit that we're porting over
+    # If we have more than one Microsoft.UI.Xaml commit that we're porting over
     # (we check count > 2 since we're ignore the last-synced to commit),
     # then we don't want to attach a name to the accompanying OS repo commit.
     # We'll use the generic name in that case.
