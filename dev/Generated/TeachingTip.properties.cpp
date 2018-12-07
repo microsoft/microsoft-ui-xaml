@@ -235,7 +235,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::Thickness>(),
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
-                ValueHelper<winrt::Thickness>::BoxValueIfNecessary(winrt::Thickness{0.0}),
+                ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_TemplateSettingsProperty)

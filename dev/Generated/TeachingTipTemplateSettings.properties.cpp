@@ -28,7 +28,7 @@ void TeachingTipTemplateSettingsProperties::EnsureProperties()
                 winrt::name_of<winrt::Thickness>(),
                 winrt::name_of<winrt::TeachingTipTemplateSettings>(),
                 false /* isAttached */,
-                ValueHelper<winrt::Thickness>::BoxValueIfNecessary(winrt::Thickness{0.0}),
+                ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_TopBeakHighlightMarginProperty)
@@ -39,7 +39,7 @@ void TeachingTipTemplateSettingsProperties::EnsureProperties()
                 winrt::name_of<winrt::Thickness>(),
                 winrt::name_of<winrt::TeachingTipTemplateSettings>(),
                 false /* isAttached */,
-                ValueHelper<winrt::Thickness>::BoxValueIfNecessary(winrt::Thickness{0.0}),
+                ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_TopLeftHighlightMarginProperty)
@@ -50,7 +50,7 @@ void TeachingTipTemplateSettingsProperties::EnsureProperties()
                 winrt::name_of<winrt::Thickness>(),
                 winrt::name_of<winrt::TeachingTipTemplateSettings>(),
                 false /* isAttached */,
-                ValueHelper<winrt::Thickness>::BoxValueIfNecessary(winrt::Thickness{0.0}),
+                ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_TopRightHighlightMarginProperty)
@@ -61,7 +61,7 @@ void TeachingTipTemplateSettingsProperties::EnsureProperties()
                 winrt::name_of<winrt::Thickness>(),
                 winrt::name_of<winrt::TeachingTipTemplateSettings>(),
                 false /* isAttached */,
-                ValueHelper<winrt::Thickness>::BoxValueIfNecessary(winrt::Thickness{0.0}),
+                ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
                 nullptr);
     }
 }

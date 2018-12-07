@@ -1,6 +1,4 @@
-﻿using Microsoft.UI.Private.Controls;
-using Microsoft.UI.Xaml.Controls;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,6 +17,11 @@ using Windows.UI.Xaml.Navigation;
 
 
 #if !BUILD_WINDOWS
+using TeachingTip = Microsoft.UI.Xaml.Controls.TeachingTip;
+using TeachingTipClosedEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs;
+using TeachingTipClosingEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs;
+using TeachingTipTestHooks = Microsoft.UI.Private.Controls.TeachingTipTestHooks;
+using TeachingTipBleedingImagePlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipBleedingImagePlacementMode;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 #endif
 
@@ -43,9 +46,9 @@ namespace MUXControlsTestApp
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            if (TeachingTip != null && TeachingTip.IsOpen)
+            if (this.TeachingTip != null && this.TeachingTip.IsOpen)
             {
-                TeachingTip.IsOpen = false;
+                this.TeachingTip.IsOpen = false;
             }
             if(testWindowBounds != null && testWindowBounds.IsOpen)
             {

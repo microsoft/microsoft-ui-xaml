@@ -634,15 +634,10 @@ namespace CustomTasks
             DefaultValueMetadata["TeachingTip.IsLightDismissEnabled"] = @"false";
             DefaultValueMetadata["TeachingTip.IsOpen"] = @"false";
             DefaultValueMetadata["TeachingTip.Placement"] = @"winrt::TeachingTipPlacementMode::Auto";
-            DefaultValueMetadata["TeachingTip.TargetOffset"] = @"winrt::Thickness{0.0}";
 
             IncludedTypesMetadata["TeachingTipTemplateSettings"] = true;
             // TeachingTipTemplateSettings -- NeedsPropChangedCallbackMetadata
             // TeachingTipTemplateSettings -- DefaultValueMetadata
-            DefaultValueMetadata["TeachingTipTemplateSettings.BeakMargin"] = @"winrt::Thickness{0.0}";
-            DefaultValueMetadata["TeachingTipTemplateSettings.TopBeakHighlightMargin"] = @"winrt::Thickness{0.0}";
-            DefaultValueMetadata["TeachingTipTemplateSettings.TopLeftHighlightMargin"] = @"winrt::Thickness{0.0}";
-            DefaultValueMetadata["TeachingTipTemplateSettings.TopRightHighlightMargin"] = @"winrt::Thickness{0.0}";
 
             IncludedTypesMetadata["TeachingTipTestHooks"] = true;
             // TeachingTipTestHooks -- NeedsPropChangedCallbackMetadata
