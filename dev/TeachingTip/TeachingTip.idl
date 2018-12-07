@@ -1,4 +1,4 @@
-[WUXC_VERSION_PREVIEW]
+﻿[WUXC_VERSION_PREVIEW]
 [webhosthidden]
 enum TeachingTipCloseButtonKind
 {
@@ -66,13 +66,9 @@ unsealed runtimeclass TeachingTipTemplateSettings : Windows.UI.Xaml.DependencyOb
 {
     TeachingTipTemplateSettings();
 
-    [MUX_DEFAULT_VALUE("winrt::Thickness{0.0}")]
     Windows.UI.Xaml.Thickness BeakMargin;
-    [MUX_DEFAULT_VALUE("winrt::Thickness{0.0}")]
     Windows.UI.Xaml.Thickness TopBeakHighlightMargin;
-    [MUX_DEFAULT_VALUE("winrt::Thickness{0.0}")]
     Windows.UI.Xaml.Thickness TopRightHighlightMargin;
-    [MUX_DEFAULT_VALUE("winrt::Thickness{0.0}")]
     Windows.UI.Xaml.Thickness TopLeftHighlightMargin;
 
     static Windows.UI.Xaml.DependencyProperty BeakMarginProperty{ get; };
@@ -106,7 +102,6 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     Windows.UI.Xaml.Input.ICommand CloseButtonCommand;
     Object CloseButtonCommandParameter;
 
-    [MUX_DEFAULT_VALUE("winrt::Thickness{0.0}")]
     Windows.UI.Xaml.Thickness TargetOffset;
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsLightDismissEnabled;
