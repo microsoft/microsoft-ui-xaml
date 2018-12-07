@@ -175,10 +175,6 @@
       <Project>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</Project>
       <Name>Microsoft.UI.Xaml</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MUXControlsTestAppForIslands\MUXControlsTestAppForIslands.csproj">
-      <Project>{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}</Project>
-      <Name>MUXControlsTestAppForIslands</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="MUXControlsTestAppWPF\themes\" />
