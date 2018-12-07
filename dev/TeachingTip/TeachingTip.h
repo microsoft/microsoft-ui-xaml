@@ -8,8 +8,6 @@
 #include "TeachingTip.g.h"
 #include "TeachingTip.properties.h"
 
-using namespace std::chrono_literals;
-
 class TeachingTip :
     public ReferenceTracker<TeachingTip, winrt::implementation::TeachingTipT>,
     public TeachingTipProperties

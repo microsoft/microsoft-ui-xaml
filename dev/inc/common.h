@@ -10,6 +10,7 @@ using namespace Windows::Foundation;
 using namespace Windows::Foundation::Numerics;
 
 using namespace std::string_view_literals;
+using namespace std::chrono_literals;
 
 #ifndef BUILD_WINDOWS
 typedef winrt::hstring const& ResourceIdType;

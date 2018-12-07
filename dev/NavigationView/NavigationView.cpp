@@ -70,8 +70,6 @@ constexpr int s_measureOnInitStep2CountThreshold{ 4 };
 
 static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
 
-using namespace std::chrono_literals;
-
 NavigationView::~NavigationView()
 {
     UnhookEventsAndClearFields(true);
