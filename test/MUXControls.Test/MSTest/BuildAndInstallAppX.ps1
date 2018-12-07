@@ -15,14 +15,14 @@ $sideloadingRegName = "AllowAllTrustedApps"
 
 Write-Host ""
 
-if (-not (Test-Path $appxRegKey) -or (Get-ItemPropertyValue -Path $appxRegKey -Name $sideloadingRegName) -ne 1)
+if (-not (Test-Path $appxRegKey) -or -not (Get-ItemProperty -Path $appxRegKey -Name $sideloadingRegName -ErrorAction Ignore) -or (Get-ItemPropertyValue -Path $appxRegKey -Name $sideloadingRegName) -ne 1)
 {
     Write-Host "Enabling sideloading of apps..." -ForegroundColor Magenta
     Write-Host ""
 
     $commands = @(
         "if (-not (Test-Path $appxRegKey)) { New-Item -Path $appxRegKey }",
-        "New-ItemProperty -Path $appxRegKey -Name $sideloadingRegName -Value 1 -Force")
+        "New-ItemProperty -Path $appxRegKey -Name $sideloadingRegName -Value 1 -PropertyType DWORD -Force")
     $argumentList = "-ExecutionPolicy Unrestricted -Command `"& { $($commands -join "; ") }`""
 
     Write-Host "powershell $argumentList"
@@ -37,8 +37,6 @@ $baseDirectory = $currentDirectory.Parent.Parent
 $configuration = $baseDirectory.Name
 $baseDirectoryName = $baseDirectory.FullName
 $rootDirectoryName = $baseDirectory.Parent.Parent.FullName
-
-$testAppAppXDir = "$baseDirectoryName\$Architecture\$($ProjectName)\AppPackages\$($ProjectName)_Test"
 
 Write-Host "Test AppX does not exist or is not up-to-date. Running build to generate." -ForegroundColor Magenta
 Write-Host ""
@@ -55,6 +53,4 @@ if (Get-AppxPackage -Name $PackageName)
     Remove-AppxPackage -Package $PackageFullName
 }
 
-Write-Host "Installing app..." -ForegroundColor Magenta
-Write-Host ""
-& $testAppAppXDir\Add-AppDevPackage.ps1 -Force
+& $PSScriptRoot\InstallAppX.ps1 -AppXDir "$baseDirectoryName\$Architecture\$($ProjectName)\AppPackages\$($ProjectName)_Test"
