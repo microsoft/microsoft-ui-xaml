@@ -10,18 +10,18 @@ jobs:
       Debug_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Debug'
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-      Release_Arm:
-        buildPlatform: 'arm'
-        buildConfiguration: 'Release'
-      Release_Arm64:
-        buildPlatform: 'arm64'
-        buildConfiguration: 'Release'
+      # Release_x86:
+      #   buildPlatform: 'x86'
+      #   buildConfiguration: 'Release'
+      # Release_x64:
+      #   buildPlatform: 'x64'
+      #   buildConfiguration: 'Release'
+      # Release_Arm:
+      #   buildPlatform: 'arm'
+      #   buildConfiguration: 'Release'
+      # Release_Arm64:
+      #   buildPlatform: 'arm64'
+      #   buildConfiguration: 'Release'
 
   variables:
     appxPackageDir: '$(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages'
@@ -75,38 +75,38 @@ jobs:
       artifactName: 'drop'
 
 
-- job: CreateNuGet
-  dependsOn:
-    - Build
-  variables:
-    nupkgdir: '$(build.artifactStagingDirectory)'
-    buildOutputDir: '$(Build.SourcesDirectory)\BuildOutput'
-  steps:
-  - task: DownloadBuildArtifacts@0 
-    inputs: 
-      artifactName: drop 
-      downloadPath: '$(buildOutputDir)'
+# - job: CreateNuGet
+#   dependsOn:
+#     - Build
+#   variables:
+#     nupkgdir: '$(build.artifactStagingDirectory)'
+#     buildOutputDir: '$(Build.SourcesDirectory)\BuildOutput'
+#   steps:
+#   - task: DownloadBuildArtifacts@0 
+#     inputs: 
+#       artifactName: drop 
+#       downloadPath: '$(buildOutputDir)'
 
-  - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.9.1'
-    inputs:
-      versionSpec: 4.9.1
+#   - task: NuGetToolInstaller@0
+#     displayName: 'Use NuGet 4.9.1'
+#     inputs:
+#       versionSpec: 4.9.1
 
-    # Extract the build revision number from Build.BuildNumber. This is needed to pass to build-nupkg
-  - powershell: |
-      $revision = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 3, 3)
-      Write-Host "##vso[task.setvariable variable=buildrevision]$revision"
-    displayName: 'Get build revision number'
+#     # Extract the build revision number from Build.BuildNumber. This is needed to pass to build-nupkg
+#   - powershell: |
+#       $revision = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 3, 3)
+#       Write-Host "##vso[task.setvariable variable=buildrevision]$revision"
+#     displayName: 'Get build revision number'
 
-  - task: powershell@2
-    displayName: 'build-nupkg.ps1'
-    inputs:
-      targetType: filePath
-      filePath: build\NuSpecs\build-nupkg.ps1
-      arguments: -BuildOutput '$(buildOutputDir)\drop' -OutputDir '$(nupkgdir)' -prereleaseversion prerelease -Subversion '$(buildrevision)' -SkipFrameworkPackage
+#   - task: powershell@2
+#     displayName: 'build-nupkg.ps1'
+#     inputs:
+#       targetType: filePath
+#       filePath: build\NuSpecs\build-nupkg.ps1
+#       arguments: -BuildOutput '$(buildOutputDir)\drop' -OutputDir '$(nupkgdir)' -prereleaseversion prerelease -Subversion '$(buildrevision)' -SkipFrameworkPackage
 
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish artifact: nupkg'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'drop'
+#   - task: PublishBuildArtifacts@1
+#     displayName: 'Publish artifact: nupkg'
+#     inputs:
+#       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+#       artifactName: 'drop'
