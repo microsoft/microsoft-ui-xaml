@@ -407,7 +407,7 @@ template <typename T>
 {
     if (!instance->m_islandTransformChangedToken.value)
     {
-        instance->m_associatedCompositionIsland = (instance->m_associatedIsland.CompositionIsland()).try_as<winrt::CompositionIsland>();
+        instance->m_associatedCompositionIsland = (instance->m_associatedIsland.AppContent()).try_as<winrt::UIContentRoot>().Island();
         instance->m_islandTransformChangedToken = instance->m_associatedCompositionIsland.StateChanged({ instance, &T::OnIslandTransformChanged });
     }
 }
@@ -463,7 +463,7 @@ template <typename T>
 
     if (instance->m_associatedIsland)
     {
-        winrt::CompositionIsland compIsland = (instance->m_associatedIsland.CompositionIsland()).try_as<winrt::CompositionIsland>();
+        winrt::CompositionIsland compIsland = (instance->m_associatedIsland.AppContent()).try_as<winrt::UIContentRoot>().Island();
         resolutionScale = static_cast<int>(std::round(compIsland.RasterizationScale() * 100.0f));
     }
     else

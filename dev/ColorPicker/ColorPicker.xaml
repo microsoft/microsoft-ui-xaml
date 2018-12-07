@@ -338,28 +338,28 @@
                                             <ResourceDictionary x:Key="HighContrast">
                                                 <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
                                                 <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForeground" Color="{StaticResource SystemColorButtonTextColor}" />
+                                                <SolidColorBrush x:Key="ToggleButtonForeground" Color="{ThemeResource SystemColorButtonTextColor}" />
                                                 <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="Transparent" />
                                                 <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SystemColorButtonFaceColor}" />
+                                                <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
                                                 <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="Transparent" />
                                                 <SolidColorBrush x:Key="ToggleButtonBorderBrushPressed" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SystemColorButtonFaceColor}" />
+                                                <SolidColorBrush x:Key="ToggleButtonForegroundPressed" Color="{ThemeResource SystemColorHighlightColor}" />
                                                 <SolidColorBrush x:Key="ToggleButtonBackgroundDisabled" Color="Transparent" />
                                                 <SolidColorBrush x:Key="ToggleButtonBorderBrushDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SystemColorButtonFaceColor}" />
+                                                <SolidColorBrush x:Key="ToggleButtonForegroundDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
                                                 <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="Transparent" />
                                                 <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="{ThemeResource SystemColorButtonTextColor}" />
                                                 <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="{ThemeResource SystemColorButtonTextColor}" />
                                                 <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="Transparent" />
                                                 <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SystemColorButtonFaceColor}" />
+                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
                                                 <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="Transparent" />
                                                 <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="{ThemeResource SystemColorHighlightColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SystemColorButtonFaceColor}" />
+                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="{ThemeResource SystemColorHighlightColor}" />
                                                 <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedDisabled" Color="Transparent" />
                                                 <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
-                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SystemColorButtonFaceColor}" />
+                                                <SolidColorBrush x:Key="ToggleButtonForegroundCheckedDisabled" Color="{ThemeResource SystemColorGrayTextColor}" />
                                             </ResourceDictionary>
                                             <ResourceDictionary x:Key="Light">
                                                 <SolidColorBrush x:Key="ToggleButtonBackground" Color="Transparent" />
