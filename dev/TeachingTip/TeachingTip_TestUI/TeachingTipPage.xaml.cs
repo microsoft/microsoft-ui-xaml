@@ -22,8 +22,6 @@ using Windows.UI.Xaml.Navigation;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 #endif
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
-
 namespace MUXControlsTestApp
 {
     public sealed partial class TeachingTipPage : TestPage

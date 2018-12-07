@@ -22,7 +22,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TeachingTipClosingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TeachingTipTemplateSettings.cpp" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip.xaml">
       <IsPublic>false</IsPublic>
       <Version>RS1</Version>
@@ -45,8 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)TeachingTip.idl" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)TeachingTipAutomationPeer.idl" />
   </ItemGroup>
 </Project>
