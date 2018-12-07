@@ -4,6 +4,9 @@ jobs:
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
+  variables:
+    buildPlatform: 'x86'
+    buildConfiguration: 'Debug'
   steps:
   - task: powershell@2
     inputs:
@@ -31,3 +34,17 @@ jobs:
       vsVersion: 15.0
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
+
+  - task: powershell@2
+    displayName: 'PrepareHelixPayloadDir.ps1'
+    inputs:
+      targetType: filePath
+      filePath: PrepareHelixPayloadDir.ps1
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet custom'
+    inputs:
+      command: custom
+      projects: helixtest.proj
+      custom: msbuild
+      arguments: '/p:HelixAccessToken=$(helixaccesstoken)'

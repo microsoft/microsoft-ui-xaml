@@ -21,11 +21,6 @@ If(test-path $binplaceDir)
 }
 New-Item -ItemType Directory -Force -Path $binplaceDir
 
-# If(!(test-path $binplaceDir))
-# {
-#     New-Item -ItemType Directory -Force -Path $binplaceDir
-# }
-
 copy "$nugetPackagesDir\microsoft.windows.apps.test\1.0.181203002\lib\netcoreapp2.1\*.dll" $binplaceDir
 copy "$nugetPackagesDir\taef.redist.wlk\10.31.180822002\build\Binaries\$platform\*" $binplaceDir
 copy "$nugetPackagesDir\taef.redist.wlk\10.31.180822002\build\Binaries\$platform\CoreClr\*" $binplaceDir
