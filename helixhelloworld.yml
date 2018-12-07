@@ -8,6 +8,12 @@ jobs:
     buildPlatform: 'x86'
     buildConfiguration: 'Debug'
   steps:
+
+  - task: CmdLine@1
+    displayName: 'Display build machine environment variables'
+    inputs:
+      filename: 'set'
+
   - task: powershell@2
     inputs:
       targetType: filePath
@@ -47,4 +53,4 @@ jobs:
       command: custom
       projects: helixtest.proj
       custom: msbuild
-      arguments: '/p:HelixAccessToken=$(helixaccesstoken)'
+      arguments: '/p:HelixAccessToken=$(helixaccesstoken) /p:HelixBuild=$(Build.BuildId)'
