@@ -36,7 +36,8 @@ copy "$nugetPackagesDir\runtime.win-$platform.microsoft.netcore.app\2.1.0\runtim
 
 # Always copy over the test files.
 
-$repoDirectory = Split-Path -Parent $script:MyInvocation.MyCommand.Path
+$repoDirectory = Split-Path -Parent $script:MyInvocation.MyCommand.Path 
+$repoDirectory = Join-Path $repoDirectory "..\..\"
 if(!$Release)
 {
     $testDllOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\AnyCPU\MUXControls.Test.TAEF"
@@ -54,8 +55,6 @@ if(!$Release)
     copy (Join-Path $ixmpAppOutputDir "AppPackages\IXMPTestApp_Test\Dependencies\$platform\*") $deviceDir
 
     copy (Join-Path $testAppWPFXamlIslandsOutputDir "AppPackages\MUXControlsTestAppWPFPackage_Test\MUXControlsTestAppWPFPackage*") $deviceDir
-    # app package dependencies are missing. Following up on email
-    #$putDOutput += putd (Join-Path $testAppWPFXamlIslandsOutputDir "AppPackages\MUXControlsTestAppWPFPackage_Test\Dependencies\$platform\*") $deviceDir
 }
 else
 {
@@ -72,4 +71,4 @@ else
     copy (Join-Path $testAppCxOutputDir "AppPackages\NugetPackageTestAppCX_Test\Dependencies\$platform\*") $deviceDir
 }
 
-copy runtests.cmd $deviceDir
+copy "build\helix\runtests.cmd" $deviceDir
