@@ -2,7 +2,7 @@
   <PropertyGroup>
     <HelixSource>pr/testing</HelixSource>
     <HelixType>test/stuff</HelixType>
-    <HelixBuild>3333.7</HelixBuild>
+    <HelixBuild>3333.8</HelixBuild>
     <HelixTargetQueues>Windows.10.Amd64.Open</HelixTargetQueues>
   </PropertyGroup>
 
