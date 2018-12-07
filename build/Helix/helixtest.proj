@@ -11,7 +11,9 @@
     <HelixCorrelationPayload Include="..\..\HelixPayload" />
 
     <HelixWorkItem Include="ColorPickerTests">
-      <Command>runtests.cmd</Command>
+      <HelixPreCommands>$(HelixPreCommands);dir /s %HELIX_CORRELATION_PAYLOAD%</HelixPreCommands>
+      <HelixPreCommands>$(HelixPreCommands);dir /s</HelixPreCommands>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd</Command>
     </HelixWorkItem>
   </ItemGroup>
 </Project>
