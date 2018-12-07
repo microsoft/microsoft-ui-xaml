@@ -31,7 +31,7 @@
     <AppxPackageName>IXMPTestApp</AppxPackageName>
     <!-- Override appx version for PackageES build -->
     <XefAppxManifestVersion>1.1.0.0</XefAppxManifestVersion>
-    <LangVersion>5</LangVersion>
+    <LangVersion>$(CSLangVersion)</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
