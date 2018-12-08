@@ -11,6 +11,7 @@
     <HelixCorrelationPayload Include="..\..\HelixPayload" />
 
     <HelixWorkItem Include="ColorPickerTests">
+      <Timeout>00:10:00</Timeout>
       <HelixPreCommands>$(HelixPreCommands);dir /s %HELIX_CORRELATION_PAYLOAD%</HelixPreCommands>
       <HelixPreCommands>$(HelixPreCommands);dir /s</HelixPreCommands>
       <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd</Command>

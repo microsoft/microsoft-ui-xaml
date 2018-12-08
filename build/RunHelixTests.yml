@@ -7,6 +7,7 @@ jobs:
   variables:
     buildPlatform: 'x86'
     buildConfiguration: 'Debug'
+    artifactsDir: '$(Build.SourcesDirectory)\Artifacts'
   steps:
 
   - task: CmdLine@1
@@ -33,13 +34,27 @@ jobs:
       feedsToUse: config
       nugetConfigPath: nuget.config
 
-  - task: VSBuild@1
-    displayName: 'Build solution MUXControls.sln'
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download Build Artifacts'
     inputs:
-      solution: MUXControls.sln
-      vsVersion: 15.0
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
+      buildType: specific
+      project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
+      pipeline: 20
+      buildVersionToDownload: specific
+      buildId: 573
+      artifactName: drop
+      downloadPath: '$(artifactsDir)'
+
+  - script: 'dir /b /s'
+    displayName: 'dir'
+
+  # - task: VSBuild@1
+  #   displayName: 'Build solution MUXControls.sln'
+  #   inputs:
+  #     solution: MUXControls.sln
+  #     vsVersion: 15.0
+  #     platform: '$(buildPlatform)'
+  #     configuration: '$(buildConfiguration)'
 
   - task: powershell@2
     displayName: 'PrepareHelixPayloadDir.ps1'

@@ -5,7 +5,7 @@ $Release = 0
 
 $deviceDir = "HelixPayload"
 
-$muxDllFile = Get-Item "BuildOutput\$Flavor\$Platform\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll"
+$muxDllFile = Get-Item "Artifacts\drop\$Flavor\$Platform\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll"
 
 #
 # Deploy TAEF, .NETCoreApp, and Microsoft.Windows.Apps.Test. These are the ones that we grabbed off nuget
@@ -35,40 +35,19 @@ copy "$nugetPackagesDir\runtime.win-$platform.microsoft.netcore.app\2.1.0\runtim
 
 
 # Always copy over the test files.
-
 $repoDirectory = Split-Path -Parent $script:MyInvocation.MyCommand.Path 
 $repoDirectory = Join-Path $repoDirectory "..\..\"
-if(!$Release)
-{
-    $testDllOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\AnyCPU\MUXControls.Test.TAEF"
-    $testAppOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\$platform\MUXControlsTestApp.TAEF"
-    $ixmpAppOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\$platform\IXMPTestApp.TAEF"
-    $testAppWPFXamlIslandsOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\$platform\MUXControlsTestAppWPFPackage"
 
-    $appxPath = Join-Path $testAppOutputDir "AppPackages\MUXControlsTestApp_Test"
-    $dependenciesPath = Join-Path $testAppOutputDir "AppPackages\MUXControlsTestApp_Test\Dependencies\$platform"
+$testDllOutputDir = Join-Path $repoDirectory "Artifacts\drop\$flavor\$platform\Test"
+$testAppOutputDir = Join-Path $repoDirectory "Artifacts\drop\$flavor\$platform\AppxPackages\MUXControlsTestApp_Test"
 
-    copy (Join-Path $testDllOutputDir "MUXControls.Test.dll") $deviceDir
-    copy "$appxPath\*" $deviceDir
-    copy "$dependenciesPath\MUXControlsTestApp*" $deviceDir
-    copy (Join-Path $ixmpAppOutputDir "AppPackages\IXMPTestApp_Test\IXMPTestApp*") $deviceDir
-    copy (Join-Path $ixmpAppOutputDir "AppPackages\IXMPTestApp_Test\Dependencies\$platform\*") $deviceDir
+$appxPath = $testAppOutputDir
+$dependenciesPath = Join-Path $testAppOutputDir "Dependencies\$platform"
 
-    copy (Join-Path $testAppWPFXamlIslandsOutputDir "AppPackages\MUXControlsTestAppWPFPackage_Test\MUXControlsTestAppWPFPackage*") $deviceDir
-}
-else
-{
-    $testDllOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\AnyCPU\MUXControls.Test.TAEF"
-    $releaseTestDllOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\AnyCPU\MUXControls.ReleaseTest.TAEF"
-    $testAppOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\$platform\NugetPackageTestApp"
-    $testAppCxOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\$platform\NugetPackageTestAppCX"
+copy (Join-Path $testDllOutputDir "MUXControls.Test.dll") $deviceDir
+copy "$appxPath\*" $deviceDir
+copy "$dependenciesPath\*" $deviceDir
 
-    copy (Join-Path $testDllOutputDir "MUXControls.Test.dll") $deviceDir
-    copy (Join-Path $releaseTestDllOutputDir "MUXControls.ReleaseTest.dll") $deviceDir
-    copy (Join-Path $testAppOutputDir "AppPackages\NugetPackageTestApp_Test\NugetPackageTestApp*") $deviceDir
-    copy (Join-Path $testAppOutputDir "AppPackages\NugetPackageTestApp_Test\Dependencies\$platform\*") $deviceDir
-    copy (Join-Path $testAppCxOutputDir "AppPackages\NugetPackageTestAppCX_Test\NugetPackageTestAppCX*") $deviceDir
-    copy (Join-Path $testAppCxOutputDir "AppPackages\NugetPackageTestAppCX_Test\Dependencies\$platform\*") $deviceDir
-}
+
 
 copy "build\helix\runtests.cmd" $deviceDir
