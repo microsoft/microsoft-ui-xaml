@@ -4,6 +4,7 @@
 using MUXControlsTestApp.Utilities;
 using System;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Common;
 
 #if USING_TAEF

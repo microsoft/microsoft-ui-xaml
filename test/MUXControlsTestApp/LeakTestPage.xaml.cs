@@ -3,6 +3,7 @@
 
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 
 #if !BUILD_WINDOWS
 using RatingControl = Microsoft.UI.Xaml.Controls.RatingControl;

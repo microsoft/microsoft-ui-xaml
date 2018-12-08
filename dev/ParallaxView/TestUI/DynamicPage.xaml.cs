@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Shapes;
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Hosting;
 
 #if !BUILD_WINDOWS

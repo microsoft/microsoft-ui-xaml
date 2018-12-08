@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 #if BUILD_WINDOWS
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 #else
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
