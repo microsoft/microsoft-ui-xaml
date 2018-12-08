@@ -20,7 +20,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 #if !BUILD_WINDOWS
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
 using ScrollerBringingIntoViewEventArgs = Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs;

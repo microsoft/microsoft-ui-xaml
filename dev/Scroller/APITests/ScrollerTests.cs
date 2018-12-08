@@ -38,7 +38,7 @@ using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 using ScrollerInputKind = Microsoft.UI.Xaml.Controls.ScrollerInputKind;
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests

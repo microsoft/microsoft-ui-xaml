@@ -1,4 +1,4 @@
-[WUXC_VERSION_PREVIEW]
+﻿[WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 unsealed runtimeclass ScrollBar2 : Windows.UI.Xaml.FrameworkElement
@@ -26,7 +26,7 @@ unsealed runtimeclass ScrollBar2 : Windows.UI.Xaml.FrameworkElement
     Windows.UI.Xaml.Style ScrollBarStyle { get; set; };
     [MUX_DEFAULT_VALUE("ScrollBar2::s_defaultScrollMode")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateScrollMode")]
-    ScrollerScrollMode ScrollMode { get; set; };
+    ScrollerScrollMode ScrollMode{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty MinOffsetProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MaxOffsetProperty { get; };

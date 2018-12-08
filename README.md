@@ -16,7 +16,7 @@ You can download and use WinUI packages in your app using the NuGet package mana
 | [Microsoft.UI.Xaml](https://www.nuget.org/packages/Microsoft.UI.Xaml) | Controls and features for building apps for Windows 10 |
 | [Microsoft.UI.Xaml.Core.Direct](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct) | Low-level APIs for creating middleware components. Not intended or required for general application use |
 
-You can also build a WinUI package yourself from source. See [Contributing to the Windows UI Library](CONTRIBUTING.md) for more information on building and contributing to WinUI.
+You can also build a WinUI package yourself from source. See [Contributing to the Windows UI Library](CONTRIBUTING.MD) for more information on building and contributing to WinUI.
 
 ### Build Status
 
@@ -83,7 +83,7 @@ Prerelease Microsoft.UI.Xaml packages also include previews of features and cont
 * [LayoutPanel](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.layoutpanel),
 [Repeater](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.repeater),
 [Scroller](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scroller),
-[ScrollerView](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollerview),
+[ScrollViewer](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollviewer),
 and
 [ScrollBar2](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollbar2)
 

@@ -8,7 +8,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 
 #if !BUILD_WINDOWS
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 #endif
 
 namespace MUXControlsTestApp

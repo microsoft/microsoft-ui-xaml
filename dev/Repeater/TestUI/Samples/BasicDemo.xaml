@@ -39,12 +39,12 @@
 
         <controls:ScrollAnchorProvider x:Name="tracker" Grid.Row="1">
             <ScrollViewer x:Name="scrollViewer">
-                <controls:ItemsRepeater x:Name="repeater" VerticalCacheLength="0" Background="LightBlue"/>
+                <controls:ItemsRepeater x:Name="repeater" VerticalCacheLength="0" />
             </ScrollViewer>
         </controls:ScrollAnchorProvider>
 
-        <!-- No ScrollAnchorProvider for RS5+. ScrollerView can do the anchoring itself-->
-        <!--controls:ScrollerView x:Name="scrollViewer" Height="500">
+        <!-- No ScrollAnchorProvider for RS5+. ScrollViewer can do the anchoring itself-->
+        <!--controls:ScrollViewer x:Name="scrollViewer" Height="500">
             <controls:ItemsRepeater x:Name="repeater" VerticalCacheLength="0" />
                 <controls:ItemsRepeater.Layout>
                     <controls:StackLayout  />

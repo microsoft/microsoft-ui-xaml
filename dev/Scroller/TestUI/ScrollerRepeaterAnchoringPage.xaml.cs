@@ -13,7 +13,7 @@ using System.Collections.Specialized;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 
 #if !BUILD_WINDOWS
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs;
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;

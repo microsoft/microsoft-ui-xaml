@@ -24,7 +24,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #if !BUILD_WINDOWS
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
 using ScrollerChangeOffsetsWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions;
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;

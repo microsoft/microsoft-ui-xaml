@@ -10,7 +10,7 @@ using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using ColorPicker = Microsoft.UI.Xaml.Controls.ColorPicker;
 using ColorChangedEventArgs = Microsoft.UI.Xaml.Controls.ColorChangedEventArgs;
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 #endif
 
 namespace MUXControlsTestApp

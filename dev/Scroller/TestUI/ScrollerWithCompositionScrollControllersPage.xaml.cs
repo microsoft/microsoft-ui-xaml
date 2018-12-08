@@ -7,7 +7,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 #if !BUILD_WINDOWS
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerScrollMode = Microsoft.UI.Xaml.Controls.ScrollerScrollMode;
 #endif
 

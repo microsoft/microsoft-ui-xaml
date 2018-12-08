@@ -25,7 +25,7 @@ namespace MUXControlsTestApp
             Tests.Add(new TestDeclaration("MenuBar Tests", typeof(MenuBarPage)));
             Tests.Add(new TestDeclaration("MenuFlyout Tests", typeof(MenuFlyoutPage)));
             Tests.Add(new TestDeclaration("ScrollBar2 Tests", typeof(ScrollBar2Page)));
-            Tests.Add(new TestDeclaration("ScrollerView Tests", typeof(ScrollerViewPage)));
+            Tests.Add(new TestDeclaration("ScrollViewer Tests", typeof(ScrollViewerPage)));
             Tests.Add(new TestDeclaration("ScrollViewerAdapter Tests", typeof(ScrollViewerAdapterPage)));
             Tests.Add(new TestDeclaration("SplitButton Tests", typeof(SplitButtonPage)));
             Tests.Add(new TestDeclaration("DropDownButton Tests", typeof(DropDownButtonPage)));

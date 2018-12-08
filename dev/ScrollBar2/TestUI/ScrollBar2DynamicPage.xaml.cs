@@ -8,17 +8,15 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
-#if !BUILD_WINDOWS
-using IScrollController = Microsoft.UI.Xaml.Controls.IScrollController;
+using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
 using ScrollerScrollMode = Microsoft.UI.Xaml.Controls.ScrollerScrollMode;
 using ScrollerViewChangeResult = Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult;
-using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollControllerInteractionRequestedEventArgs;
-using ScrollControllerOffsetChangeRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollControllerOffsetChangeRequestedEventArgs;
-using ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs;
+using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
+using ScrollControllerOffsetChangeRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeRequestedEventArgs;
+using ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs;
 using ScrollBar2 = Microsoft.UI.Xaml.Controls.ScrollBar2;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
-#endif
 
 namespace MUXControlsTestApp
 {

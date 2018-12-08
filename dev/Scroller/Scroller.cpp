@@ -3137,7 +3137,7 @@ wstring_view Scroller::GetVisualTargetedPropertyName(ScrollerDimension dimension
     }
 }
 
-// Invoked by both Scroller and ScrollerView controls
+// Invoked by both Scroller and ScrollViewer controls
 bool Scroller::IsAnchorRatioValid(
     double value)
 {

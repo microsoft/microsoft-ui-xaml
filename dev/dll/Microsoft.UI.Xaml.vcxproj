@@ -99,8 +99,8 @@
     <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared" />
     <Import Project="..\ParallaxView\ParallaxView.vcxitems" Label="Shared" />
     <Import Project="..\Scroller\Scroller.vcxitems" Label="Shared" />
-    <Import Project="..\ScrollBar2\ScrollBar2.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\ScrollerView\ScrollerView.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <Import Project="..\ScrollBar2\ScrollBar2.vcxitems" Label="Shared" Condition="$(BuildingWithBuildExe) != 'true' And $(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <Import Project="..\ScrollViewer\ScrollViewer.vcxitems" Label="Shared" Condition="$(BuildingWithBuildExe) != 'true' And $(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\Lights\Lights.vcxitems" Label="Shared" />
     <Import Project="..\Repeater\Repeater.vcxitems" Label="Shared" />
     <Import Project="..\SwipeControl\SwipeControl.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />

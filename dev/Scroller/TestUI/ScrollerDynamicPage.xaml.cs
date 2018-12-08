@@ -17,7 +17,7 @@ using Windows.UI.Xaml.Shapes;
 using MUXControlsTestApp.Utilities;
 
 #if !BUILD_WINDOWS
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerChainingMode = Microsoft.UI.Xaml.Controls.ScrollerChainingMode;
 using ScrollerRailingMode = Microsoft.UI.Xaml.Controls.ScrollerRailingMode;
 using ScrollerScrollMode = Microsoft.UI.Xaml.Controls.ScrollerScrollMode;
@@ -27,8 +27,8 @@ using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOf
 using ScrollerChangeOffsetsWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions;
 using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
 using ScrollerChangeZoomFactorWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorWithAdditionalVelocityOptions;
-using ScrollerSnapPointIrregular = Microsoft.UI.Xaml.Controls.ScrollerSnapPointIrregular;
-using ScrollerSnapPointAlignment = Microsoft.UI.Xaml.Controls.ScrollerSnapPointAlignment;
+using ScrollerSnapPointIrregular = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointIrregular;
+using ScrollerSnapPointAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;

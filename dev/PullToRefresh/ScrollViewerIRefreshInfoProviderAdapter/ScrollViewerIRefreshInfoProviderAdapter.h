@@ -15,7 +15,7 @@ public:
     ~ScrollViewerIRefreshInfoProviderAdapter();
 
     winrt::IRefreshInfoProvider AdaptFromTree(winrt::UIElement const& root, winrt::Size const& size);
-    winrt::IRefreshInfoProvider Adapt(winrt::ScrollViewer const& adaptee, winrt::Size const& size);
+    winrt::IRefreshInfoProvider Adapt(winrt::Windows::UI::Xaml::Controls::ScrollViewer const& adaptee, winrt::Size const& size);
     void SetAnimations(winrt::UIElement const& refreshVisualizerContainer);
 
 private:
@@ -24,7 +24,7 @@ private:
 
     void OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::IInspectable& args);
     void OnScrollViewerDirectManipulationCompleted(const winrt::IInspectable& sender, const winrt::IInspectable& args);
-    void OnScrollViewerViewChanging(const winrt::IInspectable& sender, const winrt::ScrollViewerViewChangingEventArgs args);
+    void OnScrollViewerViewChanging(const winrt::IInspectable& sender, const winrt::Windows::UI::Xaml::Controls::ScrollViewerViewChangingEventArgs args);
 
     bool IsWithinOffsetThreshold();
     void CleanupScrollViewer();
@@ -32,12 +32,12 @@ private:
 
     bool IsOrientationVertical();
     winrt::UIElement GetScrollContent();
-    winrt::ScrollViewer AdaptFromTreeRecursiveHelper(winrt::DependencyObject, int depth);
+    winrt::Windows::UI::Xaml::Controls::ScrollViewer AdaptFromTreeRecursiveHelper(winrt::DependencyObject, int depth);
     void MakeInteractionSource(winrt::UIElement contentParent);
 
     tracker_com_ref<RefreshInfoProviderImpl> m_infoProvider{ this };
     tracker_ref<winrt::IAdapterAnimationHandler> m_animationHandler{ this };
-    tracker_ref<winrt::ScrollViewer> m_scrollViewer{ this };
+    tracker_ref<winrt::Windows::UI::Xaml::Controls::ScrollViewer> m_scrollViewer{ this };
     winrt::RefreshPullDirection m_refreshPullDirection{ winrt::RefreshPullDirection::TopToBottom };
     tracker_ref<winrt::InteractionTracker> m_interactionTracker{ this };
     tracker_ref<winrt::VisualInteractionSource> m_visualInteractionSource{ this };
