@@ -2409,6 +2409,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void TreeViewDataLateInitTest()
+        {
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                Wait.ForIdle();
+                using (var nextPage = new TestSetupHelper("TreeViewLateDataInitTestPage"))
+                {
+                    ClickButton("InitializeItemsSource");
+                    Wait.ForIdle();
+                    UIObject node1 = FindElement.ByName("Root");
+                    Verify.IsNotNull(node1, "Verify data binding");
+                }
+            }
+        }
+
         private void ClickButton(string buttonName)
         {
             var button = new Button(FindElement.ByName(buttonName));

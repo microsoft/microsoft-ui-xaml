@@ -592,6 +592,16 @@ winrt::UIElement ViewManager::GetElementFromPinnedElements(int index)
 winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
 {
     // The view generator is the provider of last resort.
+
+    auto itemTemplateFactory = m_owner->ItemTemplateShim();
+    if (!itemTemplateFactory)
+    {
+        // If no ItemTemplate was provided, use a default 
+        auto factory = winrt::XamlReader::Load(L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='{Binding}'/></DataTemplate>").as<winrt::DataTemplate>();
+        m_owner->ItemTemplate(factory);
+        itemTemplateFactory = m_owner->ItemTemplateShim();
+    }
+
     auto data = m_owner->ItemsSourceView().GetAt(index);
 
     if (!m_ElementFactoryGetArgs)
@@ -614,7 +624,7 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
     args.as<ElementFactoryGetArgs>()->Index(index);
 #endif
 
-    winrt::UIElement element = m_owner->ItemTemplateShim().GetElement(args);
+    winrt::UIElement element = itemTemplateFactory.GetElement(args);
 
     args.Data(nullptr);
     args.Parent(nullptr);

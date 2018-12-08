@@ -108,7 +108,6 @@
                                 <VisualState x:Name="TitleBarVisible" />
                                 <VisualState x:Name="TitleBarCollapsed">
                                     <VisualState.Setters>
-                                        <Setter Target="PaneButtonGrid.Margin" Value="0,32,0,0"/>
                                         <Setter Target="PaneContentGrid.Margin" Value="0,32,0,0"/>
                                     </VisualState.Setters>
                                 </VisualState>

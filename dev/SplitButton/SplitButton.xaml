@@ -252,7 +252,8 @@
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
                             Padding="{TemplateBinding Padding}"
-                            IsTabStop="False"/>
+                            IsTabStop="False"
+                            AutomationProperties.AccessibilityView="Raw"/>
 
                         <Button x:Name="SecondaryButton"
                             Grid.Column="1"
@@ -265,7 +266,8 @@
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
                             Padding="0,0,8,0"
-                            IsTabStop="False">
+                            IsTabStop="False"
+                            AutomationProperties.AccessibilityView="Raw">
                             <Button.Content>
                                 <TextBlock
                                     FontFamily="Segoe MDL2 Assets"

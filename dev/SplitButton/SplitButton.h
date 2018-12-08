@@ -65,7 +65,6 @@ private:
     bool m_isFlyoutOpen{ false };
     winrt::PointerDeviceType m_lastPointerDeviceType{ winrt::PointerDeviceType::Mouse };
     bool m_isKeyDown{ false };
-    bool m_isAltKeyDown{ false };
 
     winrt::UIElement::KeyDown_revoker m_keyDownRevoker{};
     winrt::UIElement::KeyUp_revoker m_keyUpRevoker{};

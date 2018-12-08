@@ -283,9 +283,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
-#if BUILD_WINDOWS
-        [TestProperty("Ignore", "True")] // TODO 19581880: Re-enable after investigating and fixing the test failures.
-#endif
         public void CanBringIntoViewElements()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
@@ -323,7 +320,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                          <controls:Scroller x:Name='Scroller' Width='400' Height='600' IsChildAvailableWidthConstrained='True' Background='Gray'>
                            <controls:ItemsRepeater
                              x:Name='ItemsRepeater'
-                             ElementFactory='{StaticResource ElementFactory}'
+                             ItemTemplate='{StaticResource ElementFactory}'
                              Layout='{StaticResource VerticalStackLayout}'
                              HorizontalCacheLength='0'
                              VerticalCacheLength='0' />

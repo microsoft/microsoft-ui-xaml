@@ -4,23 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "ResourceHelper.h"
-
-#ifndef _STL140_
-
-// For some reason, languagelists.h uses std::vector<const std::wstring> when _STL140_ is not defined,
-// which is forbidden by the C++ standard (it should be std::vector<std::wstring> - no const).
-// Because of this, and because we can't use STL140 without using the FKG (which only apps can use, since that
-// requires that VSRUNTIME140.dll is shipped alongside whatever's using it), we therefore need to
-// lie to languagelists.h about which version of STL we're using.  This has no other effect -
-// the sole usage of this define in languagelists.h is to determine whether to use const std::wstring vs. std::wstring.
-#define _STL140_
 #include <languagelists.h>
-#undef _STL140_
-
-#else
-#include <languagelists.h>
-#endif
-
 #include <muiload.h>
 #include <windowsstringp.h>
 

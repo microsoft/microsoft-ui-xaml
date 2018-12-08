@@ -302,9 +302,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
-#if BUILD_WINDOWS
-        [TestProperty("Ignore", "True")] // TODO 19581880: Re-enable after investigating and fixing the test failures.
-#endif
         public void CanGrowCacheBufferWithScrollViewer()
         {
             ScrollViewer scroller = null;
@@ -328,14 +325,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     MeasureLayoutFunc = (availableSize, context) =>
                     {
                         var ctx = (VirtualizingLayoutContext)context;
-                        measureRealizationRects.Add(ctx.RealizationRect);
+                        Log.Comment("MeasureLayout - Rect:" +  ctx.RealizationRect);
+                        if(measureRealizationRects.Count == 0 || measureRealizationRects.Last() != ctx.RealizationRect)
+                        {
+                            measureRealizationRects.Add(ctx.RealizationRect);
+                        }
+
                         return new Size(1000, 2000);
                     },
 
                     ArrangeLayoutFunc = (finalSize, context) =>
                     {
                         var ctx = (VirtualizingLayoutContext)context;
-                        arrangeRealizationRects.Add(ctx.RealizationRect);
+                        Log.Comment("ArrangeLayout - Rect:" +  ctx.RealizationRect);
+                        if(arrangeRealizationRects.Count == 0 || arrangeRealizationRects.Last() != ctx.RealizationRect)
+                        {
+                            arrangeRealizationRects.Add(ctx.RealizationRect);
+                        }
 
                         if (ctx.RealizationRect.Height == scroller.Height * (repeater.VerticalCacheLength + 1))
                         {
@@ -369,7 +375,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Log.Comment("Validate that the realization window reached full size.");
                 Verify.AreEqual(expectedRealizationWindow, measureRealizationRects.Last());
-
                 Verify.AreEqual(expectedRealizationWindow, arrangeRealizationRects.Last());
 
                 Log.Comment("Validate that the realization window grew by 40 pixels each time during the process.");
@@ -389,9 +394,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
-#if BUILD_WINDOWS
-        [TestProperty("Ignore", "True")] // TODO 19581880: Re-enable after investigating and fixing the test failures.
-#endif
         public void CanBringIntoViewElements()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
@@ -429,7 +431,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                          <ScrollViewer x:Name='Scroller' Width='400' Height='600' Background='Gray'>
                            <controls:ItemsRepeater
                              x:Name='ItemsRepeater'
-                             ElementFactory='{StaticResource ElementFactory}'
+                             ItemTemplate='{StaticResource ElementFactory}'
                              Layout='{StaticResource VerticalStackLayout}'
                              HorizontalCacheLength='0'
                              VerticalCacheLength='0' />

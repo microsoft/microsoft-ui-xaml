@@ -16,6 +16,7 @@
         </Grid.Resources>
 
         <StackPanel>
+            <Button x:Name="defaultDemo" >Default Demo</Button>
             <Button x:Name="basicDemo" >Basic Demo</Button>
             <Button x:Name="itemTemplateDemo" >ItemTemplate Demo</Button>
             <Button x:Name="collectionChangeDemo" >Collection Changes Demo</Button>

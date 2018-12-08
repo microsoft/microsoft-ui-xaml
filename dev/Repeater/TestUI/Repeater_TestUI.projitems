@@ -40,6 +40,10 @@
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Defaults.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Samples\ItemsViewWithDataPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -100,6 +104,9 @@
       <DependentUpon>BasicDemo.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Samples\CircleLayoutDemo\CircleLayout.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Defaults.xaml.cs">
+      <DependentUpon>Defaults.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Samples\ItemTemplateSamples\ItemTemplateDemo.xaml.cs">
       <DependentUpon>ItemTemplateDemo.xaml</DependentUpon>
     </Compile>

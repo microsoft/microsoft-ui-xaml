@@ -587,11 +587,11 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
     }
 }
 
-void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& /* oldValue */, const winrt::IElementFactory&  newValue)
+void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory&  oldValue, const winrt::IElementFactory&  newValue)
 {
-    if (m_isLayoutInProgress)
+    if (m_isLayoutInProgress && oldValue)
     {
-        throw winrt::hresult_error(E_FAIL, L"Generator cannot be changed during layout.");
+        throw winrt::hresult_error(E_FAIL, L"ItemTemplate cannot be changed during layout.");
     }
 
     m_itemTemplate = newValue;

@@ -41,7 +41,7 @@ The WinUI Library provides some useful benefits when building apps for Windows 1
 WinUI helps keep your app up to date with the latest versions of key controls and features of [UWP XAML](https://docs.microsoft.com/windows/uwp/xaml-platform/xaml-overview) and the [Fluent Design System](https://www.microsoft.com/design/fluent)
 
 2. **Provides backward compatibility**  
-WinUI is backward-compatible with a wide range of Windows 10 versions: you can start building and shipping apps with new XAML features immediately as soon as they're released, even if your your users aren't on the latest version of Windows 10
+WinUI is backward-compatible with a wide range of Windows 10 versions: you can start building and shipping apps with new XAML features immediately as soon as they're released, even if your users aren't on the latest version of Windows 10
 
 3. **Makes it simpler to build version adaptive apps**  
 You don't need version checks or conditional XAML markup to use WinUI controls or features: WinUI automatically adapts to the user's OS version
