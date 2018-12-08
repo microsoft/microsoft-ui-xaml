@@ -3,7 +3,7 @@
 
 function Get-FilesToTrackChangesIn
 {
-    Get-ChildItem "$PSScriptRoot" -Exclude ".expectedEnlistmentFileHashes",".lastSyncedToCommit","*.ps1","*.psm1","*.cmd","sources.dep","autogen.*","Auto-OnecoreUapWindows.*","buildchk.*","buildfre.*" -File -Recurse | where { -not $_.FullName.StartsWith("$PSScriptRoot\winrt") }
+    Get-ChildItem "$PSScriptRoot" -Exclude ".cachedFileHashes",".expectedEnlistmentFileHashes",".lastSyncedToCommit","sources.dep","autogen.*","Auto-OnecoreUapWindows.*","buildchk.*","buildfre.*" -File -Recurse | where { (-not $_.FullName.StartsWith("$PSScriptRoot\winrt")) -and ($_.Directory.FullName -ne $PSScriptRoot -or $_.Extension -notmatch "(\.psm?1|\.cmd)") }
 }
 
 function Get-FileSubPathForDictionary

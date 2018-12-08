@@ -276,9 +276,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
-#if BUILD_WINDOWS
-        [TestProperty("Ignore", "True")] // TODO 19581880: Re-enable after investigating and fixing the test failures.
-#endif
         public void ValidateDataTemplateAsItemTemplate()
         {
             RunOnUIThread.Execute(() =>
@@ -309,17 +306,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater.ItemsSource = null;
                 Content.UpdateLayout();
 
-                // All the created items should be in the recycle pool now.
-                var pool = RecyclePool.GetPoolInstance(dataTemplate);
-                var recycledElements = GetAllElementsFromPool(pool);
-                Verify.AreEqual(10, recycledElements.Count);
+                // In versions below RS5 we faked the recycling behaivor on data template
+                // so we can get to the recycle pool that we addded internally in ItemsRepeater.
+                if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+                {
+                    // All the created items should be in the recycle pool now.
+                    var pool = RecyclePool.GetPoolInstance(dataTemplate);
+                    var recycledElements = GetAllElementsFromPool(pool);
+                    Verify.AreEqual(10, recycledElements.Count);
+                }
             });
         }
 
         [TestMethod]
-#if BUILD_WINDOWS
-        [TestProperty("Ignore", "True")] // TODO 19581880: Re-enable after investigating and fixing the test failures.
-#endif
         public void ValidateDataTemplateSelectorAsItemTemplate()
         {
             RunOnUIThread.Execute(() =>
@@ -360,21 +359,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater.ItemsSource = null;
                 Content.UpdateLayout();
 
-                // All the created items should be in the recycle pool now.
-                var oddPool = RecyclePool.GetPoolInstance(dataTemplateOdd);
-                var oddElements = GetAllElementsFromPool(oddPool);
-                Verify.AreEqual(5, oddElements.Count);
-                foreach(var element in oddElements)
+                // In versions below RS5 we faked the recycling behaivor on data template
+                // so we can get to the recycle pool that we addded internally in ItemsRepeater.
+                if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
                 {
-                    Verify.AreEqual(30, ((TextBlock)element).Height);
-                }
+                    // All the created items should be in the recycle pool now.
+                    var oddPool = RecyclePool.GetPoolInstance(dataTemplateOdd);
+                    var oddElements = GetAllElementsFromPool(oddPool);
+                    Verify.AreEqual(5, oddElements.Count);
+                    foreach (var element in oddElements)
+                    {
+                        Verify.AreEqual(30, ((TextBlock)element).Height);
+                    }
 
-                var evenPool = RecyclePool.GetPoolInstance(dataTemplateEven);
-                var evenElements = GetAllElementsFromPool(evenPool);
-                Verify.AreEqual(5, evenElements.Count);
-                foreach (var element in evenElements)
-                {
-                    Verify.AreEqual(40, ((TextBlock)element).Height);
+                    var evenPool = RecyclePool.GetPoolInstance(dataTemplateEven);
+                    var evenElements = GetAllElementsFromPool(evenPool);
+                    Verify.AreEqual(5, evenElements.Count);
+                    foreach (var element in evenElements)
+                    {
+                        Verify.AreEqual(40, ((TextBlock)element).Height);
+                    }
                 }
             });
         }

@@ -59,6 +59,7 @@
             <SolidColorBrush x:Key="SystemControlBackgroundListLowRevealBorderBrush" Color="{StaticResource SystemListLowColor}" />
             <SolidColorBrush x:Key="SystemControlBackgroundListMediumRevealBorderBrush" Color="{StaticResource SystemListMediumColor}" />
             <SolidColorBrush x:Key="SystemControlTransparentRevealBorderBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="SystemControlForegroundRevealTransparentBorderBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlBackgroundTransparentRevealBorderBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlHighlightTransparentRevealBorderBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlHighlightAltTransparentRevealBorderBrush" Color="Transparent" />
@@ -259,6 +260,7 @@
             <SolidColorBrush x:Key="SystemControlBackgroundListLowRevealBorderBrush" Color="{StaticResource SystemListLowColor}" />
             <SolidColorBrush x:Key="SystemControlBackgroundListMediumRevealBorderBrush" Color="{StaticResource SystemListMediumColor}" />
             <SolidColorBrush x:Key="SystemControlTransparentRevealBorderBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="SystemControlForegroundRevealTransparentBorderBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlBackgroundTransparentRevealBorderBrush" Color="Transparent" />            
             <SolidColorBrush x:Key="SystemControlHighlightTransparentRevealBorderBrush" Color="Transparent" />
             <SolidColorBrush x:Key="SystemControlHighlightAltTransparentRevealBorderBrush" Color="Transparent" />
@@ -459,6 +461,7 @@
             <SolidColorBrush x:Key="SystemControlBackgroundListLowRevealBorderBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="SystemControlBackgroundListMediumRevealBorderBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="SystemControlTransparentRevealBorderBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="SystemControlForegroundRevealTransparentBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="SystemControlBackgroundTransparentRevealBorderBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightTransparentRevealBorderBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightAltTransparentRevealBorderBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />

@@ -44,13 +44,6 @@ namespace Windows.Foundation.Numerics
     [Imported]
     [WindowsTypePattern]
     [TypeTable(IsExcludedFromDXaml = true)]
-    public struct Vector2
-    {
-    }
-
-    [Imported]
-    [WindowsTypePattern]
-    [TypeTable(IsExcludedFromDXaml = true)]
     public struct Vector4
     {
     }
@@ -89,16 +82,6 @@ namespace Windows.UI.Input
     [WindowsTypePattern]
     [TypeTable(IsExcludedFromDXaml = true)]
     public sealed class PointerPoint
-    {
-    }
-}
-
-namespace Windows.UI.Xaml.Controls
-{
-    [Imported]
-    [WindowsTypePattern]
-    [TypeTable(IsExcludedFromDXaml = true)]
-    public sealed class IconSource
     {
     }
 }
@@ -183,15 +166,6 @@ namespace <#= typeNs #>
         }
         else if (!type.IsInterface)
         {
-//[Guids(InterfaceGuid = "B9E6FB9B-8FC1-4042-AC34-A61B38BB751F", ClassGuid = "E70FC560-8843-4D9B-9B06-CE220F503B8F", OverrideGuid = "8577BFC1-49B5-47B4-A80F-539BBA1949BF", ProtectedGuid = "606613E7-B0A5-4EEC-810F-33CBE877372F", StaticsGuid = "8BA98FA1-D163-4656-81C4-50F6834C7B6F", FactoryGuid = "C9BA0C7A-ADC5-4CCC-9B1F-3CA12502FEFF")]
-            List<string> guids = new List<string> {
-                "InterfaceGuid = \"" +GetDefaultInterfaceUUID(type)+"\"",
-                "ClassGuid = \"" +Guid.Empty+"\"",
-                "OverrideGuid = \"" +Guid.Empty+"\"",
-                "ProtectedGuid = \"" +Guid.Empty+"\"",
-                "StaticsGuid = \"" +GetStaticsInterfaceUUID(type)+"\"",
-                "FactoryGuid = \"" +GetFactoryInterfaceUUID(type)+"\"",
-                };
             string propChangeType = "OnPropertyChangeCallback";
 
             if (!IsDependencyObject(type))
@@ -207,13 +181,6 @@ namespace <#= typeNs #>
 
             bool isSealed = !HasComposableAttribute(type);
 
-            string guidAttributeString = "    [Guids(" + Environment.NewLine + String.Join("," + Environment.NewLine + "        ", guids) + ")]" + Environment.NewLine;
-            if (GetContractVersion(type) >= 7)
-            {
-                // For RS5 and newer types (UAP contract 7) the guids are unnecessary and xamlcodegen actually rejects them.
-                guidAttributeString = "";
-            }
-
     // TODO: Implements interfaces
 
             //foreach (var customAttributes )
@@ -224,7 +191,7 @@ namespace <#= typeNs #>
     <#= GetContractString(type).Replace("][", "]" + Environment.NewLine + "    [") #>
     [DXamlIdlGroup("Phone")]
     [PropertyChange(PropertyChangeCallbackType.<#= propChangeType #>)]
-<#= guidAttributeString #><#
+<#
     var winRtType = new WinRtType(type);
     if(winRtType.IsList)
     {
@@ -341,7 +308,6 @@ namespace <#= typeNs #>
 {
     [DXamlIdlGroup("Phone")]
     [TypeTable(IsExcludedFromDXaml = true)]
-    [Guids(InterfaceGuid = "<#= GetDefaultInterfaceUUID(type) #>")]
     public interface <#= type.Name #>
     {
     }
