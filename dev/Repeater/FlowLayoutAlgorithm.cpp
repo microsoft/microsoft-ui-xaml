@@ -363,7 +363,7 @@ void FlowLayoutAlgorithm::Generate(
 
 bool FlowLayoutAlgorithm::IsReflowRequired() const
 {
-    // If first element is realized and is not at the very begining we need to reflow.
+    // If first element is realized and is not at the very beginning we need to reflow.
     return
         m_elementManager.GetRealizedElementCount() > 0 &&
         m_elementManager.GetDataIndexFromRealizedRangeIndex(0) == 0 &&
