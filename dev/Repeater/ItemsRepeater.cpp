@@ -10,6 +10,9 @@
 #include "ChildrenInTabFocusOrderIterable.h"
 #include "SharedHelpers.h"
 #include "RepeaterAutomationPeer.h"
+#include "ViewportManagerWithPlatformFeatures.h"
+#include "ViewportManagerDownlevel.h"
+
 #ifndef BUILD_WINDOWS
 #include "ItemTemplateWrapper.h"
 #endif
@@ -19,6 +22,15 @@ winrt::Rect ItemsRepeater::InvalidRect = { -1.f, -1.f, -1.f, -1.f };
 
 ItemsRepeater::ItemsRepeater()
 {
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        m_viewportManager = std::make_shared<ViewportManagerWithPlatformFeatures>(this);
+    }
+    else
+    {
+        m_viewportManager = std::make_shared<ViewportManagerDownLevel>(this);
+    }
+
     winrt::AutomationProperties::SetAccessibilityView(*this, winrt::AccessibilityView::Raw);
     if (SharedHelpers::IsRS3OrHigher())
     {
@@ -73,7 +85,7 @@ winrt::IIterable<winrt::DependencyObject> ItemsRepeater::GetChildrenInTabFocusOr
 
 void ItemsRepeater::OnBringIntoViewRequested(winrt::BringIntoViewRequestedEventArgs const& e)
 {
-    m_viewportManager.OnBringIntoViewRequested(e);
+    m_viewportManager->OnBringIntoViewRequested(e);
 }
 
 #pragma endregion
@@ -92,7 +104,7 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
         throw winrt::hresult_error(E_FAIL, L"Cannot run layout in the middle of a collection change.");
     }
 
-    m_viewportManager.OnOwnerMeasuring();
+    m_viewportManager->OnOwnerMeasuring();
 
     m_isLayoutInProgress = true;
     auto layoutInProgress = gsl::finally([this]()
@@ -127,7 +139,7 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
         }
     }
 
-    m_viewportManager.SetLayoutExtent(extent);
+    m_viewportManager->SetLayoutExtent(extent);
     m_lastAvailableSize = availableSize;
     return desiredSize;
 }
@@ -193,7 +205,7 @@ winrt::Size ItemsRepeater::ArrangeOverride(winrt::Size const& finalSize)
         }
     }
 
-    m_viewportManager.OnOwnerArranged();
+    m_viewportManager->OnOwnerArranged();
     m_animationManager.OnOwnerArranged();
 
     return arrangeSize;
@@ -250,7 +262,7 @@ void ItemsRepeater::Animator(winrt::ElementAnimator const& value)
 
 double ItemsRepeater::HorizontalCacheLength()
 {
-    return m_viewportManager.HorizontalCacheLength();
+    return m_viewportManager->HorizontalCacheLength();
 }
 
 void ItemsRepeater::HorizontalCacheLength(double value)
@@ -260,7 +272,7 @@ void ItemsRepeater::HorizontalCacheLength(double value)
 
 double ItemsRepeater::VerticalCacheLength()
 {
-    return m_viewportManager.VerticalCacheLength();
+    return m_viewportManager->VerticalCacheLength();
 }
 
 void ItemsRepeater::VerticalCacheLength(double value)
@@ -353,7 +365,7 @@ void ItemsRepeater::ClearElementImpl(const winrt::UIElement& element)
             m_processingDataSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Reset);
 
     m_viewManager.ClearElement(element, isClearedDueToCollectionChange);
-    m_viewportManager.OnElementCleared(element);
+    m_viewportManager->OnElementCleared(element);
 }
 
 int ItemsRepeater::GetElementIndexImpl(const winrt::UIElement& element)
@@ -406,7 +418,7 @@ winrt::UIElement ItemsRepeater::GetOrCreateElementImpl(int index)
         element.Measure({ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() });
     }
 
-    m_viewportManager.OnMakeAnchor(element, isAnchorOutsideRealizedRange);
+    m_viewportManager->OnMakeAnchor(element, isAnchorOutsideRealizedRange);
     InvalidateMeasure();
 
     return element;
@@ -470,17 +482,17 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     }
     else if (property == s_horizontalCacheLengthProperty)
     {
-        m_viewportManager.HorizontalCacheLength(unbox_value<double>(args.NewValue()));
+        m_viewportManager->HorizontalCacheLength(unbox_value<double>(args.NewValue()));
     }
     else if (property == s_verticalCacheLengthProperty)
     {
-        m_viewportManager.VerticalCacheLength(unbox_value<double>(args.NewValue()));
+        m_viewportManager->VerticalCacheLength(unbox_value<double>(args.NewValue()));
     }
 }
 
 void ItemsRepeater::OnElementPrepared(const winrt::UIElement& element, int index)
 {
-    m_viewportManager.OnElementPrepared(element);
+    m_viewportManager->OnElementPrepared(element);
     if (m_elementPreparedEventSource)
     {
         if (!m_elementPreparedArgs)
@@ -537,7 +549,7 @@ void ItemsRepeater::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt:
     if (_loadedCounter > _unloadedCounter)
     {
         InvalidateMeasure();
-        m_viewportManager.ResetScrollers();
+        m_viewportManager->ResetScrollers();
     }
     ++_loadedCounter;
 }
@@ -548,7 +560,7 @@ void ItemsRepeater::OnUnloaded(const winrt::IInspectable& /*sender*/, const winr
     // Only reset the scrollers if this unload event is in-sync.
     if (_unloadedCounter == _loadedCounter)
     {
-        m_viewportManager.ResetScrollers();
+        m_viewportManager->ResetScrollers();
     }
 }
 
@@ -657,7 +669,7 @@ void ItemsRepeater::OnLayoutChanged(const winrt::VirtualizingLayout& oldValue, c
         m_arrangeInvalidated = newValue.ArrangeInvalidated({ this, &ItemsRepeater::InvalidateArrangeForLayout });
     }
 
-    m_viewportManager.OnLayoutChanged();
+    m_viewportManager->OnLayoutChanged();
     InvalidateMeasure();
 }
 

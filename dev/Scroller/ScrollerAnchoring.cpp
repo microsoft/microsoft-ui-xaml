@@ -12,8 +12,6 @@
 // It is declared at an edge if it's within 1/10th of a pixel.
 const double c_edgeDetectionTolerance = 0.1;
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-
 void Scroller::RaiseConfigurationChanged()
 {
     if (m_configurationChanged)
@@ -43,8 +41,6 @@ void Scroller::RaiseViewportChanged(const bool isFinal)
         m_viewportChanged(*this, isFinal);
     }
 }
-
-#endif 
 
 void Scroller::RaiseAnchorRequested()
 {

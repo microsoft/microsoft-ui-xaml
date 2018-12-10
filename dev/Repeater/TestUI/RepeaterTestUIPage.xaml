@@ -41,8 +41,8 @@
                 <TextBlock>MinColumnSpacing</TextBlock>
                 <TextBox x:Name="lineSpacing" Text="10"></TextBox>
                 <TextBlock>LineAlignment</TextBlock>
-                <TextBlock>(Near/Middle/Far/SpaceEqually)</TextBlock>
-                <TextBox x:Name="lineAlingment" Text="Near"></TextBox>
+                <TextBlock>(Start/Center/End/SpaceAround/SpaceBetween/SpaceEvenly)</TextBlock>
+                <TextBox x:Name="lineAlingment" Text="Start"></TextBox>
                 <ToggleSwitch x:Name="orientation" OnContent="Horizontal" OffContent="Vertical">Scroll Orientation</ToggleSwitch>
             </StackPanel>
 

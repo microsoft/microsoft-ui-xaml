@@ -77,8 +77,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeater.common.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ViewManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactory.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ViewportManagerWithPlatformFeatures.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ViewportManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ViewportManagerWithPlatformFeatures.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ViewportManagerDownlevel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)VirtualizationInfo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)VirtualizingLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)VirtualizingLayoutContext.h" />
@@ -140,7 +141,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ViewManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ViewportManagerWithPlatformFeatures.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ViewportManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ViewportManagerDownlevel.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)VirtualizationInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)VirtualizingLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)VirtualizingLayoutContext.cpp" />

@@ -49,8 +49,6 @@ using ViewportChangedEventHandler = Microsoft.UI.Private.Controls.ViewportChange
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 #endif
 
-#if BUILD_WINDOWS
-
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
@@ -59,6 +57,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateOneScrollerScenario()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5");
+                return;
+            }
+
             var realizationRects = new List<Rect>();
             Scroller scroller = null;
             var viewChangeCompletedEvent = new AutoResetEvent(false);
@@ -122,6 +126,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateTwoScrollersScenario()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5");
+                return;
+            }
+
             var realizationRects = new List<Rect>();
             Scroller horizontalScroller = null;
             Scroller verticalScroller = null;
@@ -203,6 +213,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void CanGrowCacheBuffer()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5");
+                return;
+            }
+
             Scroller scroller = null;
             ItemsRepeater repeater = null;
             var measureRealizationRects = new List<Rect>();
@@ -483,5 +499,3 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
     }
 }
-
-#endif

@@ -348,6 +348,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 return;
             }
 
+            // Post Rs5 configuration changes will not be raised.
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping ValidateSupportForScrollerConfigurationChanges");
+                return;
+            }
+
             // From the inner most to the outer most scroller.
             var scrollers = new Scroller[4];
             var grids = new Grid[4];

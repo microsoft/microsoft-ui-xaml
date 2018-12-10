@@ -48,8 +48,6 @@ using PostArrangeEventHandler = Microsoft.UI.Private.Controls.PostArrangeEventHa
 using ViewportChangedEventHandler = Microsoft.UI.Private.Controls.ViewportChangedEventHandler;
 #endif
 
-#if BUILD_WINDOWS
-
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
@@ -58,6 +56,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateNoScrollingSurfaceScenario()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5");
+                return;
+            }
+
             RunOnUIThread.Execute(() =>
             {
                 var realizationRects = new List<Rect>();
@@ -88,6 +92,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateBasicScrollViewerScenario()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5");
+                return;
+            }
+
             var realizationRects = new List<Rect>();
             ScrollViewer scrollViewer = null;
 
@@ -154,6 +164,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateOneScrollViewerScenario()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5");
+                return;
+            }
+
             var realizationRects = new List<Rect>();
             ScrollViewer scrollViewer = null;
             var viewChangeCompletedEvent = new AutoResetEvent(false);
@@ -220,6 +236,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateTwoScrollViewerScenario()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5");
+                return;
+            }
+
             var realizationRects = new List<Rect>();
             ScrollViewer horizontalScroller = null;
             ScrollViewer verticalScroller = null;
@@ -304,6 +326,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void CanGrowCacheBufferWithScrollViewer()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5");
+                return;
+            }
+
             ScrollViewer scroller = null;
             ItemsRepeater repeater = null;
             var measureRealizationRects = new List<Rect>();
@@ -396,6 +424,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void CanBringIntoViewElements()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5");
+                return;
+            }
+
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
                 Log.Warning("Skipping CanBringIntoViewElements because UIElement.BringIntoViewRequested was added in RS4.");
@@ -586,4 +620,3 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
     }
 }
-#endif

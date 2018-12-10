@@ -808,10 +808,11 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         viewport.Width          /*viewportWidth*/,
         viewport.Height         /*viewportHeight*/);
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-    ClearAnchorCandidates();
-    RaisePostArrange();
-#endif
+    if (!SharedHelpers::IsRS5OrHigher())
+    {
+        ClearAnchorCandidates();
+        RaisePostArrange();
+    }
 
     return viewport;
 }
@@ -3259,9 +3260,11 @@ void Scroller::OnPropertyChanged(
             m_isChildAvailableHeightConstrained = isChildAvailableSizeConstrained;
         }
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-        RaiseConfigurationChanged();
-#endif
+        if (!SharedHelpers::IsRS5OrHigher())
+        {
+            RaiseConfigurationChanged();
+        }
+
         InvalidateMeasure();
     }
     else if (dependencyProperty == s_HorizontalAnchorRatioProperty ||
@@ -6261,9 +6264,10 @@ void Scroller::RaiseViewChanged()
         m_viewChangedEventSource(*this, nullptr);
     }
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-    RaiseViewportChanged(false /* isFinal */);
-#endif
+    if (!SharedHelpers::IsRS5OrHigher())
+    {
+        RaiseViewportChanged(false /* isFinal */);
+    }
 
     if (SharedHelpers::IsFrameworkElementInvalidateViewportAvailable())
     {
@@ -6354,9 +6358,10 @@ void Scroller::RaiseViewChangeCompleted(
         m_viewChangeCompletedEventSource(*this, *viewChangeCompletedEventArgs);
     }
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-    RaiseViewportChanged(true /* isFinal */);
-#endif
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        RaiseViewportChanged(true /* isFinal */);
+    }
 
     if (SharedHelpers::IsFrameworkElementInvalidateViewportAvailable())
     {
