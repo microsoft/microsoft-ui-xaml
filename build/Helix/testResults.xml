@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="299994ad-430f-4116-8d99-5afb29fe6946" name="kmahone@KMAHONE-TH1 2018-12-10 09:32:21" runUser="REDMOND\kmahone" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2018-12-10T09:32:21.5422467-08:00" queuing="2018-12-10T09:32:21.5422468-08:00" start="2018-12-10T09:32:19.9651858-08:00" finish="2018-12-10T09:32:21.5622109-08:00" />
+  <TestSettings name="default" id="c5ea223f-a549-46d2-8d95-0956c86f05b6">
+    <Deployment runDeploymentRoot="kmahone_KMAHONE-TH1_2018-12-10_09_32_21" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="b1bc85aa-9ee5-42d4-a5cf-e2b6bad69317" testId="0c21e5bb-864f-8c61-d712-8d16b0184439" testName="MyFirstUnitTests.Class1.PassingTest" computerName="KMAHONE-TH1" duration="00:00:00.0030000" startTime="2018-12-10T09:32:21.3717522-08:00" endTime="2018-12-10T09:32:21.3717550-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b1bc85aa-9ee5-42d4-a5cf-e2b6bad69317" />
+    <UnitTestResult executionId="f2b03493-6c69-49ad-9c5d-de17c056f564" testId="d55389e6-7221-6dd5-e3b0-96a86244cab6" testName="MyFirstUnitTests.Class1.FailingTest" computerName="KMAHONE-TH1" duration="00:00:00.0120000" startTime="2018-12-10T09:32:21.3636466-08:00" endTime="2018-12-10T09:32:21.3636566-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f2b03493-6c69-49ad-9c5d-de17c056f564">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure&#xD;
+Expected: 5&#xD;
+Actual:   4</Message>
+          <StackTrace>   at MyFirstUnitTests.Class1.FailingTest() in F:\github\kmahonetest\xunittest\Class1.cs:line 16</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="MyFirstUnitTests.Class1.FailingTest" storage="f:\github\kmahonetest\xunittest\bin\debug\netcoreapp2.1\xunittest.dll" id="d55389e6-7221-6dd5-e3b0-96a86244cab6">
+      <Execution id="f2b03493-6c69-49ad-9c5d-de17c056f564" />
+      <TestMethod codeBase="F:\github\kmahonetest\xunittest\bin\Debug\netcoreapp2.1\xunittest.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="xunittest" name="MyFirstUnitTests.Class1.FailingTest" />
+    </UnitTest>
+    <UnitTest name="MyFirstUnitTests.Class1.PassingTest" storage="f:\github\kmahonetest\xunittest\bin\debug\netcoreapp2.1\xunittest.dll" id="0c21e5bb-864f-8c61-d712-8d16b0184439">
+      <Execution id="b1bc85aa-9ee5-42d4-a5cf-e2b6bad69317" />
+      <TestMethod codeBase="F:\github\kmahonetest\xunittest\bin\Debug\netcoreapp2.1\xunittest.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="xunittest" name="MyFirstUnitTests.Class1.PassingTest" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="0c21e5bb-864f-8c61-d712-8d16b0184439" executionId="b1bc85aa-9ee5-42d4-a5cf-e2b6bad69317" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d55389e6-7221-6dd5-e3b0-96a86244cab6" executionId="f2b03493-6c69-49ad-9c5d-de17c056f564" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="2" executed="2" passed="1" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.4556427]   Discovering: xunittest[xUnit.net 00:00:00.5064106]   Discovered:  xunittest[xUnit.net 00:00:00.5115260]   Starting:    xunittest[xUnit.net 00:00:00.6680603]       Assert.Equal() Failure[xUnit.net 00:00:00.6681506]       Expected: 5[xUnit.net 00:00:00.6682183]       Actual:   4[xUnit.net 00:00:00.6691274]       Stack Trace:[xUnit.net 00:00:00.6701417]         F:\github\kmahonetest\xunittest\Class1.cs(16,0): at MyFirstUnitTests.Class1.FailingTest()[xUnit.net 00:00:00.6833614]   Finished:    xunittest</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="KMAHONE-TH1" outcome="Error" timestamp="2018-12-10T09:32:21.3578398-08:00">
+        <Text>[xUnit.net 00:00:00.6668413]     MyFirstUnitTests.Class1.FailingTest [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>
