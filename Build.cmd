@@ -1,6 +1,7 @@
 @echo OFF
 pushd %~dp0
 
+
 setlocal ENABLEDELAYEDEXPANSION
 
 if "%DevEnvDir%" == "" (
