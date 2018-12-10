@@ -6,7 +6,7 @@ if ($($env:SDXROOT).Length -eq 0)
     exit 1
 }
 
-$windowsPath = Resolve-Path "$PSScriptRoot" -Relative
+$windowsPath = "$env:SDXROOT\onecoreuap\windows\dxaml\controls"
 $outDir = "$env:OBJECT_ROOT\onecoreuap\windows\dxaml\controls\dev\dll\$env:_BuildAlt"
 
 $env:ERRORLEVEL = "0"
@@ -44,10 +44,10 @@ else
 }
 
 $scriptPath = "$windowsPath\tools"
-$codeGenPath = Resolve-Path "$env:SDXROOT\onecoreuap\windows\dxaml\xcp\tools\XCPTypesAutoGen\Modules\DEPControls\" -Relative
+$codeGenPath = "$env:SDXROOT\onecoreuap\windows\dxaml\xcp\tools\XCPTypesAutoGen\Modules\DEPControls\"
 $codeGennedFilePath = "$($env:OBJECT_ROOT)\onecoreuap\windows\dxaml\xcp\tools\xcptypesautogen\runcodegen\$($env:_BuildAlt)\DEPControls"
 $genericWuxcXamlPath = "$outDir\GenericWuxcXaml"
-$genericXamlPath = Resolve-Path "$($env:SDXROOT)\onecoreuap\windows\dxaml\xcp\dxaml\themes\generic.xaml" -Relative
+$genericXamlPath = "$env:SDXROOT\onecoreuap\windows\dxaml\xcp\dxaml\themes\generic.xaml"
 
 [System.Collections.Generic.List[string]]$publicPageList = @()
 
@@ -383,28 +383,34 @@ Save-FileHash "$codeGennedFilePath\Microsoft-Windows-UI-Xaml-DEPControls.man" -f
 Save-FileHash "$codeGennedFilePath\XamlTypeInfo.g.h" -fileNameOnly
 Save-FileHash "$codeGennedFilePath\XamlTypeInfo.g.rc" -fileNameOnly
 
+[System.Collections.Generic.List[string]]$xamlFilesToTest = @(
+    "$genericWuxcXamlPath\generic_wuxc_rs1.xaml",
+    "$genericWuxcXamlPath\generic_wuxc_rs2.xaml",
+    "$genericWuxcXamlPath\generic_wuxc_rs3.xaml",
+    "$genericWuxcXamlPath\generic_wuxc_rs4.xaml",
+    "$genericWuxcXamlPath\generic_wuxc_rs5.xaml",
+    "$genericWuxcXamlPath\generic_wuxc_19h1.xaml",
+    "$genericWuxcXamlPath\generic_wuxc_rs1_themeresources.xaml",
+    "$genericWuxcXamlPath\generic_wuxc_rs2_themeresources.xaml",
+    "$genericWuxcXamlPath\generic_wuxc_rs3_themeresources.xaml",
+    "$genericWuxcXamlPath\generic_wuxc_rs4_themeresources.xaml",
+    "$genericWuxcXamlPath\generic_wuxc_rs5_themeresources.xaml",
+    "$genericWuxcXamlPath\generic_wuxc_19h1_themeresources.xaml")
+    
 [System.Collections.Generic.List[string]]$xamlFilesChanged = @()
 
-if ((Test-Path $genericWuxcXamlPath\generic_wuxc1.xaml) -or (Test-Path $genericWuxcXamlPath\generic_wuxc2.xaml) -or (Test-Path $genericWuxcXamlPath\generic_wuxc3.xaml) -or (Test-Path $genericWuxcXamlPath\generic_wuxc4.xaml) )
+$xamlFilesExist = $false
+$xamlFilesToTest | ForEach-Object {
+    $xamlFilesExist = $xamlFilesExist -or (Test-Path $_) 
+}
+
+if ($xamlFilesExist)
 {
-    if (Get-FileHasChanged $genericWuxcXamlPath\generic_wuxc1.xaml)
-    {
-        $xamlFilesChanged.Add("$genericWuxcXamlPath\generic_wuxc1.xaml")
-    }
-
-    if (Get-FileHasChanged $genericWuxcXamlPath\generic_wuxc2.xaml)
-    {
-        $xamlFilesChanged.Add("$genericWuxcXamlPath\generic_wuxc2.xaml")
-    }
-
-    if (Get-FileHasChanged $genericWuxcXamlPath\generic_wuxc3.xaml)
-    {
-        $xamlFilesChanged.Add("$genericWuxcXamlPath\generic_wuxc3.xaml")
-    }
-
-    if (Get-FileHasChanged $genericWuxcXamlPath\generic_wuxc4.xaml)
-    {
-        $xamlFilesChanged.Add("$genericWuxcXamlPath\generic_wuxc4.xaml")
+    $xamlFilesToTest | ForEach-Object {
+        if (Get-FileHasChanged $_)
+        {
+            $xamlFilesChanged.Add($_)
+        }
     }
 
     if (Get-FileHasChanged $genericXamlPath)
@@ -422,9 +428,9 @@ if ((Test-Path $genericWuxcXamlPath\generic_wuxc1.xaml) -or (Test-Path $genericW
         Write-Host "Merging XAML files into generic.xaml..."
         Write-Host
     
-        Write-Host "$scriptPath\GenerateMergedXaml.cmd -MergedXamlFilePath $genericXamlPath -BaseXamlFile $genericXamlPath -XamlFileList `"$genericWuxcXamlPath\generic_wuxc1.xaml;$genericWuxcXamlPath\generic_wuxc2.xaml;$genericWuxcXamlPath\generic_wuxc3.xaml;$genericWuxcXamlPath\generic_wuxc4.xaml`" -MergedXamlName Windows.UI.Xaml.Controls.dll -RemoveUsings"
+        Write-Host "$scriptPath\GenerateMergedXaml.cmd -MergedXamlFilePath $genericXamlPath -BaseXamlFile $genericXamlPath -XamlFileList `"$($xamlFilesToTest -join ';')`" -MergedXamlName Windows.UI.Xaml.Controls.dll -RemoveUsings"
         Write-Host
-        & $scriptPath\GenerateMergedXaml.cmd -MergedXamlFilePath $genericXamlPath -BaseXamlFile $genericXamlPath -XamlFileList "$genericWuxcXamlPath\generic_wuxc1.xaml;$genericWuxcXamlPath\generic_wuxc2.xaml;$genericWuxcXamlPath\generic_wuxc3.xaml;$genericWuxcXamlPath\generic_wuxc4.xaml" -MergedXamlName Windows.UI.Xaml.Controls.dll -RemoveUsings
+        & $scriptPath\GenerateMergedXaml.cmd -MergedXamlFilePath $genericXamlPath -BaseXamlFile $genericXamlPath -XamlFileList "$($xamlFilesToTest -join ';')" -MergedXamlName Windows.UI.Xaml.Controls.dll -RemoveUsings
         Write-Host
 
         if (Get-WasError)
@@ -457,40 +463,15 @@ else
 
 Save-FileHash $genericXamlPath -fileNameOnly
 
-if (Test-Path $genericWuxcXamlPath\generic_wuxc1.xaml)
-{
-    Save-FileHash $genericWuxcXamlPath\generic_wuxc1.xaml -fileNameOnly
-}
-else
-{
-    Preserve-FileHash $genericWuxcXamlPath\generic_wuxc1.xaml -fileNameOnly
-}
-
-if (Test-Path $genericWuxcXamlPath\generic_wuxc2.xaml)
-{
-    Save-FileHash $genericWuxcXamlPath\generic_wuxc2.xaml -fileNameOnly
-}
-else
-{
-    Preserve-FileHash $genericWuxcXamlPath\generic_wuxc2.xaml -fileNameOnly
-}
-
-if (Test-Path $genericWuxcXamlPath\generic_wuxc3.xaml)
-{
-    Save-FileHash $genericWuxcXamlPath\generic_wuxc3.xaml -fileNameOnly
-}
-else
-{
-    Preserve-FileHash $genericWuxcXamlPath\generic_wuxc3.xaml -fileNameOnly
-}
-
-if (Test-Path $genericWuxcXamlPath\generic_wuxc4.xaml)
-{
-    Save-FileHash $genericWuxcXamlPath\generic_wuxc4.xaml -fileNameOnly
-}
-else
-{
-    Preserve-FileHash $genericWuxcXamlPath\generic_wuxc4.xaml -fileNameOnly
+$xamlFilesToTest | ForEach-Object {
+    if (Test-Path $_)
+    {
+        Save-FileHash $_ -fileNameOnly
+    }
+    else
+    {
+        Preserve-FileHash $_ -fileNameOnly
+    }
 }
 
 Write-Host
