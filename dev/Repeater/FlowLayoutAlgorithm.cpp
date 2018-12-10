@@ -52,12 +52,11 @@ winrt::Size FlowLayoutAlgorithm::Measure(
     }
 
     m_elementManager.OnBeginMeasure(orientation);
-    bool firstElementNotRealizedBefore = m_elementManager.GetRealizedElementCount() == 0 || m_elementManager.GetDataIndexFromRealizedRangeIndex(0) != 0;
 
     int anchorIndex = GetAnchorIndex(availableSize, isWrapping, minItemSpacing, layoutId);
     Generate(GenerateDirection::Forward, anchorIndex, availableSize, minItemSpacing, lineSpacing, layoutId);
     Generate(GenerateDirection::Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, layoutId);
-    if (firstElementNotRealizedBefore && IsReflowRequired())
+    if (isWrapping && IsReflowRequired())
     {
         REPEATER_TRACE_INFO(L"%ls: \tReflow Pass \n", layoutId.data());
         auto firstElementBounds = m_elementManager.GetLayoutBoundsForRealizedIndex(0);
@@ -364,8 +363,7 @@ void FlowLayoutAlgorithm::Generate(
 
 bool FlowLayoutAlgorithm::IsReflowRequired() const
 {
-    // Is the MinorStart of element for data index 0 at 0 ?
-    // For stack layout it will always be at 0, so this will always return false
+    // If first element is realized and is not at the very begining we need to reflow.
     return
         m_elementManager.GetRealizedElementCount() > 0 &&
         m_elementManager.GetDataIndexFromRealizedRangeIndex(0) == 0 &&
