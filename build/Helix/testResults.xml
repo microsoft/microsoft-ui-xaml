@@ -1,12 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
-<assemblies>
-  <assembly name="Canonicalization.Tests.dll" environment="64-bit .NET (unknown version) [collection-per-class, parallel (2 threads)]" test-framework="xUnit.net 2.2.0.3300" run-date="2018-10-16" run-time="23:50:11" total="4" passed="4" failed="0" skipped="0" time="1.310" errors="0">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<assemblies timestamp="12/10/2018 13:53:03">
+  <assembly name="F:\Temp\apps\xUnitTestApp\xUnitTestApp\bin\Debug\xUnitTestApp.DLL" environment="64-bit .NET 4.0.30319.42000 [collection-per-class, parallel (12 threads)]" test-framework="xUnit.net 2.4.1.0" run-date="2018-12-10" run-time="13:53:03" config-file="F:\Temp\apps\xUnitTestApp\packages\xunit.runner.console.2.4.1\tools\net472\xunit.console.exe.Config" total="2" passed="1" failed="1" skipped="0" time="0.275" errors="0">
     <errors />
-    <collection total="4" passed="4" failed="0" skipped="0" name="Test collection for System.Runtime.Serialization.Xml.Canonicalization.Tests.XmlCanonicalizationTest" time="1.078">
-      <test name="System.Runtime.Serialization.Xml.Canonicalization.Tests.XmlCanonicalizationTest.CryptoCanonicalizationTest" type="System.Runtime.Serialization.Xml.Canonicalization.Tests.XmlCanonicalizationTest" method="CryptoCanonicalizationTest" time="0.9113398" result="Pass" />
-      <test name="System.Runtime.Serialization.Xml.Canonicalization.Tests.XmlCanonicalizationTest.C14NWriterNegativeTests" type="System.Runtime.Serialization.Xml.Canonicalization.Tests.XmlCanonicalizationTest" method="C14NWriterNegativeTests" time="0.0054404" result="Pass" />
-      <test name="System.Runtime.Serialization.Xml.Canonicalization.Tests.XmlCanonicalizationTest.ReaderWriter_C14N_DifferentReadersWriters" type="System.Runtime.Serialization.Xml.Canonicalization.Tests.XmlCanonicalizationTest" method="ReaderWriter_C14N_DifferentReadersWriters" time="0.1532764" result="Pass" />
-      <test name="System.Runtime.Serialization.Xml.Canonicalization.Tests.XmlCanonicalizationTest.TestC14NInclusivePrefixes" type="System.Runtime.Serialization.Xml.Canonicalization.Tests.XmlCanonicalizationTest" method="TestC14NInclusivePrefixes" time="0.0075479" result="Pass" />
+    <collection total="2" passed="1" failed="1" skipped="0" name="Test collection for xUnitTestApp.Class1" time="0.056">
+      <test name="xUnitTestApp.Class1.FailingTest" type="xUnitTestApp.Class1" method="FailingTest" time="0.0532798" result="Fail">
+        <failure exception-type="Xunit.Sdk.EqualException">
+          <message><![CDATA[Assert.Equal() Failure\r\nExpected: 5\r\nActual:   4]]></message>
+          <stack-trace><![CDATA[   at xUnitTestApp.Class1.FailingTest() in f:\temp\apps\xUnitTestApp\xUnitTestApp\Class1.cs:line 21]]></stack-trace>
+        </failure>
+      </test>
+      <test name="xUnitTestApp.Class1.PassingTest" type="xUnitTestApp.Class1" method="PassingTest" time="0.002329" result="Pass" />
     </collection>
   </assembly>
 </assemblies>
