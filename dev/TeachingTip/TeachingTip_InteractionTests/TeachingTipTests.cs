@@ -1,15 +1,26 @@
-﻿
-using WEX.TestExecution;
-using WEX.TestExecution.Markup;
-using WEX.Logging.Interop;
-using MS.Internal.Mita.Foundation.Controls;
-
-using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
+﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using Common;
 using System;
+
+#if USING_TAEF
+using WEX.TestExecution;
+using WEX.TestExecution.Markup;
+using WEX.Logging.Interop;
+#else
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
+#endif
+
+#if BUILD_WINDOWS
 using System.Windows.Automation;
 using MS.Internal.Mita.Foundation;
+using MS.Internal.Mita.Foundation.Controls;
+#else
+using Microsoft.Windows.Apps.Test.Automation;
+using Microsoft.Windows.Apps.Test.Foundation;
+using Microsoft.Windows.Apps.Test.Foundation.Controls;
+#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -23,6 +34,50 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             public double width;
             public double height;
         };
+        
+        private struct TeachingTipTestPageElements
+        {
+            public ListBox lstTeachingTipEvents;
+
+            public TextBlock effectivePlacementTextBlock;
+
+            public Button getTargetBoundsButton;
+            public TextBlock targetXOffsetTextBlock;
+            public TextBlock targetYOffsetTextBlock;
+            public TextBlock targetWidthTextBlock;
+            public TextBlock targetHeightTextBlock;
+
+            public CheckBox useTestWindowBoundsCheckbox;
+            public Edit testWindowBoundsXTextBox;
+            public Edit testWindowBoundsYTextBox;
+            public Edit testWindowBoundsWidthTextBox;
+            public Edit testWindowBoundsHeightTextBox;
+
+            public TextBlock tipWidthTextBlock;
+
+            public Edit scrollViewerOffsetTextBox;
+            public Button scrollViewerOffsetButton;
+
+            public TextBlock popupVerticalOffsetTextBlock;
+
+            public ComboBox bleedingContentComboBox;
+            public Button setBleedingContentButton;
+
+            public ComboBox placementComboBox;
+            public Button setPlacementButton;
+
+            public ComboBox isLightDismissEnabledComboBox;
+            public Button isLightDismissEnabledButton;
+
+            public Button showButton;
+            public Button closeButton;
+            public CheckBox isOpenCheckBox;
+            public CheckBox isIdleCheckBox;
+
+            public Button bringIntoViewButton;
+        }
+
+        var elements;
 
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
@@ -45,36 +100,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
             {
-                if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5) || PlatformConfiguration.IsDevice(DeviceType.Phone))
-                {
-                    Log.Warning("Test is disabled on RS4 and phone.");
-                    return;
-                }
-
-                var elements = new TeachingTipTestPageElements();
-                ScrollTargetIntoView(ref elements);
-                OpenTeachingTip(ref elements);
-                CloseTeachingTipProgramatic(ref elements);
-                var message0 = getMessage(ref elements, 0);
+                elements = new TeachingTipTestPageElements();
+                ScrollTargetIntoView();
+                OpenTeachingTip();
+                CloseTeachingTipProgrammatically();
+                var message0 = getMessage(0);
                 Verify.IsTrue(message0.ToString().Contains("Programmatic"));
 
-                setBleedingContent(ref elements, 3);
-                OpenTeachingTip(ref elements);
-                PressXCloseButton(ref elements);
-                var message2 = getMessage(ref elements, 2);
-                var message4 = getMessage(ref elements, 4);
+                SetBleedingContent(3);
+                OpenTeachingTip();
+                PressXCloseButton();
+                var message2 = getMessage(2);
+                var message4 = getMessage(4);
                 Verify.IsTrue(message2.ToString().Contains("Close Button Clicked"));
                 Verify.IsTrue(message4.ToString().Contains("CloseButton"));
 
-                EnableLightDismiss(ref elements, true);
-                OpenTeachingTip(ref elements);
-                CloseTeachingTipProgramatic(ref elements);
-                var message6 = getMessage(ref elements, 6);
+                EnableLightDismiss(true);
+                OpenTeachingTip();
+                CloseTeachingTipProgrammatically();
+                var message6 = getMessage(6);
                 Verify.IsTrue(message6.ToString().Contains("Programmatic"));
 
-                OpenTeachingTip(ref elements);
+                OpenTeachingTip();
                 message2.Tap();
-                var message7 = getMessage(ref elements, 7);
+                var message7 = getMessage(7);
                 Verify.IsTrue(message7.ToString().Contains("LightDismiss"));
             }
         }
@@ -84,21 +133,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
             {
-                if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5) || PlatformConfiguration.IsDevice(DeviceType.Phone))
-                {
-                    Log.Warning("Test is disabled on RS4 and phone.");
-                    return;
-                }
+                elements = new TeachingTipTestPageElements();
 
-                var elements = new TeachingTipTestPageElements();
-
-                ScrollTargetIntoView(ref elements);
-                OpenTeachingTip(ref elements);
-                double initialVerticalOffset = getVerticalOffset(ref elements);
-                scrollBy(ref elements, 10);
-                Verify.IsLessThan(getVerticalOffset(ref elements), initialVerticalOffset);
-                scrollBy(ref elements, -20);
-                Verify.IsGreaterThan(getVerticalOffset(ref elements), initialVerticalOffset);
+                ScrollTargetIntoView();
+                OpenTeachingTip();
+                double initialVerticalOffset = getVerticalOffset();
+                scrollBy(10);
+                Verify.IsLessThan(getVerticalOffset(), initialVerticalOffset);
+                scrollBy(-20);
+                Verify.IsGreaterThan(getVerticalOffset(), initialVerticalOffset);
             }
         }
 
@@ -107,69 +150,63 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
             {
-                if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5) || PlatformConfiguration.IsDevice(DeviceType.Phone))
-                {
-                    Log.Warning("Test is disabled on RS4 and phone.");
-                    return;
-                }
+                elements = new TeachingTipTestPageElements();
 
-                var elements = new TeachingTipTestPageElements();
-
-                ScrollTargetIntoView(ref elements);
-                scrollBy(ref elements, 10);
-                var targetRect = getTargetBounds(ref elements);
-                useTestWindowBounds(ref elements, targetRect.x - 328, targetRect.y - 304, targetRect.width + 656, targetRect.height + 608);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("Top"));
-                CloseTeachingTipProgramatic(ref elements);
-                useTestWindowBounds(ref elements, targetRect.x - 328, targetRect.y - 300, targetRect.width + 656, targetRect.height + 608);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("Bottom"));
-                CloseTeachingTipProgramatic(ref elements);
-                useTestWindowBounds(ref elements, targetRect.x - 328, targetRect.y - 300, targetRect.width + 656, targetRect.height + 603);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("RightEdgeAlignedTop"));
-                CloseTeachingTipProgramatic(ref elements);
-                useTestWindowBounds(ref elements, targetRect.x - 328, targetRect.y - 100, targetRect.width + 656, targetRect.height + 403);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("RightEdgeAlignedBottom"));
-                CloseTeachingTipProgramatic(ref elements);
-                useTestWindowBounds(ref elements, targetRect.x - 328, targetRect.y - 100, targetRect.width + 643, targetRect.height + 403);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("LeftEdgeAlignedBottom"));
-                CloseTeachingTipProgramatic(ref elements);
-                useTestWindowBounds(ref elements, targetRect.x - 328, targetRect.y - 300, targetRect.width + 643, targetRect.height + 603);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("LeftEdgeAlignedTop"));
-                CloseTeachingTipProgramatic(ref elements);
-                useTestWindowBounds(ref elements, targetRect.x - 328, targetRect.y - 304, targetRect.width + 348, targetRect.height + 608);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("TopEdgeAlignedLeft"));
-                CloseTeachingTipProgramatic(ref elements);
-                useTestWindowBounds(ref elements, targetRect.x - 20, targetRect.y - 304, targetRect.width + 348, targetRect.height + 608);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("TopEdgeAlignedRight"));
-                CloseTeachingTipProgramatic(ref elements);
-                useTestWindowBounds(ref elements, targetRect.x - 328, targetRect.y - 100, targetRect.width + 348, targetRect.height + 408);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("BottomEdgeAlignedLeft"));
-                CloseTeachingTipProgramatic(ref elements);
-                useTestWindowBounds(ref elements, targetRect.x - 20, targetRect.y - 100, targetRect.width + 348, targetRect.height + 408);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("BottomEdgeAlignedRight"));
-                CloseTeachingTipProgramatic(ref elements);
+                ScrollTargetIntoView();
+                scrollBy(10);
+                var targetRect = getTargetBounds();
+                useTestWindowBounds(targetRect.x - 328, targetRect.y - 304, targetRect.width + 656, targetRect.height + 608);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("Top"));
+                CloseTeachingTipProgrammatically();
+                useTestWindowBounds(targetRect.x - 328, targetRect.y - 300, targetRect.width + 656, targetRect.height + 608);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("Bottom"));
+                CloseTeachingTipProgrammatically();
+                useTestWindowBounds(targetRect.x - 328, targetRect.y - 300, targetRect.width + 656, targetRect.height + 603);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("RightEdgeAlignedTop"));
+                CloseTeachingTipProgrammatically();
+                useTestWindowBounds(targetRect.x - 328, targetRect.y - 100, targetRect.width + 656, targetRect.height + 403);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("RightEdgeAlignedBottom"));
+                CloseTeachingTipProgrammatically();
+                useTestWindowBounds(targetRect.x - 328, targetRect.y - 100, targetRect.width + 643, targetRect.height + 403);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("LeftEdgeAlignedBottom"));
+                CloseTeachingTipProgrammatically();
+                useTestWindowBounds(targetRect.x - 328, targetRect.y - 300, targetRect.width + 643, targetRect.height + 603);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("LeftEdgeAlignedTop"));
+                CloseTeachingTipProgrammatically();
+                useTestWindowBounds(targetRect.x - 328, targetRect.y - 304, targetRect.width + 348, targetRect.height + 608);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("TopEdgeAlignedLeft"));
+                CloseTeachingTipProgrammatically();
+                useTestWindowBounds(targetRect.x - 20, targetRect.y - 304, targetRect.width + 348, targetRect.height + 608);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("TopEdgeAlignedRight"));
+                CloseTeachingTipProgrammatically();
+                useTestWindowBounds(targetRect.x - 328, targetRect.y - 100, targetRect.width + 348, targetRect.height + 408);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("BottomEdgeAlignedLeft"));
+                CloseTeachingTipProgrammatically();
+                useTestWindowBounds(targetRect.x - 20, targetRect.y - 100, targetRect.width + 348, targetRect.height + 408);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("BottomEdgeAlignedRight"));
+                CloseTeachingTipProgrammatically();
 
                 //remove the bleeding content;
-                setBleedingContent(ref elements, 3);
+                SetBleedingContent(3);
 
-                useTestWindowBounds(ref elements, targetRect.x - 328, targetRect.y - 100, targetRect.width + 348, targetRect.height + 20);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("Left"));
-                CloseTeachingTipProgramatic(ref elements);
-                useTestWindowBounds(ref elements, targetRect.x - 20, targetRect.y - 100, targetRect.width + 348, targetRect.height + 20);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("Right"));
-                CloseTeachingTipProgramatic(ref elements);
+                useTestWindowBounds(targetRect.x - 328, targetRect.y - 100, targetRect.width + 348, targetRect.height + 20);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("Left"));
+                CloseTeachingTipProgrammatically();
+                useTestWindowBounds(targetRect.x - 20, targetRect.y - 100, targetRect.width + 348, targetRect.height + 20);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("Right"));
+                CloseTeachingTipProgrammatically();
             }
         }
 
@@ -178,80 +215,74 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
             {
-                if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5) || PlatformConfiguration.IsDevice(DeviceType.Phone))
-                {
-                    Log.Warning("Test is disabled on RS4 and phone.");
-                    return;
-                }
+                elements = new TeachingTipTestPageElements();
 
-                var elements = new TeachingTipTestPageElements();
+                ScrollTargetIntoView();
+                scrollBy(10);
 
-                ScrollTargetIntoView(ref elements);
-                scrollBy(ref elements, 10);
-
-                setPlacement(ref elements, 0);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("Top"));
-                CloseTeachingTipProgramatic(ref elements);
+                SetPlacement(0);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("Top"));
+                CloseTeachingTipProgrammatically();
                 
-                setPlacement(ref elements, 1);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("Bottom"));
-                CloseTeachingTipProgramatic(ref elements);
+                SetPlacement(1);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("Bottom"));
+                CloseTeachingTipProgrammatically();
 
-                setPlacement(ref elements, 2);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("Left"));
-                CloseTeachingTipProgramatic(ref elements);
+                SetPlacement(2);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("Left"));
+                CloseTeachingTipProgrammatically();
 
-                setPlacement(ref elements, 3);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("Right"));
-                CloseTeachingTipProgramatic(ref elements);
+                SetPlacement(3);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("Right"));
+                CloseTeachingTipProgrammatically();
                 
-                setPlacement(ref elements, 4);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("TopEdgeAlignedRight"));
-                CloseTeachingTipProgramatic(ref elements);
+                SetPlacement(4);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("TopEdgeAlignedRight"));
+                CloseTeachingTipProgrammatically();
 
-                setPlacement(ref elements, 5);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("TopEdgeAlignedLeft"));
-                CloseTeachingTipProgramatic(ref elements);
+                SetPlacement(5);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("TopEdgeAlignedLeft"));
+                CloseTeachingTipProgrammatically();
 
-                setPlacement(ref elements, 6);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("BottomEdgeAlignedRight"));
-                CloseTeachingTipProgramatic(ref elements);
+                SetPlacement(6);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("BottomEdgeAlignedRight"));
+                CloseTeachingTipProgrammatically();
 
-                setPlacement(ref elements, 7);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("BottomEdgeAlignedLeft"));
-                CloseTeachingTipProgramatic(ref elements);
+                SetPlacement(7);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("BottomEdgeAlignedLeft"));
+                CloseTeachingTipProgrammatically();
 
-                setPlacement(ref elements, 8);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("LeftEdgeAlignedTop"));
-                CloseTeachingTipProgramatic(ref elements);
+                SetPlacement(8);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("LeftEdgeAlignedTop"));
+                CloseTeachingTipProgrammatically();
 
-                setPlacement(ref elements, 9);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("LeftEdgeAlignedBottom"));
-                CloseTeachingTipProgramatic(ref elements);
+                SetPlacement(9);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("LeftEdgeAlignedBottom"));
+                CloseTeachingTipProgrammatically();
 
-                setPlacement(ref elements, 10);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("RightEdgeAlignedTop"));
-                CloseTeachingTipProgramatic(ref elements);
+                SetPlacement(10);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("RightEdgeAlignedTop"));
+                CloseTeachingTipProgrammatically();
 
-                setPlacement(ref elements, 11);
-                OpenTeachingTip(ref elements);
-                Verify.IsTrue(getEffectivePlacement(ref elements).Equals("RightEdgeAlignedBottom"));
-                CloseTeachingTipProgramatic(ref elements);
+                SetPlacement(11);
+                OpenTeachingTip();
+                Verify.IsTrue(getEffectivePlacement().Equals("RightEdgeAlignedBottom"));
+                CloseTeachingTipProgrammatically();
             }
         }
 
-        private void ScrollTargetIntoView(ref TeachingTipTestPageElements elements)
+        private void ScrollTargetIntoView()
         {
             if (elements.bringIntoViewButton == null)
             {
@@ -262,7 +293,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.bringIntoViewButton.Invoke();
         }
 
-        private void OpenTeachingTip(ref TeachingTipTestPageElements elements)
+        private void OpenTeachingTip()
         {
             if (elements.showButton == null)
             {
@@ -294,7 +325,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        private void CloseTeachingTipProgramatic(ref TeachingTipTestPageElements elements)
+        private void CloseTeachingTipProgrammatically()
         {
             if (elements.closeButton == null)
             {
@@ -326,7 +357,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        private void PressXCloseButton(ref TeachingTipTestPageElements elements)
+        private void PressXCloseButton()
         {
             if(elements.tipWidthTextBlock == null)
             {
@@ -359,7 +390,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             WaitForChecked(elements.isIdleCheckBox);
         }
 
-        private void EnableLightDismiss(ref TeachingTipTestPageElements elements, bool enable)
+        private void EnableLightDismiss(bool enable)
         {
             if (elements.isLightDismissEnabledComboBox == null)
             {
@@ -385,7 +416,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.isLightDismissEnabledButton.Invoke();
         }
 
-        private void setPlacement(ref TeachingTipTestPageElements elements, int dropDownValue)
+        private void SetPlacement(int dropDownValue)
         {
             if (elements.placementComboBox == null)
             {
@@ -446,7 +477,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.setPlacementButton.Invoke();
         }
 
-        private void setBleedingContent(ref TeachingTipTestPageElements elements, int dropDownValue)
+        private void SetBleedingContent(int dropDownValue)
         {
             if (elements.bleedingContentComboBox == null)
             {
@@ -480,7 +511,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.setBleedingContentButton.Invoke();
         }
 
-        private double getVerticalOffset(ref TeachingTipTestPageElements elements)
+        private double GetVerticalOffset()
         {
             if (elements.popupVerticalOffsetTextBlock == null)
             {
@@ -491,7 +522,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return double.Parse(elements.popupVerticalOffsetTextBlock.GetText());
         }
 
-        private void scrollBy(ref TeachingTipTestPageElements elements, double ammount)
+        private void ScrollBy(double ammount)
         {
             if (elements.scrollViewerOffsetTextBox == null)
             {
@@ -512,7 +543,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.scrollViewerOffsetButton.Invoke();
         }
         
-        private void useTestWindowBounds(ref TeachingTipTestPageElements elements, double x, double y, double width, double height)
+        private void UseTestWindowBounds(double x, double y, double width, double height)
         {
             if (elements.useTestWindowBoundsCheckbox == null)
             {
@@ -558,7 +589,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.useTestWindowBoundsCheckbox.Check();
         }
 
-        private rect getTargetBounds(ref TeachingTipTestPageElements elements)
+        private rect GetTargetBounds()
         {
             if (elements.getTargetBoundsButton == null)
             {
@@ -605,7 +636,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return retVal;
         }
 
-        private string getEffectivePlacement(ref TeachingTipTestPageElements elements)
+        private string GetEffectivePlacement()
         {
             if (elements.effectivePlacementTextBlock == null)
             {
@@ -616,7 +647,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return elements.effectivePlacementTextBlock.GetText();
         }
 
-        private ListBoxItem getMessage(ref TeachingTipTestPageElements elements, int index)
+        private ListBoxItem GetMessage(int index)
         {
             if (elements.lstTeachingTipEvents == null)
             {
@@ -662,48 +693,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
             return true;
-        }
-
-        private struct TeachingTipTestPageElements
-        {
-            public ListBox lstTeachingTipEvents;
-
-            public TextBlock effectivePlacementTextBlock;
-
-            public Button getTargetBoundsButton;
-            public TextBlock targetXOffsetTextBlock;
-            public TextBlock targetYOffsetTextBlock;
-            public TextBlock targetWidthTextBlock;
-            public TextBlock targetHeightTextBlock;
-
-            public CheckBox useTestWindowBoundsCheckbox;
-            public Edit testWindowBoundsXTextBox;
-            public Edit testWindowBoundsYTextBox;
-            public Edit testWindowBoundsWidthTextBox;
-            public Edit testWindowBoundsHeightTextBox;
-            
-            public TextBlock tipWidthTextBlock;
-
-            public Edit scrollViewerOffsetTextBox;
-            public Button scrollViewerOffsetButton;
-
-            public TextBlock popupVerticalOffsetTextBlock;
-
-            public ComboBox bleedingContentComboBox;
-            public Button setBleedingContentButton;
-
-            public ComboBox placementComboBox;
-            public Button setPlacementButton;
-
-            public ComboBox isLightDismissEnabledComboBox;
-            public Button isLightDismissEnabledButton;
-
-            public Button showButton;
-            public Button closeButton;
-            public CheckBox isOpenCheckBox;
-            public CheckBox isIdleCheckBox;
-
-            public Button bringIntoViewButton;
         }
     }
 }

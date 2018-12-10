@@ -22,6 +22,8 @@ using TeachingTipClosedEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosedE
 using TeachingTipClosingEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs;
 using TeachingTipTestHooks = Microsoft.UI.Private.Controls.TeachingTipTestHooks;
 using TeachingTipBleedingImagePlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipBleedingImagePlacementMode;
+using TeachingTipPlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode;
+using TeachingTipCloseButtonKind = Microsoft.UI.Xaml.Controls.TeachingTipCloseButtonKind;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 #endif
 
@@ -360,55 +362,55 @@ namespace MUXControlsTestApp
         {
             if (this.PlacementComboBox.SelectedIndex == 0)
             {
-                this.TeachingTip.Placement = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Top;
+                this.TeachingTip.Placement = TeachingTipPlacementMode.Top;
             }
             else if (this.PlacementComboBox.SelectedIndex == 1)
             {
-                this.TeachingTip.Placement = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Bottom;
+                this.TeachingTip.Placement = TeachingTipPlacementMode.Bottom;
             }
             else if (this.PlacementComboBox.SelectedIndex == 2)
             {
-                this.TeachingTip.Placement = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Left;
+                this.TeachingTip.Placement = TeachingTipPlacementMode.Left;
             }
             else if (this.PlacementComboBox.SelectedIndex == 3)
             {
-                this.TeachingTip.Placement = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Right;
+                this.TeachingTip.Placement = TeachingTipPlacementMode.Right;
             }
             else if (this.PlacementComboBox.SelectedIndex == 4)
             {
-                this.TeachingTip.Placement = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.TopEdgeAlignedRight;
+                this.TeachingTip.Placement = TeachingTipPlacementMode.TopEdgeAlignedRight;
             }
             else if (this.PlacementComboBox.SelectedIndex == 5)
             {
-                this.TeachingTip.Placement = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.TopEdgeAlignedLeft;
+                this.TeachingTip.Placement = TeachingTipPlacementMode.TopEdgeAlignedLeft;
             }
             else if (this.PlacementComboBox.SelectedIndex == 6)
             {
-                this.TeachingTip.Placement = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.BottomEdgeAlignedRight;
+                this.TeachingTip.Placement = TeachingTipPlacementMode.BottomEdgeAlignedRight;
             }
             else if (this.PlacementComboBox.SelectedIndex == 7)
             {
-                this.TeachingTip.Placement = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.BottomEdgeAlignedLeft;
+                this.TeachingTip.Placement = TeachingTipPlacementMode.BottomEdgeAlignedLeft;
             }
             else if (this.PlacementComboBox.SelectedIndex == 8)
             {
-                this.TeachingTip.Placement = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.LeftEdgeAlignedTop;
+                this.TeachingTip.Placement = TeachingTipPlacementMode.LeftEdgeAlignedTop;
             }
             else if (this.PlacementComboBox.SelectedIndex == 9)
             {
-                this.TeachingTip.Placement = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.LeftEdgeAlignedBottom;
+                this.TeachingTip.Placement = TeachingTipPlacementMode.LeftEdgeAlignedBottom;
             }
             else if (this.PlacementComboBox.SelectedIndex == 10)
             {
-                this.TeachingTip.Placement = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.RightEdgeAlignedTop;
+                this.TeachingTip.Placement = TeachingTipPlacementMode.RightEdgeAlignedTop;
             }
             else if (this.PlacementComboBox.SelectedIndex == 11)
             {
-                this.TeachingTip.Placement = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.RightEdgeAlignedBottom;
+                this.TeachingTip.Placement = TeachingTipPlacementMode.RightEdgeAlignedBottom;
             }
             else
             {
-                this.TeachingTip.Placement = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Auto;
+                this.TeachingTip.Placement = TeachingTipPlacementMode.Auto;
             }
         }
 
@@ -416,15 +418,15 @@ namespace MUXControlsTestApp
         {
             if(this.CloseButtonKindComboBox.SelectedIndex == 0)
             {
-                this.TeachingTip.CloseButtonKind = Microsoft.UI.Xaml.Controls.TeachingTipCloseButtonKind.Auto;
+                this.TeachingTip.CloseButtonKind = TeachingTipCloseButtonKind.Auto;
             }
             else if (this.CloseButtonKindComboBox.SelectedIndex == 1)
             {
-                this.TeachingTip.CloseButtonKind = Microsoft.UI.Xaml.Controls.TeachingTipCloseButtonKind.Header;
+                this.TeachingTip.CloseButtonKind = TeachingTipCloseButtonKind.Header;
             }
             else
             {
-                this.TeachingTip.CloseButtonKind = Microsoft.UI.Xaml.Controls.TeachingTipCloseButtonKind.Footer;
+                this.TeachingTip.CloseButtonKind = TeachingTipCloseButtonKind.Footer;
             }
         }
 
