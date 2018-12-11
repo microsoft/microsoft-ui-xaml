@@ -54,8 +54,8 @@ enum FlowLayoutLineAlignment
     Center = 1,
     End = 2,
     SpaceAround = 3,
-    SpaceBetween = 4
-    // SpaceEvenly = 5 Pending support
+    SpaceBetween = 4,
+    SpaceEvenly = 5
 };
 
 [WUXC_VERSION_MUXONLY]
@@ -66,8 +66,17 @@ enum UniformGridLayoutItemsJustification
     Center = 1,
     End = 2,
     SpaceAround = 3,
-    SpaceBetween = 4
-    // SpaceEvenly = 5 Pending support
+    SpaceBetween = 4,
+    SpaceEvenly = 5
+};
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+enum UniformGridLayoutItemsStretch
+{
+    None = 0,
+    Fill = 1,
+    Uniform = 2
 };
 
 [WUXC_VERSION_PREVIEW]
@@ -376,6 +385,7 @@ unsealed runtimeclass UniformGridLayout : VirtualizingLayout
     Double MinRowSpacing { get; set; };
     Double MinColumnSpacing { get; set; };
     UniformGridLayoutItemsJustification ItemsJustification{ get; set; };
+    UniformGridLayoutItemsStretch ItemsStretch{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MinItemWidthProperty { get; };
@@ -383,6 +393,7 @@ unsealed runtimeclass UniformGridLayout : VirtualizingLayout
     static Windows.UI.Xaml.DependencyProperty MinRowSpacingProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MinColumnSpacingProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ItemsJustificationProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ItemsStretchProperty{ get; };
 }
 
 [WUXC_VERSION_PREVIEW]

@@ -71,6 +71,16 @@ void UniformGridLayout::ItemsJustification(winrt::UniformGridLayoutItemsJustific
     SetValue(s_itemsJustificationProperty, box_value(value));
 }
 
+winrt::UniformGridLayoutItemsStretch UniformGridLayout::ItemsStretch()
+{
+    return m_itemsStretch;
+}
+
+void UniformGridLayout::ItemsStretch(winrt::UniformGridLayoutItemsStretch const& value)
+{
+    SetValue(s_itemsStretchProperty, box_value(value));
+}
+
 #pragma endregion
 
 #pragma region IVirtualizingLayoutOverrides
@@ -320,6 +330,10 @@ void UniformGridLayout::OnPropertyChanged(const winrt::DependencyPropertyChanged
     else if (property == s_itemsJustificationProperty)
     {
         m_itemsJustification = unbox_value<winrt::UniformGridLayoutItemsJustification>(args.NewValue());
+    }
+    else if (property == s_itemsStretchProperty)
+    {
+        m_itemsStretch = unbox_value<winrt::UniformGridLayoutItemsStretch>(args.NewValue());
     }
     else if (property == s_minItemWidthProperty)
     {
