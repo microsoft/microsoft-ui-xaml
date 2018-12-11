@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>MUXCustomBuildTasks</id>
-    <version>1.0.37</version>
+    <version>1.0.38-test</version>
     <title>MUXCustomBuildTasks</title>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
@@ -14,6 +14,7 @@
   <files>
     <!-- Common build logic -->
     <file target="build\CustomTasks.dll" src="..\..\..\BuildOutput\Release\AnyCPU\CustomTasks\CustomTasks.dll"/>
+    <file target="build\WttLog.dll" src="..\..\..\BuildOutput\WttLog.dll"/>
     <file target="build\MUXCustomBuildTasks.targets" src="MUXCustomBuildTasks.targets"/>
     
     <!-- This is here for C++ based projects, see http://nugetdocsbeta.azurewebsites.net/ndocs/guides/create-uwp-packages -->

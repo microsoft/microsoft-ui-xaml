@@ -32,11 +32,10 @@ copy "$nugetPackagesDir\runtime.win-$platform.microsoft.netcore.app\2.1.0\runtim
 copy "$nugetPackagesDir\runtime.win-$platform.microsoft.netcore.app\2.1.0\runtimes\win-$platform\native\*" "$binplaceDir\.NETCoreApp2.1\"
 
 
-
-
-# Always copy over the test files.
 $repoDirectory = Split-Path -Parent $script:MyInvocation.MyCommand.Path 
 $repoDirectory = Join-Path $repoDirectory "..\..\"
+
+copy "$repoDirectory\packages\MUXCustomBuildTasks.1.0.38-test\build\WttLog.dll" $binplaceDir
 
 $testDllOutputDir = Join-Path $repoDirectory "Artifacts\drop\$flavor\$platform\Test"
 $testAppOutputDir = Join-Path $repoDirectory "Artifacts\drop\$flavor\$platform\AppxPackages\MUXControlsTestApp_Test"

@@ -38,10 +38,13 @@ jobs:
     displayName: 'Download Build Artifacts'
     inputs:
       buildType: specific
-      project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
-      pipeline: 20
       buildVersionToDownload: specific
-      buildId: 573
+      # project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
+      # pipeline: 20
+      # buildId: 573
+      project: 'f05f4dbf-3077-427d-91e0-b66d9e4ca374'
+      pipeline: 33581
+      buildId: 13338677
       artifactName: drop
       downloadPath: '$(artifactsDir)'
 
