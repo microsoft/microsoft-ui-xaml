@@ -825,6 +825,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     dataSource.Insert(0 /*index*/, 2 /*count*/);
                 });
 
+                IdleSynchronizer.Wait();
                 WaitForEvent("Waiting for Scroller.ViewChanged event", scrollerViewChangedEvent);
 
                 RunOnUIThread.Execute(() =>

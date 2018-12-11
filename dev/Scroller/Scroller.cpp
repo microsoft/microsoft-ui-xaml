@@ -808,6 +808,8 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         viewport.Width          /*viewportWidth*/,
         viewport.Height         /*viewportHeight*/);
 
+    // We do the following only when effective viewport
+    // support is not available. This is to provide downlevel support.
     if (!SharedHelpers::IsRS5OrHigher())
     {
         ClearAnchorCandidates();
@@ -3260,6 +3262,8 @@ void Scroller::OnPropertyChanged(
             m_isChildAvailableHeightConstrained = isChildAvailableSizeConstrained;
         }
 
+        // Raise configuration changed only when effective viewport
+        // support is not available.
         if (!SharedHelpers::IsRS5OrHigher())
         {
             RaiseConfigurationChanged();
@@ -6358,6 +6362,8 @@ void Scroller::RaiseViewChangeCompleted(
         m_viewChangeCompletedEventSource(*this, *viewChangeCompletedEventArgs);
     }
 
+    // Raise viewport changed only when effective viewport
+    // support is not available.
     if (SharedHelpers::IsRS5OrHigher())
     {
         RaiseViewportChanged(true /* isFinal */);

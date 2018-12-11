@@ -59,7 +59,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping since version is less than RS5");
+                Log.Warning("Skipping since version is less than RS5 and effective viewport feature is not available below RS5");
                 return;
             }
 
@@ -128,7 +128,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping since version is less than RS5");
+                Log.Warning("Skipping since version is less than RS5 and effective viewport feature is not available below RS5");
                 return;
             }
 
@@ -215,7 +215,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping since version is less than RS5");
+                Log.Warning("Skipping since version is less than RS5 and effective viewport feature is not available below RS5");
                 return;
             }
 
@@ -301,9 +301,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void CanBringIntoViewElements()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping CanBringIntoViewElements because UIElement.BringIntoViewRequested was added in RS4.");
+                // Note that UIElement.BringIntoViewRequested was added in RS4, and effective viewport was added in RS5
+                Log.Warning("Skipping since version is less than RS5 and effective viewport feature is not available below RS5");
                 return;
             }
 

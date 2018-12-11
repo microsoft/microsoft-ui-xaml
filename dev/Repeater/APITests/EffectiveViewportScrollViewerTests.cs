@@ -54,52 +54,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     public class EffectiveViewportTests : TestsBase
     {
         [TestMethod]
-        public void ValidateNoScrollingSurfaceScenario()
-        {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("Skipping since version is less than RS5");
-                return;
-            }
-
-            RunOnUIThread.Execute(() =>
-            {
-                var realizationRects = new List<Rect>();
-
-                var repeater = new ItemsRepeater()
-                {
-                    Layout = GetMonitoringLayout(new Size(500, 500), realizationRects),
-                    HorizontalCacheLength = 0.0,
-                    VerticalCacheLength = 0.0
-                };
-
-                Content = repeater;
-                Content.UpdateLayout();
-
-                Verify.AreEqual(2, realizationRects.Count);
-                Verify.AreEqual(new Rect(0, 0, 0, 0), realizationRects[0]);
-                Verify.AreEqual(0, realizationRects[1].X);
-                // 32 pixel title bar
-                Verify.AreEqual(-32, realizationRects[1].Y);
-                // Width/Height depends on the window size, so just
-                // validating something reasonable here to avoid flakiness.
-                Verify.IsLessThan(500.0, realizationRects[1].Width);
-                Verify.IsLessThan(500.0, realizationRects[1].Height);
-                realizationRects.Clear();
-            });
-        }
-
-        [TestMethod]
         public void ValidateBasicScrollViewerScenario()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping since version is less than RS5");
+                Log.Warning("Skipping since version is less than RS5 since effective viewport is not available below RS5");
                 return;
             }
 
             var realizationRects = new List<Rect>();
             ScrollViewer scrollViewer = null;
+            ManualResetEvent viewChanged = new ManualResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
@@ -119,6 +84,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
                 };
 
+                scrollViewer.ViewChanged += (sender, args) =>
+                {
+                    if(!args.IsIntermediate)
+                    {
+                        viewChanged.Set();
+                    }
+                };
+
                 Content = scrollViewer;
                 Content.UpdateLayout();
 
@@ -129,9 +102,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(new Rect(0, 0, 200, 300), realizationRects[1]);
                 realizationRects.Clear();
 
+                viewChanged.Reset();
                 scrollViewer.ChangeView(null, 100.0, 1.0f, disableAnimation: true);
             });
+
             IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChanged.WaitOne(), "Did not recieve view changed event");
+            viewChanged.Reset();
 
             RunOnUIThread.Execute(() =>
             {
@@ -142,7 +119,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 // is expected to get coerced from 400 to 300.
                 scrollViewer.ChangeView(400, 100.0, 1.0f, disableAnimation: true);
             });
+
             IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChanged.WaitOne(), "Did not recieve view changed event");
+            viewChanged.Reset();
 
             RunOnUIThread.Execute(() =>
             {
@@ -151,8 +131,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 scrollViewer.ChangeView(null, null, 2.0f, disableAnimation: true);
             });
+
             IdleSynchronizer.Wait();
-            IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChanged.WaitOne(), "Did not recieve view changed event");
+            viewChanged.Reset();
 
             RunOnUIThread.Execute(() =>
             {
@@ -166,7 +148,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping since version is less than RS5");
+                Log.Warning("Skipping since version is less than RS5 since effective viewport is not available below RS5");
                 return;
             }
 
@@ -238,7 +220,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping since version is less than RS5");
+                Log.Warning("Skipping since version is less than RS5 since effective viewport is not available below RS5");
                 return;
             }
 
@@ -328,7 +310,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping since version is less than RS5");
+                Log.Warning("Skipping since version is less than RS5 since effective viewport is not available below RS5");
                 return;
             }
 
@@ -426,7 +408,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping since version is less than RS5");
+                Log.Warning("Skipping since version is less than RS5 since effective viewport is not available below RS5");
                 return;
             }
 
