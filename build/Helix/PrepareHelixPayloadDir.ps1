@@ -50,4 +50,4 @@ copy "$dependenciesPath\*" $deviceDir
 
 
 copy "build\helix\runtests.cmd" $deviceDir
-copy "build\helix\testResults.xml" $deviceDir
+copy "build\helix\ConvertWttLogToXUnit.ps1" $deviceDir
