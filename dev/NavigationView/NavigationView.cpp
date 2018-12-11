@@ -3177,6 +3177,14 @@ void NavigationView::UpdateListViewItemSource()
                 }
                 });
         }
+        else
+        {
+            m_menuItemsVectorChangedRevoker.revoke();
+        }
+    }
+    else
+    {
+        m_menuItemsVectorChangedRevoker.revoke();
     }
 
     if (!m_appliedTemplate)
