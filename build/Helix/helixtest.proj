@@ -12,9 +12,9 @@
 
     <HelixCorrelationPayload Include="..\..\HelixPayload" />
 
-    <HelixWorkItem Include="ColorPickerTests">
-      <Timeout>00:30:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ColorPickerTests.*</Command>
+    <HelixWorkItem Include="ColorPickerTests-prevcolor">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ColorPickerTests.CanSelectPreviousColor</Command>
     </HelixWorkItem>
     <!-- <HelixWorkItem Include="RatingControlTests">
       <Timeout>00:30:00</Timeout>
