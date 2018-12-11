@@ -64,6 +64,8 @@ jobs:
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet custom'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       command: custom
       projects: build\Helix\helixtest.proj
