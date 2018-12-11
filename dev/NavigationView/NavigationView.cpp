@@ -3135,7 +3135,7 @@ void NavigationView::UpdateListViewItemSource()
             auto wuxItem = item.try_as<winrt::Windows::UI::Xaml::Controls::NavigationViewItem>();
             if (wuxItem)
             {
-                throw winrt::hresult_invalid_argument(L"List contains Windows.UI.Xaml.Controls.NavigationViewItem. This control requires that the NavigationViewItems be of type Microsoft.UI.Xaml.Controls.NavigationViewITem");
+                throw winrt::hresult_invalid_argument(L"MenuItems contains a Windows.UI.Xaml.Controls.NavigationViewItem. This control requires that the NavigationViewItems be of type Microsoft.UI.Xaml.Controls.NavigationViewItem.");
             }
         };
 
@@ -3157,7 +3157,7 @@ void NavigationView::UpdateListViewItemSource()
             checkListIsValid(observableVector);
 
             // And any future content changes
-            m_menuItemsVectorChangedToken = observableVector.VectorChanged({
+            m_menuItemsVectorChangedRevoker = observableVector.VectorChanged(winrt::auto_revoke, {
                 [checkItemIsValid, checkListIsValid](winrt::IObservableVector<winrt::IInspectable> const& sender, winrt::IVectorChangedEventArgs const& args)
                 {
                     switch (args.CollectionChange())
