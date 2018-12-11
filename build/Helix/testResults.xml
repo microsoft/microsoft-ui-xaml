@@ -1,6 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <assemblies timestamp="12/10/2018 13:53:03">
-  <assembly name="F:\Temp\apps\xUnitTestApp\xUnitTestApp\bin\Debug\xUnitTestApp.DLL" environment="64-bit .NET 4.0.30319.42000 [collection-per-class, parallel (12 threads)]" test-framework="xUnit.net 2.4.1.0" run-date="2018-12-10" run-time="13:53:03" config-file="F:\Temp\apps\xUnitTestApp\packages\xunit.runner.console.2.4.1\tools\net472\xunit.console.exe.Config" total="2" passed="1" failed="1" skipped="0" time="0.275" errors="0">
+  <assembly name="F:\Temp\apps\xUnitTestApp\xUnitTestApp\bin\Debug\xUnitTestApp.DLL" 
+    environment="64-bit .NET 4.0.30319.42000 [collection-per-class, parallel (12 threads)]" 
+    test-framework="xUnit.net 2.4.1.0" 
+    run-date="2018-12-10" 
+    run-time="13:53:03" 
+    config-file="F:\Temp\apps\xUnitTestApp\packages\xunit.runner.console.2.4.1\tools\net472\xunit.console.exe.Config" 
+    total="2" 
+    passed="1" 
+    failed="1" 
+    skipped="0" 
+    time="0.275" 
+    errors="0">
     <errors />
     <collection total="2" passed="1" failed="1" skipped="0" name="Test collection for xUnitTestApp.Class1" time="0.056">
       <test name="xUnitTestApp.Class1.FailingTest" type="xUnitTestApp.Class1" method="FailingTest" time="0.0532798" result="Fail">
