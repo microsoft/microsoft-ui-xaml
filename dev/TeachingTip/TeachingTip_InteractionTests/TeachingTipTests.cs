@@ -2,6 +2,7 @@
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using Common;
 using System;
+using Windows.Foundation;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -27,14 +28,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
     [TestClass]
     public class TeachingTipTests
     {
-        struct rect
-        {
-            public double x;
-            public double y;
-            public double width;
-            public double height;
-        };
-        
         private struct TeachingTipTestPageElements
         {
             public ListBox lstTeachingTipEvents;
@@ -75,6 +68,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             public CheckBox isIdleCheckBox;
 
             public Button bringIntoViewButton;
+        }
+
+        enum PlacementOptions
+        {
+            Top,
+            Bottom,
+            Left,
+            Right,
+            TopEdgeAlignedRight,
+            TopEdgeAlignedLeft,
+            BottomEdgeAlignedRight,
+            BottomEdgeAlignedLeft,
+            LeftEdgeAlignedTop,
+            LeftEdgeAlignedBottom,
+            RightEdgeAlignedTop,
+            RightEdgeAlignedBottom,
+            Auto
+        }
+
+        enum BleedingContentOptions
+        {
+            RedSquare,
+            BlueSquare,
+            Image,
+            NoContent
         }
 
         var elements;
@@ -154,7 +172,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ScrollTargetIntoView();
                 scrollBy(10);
-                var targetRect = getTargetBounds();
+                var targetRect = GetTargetBounds();
                 useTestWindowBounds(targetRect.x - 328, targetRect.y - 304, targetRect.width + 656, targetRect.height + 608);
                 OpenTeachingTip();
                 Verify.IsTrue(getEffectivePlacement().Equals("Top"));
@@ -416,7 +434,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.isLightDismissEnabledButton.Invoke();
         }
 
-        private void SetPlacement(int dropDownValue)
+        private void SetPlacement(PlacementOptions placement)
         {
             if (elements.placementComboBox == null)
             {
@@ -432,42 +450,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(elements.setPlacementButton);
             }
 
-            switch (dropDownValue)
+            switch (placement)
             {
-                case 0:
+                case PlacementOptions.Top:
                     elements.placementComboBox.SelectItemByName("Top");
                     break;
-                case 1:
+                case PlacementOptions.Bottom:
                     elements.placementComboBox.SelectItemByName("Bottom");
                     break;
-                case 2:
+                case PlacementOptions.Left:
                     elements.placementComboBox.SelectItemByName("Left");
                     break;
-                case 3:
+                case PlacementOptions.Right:
                     elements.placementComboBox.SelectItemByName("Right");
                     break;
-                case 4:
+                case PlacementOptions.TopEdgeAlignedRight:
                     elements.placementComboBox.SelectItemByName("TopEdgeAlignedRight");
                     break;
-                case 5:
+                case PlacementOptions.TopEdgeAlignedLeft:
                     elements.placementComboBox.SelectItemByName("TopEdgeAlignedLeft");
                     break;
-                case 6:
+                case PlacementOptions.BottomEdgeAlignedRight:
                     elements.placementComboBox.SelectItemByName("BottomEdgeAlignedRight");
                     break;
-                case 7:
+                case PlacementOptions.BottomEdgeAlignedLeft:
                     elements.placementComboBox.SelectItemByName("BottomEdgeAlignedLeft");
                     break;
-                case 8:
+                case PlacementOptions.LeftEdgeAlignedTop:
                     elements.placementComboBox.SelectItemByName("LeftEdgeAlignedTop");
                     break;
-                case 9:
+                case PlacementOptions.LeftEdgeAlignedBottom:
                     elements.placementComboBox.SelectItemByName("LeftEdgeAlignedBottom");
                     break;
-                case 10:
+                case PlacementOptions.RightEdgeAlignedTop:
                     elements.placementComboBox.SelectItemByName("RightEdgeAlignedTop");
                     break;
-                case 11:
+                case PlacementOptions.RightEdgeAlignedBottom:
                     elements.placementComboBox.SelectItemByName("RightEdgeAlignedBottom");
                     break;
                 default:
@@ -477,7 +495,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.setPlacementButton.Invoke();
         }
 
-        private void SetBleedingContent(int dropDownValue)
+        private void SetBleedingContent(BleedingContentOptions bleedingContent)
         {
             if (elements.bleedingContentComboBox == null)
             {
@@ -493,15 +511,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(elements.setBleedingContentButton);
             }
 
-            switch (dropDownValue)
+            switch (bleedingContent)
             {
-                case 0:
+                case BleedingContentOptions.RedSquare:
                     elements.bleedingContentComboBox.SelectItemByName("Red Square");
                     break;
-                case 1:
+                case BleedingContentOptions.BlueSquare:
                     elements.bleedingContentComboBox.SelectItemByName("Blue Square");
                     break;
-                case 2:
+                case BleedingContentOptions.Image:
                     elements.bleedingContentComboBox.SelectItemByName("Image");
                     break;
                 default:
@@ -589,7 +607,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.useTestWindowBoundsCheckbox.Check();
         }
 
-        private rect GetTargetBounds()
+        private Windows.Foundation.Rect GetTargetBounds()
         {
             if (elements.getTargetBoundsButton == null)
             {
