@@ -3,6 +3,9 @@
 
 using MUXControlsTestApp.Utilities;
 
+using System;
+using System.Collections.Generic;
+
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Markup;
@@ -362,5 +365,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 #endif
 
+        [TestMethod]
+        public void VerifyCanNotAddWUXItems()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+
+                // Nothing should go wrong adding a MUX item
+                var muxItem = new Microsoft.UI.Xaml.Controls.NavigationViewItem { Content = "MUX Item" };
+                navView.MenuItems.Add(muxItem);
+
+                navView.MenuItems.Add(new Microsoft.UI.Xaml.Controls.NavigationViewItemSeparator());
+
+                // But adding a MUX item should generate an exception
+                var wuxItem = new Windows.UI.Xaml.Controls.NavigationViewItem { Content = "WUX Item" };
+                Verify.Throws<Exception>(() => { navView.MenuItems.Add(wuxItem); });
+            });
+        }
     }
 }
