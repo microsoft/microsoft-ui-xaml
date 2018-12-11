@@ -1,23 +1,32 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<assemblies timestamp="12/10/2018 13:53:03">
-  <assembly name="MUXControls.Test.dll" 
-    test-framework="TAEF" 
-    run-date="2018-12-10" 
-    run-time="13:53:03" 
-    total="2" 
-    passed="1" 
-    failed="1" 
-    skipped="0" 
-    time="0.275" 
-    errors="0">
-    <errors />
-    <collection total="2" passed="1" failed="1" skipped="0" name="Test collection for xUnitTestApp.Class1" time="0.056">
-      <test name="xUnitTestApp.Class1.FailingTest" type="xUnitTestApp.Class1" method="FailingTest" time="0.0532798" result="Fail">
-        <failure exception-type="TaefException">
-          <message><![CDATA[Assert.Equal() Failure\r\nExpected: 5\r\nActual:   4]]></message>
+﻿<assemblies timestamp="2018-12-11T13:14:33.8958952-08:00">
+  <assembly name="MUXControls.Test.dll" test-framework="TAEF" run-date="2018-14-11" run-time="01:14:33" total="7" passed="6" failed="1" skipped="0" time="0" errors="0">
+    <collection total="7" passed="6" failed="1" skipped="0" name="Test collection" time="0">
+      <test name="MUXControls.InteractionTests.ParallaxViewTests.TargetListViewBackground" type="MUXControls.InteractionTests.ParallaxViewTests" method=".TargetListViewBackground" time="6.811" result="Pass" />
+      <test name="MUXControls.InteractionTests.ParallaxViewTests.TargetListViewItem" type="MUXControls.InteractionTests.ParallaxViewTests" method=".TargetListViewItem" time="10.995" result="Fail">
+        <failure exception-type="Exception">
+          <message><![CDATA[
+[Info]: Selecting ParallaxView tests
+[Info]: ParallaxView Tests initializing TestSetupHelper
+[Info]: Waiting until __TestContentLoadedCheckBox to be checked by test app.
+[Info]: __TestContentLoadedCheckBox checkbox checked, page has loaded
+[Info]: Navigating to ListViewItemPage
+[Info]: IsNotNull(Microsoft.Windows.Apps.Test.Foundation.UIObject) - Verifying that navigateToListViewItem Button was found
+[Info]: Retrieving ListView
+[Info]: Going to the previous page...
+[Info]: Process already exited
+[Error]: System.Runtime.InteropServices.COMException (0x80040201): An event was unable to invoke any of the subscribers (Exception from HRESULT: 0x80040201)    at UIAutomationClient.IUIAutomationInvokePattern.Invoke()    at Microsoft.Windows.Apps.Test.Foundation.Patterns.InvokeImplementation.Invoke()    at Microsoft.Windows.Apps.Test.Foundation.Controls.Button.Invoke()    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common.Wait.ForIdle(Boolean findElementsIfNull)    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common.ElementCache.Refresh()    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common.ElementCache.TryGetObject(String key, List`1 dictionaries, Action`1 waitAction)    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common.ElementCache.TryGetObject(String key, Dictionary`2 dictionary, Action`1 waitAction)    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common.ElementCache.TryGetObjectByName(String name, Boolean shouldWait)    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common.FindCore.ByName(String name, Boolean shouldWait)    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common.TryFindElement.ByName(String name)    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra.TestEnvironment.WaitUntilElementLoaded(String key, ElementKeyType keyType)    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra.TestEnvironment.WaitUntilElementLoadedByName(String name)    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common.ElementCache.TryGetObject(String key, List`1 dictionaries, Action`1 waitAction)    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common.ElementCache.TryGetObject(String key, Dictionary`2 dictionary, Action`1 waitAction)    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common.ElementCache.TryGetObjectByName(String name, Boolean shouldWait)    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common.FindCore.ByName(String name, Boolean shouldWait)    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common.FindElement.ByName(String name)    at Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ParallaxViewTests.TargetListViewItem()
+[Info]: Cleaning up test...
+[Error]: Failed to create test app process (Process is null: False) or process exited unexpectedly. Failing the current test and queueing an app restart.
+[Info]: Test failed. Queueing an app restart, since we may now be in an unknown state.
+[Info]: Test cleanup complete.
+[Error]: Cleanup fixture 'TestCleanup' for the scope 'Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ParallaxViewTests.TargetListViewItem' failed.]]></message>
         </failure>
       </test>
-      <test name="xUnitTestApp.Class1.PassingTest" type="xUnitTestApp.Class1" method="PassingTest" time="0.002329" result="Pass" />
+      <test name="MUXControls.InteractionTests.ParallaxViewTests.TargetListViewHeader" type="MUXControls.InteractionTests.ParallaxViewTests" method=".TargetListViewHeader" time="17.5" result="Pass" />
+      <test name="MUXControls.InteractionTests.ParallaxViewTests.UseVirtualizingStackPanelSource" type="MUXControls.InteractionTests.ParallaxViewTests" method=".UseVirtualizingStackPanelSource" time="5.6209999999999996" result="Pass" />
+      <test name="MUXControls.InteractionTests.ParallaxViewTests.UseTextControlSource" type="MUXControls.InteractionTests.ParallaxViewTests" method=".UseTextControlSource" time="7.462" result="Pass" />
+      <test name="MUXControls.InteractionTests.ParallaxViewTests.ChangeSourceAndTargetPropertiesUsingScrollViewer" type="MUXControls.InteractionTests.ParallaxViewTests" method=".ChangeSourceAndTargetPropertiesUsingScrollViewer" time="8.732" result="Pass" />
+      <test name="MUXControls.InteractionTests.ParallaxViewTests.ChangeSourceAndTargetPropertiesUsingScroller" type="MUXControls.InteractionTests.ParallaxViewTests" method=".ChangeSourceAndTargetPropertiesUsingScroller" time="8.638" result="Pass" />
     </collection>
   </assembly>
 </assemblies>
