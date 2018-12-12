@@ -1,6 +1,6 @@
 # Windows UI Library
 
-The Windows UI Library (WinUI) is a set of open source Microsoft UI controls and features for the Windows [UWP platform](https://docs.microsoft.com/windows/uwp/index).
+The Windows UI Library (WinUI) provides official native Microsoft UI controls and features for the Windows [UWP platform](https://docs.microsoft.com/windows/uwp/index).
 
 WinUI is the easiest way to build great [Fluent Design](https://docs.microsoft.com/windows/uwp/design/fluent-design-system/) experiences for Windows.
 
@@ -93,7 +93,7 @@ The **Microsoft.UI.Xaml.Core.Direct** package includes:
 
 ## Roadmap
 
-For info on schedules and plans please see the high level plans see the [Windows UI Library Roadmap](docs/roadmap.md).
+For more info on the WinUI release schedule and high level plans please see the [Windows UI Library Roadmap](docs/roadmap.md).
 
 ## Data/Telemetry
 
