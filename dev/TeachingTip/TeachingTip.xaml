@@ -68,13 +68,13 @@
                                 <VisualState x:Name="HeaderCloseButton">
                                     <VisualState.Setters>
                                         <Setter Target="TitlesStackPanel.Margin" Value="0,0,28,0"/>
-                                        <Setter Target="XCloseButton.Visibility" Value="Visible"/>
+                                        <Setter Target="AlternateCloseButton.Visibility" Value="Visible"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="FooterCloseButton">
                                     <VisualState.Setters>
                                         <Setter Target="TitlesStackPanel.Margin" Value="0,0,0,0"/>
-                                        <Setter Target="XCloseButton.Visibility" Value="Collapsed"/>
+                                        <Setter Target="AlternateCloseButton.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -395,7 +395,7 @@
                                             </Grid>
                                         </StackPanel>
                                     </ScrollViewer>
-                                    <Button x:Name="XCloseButton" Width="40" Height="40" Background="Transparent" VerticalAlignment="Top" HorizontalAlignment="Right" BorderThickness="0">
+                                    <Button x:Name="AlternateCloseButton" Width="40" Height="40" Background="Transparent" VerticalAlignment="Top" HorizontalAlignment="Right" BorderThickness="0">
                                         <Viewbox Width="12" Height="12">
                                             <SymbolIcon Symbol="Cancel"/>
                                         </Viewbox>

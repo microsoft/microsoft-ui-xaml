@@ -102,7 +102,7 @@ private:
     tracker_ref<winrt::ContentPresenter> m_bleedingImageContentPresenter{ this };
     tracker_ref<winrt::ContentPresenter> m_iconContentPresenter{ this };
     tracker_ref<winrt::Button> m_actionButton{ this };
-    tracker_ref<winrt::Button> m_xCloseButton{ this };
+    tracker_ref<winrt::Button> m_alternateCloseButton{ this };
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::Polygon> m_beakPolygon{ this };
     tracker_ref<winrt::Grid> m_beakEdgeBorder{ this };
@@ -190,7 +190,7 @@ private:
     static constexpr wstring_view s_titlesStackPanelName{ L"TitlesStackPanel"sv };
     static constexpr wstring_view s_titleTextBoxName{ L"TitleTextBlock"sv };
     static constexpr wstring_view s_subtextTextBoxName{ L"SubtextTextBlock"sv };
-    static constexpr wstring_view s_xCloseButtonName{ L"XCloseButton"sv };
+    static constexpr wstring_view s_alternateCloseButtonName{ L"AlternateCloseButton"sv };
     static constexpr wstring_view s_mainContentPresenterName{ L"MainContentPresenter"sv };
     static constexpr wstring_view s_actionButtonName{ L"ActionButton"sv };
     static constexpr wstring_view s_closeButtonName{ L"CloseButton"sv };

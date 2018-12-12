@@ -29,7 +29,7 @@ void TeachingTip::OnApplyTemplate()
     m_bleedingImageContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(s_bleedingImageContentPresenterName, controlProtected));
     m_iconContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(s_iconName, controlProtected));
     m_actionButton.set(GetTemplateChildT<winrt::Button>(s_actionButtonName, controlProtected));
-    m_xCloseButton.set(GetTemplateChildT<winrt::Button>(s_xCloseButtonName, controlProtected));
+    m_alternateCloseButton.set(GetTemplateChildT<winrt::Button>(s_alternateCloseButtonName, controlProtected));
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
     m_beakEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_beakEdgeBorderName, controlProtected));
     if (SharedHelpers::IsThemeShadowAvailable())
@@ -68,9 +68,9 @@ void TeachingTip::OnApplyTemplate()
     {
         m_closeButton.get().Click({ this, &TeachingTip::OnCloseButtonClicked });
     }
-    if (m_xCloseButton)
+    if (m_alternateCloseButton)
     {
-        m_xCloseButton.get().Click({ this, &TeachingTip::OnCloseButtonClicked });
+        m_alternateCloseButton.get().Click({ this, &TeachingTip::OnCloseButtonClicked });
     }
 
     if (m_actionButton)
