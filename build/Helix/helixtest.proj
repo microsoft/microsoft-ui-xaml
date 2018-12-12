@@ -112,9 +112,9 @@
       <Timeout>00:20:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.SliderInteractionTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="ApiTests">
+    <!-- <HelixWorkItem Include="ApiTests">
       <Timeout>00:20:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.*</Command>
-    </HelixWorkItem>
+    </HelixWorkItem> -->
   </ItemGroup>
 </Project>
