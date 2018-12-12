@@ -324,6 +324,9 @@
                              cast the shadow. But in order for the RootGrid to cast a shadow we need to specify which elements are to receive that shadow. Since we can't know
                              this from the tip's code we need to instead have an element within the template we can target. This is that element. -->
                         <Grid x:Name="ShadowTarget" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" Margin="-100"/>
+                        <!-- This BeakEdgeBorder needs to be z ordered underneath the BeakPolygon while the RootGrid needs to be over it, hence declaring these parts in this
+                             order. This is to achieve the desired occlusion of the beaks content edge border. The beak edge border is a low opacity highlight, which means we
+                             need to have the background color present underneath the highlight, hence the double grid here. -->
                         <Grid x:Name="BeakEdgeBorder" Background="{TemplateBinding Background}">
                             <Grid Background="{ThemeResource TeachingTipBorderBrush}"/>
                         </Grid>
