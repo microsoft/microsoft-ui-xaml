@@ -35,12 +35,19 @@ namespace ConsoleApp1
         public List<TestMetric> Metrics { get; private set; }
     }
 
+    public class TestPass
+    {
+        public TimeSpan TestPassTime { get; set; }
+        public List<TestResult> Tests { get; set; }
+    }
+
     public static class TestResultParser
     {
         public static void ConvertTaefLogToXUnitLog(string taefInputPath, string xunitOutputPath)
         {
             var telogfilepath = taefInputPath;
-            var results = TestResultParser.ParseTestWttFile2(telogfilepath, true);
+            var testPass = TestResultParser.ParseTestWttFile2(telogfilepath, true);
+            var results = testPass.Tests;
 
             int resultCount = results.Count;
             int passedCount = results.Where(r => r.Passed).Count();
@@ -56,10 +63,12 @@ namespace ConsoleApp1
             assembly.SetAttributeValue("total", resultCount);
             assembly.SetAttributeValue("passed", passedCount);
             assembly.SetAttributeValue("failed", failedCount);
-            assembly.SetAttributeValue("skipped", 0); // ?
-            assembly.SetAttributeValue("time", 0); // ?
+            assembly.SetAttributeValue("skipped", 0);
+            assembly.SetAttributeValue("time", (int)testPass.TestPassTime.TotalSeconds);
             assembly.SetAttributeValue("errors", 0); // ?
             root.Add(assembly);
+
+            
 
             var collection = new XElement("collection");
             collection.SetAttributeValue("total", resultCount);
@@ -67,7 +76,7 @@ namespace ConsoleApp1
             collection.SetAttributeValue("failed", failedCount);
             collection.SetAttributeValue("skipped", 0); // ?
             collection.SetAttributeValue("name", "Test collection"); // ?
-            collection.SetAttributeValue("time", 0); // ?
+            collection.SetAttributeValue("time", (int)testPass.TestPassTime.TotalSeconds); // ?
             assembly.Add(collection);
 
             foreach (var result in results)
@@ -100,7 +109,7 @@ namespace ConsoleApp1
 
             File.WriteAllText(xunitOutputPath, root.ToString());
         }
-        public static List<TestResult> ParseTestWttFile2(string fileName, bool cleanupFailuresAreRegressions)
+        public static TestPass ParseTestWttFile2(string fileName, bool cleanupFailuresAreRegressions)
         {
             using (var stream = System.IO.File.OpenRead(fileName)) {
                 var doc = XDocument.Load(stream);
@@ -115,6 +124,9 @@ namespace ConsoleApp1
                 bool hasSeenPerfAnalyzerStopSession = false;
 
                 bool shouldLogToTestDetails = false;
+
+                long testPassStartTime = 0;
+                long testPassStopTime = 0;
 
                 Func<XElement, bool> isScopeData = (elt) => {
                     return
@@ -259,14 +271,14 @@ namespace ConsoleApp1
                         }
                     }
 
-                    if (currentResult != null && element.Name == "Msg") {
-                        if (shouldLogToTestDetails && !isScopeData(element)) {
-                            currentResult.Details += "\r\n[Info]: " + element.Attribute("UserText").Value;
-                        }
-                        if (currentResult.Passed && element.Attribute("UserText").Value.StartsWith(" Performance analyzer results")) {
-                            hasSeenPerfAnalyzerStopSession = true;
-                        }
-                    }
+                    //if (currentResult != null && element.Name == "Msg") {
+                    //    if (shouldLogToTestDetails && !isScopeData(element)) {
+                    //        currentResult.Details += "\r\n[Info]: " + element.Attribute("UserText").Value;
+                    //    }
+                    //    if (currentResult.Passed && element.Attribute("UserText").Value.StartsWith(" Performance analyzer results")) {
+                    //        hasSeenPerfAnalyzerStopSession = true;
+                    //    }
+                    //}
 
                     if (currentResult != null && element.Name == "Warn") {
                         if (shouldLogToTestDetails) {
@@ -281,7 +293,19 @@ namespace ConsoleApp1
                         }
                     }
                 }
-                return testResults;
+                
+                testPassStartTime = Int64.Parse(doc.Root.Descendants("WexTraceInfo").First().Attribute("TimeStamp").Value);
+                testPassStopTime = Int64.Parse(doc.Root.Descendants("WexTraceInfo").Last().Attribute("TimeStamp").Value);
+                
+                var testPassTime = TimeSpan.FromSeconds((double)(testPassStopTime - testPassStartTime) / frequency);
+
+                var testpass = new TestPass
+                {
+                    TestPassTime = testPassTime,
+                    Tests = testResults
+                };
+
+                return testpass;
             }
         }
     }
