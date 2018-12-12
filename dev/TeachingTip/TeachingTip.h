@@ -88,8 +88,8 @@ private:
     void CreateExpandAnimation();
     void CreateContractAnimation();
 
-    void StartExpandAnimation();
-    void StartContractToCloseAnimation();
+    void StartExpandToOpen();
+    void StartContractToClose();
 
     winrt::TeachingTipPlacementMode DetermineEffectivePlacement();
     void EstablishShadows();

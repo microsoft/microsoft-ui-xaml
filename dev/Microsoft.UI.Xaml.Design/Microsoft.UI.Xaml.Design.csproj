@@ -39,12 +39,6 @@
     <Compile Include="RegisterMetadata.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\dll\Microsoft.UI.Xaml.vcxproj">
-      <Project>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</Project>
-      <Name>Microsoft.UI.Xaml</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <!-- [Namespace.ControlName.extension]
     https://docs.microsoft.com/en-us/nuget/guides/create-ui-controls#add-custom-icons-to-your-controls -->
     <EmbeddedResource Include="Icons\Microsoft.UI.Xaml.Controls.ColorPicker.bmp" />

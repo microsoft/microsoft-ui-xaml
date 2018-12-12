@@ -95,7 +95,7 @@ void TeachingTip::OnApplyTemplate()
 
     if (m_startAnimationInOnApplyTemplate)
     {
-        StartExpandAnimation();
+        StartExpandToOpen();
         m_startAnimationInOnApplyTemplate = false;
     }
 }
@@ -731,7 +731,7 @@ void TeachingTip::OnIsOpenChanged()
             m_popup.get().IsOpen(true);
             if (m_rootGrid)
             {
-                StartExpandAnimation();
+                StartExpandToOpen();
             }
             else
             {
@@ -912,7 +912,7 @@ void TeachingTip::ClosePopupWithAnimation()
 {
     if (m_popup && m_popup.get().IsOpen())
     {
-        StartContractToCloseAnimation();
+        StartContractToClose();
     }
 }
 
@@ -1028,7 +1028,7 @@ void TeachingTip::CreateContractAnimation()
     m_contractElevationAnimation.set(contractElevationAnimation);
 }
 
-void TeachingTip::StartExpandAnimation()
+void TeachingTip::StartExpandToOpen()
 {
     //The contract and expand animations currently use facade's which were not availible pre RS5.
     if (SharedHelpers::IsRS5OrHigher())
@@ -1072,7 +1072,7 @@ void TeachingTip::StartExpandAnimation()
     }
 }
 
-void TeachingTip::StartContractToCloseAnimation()
+void TeachingTip::StartContractToClose()
 {
     //The contract and expand animations currently use facade's which were not availible pre RS5.
     if (SharedHelpers::IsRS5OrHigher())
