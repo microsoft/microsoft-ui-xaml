@@ -214,7 +214,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(getEffectivePlacement().Equals("BottomEdgeAlignedRight"));
                 CloseTeachingTipProgrammatically();
 
-                //remove the bleeding content;
+                // Remove the bleeding content;
                 SetBleedingContent(3);
 
                 useTestWindowBounds(targetRect.x - 328, targetRect.y - 100, targetRect.width + 348, targetRect.height + 20);
@@ -665,9 +665,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return elements.effectivePlacementTextBlock.GetText();
         }
 
-        //The test UI has a list box which the teaching tip populates with messages about which events have fired and other useful
-        //Debugging info. This method returns the message at the provided index, which helps testing that events were received in
-        //the expected order.
+        // The test UI has a list box which the teaching tip populates with messages about which events have fired and other useful
+        // Debugging info. This method returns the message at the provided index, which helps testing that events were received in
+        // the expected order.
         private ListBoxItem GetTeachingTipDebugMessage(int index)
         {
             if (elements.lstTeachingTipEvents == null)

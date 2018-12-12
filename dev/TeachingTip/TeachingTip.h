@@ -20,10 +20,10 @@ public:
     void OnApplyTemplate();
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    //ContentControl
+    // ContentControl
     void OnContentChanged(const winrt::IInspectable& oldContent, const winrt::IInspectable& newContent);
 
-    //UIElement
+    // UIElement
     void OnBackgroundChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
     winrt::AutomationPeer OnCreateAutomationPeer();
 
@@ -32,7 +32,7 @@ public:
     static void SetAttach(const winrt::UIElement& element, const winrt::TeachingTip& teachingTip);
     static winrt::TeachingTip GetAttach(const winrt::UIElement& element);
 
-    //TestHooks
+    // TestHooks
     void SetExpandEasingFunction(const winrt::CompositionEasingFunction& easingFunction);
     void SetContractEasingFunction(const winrt::CompositionEasingFunction& easingFunction);
     void SetContentElevation(float elevation);
@@ -151,13 +151,13 @@ private:
     static inline winrt::Thickness RightEdgeAlignedBottomBeakMargin(double width, double height) { return { 0, s_minimumActualTipEdgeToBeakEdgeMargin, 0, 0 }; }
     static inline winrt::Thickness OtherBeakMargin(double width, double height) { return { 0, 0, 0, 0 }; }
 
-    //These values are shifted by one because this is the 1 px beak highlight that sits adjacent to the actual beak for which the constants are defined.
+    // These values are shifted by one because this is the 1 px beak highlight that sits adjacent to the actual beak for which the constants are defined.
     static inline winrt::Thickness BottomBeakHightlightMargin(double width, double height) { return { ((width - s_beakLongSideActualLength) / 2) - 1, -(s_beakShortSideLength - 1), 0, 0 }; }
     static inline winrt::Thickness BottomEdgeAlignedRightBeakHighlightMargin(double width, double height) { return { (s_beakLongSideActualLength / 2) -1, -(s_beakShortSideLength - 1), 0, 0 }; }
     static inline winrt::Thickness BottomEdgeAlignedLeftBeakHighlightMargin(double width, double height) { return { width - (s_beakLongSideActualLength + s_minimumActualTipEdgeToBeakEdgeMargin + 1), -(s_beakShortSideLength - 1), 0, 0 }; }
     static inline winrt::Thickness OtherBeakHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
 
-    //These values are shifted by one because this is the 1px highlight that sits adjacent to the tip border.
+    // These values are shifted by one because this is the 1px highlight that sits adjacent to the tip border.
     static inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (s_beakShortSideLength - 1), 1, 0, 0 }; }
     static inline winrt::Thickness BottomEdgeAlignedRightPlacementTopRightHighlightMargin(double width, double height) { return { s_minimumTipEdgeToBeakEdgeMargin + s_beakLongSideLength - 1, 1, 0, 0 }; }
     static inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (s_minimumTipEdgeToBeakEdgeMargin + 1), 1, 0, 0 }; }
@@ -167,7 +167,7 @@ private:
     static inline winrt::Thickness BottomEdgeAlignedRightPlacementTopLeftHighlightMargin(double width, double height) { return { 0, 1, width - (s_minimumTipEdgeToBeakEdgeMargin + 1), 0 }; }
     static inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 0, 1, s_minimumTipEdgeToBeakEdgeMargin + s_beakLongSideLength - 1, 0 }; }
     static inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
-    //Shifted by one since the beak edge's border is not accounted for automatically.
+    // Shifted by one since the beak edge's border is not accounted for automatically.
     static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 0, 0, 1, 0 }; }
     static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, 0, 0 }; }
 
@@ -214,8 +214,8 @@ private:
 
     static constexpr float s_defaultTipHeightAndWidth = 320;
 
-    //The beak is designed as an 8x16 pixel shape, however it is actual a 10x20 shape which is partially occluded by the tip content.
-    //This is done to get the border of the tip to follow the beak shape without drawing the border on the tip edge of the beak.
+    // The beak is designed as an 8x16 pixel shape, however it is actual a 10x20 shape which is partially occluded by the tip content.
+    // This is done to get the border of the tip to follow the beak shape without drawing the border on the tip edge of the beak.
     static constexpr float s_minimumTipEdgeToBeakEdgeMargin = 12;
     static constexpr float s_minimumActualTipEdgeToBeakEdgeMargin = 10;
 
@@ -227,6 +227,6 @@ private:
     static constexpr float s_beakShortSideActualLength = 10;
 
     static constexpr float s_beakOcculsionDistance = 2;
-    //The top edge needs an extra pixel of occlusion because of the top edge highlight.
+    // The top edge needs an extra pixel of occlusion because of the top edge highlight.
     static constexpr float s_beakTopEdgeOcculsionDistance = 3;
 };
