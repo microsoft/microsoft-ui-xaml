@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "common.h"
 #include "TeachingTipTestHooks.h"
 
@@ -34,7 +34,7 @@ void TeachingTipTestHooks::SetContractEasingFunction(const winrt::TeachingTip& t
     }
 }
 
-void TeachingTipTestHooks::SetContentElevation(const winrt::TeachingTip& teachingTip, const float elevation)
+void TeachingTipTestHooks::SetContentElevation(const winrt::TeachingTip& teachingTip, float elevation)
 {
     if (teachingTip)
     {
@@ -42,7 +42,7 @@ void TeachingTipTestHooks::SetContentElevation(const winrt::TeachingTip& teachin
     }
 }
 
-void TeachingTipTestHooks::SetBeakElevation(const winrt::TeachingTip& teachingTip, const float elevation)
+void TeachingTipTestHooks::SetBeakElevation(const winrt::TeachingTip& teachingTip, float elevation)
 {
     if (teachingTip)
     {
@@ -50,7 +50,7 @@ void TeachingTipTestHooks::SetBeakElevation(const winrt::TeachingTip& teachingTi
     }
 }
 
-void TeachingTipTestHooks::SetBeakShadowTargetsShadowTarget(const winrt::TeachingTip& teachingTip, const bool targetsShadowTarget)
+void TeachingTipTestHooks::SetBeakShadowTargetsShadowTarget(const winrt::TeachingTip& teachingTip, bool targetsShadowTarget)
 {
     if (teachingTip)
     {
@@ -58,7 +58,7 @@ void TeachingTipTestHooks::SetBeakShadowTargetsShadowTarget(const winrt::Teachin
     }
 }
 
-void TeachingTipTestHooks::SetUseTestWindowBounds(const winrt::TeachingTip& teachingTip, const bool useTestWindowBounds)
+void TeachingTipTestHooks::SetUseTestWindowBounds(const winrt::TeachingTip& teachingTip, bool useTestWindowBounds)
 {
     if (teachingTip)
     {

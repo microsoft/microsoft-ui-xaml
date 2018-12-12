@@ -1460,7 +1460,7 @@ void TeachingTip::SetContractEasingFunction(const winrt::CompositionEasingFuncti
     m_contractEasingFunction.set(easingFunction);
     CreateContractAnimation();
 }
-void TeachingTip::SetContentElevation(const float elevation)
+void TeachingTip::SetContentElevation(float elevation)
 {
     m_contentElevation = elevation;
     if (SharedHelpers::IsRS5OrHigher())
@@ -1475,7 +1475,7 @@ void TeachingTip::SetContentElevation(const float elevation)
         }
     }
 }
-void TeachingTip::SetBeakElevation(const float elevation)
+void TeachingTip::SetBeakElevation(float elevation)
 {
     m_beakElevation = elevation;
     if (SharedHelpers::IsRS5OrHigher() && m_beakPolygon)

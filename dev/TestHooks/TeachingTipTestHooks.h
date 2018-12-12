@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "TeachingTip.h"
 
@@ -19,10 +19,10 @@ public:
 
     static void SetExpandEasingFunction(const winrt::TeachingTip& teachingTip, const winrt::CompositionEasingFunction& easingFunction);
     static void SetContractEasingFunction(const winrt::TeachingTip& teachingTip, const winrt::CompositionEasingFunction& easingFunction);
-    static void SetContentElevation(const winrt::TeachingTip& teachingTip, const float elevation);
-    static void SetBeakElevation(const winrt::TeachingTip& teachingTip, const float elevation);
-    static void SetBeakShadowTargetsShadowTarget(const winrt::TeachingTip& teachingTip, const bool targetsShadowTarget);
-    static void SetUseTestWindowBounds(const winrt::TeachingTip& teachingTip, const bool useTestWindowBounds);
+    static void SetContentElevation(const winrt::TeachingTip& teachingTip, float elevation);
+    static void SetBeakElevation(const winrt::TeachingTip& teachingTip, float elevation);
+    static void SetBeakShadowTargetsShadowTarget(const winrt::TeachingTip& teachingTip, bool targetsShadowTarget);
+    static void SetUseTestWindowBounds(const winrt::TeachingTip& teachingTip, bool useTestWindowBounds);
     static void SetTestWindowBounds(const winrt::TeachingTip& teachingTip, const winrt::Rect& testWindowBounds);
 
     static bool GetIsIdle(const winrt::TeachingTip& teachingTip);

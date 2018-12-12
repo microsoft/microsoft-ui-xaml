@@ -35,9 +35,9 @@ public:
     //TestHooks
     void SetExpandEasingFunction(const winrt::CompositionEasingFunction& easingFunction);
     void SetContractEasingFunction(const winrt::CompositionEasingFunction& easingFunction);
-    void SetContentElevation(const float elevation);
-    void SetBeakElevation(const float elevation);
-    void SetBeakShadowTargetsShadowTarget(const bool targetsShadowTarget);
+    void SetContentElevation(float elevation);
+    void SetBeakElevation(float elevation);
+    void SetBeakShadowTargetsShadowTarget(bool targetsShadowTarget);
     bool GetIsIdle();
     winrt::TeachingTipPlacementMode GetEffectivePlacement();
     winrt::TeachingTipBleedingImagePlacementMode GetEffectiveBleedingPlacement();
@@ -137,43 +137,43 @@ private:
 
     winrt::TeachingTipCloseReason m_lastCloseReason{ winrt::TeachingTipCloseReason::Programmatic };
 
-    static inline winrt::Thickness TopBeakMargin(const double width, const double height) { return { (width - s_beakLongSideActualLength) / 2, height - s_beakTopEdgeOcculsionDistance, 0, 0 }; }
-    static inline winrt::Thickness BottomBeakMargin(const double width, const double height) { return { (width - s_beakLongSideActualLength) / 2, 0, 0, 0 }; }
-    static inline winrt::Thickness LeftBeakMargin(const double width, const double height) { return { width - s_beakOcculsionDistance, (height - s_beakLongSideActualLength) / 2, 0, 0 }; }
-    static inline winrt::Thickness RightBeakMargin(const double width, const double height) { return { 0, (height - s_beakLongSideActualLength) / 2, 0, 0 }; }
-    static inline winrt::Thickness TopEdgeAlignedRightBeakMargin(const double width, const double height) { return { s_minimumActualTipEdgeToBeakEdgeMargin, height - s_beakTopEdgeOcculsionDistance, 0, 0 }; }
-    static inline winrt::Thickness TopEdgeAlignedLeftBeakMargin(const double width, const double height) { return { width - (s_beakLongSideActualLength + s_minimumActualTipEdgeToBeakEdgeMargin), height - s_beakTopEdgeOcculsionDistance, 0, 0 }; }
-    static inline winrt::Thickness BottomEdgeAlignedRightBeakMargin(const double width, const double height) { return { s_minimumActualTipEdgeToBeakEdgeMargin, 0, 0, 0 }; }
-    static inline winrt::Thickness BottomEdgeAlignedLeftBeakMargin(const double width, const double height) { return { width - (s_beakLongSideActualLength + s_minimumActualTipEdgeToBeakEdgeMargin), 0, 0, 0 }; }
-    static inline winrt::Thickness LeftEdgeAlignedTopBeakMargin(const double width, const double height) { return { width - s_beakOcculsionDistance, height - (s_beakLongSideActualLength + s_minimumActualTipEdgeToBeakEdgeMargin), 0, 0 }; }
-    static inline winrt::Thickness LeftEdgeAlignedBottomBeakMargin(const double width, const double height) { return { width - s_beakOcculsionDistance, s_minimumActualTipEdgeToBeakEdgeMargin, 0, 0 }; }
-    static inline winrt::Thickness RightEdgeAlignedTopBeakMargin(const double width, const double height) { return { 0, height - (s_beakLongSideActualLength + s_minimumActualTipEdgeToBeakEdgeMargin), 0, 0 }; }
-    static inline winrt::Thickness RightEdgeAlignedBottomBeakMargin(const double width, const double height) { return { 0, s_minimumActualTipEdgeToBeakEdgeMargin, 0, 0 }; }
-    static inline winrt::Thickness OtherBeakMargin(const double width, const double height) { return { 0, 0, 0, 0 }; }
+    static inline winrt::Thickness TopBeakMargin(double width, double height) { return { (width - s_beakLongSideActualLength) / 2, height - s_beakTopEdgeOcculsionDistance, 0, 0 }; }
+    static inline winrt::Thickness BottomBeakMargin(double width, double height) { return { (width - s_beakLongSideActualLength) / 2, 0, 0, 0 }; }
+    static inline winrt::Thickness LeftBeakMargin(double width, double height) { return { width - s_beakOcculsionDistance, (height - s_beakLongSideActualLength) / 2, 0, 0 }; }
+    static inline winrt::Thickness RightBeakMargin(double width, double height) { return { 0, (height - s_beakLongSideActualLength) / 2, 0, 0 }; }
+    static inline winrt::Thickness TopEdgeAlignedRightBeakMargin(double width, double height) { return { s_minimumActualTipEdgeToBeakEdgeMargin, height - s_beakTopEdgeOcculsionDistance, 0, 0 }; }
+    static inline winrt::Thickness TopEdgeAlignedLeftBeakMargin(double width, double height) { return { width - (s_beakLongSideActualLength + s_minimumActualTipEdgeToBeakEdgeMargin), height - s_beakTopEdgeOcculsionDistance, 0, 0 }; }
+    static inline winrt::Thickness BottomEdgeAlignedRightBeakMargin(double width, double height) { return { s_minimumActualTipEdgeToBeakEdgeMargin, 0, 0, 0 }; }
+    static inline winrt::Thickness BottomEdgeAlignedLeftBeakMargin(double width, double height) { return { width - (s_beakLongSideActualLength + s_minimumActualTipEdgeToBeakEdgeMargin), 0, 0, 0 }; }
+    static inline winrt::Thickness LeftEdgeAlignedTopBeakMargin(double width, double height) { return { width - s_beakOcculsionDistance, height - (s_beakLongSideActualLength + s_minimumActualTipEdgeToBeakEdgeMargin), 0, 0 }; }
+    static inline winrt::Thickness LeftEdgeAlignedBottomBeakMargin(double width, double height) { return { width - s_beakOcculsionDistance, s_minimumActualTipEdgeToBeakEdgeMargin, 0, 0 }; }
+    static inline winrt::Thickness RightEdgeAlignedTopBeakMargin(double width, double height) { return { 0, height - (s_beakLongSideActualLength + s_minimumActualTipEdgeToBeakEdgeMargin), 0, 0 }; }
+    static inline winrt::Thickness RightEdgeAlignedBottomBeakMargin(double width, double height) { return { 0, s_minimumActualTipEdgeToBeakEdgeMargin, 0, 0 }; }
+    static inline winrt::Thickness OtherBeakMargin(double width, double height) { return { 0, 0, 0, 0 }; }
 
     //These values are shifted by one because this is the 1 px beak highlight that sits adjacent to the actual beak for which the constants are defined.
-    static inline winrt::Thickness BottomBeakHightlightMargin(const double width, const double height) { return { ((width - s_beakLongSideActualLength) / 2) - 1, -(s_beakShortSideLength - 1), 0, 0 }; }
-    static inline winrt::Thickness BottomEdgeAlignedRightBeakHighlightMargin(const double width, const double height) { return { (s_beakLongSideActualLength / 2) -1, -(s_beakShortSideLength - 1), 0, 0 }; }
-    static inline winrt::Thickness BottomEdgeAlignedLeftBeakHighlightMargin(const double width, const double height) { return { width - (s_beakLongSideActualLength + s_minimumActualTipEdgeToBeakEdgeMargin + 1), -(s_beakShortSideLength - 1), 0, 0 }; }
-    static inline winrt::Thickness OtherBeakHighlightMargin(const double width, const double height) { return { 0, 0, 0, 0 }; }
+    static inline winrt::Thickness BottomBeakHightlightMargin(double width, double height) { return { ((width - s_beakLongSideActualLength) / 2) - 1, -(s_beakShortSideLength - 1), 0, 0 }; }
+    static inline winrt::Thickness BottomEdgeAlignedRightBeakHighlightMargin(double width, double height) { return { (s_beakLongSideActualLength / 2) -1, -(s_beakShortSideLength - 1), 0, 0 }; }
+    static inline winrt::Thickness BottomEdgeAlignedLeftBeakHighlightMargin(double width, double height) { return { width - (s_beakLongSideActualLength + s_minimumActualTipEdgeToBeakEdgeMargin + 1), -(s_beakShortSideLength - 1), 0, 0 }; }
+    static inline winrt::Thickness OtherBeakHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
 
     //These values are shifted by one because this is the 1px highlight that sits adjacent to the tip border.
-    static inline winrt::Thickness BottomPlacementTopRightHighlightMargin(const double width, const double height) { return { (width / 2) + (s_beakShortSideLength - 1), 1, 0, 0 }; }
-    static inline winrt::Thickness BottomEdgeAlignedRightPlacementTopRightHighlightMargin(const double width, const double height) { return { s_minimumTipEdgeToBeakEdgeMargin + s_beakLongSideLength - 1, 1, 0, 0 }; }
-    static inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopRightHighlightMargin(const double width, const double height) { return { width - (s_minimumTipEdgeToBeakEdgeMargin + 1), 1, 0, 0 }; }
-    static inline winrt::Thickness OtherPlacementTopRightHighlightMargin(const double width, const double height) { return { 0, 0, 0, 0 }; }
+    static inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (s_beakShortSideLength - 1), 1, 0, 0 }; }
+    static inline winrt::Thickness BottomEdgeAlignedRightPlacementTopRightHighlightMargin(double width, double height) { return { s_minimumTipEdgeToBeakEdgeMargin + s_beakLongSideLength - 1, 1, 0, 0 }; }
+    static inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (s_minimumTipEdgeToBeakEdgeMargin + 1), 1, 0, 0 }; }
+    static inline winrt::Thickness OtherPlacementTopRightHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
 
-    static inline winrt::Thickness BottomPlacementTopLeftHightMargin(const double width, const double height) { return { 0, 1, (width / 2) + (s_beakShortSideLength - 1), 0 }; }
-    static inline winrt::Thickness BottomEdgeAlignedRightPlacementTopLeftHighlightMargin(const double width, const double height) { return { 0, 1, width - (s_minimumTipEdgeToBeakEdgeMargin + 1), 0 }; }
-    static inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopLeftHighlightMargin(const double width, const double height) { return { 0, 1, s_minimumTipEdgeToBeakEdgeMargin + s_beakLongSideLength - 1, 0 }; }
-    static inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(const double width, const double height) { return { 0, 0, 0, 0 }; }
+    static inline winrt::Thickness BottomPlacementTopLeftHightMargin(double width, double height) { return { 0, 1, (width / 2) + (s_beakShortSideLength - 1), 0 }; }
+    static inline winrt::Thickness BottomEdgeAlignedRightPlacementTopLeftHighlightMargin(double width, double height) { return { 0, 1, width - (s_minimumTipEdgeToBeakEdgeMargin + 1), 0 }; }
+    static inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 0, 1, s_minimumTipEdgeToBeakEdgeMargin + s_beakLongSideLength - 1, 0 }; }
+    static inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
     //Shifted by one since the beak edge's border is not accounted for automatically.
-    static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(const double width, const double height) { return { 0, 0, 1, 0 }; }
-    static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(const double width, const double height) { return { 1, 0, 0, 0 }; }
+    static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 0, 0, 1, 0 }; }
+    static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, 0, 0 }; }
 
-    static inline double UntargetedTipFarPlacementOffset(const float windowSize, const double tipSize, const double offset) { return windowSize - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
-    static inline double UntargetedTipCenterPlacementOffset(const float windowSize, const double tipSize, const double nearOffset, const double farOffset) { return (windowSize / 2) - (tipSize / 2) + nearOffset - farOffset; }
-    static inline double UntargetedTipNearPlacementOffset(const double offset) { return s_untargetedTipWindowEdgeMargin + offset; }
+    static inline double UntargetedTipFarPlacementOffset(float windowSize, double tipSize, double offset) { return windowSize - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
+    static inline double UntargetedTipCenterPlacementOffset(float windowSize, double tipSize, double nearOffset, double farOffset) { return (windowSize / 2) - (tipSize / 2) + nearOffset - farOffset; }
+    static inline double UntargetedTipNearPlacementOffset(double offset) { return s_untargetedTipWindowEdgeMargin + offset; }
 
     static constexpr winrt::TimeSpan s_expandAnimationDuration{ 300ms };
     static constexpr winrt::TimeSpan s_contractAnimationDuration{ 200ms };
