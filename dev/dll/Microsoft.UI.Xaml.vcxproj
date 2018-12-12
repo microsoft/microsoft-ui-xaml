@@ -493,7 +493,7 @@
   <Target Name="ComputeXamlGeneratedCompileInputs" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\packages\Microsoft.Gsl.0.1.2.1\build\native\Microsoft.Gsl.targets" Condition="Exists('..\..\packages\Microsoft.Gsl.0.1.2.1\build\native\Microsoft.Gsl.targets')" />
-    <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.37\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.37\build\native\MUXCustomBuildTasks.targets')" />
+    <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.38-test\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.38-test\build\native\MUXCustomBuildTasks.targets')" />
   </ImportGroup>
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
@@ -1015,7 +1015,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\..\packages\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Gsl.0.1.2.1\build\native\Microsoft.Gsl.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Gsl.0.1.2.1\build\native\Microsoft.Gsl.targets'))" />
-    <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.37\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.37\build\native\MUXCustomBuildTasks.targets'))" />
+    <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.38-test\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.38-test\build\native\MUXCustomBuildTasks.targets'))" />
   </Target>
   <Target Name="RunBinSkim" AfterTargets="AfterBuild" Condition="'$(Configuration)'=='Release' And $(BuildingWithBuildExe) != 'true'">
     <PropertyGroup>
