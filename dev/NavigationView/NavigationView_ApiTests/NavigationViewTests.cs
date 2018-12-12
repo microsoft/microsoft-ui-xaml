@@ -365,6 +365,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 #endif
 
+#if !BUILD_WINDOWS
         [TestMethod]
         public void VerifyCanNotAddWUXItems()
         {
@@ -390,4 +391,5 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
     }
+#endif
 }
