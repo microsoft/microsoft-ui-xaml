@@ -1,6 +1,69 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: Build
+  condition: 
+    False
+  pool:
+    vmImage: 'VS2017-Win2016'
+  timeoutInMinutes: 120
+  variables:
+    appxPackageDir: '$(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages'
+    buildOutputDir: '$(Build.SourcesDirectory)\BuildOutput'
+    buildPlatform: 'x86'
+    buildConfiguration: 'Debug'
+
+  steps:
+  - task: CmdLine@1
+    displayName: 'Display build machine environment variables'
+    inputs:
+      filename: 'set'
+
+  - task: powershell@2
+    displayName: 'Install RS5 SDK (17763)'
+    inputs:
+      targetType: filePath
+      filePath: build\Install-WindowsSdkISO.ps1
+      arguments: 17763
+
+  - task: NuGetToolInstaller@0
+    displayName: 'Use NuGet 4.9.1'
+    inputs:
+      versionSpec: 4.9.1
+        
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'NuGet restore MUXControls.sln'
+    inputs:
+      restoreSolution: MUXControls.sln
+      feedsToUse: config
+      nugetConfigPath: nuget.config
+
+  - task: VSBuild@1
+    displayName: 'Build solution MUXControls.sln'
+    inputs:
+      solution: MUXControls.sln
+      vsVersion: 15.0
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
+      msbuildArgs: '/p:AppxPackageDir="$(appxPackageDir)" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false'
+
+  - task: powershell@2
+    displayName: 'Copy files to staging dir'
+    inputs:
+      targetType: filePath
+      filePath: build\CopyFilesToStagingDir.ps1
+      arguments: -BuildOutputDir '$(buildOutputDir)' -PublishDir '$(Build.ArtifactStagingDirectory)' -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artifact: drop'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: 'drop'
+
+
+
+- job: RunTests
+  # dependsOn:
+  #   - Build
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
@@ -9,18 +72,12 @@ jobs:
     buildConfiguration: 'Debug'
     artifactsDir: '$(Build.SourcesDirectory)\Artifacts'
   steps:
-
-  - task: CmdLine@1
-    displayName: 'Display build machine environment variables'
-    inputs:
-      filename: 'set'
-
-  - task: powershell@2
-    inputs:
-      targetType: filePath
-      filePath: build\Install-WindowsSdkISO.ps1
-      arguments: 17763
-    displayName: 'Install RS5 SDK (17763)'
+  # - task: powershell@2
+  #   inputs:
+  #     targetType: filePath
+  #     filePath: build\Install-WindowsSdkISO.ps1
+  #     arguments: 17763
+  #   displayName: 'Install RS5 SDK (17763)'
 
   - task: NuGetToolInstaller@0
     displayName: 'Use NuGet 4.9.1'
@@ -44,20 +101,9 @@ jobs:
       # buildId: 573
       project: 'f05f4dbf-3077-427d-91e0-b66d9e4ca374'
       pipeline: 33581
-      buildId: 13355909
+      buildId: 13358468
       artifactName: drop
       downloadPath: '$(artifactsDir)'
-
-  - script: 'dir /b /s'
-    displayName: 'dir'
-
-  # - task: VSBuild@1
-  #   displayName: 'Build solution MUXControls.sln'
-  #   inputs:
-  #     solution: MUXControls.sln
-  #     vsVersion: 15.0
-  #     platform: '$(buildPlatform)'
-  #     configuration: '$(buildConfiguration)'
 
   - task: powershell@2
     displayName: 'PrepareHelixPayloadDir.ps1'
