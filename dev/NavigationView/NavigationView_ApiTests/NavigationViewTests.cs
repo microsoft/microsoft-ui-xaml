@@ -368,6 +368,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyCanNotAddWUXItems()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("WUX version of NavigationViewItem only available starting in RS3.");
+                return;
+            }
+
             RunOnUIThread.Execute(() =>
             {
                 var navView = new NavigationView();
