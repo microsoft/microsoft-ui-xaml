@@ -49,7 +49,7 @@ void TeachingTipClosingEventArgs::SetDeferral(const winrt::Deferral& deferral)
 
 void TeachingTipClosingEventArgs::DecrementDeferralCount()
 {
-    MUX_ASSERT(m_deferralCount >= 0);
+    MUX_ASSERT(m_deferralCount > 0);
     m_deferralCount--;
     if (m_deferralCount == 0)
     {
