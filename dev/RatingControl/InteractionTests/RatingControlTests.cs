@@ -78,18 +78,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("!!!!B");
                 Wait.ForIdle();
                 Log.Comment("!!!!C");
-                Thread.Sleep(5000);
-                Log.Comment("!!!!D");
-
-                Log.Comment("Verify a tap on the third star sets Rating to 3");
-                TestEnvironment.VerifyAreEqualWithRetry(10,
-                    () => "3",
-                    () => textBlock.DocumentText,
-                    () => InputHelper.Tap(ratingUIObject, 60, RATING_ITEM_HEIGHT / 2));
+                //Thread.Sleep(5000);
+                //Log.Comment("!!!!D");
 
                 //Log.Comment("Verify a tap on the third star sets Rating to 3");
-                //InputHelper.Tap(ratingUIObject, 60, RATING_ITEM_HEIGHT / 2);
-                //Verify.AreEqual("3", textBlock.DocumentText);
+                //TestEnvironment.VerifyAreEqualWithRetry(10,
+                //    () => "3",
+                //    () => textBlock.DocumentText,
+                //    () => InputHelper.Tap(ratingUIObject, 60, RATING_ITEM_HEIGHT / 2));
+
+                Log.Comment("Verify a tap on the third star sets Rating to 3");
+                InputHelper.Tap(ratingUIObject, 60, RATING_ITEM_HEIGHT / 2);
+                Verify.AreEqual("3", textBlock.DocumentText);
 
                 Log.Comment("Verify a tap on the third star sets Rating to 2.5 (placeholder value)");
                 InputHelper.Tap(ratingUIObject, 60, RATING_ITEM_HEIGHT / 2);
