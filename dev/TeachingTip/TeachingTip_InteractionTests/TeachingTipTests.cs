@@ -122,26 +122,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ScrollTargetIntoView();
                 OpenTeachingTip();
                 CloseTeachingTipProgrammatically();
-                var message0 = getMessage(0);
+                var message0 = GetTeachingTipDebugMessage(0);
                 Verify.IsTrue(message0.ToString().Contains("Programmatic"));
 
                 SetBleedingContent(3);
                 OpenTeachingTip();
                 PressXCloseButton();
-                var message2 = getMessage(2);
-                var message4 = getMessage(4);
+                var message2 = GetTeachingTipDebugMessage(2);
+                var message4 = GetTeachingTipDebugMessage(4);
                 Verify.IsTrue(message2.ToString().Contains("Close Button Clicked"));
                 Verify.IsTrue(message4.ToString().Contains("CloseButton"));
 
                 EnableLightDismiss(true);
                 OpenTeachingTip();
                 CloseTeachingTipProgrammatically();
-                var message6 = getMessage(6);
+                var message6 = GetTeachingTipDebugMessage(6);
                 Verify.IsTrue(message6.ToString().Contains("Programmatic"));
 
                 OpenTeachingTip();
                 message2.Tap();
-                var message7 = getMessage(7);
+                var message7 = GetTeachingTipDebugMessage(7);
                 Verify.IsTrue(message7.ToString().Contains("LightDismiss"));
             }
         }
@@ -665,7 +665,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return elements.effectivePlacementTextBlock.GetText();
         }
 
-        private ListBoxItem GetMessage(int index)
+        //The test UI has a list box which the teaching tip populates with messages about which events have fired and other useful
+        //Debugging info. This method returns the message at the provided index, which helps testing that events were received in
+        //the expected order.
+        private ListBoxItem GetTeachingTipDebugMessage(int index)
         {
             if (elements.lstTeachingTipEvents == null)
             {
