@@ -11,110 +11,253 @@
   <ItemGroup>
 
     <HelixCorrelationPayload Include="..\..\HelixPayload" />
-
     <!--<HelixWorkItem Include="ColorPickerTests-prevcolor">
       <Timeout>00:10:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ColorPickerTests.CanSelectPreviousColor</Command>
     </HelixWorkItem> -->
-    <HelixWorkItem Include="ColorPickerTests">
+    <HelixWorkItem Include="InteractionTests.ColorPickerTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ColorPickerTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ColorPickerTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="RatingControlTests">
+    <HelixWorkItem Include="InteractionTests.RatingControlTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.RatingControlTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.RatingControlTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="ParallaxViewTests">
+    <HelixWorkItem Include="InteractionTests.ParallaxViewTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ParallaxViewTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ParallaxViewTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="ScrollerTestsWithAutomationPeer">
+    <HelixWorkItem Include="InteractionTests.ScrollerTestsWithAutomationPeer">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollerTestsWithAutomationPeer.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollerTestsWithAutomationPeer.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="ScrollerTestsWithInputHelper">
+    <HelixWorkItem Include="InteractionTests.ScrollerTestsWithInputHelper">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollerTestsWithInputHelper.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollerTestsWithInputHelper.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="ScrollBar2TestsWithInputHelper">
+    <HelixWorkItem Include="InteractionTests.ScrollBar2TestsWithInputHelper">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollBar2TestsWithInputHelper.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollBar2TestsWithInputHelper.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="ScrollerViewTestsWithInputHelper">
+    <HelixWorkItem Include="InteractionTests.ScrollerViewTestsWithInputHelper">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollerViewTestsWithInputHelper.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollerViewTestsWithInputHelper.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="PersonPictureTests">
+    <HelixWorkItem Include="InteractionTests.PersonPictureTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.PersonPictureTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.PersonPictureTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="TreeViewTests">
+    <HelixWorkItem Include="InteractionTests.TreeViewTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TreeViewTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TreeViewTests.*</Command>
     </HelixWorkItem>
-    <!-- <HelixWorkItem Include="NavigationViewTests">
+    <HelixWorkItem Include="InteractionTests.NavigationViewTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests.*</Command>
-    </HelixWorkItem> -->
-    <HelixWorkItem Include="AcrylicBrushTests">
-      <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.AcrylicBrushTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="RevealBrushTests">
+    <HelixWorkItem Include="InteractionTests.AcrylicBrushTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.RevealBrushTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.AcrylicBrushTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="SwipeControlTests">
+    <HelixWorkItem Include="InteractionTests.RevealBrushTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.SwipeControlTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.RevealBrushTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="RefreshContainerTests">
+    <HelixWorkItem Include="InteractionTests.SwipeControlTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.RefreshContainerTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.SwipeControlTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="TwoPaneViewTests">
+    <HelixWorkItem Include="InteractionTests.RefreshContainerTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TwoPaneViewTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.RefreshContainerTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="MenuBarTests">
+    <HelixWorkItem Include="InteractionTests.TwoPaneViewTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.MenuBarTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TwoPaneViewTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="SplitButtonTests">
+    <HelixWorkItem Include="InteractionTests.MenuBarTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.SplitButtonTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.MenuBarTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="DropDownButtonTests">
+    <HelixWorkItem Include="InteractionTests.SplitButtonTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.DropDownButtonTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.SplitButtonTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="CommandBarFlyoutTests">
+    <HelixWorkItem Include="InteractionTests.DropDownButtonTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.CommandBarFlyoutTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.DropDownButtonTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="TextCommandBarFlyoutTests">
+    <HelixWorkItem Include="InteractionTests.CommandBarFlyoutTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TextCommandBarFlyoutTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.CommandBarFlyoutTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="CommonStylesTests">
+    <HelixWorkItem Include="InteractionTests.TextCommandBarFlyoutTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.CommonStylesTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TextCommandBarFlyoutTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="RadioButtonsTests">
+    <HelixWorkItem Include="InteractionTests.CommonStylesTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.RadioButtonsTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.CommonStylesTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="ButtonInteractionTests">
+    <HelixWorkItem Include="InteractionTests.RadioButtonsTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ButtonInteractionTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.RadioButtonsTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="SliderInteractionTests">
+    <HelixWorkItem Include="InteractionTests.ButtonInteractionTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.SliderInteractionTests.*</Command>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ButtonInteractionTests.*</Command>
     </HelixWorkItem>
-    <!-- <HelixWorkItem Include="ApiTests">
+    <HelixWorkItem Include="InteractionTests.SliderInteractionTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.*</Command>
-    </HelixWorkItem> -->
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.SliderInteractionTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.ThemeResourcesTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.ThemeResourcesTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.LeakTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.LeakTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.LocalizationTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.LocalizationTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.LightConfigurationTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.LightConfigurationTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.ColorPickerTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.ColorPickerTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.CommandBarFlyoutTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.CommandBarFlyoutTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.IconSourceApiTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.IconSourceApiTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.LayoutPanelTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.LayoutPanelTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.AcrylicBrushTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.AcrylicBrushTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.NavigationViewTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.NavigationViewTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.ParallaxViewTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.ParallaxViewTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.PersonPictureTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.PersonPictureTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RefreshVisualizerTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RefreshVisualizerTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.ScrollViewerAdapterTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.ScrollViewerAdapterTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RatingControlTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RatingControlTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.ScrollBar2Tests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.ScrollBar2Tests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.ScrollerTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.ScrollerTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.ScrollerViewTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.ScrollerViewTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.SplitButtonTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.SplitButtonTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.SwipeControlTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.SwipeControlTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.TreeViewTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.TreeViewTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.TwoPaneViewTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.TwoPaneViewTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.AccessibilityTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.AccessibilityTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.ElementAnimatorTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.ElementAnimatorTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.FlowLayoutCollectionChangeTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.FlowLayoutCollectionChangeTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.FlowLayoutTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.FlowLayoutTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.IndexPathTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.IndexPathTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.InspectingDataSourceTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.InspectingDataSourceTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.LayoutTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.LayoutTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.PhasingTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.PhasingTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.RecyclePoolTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.RecyclePoolTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.RepeaterFocusTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.RepeaterFocusTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.RepeaterTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.RepeaterTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.SelectionModelTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.SelectionModelTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.ElementFactoryTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.ElementFactoryTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.ViewManagerTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.ViewManagerTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="ApiTests.RepeaterTests.ViewportTests">
+      <Timeout>00:20:00</Timeout>
+      <Command>%HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.ViewportTests.*</Command>
+    </HelixWorkItem>
   </ItemGroup>
 </Project>
