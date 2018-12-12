@@ -390,6 +390,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.Throws<Exception>(() => { navView.MenuItems.Add(wuxItem); });
             });
         }
-    }
 #endif
+    }
 }

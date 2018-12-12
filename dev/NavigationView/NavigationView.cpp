@@ -3126,14 +3126,15 @@ void NavigationView::UpdateListViewItemSource()
         dataSource = MenuItems();
     }
 
+    // The following validation is only relevant outside of the Windows build where WUXC and MUXC have distinct types.
+#if !BUILD_WINDOWS
     auto iterable = dataSource.try_as<winrt::IIterable<winrt::IInspectable>>();
     if (iterable)
     {
         // Certain items are disallowed in a NavigationView's items list. Check for them.
         auto checkItemIsValid = [](const winrt::IInspectable& item)
         {
-            auto wuxItem = item.try_as<winrt::Windows::UI::Xaml::Controls::NavigationViewItem>();
-            if (wuxItem)
+            if (item.try_as<winrt::Windows::UI::Xaml::Controls::NavigationViewItemBase>())
             {
                 throw winrt::hresult_invalid_argument(L"MenuItems contains a Windows.UI.Xaml.Controls.NavigationViewItem. This control requires that the NavigationViewItems be of type Microsoft.UI.Xaml.Controls.NavigationViewItem.");
             }
@@ -3186,6 +3187,7 @@ void NavigationView::UpdateListViewItemSource()
     {
         m_menuItemsVectorChangedRevoker.revoke();
     }
+#endif
 
     if (!m_appliedTemplate)
     {
