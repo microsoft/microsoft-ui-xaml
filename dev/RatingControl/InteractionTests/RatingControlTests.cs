@@ -32,6 +32,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using Image = Microsoft.Windows.Apps.Test.Foundation.Controls.Image;
 using Point = System.Drawing.Point;
+using System.Threading;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
@@ -71,9 +72,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Retrieve the text block as a TextBlock");
                 TextBlock textBlock = new TextBlock(FindElement.ByName("TestTextBlockControl"));
 
+                //add dummy tap
+                Log.Comment("!!!!A");
+                InputHelper.Tap(textBlock);
+                Log.Comment("!!!!B");
+                Wait.ForIdle();
+                Log.Comment("!!!!C");
+                Thread.Sleep(5000);
+                Log.Comment("!!!!D");
+
                 Log.Comment("Verify a tap on the third star sets Rating to 3");
-                InputHelper.Tap(ratingUIObject, 60, RATING_ITEM_HEIGHT / 2);
-                Verify.AreEqual("3", textBlock.DocumentText);
+                TestEnvironment.VerifyAreEqualWithRetry(10,
+                    () => "3",
+                    () => textBlock.DocumentText,
+                    () => InputHelper.Tap(ratingUIObject, 60, RATING_ITEM_HEIGHT / 2));
+
+                //Log.Comment("Verify a tap on the third star sets Rating to 3");
+                //InputHelper.Tap(ratingUIObject, 60, RATING_ITEM_HEIGHT / 2);
+                //Verify.AreEqual("3", textBlock.DocumentText);
 
                 Log.Comment("Verify a tap on the third star sets Rating to 2.5 (placeholder value)");
                 InputHelper.Tap(ratingUIObject, 60, RATING_ITEM_HEIGHT / 2);
