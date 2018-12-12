@@ -353,7 +353,7 @@
                                      Stroke="{ThemeResource TeachingTipTopHighlightBrush}"
                                      StrokeThickness="1"
                                      Points="0,10 10,0 20,10"/>
-                            <Grid x:Name="ContentRootGrid" Background="{TemplateBinding Background}" BorderBrush="Transparent">
+                            <Grid x:Name="ContentRootGrid" Background="{TemplateBinding Background}">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
@@ -362,13 +362,7 @@
                                 <ContentPresenter x:Name="BleedingImageContentPresenter" Grid.Row="0" Content="{TemplateBinding BleedingImageContent}" Background="{TemplateBinding Background}"/>
                                 <Grid x:Name="NonBleedingContentRootGrid" Grid.Row="1">
                                     <ScrollViewer>
-                                        <Grid Margin="12">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                            </Grid.RowDefinitions>
-
+                                        <StackPanel Margin="12">
                                             <Grid Grid.Row="0">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto"/>
@@ -380,7 +374,6 @@
                                                     <TextBlock x:Name="TitleTextBlock" Grid.Column="0" Text="{TemplateBinding Title}" TextWrapping="WrapWholeWords" FontWeight="SemiBold"/>
                                                     <TextBlock x:Name="SubtextTextBlock" Grid.Row="1" Text="{TemplateBinding Subtext}" TextWrapping="WrapWholeWords"/>
                                                 </StackPanel>
-
                                             </Grid>
                                             <ContentPresenter x:Name="MainContentPresenter" Grid.Row="1" Content="{TemplateBinding Content}"/>
                                             <Grid Grid.Row="2">
@@ -400,7 +393,7 @@
                                                         CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
                                                         Grid.Column="1"/>
                                             </Grid>
-                                        </Grid>
+                                        </StackPanel>
                                     </ScrollViewer>
                                     <Button x:Name="XCloseButton" Width="40" Height="40" Background="Transparent" VerticalAlignment="Top" HorizontalAlignment="Right" BorderThickness="0">
                                         <Viewbox Width="12" Height="12">
