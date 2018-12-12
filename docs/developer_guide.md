@@ -7,14 +7,22 @@ improvements.
 
 #### /build, /tools
 
-These folders contain scripts and other support machinery that you shouldn't need to edit for most changes.
+These folders contain scripts and other support machinery that you shouldn't 
+need to edit for most changes.
 
 In particular:
 
 * **/build/NuSpecs** enables .nupkg generation
 * **/build/FrameworkPackage** enables .appx generation
 
-Note that here and in various parts of the codebase you will see references to `BUILD_WINDOWS`. WinUI operates as a standalone package for Xaml apps but is also a way that new controls migrate into [Windows.UI.Xaml.Controls](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls) as part of the Windows build system. The places where the WinUI source needs to differ for this different environment are specified under `BUILD_WINDOWS`. It's expected that it is the responsibility of the Microsoft team members to maintain this part of WinUI, and other community members should be able to ignore it.
+Note that here and in various parts of the codebase you will see references to 
+`BUILD_WINDOWS`. WinUI operates as a standalone package for Xaml apps but is 
+also a way that new controls migrate into [Windows.UI.Xaml.Controls](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls) 
+as part of the Windows build system. The places where the WinUI source needs to 
+differ for this different environment are specified under `BUILD_WINDOWS`. It's 
+expected that it is the responsibility of the Microsoft team members to 
+maintain this part of WinUI, and other community members should be able to 
+ignore it.
 
 #### /dev
 
@@ -50,8 +58,9 @@ Note that developer usage documentation can be found separately on docs.microsof
 Our test library and test app (the app that the test library interacts with 
 when executing the tests) are here.
 
-MUXControls.Test is a [MSTest](https://docs.microsoft.com/dotnet/api/microsoft.visualstudio.testtools.unittesting) DLL using MITALite that contains all of the test 
-code for the various controls by automating the MUXControlsTestApp.
+MUXControls.Test is a [MSTest](https://docs.microsoft.com/dotnet/api/microsoft.visualstudio.testtools.unittesting) 
+DLL using MITALite that contains all of the test code for the various controls 
+by automating the MUXControlsTestApp.
 
 MUXControlsTestApp is a UWP app that exercises all the controls. This is just a 
 manual testing playground which can be driven by the automated tests for 
@@ -86,7 +95,8 @@ The following file header is the used for WinUI. Please use it for new files.
 
 ## Building the repository
 
-Generally you will want to set your configuration to **Debug**, **x86**, and select **MUXControlsTestApp** as your startup project in Visual Studio.
+Generally you will want to set your configuration to **Debug**, **x86**, and 
+select **MUXControlsTestApp** as your startup project in Visual Studio.
 
 ### Prerequisites
 #### Visual Studio
@@ -95,7 +105,9 @@ Install latest VS2017 (15.9 or later) from here: http://visualstudio.com/downloa
 
 #### SDK
 
-While WinUI is designed to work against many versions of Windows, you will need a fairly recent SDK in order to build WinUI. It's required that you install the 16299, 17134 and 17763 SDKs.
+While WinUI is designed to work against many versions of Windows, you will need 
+a fairly recent SDK in order to build WinUI. It's required that you install the 
+16299, 17134 and 17763 SDKs. You can download these from here: https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk
 
 ### Creating a NuGet package
 
@@ -111,7 +123,10 @@ While WinUI is designed to work against many versions of Windows, you will need 
 
 #### Test app
 
-The WinUI solution project has a test app that is useful for validating common scenarios affected by the presence of the WinUI package.  Set **MUXControlsTestApp** as your startup project in Visual Studio and you can F5 to start debugging that app and validate your changes.
+The WinUI solution project has a test app that is useful for validating common 
+scenarios affected by the presence of the WinUI package.  Set 
+**MUXControlsTestApp** as your startup project in Visual Studio and you can F5 
+to start debugging that app and validate your changes.
 
 ##### Organization
 
@@ -162,7 +177,12 @@ different versions is sometimes necessary. To accomplish this you will need to a
 
 ### Automated testing
 
-> More information will be coming on this soon
+You can run the test suite from within Visual Studio by using the Test top 
+level menu. For targeting indivual tests you can use [Test Explorer](https://docs.microsoft.com/en-us/visualstudio/test/run-unit-tests-with-test-explorer?view=vs-2017) 
+(found under the Test->Windows sub menu).
+
+This same suite of tests will be run as part of your Pull Request validation 
+[check](contribution_workflow.md#Checks).
 
 ## Telemetry
 

@@ -19,6 +19,9 @@ We mark the most straightforward issues with labels. These issues are the place 
 * [good first issues](https://github.com/Microsoft/microsoft-ui-xaml/labels/good%20first%20issue)
 * [help wanted](https://github.com/Microsoft/microsoft-ui-xaml/labels/help%20wanted)
 
+Another great way to help is by voting and commenting on feature proposals:
+* [feature request](https://github.com/Microsoft/microsoft-ui-xaml/labels/feature%20request)
+
 ## Code contribution guidelines
 
 ### Proposing new public APIs or UI
