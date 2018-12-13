@@ -122,7 +122,7 @@ winrt::Size UniformGridLayout::MeasureOverride(
     // Set the width and height on the grid state. If the user already set them then use the preset. 
     // If not, we have to measure the first element and get back a size which we're going to be using for the rest of the items.
     auto gridState = GetAsGridState(context.LayoutState());
-    gridState->EnsureElementSize(availableSize, context, m_minItemWidth, m_minItemHeight);
+    gridState->EnsureElementSize(availableSize, context, m_minItemWidth, m_minItemHeight, m_itemsStretch, Orientation(), MinRowSpacing(), MinColumnSpacing());
 
     auto desiredSize = GetFlowAlgorithm(context).Measure(
         availableSize,

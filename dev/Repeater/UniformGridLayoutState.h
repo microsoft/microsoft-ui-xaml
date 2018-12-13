@@ -24,7 +24,15 @@ public:
     // If it's realized then we shouldn't be caching it
     void EnsureFirstElementOwnership();
 
-    void EnsureElementSize(const winrt::Size availableSize, const winrt::VirtualizingLayoutContext& context, const double itemWidth, const double itemHeight);
+    void EnsureElementSize(
+        const winrt::Size availableSize,
+        const winrt::VirtualizingLayoutContext& context,
+        const double itemWidth,
+        const double itemHeight,
+        const winrt::UniformGridLayoutItemsStretch& stretch,
+        const winrt::Orientation& orientation,
+        double minRowSpacing,
+        double minColumnSpacing);
     void ClearElementOnDataSourceChange(winrt::VirtualizingLayoutContext const& context, winrt::NotifyCollectionChangedEventArgs const& args);
 
 private:
@@ -32,7 +40,14 @@ private:
     double m_effectiveItemWidth{ 0.0 };
     double m_effectiveItemHeight{ 0.0 };
 
-    void SetSize(winrt::UIElement UIElement, const double itemWidth, const double itemHeight);
+    void SetSize(winrt::UIElement UIElement,
+        const double itemWidth,
+        const double itemHeight,
+        const winrt::Size availableSize,
+        const winrt::UniformGridLayoutItemsStretch& stretch,
+        const winrt::Orientation& orientation,
+        double minRowSpacing,
+        double minColumnSpacing);
 
     // We need to measure the element at index 0 to know what size to measure all other items. 
     // If FlowlayoutAlgorithm has already realized element 0 then we can use that. 
