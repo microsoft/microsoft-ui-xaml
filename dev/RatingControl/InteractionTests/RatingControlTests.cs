@@ -72,12 +72,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Retrieve the text block as a TextBlock");
                 TextBlock textBlock = new TextBlock(FindElement.ByName("TestTextBlockControl"));
 
-                //add dummy tap
-                Log.Comment("!!!!A");
-                InputHelper.Tap(textBlock);
-                Log.Comment("!!!!B");
-                Wait.ForIdle();
-                Log.Comment("!!!!C");
+                ////add dummy tap
+                //Log.Comment("!!!!A");
+                //InputHelper.Tap(textBlock);
+                //Log.Comment("!!!!B");
+                //Wait.ForIdle();
+                //Log.Comment("!!!!C");
                 //Thread.Sleep(5000);
                 //Log.Comment("!!!!D");
 

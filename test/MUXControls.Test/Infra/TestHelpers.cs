@@ -113,6 +113,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                         }
                     }
 
+                    var currentPageTextBlock = FindElement.ByNameAndClassName(testName, "__CurrentPage");
+                    if (currentPageTextBlock == null)
+                    {
+                        string errorMessage = string.Format("Cannot find __CurrentPage textblock");
+
+                        // We'll raise the error message first so the dump has proper context preceding it,
+                        // and will then throw it as an exception so we immediately cease execution.
+                        Log.Error(errorMessage);
+                        DumpHelper.DumpFullContext();
+                        throw new InvalidOperationException(errorMessage);
+                    }
+                    InputHelper.LeftClick(currentPageTextBlock);
+
                     var uiObject = FindElement.ByNameAndClassName(testName, "Button");
                     if (uiObject == null)
                     {
