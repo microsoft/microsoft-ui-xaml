@@ -379,15 +379,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var navView = new NavigationView();
 
-                // Nothing should go wrong adding a MUX item
                 var muxItem = new Microsoft.UI.Xaml.Controls.NavigationViewItem { Content = "MUX Item" };
                 navView.MenuItems.Add(muxItem);
 
                 navView.MenuItems.Add(new Microsoft.UI.Xaml.Controls.NavigationViewItemSeparator());
 
-                // But adding a MUX item should generate an exception
+                // No errors should occur here when we only use MUX items
+                navView.UpdateLayout();
+
                 var wuxItem = new Windows.UI.Xaml.Controls.NavigationViewItem { Content = "WUX Item" };
-                Verify.Throws<Exception>(() => { navView.MenuItems.Add(wuxItem); });
+                navView.MenuItems.Add(wuxItem);
+
+                // But adding a WUX item should generate an exception (as soon as the new item gets processed)
+                Verify.Throws<Exception>(() => { navView.UpdateLayout(); });
             });
         }
 #endif

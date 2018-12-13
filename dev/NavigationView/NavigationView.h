@@ -328,7 +328,6 @@ private:
     winrt::SplitView::PaneOpening_revoker m_splitViewPaneOpeningRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedToken{};
     winrt::UIElement::AccessKeyInvoked_revoker m_accessKeyInvokedRevoker{};
-    winrt::IObservableVector<IInspectable>::VectorChanged_revoker m_menuItemsVectorChangedRevoker{};
 
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };
