@@ -1,0 +1,36 @@
+parameters:
+# Extract the build revision number from Build.BuildNumber. This is needed to pass to build-nupkg
+  subversion: '$env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 3, 3)'
+  dependsOn: ''
+  buildOutputDir: '$env:Build_SourcesDirectory\BuildOutput'
+  nupkgdir: '$env:build_artifactStagingDirectory'
+  publishPath: '$env:Build_ArtifactStagingDirectory'
+
+jobs:
+- job: CreateNugetPackage
+  dependsOn:
+    - ${{ parameters.dependsOn }}
+
+  steps:
+  - task: DownloadBuildArtifacts@0 
+    inputs: 
+      artifactName: drop 
+      downloadPath: '${{ parameters.buildOutputDir }}'
+
+  - task: NuGetToolInstaller@0
+    displayName: 'Use NuGet 4.9.1'
+    inputs:
+      versionSpec: 4.9.1
+
+  - task: powershell@2
+    displayName: 'build-nupkg.ps1'
+    inputs:
+      targetType: filePath
+      filePath: build\NuSpecs\build-nupkg.ps1
+      arguments: -BuildOutput '${{ parameters.buildOutputDir }}\drop' -OutputDir '${{ parameters.nupkgdir }}' -prereleaseversion prerelease -Subversion '${{ parameters.revision }}' -SkipFrameworkPackage
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artifact: nupkg'
+    inputs:
+      PathtoPublish: '${{ parameters.publishPath }}'
+      artifactName: 'drop'
