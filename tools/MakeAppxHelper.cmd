@@ -40,7 +40,7 @@ if "%XES_OUTDIR%" == "" (
 )
 
 call ..\build\FrameworkPackage\MakeFrameworkPackage.cmd -Inputs '%WinMDInputs%' ^
--OutputDirectory '%OutputDirectory%' -BasePackageName '%BasePackageName%' -PackageNameSuffix 3.0 ^
+-OutputDirectory '%OutputDirectory%' -BasePackageName '%BasePackageName%' -PackageNameSuffix 2.1 ^
 -Platform %TFS_PLATFORM% -Configuration %TFS_BUILDCONFIGURATION% ^
 -TestAppManifest %TestAppManifest% %3 %4 %5 %6 %7 %8 %9
 
