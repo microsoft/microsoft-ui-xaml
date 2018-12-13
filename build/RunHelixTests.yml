@@ -1,8 +1,8 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: Build
-  condition: 
-    False
+  # condition: 
+  #   False
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
@@ -62,8 +62,8 @@ jobs:
 
 
 - job: RunTests
-  # dependsOn:
-  #   - Build
+  dependsOn:
+    - Build
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
@@ -77,46 +77,33 @@ jobs:
     displayName: 'Use NuGet 4.9.1'
     inputs:
       versionSpec: 4.9.1
-        
-  # - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-  #   displayName: 'NuGet restore MUXControls.sln'
-  #   inputs:
-  #     restoreSolution: MUXControls.sln
-  #     feedsToUse: config
-  #     nugetConfigPath: nuget.config
 
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-    displayName: 'NuGet restore'
+    displayName: 'NuGet restore build/Helix/packages.config'
     inputs:
       restoreSolution: build/Helix/packages.config
       feedsToUse: config
       nugetConfigPath: nuget.config
       restoreDirectory: packages
 
-  - task: DownloadBuildArtifacts@0
-    displayName: 'Download Build Artifacts from other pipeline'
-    inputs:
-      buildType: specific
-      buildVersionToDownload: specific
-      # project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
-      # pipeline: 20
-      # buildId: 573
-      project: 'f05f4dbf-3077-427d-91e0-b66d9e4ca374'
-      pipeline: 34322
-      buildId: 13378020
-      artifactName: drop
-      downloadPath: '$(artifactsDir)'
-
-  # - task: DownloadBuildArtifacts@0 
-  #   inputs: 
-  #     artifactName: drop 
+  # - task: DownloadBuildArtifacts@0
+  #   displayName: 'Download Build Artifacts from other pipeline'
+  #   inputs:
+  #     buildType: specific
+  #     buildVersionToDownload: specific
+  #     # project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
+  #     # pipeline: 20
+  #     # buildId: 573
+  #     project: 'f05f4dbf-3077-427d-91e0-b66d9e4ca374'
+  #     pipeline: 34322
+  #     buildId: 13378020
+  #     artifactName: drop
   #     downloadPath: '$(artifactsDir)'
 
-  - task: CmdLine@1
-    displayName: 'dir'
-    inputs:
-      filename: 'dir'
-      arguments: '/b /s'
+  - task: DownloadBuildArtifacts@0 
+    inputs: 
+      artifactName: drop 
+      downloadPath: '$(artifactsDir)'
 
   - task: powershell@2
     displayName: 'PrepareHelixPayloadDir.ps1'
@@ -125,7 +112,7 @@ jobs:
       filePath: build\Helix\PrepareHelixPayloadDir.ps1
 
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet custom'
+    displayName: 'Run tests in Helix'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
