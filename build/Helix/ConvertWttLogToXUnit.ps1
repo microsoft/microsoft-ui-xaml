@@ -1,11 +1,11 @@
 Param(
     [Parameter(Mandatory = $true)] 
-    [string]$TaefInput,
+    [string]$WttInputPath,
 
     [Parameter(Mandatory = $true)] 
-    [string]$XUnitOutput
+    [string]$XUnitOutputPath
 )
 
 Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xml.Linq (Get-Content .\ConvertWttLogToXUnit.cs -Raw)
 
-[HelixTestHelpers.TestResultParser]::ConvertWttLogToXUnitLog($TaefInput, $XUnitOutput)
+[HelixTestHelpers.TestResultParser]::ConvertWttLogToXUnitLog($WttInputPath, $XUnitOutputPath)

@@ -2,7 +2,6 @@
   <PropertyGroup>
     <HelixSource>pr/winui/$(BUILD_SOURCEBRANCH)/</HelixSource>
     <HelixType>test/product/</HelixType>
-    <HelixBuild Condition="'$(HelixBuild)'==''">11111.1</HelixBuild>
     <HelixTargetQueues>Windows.10.Amd64.Open</HelixTargetQueues>
     <EnableXUnitReporter>true</EnableXUnitReporter>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>

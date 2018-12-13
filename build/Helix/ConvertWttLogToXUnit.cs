@@ -23,10 +23,9 @@ namespace HelixTestHelpers
             public string Details { get; set; }
         }
 
-        public static void ConvertWttLogToXUnitLog(string taefInputPath, string xunitOutputPath)
+        public static void ConvertWttLogToXUnitLog(string wttInputPath, string xunitOutputPath)
         {
-            var telogfilepath = taefInputPath;
-            var testPass = TestResultParser.ParseTestWttFile(telogfilepath, true);
+            var testPass = TestResultParser.ParseTestWttFile(wttInputPath, true);
             var results = testPass.TestResults;
 
             int resultCount = results.Count;

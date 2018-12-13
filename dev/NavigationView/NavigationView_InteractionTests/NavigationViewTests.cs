@@ -347,8 +347,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")] // Bug 18159731
+        [TestMethod] // Bug 18159731
+        [TestProperty("NavViewTestSuite", "A")]
         public void PaneOpenForceCloseTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -704,8 +704,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")] // bug 16644730
+        [TestMethod] // bug 16644730
+        [TestProperty("NavViewTestSuite", "A")]
         public void VerifySettingsWidthOnLeftNavMediumMode()
         {
             using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
@@ -843,8 +843,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")] //bug 17792706
+        [TestMethod] //bug 17792706
+        [TestProperty("NavViewTestSuite", "A")]
         public void BackButtonPlaceHolderOnTopNavTest()
         {
             using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
@@ -1542,8 +1542,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")] //bug 18033309
+        [TestMethod] //bug 18033309
+        [TestProperty("NavViewTestSuite", "B")]
         public void TopNavigationSecondClickOnSuppressSelectionItemTest()
         {
             using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
@@ -2648,7 +2648,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]       
+        [TestProperty("NavViewTestSuite", "C")]
         public void KeyboardFocusToolTipTest() // Verify tooltips appear when Keyboard focused
         {
             using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
