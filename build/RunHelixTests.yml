@@ -115,7 +115,8 @@ jobs:
   - task: CmdLine@1
     displayName: 'dir'
     inputs:
-      filename: 'dir /b /s '
+      filename: 'dir'
+      arguments: '/b /s'
 
   - task: powershell@2
     displayName: 'PrepareHelixPayloadDir.ps1'
