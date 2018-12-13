@@ -105,10 +105,10 @@ jobs:
       artifactName: drop
       downloadPath: '$(artifactsDir)'
 
-  - task: DownloadBuildArtifacts@0 
-    inputs: 
-      artifactName: drop 
-      downloadPath: '$(artifactsDir)'
+  # - task: DownloadBuildArtifacts@0 
+  #   inputs: 
+  #     artifactName: drop 
+  #     downloadPath: '$(artifactsDir)'
 
   - task: powershell@2
     displayName: 'PrepareHelixPayloadDir.ps1'
