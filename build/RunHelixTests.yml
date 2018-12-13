@@ -91,7 +91,6 @@ jobs:
       restoreSolution: build/Helix/nuget.config
       feedsToUse: config
       nugetConfigPath: nuget.config
-      restoreDirectory: packages
 
   - task: DownloadBuildArtifacts@0
     displayName: 'Download Build Artifacts from other pipeline'
