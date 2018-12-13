@@ -1,8 +1,8 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: Build
-  # condition: 
-  #   False
+  condition: 
+    False
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
@@ -62,8 +62,8 @@ jobs:
 
 
 - job: RunTests
-  dependsOn:
-    - Build
+  # dependsOn:
+  #   - Build
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
@@ -91,19 +91,19 @@ jobs:
       feedsToUse: config
       nugetConfigPath: nuget.config
 
-  # - task: DownloadBuildArtifacts@0
-  #   displayName: 'Download Build Artifacts from other pipeline'
-  #   inputs:
-  #     buildType: specific
-  #     buildVersionToDownload: specific
-  #     # project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
-  #     # pipeline: 20
-  #     # buildId: 573
-  #     project: 'f05f4dbf-3077-427d-91e0-b66d9e4ca374'
-  #     pipeline: 33581
-  #     buildId: 13358468
-  #     artifactName: drop
-  #     downloadPath: '$(artifactsDir)'
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download Build Artifacts from other pipeline'
+    inputs:
+      buildType: specific
+      buildVersionToDownload: specific
+      # project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
+      # pipeline: 20
+      # buildId: 573
+      project: 'f05f4dbf-3077-427d-91e0-b66d9e4ca374'
+      pipeline: 34322
+      buildId: 13363119
+      artifactName: drop
+      downloadPath: '$(artifactsDir)'
 
   - task: DownloadBuildArtifacts@0 
     inputs: 
