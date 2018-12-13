@@ -3120,78 +3120,15 @@ void NavigationView::UpdateTopNavListViewItemSource(const winrt::IInspectable& i
 
 void NavigationView::UpdateListViewItemSource()
 {
+    if (!m_appliedTemplate)
+    {
+        return;
+    }
+
     auto dataSource = MenuItemsSource();
     if (!dataSource)
     {
         dataSource = MenuItems();
-    }
-
-    // The following validation is only relevant outside of the Windows build where WUXC and MUXC have distinct types.
-#if !BUILD_WINDOWS
-    auto iterable = dataSource.try_as<winrt::IIterable<winrt::IInspectable>>();
-    if (iterable)
-    {
-        // Certain items are disallowed in a NavigationView's items list. Check for them.
-        auto checkItemIsValid = [](const winrt::IInspectable& item)
-        {
-            if (item.try_as<winrt::Windows::UI::Xaml::Controls::NavigationViewItemBase>())
-            {
-                throw winrt::hresult_invalid_argument(L"MenuItems contains a Windows.UI.Xaml.Controls.NavigationViewItem. This control requires that the NavigationViewItems be of type Microsoft.UI.Xaml.Controls.NavigationViewItem.");
-            }
-        };
-
-        // Walk over the entire contents of the items list and validate each item.
-        auto checkListIsValid = [checkItemIsValid](winrt::IIterable<winrt::IInspectable> list)
-        {
-            for (auto&& item : list)
-            {
-                checkItemIsValid(item);
-            }
-        };
-        checkListIsValid(iterable);
-
-        // If the list offers change notifications hook to validate the item contents as they're added later
-        auto observableVector = dataSource.try_as<winrt::IObservableVector<winrt::IInspectable>>();
-        if (observableVector)
-        {
-            // Validate the contents now
-            checkListIsValid(observableVector);
-
-            // And any future content changes
-            m_menuItemsVectorChangedRevoker = observableVector.VectorChanged(winrt::auto_revoke, {
-                [checkItemIsValid, checkListIsValid](winrt::IObservableVector<winrt::IInspectable> const& sender, winrt::IVectorChangedEventArgs const& args)
-                {
-                    switch (args.CollectionChange())
-                    {
-                    case winrt::Collections::CollectionChange::ItemInserted:
-                    case winrt::Collections::CollectionChange::ItemChanged:
-                    {
-                        auto item = sender.GetAt(args.Index());
-                        checkItemIsValid(item);
-                        break;
-                    }
-                    case winrt::Collections::CollectionChange::Reset:
-                        checkListIsValid(sender);
-                        break;
-                    }
-
-                }
-                });
-        }
-        else
-        {
-            m_menuItemsVectorChangedRevoker.revoke();
-        }
-    }
-    else
-    {
-        m_menuItemsVectorChangedRevoker.revoke();
-    }
-#endif
-
-    if (!m_appliedTemplate)
-    {
-        return;
     }
 
     // Always unset the data source first from old ListView, then set data source for new ListView.
