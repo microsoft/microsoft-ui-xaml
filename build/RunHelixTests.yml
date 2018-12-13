@@ -106,10 +106,10 @@ jobs:
       downloadPath: '$(artifactsDir)'
 
   - task: powershell@2
-    displayName: 'PrepareHelixPayloadDir.ps1'
+    displayName: 'PrepareHelixPayload.ps1'
     inputs:
       targetType: filePath
-      filePath: build\Helix\PrepareHelixPayloadDir.ps1
+      filePath: build\Helix\PrepareHelixPayload.ps1
 
   - task: DotNetCoreCLI@2
     displayName: 'Run tests in Helix'
@@ -117,6 +117,6 @@ jobs:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       command: custom
-      projects: build\Helix\helixtest.proj
+      projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
-      arguments: '/p:HelixAccessToken=$(helixaccesstoken) /p:HelixBuild=$(Build.BuildId)'
+      arguments: '/p:HelixAccessToken=$(BotAccount-dotnet-github-anon-kaonashi-bot-helix-token) /p:HelixBuild=$(Build.BuildId)'
