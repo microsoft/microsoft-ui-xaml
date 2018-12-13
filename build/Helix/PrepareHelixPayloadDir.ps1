@@ -6,7 +6,7 @@ $repoDirectory = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Pa
 #$nugetPackagesDir = "$env:USERPROFILE\.nuget\packages"
 #$nugetPackagesDir = "$repoDirectory\packages\"
 $nugetPackagesDir = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path) "packages"
-
+ 
 # Create the payload directory. Remove it if it already exists.
 If(test-path $payloadDir)
 {
