@@ -10,6 +10,7 @@
 
 TeachingTip::TeachingTip()
 {
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_TeachingTip);
     SetDefaultStyleKey(this);
     EnsureProperties();
     SetValue(s_TemplateSettingsProperty, winrt::make<::TeachingTipTemplateSettings>());
@@ -40,7 +41,7 @@ void TeachingTip::OnApplyTemplate()
 
     if (m_rootGrid)
     {
-        m_ContentSizeChangedRevoker = m_rootGrid.get().SizeChanged(winrt::auto_revoke, {
+        m_contentSizeChangedRevoker = m_rootGrid.get().SizeChanged(winrt::auto_revoke, {
             [this](auto const&, auto const&)
             {
                 UpdateSizeBasedTemplateSettings();
@@ -705,7 +706,7 @@ void TeachingTip::OnIsOpenChanged()
         {
             m_popup.set(winrt::Popup());
             m_popup.get().Child(*this);
-            m_popup.get().Closed({ this, &TeachingTip::OnPopupClosed });
+            m_popupClosedRevoker = m_popup.get().Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
             if (IsLightDismissEnabled())
             {
                 m_popup.get().IsLightDismissEnabled(true);

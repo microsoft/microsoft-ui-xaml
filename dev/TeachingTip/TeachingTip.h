@@ -47,8 +47,9 @@ public:
     void SetTestWindowBounds(const winrt::Rect& testWindowBounds);
 
 private:
-    winrt::FrameworkElement::SizeChanged_revoker m_ContentSizeChangedRevoker{};
+    winrt::FrameworkElement::SizeChanged_revoker m_contentSizeChangedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_targetLayoutUpdatedRevoker{};
+    winrt::Popup::Closed_revoker m_popupClosedRevoker{};
     winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
     void UpdateBeak();
     void PositionPopup();
