@@ -3,7 +3,8 @@ $Platform = "x86"
 $payloadDir = "HelixPayload"
 
 $repoDirectory = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path) "..\..\"
-$nugetPackagesDir = "$env:USERPROFILE\.nuget\packages"
+#$nugetPackagesDir = "$env:USERPROFILE\.nuget\packages"
+$nugetPackagesDir = "$repoDirectory\packages\"
 
 # Create the payload directory. Remove it if it already exists.
 If(test-path $payloadDir)
