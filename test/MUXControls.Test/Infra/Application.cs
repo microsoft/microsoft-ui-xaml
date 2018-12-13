@@ -226,9 +226,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 }
             }
 
-            Log.Comment("!!!!sleeping for 5 seconds");
-            Thread.Sleep(5000);
-
             return coreWindow;
         }
 

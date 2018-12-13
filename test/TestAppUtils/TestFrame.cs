@@ -57,7 +57,7 @@ namespace MUXControlsTestApp
             if (e.SourcePageType == _mainPageType)
             {
                 _backButton.Visibility = Visibility.Collapsed;
-                _currentPageTextBlock.Text = "Main Page";
+                _currentPageTextBlock.Text = "Home";
             }
             else
             {
@@ -106,7 +106,7 @@ namespace MUXControlsTestApp
             _logReportingTextBox = (TextBox)GetTemplateChild("LogReportingTextBox");
 
             _currentPageTextBlock = (TextBlock)GetTemplateChild("CurrentPageTextBlock");
-            _currentPageTextBlock.Text = "Main Page";
+            _currentPageTextBlock.Text = "Home";
 
             _viewScalingCheckBox = (CheckBox)GetTemplateChild("ViewScalingCheckBox");
             _viewScalingCheckBox.Checked += OnViewScalingCheckBoxChanged;

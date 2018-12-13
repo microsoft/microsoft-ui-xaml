@@ -118,5 +118,15 @@
     <Page Include="@(PageRequiringCustomCompilation)" />
     <Page Include="@(PageRequiringCustomCompilation)" />
     <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
   </ItemGroup>
 </Project>

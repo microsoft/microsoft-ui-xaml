@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>MUXCustomBuildTasks</id>
-    <version>1.0.38-test</version>
+    <version>1.0.38</version>
     <title>MUXCustomBuildTasks</title>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
@@ -14,11 +14,15 @@
   <files>
     <!-- Common build logic -->
     <file target="build\CustomTasks.dll" src="..\..\..\BuildOutput\Release\AnyCPU\CustomTasks\CustomTasks.dll"/>
-    <file target="build\WttLog.dll" src="..\..\..\BuildOutput\WttLog.dll"/>
     <file target="build\MUXCustomBuildTasks.targets" src="MUXCustomBuildTasks.targets"/>
-    
+
     <!-- This is here for C++ based projects, see http://nugetdocsbeta.azurewebsites.net/ndocs/guides/create-uwp-packages -->
     <file target="build\native\CustomTasks.dll" src="..\..\..\BuildOutput\Release\AnyCPU\CustomTasks\CustomTasks.dll"/>
     <file target="build\native\MUXCustomBuildTasks.targets" src="MUXCustomBuildTasks.targets"/>
+
+    <!-- Include WttLog.dll -->
+    <!-- You must install the WDK to get this file: https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk -->
+    <file target="tools\x86\WttLog.dll" src="$PROGRAMFILES$\Windows Kits\10\Testing\Runtimes\TAEF\x86\wttlog.dll" />
+    <file target="tools\x64\WttLog.dll" src="$PROGRAMFILES$\Windows Kits\10\Testing\Runtimes\TAEF\x64\wttlog.dll" />
   </files>
 </package>
