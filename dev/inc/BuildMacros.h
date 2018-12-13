@@ -22,7 +22,7 @@
 #ifdef _DEBUG
 // NOTE: This could be "Microsoft.UI.Xaml.Debug" if we wanted to have Debug framework packages be distinct and
 // installed side-by-side on a machine.
-#define MUXCONTROLS_PACKAGE_NAME L"Microsoft.UI.Xaml.3.0"
+#define MUXCONTROLS_PACKAGE_NAME L"Microsoft.UI.Xaml.2.1"
 #else
-#define MUXCONTROLS_PACKAGE_NAME L"Microsoft.UI.Xaml.3.0"
+#define MUXCONTROLS_PACKAGE_NAME L"Microsoft.UI.Xaml.2.1"
 #endif
