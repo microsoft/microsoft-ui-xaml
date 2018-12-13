@@ -28,10 +28,10 @@ have one).
 4. Make and commit your changes. 
     * Please follow our [Commit Messages](contribution_workflow.md#Commit%20Messages) 
     guidance.
-5. Add new tests corresponding to your change, if applicable.
+5. Add [new tests](developer_guide.md#Testing) corresponding to your change, if applicable.
 6. Build the repository with your changes. 
     * Make sure that the builds are clean.
-    * Make sure that the tests are all passing, including your new tests.
+    * Make sure that the [tests](developer_guide.md#Testing) are all passing, including your new tests.
 7. Create a pull request (PR) against the upstream repository's master branch. 
     * Push your changes to your fork on GitHub (if you haven't already).
     - Note: It is okay for your PR to include a large number of commits. Once 

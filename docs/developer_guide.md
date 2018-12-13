@@ -41,8 +41,8 @@ that contains all the controls and other solutions which will be packaged and
 deployed. At this time we believe the Microsoft.UI.Xaml.dll is 
 small enough to include all controls into one DLL. As we increase the number of 
 controls we will revisit this decision and may decompose it into different DLLs 
-in the future. Also we will adjust based on developer feedback if we start to see
- usage patterns where teams use just a few controls vs. the whole library.
+in the future. Also we will adjust based on developer feedback if we start to see 
+usage patterns where teams use just a few controls vs. the whole library.
 
 This project also includes the necessary definitions to package the DLL into a 
 NuGet package.
@@ -64,7 +64,9 @@ by automating the MUXControlsTestApp.
 
 MUXControlsTestApp is a UWP app that exercises all the controls. This is just a 
 manual testing playground which can be driven by the automated tests for 
-automated verification as well as [TestMethod] control API verification. Note this applications references the MUXControls DLL rather than including the Shared Items.
+automated verification as well as [TestMethod] control API verification. Note 
+this applications references the MUXControls DLL rather than including the 
+Shared Items.
 
 ## Code style and conventions
 
@@ -173,7 +175,9 @@ build and run MUXControl.ReleaseTest.
 One of the core values of WinUI is the way that it brings controls to a wide 
 variety of versions of Windows, handling version compatibility differences so 
 that developers using WinUI don't have to. As such, testing WinUI changes on 
-different versions is sometimes necessary. To accomplish this you will need to at times set up older versions of Windows for testing. To get these earlier versions you can make use of a Visual Studio subscription [as described here](https://docs.microsoft.com/azure/virtual-machines/windows/client-images).
+different versions is sometimes necessary. To accomplish this you will need to 
+at times set up older versions of Windows for testing. To get these earlier 
+versions you can make use of a Visual Studio subscription [as described here](https://docs.microsoft.com/azure/virtual-machines/windows/client-images).
 
 ### Automated testing
 
@@ -184,19 +188,42 @@ level menu. For targeting indivual tests you can use [Test Explorer](https://doc
 This same suite of tests will be run as part of your Pull Request validation 
 [check](contribution_workflow.md#Checks).
 
+#### Creating a new test
+
+For your test to be discovered it needs to be a method tagged as [\[TestMethod\]](https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.testtools.unittesting.testmethodattribute?view=mstest-net-1.2.0) 
+on a class tagged with as [\[TestClass\]](https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.testtools.unittesting.testclassattribute?view=mstest-net-1.2.0). 
+With that metadata in place your new test method will be picked up by Test 
+Explorer.
+
+There are two types of tests you can use to validate your scenarios:
+* **API Tests**: Run in the context of an app and validate the behaviors of our 
+APIs. 
+* **Interaction Tests**: Drive the UI on an external app and validate the 
+results using UI Automation.
+
+Keep in mind that your test will be executed on many different versions of 
+Windows, not just the most recent version. Your tests may need version or 
+[IsApiPresent](https://docs.microsoft.com/en-us/uwp/api/windows.foundation.metadata.apiinformation.istypepresent) 
+checks in order to pass on all versions.
+
 ## Telemetry
 
-This project collects usage data and sends it to Microsoft to help improve our products and services.
+This project collects usage data and sends it to Microsoft to help improve our 
+products and services.
 
-If desired you can disable logging when building the project by following these steps:
+If desired you can disable logging when building the project by following these 
+steps:
 
-1. In Microsoft Visual Studio's Solution Explorer window, right-click the "Microsoft.UI.Xaml (Universal Windows)" project. 
+1. In Microsoft Visual Studio's Solution Explorer window, right-click the 
+"Microsoft.UI.Xaml (Universal Windows)" project. 
 2. Select the "Properties" menu.
 3. Select "All Configurations" in the Configuration dropdown.
 4. Select "All Platforms" in the Platform dropdown.
-5. Select "Configuration Properties", then "C/C++", then "Preprocessor" in the left tree structure.
+5. Select "Configuration Properties", then "C/C++", then "Preprocessor" in the 
+left tree structure.
 6. In the entry called "Preprocessor Definitions":
-    * Add "DISABLE_TELEMETRY_TRACELOGGING;" to disable Microsoft telemetry logging alone. 
+    * Add "DISABLE_TELEMETRY_TRACELOGGING;" to disable Microsoft telemetry 
+    logging alone. 
     * Add "DISABLE_PERF_TRACELOGGING;" to disable performance logging alone.
     * Add "DISABLE_DEBUG_TRACELOGGING;" to disable debug logging alone.
     * Or simply add "DISABLE_ALL_TRACELOGGING;" to disable all three types of logging.
