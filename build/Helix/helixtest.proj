@@ -46,10 +46,10 @@
       <Timeout>00:20:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TreeViewTests.*</Command>
     </HelixWorkItem>
-    <!-- <HelixWorkItem Include="InteractionTests.NavigationViewTests">
+    <HelixWorkItem Include="InteractionTests.NavigationViewTests">
       <Timeout>00:20:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests.*</Command>
-    </HelixWorkItem> -->
+    </HelixWorkItem>
     <HelixWorkItem Include="InteractionTests.AcrylicBrushTests">
       <Timeout>00:20:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.AcrylicBrushTests.*</Command>
