@@ -3102,7 +3102,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                             WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
                             Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
                             Verify.AreEqual(expectedString, closingCounts.GetText());
-                            return;
                         });
                 }
             }
