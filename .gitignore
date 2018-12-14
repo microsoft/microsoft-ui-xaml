@@ -257,5 +257,5 @@ dev/dll/CppWinRTFilterTypes.txt
 dev/dll/XamlTypeInfo.g.*
 manifest/Microsoft-Windows-UI-Xaml-MUXControls.man
 
-Artifacts/
+artifacts/
 HelixPayload/

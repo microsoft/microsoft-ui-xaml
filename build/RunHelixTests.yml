@@ -2,13 +2,18 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: Build
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: VS2017-Win2016
   timeoutInMinutes: 120
   variables:
-    appxPackageDir: '$(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages'
-    buildOutputDir: '$(Build.SourcesDirectory)\BuildOutput'
-    buildPlatform: 'x86'
-    buildConfiguration: 'Debug'
+  - group: DotNet-HelixApi-Access
+  - name: appxPackageDir
+    value: $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+  - name: buildOutputDir
+    value: $(Build.SourcesDirectory)\BuildOutput
+  - name: buildPlatform 
+    value: x86
+  - name: buildConfiguration 
+    value: Debug
 
   steps:
   - task: CmdLine@1
@@ -66,9 +71,13 @@ jobs:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
   variables:
-    buildPlatform: 'x86'
-    buildConfiguration: 'Debug'
-    artifactsDir: '$(Build.SourcesDirectory)\Artifacts'
+  - group: DotNet-HelixApi-Access
+  - name: artifactsDir
+    value: $(Build.SourcesDirectory)\Artifacts
+  - name: buildPlatform 
+    value: x86
+  - name: buildConfiguration 
+    value: Debug
   steps:
 
   - task: NuGetToolInstaller@0
