@@ -444,7 +444,7 @@
     <None Include="CommonHelpers.tt" />
     <None Include="CppWinRTFilterTypes.tt" />
     <T4ParameterValues Include="MetadataWinmdPaths">
-      <Value>$(OutDir)$(TargetName).winmd;$(OutDir)Microsoft.UI.Private.winmd</Value>
+      <Value>$(OutDir)\sdk\Microsoft.UI.Xaml.winmd</Value>
     </T4ParameterValues>
   </ItemGroup>
   <ItemGroup Condition="$(BuildingWithBuildExe) == 'true'">

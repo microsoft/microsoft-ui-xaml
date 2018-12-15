@@ -1,6 +1,6 @@
 # Windows UI Library
 
-The Windows UI Library (WinUI) is a set of open source Microsoft UI controls and features for the Windows [UWP platform](https://docs.microsoft.com/windows/uwp/index).
+The Windows UI Library (WinUI) provides official native Microsoft UI controls and features for Windows [UWP apps](https://docs.microsoft.com/windows/uwp/index).
 
 WinUI is the easiest way to build great [Fluent Design](https://docs.microsoft.com/windows/uwp/design/fluent-design-system/) experiences for Windows.
 
@@ -11,14 +11,12 @@ You can download and use WinUI packages in your app using the NuGet package mana
 
 ### Packages
 
-| NuGet Package Name | Description |
-| --- | --- |
-| [Microsoft.UI.Xaml](https://www.nuget.org/packages/Microsoft.UI.Xaml) | Controls and features for building apps for Windows 10 |
-| [Microsoft.UI.Xaml.Core.Direct](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct) | Low-level APIs for creating middleware components. Not intended or required for general application use |
+| NuGet Package | Build Status | Latest Versions |
+| --- | --- | --- |
+| [Microsoft.UI.Xaml](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> Controls and Fluent Design for UWP apps | [![Build Status](https://dev.azure.com/ms/microsoft-ui-xaml/_apis/build/status/WinUI-Public-MUX-CI?branchName=master)](https://dev.azure.com/ms/microsoft-ui-xaml/_build/latest?definitionId=20?branchName=master) | ![latest stable version](https://img.shields.io/nuget/v/Microsoft.UI.Xaml.svg) <br /> ![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.svg) |
+| [Microsoft.UI.Xaml.Core.Direct](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct) <br /> Low-level APIs for middleware components | | ![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.Core.Direct.svg) |
 
 You can also build a WinUI package yourself from source. See [Contributing to the Windows UI Library](CONTRIBUTING.md) for more information on building and contributing to WinUI.
-
-### Build Status
 
 ## Documentation
 
@@ -93,7 +91,7 @@ The **Microsoft.UI.Xaml.Core.Direct** package includes:
 
 ## Roadmap
 
-For info on schedules and plans please see the high level plans see the [Windows UI Library Roadmap](docs/roadmap.md).
+For info on the WinUI release schedule and high level plans please see the [Windows UI Library Roadmap](docs/roadmap.md).
 
 ## Data/Telemetry
 
