@@ -2857,6 +2857,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 string expectString = status == PaneOpenStatus.Opened ? "Opened" : "Closed";
                 var eventTextBlock = new TextBlock(FindElement.ByName("PaneOpenedOrClosedEvent"));
 
+                Log.Comment("PaneOpenedOrClosedEvent before wait: " + eventTextBlock.GetText());
                 TestEnvironment.VerifyAreEqualWithRetry(100, // wait max to 5s
                     () => expectString,
                     () => eventTextBlock.GetText());
@@ -2884,45 +2885,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         return;
                     }
 
-                    // Bug 19409503
-                    if (PlatformConfiguration.IsOsVersion(OSVersion.Redstone3))
-                    {
-                        Log.Warning("Test is disabled on RS3 because it's not stable");
-                        return;
-                    }
-
-                    SetNavViewWidth(ControlWidth.Medium);
-
                     CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
 
-                    // On phone, the pane will initially be in the closed compact state, so open it before
-                    // proceeding with the test.
-                    if (isPaneOpenCheckBox.ToggleState == ToggleState.Off)
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "Pane should be open by default since test is disabled on mobile");
+
+                    SetNavViewWidth(ControlWidth.Medium);
+                    WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                    using (var waiter = isPaneOpenCheckBox.GetToggledWaiter())
                     {
-                        using (var waiter = isPaneOpenCheckBox.GetToggledWaiter())
-                        {
-                            isPaneOpenCheckBox.Toggle();
-                            waiter.Wait();
-                        }
-                        WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
+                        isPaneOpenCheckBox.Toggle();
+                        waiter.Wait();
                     }
+                    WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
 
                     Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
 
-                    KeyboardHelper.PressKey(Key.Backspace, ModifierKey.Windows);
-                    Wait.ForIdle();
-                    WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "Verify Windows+Back light dismisses the pane");
+                    PaneOpenCloseTestCaseRetry(3, () =>
+                    {
+                        KeyboardHelper.PressKey(Key.Backspace, ModifierKey.Windows);
+                        Wait.ForIdle();
+                        WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+                        Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "Verify Windows+Back light dismisses the pane");
+                    });
 
                     isPaneOpenCheckBox.Toggle();
                     Wait.ForIdle();
                     WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
                     Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
 
-                    KeyboardHelper.PressKey(Key.Left, ModifierKey.Alt);
-                    Wait.ForIdle();
-                    WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "Verify Alt+Left light dismisses the pane");
+                    PaneOpenCloseTestCaseRetry(3, () =>
+                    {
+                        KeyboardHelper.PressKey(Key.Left, ModifierKey.Alt);
+                        Wait.ForIdle();
+                        WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+                        Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "Verify Alt+Left light dismisses the pane");
+                    });
 
                     isPaneOpenCheckBox.Toggle();
                     Wait.ForIdle();
@@ -3006,7 +3004,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
         }
-      
+
+        private void PaneOpenCloseTestCaseRetry(int retryNumber, Action action)
+        {
+            for (int i = 0; i < retryNumber; i++)
+            {
+                try
+                {
+                    if (i > 0)
+                    {
+                        Log.Comment("Retry on " + i);
+                    }
+                    action();
+                    return;
+                }
+                catch (Exception e)
+                {
+                    CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
+                    Log.Comment("IsPaneOpenCheckBox toggle status: " + isPaneOpenCheckBox.ToggleState);
+
+                    Edit closingCounts = new Edit(FindElement.ByName("ClosingEventCountTextBlock"));
+                    Log.Comment("ClosingEventCountTextBlock text: " + closingCounts.GetText());
+
+                    TextBlock eventTextBlock = new TextBlock(FindElement.ByName("PaneOpenedOrClosedEvent"));
+                    Log.Comment("PaneOpenedOrClosedEvent text: " + eventTextBlock.GetText());
+
+                    Log.Comment(e.Message);
+                }
+            }
+
+            throw new Exception("Reach max number of retry " + retryNumber);
+        }
+
         [TestMethod]
         public void VerifyLightDismissDoesntSendDuplicateEvents()
         {
@@ -3028,43 +3057,52 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         return;
                     }
                     
-                    // Bug 19409503
-                    if (PlatformConfiguration.IsOsVersion(OSVersion.Redstone3))
-                    {
-                        Log.Warning("Test is disabled on RS3 because it's not stable");
-                        return;
-                    }
+                    CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "Pane should be open by default since test is disabled on mobile");
 
                     SetNavViewWidth(ControlWidth.Medium);
-
-                    CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
-
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
-
-                    Log.Comment("Reset the event count");
-                    new Button(FindElement.ById("ClosingEventCountResetButton")).Invoke();
-                    Wait.ForIdle();
-
-                    Log.Comment("Open the pane");
-                    using (var waiter = isPaneOpenCheckBox.GetToggledWaiter())
-                    {
-                        isPaneOpenCheckBox.Toggle();
-                        waiter.Wait();
-                    }
-                    WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
-
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
-
-                    var closingCounts = new Edit(FindElement.ByName("ClosingEventCountTextBlock"));
-                    var expectedString = "1-1";
-
-                    //  trigger a light dismiss
-                    KeyboardHelper.PressKey(Key.Left, ModifierKey.Alt);
-                    Wait.ForIdle();
-
                     WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
-                    Verify.AreEqual(expectedString, closingCounts.GetText());
+
+                    PaneOpenCloseTestCaseRetry(3, () =>
+                        {
+                            // recover from the exception if needed
+                            if (isPaneOpenCheckBox.ToggleState != ToggleState.Off)
+                            {
+                                using (var waiter = isPaneOpenCheckBox.GetToggledWaiter())
+                                {
+                                    isPaneOpenCheckBox.Toggle();
+                                    waiter.Wait();
+                                }
+                                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+                            }
+
+                            Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+
+                            Log.Comment("Reset the event count");
+                            new Button(FindElement.ById("ClosingEventCountResetButton")).Invoke();
+                            Wait.ForIdle();
+
+                            Log.Comment("Open the pane");
+                            using (var waiter = isPaneOpenCheckBox.GetToggledWaiter())
+                            {
+                                isPaneOpenCheckBox.Toggle();
+                                waiter.Wait();
+                            }
+                            WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
+
+                            Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+
+                            var closingCounts = new Edit(FindElement.ByName("ClosingEventCountTextBlock"));
+                            var expectedString = "1-1";
+
+                            //  trigger a light dismiss
+                            KeyboardHelper.PressKey(Key.Left, ModifierKey.Alt);
+                            Wait.ForIdle();
+
+                            WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+                            Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                            Verify.AreEqual(expectedString, closingCounts.GetText());
+                        });
                 }
             }
         }
