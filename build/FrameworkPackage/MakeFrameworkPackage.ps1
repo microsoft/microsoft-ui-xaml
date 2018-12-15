@@ -252,7 +252,7 @@ Write-Host $makeappx
 cmd /c $makeappx
 if ($LastExitCode -ne 0) { Exit 1 }
 
-if ($env:TFS_ToolsDirectory -and ($env:BUILD_DEFINITIONNAME -match "_release"))
+if ($env:TFS_ToolsDirectory -and ($env:BUILD_DEFINITIONNAME -match "_release") -and $env:UseSimpleSign)
 {
     # From MakeAppxBundle in the XES tools
     $signToolPath = $env:TFS_ToolsDirectory + "\bin\SimpleSign.exe"
