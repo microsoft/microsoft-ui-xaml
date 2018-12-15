@@ -38,7 +38,12 @@ namespace HelixTestHelpers
             assembly.SetAttributeValue("name", "MUXControls.Test.dll");
             assembly.SetAttributeValue("test-framework", "TAEF");
             assembly.SetAttributeValue("run-date", DateTime.Now.ToString("yyyy-mm-dd"));
-            assembly.SetAttributeValue("run-time", DateTime.Now.ToString("hh:mm:ss"));
+
+            // This doesn't need to be completely accurate since it's not exposed anywhere.
+            // If we need accurate an start time we can probably calculate it from the te.wtl file, but for
+            // now this is fine.
+            assembly.SetAttributeValue("run-time", (DateTime.Now - testPass.TestPassExecutionTime).ToString("hh:mm:ss"));
+            
             assembly.SetAttributeValue("total", resultCount);
             assembly.SetAttributeValue("passed", passedCount);
             assembly.SetAttributeValue("failed", failedCount);

@@ -118,7 +118,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     var currentPageTextBlock = FindElement.ById("__CurrentPage");
                     if (currentPageTextBlock == null)
                     {
-                        string errorMessage = string.Format("Cannot find __CurrentPage textblock");
+                        string errorMessage = "Cannot find __CurrentPage textblock";
                         Log.Error(errorMessage);
                         DumpHelper.DumpFullContext();
                         throw new InvalidOperationException(errorMessage);
