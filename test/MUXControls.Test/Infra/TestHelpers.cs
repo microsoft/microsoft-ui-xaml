@@ -113,6 +113,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                         }
                     }
 
+                    // We were hitting an issue in the lab where sometimes the very first click would fail to go through resulting in 
+                    // test instability. We work around this by clicking on element when the app launches. 
+                    var currentPageTextBlock = FindElement.ById("__CurrentPage");
+                    if (currentPageTextBlock == null)
+                    {
+                        string errorMessage = "Cannot find __CurrentPage textblock";
+                        Log.Error(errorMessage);
+                        DumpHelper.DumpFullContext();
+                        throw new InvalidOperationException(errorMessage);
+                    }
+                    InputHelper.LeftClick(currentPageTextBlock);
+
                     var uiObject = FindElement.ByNameAndClassName(testName, "Button");
                     if (uiObject == null)
                     {
