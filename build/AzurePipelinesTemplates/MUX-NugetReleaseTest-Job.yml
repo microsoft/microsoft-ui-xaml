@@ -1,31 +1,12 @@
 parameters:
   dependsOn: ''
-  nugetConfigPath: 'test\MUXControlsReleaseTest\nuget.config'
+  useNupkgFromArtifacts: false
+  nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
   matrix: 
       Debug_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Debug'
-      # Debug_x64:
-      #   buildPlatform: 'x64'
-      #   buildConfiguration: 'Debug'
-      # Debug_Arm:
-      #   buildPlatform: 'arm'
-      #   buildConfiguration: 'Debug'
-      # Debug_Arm64:
-      #   buildPlatform: 'arm64'
-      #   buildConfiguration: 'Debug'
-      # Release_x86:
-      #   buildPlatform: 'x86'
-      #   buildConfiguration: 'Release'
-      # Release_x64:
-      #   buildPlatform: 'x64'
-      #   buildConfiguration: 'Release'
-      # Release_Arm:
-      #   buildPlatform: 'arm'
-      #   buildConfiguration: 'Release'
-      # Release_Arm64:
-      #   buildPlatform: 'arm64'
-      #   buildConfiguration: 'Release'
+      
 jobs:
 - job: BuildNugetTests
   dependsOn:
@@ -38,9 +19,79 @@ jobs:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}
 
+  variables:
+    solutionPath: test\MUXControlsReleaseTest\MUXControlsReleaseTest.sln
+    nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
+    packageSaveDirectory: $(Build.SourcesDirectory)\packages\muxreleasetest
+    artifactDownloadPath: $(Build.SourcesDirectory)\Artifacts
+
   steps:
+  # When using the nupkg from artifacts we need to make a new nuget.config that points the MUXReleaseTest
+  # projects at the just-built nupkg. The MUXRelease projects use a specific nuget version but the nuget
+  # restore logic is such that if the feeds provided don't include the requested version but instead have
+  # a newer one, it will choose the newer one. We leverage this fact to rewrite the nuget.config that
+  # the test projects use to point at a local folder that includes only one Microsoft.UI.Xaml.*.nupkg
+  # whose version is newer than the requested one.
+  # 
+  # The only wrinkle is that because the specific requested version might be on nuget.org so we can't
+  # actually list nuget.org in the nuget.config. So we restore the old nuget packages and then copy out
+  # all the .nupkg files into the artifact drop location where we placed the Microsoft.UI.Xaml.???.nupkg 
+  # that was just built.
+  - ${{ if eq(parameters.useNupkgFromArtifacts, 'true') }}:
+    - task: DownloadBuildArtifacts@0 
+      inputs: 
+        artifactName: drop
+        downloadPath: $(artifactDownloadPath)
+
+    # First, nuget restore the project to the artifact drop
+    - template: MUX-InstallNuget-Steps.yml
+
+    - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+      displayName: 'NuGet restore packages first'
+      inputs:
+        command: custom
+        arguments: >
+          restore 
+          -PackagesDirectory $(packageSaveDirectory)
+          -PackageSaveMode nupkg 
+          $(solutionPath)
+          -ConfigFile $(nugetConfigPath)
+          -DirectDownload
+
+    # Copy the restored packages into the drop location
+    - powershell: |
+        Write-Host "Listing contents of $env:USERPROFILE\.nuget:"
+        cmd /c dir /s /b $env:USERPROFILE\.nuget
+
+        Write-Host "Create $env:artifactDownloadPath\drop if it doesn't exist"
+        if (-not (Test-Path $env:artifactDownloadPath\drop)) { mkdir $env:artifactDownloadPath\drop }
+
+        Write-Host "Looking through packages in $env:packageSaveDirectory"
+        Get-ChildItem -r $env:packageSaveDirectory\*.nupkg |
+          Where-Object { -not ($_.Name -imatch "Microsoft.UI.Xaml")} |
+          ForEach-Object { Copy-Item $_.PSPath $env:artifactDownloadPath\drop }
+
+        # Display what we copied for diagnostics
+        cmd /c dir /s /b $env:artifactDownloadPath\drop
+      displayName: Copy saved nupkgs to a flat directory (except Microsoft.UI.Xaml)
+
+    # Rewrite the nuget.config to use artifacts.
+    - powershell: |
+        $nugetConfigFullPath = "$env:BUILD_SOURCESDIRECTORY\$env:nugetConfigPath"
+        @"
+        <?xml version='1.0' encoding='utf-8'?>
+        <configuration>
+          <packageSources>
+            <add key='local' value='$env:artifactDownloadPath\drop'/>
+          </packageSources>
+        </configuration>
+        "@ | Out-File -Encoding UTF8 $nugetConfigFullPath
+        # Output for debugging
+        Write-Host (Get-Content $nugetConfigFullPath)
+      displayName: Rewrite nuget.config to use artifacts
+
   - template: MUX-BuildProject-Steps.yml
     parameters:
-      solutionPath: test\MUXControlsReleaseTest\MUXControlsReleaseTest.sln
-      nugetConfigPath: ${{ parameters.nugetConfigPath }}
+      solutionPath: $(solutionPath)
+      nugetConfigPath: $(nugetConfigPath)
 
