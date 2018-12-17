@@ -24,6 +24,10 @@ function PublishFile {
         }
         Copy-Item -Force $source $destinationDir
     }
+    else
+    {
+        Write-Host "Not copying '$source' to $destinationDir because it did not exist"
+    }
 }
 
 PublishFile $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll $FullPublishDir\Microsoft.UI.Xaml\
@@ -31,7 +35,6 @@ PublishFile $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri $FullPublis
 PublishFile $FullBuildOutput\Microsoft.UI.Xaml\sdk\Microsoft.UI.Xaml.winmd $FullPublishDir\Microsoft.UI.Xaml\sdk\
 PublishFile $FullBuildOutput\Microsoft.UI.Xaml\Generic.xaml $FullPublishDir\Microsoft.UI.Xaml\
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml.Design\Microsoft.UI.Xaml.Design.dll $FullPublishDir\Microsoft.UI.Xaml.Design\
-
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\MUXControls.Test.dll $FullPublishDir\Test\
 
 # Publish pdbs:
