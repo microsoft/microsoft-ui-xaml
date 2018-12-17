@@ -14,7 +14,7 @@
             <StaticResource x:Key="MenuBarItemBackground" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="MenuBarItemBackgroundPointerOver" ResourceKey="SystemControlBackgroundListLowBrush" />
             <StaticResource x:Key="MenuBarItemBackgroundPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundSelected" ResourceKey="SystemControlBackgroundListLowBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundSelected" ResourceKey="SystemControlBackgroundListMediumBrush" />
 
             <Thickness x:Key="MenuBarItemBorderThickness">0</Thickness>
 
@@ -30,7 +30,7 @@
             <StaticResource x:Key="MenuBarItemBackground" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="MenuBarItemBackgroundPointerOver" ResourceKey="SystemControlBackgroundListLowBrush" />
             <StaticResource x:Key="MenuBarItemBackgroundPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundSelected" ResourceKey="SystemControlBackgroundListLowBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundSelected" ResourceKey="SystemControlBackgroundListMediumBrush" />
 
             <Thickness x:Key="MenuBarItemBorderThickness">0</Thickness>
 
@@ -46,7 +46,7 @@
             <StaticResource x:Key="MenuBarItemBackground" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="MenuBarItemBackgroundPointerOver" ResourceKey="SystemControlBackgroundListLowBrush" />
             <StaticResource x:Key="MenuBarItemBackgroundPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />
-            <StaticResource x:Key="MenuBarItemBackgroundSelected" ResourceKey="SystemControlBackgroundListLowBrush" />
+            <StaticResource x:Key="MenuBarItemBackgroundSelected" ResourceKey="SystemControlBackgroundListMediumBrush" />
 
             <Thickness x:Key="MenuBarItemBorderThickness">2</Thickness>
 

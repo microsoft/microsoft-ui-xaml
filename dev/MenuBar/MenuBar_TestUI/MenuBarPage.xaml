@@ -17,6 +17,8 @@
         </Grid.RowDefinitions>
 
         <StackPanel x:Name="contentRoot" Grid.Row="0">
+            <Button AutomationProperties.Name="FirstButton" Content="First Button"/>
+
             <muxc:MenuBar x:Name="menuBar">
                 <muxc:MenuBarItem x:Name="FileItem" AutomationProperties.Name="FileItem" Title="File">
                     <MenuFlyoutItem x:Name="NewItem" AutomationProperties.Name="NewItem" Text="New" Click="NewItem_Click"/>
