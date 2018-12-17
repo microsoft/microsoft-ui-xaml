@@ -109,7 +109,9 @@ Install latest VS2017 (15.9 or later) from here: http://visualstudio.com/downloa
 
 While WinUI is designed to work against many versions of Windows, you will need 
 a fairly recent SDK in order to build WinUI. It's required that you install the 
-16299, 17134 and 17763 SDKs. You can download these from here: https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk
+16299, 17134 and 17763 SDKs. You can download these via Visual Studio (check 
+all the boxes when prompted), or you can manually download them from here: 
+https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk
 
 ### Creating a NuGet package
 

@@ -87,6 +87,9 @@ to @ mention Microsoft team members to ask for help.
 
 #### WinUI-Public-MUX-PR
 
+> Note: Until [this issue](https://github.com/Microsoft/microsoft-ui-xaml/issues/49)
+is resolved the only check made is build validation, not automated tests.
+
 This check runs automated tests on your change. These tests should match what 
 you're able to run with local automated testing using Test Explorer.
 
