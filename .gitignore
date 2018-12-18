@@ -262,3 +262,5 @@ manifest/Microsoft-Windows-UI-Xaml-MUXControls.man
 
 artifacts/
 HelixPayload/
+/test/MUXControlsTestApp/MSTest/MUXControlsTestApp_Test
+/test/MUXControlsTestApp/TAEF/MUXControlsTestApp_Test
