@@ -56,7 +56,7 @@ echo ++++++++++++++++ ----------- ++++++++++++++++++++++++
 
 pushd %~dp0\..\build\NuSpecs
 
-set NUGETCMD=\\edge-svcs\nuget\v3.5\nuget.exe
+set NUGETCMD=%~dp0\NugetWrapper.cmd
 set BUILDOUTPUT=%XES_DFSDROP%
 set OUTPUTDIR=%BUILD_BINARIESDIRECTORY%\PostBuild
 set ECHOON=1

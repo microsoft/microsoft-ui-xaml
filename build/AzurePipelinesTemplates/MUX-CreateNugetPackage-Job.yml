@@ -1,0 +1,56 @@
+parameters:
+# Extract the build revision number from Build.BuildNumber. This is needed to pass to build-nupkg
+  jobName: ''
+  dependsOn: ''
+  buildOutputDir: '$(Build.SourcesDirectory)\BuildOutput'
+  nupkgdir: '$(build.artifactStagingDirectory)'
+# The "primary" build arch is the one that the nuspec gets its winmd, pri, and other neutral files from
+  primaryBuildArch: x86
+  buildFlavor: Release
+
+jobs:
+- job: ${{ parameters.jobName }}
+  dependsOn:
+    - ${{ parameters.dependsOn }}
+
+  steps:
+    # Extract the build revision number from Build.BuildNumber. This is needed to pass to build-nupkg
+  - powershell: |
+      $revision = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 3, 3)
+      Write-Host "##vso[task.setvariable variable=buildrevision]$revision"
+    displayName: 'Get build revision number'
+  
+  - script: |
+      echo parameters.jobName '${{ parameters.jobName }}'
+      echo parameters.buildOutputDir '${{ parameters.buildOutputDir }}'
+      echo parameters.nupkgdir '${{ parameters.nupkgdir }}'
+      echo parameters.publishPath '${{ parameters.publishPath }}'
+      echo buildrevision=$(buildrevision)
+    displayName: 'CreateNugetPackage: Display parameters'
+
+  - task: DownloadBuildArtifacts@0 
+    inputs: 
+      artifactName: drop
+      downloadPath: '$(Build.SourcesDirectory)\Artifacts'
+
+  - template: MUX-InstallNuget-Steps.yml
+
+  - task: powershell@2
+    displayName: 'build-nupkg.ps1'
+    inputs:
+      targetType: filePath
+      filePath: build\NuSpecs\build-nupkg.ps1
+      arguments: > 
+        -BuildOutput '$(Build.SourcesDirectory)\Artifacts\drop' 
+        -OutputDir '${{ parameters.nupkgdir }}' 
+        -prereleaseversion prerelease 
+        -Subversion '$(buildrevision)' 
+        -SkipFrameworkPackage
+        -BuildArch ${{ parameters.primaryBuildArch }}
+        -BuildFlavor ${{ parameters.buildFlavor }} 
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artifact: nupkg'
+    inputs:
+      PathtoPublish: '${{ parameters.nupkgdir }}'
+      artifactName: 'drop'

@@ -7,14 +7,22 @@ improvements.
 
 #### /build, /tools
 
-These folders contain scripts and other support machinery that you shouldn't need to edit for most changes.
+These folders contain scripts and other support machinery that you shouldn't 
+need to edit for most changes.
 
 In particular:
 
 * **/build/NuSpecs** enables .nupkg generation
 * **/build/FrameworkPackage** enables .appx generation
 
-Note that here and in various parts of the codebase you will see references to `BUILD_WINDOWS`. WinUI operates as a standalone package for Xaml apps but is also a way that new controls migrate into [Windows.UI.Xaml.Controls](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls) as part of the Windows build system. The places where the WinUI source needs to differ for this different environment are specified under `BUILD_WINDOWS`. It's expected that it is the responsibility of the Microsoft team members to maintain this part of WinUI, and other community members should be able to ignore it.
+Note that here and in various parts of the codebase you will see references to 
+`BUILD_WINDOWS`. WinUI operates as a standalone package for Xaml apps but is 
+also a way that new controls migrate into [Windows.UI.Xaml.Controls](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls) 
+as part of the Windows build system. The places where the WinUI source needs to 
+differ for this different environment are specified under `BUILD_WINDOWS`. It's 
+expected that it is the responsibility of the Microsoft team members to 
+maintain this part of WinUI, and other community members should be able to 
+ignore it.
 
 #### /dev
 
@@ -33,8 +41,8 @@ that contains all the controls and other solutions which will be packaged and
 deployed. At this time we believe the Microsoft.UI.Xaml.dll is 
 small enough to include all controls into one DLL. As we increase the number of 
 controls we will revisit this decision and may decompose it into different DLLs 
-in the future. Also we will adjust based on developer feedback if we start to see
- usage patterns where teams use just a few controls vs. the whole library.
+in the future. Also we will adjust based on developer feedback if we start to see 
+usage patterns where teams use just a few controls vs. the whole library.
 
 This project also includes the necessary definitions to package the DLL into a 
 NuGet package.
@@ -50,12 +58,15 @@ Note that developer usage documentation can be found separately on docs.microsof
 Our test library and test app (the app that the test library interacts with 
 when executing the tests) are here.
 
-MUXControls.Test is a [MSTest](https://docs.microsoft.com/dotnet/api/microsoft.visualstudio.testtools.unittesting) DLL using MITALite that contains all of the test 
-code for the various controls by automating the MUXControlsTestApp.
+MUXControls.Test is a [MSTest](https://docs.microsoft.com/dotnet/api/microsoft.visualstudio.testtools.unittesting) 
+DLL using MITALite that contains all of the test code for the various controls 
+by automating the MUXControlsTestApp.
 
 MUXControlsTestApp is a UWP app that exercises all the controls. This is just a 
 manual testing playground which can be driven by the automated tests for 
-automated verification as well as [TestMethod] control API verification. Note this applications references the MUXControls DLL rather than including the Shared Items.
+automated verification as well as [TestMethod] control API verification. Note 
+this applications references the MUXControls DLL rather than including the 
+Shared Items.
 
 ## Code style and conventions
 
@@ -86,7 +97,8 @@ The following file header is the used for WinUI. Please use it for new files.
 
 ## Building the repository
 
-Generally you will want to set your configuration to **Debug**, **x86**, and select **MUXControlsTestApp** as your startup project in Visual Studio.
+Generally you will want to set your configuration to **Debug**, **x86**, and 
+select **MUXControlsTestApp** as your startup project in Visual Studio.
 
 ### Prerequisites
 #### Visual Studio
@@ -95,7 +107,11 @@ Install latest VS2017 (15.9 or later) from here: http://visualstudio.com/downloa
 
 #### SDK
 
-While WinUI is designed to work against many versions of Windows, you will need a fairly recent SDK in order to build WinUI. It's required that you install the 16299, 17134 and 17763 SDKs.
+While WinUI is designed to work against many versions of Windows, you will need 
+a fairly recent SDK in order to build WinUI. It's required that you install the 
+16299, 17134 and 17763 SDKs. You can download these via Visual Studio (check 
+all the boxes when prompted), or you can manually download them from here: 
+https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk
 
 ### Creating a NuGet package
 
@@ -111,7 +127,10 @@ While WinUI is designed to work against many versions of Windows, you will need 
 
 #### Test app
 
-The WinUI solution project has a test app that is useful for validating common scenarios affected by the presence of the WinUI package.  Set **MUXControlsTestApp** as your startup project in Visual Studio and you can F5 to start debugging that app and validate your changes.
+The WinUI solution project has a test app that is useful for validating common 
+scenarios affected by the presence of the WinUI package.  Set 
+**MUXControlsTestApp** as your startup project in Visual Studio and you can F5 
+to start debugging that app and validate your changes.
 
 ##### Organization
 
@@ -158,25 +177,55 @@ build and run MUXControl.ReleaseTest.
 One of the core values of WinUI is the way that it brings controls to a wide 
 variety of versions of Windows, handling version compatibility differences so 
 that developers using WinUI don't have to. As such, testing WinUI changes on 
-different versions is sometimes necessary. To accomplish this you will need to at times set up older versions of Windows for testing. To get these earlier versions you can make use of a Visual Studio subscription [as described here](https://docs.microsoft.com/azure/virtual-machines/windows/client-images).
+different versions is sometimes necessary. To accomplish this you will need to 
+at times set up older versions of Windows for testing. To get these earlier 
+versions you can make use of a Visual Studio subscription [as described here](https://docs.microsoft.com/azure/virtual-machines/windows/client-images).
 
 ### Automated testing
 
-> More information will be coming on this soon
+You can run the test suite from within Visual Studio by using the Test top 
+level menu. For targeting indivual tests you can use [Test Explorer](https://docs.microsoft.com/en-us/visualstudio/test/run-unit-tests-with-test-explorer?view=vs-2017) 
+(found under the Test->Windows sub menu).
+
+This same suite of tests will be run as part of your Pull Request validation 
+[check](contribution_workflow.md#Checks).
+
+#### Creating a new test
+
+For your test to be discovered it needs to be a method tagged as [\[TestMethod\]](https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.testtools.unittesting.testmethodattribute?view=mstest-net-1.2.0) 
+on a class tagged with as [\[TestClass\]](https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.testtools.unittesting.testclassattribute?view=mstest-net-1.2.0). 
+With that metadata in place your new test method will be picked up by Test 
+Explorer.
+
+There are two types of tests you can use to validate your scenarios:
+* **API Tests**: Run in the context of an app and validate the behaviors of our 
+APIs. 
+* **Interaction Tests**: Drive the UI on an external app and validate the 
+results using UI Automation.
+
+Keep in mind that your test will be executed on many different versions of 
+Windows, not just the most recent version. Your tests may need version or 
+[IsApiPresent](https://docs.microsoft.com/en-us/uwp/api/windows.foundation.metadata.apiinformation.istypepresent) 
+checks in order to pass on all versions.
 
 ## Telemetry
 
-This project collects usage data and sends it to Microsoft to help improve our products and services.
+This project collects usage data and sends it to Microsoft to help improve our 
+products and services.
 
-If desired you can disable logging when building the project by following these steps:
+If desired you can disable logging when building the project by following these 
+steps:
 
-1. In Microsoft Visual Studio's Solution Explorer window, right-click the "Microsoft.UI.Xaml (Universal Windows)" project. 
+1. In Microsoft Visual Studio's Solution Explorer window, right-click the 
+"Microsoft.UI.Xaml (Universal Windows)" project. 
 2. Select the "Properties" menu.
 3. Select "All Configurations" in the Configuration dropdown.
 4. Select "All Platforms" in the Platform dropdown.
-5. Select "Configuration Properties", then "C/C++", then "Preprocessor" in the left tree structure.
+5. Select "Configuration Properties", then "C/C++", then "Preprocessor" in the 
+left tree structure.
 6. In the entry called "Preprocessor Definitions":
-    * Add "DISABLE_TELEMETRY_TRACELOGGING;" to disable Microsoft telemetry logging alone. 
+    * Add "DISABLE_TELEMETRY_TRACELOGGING;" to disable Microsoft telemetry 
+    logging alone. 
     * Add "DISABLE_PERF_TRACELOGGING;" to disable performance logging alone.
     * Add "DISABLE_DEBUG_TRACELOGGING;" to disable debug logging alone.
     * Or simply add "DISABLE_ALL_TRACELOGGING;" to disable all three types of logging.

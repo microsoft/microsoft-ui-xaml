@@ -24,42 +24,21 @@ jobs:
         buildConfiguration: 'Release'
 
   variables:
-    appxPackageDir: '$(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages'
-    buildOutputDir: '$(Build.SourcesDirectory)\BuildOutput'
+  - name: appxPackageDir
+    value: $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+  - name: buildOutputDir
+    value: $(Build.SourcesDirectory)\BuildOutput
+  - name: publishDir
+    value: $(Build.ArtifactStagingDirectory)
 
   steps:
-  - task: CmdLine@1
-    displayName: 'Display build machine environment variables'
-    inputs:
-      filename: 'set'
-
-  - task: powershell@2
-    displayName: 'Install RS5 SDK (17763)'
-    inputs:
-      targetType: filePath
-      filePath: build\Install-WindowsSdkISO.ps1
-      arguments: 17763
-
-  - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.9.1'
-    inputs:
-      versionSpec: 4.9.1
-        
-  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-    displayName: 'NuGet restore MUXControls.sln'
-    inputs:
-      restoreSolution: MUXControls.sln
-      feedsToUse: config
+  - template: AzurePipelinesTemplates\MUX-BuildProject-Steps.yml
+    parameters:
+      solutionPath: MUXControls.sln
       nugetConfigPath: nuget.config
-
-  - task: VSBuild@1
-    displayName: 'Build solution MUXControls.sln'
-    inputs:
-      solution: MUXControls.sln
-      vsVersion: 15.0
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
-      msbuildArgs: '/p:AppxPackageDir="$(appxPackageDir)" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false'
+      appxPackageDir: $(appxPackageDir)
+      buildOutputDir: $(buildOutputDir)
+      publishDir: $(publishDir)
 
   - task: powershell@2
     displayName: 'Copy files to staging dir'
@@ -74,39 +53,27 @@ jobs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: 'drop'
 
-
-- job: CreateNuGet
-  dependsOn:
-    - Build
-  variables:
-    nupkgdir: '$(build.artifactStagingDirectory)'
-    buildOutputDir: '$(Build.SourcesDirectory)\BuildOutput'
-  steps:
-  - task: DownloadBuildArtifacts@0 
-    inputs: 
-      artifactName: drop 
-      downloadPath: '$(buildOutputDir)'
-
-  - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.9.1'
-    inputs:
-      versionSpec: 4.9.1
-
-    # Extract the build revision number from Build.BuildNumber. This is needed to pass to build-nupkg
-  - powershell: |
-      $revision = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 3, 3)
-      Write-Host "##vso[task.setvariable variable=buildrevision]$revision"
-    displayName: 'Get build revision number'
-
-  - task: powershell@2
-    displayName: 'build-nupkg.ps1'
-    inputs:
-      targetType: filePath
-      filePath: build\NuSpecs\build-nupkg.ps1
-      arguments: -BuildOutput '$(buildOutputDir)\drop' -OutputDir '$(nupkgdir)' -prereleaseversion prerelease -Subversion '$(buildrevision)' -SkipFrameworkPackage
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish artifact: nupkg'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'drop'
+# Create Nuget Package
+- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+  parameters:
+    jobName: CreateNugetPackage
+    dependsOn: Build
+  
+# Build solution that depends on nuget package
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    dependsOn: CreateNugetPackage
+    useNupkgFromArtifacts: true
+    matrix: 
+      Debug_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Debug'
+      Debug_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Debug'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+      Release_arm:
+        buildPlatform: 'arm'
+        buildConfiguration: 'Release'
