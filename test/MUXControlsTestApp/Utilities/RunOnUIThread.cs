@@ -30,6 +30,7 @@ namespace MUXControlsTestApp.Utilities
 
         public static void Execute(CoreApplicationView whichView, Action action)
         {
+            Exception exception = null;
             var dispatcher = whichView.Dispatcher;
             if (dispatcher.HasThreadAccess)
             {
@@ -51,7 +52,8 @@ namespace MUXControlsTestApp.Utilities
                         }
                         catch (Exception e)
                         {
-                            Verify.Fail("Exception thrown by action on the UI thread: " + e.ToString());
+                            exception = e;
+                            throw;
                         }
                         finally // Unblock calling thread even if action() throws
                         {
@@ -69,7 +71,8 @@ namespace MUXControlsTestApp.Utilities
                                 }
                                 catch (Exception e)
                                 {
-                                    Verify.Fail("Exception thrown by action on the UI thread: " + e.ToString());
+                                    exception = e;
+                                    throw;
                                 }
                                 finally // Unblock calling thread even if action() throws
                                 {
@@ -80,6 +83,10 @@ namespace MUXControlsTestApp.Utilities
                 });
 
                 workComplete.WaitOne();
+                if (exception != null)
+                {
+                    Verify.Fail("Exception thrown by action on the UI thread: " + exception.ToString());
+                }
             }
         }
 
