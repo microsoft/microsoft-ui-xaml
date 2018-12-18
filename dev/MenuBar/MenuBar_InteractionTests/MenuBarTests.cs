@@ -312,5 +312,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(menuBarItem.BoundingRectangle.Height, 24);
             }
         }
+
+
+        [TestMethod]
+        public void TabTest()
+        {
+            if (PlatformConfiguration.IsDevice(DeviceType.Phone))
+            {
+                Log.Comment("Skipping tests on phone, because menubar is not supported.");
+                return;
+            }
+            using (var setup = new TestSetupHelper("MenuBar Tests"))
+            {
+                var firstButton = FindElement.ByName<Button>("FirstButton");
+                var fileButton = FindElement.ById<Button>("FileItem");
+
+                firstButton.SetFocus();
+                Wait.ForIdle();
+
+                Log.Comment("Verify that pressing tab from previous control goes to the File item");
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                
+                Verify.AreEqual(true, fileButton.HasKeyboardFocus);
+            }
+        }
     }
 }
