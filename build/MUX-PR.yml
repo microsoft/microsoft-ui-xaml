@@ -41,7 +41,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish artifact: drop'
     inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      PathtoPublish: '$(publishDir)'
       artifactName: 'drop'
 
 # Create Nuget Package

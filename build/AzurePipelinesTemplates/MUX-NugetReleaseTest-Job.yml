@@ -45,6 +45,7 @@ jobs:
         <?xml version='1.0' encoding='utf-8'?>
         <configuration>
           <packageSources>
+            <clear />
             <add key='NuGet official package source' value='https://nuget.org/api/v2/' />
             <add key='dotnetfeed' value='https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json' />
             <add key='local' value='$env:artifactDownloadPath\drop'/>
