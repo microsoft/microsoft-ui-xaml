@@ -64,6 +64,7 @@ jobs:
 
         Write-Host "New version: $newVersion"
 
+        $numFilesReplaced = 0
         Get-ChildItem -r $env:solutionDir -File |
           ForEach-Object {
             $path = $_.FullName
@@ -72,8 +73,15 @@ jobs:
             if ($contents -ne $newContents) {
               Write-Host "Updating version in $path"
               $newContents | Set-Content $path -Encoding UTF8
+              $numFilesReplaced += 1
             }
           }
+
+        if ($numFilesReplaced -eq 0)
+        {
+          Write-Host "##vso[task.logissue type=error]No files found with '$env:currentPackageVersion' in them, make sure to update *.yml files when retargeting ReleaseTest projects"
+          Exit 1
+        }
       displayName: Rewrite project files to use new version
 
   - template: MUX-BuildProject-Steps.yml
