@@ -3,6 +3,7 @@
 
 using MUXControlsTestApp.Utilities;
 using System;
+using System.Runtime.InteropServices;
 using Windows.UI.Xaml.Controls;
 using Common;
 
@@ -21,7 +22,6 @@ using ScrollerSnapPointBase = Microsoft.UI.Xaml.Controls.ScrollerSnapPointBase;
 using ScrollerSnapPointAlignment = Microsoft.UI.Xaml.Controls.ScrollerSnapPointAlignment;
 using ScrollerSnapPointRegular = Microsoft.UI.Xaml.Controls.ScrollerSnapPointRegular;
 using ScrollerSnapPointIrregular = Microsoft.UI.Xaml.Controls.ScrollerSnapPointIrregular;
-using System.Runtime.InteropServices;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
