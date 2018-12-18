@@ -370,14 +370,14 @@ void NavigationView::OnApplyTemplate()
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-#if defined(BUILD_WINDOWS)
+#ifdef USE_INSIDER_SDK
         if (auto splitView = m_rootSplitView.get())
         {
             if (auto contentRoot = splitView.Content())
             {
                 if (auto paneRoot = splitView.Pane())
                 {
-                    winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
+                    winrt::ThemeShadow shadow;
                     shadow.Receivers().Append(contentRoot);
                     paneRoot.Shadow(shadow);
                 }
@@ -2743,7 +2743,7 @@ void NavigationView::OnIsPaneOpenChanged()
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-#if defined(BUILD_WINDOWS)
+#ifdef USE_INSIDER_SDK
         if (auto splitView = m_rootSplitView.get())
         {
             if (auto paneRoot = splitView.Pane())
