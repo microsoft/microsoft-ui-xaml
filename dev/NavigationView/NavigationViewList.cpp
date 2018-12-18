@@ -26,9 +26,9 @@ bool NavigationViewList::IsItemItsOwnContainerOverride(winrt::IInspectable const
     bool isItemItsOwnContainerOverride = false;
     if (args)
     {
-        // This validation is only relevant outside of the Windows build where WUXC and MUXC have distinct types.
-#if !BUILD_WINDOWS
         // Certain items are disallowed in a NavigationView's items list. Check for them.
+        // Only relevant outside of the Windows build where WUXC and MUXC have distinct types.
+#if !BUILD_WINDOWS
         if (args.try_as<winrt::Windows::UI::Xaml::Controls::NavigationViewItemBase>())
         {
             throw winrt::hresult_invalid_argument(L"MenuItems contains a Windows.UI.Xaml.Controls.NavigationViewItem. This control requires that the NavigationViewItems be of type Microsoft.UI.Xaml.Controls.NavigationViewItem.");
