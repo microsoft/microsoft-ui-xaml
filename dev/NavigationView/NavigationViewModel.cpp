@@ -22,8 +22,9 @@ NavigationViewModel::~NavigationViewModel()
 void NavigationViewModel::RegisterItemExpandEventToSelf(winrt::NavigationViewItem const& item, winrt::NavigationViewList const& list)
 {
     auto navItem = winrt::get_self<NavigationViewItem>(item);
-    auto index = list.IndexFromContainer(item);
-    m_isExpandedChangedEventTokenVector.insert(m_isExpandedChangedEventTokenVector.begin() + index, navItem->AddExpandedChanged({ this, &NavigationViewModel::IsExpandedPropertyChanged }));
+    navItem->AddExpandedChanged({ this, &NavigationViewModel::IsExpandedPropertyChanged });
+    //auto index = list.IndexFromContainer(item);
+    //m_isExpandedChangedEventTokenVector.insert(m_isExpandedChangedEventTokenVector.begin() + index, navItem->AddExpandedChanged({ this, &NavigationViewModel::IsExpandedPropertyChanged }));
 
     //navItem->AddExpandedChanged({ this, &NavigationViewModel::IsExpandedPropertyChanged });
 
@@ -172,7 +173,7 @@ void NavigationViewModel::IsExpandedPropertyChanged(winrt::NavigationViewItem co
 	}
 }
 
-void NavigationViewModel::RemoveItemAndDescendantsFromView(const winrt::NavigationViewItemBase& value, const int index)
+void NavigationViewModel::RemoveItemAndDescendantsFromView(winrt::NavigationViewItemBase const& value, int const index)
 {
     if (auto navigationViewItem = value.try_as<winrt::NavigationViewItem>())
     {
@@ -199,9 +200,9 @@ void NavigationViewModel::RemoveItemAndDescendantsFromView(const winrt::Navigati
         // Revoke isExpanded Event registration 
         if (navigationViewItem.MenuItems().Size() > 0 || navigationViewItem.MenuItemsSource())
         {
-            winrt::get_self<NavigationViewItem>(navigationViewItem)->RemoveExpandedChanged(m_isExpandedChangedEventTokenVector[index]);
-            m_isExpandedChangedEventTokenVector.erase(m_isExpandedChangedEventTokenVector.begin() + index);
-            navigationViewItem.IsExpanded(false);
+            //winrt::get_self<NavigationViewItem>(navigationViewItem)->RemoveExpandedChanged(m_isExpandedChangedEventTokenVector[index]);
+            //m_isExpandedChangedEventTokenVector.erase(m_isExpandedChangedEventTokenVector.begin() + index);
+            //navigationViewItem.IsExpanded(false);
         }
     }
 

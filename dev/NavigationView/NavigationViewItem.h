@@ -54,10 +54,7 @@ public:
     winrt::event_token AddExpandedChanged(winrt::TypedEventHandler<winrt::NavigationViewItem, winrt::DependencyPropertyChangedEventArgs> const& value);
     void RemoveExpandedChanged(winrt::event_token token);
 
-    bool HasRegisteredWithViewModelForExpandEvent() { return m_registeredWithViewModelForExpandedChangedEvent; };
-
-    void SetDepth(int depth);
-    int GetDepth();
+    void UpdateItemDepth(int depth);
 
     void SetParentItem(winrt::NavigationViewItem const& item);
 
@@ -102,13 +99,7 @@ private:
     bool m_hasKeyboardFocus{ false };
     bool m_isContentChangeHandlingDelayedForTopNav{ false };
 
-    bool m_registeredWithViewModelForExpandedChangedEvent{ false };
     event_source<winrt::TypedEventHandler<winrt::NavigationViewItem, winrt::DependencyPropertyChangedEventArgs>> m_expandedChangedEventSource{ this };
 
-    int m_depth{ 0 };
-    void UpdateItemDepth(int depth);
-
     tracker_ref<winrt::NavigationViewItem> m_parentItem{ this };
-
-    void InformViewModelOfAbilityToExpand();
 };

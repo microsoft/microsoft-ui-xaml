@@ -1353,7 +1353,7 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
     {
         if (auto clickedItemContainer = itemContainer.try_as<winrt::NavigationViewItem>())
         {
-            bool hasChildren = ((clickedItemContainer.MenuItems() && clickedItemContainer.MenuItems().Size() > 0) ||
+            bool hasChildren = (clickedItemContainer.MenuItems().Size() > 0 ||
                                 clickedItemContainer.MenuItemsSource() ||
                                 clickedItemContainer.HasUnrealizedChildren());
             if (hasChildren)
