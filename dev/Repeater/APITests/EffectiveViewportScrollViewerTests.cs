@@ -65,18 +65,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             var realizationRects = new List<Rect>();
             ScrollViewer scrollViewer = null;
             ManualResetEvent viewChanged = new ManualResetEvent(false);
+            ManualResetEvent layoutMeasured = new ManualResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                var repeater = new ItemsRepeater()
-                {
-                    Layout = GetMonitoringLayout(new Size(500, 600), realizationRects),
+                var repeater = new ItemsRepeater() {
+                    Layout = GetMonitoringLayout(new Size(500, 600), realizationRects, layoutMeasured),
                     HorizontalCacheLength = 0.0,
                     VerticalCacheLength = 0.0
                 };
 
-                scrollViewer = new ScrollViewer
-                {
+                scrollViewer = new ScrollViewer {
                     Content = repeater,
                     Width = 200,
                     Height = 300,
@@ -86,29 +85,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 scrollViewer.ViewChanged += (sender, args) =>
                 {
-                    if(!args.IsIntermediate)
+                    if (!args.IsIntermediate)
                     {
+                        Log.Comment("ViewChanged " + scrollViewer.HorizontalOffset + ":" + scrollViewer.VerticalOffset);
                         viewChanged.Set();
                     }
                 };
 
                 Content = scrollViewer;
-                Content.UpdateLayout();
+            });
 
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not recieve measure on layout");
+
+            RunOnUIThread.Execute(() =>
+            {
                 // First layout pass will invalidate measure during the first arrange
                 // so that we can get a viewport during the second measure/arrange pass.
-                Verify.AreEqual(2, realizationRects.Count);
                 Verify.AreEqual(new Rect(0, 0, 0, 0), realizationRects[0]);
                 Verify.AreEqual(new Rect(0, 0, 200, 300), realizationRects[1]);
                 realizationRects.Clear();
 
                 viewChanged.Reset();
+                layoutMeasured.Reset();
                 scrollViewer.ChangeView(null, 100.0, 1.0f, disableAnimation: true);
             });
 
             IdleSynchronizer.Wait();
             Verify.IsTrue(viewChanged.WaitOne(), "Did not recieve view changed event");
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not recieve measure on layout");
             viewChanged.Reset();
+            layoutMeasured.Reset();
 
             RunOnUIThread.Execute(() =>
             {
@@ -122,7 +128,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             IdleSynchronizer.Wait();
             Verify.IsTrue(viewChanged.WaitOne(), "Did not recieve view changed event");
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not recieve measure on layout");
             viewChanged.Reset();
+            layoutMeasured.Reset();
 
             RunOnUIThread.Execute(() =>
             {
@@ -134,7 +142,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             IdleSynchronizer.Wait();
             Verify.IsTrue(viewChanged.WaitOne(), "Did not recieve view changed event");
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not recieve measure on layout");
             viewChanged.Reset();
+            layoutMeasured.Reset();
 
             RunOnUIThread.Execute(() =>
             {
@@ -586,14 +596,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             Verify.AreEqual(expectedLastItemIndex, actualLastItemIndex);
         }
 
-        private static VirtualizingLayout GetMonitoringLayout(Size desiredSize, List<Rect> realizationRects)
+        private static VirtualizingLayout GetMonitoringLayout(Size desiredSize, List<Rect> realizationRects, ManualResetEvent layoutMeasured = null)
         {
             return new MockVirtualizingLayout
             {
                 MeasureLayoutFunc = (availableSize, context) =>
                 {
                     var ctx = (VirtualizingLayoutContext)context;
+                    Log.Comment("MeasureLayout:" + ctx.RealizationRect);
                     realizationRects.Add(ctx.RealizationRect);
+                    if (layoutMeasured != null)
+                    {
+                        layoutMeasured.Set();
+                    }
                     return desiredSize;
                 },
 
