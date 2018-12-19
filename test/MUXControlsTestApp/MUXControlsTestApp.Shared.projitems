@@ -169,6 +169,7 @@
     <AppxPackageExtension Condition="'$(AppxPackageExtension)'==''">.appx</AppxPackageExtension>
     <AppxPackageTestDir Condition="'$(AppxPackageTestDir)'==''">$(AppxPackageDir)$(AppxPackageName)_Test\</AppxPackageTestDir>
     <AppxPackageOutput Condition="'$(AppxPackageOutput)'==''">$(AppxPackageTestDir)$(AppxPackageName)$(AppxPackageExtension)</AppxPackageOutput>
+    <AppxIntermediateExtension Condition="'$(AppxIntermediateExtension)'==''">.intermediate</AppxIntermediateExtension>
   </PropertyGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />

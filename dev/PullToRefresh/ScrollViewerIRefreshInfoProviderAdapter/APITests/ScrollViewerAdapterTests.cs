@@ -45,7 +45,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 ScrollViewerIRefreshInfoProviderAdapter adapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, null);
                 Verify.IsNotNull(adapter);
-                Verify.Throws<Exception>(() => { adapter.Adapt(null, new Size(1.0, 1.0)); });
+                Verify.Throws<ArgumentException>(() => { adapter.Adapt(null, new Size(1.0, 1.0)); });
             });
         }
 
@@ -66,7 +66,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 ScrollViewer sv = (ScrollViewer)MUXControlsTestApp.App.TestContentRoot;
                 ScrollViewerIRefreshInfoProviderAdapter adapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, null);
                 Verify.IsNotNull(adapter);
-                Verify.Throws<Exception>(() => { adapter.Adapt(sv, new Size(1.0, 1.0)); });
+                Verify.Throws<ArgumentException>(() => { adapter.Adapt(sv, new Size(1.0, 1.0)); });
             });
         }
 
@@ -90,7 +90,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(sv.Content);
                 ScrollViewerIRefreshInfoProviderAdapter adapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, null);
                 Verify.IsNotNull(adapter);
-                Verify.Throws<Exception>(() => { adapter.Adapt(sv, new Size(1.0, 1.0)); });
+                Verify.Throws<ArgumentException>(() => { adapter.Adapt(sv, new Size(1.0, 1.0)); });
             });
         }
 

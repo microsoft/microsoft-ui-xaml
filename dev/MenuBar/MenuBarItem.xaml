@@ -9,8 +9,9 @@
         <Setter Property="BorderThickness" Value="{ThemeResource MenuBarItemBorderThickness}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource MenuBarItemBorderBrush}"/>
         <Setter Property="Title" Value="Item"/>
-        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="IsTabStop" Value="True"/>
         <Setter Property="ExitDisplayModeOnAccessKeyInvoked" Value="False"/>
+        <Setter Property="UseSystemFocusVisuals" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:MenuBarItem">
@@ -69,7 +70,9 @@
                             Background="Transparent"
                             BorderThickness="0"
                             VerticalAlignment="Stretch"
-                            Padding="12,0,12,0"/>
+                            Padding="12,0,12,0"
+                            IsTabStop="False"
+                            AutomationProperties.AccessibilityView="Raw"/>
                     </Grid>
 
                 </ControlTemplate>

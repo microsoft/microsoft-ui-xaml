@@ -148,10 +148,10 @@
       <Version>6.1.7</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.0.180916002-prerelease</Version>
+      <Version>2.1.181217001-prerelease</Version>
     </PackageReference>
     <PackageReference Include="MUXCustomBuildTasks">
-      <Version>1.0.37</Version>
+      <Version>1.0.38</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\..\TestAppUtils\TestAppUtils.projitems" Label="Shared" />
@@ -167,9 +167,6 @@
   </Target>
   -->
   <Import Project="$(MSBuildProjectDirectory)\..\..\..\CustomInlineTasks.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\CustomTasks.1.0.13\build\CustomTasks.targets" Condition="Exists('..\packages\CustomTasks.1.0.13\build\CustomTasks.targets')" />
-  </ImportGroup>
   <Target Name="AfterBuild">
     <RunPowershellScript Path="$(SolutionDir)\tools\ExtractPackageDependencies_ReleaseTest.ps1" Parameters="-sourceFile $(OutDir)\$(AppxPackageName).build.appxrecipe -platform $(PlatformName) -outputFile $(AppxPackageTestDir)\$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)\$(AppxPackageName).dependencies.txt" />
   </Target>
