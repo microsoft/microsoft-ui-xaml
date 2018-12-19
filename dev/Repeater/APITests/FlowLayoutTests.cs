@@ -354,7 +354,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 foreach (ScrollOrientation scrollOrientation in Enum.GetValues(typeof(ScrollOrientation)))
                 {
-                    Log.Comment(string.Format("ScrollOrientation: {0} -------------", scrollOrientation));
+                    Log.Comment(string.Format("ScrollOrientation: {0}", scrollOrientation));
                     var om = new OrientationBasedMeasures(scrollOrientation);
                     const int panelMinorSize = 500;
                     const int numItems = 2;
