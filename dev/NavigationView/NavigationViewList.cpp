@@ -80,7 +80,7 @@ void NavigationViewList::PrepareContainerForItemOverride(winrt::DependencyObject
             winrt::get_self<NavigationViewItem>(itemContainer)->SetDepth(depth + 1);
         }
 
-        if ((itemContainer.MenuItems() && itemContainer.MenuItems().Size() > 0) || itemContainer.MenuItemsSource() || itemContainer.HasUnrealizedChildren())
+        if (itemContainer.MenuItems().Size() > 0 || itemContainer.MenuItemsSource() || itemContainer.HasUnrealizedChildren())
         {
             auto viewModel = winrt::get_self<NavigationView>(navigationView)->GetViewModel();
             viewModel->RegisterItemExpandEventToSelf(itemContainer, *this);

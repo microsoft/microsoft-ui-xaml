@@ -63,25 +63,7 @@ void NavigationViewItem::OnApplyTemplate()
         UpdateIsClosedCompact();
     }
 
-    winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get())->SetDepth(m_depth);
-
-    ////Update Item depth and set item parent
-    //auto navigationView = GetNavigationView();
-    //auto navigationViewItem = winrt::get_self<NavigationView>(navigationView)->GetLastExpandedItem();
-    //if (navigationViewItem)
-    //{
-    //    m_parentItem.set(navigationViewItem);
-    //    // Update the item depth
-    //    auto depth = winrt::get_self<NavigationViewItem>(navigationViewItem)->GetDepth();
-    //    UpdateItemDepth(depth + 1);
-    //}
-
-    //// Register NavigationViewModel to listen to IsExpanded property changes if this item has children
-    //if ((MenuItems() && MenuItems().Size() > 0) || MenuItemsSource() || HasUnrealizedChildren())
-    //{
-    //    InformViewModelOfAbilityToExpand();
-    //    //TODO: Change Item VisualState to the expandable states
-    //}
+    winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get())->SetDepth(GetDepth());
 
     m_appliedTemplate = true;
     UpdateVisualStateNoTransition();
@@ -94,22 +76,6 @@ void NavigationViewItem::UpdateItemDepth(int depth)
 {
         SetDepth(depth);
         winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get())->SetDepth(depth);
-}
-
-void NavigationViewItem::InformViewModelOfAbilityToExpand() {
-    //if (!m_registeredWithViewModelForExpandedChangedEvent)
-    //{
-    //    if (auto navigationView = GetNavigationView())
-    //    {
-    //        auto navView = winrt::get_self<NavigationView>(navigationView);
-    //        //navView->RegisterItemExpandEventToViewMode(*this);
-    //        m_registeredWithViewModelForExpandedChangedEvent = true;
-    //        if (auto navViewModel = navView->GetViewModel())
-    //        {
-    //            navViewModel->RegisterItemExpandEventToSelf(*this);
-    //        }
-    //    }
-    //}
 }
 
 winrt::UIElement NavigationViewItem::GetSelectionIndicator()
@@ -206,7 +172,6 @@ void NavigationViewItem::OnPropertyChanged(const winrt::DependencyPropertyChange
     }
     else if (property == s_IsExpandedProperty)
     {
-        auto test = m_registeredWithViewModelForExpandedChangedEvent;
         m_expandedChangedEventSource(*this, args);
     }
 }
@@ -412,26 +377,14 @@ void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
     }
 }
 
-void NavigationViewItem::SetDepth(int depth)
-{
-    m_depth = depth;
-}
-
-int NavigationViewItem::GetDepth()
-{
-    return m_depth;
-}
-
 winrt::event_token NavigationViewItem::AddExpandedChanged(winrt::TypedEventHandler<winrt::NavigationViewItem, winrt::DependencyPropertyChangedEventArgs> const& value)
 {
     winrt::event_token token = m_expandedChangedEventSource.add(value);
-    m_registeredWithViewModelForExpandedChangedEvent = true;
     return token;
 }
 
 void NavigationViewItem::RemoveExpandedChanged(winrt::event_token token)
 {
-    m_registeredWithViewModelForExpandedChangedEvent = false;
     m_expandedChangedEventSource.remove(token);
 }
 

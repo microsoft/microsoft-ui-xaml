@@ -35,7 +35,7 @@
                             </muxc:NavigationViewItem>
                         </muxc:NavigationViewItem.MenuItems>
                     </muxc:NavigationViewItem>
-                    <muxc:NavigationViewItem Content="E Menu Item" Icon="Home" x:Name="E"/>
+                    <!--<muxc:NavigationViewItem Content="E Menu Item" Icon="Home" x:Name="E"/>
                     <muxc:NavigationViewItem Content="F Menu Item" Icon="Home" x:Name="F"/>
                     <muxc:NavigationViewItem Content="G Menu Item" Icon="Home" x:Name="G"/>
                     <muxc:NavigationViewItem Content="H Menu Item" Icon="Home" x:Name="H"/>
@@ -47,7 +47,7 @@
                     <muxc:NavigationViewItem Content="N Menu Item" Icon="Home" x:Name="N"/>
                     <muxc:NavigationViewItem Content="O Menu Item" Icon="Home" x:Name="O"/>
                     <muxc:NavigationViewItem Content="P Menu Item" Icon="Home" x:Name="P"/>
-                    <muxc:NavigationViewItem Content="Q Menu Item" Icon="Home" x:Name="Q"/>
+                    <muxc:NavigationViewItem Content="Q Menu Item" Icon="Home" x:Name="Q"/>-->
                 </muxc:NavigationView.MenuItems>
             </muxc:NavigationView>
         </StackPanel>

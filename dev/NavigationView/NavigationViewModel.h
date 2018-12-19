@@ -39,7 +39,7 @@ private:
 
     void UpdatePrimaryItems();
     void NavigationViewModel::InsertAt(uint32_t index, winrt::IInspectable const& value);
-    void NavigationViewModel::RemoveItemAndDescendantsFromView(const winrt::NavigationViewItemBase& value, const int index);
+    void NavigationViewModel::RemoveItemAndDescendantsFromView(winrt::NavigationViewItemBase const& value, int const index);
 
     tracker_ref<winrt::ItemsSourceView> m_dataSource;
     // If the raw datasource is the same, we don't need to create new winrt::ItemsSourceView object.

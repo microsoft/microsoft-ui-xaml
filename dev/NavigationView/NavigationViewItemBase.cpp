@@ -76,3 +76,13 @@ winrt::NavigationViewList NavigationViewItemBase::GetNavigationViewList()
     // Find parent NavigationViewList
     return SharedHelpers::GetAncestorOfType<winrt::NavigationViewList>(winrt::VisualTreeHelper::GetParent(*this));
 }
+
+void NavigationViewItemBase::SetDepth(int depth)
+{
+    m_depth = depth;
+}
+
+int NavigationViewItemBase::GetDepth()
+{
+    return m_depth;
+}
