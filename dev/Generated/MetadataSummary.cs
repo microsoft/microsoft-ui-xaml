@@ -269,18 +269,20 @@ namespace CustomTasks
 
             IncludedTypesMetadata["NavigationViewItem"] = true;
             // NavigationViewItem -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["NavigationViewItem.HasUnrealizedChildren"] = true;
             NeedsPropChangedCallbackMetadata["NavigationViewItem.Icon"] = true;
+            NeedsPropChangedCallbackMetadata["NavigationViewItem.IsChildSelected"] = true;
+            NeedsPropChangedCallbackMetadata["NavigationViewItem.IsExpanded"] = true;
             // NavigationViewItem -- DefaultValueMetadata
             DefaultValueMetadata["NavigationViewItem.CompactPaneLength"] = @"48.0";
+            DefaultValueMetadata["NavigationViewItem.HasUnrealizedChildren"] = @"false";
+            DefaultValueMetadata["NavigationViewItem.IsChildSelected"] = @"false";
+            DefaultValueMetadata["NavigationViewItem.IsExpanded"] = @"false";
             DefaultValueMetadata["NavigationViewItem.SelectsOnInvoked"] = @"true";
 
             IncludedTypesMetadata["NavigationViewItemBase"] = true;
             // NavigationViewItemBase -- NeedsPropChangedCallbackMetadata
             // NavigationViewItemBase -- DefaultValueMetadata
-
-            IncludedTypesMetadata["NavigationViewItemGroup"] = true;
-            // NavigationViewItemGroup -- NeedsPropChangedCallbackMetadata
-            // NavigationViewItemGroup -- DefaultValueMetadata
 
             IncludedTypesMetadata["NavigationViewItemPresenter"] = true;
             // NavigationViewItemPresenter -- NeedsPropChangedCallbackMetadata

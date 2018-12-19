@@ -9,7 +9,6 @@
 CppWinRTActivatableClassWithDPFactory(NavigationViewItemTemplateSettings)
 
 GlobalDependencyProperty NavigationViewItemTemplateSettingsProperties::s_CompactWidthProperty{ nullptr };
-GlobalDependencyProperty NavigationViewItemTemplateSettingsProperties::s_IsChildSelectedProperty{ nullptr };
 
 NavigationViewItemTemplateSettingsProperties::NavigationViewItemTemplateSettingsProperties()
 {
@@ -29,23 +28,11 @@ void NavigationViewItemTemplateSettingsProperties::EnsureProperties()
                 ValueHelper<double>::BoxedDefaultValue(),
                 nullptr);
     }
-    if (!s_IsChildSelectedProperty)
-    {
-        s_IsChildSelectedProperty =
-            InitializeDependencyProperty(
-                L"IsChildSelected",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::NavigationViewItemTemplateSettings>(),
-                false /* isAttached */,
-                ValueHelper<bool>::BoxedDefaultValue(),
-                nullptr);
-    }
 }
 
 void NavigationViewItemTemplateSettingsProperties::ClearProperties()
 {
     s_CompactWidthProperty = nullptr;
-    s_IsChildSelectedProperty = nullptr;
 }
 
 void NavigationViewItemTemplateSettingsProperties::CompactWidth(double value)
@@ -56,14 +43,4 @@ void NavigationViewItemTemplateSettingsProperties::CompactWidth(double value)
 double NavigationViewItemTemplateSettingsProperties::CompactWidth()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<NavigationViewItemTemplateSettings*>(this)->GetValue(s_CompactWidthProperty));
-}
-
-void NavigationViewItemTemplateSettingsProperties::IsChildSelected(bool value)
-{
-    static_cast<NavigationViewItemTemplateSettings*>(this)->SetValue(s_IsChildSelectedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
-}
-
-bool NavigationViewItemTemplateSettingsProperties::IsChildSelected()
-{
-    return ValueHelper<bool>::CastOrUnbox(static_cast<NavigationViewItemTemplateSettings*>(this)->GetValue(s_IsChildSelectedProperty));
 }

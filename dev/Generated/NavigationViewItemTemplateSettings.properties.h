@@ -12,14 +12,9 @@ public:
     void CompactWidth(double value);
     double CompactWidth();
 
-    void IsChildSelected(bool value);
-    bool IsChildSelected();
-
     static winrt::DependencyProperty CompactWidthProperty() { return s_CompactWidthProperty; }
-    static winrt::DependencyProperty IsChildSelectedProperty() { return s_IsChildSelectedProperty; }
 
     static GlobalDependencyProperty s_CompactWidthProperty;
-    static GlobalDependencyProperty s_IsChildSelectedProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
