@@ -1,4 +1,4 @@
-[WUXC_VERSION_RS3]
+﻿[WUXC_VERSION_RS3]
 [webhosthidden]
 enum NavigationViewDisplayMode
 {
@@ -158,10 +158,7 @@ unsealed runtimeclass NavigationViewItemTemplateSettings : Windows.UI.Xaml.Depen
 	NavigationViewItemTemplateSettings();
 	
 	Double CompactWidth{ get; };
-	Boolean IsChildSelected { get; };
-
 	static Windows.UI.Xaml.DependencyProperty CompactWidthProperty{ get; };
-	static Windows.UI.Xaml.DependencyProperty IsChildSelectedProperty { get; };
 }
 
 
@@ -295,8 +292,8 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
 		event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewExpandingEventArgs> Expanding;
 		event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewCollapsedEventArgs> Collapsed;
 
-		void Expand(NavigationViewItemGroup item);
-		void Collapse(NavigationViewItemGroup item);
+		void Expand(NavigationViewItem item);
+		void Collapse(NavigationViewItem item);
 		
 		Boolean AllowMultipleExpandedItemGroups { get; set; };
 
@@ -351,6 +348,28 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
 
         static Windows.UI.Xaml.DependencyProperty SelectsOnInvokedProperty { get; };
     }
+
+    [WUXC_VERSION_MUXONLY]
+    {
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        [MUX_DEFAULT_VALUE("false")]
+        Boolean IsExpanded{ get; set; };
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        [MUX_DEFAULT_VALUE("false")]
+        Boolean HasUnrealizedChildren{ get; set; };
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        [MUX_DEFAULT_VALUE("false")]
+        Boolean IsChildSelected{ get; set; };
+
+        Windows.Foundation.Collections.IVector<Object> MenuItems{ get; };
+        Object MenuItemsSource{ get; set; };
+
+        static Windows.UI.Xaml.DependencyProperty IsExpandedProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty HasUnrealizedChildrenProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty IsChildSelectedProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty MenuItemsProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty MenuItemsSourceProperty{ get; };
+    }
 }
 
 [WUXC_VERSION_RS3]
@@ -369,22 +388,4 @@ unsealed runtimeclass NavigationViewItemSeparator : NavigationViewItemBase
 unsealed runtimeclass NavigationViewItemHeader : NavigationViewItemBase
 {
     NavigationViewItemHeader();
-}
-
-[WUXC_VERSION_MUXONLY]
-[webhosthidden]
-unsealed runtimeclass NavigationViewItemGroup : NavigationViewItemBase
-{
-	NavigationViewItemGroup();
-
-	Windows.UI.Xaml.Controls.IconElement Icon { get; set; };
-	Boolean IsExpanded { get; set; };
-
-	Windows.Foundation.Collections.IVector<Object> MenuItems{ get; };
-	Object MenuItemsSource{ get; set; };
-
-	static Windows.UI.Xaml.DependencyProperty IconProperty{ get; };
-	static Windows.UI.Xaml.DependencyProperty IsExpandedProperty{ get; };
-	static Windows.UI.Xaml.DependencyProperty MenuItemsProperty{ get; };
-	static Windows.UI.Xaml.DependencyProperty MenuItemsSourceProperty{ get; };
 }

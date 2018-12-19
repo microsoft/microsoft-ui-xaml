@@ -13,6 +13,7 @@ struct bringintoview_event_revoker;
 #include "TopNavigationViewDataProvider.h"
 #include "NavigationViewHelper.h"
 #include "NavigationView.properties.h"
+#include "NavigationViewModel.h"
 
 enum class TopNavigationViewLayoutState
 {
@@ -78,8 +79,12 @@ public:
 
     void CoerceToGreaterThanZero(double& value);
 
-	void Expand(winrt::NavigationViewItemGroup const& value);
-	void Collapse(winrt::NavigationViewItemGroup const& value);
+	void Expand(winrt::NavigationViewItem const& value);
+	void Collapse(winrt::NavigationViewItem const& value);
+
+    NavigationViewModel* GetViewModel();
+
+    winrt::NavigationViewItem GetLastExpandedItem();
 
 private:
     bool ShouldIgnoreMeasureOverride();
@@ -200,6 +205,9 @@ private:
     void ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity);
     winrt::NavigationViewItem NavigationViewItemOrSettingsContentFromData(const winrt::IInspectable& data);
     winrt::NavigationViewItemBase NavigationViewItemBaseOrSettingsContentFromData(const winrt::IInspectable& data);
+
+    void RaiseIsExpanding(winrt::NavigationViewItemBase const& item);
+    void RaiseCollapsed(winrt::NavigationViewItemBase const& item);
 
     // Cache these objects for the view as they are expensive to query via GetForCurrentView() calls.
     winrt::ViewManagement::ApplicationView m_applicationView{ nullptr };
@@ -337,6 +345,9 @@ private:
 
     TopNavigationViewDataProvider m_topDataProvider{ this };
 
+    NavigationViewModel m_viewModel{ this };
+    tracker_ref<winrt::NavigationViewItem> m_lastExpandedItem{ this };
+
     bool m_appliedTemplate{ false };
 
     // flag is used to stop recursive call. eg:
@@ -373,5 +384,10 @@ private:
     // 3, customer changed PaneDisplayMode.
     // 2 and 3 are internal implementation and will call by ClosePane/OpenPane. the flag is to indicate 1 if it's false
     bool m_isOpenPaneForInteraction{ false };
+
+    // When  NavigationView is first loaded, we need to register the NavigationViewModel for changes to the
+    // 'isExpanded' property of the first level of NavigationViewItems (subsquent nested items get registered
+    // as they get placed into the list view).
+    bool m_initializedExpandEvents{ false };
 };
 

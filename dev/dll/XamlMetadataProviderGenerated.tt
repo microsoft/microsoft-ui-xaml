@@ -59,7 +59,6 @@
 #include "AcrylicBrush.h"
 #include "NavigationView.h"
 #include "NavigationViewItem.h"
-#include "NavigationViewItemGroup.h"
 #include "ParallaxView.h"
 #include "RevealBrush.h"
 #include "XamlAmbientLight.h"

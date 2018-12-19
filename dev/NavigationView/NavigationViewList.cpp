@@ -7,6 +7,7 @@
 #include "Utils.h"
 #include "NavigationViewList.h"
 #include "NavigationViewItem.h"
+#include "NavigationView.h"
 
 CppWinRTActivatableClassWithBasicFactory(NavigationViewList);
 
@@ -49,7 +50,10 @@ void NavigationViewList::ClearContainerForItemOverride(winrt::DependencyObject c
 {
     if (auto itemContainer = element.try_as<winrt::NavigationViewItem>())
     {
-        winrt::get_self<NavigationViewItem>(itemContainer)->ClearIsContentChangeHandlingDelayedForTopNavFlag();
+        auto itemContainerImplementation = winrt::get_self<NavigationViewItem>(itemContainer);
+        itemContainerImplementation->ClearIsContentChangeHandlingDelayedForTopNavFlag();
+        itemContainerImplementation->SetDepth(0);
+        itemContainerImplementation->SetParentItem(nullptr);
     }
     __super::PrepareContainerForItemOverride(element, item);
 }
@@ -64,6 +68,23 @@ void NavigationViewList::PrepareContainerForItemOverride(winrt::DependencyObject
     {
         itemContainer.UseSystemFocusVisuals(m_showFocusVisual);
         winrt::get_self<NavigationViewItem>(itemContainer)->ClearIsContentChangeHandlingDelayedForTopNavFlag();
+
+        //Update Item depth and set item parent
+        auto navigationView = GetNavigationViewParent();
+        auto lastExpandedNavItem = winrt::get_self<NavigationView>(navigationView)->GetLastExpandedItem();
+        if (lastExpandedNavItem)
+        {
+            winrt::get_self<NavigationViewItem>(itemContainer)->SetParentItem(lastExpandedNavItem);
+
+            auto depth = winrt::get_self<NavigationViewItem>(lastExpandedNavItem)->GetDepth();
+            winrt::get_self<NavigationViewItem>(itemContainer)->SetDepth(depth + 1);
+        }
+
+        if ((itemContainer.MenuItems() && itemContainer.MenuItems().Size() > 0) || itemContainer.MenuItemsSource() || itemContainer.HasUnrealizedChildren())
+        {
+            auto viewModel = winrt::get_self<NavigationView>(navigationView)->GetViewModel();
+            viewModel->RegisterItemExpandEventToSelf(itemContainer, *this);
+        }
     }
 
     __super::PrepareContainerForItemOverride(element, item);

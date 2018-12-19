@@ -7,9 +7,17 @@
 #include "NavigationViewItem.h"
 #include "SharedHelpers.h"
 
+static constexpr wstring_view c_navigationViewItemPresenterContentGridName = L"ContentGrid"sv;
+
+
 NavigationViewItemPresenter::NavigationViewItemPresenter()
 {
     SetDefaultStyleKey(this);
+}
+
+void NavigationViewItemPresenter::SetDepth(int depth)
+{
+    m_depth = depth;
 }
 
 void NavigationViewItemPresenter::OnApplyTemplate()
@@ -20,6 +28,17 @@ void NavigationViewItemPresenter::OnApplyTemplate()
     {
         navigationViewItem->UpdateVisualStateNoTransition();
     }
+
+    winrt::IControlProtected controlProtected = *this;
+    auto presenterContentGrid = GetTemplateChildT<winrt::Grid>(c_navigationViewItemPresenterContentGridName, controlProtected);
+    if (presenterContentGrid)
+    {
+        //TODO: Remove Magic Number
+        auto leftIndentation = 15 * m_depth;
+        auto thickness = winrt::ThicknessHelper::FromLengths(leftIndentation, 0, 0, 0);
+        presenterContentGrid.Margin(thickness);
+    }
+
 }
 
 winrt::UIElement NavigationViewItemPresenter::GetSelectionIndicator()

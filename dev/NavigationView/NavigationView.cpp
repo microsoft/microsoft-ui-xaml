@@ -134,6 +134,8 @@ NavigationView::NavigationView()
         });
 
     Unloaded({ this, &NavigationView::OnUnloaded });
+
+    m_viewModel.SetNavigationViewParent(*this);
 }
 
 void NavigationView::OnApplyTemplate()
@@ -1346,9 +1348,40 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
 {
     auto clickedItem = args.ClickedItem();
 
+    //TODO: Update container retrieval logic to work with popup listviews
     auto itemContainer = GetContainerForClickedItem(clickedItem);
 
     auto selectedItem = SelectedItem();
+
+    // We want to expand/collapse items with children regardless of selection logic.
+    // In order to determine if the item has children, we need access to the item's container.
+    if (itemContainer)
+    {
+        if (auto clickedItemContainer = itemContainer.try_as<winrt::NavigationViewItem>())
+        {
+            bool hasChildren = ((clickedItemContainer.MenuItems() && clickedItemContainer.MenuItems().Size() > 0) ||
+                                clickedItemContainer.MenuItemsSource() ||
+                                clickedItemContainer.HasUnrealizedChildren());
+            if (hasChildren)
+            {
+                auto itemBeingExpanded = !clickedItemContainer.IsExpanded();
+                if (itemBeingExpanded)
+                {
+                    RaiseIsExpanding(clickedItemContainer);
+                    m_lastExpandedItem.set(clickedItemContainer);
+                }
+
+                m_viewModel.ToggleIsExpanded(clickedItemContainer);
+
+                if (!itemBeingExpanded)
+                {
+                    RaiseCollapsed(clickedItemContainer);
+                    m_lastExpandedItem.set(nullptr);
+                }
+            }
+        }
+    }
+
     // If SelectsOnInvoked and previous item(selected item) == new item(clicked item), raise OnItemClicked (same item would not have selectchange event)
     // Others would be invoked by SelectionChanged. Please see ChangeSelection for more details.
     //
@@ -1359,6 +1392,17 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
     {
         RaiseItemInvoked(selectedItem, false /*isSettings*/, itemContainer);
     }
+}
+
+
+void NavigationView::RaiseIsExpanding(winrt::NavigationViewItemBase const& item)
+{
+
+}
+
+void NavigationView::RaiseCollapsed(winrt::NavigationViewItemBase const& item)
+{
+
 }
 
 void NavigationView::RaiseItemInvoked(winrt::IInspectable const& item,
@@ -3087,7 +3131,17 @@ void NavigationView::UpdatePaneTitleMargins()
 
 void NavigationView::UpdateLeftNavListViewItemSource(const winrt::IInspectable& items)
 {
-    UpdateListViewItemsSource(m_leftNavListView.get(), items);
+    if (m_topDataProvider.ShouldChangeDataSource(items))
+    {
+        // unbinding Data from ListView
+        UpdateListViewItemsSource(m_topNavListView.get(), nullptr);
+        UpdateListViewItemsSource(m_topNavListOverflowView.get(), nullptr);
+
+        // Change data source and setup vectors
+        m_viewModel.SetDataSource(items);
+
+        UpdateListViewItemsSource(m_leftNavListView.get(), m_viewModel.GetPrimaryItems());
+    }
 }
 
 void NavigationView::UpdateTopNavListViewItemSource(const winrt::IInspectable& items)
@@ -3335,12 +3389,22 @@ bool NavigationView::IsFullScreenOrTabletMode()
     return isFullScreenMode || isTabletMode;
 }
 
-void NavigationView::Expand(winrt::NavigationViewItemGroup const& value)
+void NavigationView::Expand(winrt::NavigationViewItem const& value)
 {
 
 }
 
-void NavigationView::Collapse(winrt::NavigationViewItemGroup const& value)
+void NavigationView::Collapse(winrt::NavigationViewItem const& value)
 {
 
+}
+
+NavigationViewModel* NavigationView::GetViewModel()
+{
+    return &m_viewModel;
+}
+
+winrt::NavigationViewItem NavigationView::GetLastExpandedItem()
+{
+    return m_lastExpandedItem.get();
 }
