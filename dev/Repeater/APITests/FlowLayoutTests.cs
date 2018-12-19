@@ -447,8 +447,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         panel,
                         new List<Rect>()
                         {
-                            om.MinorMajorRect(0, 0, itemMinorSize + 30, itemMajorSize),
-                            om.MinorMajorRect(270, 0, itemMinorSize + 30, itemMajorSize)
+                            om.MinorMajorRect(0, 0, itemMinorSize + 40, itemMajorSize),
+                            om.MinorMajorRect(250, 0, itemMinorSize + 40, itemMajorSize)
                         });
 
                     Log.Comment("UniformGridLayoutItemsJustification.Start +  UniformGridLayoutItemsStretch.Uniform");
@@ -461,8 +461,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         panel,
                         new List<Rect>()
                         {
-                            om.MinorMajorRect(0, 0, itemMinorSize + 30, itemMajorSize + 15),
-                            om.MinorMajorRect(270, 0, itemMinorSize + 31, itemMajorSize + 15)
+                            om.MinorMajorRect(0, 0, itemMinorSize + 40, itemMajorSize + 19),
+                            om.MinorMajorRect(250, 0, itemMinorSize + 40, itemMajorSize + 19)
                         });
                 }
             });
