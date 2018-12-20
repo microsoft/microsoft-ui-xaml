@@ -14,6 +14,13 @@ $WindowsSDKInstalledRegPath = "$WindowsSDKRegPath\$WindowsSDKVersion\Installed O
 $StrongNameRegPath = "HKLM:\SOFTWARE\Microsoft\StrongName\Verification"
 $PublicKeyTokens = @("31bf3856ad364e35")
 
+if ($buildNumber -notmatch "^\d{5,}$")
+{
+    Write-Host "ERROR: '$buildNumber' doesn't look like a windows build number"
+    Write-Host
+    Exit 1
+}
+
 function Download-File
 {
     param ([string] $outDir,
@@ -264,7 +271,9 @@ if ($InstallWindowsSDK)
     # Check to make sure the file is at least 10 MB.
     if ($downloadFileItem.Length -lt 10*1024*1024)
     {
-        Write-Error "Downloaded file ($downloadFile) doesn't look large enough to be an ISO..."
+        Write-Host
+        Write-Host "ERROR: Downloaded file doesn't look large enough to be an ISO. The requested version may not be on microsoft.com yet."
+        Write-Host
         Exit 1
     }
 
