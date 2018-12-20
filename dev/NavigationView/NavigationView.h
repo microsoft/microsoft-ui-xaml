@@ -390,10 +390,5 @@ private:
     // 3, customer changed PaneDisplayMode.
     // 2 and 3 are internal implementation and will call by ClosePane/OpenPane. the flag is to indicate 1 if it's false
     bool m_isOpenPaneForInteraction{ false };
-
-    // When  NavigationView is first loaded, we need to register the NavigationViewModel for changes to the
-    // 'isExpanded' property of the first level of NavigationViewItems (subsquent nested items get registered
-    // as they get placed into the list view).
-    bool m_initializedExpandEvents{ false };
 };
 
