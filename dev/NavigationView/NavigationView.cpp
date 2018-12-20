@@ -2842,11 +2842,15 @@ void NavigationView::UpdatePaneVisibility()
             templateSettings->TopPaneVisibility(winrt::Visibility::Collapsed);
             templateSettings->LeftPaneVisibility(winrt::Visibility::Visible);
         }
+
+        winrt::VisualStateManager::GoToState(*this, L"PaneVisible", false /*useTransitions*/);
     }
     else
     {
         templateSettings->TopPaneVisibility(winrt::Visibility::Collapsed);
         templateSettings->LeftPaneVisibility(winrt::Visibility::Collapsed);
+
+        winrt::VisualStateManager::GoToState(*this, L"PaneCollapsed", false /*useTransitions*/);
     }
 }
 
