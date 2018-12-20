@@ -130,6 +130,17 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="PaneVisibilityGroup">
+                                <VisualState x:Name="PaneVisible" />
+                                <VisualState x:Name="PaneCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="RootSplitView.DisplayMode" Value="CompactOverlay" />
+                                        <Setter Target="RootSplitView.CompactPaneLength" Value="0" />
+                                        <Setter Target="PaneToggleButtonGrid.Visibility" Value="Collapsed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Grid
