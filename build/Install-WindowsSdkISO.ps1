@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory=$true)]
+param([Parameter(Mandatory=$true, Position=0)]
       [string]$buildNumber)
 
 # Ensure the error action preference is set to the default for PowerShell3, 'Stop'
@@ -258,6 +258,15 @@ if ($InstallWindowsSDK)
 
     Write-Verbose "Getting WinSDK from $uri"
     $downloadFile = Download-File $winsdkTempDir $uri $file
+    Write-Verbose "File is at $downloadFile"
+    $downloadFileItem = Get-Item $downloadFile
+    
+    # Check to make sure the file is at least 10 MB.
+    if ($downloadFileItem.Length -lt 10*1024*1024)
+    {
+        Write-Error "Downloaded file ($downloadFile) doesn't look large enough to be an ISO..."
+        Exit 1
+    }
 
     # TODO Check if zip, exe, iso, etc.
     try
