@@ -9,6 +9,7 @@
 CppWinRTActivatableClassWithDPFactory(UniformGridLayout)
 
 GlobalDependencyProperty UniformGridLayoutProperties::s_ItemsJustificationProperty{ nullptr };
+GlobalDependencyProperty UniformGridLayoutProperties::s_ItemsStretchProperty{ nullptr };
 GlobalDependencyProperty UniformGridLayoutProperties::s_MinColumnSpacingProperty{ nullptr };
 GlobalDependencyProperty UniformGridLayoutProperties::s_MinItemHeightProperty{ nullptr };
 GlobalDependencyProperty UniformGridLayoutProperties::s_MinItemWidthProperty{ nullptr };
@@ -31,6 +32,17 @@ void UniformGridLayoutProperties::EnsureProperties()
                 winrt::name_of<winrt::UniformGridLayout>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UniformGridLayoutItemsJustification>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_ItemsStretchProperty)
+    {
+        s_ItemsStretchProperty =
+            InitializeDependencyProperty(
+                L"ItemsStretch",
+                winrt::name_of<winrt::UniformGridLayoutItemsStretch>(),
+                winrt::name_of<winrt::UniformGridLayout>(),
+                false /* isAttached */,
+                ValueHelper<winrt::UniformGridLayoutItemsStretch>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_MinColumnSpacingProperty)
@@ -93,6 +105,7 @@ void UniformGridLayoutProperties::EnsureProperties()
 void UniformGridLayoutProperties::ClearProperties()
 {
     s_ItemsJustificationProperty = nullptr;
+    s_ItemsStretchProperty = nullptr;
     s_MinColumnSpacingProperty = nullptr;
     s_MinItemHeightProperty = nullptr;
     s_MinItemWidthProperty = nullptr;
@@ -108,6 +121,16 @@ void UniformGridLayoutProperties::ItemsJustification(winrt::UniformGridLayoutIte
 winrt::UniformGridLayoutItemsJustification UniformGridLayoutProperties::ItemsJustification()
 {
     return ValueHelper<winrt::UniformGridLayoutItemsJustification>::CastOrUnbox(static_cast<UniformGridLayout*>(this)->GetValue(s_ItemsJustificationProperty));
+}
+
+void UniformGridLayoutProperties::ItemsStretch(winrt::UniformGridLayoutItemsStretch const& value)
+{
+    static_cast<UniformGridLayout*>(this)->SetValue(s_ItemsStretchProperty, ValueHelper<winrt::UniformGridLayoutItemsStretch>::BoxValueIfNecessary(value));
+}
+
+winrt::UniformGridLayoutItemsStretch UniformGridLayoutProperties::ItemsStretch()
+{
+    return ValueHelper<winrt::UniformGridLayoutItemsStretch>::CastOrUnbox(static_cast<UniformGridLayout*>(this)->GetValue(s_ItemsStretchProperty));
 }
 
 void UniformGridLayoutProperties::MinColumnSpacing(double value)

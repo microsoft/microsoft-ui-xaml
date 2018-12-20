@@ -15,6 +15,7 @@ GlobalDependencyProperty UniformGridLayout::s_minItemHeightProperty{ nullptr };
 GlobalDependencyProperty UniformGridLayout::s_minRowSpacingProperty{ nullptr };
 GlobalDependencyProperty UniformGridLayout::s_minColumnSpacingProperty{ nullptr };
 GlobalDependencyProperty UniformGridLayout::s_itemsJustificationProperty{ nullptr };
+GlobalDependencyProperty UniformGridLayout::s_itemsStretchProperty{ nullptr };
 
 /* static */
 void UniformGridLayout::EnsureProperties()
@@ -90,6 +91,18 @@ void UniformGridLayout::EnsureProperties()
                 box_value(winrt::UniformGridLayoutItemsJustification::Start), /* defaultValue */
                 winrt::PropertyChangedCallback(&UniformGridLayout::OnPropertyChanged));
     }
+
+    if(!s_itemsStretchProperty)
+    {
+        s_itemsStretchProperty =
+            InitializeDependencyProperty(
+                L"ItemsStretch",
+                winrt::name_of<winrt::UniformGridLayoutItemsStretch>(),
+                winrt::name_of<winrt::UniformGridLayout>(),
+                false /* isAttached */,
+                box_value(winrt::UniformGridLayoutItemsStretch::None), /* defaultValue */
+                winrt::PropertyChangedCallback(&UniformGridLayout::OnPropertyChanged));
+    }
 }
 
 /*static*/
@@ -101,6 +114,7 @@ void UniformGridLayout::ClearProperties()
     s_minRowSpacingProperty = nullptr;
     s_minColumnSpacingProperty = nullptr;
     s_itemsJustificationProperty = nullptr;
+    s_itemsStretchProperty = nullptr;
 }
 
 void UniformGridLayout::OnPropertyChanged(

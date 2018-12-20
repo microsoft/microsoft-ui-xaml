@@ -10,6 +10,7 @@ using FlowLayout = Microsoft.UI.Xaml.Controls.FlowLayout;
 using FlowLayoutLineAlignment = Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using UniformGridLayoutItemsJustification = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification;
+using UniformGridLayoutItemsStretch = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 #endif
 
@@ -62,6 +63,19 @@ namespace MUXControlsTestApp.Samples
                 ((FlowLayout)layout).LineAlignment = alignment;
             }
             else if (layout is StackLayout)
+            {
+                // no-op
+            }
+        }
+
+        public static void SetItemsStretch(Layout layout, string value)
+        {
+            if (layout is UniformGridLayout)
+            {
+                var stretch = (UniformGridLayoutItemsStretch)Enum.Parse(typeof(UniformGridLayoutItemsStretch), value);
+                ((UniformGridLayout)layout).ItemsStretch = stretch;
+            }
+            else
             {
                 // no-op
             }
