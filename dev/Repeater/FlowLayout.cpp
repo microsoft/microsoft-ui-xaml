@@ -260,7 +260,7 @@ winrt::Rect FlowLayout::GetExtent(
             auto lineSpacing = LineSpacing();
             auto minItemSpacing = MinItemSpacing();
             // We dont have anything realized. make an educated guess.
-            int numLines = (int)(itemsCount / averageItemsPerLine);
+            int numLines = (int)std::ceil(itemsCount / averageItemsPerLine);
             extent =
                 std::isfinite(availableSizeMinor) ? 
                 MinorMajorRect(0, 0, availableSizeMinor, std::max(0.0f, static_cast<float>(numLines * averageLineSize - lineSpacing))) :
