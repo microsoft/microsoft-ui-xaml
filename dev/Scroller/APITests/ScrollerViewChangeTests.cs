@@ -4,6 +4,7 @@
 using Common;
 using MUXControlsTestApp.Utilities;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Threading;
 using Windows.Foundation;
@@ -1604,9 +1605,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private void WaitForEvent(string logComment, EventWaitHandle eventWaitHandle)
         {
             Log.Comment(logComment);
-            if (!eventWaitHandle.WaitOne(TimeSpan.FromMilliseconds(c_MaxWaitDuration)))
+            if(Debugger.IsAttached)
             {
-                throw new Exception("Timeout expiration in WaitForEvent.");
+                eventWaitHandle.WaitOne();
+            }
+            else
+            {
+                if (!eventWaitHandle.WaitOne(TimeSpan.FromMilliseconds(c_MaxWaitDuration)))
+                {
+                    throw new Exception("Timeout expiration in WaitForEvent.");
+                }
             }
         }
 
