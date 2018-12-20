@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -49,6 +49,8 @@ namespace MUXControlsTestApp
             Tests.Add(new TestDeclaration("Reveal Tests", typeof(RevealPage)));
             Tests.Add(new TestDeclaration("ItemsRepeater Tests", typeof(RepeaterTestUIPage)));
             Tests.Add(new TestDeclaration("Scroller Tests", typeof(ScrollerPage)));
+
+            Tests.Add(new TestDeclaration("ItemsView Tests", typeof(ItemsViewTestUIPage)));
         }
 
         public static List<TestDeclaration> Tests { get; private set; }

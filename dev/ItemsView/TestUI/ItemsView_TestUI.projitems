@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>6db79e6c-dcb6-4260-9cab-1928b0ab62bf</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ItemsView_TestUI</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)FileExplorerScenario.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ItemsViewBasicPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ItemsViewTestUIPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)FileExplorerScenario.xaml.cs">
+      <DependentUpon>FileExplorerScenario.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ItemsViewBasicPage.xaml.cs">
+      <DependentUpon>ItemsViewBasicPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ItemsViewTestUIPage.xaml.cs">
+      <DependentUpon>ItemsViewTestUIPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ItemsView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ItemsViewAutomationPeer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ItemsViewBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ItemsViewItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ItemsViewItemAutomationPeer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\LayoutPanel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\LayoutPanelLayoutContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\Selection\ExtendedSelector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\Selection\IRepeatedIndex.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\Selection\ISelectable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\Selection\MultipleSelector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\Selection\NullSelector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\Selection\Selector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\Selection\SelectorDelegateBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\Selection\SingleSelector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\TreeHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ViewDefinitionBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\Animations\ItemsViewAnimator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\Data\Book.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\Data\ObservableDataSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\Hierarchy\HierarchicalViewGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\Hierarchy\HierarchicalDataTemplate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ViewDefinition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ViewDefinitions\Table\IsGroupEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ViewDefinitions\Table\ItemsViewColumnDefinition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ViewDefinitions\Table\ItemsViewColumnDefinitionBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ViewDefinitions\Table\ItemsViewTextColumnDefinition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ViewDefinitions\Table\SortState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ViewDefinitions\Table\TableHeaderRow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ViewDefinitions\Table\TableRow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ViewDefinitions\Table\TableRowLayout.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ViewDefinitions\Table\TableCell.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ViewDefinitions\Table\TableDefinition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ViewDefinitions\Table\TableHeaderCell.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Prototype\ViewDefinitions\Table\TableViewGenerator.cs" />
+  </ItemGroup>
+</Project>

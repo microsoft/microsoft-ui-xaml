@@ -36,6 +36,7 @@
       <SubType>Designer</SubType>
     </AppxManifest>
   </ItemGroup>
+  <Import Project="..\..\..\dev\ItemsView\TestUI\ItemsView_TestUI.projitems" Label="Shared" />
   <Import Project="..\MUXControlsTestApp.Shared.projitems" />
   <Import Project="..\MUXControlsTestApp.Shared.targets" />
 </Project>
