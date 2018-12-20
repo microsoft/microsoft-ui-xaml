@@ -14,6 +14,7 @@
             <Button Content="Base CommandBarFlyout Tests" Click="OnCommandBarFlyoutTestsClicked" Margin="10" />
             <Button Content="TextCommandBarFlyout Tests" Click="OnTextCommandBarFlyoutTestsClicked" Margin="10" />
             <Button Content="Extra CommandBarFlyout Tests" Click="OnExtraCommandBarFlyoutTestsClicked" Margin="10" />
+            <Button Content="Add item to navview" Click="OnAddNavItemClick" Margin="10"/>
             <!--<CommandBar>
                 <AppBarButton Content="NotToggle" Icon="Save"/>
                 <AppBarToggleButton Content="Toggle" Icon="Save"/>
@@ -23,7 +24,7 @@
             <AppBarToggleButton Content="AppBarToggleButton" Icon="Delete"/>
             <AppBarToggleButton Content="ABTBDisabled" Icon="Delete" IsEnabled="False"/>
             <AppBarToggleButton Content="ABTBToggledDisabled" Icon="Delete" IsEnabled="False" IsChecked="True"/>-->
-            <muxc:NavigationView>
+            <muxc:NavigationView x:Name="navView">
                 <muxc:NavigationView.MenuItems>
                     <muxc:NavigationViewItem Content="First Menu Item" Icon="Home" x:Name="A">
                         <muxc:NavigationViewItem.MenuItems>

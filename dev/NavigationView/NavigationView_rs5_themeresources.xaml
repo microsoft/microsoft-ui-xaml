@@ -3,7 +3,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
-    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:media="using:Microsoft.UI.Xaml.Media">
 
     <Thickness x:Key="NavigationViewItemIconBoxMargin">10,12,16,12</Thickness>
@@ -26,5 +25,4 @@
             <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="{StaticResource SystemColorWindowColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-
 </ResourceDictionary>

@@ -35,9 +35,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewList.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewPaneClosingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewSelectionChangedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewNode.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TopNavigationViewDataProvider.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewNode.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewModel.h" />
