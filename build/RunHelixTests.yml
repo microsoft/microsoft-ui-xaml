@@ -112,4 +112,4 @@ jobs:
       command: custom
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
-      arguments: '/p:HelixAccessToken=$(BotAccount-dotnet-github-anon-kaonashi-bot-helix-token) /p:HelixBuild=$(Build.BuildId)'
+      arguments: '/p:HelixBuild=$(Build.BuildId) /p:Creator:WinUI /p:IsExternal=true'
