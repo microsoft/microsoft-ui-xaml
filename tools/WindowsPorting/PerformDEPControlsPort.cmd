@@ -123,7 +123,7 @@ if not exist "%OSRepoRoot%\src" (
     echo.
 
     for /f "delims=" %%I in ('dir /B /AD') do ( rd /s /q %%I )
-    rm * -f
+    del /q *
     call :CheckErrorLevel "Deleting current contents" || goto Cleanup
 
     gvfs clone %OSRepoUri% %OSRepoRoot%
