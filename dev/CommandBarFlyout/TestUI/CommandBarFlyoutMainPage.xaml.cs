@@ -30,5 +30,10 @@ namespace MUXControlsTestApp
             var rootFrame = Window.Current.Content as Frame;
             rootFrame.NavigateWithoutAnimation(typeof(ExtraCommandBarFlyoutPage), "Extra CommandBarFlyout Tests");
         }
+
+        public void OnAddNavItemClick(object sender, object args)
+        {
+
+        }
     }
 }
