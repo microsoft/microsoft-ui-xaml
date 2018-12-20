@@ -967,7 +967,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
-#region Private Helpers
+        [TestMethod]
+        public void ValidateFlowLayoutWithOneItemHasNonZeroExtent()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (ScrollOrientation scrollOrientation in Enum.GetValues(typeof(ScrollOrientation)))
+                {
+                    var repeater = new ItemsRepeater() {
+                        ItemsSource = new List<string>() { "single item" },
+                        Layout = new FlowLayout() { Orientation = scrollOrientation.ToLayoutOrientation() },
+                    };
+
+                    Content = repeater;
+                    Content.UpdateLayout();
+
+                    Verify.IsTrue(repeater.ActualWidth > 10);
+                    Verify.IsTrue(repeater.ActualHeight > 10);
+                }
+            });
+        }
+
+        #region Private Helpers
 
         private enum LayoutChoice
         {
