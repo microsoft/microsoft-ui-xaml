@@ -8,7 +8,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <AppxPackageName>MUXControlsTestAppWPFPackage</AppxPackageName>
-    <GenerateAppxPackageOnBuild Condition="'$(IsTDPConfiguration)' == 'true'">true</GenerateAppxPackageOnBuild>
     <PackageCertificateKeyFile>..\..\build\MSTest.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
@@ -53,6 +52,9 @@
     <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
   </PropertyGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
+  <PropertyGroup>
+    <GenerateAppxPackageOnBuild Condition="'$(IsTDPConfiguration)' == 'true'">true</GenerateAppxPackageOnBuild>
+  </PropertyGroup>
   <PropertyGroup>
     <ProjectGuid>03f7f4f7-0250-435e-a730-ed82f6a08652</ProjectGuid>
     <TargetPlatformVersion>$(MuxSdkVersion)</TargetPlatformVersion>
