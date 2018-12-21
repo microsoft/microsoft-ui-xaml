@@ -4,13 +4,26 @@
   <Import Project="$(MSBuildProjectDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildProjectDirectory)\..\..\mux.controls.props') And $(BuildingWithBuildExe) != 'true'" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\SdkVersion.props" Condition="$(BuildingWithBuildExe) == 'true'" />
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0'">
-    <VisualStudioVersion>15.0</VisualStudioVersion>	
+    <VisualStudioVersion>15.0</VisualStudioVersion>
   </PropertyGroup>
   <PropertyGroup>
     <AppxPackageName>MUXControlsTestAppWPFPackage</AppxPackageName>
+    <GenerateAppxPackageOnBuild Condition="'$(IsTDPConfiguration)' == 'true'">true</GenerateAppxPackageOnBuild>
     <PackageCertificateKeyFile>..\..\build\MSTest.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug_test|AnyCPU">
+      <Configuration>Debug_test</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug_test|x64">
+      <Configuration>Debug_test</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug_test|x86">
+      <Configuration>Debug_test</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x86">
       <Configuration>Debug</Configuration>
       <Platform>x86</Platform>
@@ -52,16 +65,16 @@
       <SubType>Designer</SubType>
     </AppxManifest>
     <None Include="..\..\build\MSTest.pfx" />
-	<Content Include="$(OutputPath)..\Microsoft.UI.Xaml\Themes\*.xaml">
+    <Content Include="$(OutputPath)..\Microsoft.UI.Xaml\Themes\*.xaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>Microsoft.UI.Xaml\Themes\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Content>
-	<Content Include="$(OutputPath)..\Microsoft.UI.Xaml\Themes\*.xbf">
+    <Content Include="$(OutputPath)..\Microsoft.UI.Xaml\Themes\*.xbf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>Microsoft.UI.Xaml\Themes\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Content>
-    <MUXResourceFiles Include="$(OutputPath)MUXControlsTestAppWPF\Microsoft.UI.Xaml\**\*.xaml" />	
-	<MUXResourceFiles Include="$(OutputPath)MUXControlsTestAppWPF\Microsoft.UI.Xaml\**\*.xbf" />	
+    <MUXResourceFiles Include="$(OutputPath)MUXControlsTestAppWPF\Microsoft.UI.Xaml\**\*.xaml" />
+    <MUXResourceFiles Include="$(OutputPath)MUXControlsTestAppWPF\Microsoft.UI.Xaml\**\*.xbf" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Images\LockScreenLogo.scale-200.png" />
@@ -75,10 +88,10 @@
     <ProjectReference Include="..\MUXControlsTestAppWPF\MUXControlsTestAppWPF.csproj" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
-  <Target Name="GeneratePriResources" AfterTargets="AfterBuild" >
-	<Copy SourceFiles="$(MSBuildProjectDirectory)\priconfig.xml" DestinationFolder="$(OutputPath)" />
-	<Copy SourceFiles="$(MSBuildProjectDirectory)\pri.resfiles" DestinationFolder="$(OutputPath)" />
-	<Copy SourceFiles="$(OutputPath)..\Microsoft.UI.Xaml\Microsoft.ui.xaml.pri" DestinationFolder="$(OutputPath)" />
-	<Exec Command="&quot;C:\Program Files (x86)\Windows Kits\10\bin\$(MuxSdkVersion)\x64\MakePri.exe&quot; new /pr $(OutputPath) /cf priconfig.xml /of $(OutputPath)resources.pri /in MUXControlsTestAppWPFPackage /o" />	
+  <Target Name="GeneratePriResources" AfterTargets="AfterBuild">
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\priconfig.xml" DestinationFolder="$(OutputPath)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\pri.resfiles" DestinationFolder="$(OutputPath)" />
+    <Copy SourceFiles="$(OutputPath)..\Microsoft.UI.Xaml\Microsoft.ui.xaml.pri" DestinationFolder="$(OutputPath)" />
+    <Exec Command="&quot;C:\Program Files (x86)\Windows Kits\10\bin\$(MuxSdkVersion)\x64\MakePri.exe&quot; new /pr $(OutputPath) /cf priconfig.xml /of $(OutputPath)resources.pri /in MUXControlsTestAppWPFPackage /o" />
   </Target>
 </Project>
