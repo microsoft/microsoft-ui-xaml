@@ -73,6 +73,7 @@ artifacts/
 *.run.code
 *.tl
 pingme.txt
+*.binlog
 
 # Chutzpah Test files
 _Chutzpah*
