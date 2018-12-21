@@ -125,13 +125,11 @@ namespace MUXControlsTestApp.ItemsViewPrototype
                                 // nothing is selected and there is data, select the first item
                                 if (this.Model.Source != null)
                                 {
-                                    var source = this.Model.Source as ItemsSourceView;
-                                    if ((source == null && DataSource.CreateFrom(this.Model.Source).GetSize() > 0) ||
-                                       (source != null && source.GetSize() > 0))
+                                    var source = new ItemsSourceView(this.Model.Source);
+                                    if (source.Count > 0)
                                     {
                                         this.Model.Select(0);
                                     }
-
                                 }
                             }
                             else

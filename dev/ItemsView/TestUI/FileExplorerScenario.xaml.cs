@@ -21,8 +21,10 @@ namespace MUXControlsTestApp
     public sealed partial class FileExplorerScenario : Page
     {
         public List<Item> allItems = new List<Item>();
-        public ObservableDataSource<Item> Items = new ObservableDataSource<Item>();
-        public ObservableDataSource<IGrouping<string, Item>> ItemsGroupedByParentMountain = new ObservableDataSource<IGrouping<string, Item>>();
+        // public ObservableDataSource<Item> Items = new ObservableDataSource<Item>();
+        // public ObservableDataSource<IGrouping<string, Item>> ItemsGroupedByParentMountain = new ObservableDataSource<IGrouping<string, Item>>();
+        public ObservableCollection<Item> Items = new ObservableCollection<Item>();
+        public ObservableCollection<IGrouping<string, Item>> ItemsGroupedByParentMountain = new ObservableCollection<IGrouping<string, Item>>();
         bool isGrouped = false;
 
         public FileExplorerScenario()
@@ -158,8 +160,7 @@ namespace MUXControlsTestApp
                         double longitude = GetDecimalDegrees(coordinates[1]);
 
                         allItems.Add(
-                            new Item()
-                            {
+                            new Item() {
                                 Rank = uint.Parse(values[0]),
                                 Mountain = values[1],
                                 Height_m = uint.Parse(values[2]),
