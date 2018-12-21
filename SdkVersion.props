@@ -9,6 +9,7 @@
 	<SDKVersion19H1Insider>10.0.18312.0</SDKVersion19H1Insider>
   </PropertyGroup>
   <PropertyGroup>
+    <UseInsiderSDK>true</UseInsiderSDK>
     <!-- By default we use the publicly shipped SDK version which is RS5 now -->
     <MuxSdkVersion Condition="$(UseInsiderSDK) != 'true'">$(SDKVersionRS5)</MuxSdkVersion>
 

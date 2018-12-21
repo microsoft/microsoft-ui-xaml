@@ -250,6 +250,7 @@ namespace MU_XC_NAMESPACE
 #endif
 
 #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
+#include <AnimatedVisualPlayer\AnimatedVisualPlayer.idl>
 #include <ColorPicker\Common.idl>
 #include <ColorPicker\ColorPicker.idl>
 #include <CommandBarFlyout\CommandBarFlyout.idl>
@@ -308,6 +309,7 @@ namespace MU_XAP_NAMESPACE
 #include <NavigationView\NavigationViewItemAutomationPeer.idl>
 
 #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
+#include <AnimatedVisualPlayer\AnimatedVisualPlayerAutomationPeer.idl>
 #include <ColorPicker\ColorSpectrumAutomationPeer.idl>
 #include <ColorPicker\ColorPickerSliderAutomationPeer.idl>
 #include <MenuBar\MenuBarAutomationPeer.idl>

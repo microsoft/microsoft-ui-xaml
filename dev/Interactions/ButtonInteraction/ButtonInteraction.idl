@@ -1,4 +1,4 @@
-[WUXC_VERSION_PREVIEW]
+﻿[WUXC_VERSION_PREVIEW]
 [webhosthidden]
 enum ButtonInteractionInvokeMode
 {
@@ -17,7 +17,7 @@ runtimeclass ButtonInteractionInvokedEventArgs
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass ButtonInteraction :
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
 Windows.UI.Xaml.InteractionBase, 
 #else
 Windows.UI.Xaml.DependencyObject,

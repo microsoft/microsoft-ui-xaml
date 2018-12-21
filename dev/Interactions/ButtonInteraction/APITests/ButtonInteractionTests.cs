@@ -57,10 +57,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+#if USE_INTERNAL_SDK
                 var interaction = new ButtonInteraction();
                 var supportedEvents = interaction.GetSupportedEvents();
 
                 Verify.IsGreaterThan(supportedEvents.Count, 0);
+#endif
             });
         }
     }
