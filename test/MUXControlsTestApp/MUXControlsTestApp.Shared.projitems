@@ -152,13 +152,6 @@
       <Name>Microsoft.UI.Xaml</Name>
     </ProjectReference>
   </ItemGroup>
-  <PropertyGroup Condition="'$(IsTDPConfiguration)' == 'true'">
-    <AppxPackageName Condition="'$(AppxPackageName)'==''">$(TargetName)</AppxPackageName>
-    <AppxPackageExtension Condition="'$(AppxPackageExtension)'==''">.appx</AppxPackageExtension>
-    <AppxPackageTestDir Condition="'$(AppxPackageTestDir)'==''">$(AppxPackageDir)$(AppxPackageName)_Test\</AppxPackageTestDir>
-    <AppxPackageOutput Condition="'$(AppxPackageOutput)'==''">$(AppxPackageTestDir)$(AppxPackageName)$(AppxPackageExtension)</AppxPackageOutput>
-    <AppxIntermediateExtension Condition="'$(AppxIntermediateExtension)'==''">.intermediate</AppxIntermediateExtension>
-  </PropertyGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />
   </ItemGroup>
@@ -450,6 +443,13 @@
       <FileWrites Include="$(OutDir)ThemeResourcesTests.g.cs" />
     </ItemGroup>
   </Target>
+  <PropertyGroup Condition="'$(IsTDPConfiguration)' == 'true'">
+    <AppxPackageName Condition="'$(AppxPackageName)'==''">$(TargetName)</AppxPackageName>
+    <AppxPackageExtension Condition="'$(AppxPackageExtension)'==''">.appx</AppxPackageExtension>
+    <AppxPackageTestDir Condition="'$(AppxPackageTestDir)'==''">$(AppxPackageDir)$(AppxPackageName)_Test\</AppxPackageTestDir>
+    <AppxPackageOutput Condition="'$(AppxPackageOutput)'==''">$(AppxPackageTestDir)$(AppxPackageName)$(AppxPackageExtension)</AppxPackageOutput>
+    <AppxIntermediateExtension Condition="'$(AppxIntermediateExtension)'==''">.intermediate</AppxIntermediateExtension>
+  </PropertyGroup>
   <!-- For the purposes of code coverage, we need to know where the intermediates directory is,
        since we need to re-pack MUXControlsTestApp.appx for code coverage.
        We can't get it from any environment variable, so let's write it to a text file as a workaround. -->
