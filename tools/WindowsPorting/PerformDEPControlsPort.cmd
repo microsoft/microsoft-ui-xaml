@@ -183,8 +183,6 @@ call %OSRepoRoot%\src\tools\razzle.cmd x86fre no_oacr
 call :CheckErrorLevel "Razzle start" || goto Cleanup
 call doublecheck /awd /rc
 
-set WindowsDir=%SDXROOT%\onecoreuap\windows\dxaml\controls
-
 rem If we're planning to check in, then we need to check out a branch that tracks a remote branch.
 rem If we're just planning to build, though, then we can just check out a detached commit.
 if "%BUILDONLY%" neq "--buildonly" (
@@ -249,6 +247,15 @@ echo   STEP 3: SYNC DEPCONTROLS REPO
 echo ---------------------------------
 
 set StartTime=%time%
+
+echo.
+echo Re-starting Razzle...
+echo.
+
+call %OSRepoRoot%\src\tools\razzle.cmd x86fre no_oacr
+call :CheckErrorLevel "Razzle start" || goto Cleanup
+
+set WindowsDir=%SDXROOT%\onecoreuap\windows\dxaml\controls
 
 if "%BUILDONLY%" neq "--buildonly" (
     echo.
