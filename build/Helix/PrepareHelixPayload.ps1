@@ -33,7 +33,7 @@ Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\Test\MUXContro
 Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\*" $payloadDir
 Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\Dependencies\$Platform\*" $payloadDir
 Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\*" $payloadDir
-Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\Dependencies\$Platform\*" $payloadDir
+Copy-Item -Force "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\Dependencies\$Platform\*" $payloadDir
 
 # Copy files from the repo
 Copy-Item "build\helix\runtests.cmd" $payloadDir
