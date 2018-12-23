@@ -1,6 +1,8 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: Build
+  condition: 
+    False
   pool:
     vmImage: VS2017-Win2016
   timeoutInMinutes: 120
@@ -10,10 +12,21 @@ jobs:
     value: $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
   - name: buildOutputDir
     value: $(Build.SourcesDirectory)\BuildOutput
-  - name: buildPlatform 
-    value: x86
-  - name: buildConfiguration 
-    value: Debug
+  strategy:
+    maxParallel: 4
+    matrix:
+      Debug_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Debug'
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+      Debug_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Debug'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
 
   steps:
   - task: CmdLine@1
@@ -74,10 +87,18 @@ jobs:
   - group: DotNet-HelixApi-Access
   - name: artifactsDir
     value: $(Build.SourcesDirectory)\Artifacts
-  - name: buildPlatform 
-    value: x86
-  - name: buildConfiguration 
-    value: Debug
+  strategy:
+    maxParallel: 4
+    matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+        helixTargetQueues: 'Windows.10.Amd64.ClientRS4.Open'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+        # %3b is the escape code for ';' which is used as the delimiter
+        helixTargetQueues: 'Windows.10.Amd64.Open%3bWindows.10.Amd64.ServerRS5.Open'
   steps:
 
   - task: NuGetToolInstaller@0
@@ -103,6 +124,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\PrepareHelixPayload.ps1
+      arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
 
   - task: DotNetCoreCLI@2
     displayName: 'Run tests in Helix'
@@ -112,4 +134,5 @@ jobs:
       command: custom
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
-      arguments: '/p:HelixBuild=$(Build.BuildId) /p:Creator=WinUI /p:IsExternal=true'
+      arguments: '/p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues)'
+      

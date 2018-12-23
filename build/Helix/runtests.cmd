@@ -1,7 +1,9 @@
 robocopy %HELIX_CORRELATION_PAYLOAD% . /s
-te MUXControls.Test.dll MUXControlsTestApp.appx /enablewttlogging /unicodeOutput:false /testtimeout:0:05 %*
-type te.wtl
+
+te MUXControls.Test.dll MUXControlsTestApp.appx /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 %*
+
 cd scripts
-powershell .\ConvertWttLogToXUnit.ps1 ..\te.wtl ..\testResults.xml
+powershell -ExecutionPolicy Bypass .\ConvertWttLogToXUnit.ps1 ..\te.wtl ..\testResults.xml %testnameprefix%
 cd ..
+
 type testResults.xml
