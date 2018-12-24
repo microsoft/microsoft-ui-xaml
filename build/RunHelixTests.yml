@@ -1,6 +1,8 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: Build
+  condition: 
+    False
   pool:
     vmImage: VS2017-Win2016
   timeoutInMinutes: 120
@@ -13,12 +15,15 @@ jobs:
   strategy:
     maxParallel: 4
     matrix:
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-      Release_x64:
+      # Release_x86:
+      #   buildPlatform: 'x86'
+      #   buildConfiguration: 'Release'
+      Debug_x64:
         buildPlatform: 'x64'
-        buildConfiguration: 'Release'
+        buildConfiguration: 'Debug'
+      # Release_x64:
+      #   buildPlatform: 'x64'
+      #   buildConfiguration: 'Release'
 
   steps:
   - task: CmdLine@1
@@ -82,15 +87,19 @@ jobs:
   strategy:
     maxParallel: 4
     matrix:
-      Release_x86:
+      Debug_x86:
         buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-        helixTargetQueues: 'Windows.10.Amd64.ClientRS4.Open'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-        # %3b is the escape code for ';' which is used as the delimiter
-        helixTargetQueues: 'Windows.10.Amd64.Open%3bWindows.10.Amd64.ServerRS5.Open'
+        buildConfiguration: 'Debug'
+        helixTargetQueues: 'Windows.10.Amd64.Open'
+      # Release_x86:
+      #   buildPlatform: 'x86'
+      #   buildConfiguration: 'Release'
+      #   helixTargetQueues: 'Windows.10.Amd64.ClientRS4.Open'
+      # Release_x64:
+      #   buildPlatform: 'x64'
+      #   buildConfiguration: 'Release'
+      #   # %3b is the escape code for ';' which is used as the delimiter
+      #   helixTargetQueues: 'Windows.10.Amd64.Open%3bWindows.10.Amd64.ServerRS5.Open'
   steps:
 
   - task: NuGetToolInstaller@0
@@ -105,6 +114,19 @@ jobs:
       feedsToUse: config
       nugetConfigPath: nuget.config
       restoreDirectory: packages
+
+  # - task: DownloadBuildArtifacts@0 
+  #   displayName: 'Download Build Artifacts from other pipeline'
+  #   inputs: 
+  #     buildType: specific
+  #     buildVersionToDownload: specific
+  #     project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
+  #     pipeline: 22
+  #     buildId: 1042
+  #     # project: 'f05f4dbf-3077-427d-91e0-b66d9e4ca374'
+  #     # pipeline: 34322
+  #     # buildId: 13496210
+
 
   - task: DownloadBuildArtifacts@0 
     inputs: 
