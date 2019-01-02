@@ -28,13 +28,21 @@ void UniformGridLayoutState::UninitializeForContext(const winrt::VirtualizingLay
     }
 }
 
-void UniformGridLayoutState::EnsureElementSize(const winrt::Size availableSize, const winrt::VirtualizingLayoutContext& context, const double layoutItemWidth, const double LayoutItemHeight)
+void UniformGridLayoutState::EnsureElementSize(
+    const winrt::Size availableSize,
+    const winrt::VirtualizingLayoutContext& context,
+    const double layoutItemWidth,
+    const double LayoutItemHeight,
+    const winrt::UniformGridLayoutItemsStretch& stretch,
+    const winrt::Orientation& orientation,
+    double minRowSpacing,
+    double minColumnSpacing)
 {
     // If the first element is realized we don't need to cache it or to get it from the context
     if (auto realizedElement = m_flowAlgorithm.GetElementIfRealized(0))
     {
         realizedElement.Measure(availableSize);
-        SetSize(realizedElement, layoutItemWidth, LayoutItemHeight);
+        SetSize(realizedElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing);
         m_cachedFirstElement = nullptr;
     }
     else
@@ -46,7 +54,7 @@ void UniformGridLayoutState::EnsureElementSize(const winrt::Size availableSize, 
         }
 
         m_cachedFirstElement.Measure(availableSize);
-        SetSize(m_cachedFirstElement, layoutItemWidth, LayoutItemHeight);
+        SetSize(m_cachedFirstElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing);
 
         // See if we can move ownership to the flow algorithm. If we can, we do not need a local cache.
         bool added = m_flowAlgorithm.TryAddElement0(m_cachedFirstElement);
@@ -57,10 +65,55 @@ void UniformGridLayoutState::EnsureElementSize(const winrt::Size availableSize, 
     }
 }
 
-void UniformGridLayoutState::SetSize(winrt::UIElement UIElement, const double layoutItemWidth, const double LayoutItemHeight)
+void UniformGridLayoutState::SetSize(
+    winrt::UIElement UIElement,
+    const double layoutItemWidth,
+    const double LayoutItemHeight,
+    const winrt::Size availableSize,
+    const winrt::UniformGridLayoutItemsStretch& stretch,
+    const winrt::Orientation& orientation,
+    double minRowSpacing,
+    double minColumnSpacing)
 {
     m_effectiveItemWidth = (std::isnan(layoutItemWidth) ? UIElement.DesiredSize().Width : layoutItemWidth);
     m_effectiveItemHeight = (std::isnan(LayoutItemHeight) ? UIElement.DesiredSize().Height : LayoutItemHeight);
+
+    auto availableSizeMinor = orientation == winrt::Orientation::Horizontal ? availableSize.Width : availableSize.Height;
+    auto minorItemSpacing = orientation == winrt::Orientation::Horizontal ? minRowSpacing : minColumnSpacing;
+
+    auto itemSizeMinor = orientation == winrt::Orientation::Horizontal ? m_effectiveItemWidth : m_effectiveItemHeight;
+    itemSizeMinor += minorItemSpacing;
+
+    auto numItemsPerColumn = static_cast<int>(std::max(1.0, availableSizeMinor / itemSizeMinor));
+    auto remainingSpace = ((int)availableSizeMinor) % ((int)itemSizeMinor);
+    auto extraMinorPixelsForEachItem = remainingSpace / numItemsPerColumn;
+
+    if (stretch == winrt::UniformGridLayoutItemsStretch::Fill)
+    {
+        if (orientation == winrt::Orientation::Horizontal)
+        {
+            m_effectiveItemWidth += extraMinorPixelsForEachItem;
+        }
+        else
+        {
+            m_effectiveItemHeight += extraMinorPixelsForEachItem;
+        }
+    }
+    else if (stretch == winrt::UniformGridLayoutItemsStretch::Uniform)
+    {
+        auto itemSizeMajor = orientation == winrt::Orientation::Horizontal ? m_effectiveItemHeight : m_effectiveItemWidth;
+        auto extraMajorPixelsForEachItem = itemSizeMajor * (extraMinorPixelsForEachItem / itemSizeMinor);
+        if (orientation == winrt::Orientation::Horizontal)
+        {
+            m_effectiveItemWidth += extraMinorPixelsForEachItem;
+            m_effectiveItemHeight += extraMajorPixelsForEachItem;
+        }
+        else
+        {
+            m_effectiveItemHeight += extraMinorPixelsForEachItem;
+            m_effectiveItemWidth += extraMajorPixelsForEachItem;
+        }
+    }
 }
 
 void UniformGridLayoutState::EnsureFirstElementOwnership()

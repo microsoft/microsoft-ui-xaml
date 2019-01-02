@@ -550,12 +550,12 @@ void FlowLayoutAlgorithm::PerformLineAlignment(
                 }
             
             case FlowLayoutAlgorithm::LineAlignment::SpaceAround:
-            {
-                float interItemSpace = countInLine >= 1 ? totalSpace / (countInLine + 1) : 0;
-                bounds.*MinorStart() -= spaceAtLineStart;
-                bounds.*MinorStart() += interItemSpace * (rangeIndex - lineStartIndex + 1);
-                break;
-            }
+                {
+                    float interItemSpace = countInLine >= 1 ? totalSpace / (countInLine * 2) : 0;
+                    bounds.*MinorStart() -= spaceAtLineStart;
+                    bounds.*MinorStart() += interItemSpace * ((rangeIndex - lineStartIndex + 1)*2 - 1);
+                    break;
+                }
 
             case FlowLayoutAlgorithm::LineAlignment::SpaceBetween:
                 {
@@ -565,6 +565,13 @@ void FlowLayoutAlgorithm::PerformLineAlignment(
                     break;
                 }
 
+            case FlowLayoutAlgorithm::LineAlignment::SpaceEvenly:
+                {
+                    float interItemSpace = countInLine >= 1 ? totalSpace / (countInLine + 1) : 0;
+                    bounds.*MinorStart() -= spaceAtLineStart;
+                    bounds.*MinorStart() += interItemSpace * (rangeIndex - lineStartIndex + 1);
+                    break;
+                }
             }
         }
 

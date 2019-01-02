@@ -152,8 +152,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
 #if !BUILD_WINDOWS
         // Regression Test for Bug 11144540:Acrylic noise surface is lost after workstation sleep/resume
-        [TestMethod]
-        [TestProperty("Platform", "Desktop")]
+        //[TestMethod]
+        //[TestProperty("Platform", "Desktop")]
+        // Disabled due to: Bug 19996114: Unstable test: InteractionTests.AcrylicBrushTests.HideAndShowWindow
         public void HideAndShowWindow()
         {
             if (!OnRS2OrGreater()) { return; }

@@ -2,6 +2,7 @@
 param(
     [switch]$NoRun,
     [switch]$NoDeploy,
+    [switch]$NoBuild,
     [switch]$ForceDeploy,
     [switch]$LogVerbose,
     [switch]$LogSuperVerbose,
@@ -61,14 +62,33 @@ function Build-AppXIfNeeded
 
     if ((!$testAppxFile) -or (!$testExeFile) -or ($testExeFile.LastWriteTime -gt $testAppxFile.LastWriteTime) -or ($muxDllFile.LastWriteTime -gt $testAppxFile.LastWriteTime))
     {
-	    Write-Host ""
-	    Write-Host "$ProjectName AppX does not exist or is not up-to-date. Running build to generate..." -foregroundcolor Magenta
-	    Write-Host ""
-	    $buildCmd = "$PSScriptRoot\build.cmd $($Platform.ToLower()) $($Flavor.ToLower()) /project `"$PSScriptRoot\test\$ProjectPath`""
-	    Write-Host $buildCmd
-	    Invoke-Expression $buildCmd
-	    Write-Host ""
-	    Write-Host "Rebuild complete." -foregroundcolor Magenta
+        if ($testAppxFile)
+        {
+            Write-Verbose "$testAppxFile LastWriteTime = $($testAppxFile.LastWriteTime)"
+        }
+        if ($testExeFile)
+        {
+            Write-Verbose "$testExeFile LastWriteTime = $($testExeFile.LastWriteTime)"
+        }
+        Write-Verbose "$muxDllFile LastWriteTime = $($muxDllFile.LastWriteTime)"
+
+        if (-not $NoBuild)
+        {
+            Write-Host ""
+            Write-Host "$ProjectName AppX does not exist or is not up-to-date. Running build to generate..." -foregroundcolor Magenta
+            Write-Host ""
+            $buildCmd = "$PSScriptRoot\build.cmd $($Platform.ToLower()) $($Flavor.ToLower()) /project `"$PSScriptRoot\test\$ProjectPath`""
+            Write-Host $buildCmd
+            Invoke-Expression $buildCmd
+            Write-Host ""
+            Write-Host "Rebuild complete." -foregroundcolor Magenta
+        }
+        else
+        {
+            Write-Host ""
+            Write-Warning "$ProjectName AppX does not exist or is not up-to-date. But -NoBuild was requested so not running build."
+            Write-Host ""
+        }
     }
 }
 

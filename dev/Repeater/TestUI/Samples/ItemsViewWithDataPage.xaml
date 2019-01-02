@@ -138,11 +138,17 @@
                 <Slider x:Name="itemSpacingSlider" Header="ItemSpacing" Minimum="0" Maximum="400" StepFrequency="20" TickFrequency="20" Width="150" ValueChanged="OnItemSpacingSliderValueChanged" Padding="20 0 0 0" />
                 <Slider x:Name="lineSpacingSlider" Header="MinColumnSpacing" Minimum="0" Maximum="400" StepFrequency="20" TickFrequency="20" Width="150" ValueChanged="OnLineSpacingSliderValueChanged" Padding="20 0 0 0" />
                 <ComboBox x:Name="lineAlignmentComboBox" SelectedIndex="0">
-                    <ComboBoxItem>Near</ComboBoxItem>
+                    <ComboBoxItem>Start</ComboBoxItem>
                     <ComboBoxItem>Center</ComboBoxItem>
-                    <ComboBoxItem>Far</ComboBoxItem>
-                    <ComboBoxItem>SpaceEqually</ComboBoxItem>
+                    <ComboBoxItem>End</ComboBoxItem>
+                    <ComboBoxItem>SpaceEvenly</ComboBoxItem>
                     <ComboBoxItem>SpaceAround</ComboBoxItem>
+                    <ComboBoxItem>SpaceBetween</ComboBoxItem>
+                </ComboBox>
+                <ComboBox x:Name="itemsStretchComboBox" SelectedIndex="0">
+                    <ComboBoxItem>None</ComboBoxItem>
+                    <ComboBoxItem>Fill</ComboBoxItem>
+                    <ComboBoxItem>Uniform</ComboBoxItem>
                 </ComboBox>
             </StackPanel>
             <TextBox x:Name="scrollIndex" PlaceholderText="Index" Margin="20 0 0 0" VerticalAlignment="Center" />

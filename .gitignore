@@ -73,6 +73,7 @@ artifacts/
 *.run.code
 *.tl
 pingme.txt
+*.binlog
 
 # Chutzpah Test files
 _Chutzpah*
@@ -259,3 +260,8 @@ local.props
 dev/dll/CppWinRTFilterTypes.txt
 dev/dll/XamlTypeInfo.g.*
 manifest/Microsoft-Windows-UI-Xaml-MUXControls.man
+
+artifacts/
+HelixPayload/
+/test/MUXControlsTestApp/MSTest/MUXControlsTestApp_Test
+/test/MUXControlsTestApp/TAEF/MUXControlsTestApp_Test
