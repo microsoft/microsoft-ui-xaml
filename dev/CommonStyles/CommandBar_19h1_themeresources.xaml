@@ -801,17 +801,17 @@
                                 StrokeThickness="1" />
                         </Grid>
                         <Popup x:Name="OverflowPopup">
+                            <Popup.RenderTransform>
+                                <TransformGroup>
+                                    <TranslateTransform x:Name="OverflowContentRootMarginOffsetTransform" />
+                                    <TranslateTransform x:Name="OverflowContentRootTransform" X="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentHorizontalOffset}" />
+                                </TransformGroup>
+                            </Popup.RenderTransform>
                             <Grid x:Name="OverflowContentRoot"
                                 Opacity="0"
                                 MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentMinWidth}"
                                 MaxWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentMaxWidth}"
                                 MaxHeight="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentMaxHeight}">
-                                <Grid.RenderTransform>
-                                    <TransformGroup>
-                                        <TranslateTransform x:Name="OverflowContentRootMarginOffsetTransform" />
-                                        <TranslateTransform x:Name="OverflowContentRootTransform" X="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentHorizontalOffset}" />
-                                    </TransformGroup>
-                                </Grid.RenderTransform>
                                 <Grid.RowDefinitions>
                                     <RowDefinition />
                                     <RowDefinition Height="Auto" />
