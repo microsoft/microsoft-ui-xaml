@@ -315,14 +315,22 @@ winrt::CompositionSurfaceBrush MaterialHelper::GetNoiseBrushImpl(int dpiScale)
 }
 
 template <typename T>
-/*static*/ void MaterialHelper::LightTemplates<T>::OnLightTransparencyPolicyChanged(T* instance, const winrt::IMaterialProperties& materialProperties, bool onUIThread)
+/*static*/
+void MaterialHelper::LightTemplates<T>::OnLightTransparencyPolicyChanged(
+    const winrt::weak_ref<T> weakInstance,
+    const winrt::IMaterialProperties& materialProperties,
+    const winrt::DispatcherQueue& dispatcherQueue,
+    bool onUIThread)
 {
-    auto strongThis = instance->get_strong();
-    auto callback = [strongThis, materialProperties]() {
+    auto callback = [weakInstance, dispatcherQueue, materialProperties](){
+        auto instance = weakInstance.get();
+        if (instance)
+        {
             bool isDisabledByMaterialPolicy =
                 (materialProperties.InAppTransparencyPolicy() == winrt::Windows::UI::TransparencyPolicy::Opaque && !MaterialHelper::IgnoreAreEffectsFast()) || MaterialHelper::SimulateDisabledByPolicy();
-            LightPolicyChangedHelper(strongThis.get(), isDisabledByMaterialPolicy);
-        };
+            LightPolicyChangedHelper(instance.get(), isDisabledByMaterialPolicy);
+        }
+    };
 
     if (onUIThread)
     {
@@ -330,9 +338,9 @@ template <typename T>
     }
     else
     {
-        if (instance->m_dispatcherQueue) // We might have no dispatcher in XamlPresenter scenarios, in this case we will always be in the disabled state.
+        if (dispatcherQueue) // We might have no dispatcher in XamlPresenter scenarios, in this case we will always be in the disabled state.
         {
-            instance->m_dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler(callback));
+            dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler(callback));
         }
     }
 }

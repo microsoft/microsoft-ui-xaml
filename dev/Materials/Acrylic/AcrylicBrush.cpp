@@ -98,7 +98,33 @@ void AcrylicBrush::OnElementConnected(winrt::DependencyObject element) noexcept
 
     if (hasNewMaterialPolicy)
     {
-        m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, { this, &AcrylicBrush::OnTransparencyPolicyChanged });
+        // We might have no dispatcher in XamlPresenter scenarios (currenlty LogonUI/CredUI do not appear to use Acrylic).
+        // In these cases, we will honor the initial policy state but not get change notifications.
+        // This matches the legacy MaterialHelper behavior and should be sufficient for the special case of login screen.
+        if (m_dispatcherQueue)
+        {
+            // TransparencyPolicyCHanged is called on a worker thread. To ensure correct handler execution, make sure to:
+            // (1) Capture weak ref to this to ensure brush still exists when the handler is scheduled to the UI thread.
+            // (2) Capture DispatcherQueue so we don't need to access the brush off-thread.
+            m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, {
+                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue](const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
+                {
+                    dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler([weakThis]()
+                    {
+                        auto target = weakThis.get();
+                        if (target)
+                        {
+                            // Note HostBackdropTransparencyPolicy also incorporates the IsFullScreenOrTabletMode status tracked by legacy MaterialHelper implementation
+                            target->PolicyStatusChangedHelper(
+                                MaterialHelper::BrushTemplates<AcrylicBrush>::IsDisabledByInAppTransparencyPolicy(target.get()),
+                                MaterialHelper::BrushTemplates<AcrylicBrush>::IsDisabledByHostBackdropTransparencyPolicy(target.get())
+                                );
+                        }
+                    }));
+                }
+            });
+        }
+
         m_additionalMaterialPolicyChangedToken = MaterialHelper::AdditionalPolicyChanged([this](auto sender) { OnAdditionalMaterialPolicyChanged(sender); });
     }
 
@@ -449,26 +475,6 @@ void AcrylicBrush::PolicyStatusChangedHelper(bool isDisabledByBackdropPolicy, bo
     if (m_isConnected)
     {
         UpdateAcrylicStatus();
-    }
-}
-
-void AcrylicBrush::OnTransparencyPolicyChanged(const winrt::IMaterialProperties& sender, const winrt::IInspectable& /*args*/)
-{
-    // We might have no dispatcher in XamlPresenter scenarios (currenlty LogonUI/CredUI do not appear to use Acrylic).
-    // In these cases, we will honor the initial policy state but not get change notifications.
-    // This matches the legacy MaterialHelper behavior and should be sufficient for the special case of login screen.
-    if (m_dispatcherQueue)
-    {
-        com_ptr<AcrylicBrush> strongThis = get_strong();
-        m_dispatcherQueue.TryEnqueue(
-            winrt::Windows::System::DispatcherQueueHandler([strongThis]()
-        {
-            // Note HostBackdropTransparencyPolicy also incorporates the IsFullScreenOrTabletMode status tracked by legacy MaterialHelper implementation
-            strongThis->PolicyStatusChangedHelper(
-                MaterialHelper::BrushTemplates<AcrylicBrush>::IsDisabledByInAppTransparencyPolicy(strongThis.get()),
-                MaterialHelper::BrushTemplates<AcrylicBrush>::IsDisabledByHostBackdropTransparencyPolicy(strongThis.get())
-                );
-        }));
     }
 }
 

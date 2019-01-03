@@ -195,7 +195,27 @@ void RevealBrush::OnElementConnected(winrt::DependencyObject element) noexcept
 
     if (hasNewMaterialPolicy)
     {
-        m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, { this, &RevealBrush::OnTransparencyPolicyChanged });
+        // We might have no dispatcher in XamlPresenter scenarios (currenlty LogonUI/CredUI do not appear to use Acrylic).
+        // In these cases, we will honor the initial policy state but not get change notifications.
+        // This matches the legacy MaterialHelper behavior and should be sufficient for the special case of login screen.
+        if (m_dispatcherQueue)
+        {
+            m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, {
+                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue](const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
+                {
+                    dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler([weakThis]()
+                    {
+                        auto target = weakThis.get();
+                        if (target)
+                        {
+                            target->PolicyStatusChangedHelper(MaterialHelper::BrushTemplates<RevealBrush>::IsDisabledByInAppTransparencyPolicy(target.get()));
+                        }
+                    }));
+                }
+            });
+        }
+
+
         m_additionalMaterialPolicyChangedToken = MaterialHelper::AdditionalPolicyChanged([this](auto sender) { OnAdditionalMaterialPolicyChanged(sender); });
     }
 
