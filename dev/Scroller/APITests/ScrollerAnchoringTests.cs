@@ -781,7 +781,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // [TestMethod] Bug 19501499
+        [TestMethod]
         [TestProperty("Description", "Verifies VerticalOffset adjusts when inserting and removing items at the beginning (VerticalAnchorRatio=0.5).")]
         public void AnchoringAtRepeaterMiddle()
         {
@@ -825,7 +825,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     dataSource.Insert(0 /*index*/, 2 /*count*/);
                 });
 
-                IdleSynchronizer.Wait();
                 WaitForEvent("Waiting for Scroller.ViewChanged event", scrollerViewChangedEvent);
 
                 RunOnUIThread.Execute(() =>
