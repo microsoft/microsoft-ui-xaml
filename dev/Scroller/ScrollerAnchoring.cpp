@@ -14,6 +14,14 @@ const double c_edgeDetectionTolerance = 0.1;
 
 #ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
 
+void Scroller::ClearAnchorCandidates()
+{
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    m_anchorCandidates.clear();
+    m_isAnchorElementDirty = true;
+}
+
 void Scroller::RaiseConfigurationChanged()
 {
     if (m_configurationChanged)
@@ -283,14 +291,6 @@ winrt::Size Scroller::ComputeViewportToElementAnchorPointsDistance(
     }
 }
 
-void Scroller::ClearAnchorCandidates()
-{
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
-
-    m_anchorCandidates.clear();
-    m_isAnchorElementDirty = true;
-}
-
 void Scroller::ResetAnchorElement()
 {
     if (m_anchorElement.get())
@@ -357,6 +357,9 @@ void Scroller::EnsureAnchorElementSelection()
         {
             globalTestHooks->NotifyAnchorEvaluated(*this, requestedAnchorElement, viewportAnchorPointHorizontalOffset, viewportAnchorPointVerticalOffset);
         }
+
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str());
+
         return;
     }
 
@@ -409,6 +412,8 @@ void Scroller::EnsureAnchorElementSelection()
     {
         m_anchorElement.set(bestAnchorCandidate);
         m_anchorElementBounds = bestAnchorCandidateBounds;
+
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str());
     }
 
     if (globalTestHooks && globalTestHooks->AreAnchorNotificationsRaised())
