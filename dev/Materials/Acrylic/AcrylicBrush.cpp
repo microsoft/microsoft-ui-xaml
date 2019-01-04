@@ -595,6 +595,15 @@ winrt::CompositionEffectBrush AcrylicBrush::CreateAcrylicBrushWorker(
         }
     }
 
+#ifndef BUILD_WINDOWS
+    winrt::CompositionObject compositionObject{ acrylicBrush.try_as<winrt::CompositionObject>() };
+    winrt::CompositionPropertySet compositionPropertySet = compositionObject.Properties();
+
+    // Property sets don't support strings as property values, so store our tag as a scalar value.
+    static winrt::hstring brushIdentifier = winrt::hstring(L"Microsoft.UI.Xaml.AcrylicBrush");
+    compositionPropertySet.InsertScalar(brushIdentifier, 1.0f);
+#endif
+
     return acrylicBrush;
 }
 

@@ -211,6 +211,7 @@ void RevealBrush::OnConnected()
     // XCBB will use Fallback rendering, so do not run derived Brush code.
     if (SharedHelpers::IsInDesignMode()) { return; }
 
+
 #if BUILD_WINDOWS
 
     if (m_associatedIsland)
@@ -629,6 +630,7 @@ RevealBrush::GetOrCreateRevealBrushCompositionEffectFactory(
 
 void RevealBrush::CreateRevealBrush()
 {
+
     winrt::Compositor compositor = winrt::Window::Current().Compositor();
     if (!IsInFallbackMode())
     {
@@ -679,6 +681,15 @@ void RevealBrush::CreateRevealBrush()
             m_brush = compositor.CreateColorBrush(fallbackColor);
         }
     }
+
+#ifndef BUILD_WINDOWS
+    winrt::CompositionObject compositionObject {m_brush.try_as<winrt::CompositionObject>()};
+    winrt::CompositionPropertySet compositionPropertySet = compositionObject.Properties();
+
+    // Property sets don't support strings as property values, so store our tag as a scalar value.
+    static winrt::hstring brushIdentifier = winrt::hstring(L"Microsoft.UI.Xaml.RevealBrush");
+    compositionPropertySet.InsertScalar(brushIdentifier, 1.0f);
+#endif
 }
 
 void RevealBrush::UpdateRevealBrush()
