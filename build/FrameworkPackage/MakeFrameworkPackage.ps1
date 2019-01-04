@@ -40,7 +40,11 @@ Copy-IntoNewDirectory FrameworkPackageContents\* $fullOutputPath\PackageContents
 
 Copy-IntoNewDirectory PriConfig\* $fullOutputPath
 
-if (!$WindowsSdkBinDir)
+if (!$WindowsSdkBinDir -and $env:WindowsSdkVerBinPath)
+{
+    $WindowsSdkBinDir = "${env:WindowsSdkVerBinPath}\x86"
+}
+else
 {
     $WindowsSdkBinDir = "${env:ProgramFiles(x86)}\Windows Kits\10\bin\x86"
 }

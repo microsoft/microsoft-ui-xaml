@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory=$true)]
+param([Parameter(Mandatory=$true, Position=0)]
       [string]$buildNumber)
 
 # Ensure the error action preference is set to the default for PowerShell3, 'Stop'
@@ -13,6 +13,13 @@ $WindowsSDKVersion = "10.0.$buildNumber.0"
 $WindowsSDKInstalledRegPath = "$WindowsSDKRegPath\$WindowsSDKVersion\Installed Options"
 $StrongNameRegPath = "HKLM:\SOFTWARE\Microsoft\StrongName\Verification"
 $PublicKeyTokens = @("31bf3856ad364e35")
+
+if ($buildNumber -notmatch "^\d{5,}$")
+{
+    Write-Host "ERROR: '$buildNumber' doesn't look like a windows build number"
+    Write-Host
+    Exit 1
+}
 
 function Download-File
 {
@@ -258,6 +265,17 @@ if ($InstallWindowsSDK)
 
     Write-Verbose "Getting WinSDK from $uri"
     $downloadFile = Download-File $winsdkTempDir $uri $file
+    Write-Verbose "File is at $downloadFile"
+    $downloadFileItem = Get-Item $downloadFile
+    
+    # Check to make sure the file is at least 10 MB.
+    if ($downloadFileItem.Length -lt 10*1024*1024)
+    {
+        Write-Host
+        Write-Host "ERROR: Downloaded file doesn't look large enough to be an ISO. The requested version may not be on microsoft.com yet."
+        Write-Host
+        Exit 1
+    }
 
     # TODO Check if zip, exe, iso, etc.
     try

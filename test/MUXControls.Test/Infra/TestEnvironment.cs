@@ -48,9 +48,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         private const string _testAppPackageName = "MUXControlsTestApp";
 
 #if USING_TAEF
-        private const string _testAppName = "407b1cc5-f51e-4bfa-b5d2-04afa83fe380_8wekyb3d8bbwe!taef.executionengine.universal.App";
+        private const string _testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App";
 #else
-        private const string _testAppName = "407b1cc5-f51e-4bfa-b5d2-04afa83fe380_8wekyb3d8bbwe!App";
+        private const string _testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!App";
 #endif
 
         private const string _wpfXamlIslandPackageName = "MUXControlsTestAppWPFPackage";
@@ -62,27 +62,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         public const string _nugetTestAppCXPackageName = "NugetPackageTestAppCX";
         private const string _nugetTestAppCXName = "NugetPackageTestAppCX_8wekyb3d8bbwe!App";
 
-#if BUILD_WINDOWS
-        private const string _testAppPackageFullName = "407b1cc5-f51e-4bfa-b5d2-04afa83fe380_1.0.0.0_neutral__8wekyb3d8bbwe";
-        private const string _nugetTestAppPackageFullName = "NugetPackageTestApp_1.0.0.0_neutral__8wekyb3d8bbwe";
-        private const string _nugetTestAppCXPackageFullName = "NugetPackageTestAppCX_1.0.0.0_neutral__8wekyb3d8bbwe";
-        private const string _wpfXamlIslandPackageFullName = "MUXControlsTestAppWPFPackage_1.0.0.0_neutral__8wekyb3d8bbwe";
-#elif ARM
-        private const string _testAppPackageFullName = "407b1cc5-f51e-4bfa-b5d2-04afa83fe380_1.0.0.0_arm__8wekyb3d8bbwe";
-        private const string _nugetTestAppPackageFullName = "NugetPackageTestApp_1.0.0.0_arm__8wekyb3d8bbwe";
-        private const string _nugetTestAppCXPackageFullName = "NugetPackageTestAppCX_1.0.0.0_arm__8wekyb3d8bbwe";
-        private const string _wpfXamlIslandPackageFullName = "MUXControlsTestAppWPFPackage_1.0.0.0_arm__8wekyb3d8bbwe";
-#elif X64
-        private const string _testAppPackageFullName = "407b1cc5-f51e-4bfa-b5d2-04afa83fe380_1.0.0.0_x64__8wekyb3d8bbwe";
-        private const string _nugetTestAppPackageFullName = "NugetPackageTestApp_1.0.0.0_x64__8wekyb3d8bbwe";
-        private const string _nugetTestAppCXPackageFullName = "NugetPackageTestAppCX_1.0.0.0_x64__8wekyb3d8bbwe";
-        private const string _wpfXamlIslandPackageFullName = "MUXControlsTestAppWPFPackage_1.0.0.0_x64__8wekyb3d8bbwe";
-#else
-        private const string _testAppPackageFullName = "407b1cc5-f51e-4bfa-b5d2-04afa83fe380_1.0.0.0_x86__8wekyb3d8bbwe";
-        private const string _nugetTestAppPackageFullName = "NugetPackageTestApp_1.0.0.0_x86__8wekyb3d8bbwe";
-        private const string _nugetTestAppCXPackageFullName = "NugetPackageTestAppCX_1.0.0.0_x86__8wekyb3d8bbwe";
-        private const string _wpfXamlIslandPackageFullName = "MUXControlsTestAppWPFPackage_1.0.0.0_x86__8wekyb3d8bbwe";
-#endif
+        private const string _testAppPackageFamilyName = "MUXControlsTestApp_8wekyb3d8bbwe";
+        private const string _nugetTestAppPackageFamilyName = "NugetPackageTestApp_8wekyb3d8bbwe";
+        private const string _nugetTestAppCXPackageFamilyName = "NugetPackageTestAppCX_8wekyb3d8bbwe";
+        private const string _wpfXamlIslandPackageFamilyName = "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe";
 
         public static TestContext TestContext { get; private set; }
 
@@ -182,10 +165,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         private static Application CreateApplication(TestType type)
         {
-            if (type == TestType.Nuget) return new Application(_nugetTestAppPackageName, _nugetTestAppPackageFullName, _nugetTestAppName);
-            if (type == TestType.NugetCX) return new Application(_nugetTestAppCXPackageName, _nugetTestAppCXPackageFullName, _nugetTestAppCXName);
-            if (type == TestType.WPFXAMLIsland) return new Application(_wpfXamlIslandPackageName, _wpfXamlIslandPackageFullName, _wfpXamlIslandAppName, false /* isUWPApp */);
-            return new Application(_testAppPackageName, _testAppPackageFullName, _testAppName);
+            if (type == TestType.Nuget) return new Application(_nugetTestAppPackageName, _nugetTestAppPackageFamilyName, _nugetTestAppName);
+            if (type == TestType.NugetCX) return new Application(_nugetTestAppCXPackageName, _nugetTestAppCXPackageFamilyName, _nugetTestAppCXName);
+            if (type == TestType.WPFXAMLIsland) return new Application(_wpfXamlIslandPackageName, _wpfXamlIslandPackageFamilyName, _wfpXamlIslandAppName, false /* isUWPApp */);
+            return new Application(_testAppPackageName, _testAppPackageFamilyName, _testAppName);
         }
 
         // Tests classes call this from their ClassInitialize methods to init our Application instance

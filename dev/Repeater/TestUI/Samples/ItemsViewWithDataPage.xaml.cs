@@ -43,6 +43,7 @@ namespace MUXControlsTestApp.Samples
             //this.LayoutUpdated += OnLayoutUpdated;
             //CompositionTarget.Rendering += OnRendering;
             lineAlignmentComboBox.SelectionChanged += LineAlignmentComboBox_SelectionChanged;
+            itemsStretchComboBox.SelectionChanged += ItemsStretchComboBox_SelectionChanged;
 
             scrollButton.Click += OnScrollButtonClicked;
         }
@@ -195,6 +196,25 @@ namespace MUXControlsTestApp.Samples
             if (_pageInfo.Level2Layout != null)
             {
                 LayoutHelper.SetLineAlignment(_pageInfo.Level2Layout, alignment);
+            }
+        }
+
+        private void ItemsStretchComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var alignment = (itemsStretchComboBox.SelectedItem as ComboBoxItem).Content.ToString();
+            if (_pageInfo.Level0Layout != null)
+            {
+                LayoutHelper.SetItemsStretch(_pageInfo.Level0Layout, alignment);
+            }
+
+            if (_pageInfo.Level1Layout != null)
+            {
+                LayoutHelper.SetItemsStretch(_pageInfo.Level1Layout, alignment);
+            }
+
+            if (_pageInfo.Level2Layout != null)
+            {
+                LayoutHelper.SetItemsStretch(_pageInfo.Level2Layout, alignment);
             }
         }
 
