@@ -24,7 +24,6 @@ public:
     void OnDisconnected(winrt::UIElement const& oldElement);
 
 #if BUILD_WINDOWS
-    void OnTransparencyPolicyChanged(const winrt::IMaterialProperties& sender, const winrt::IInspectable& /*args*/);
     void OnAdditionalMaterialPolicyChanged(const com_ptr<MaterialHelperBase>& sender);
 #else
     void OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy);
