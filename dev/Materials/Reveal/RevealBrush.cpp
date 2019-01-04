@@ -211,7 +211,6 @@ void RevealBrush::OnConnected()
     // XCBB will use Fallback rendering, so do not run derived Brush code.
     if (SharedHelpers::IsInDesignMode()) { return; }
 
-
 #if BUILD_WINDOWS
 
     if (m_associatedIsland)
@@ -630,7 +629,6 @@ RevealBrush::GetOrCreateRevealBrushCompositionEffectFactory(
 
 void RevealBrush::CreateRevealBrush()
 {
-
     winrt::Compositor compositor = winrt::Window::Current().Compositor();
     if (!IsInFallbackMode())
     {
