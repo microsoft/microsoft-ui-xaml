@@ -55,7 +55,7 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
         winrt::WindowingEnvironment environment{ nullptr };
         try
         {
-            environment = winrt::WindowingEnvironment::GetForCurrentView();
+            environment = winrt::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView().WindowingEnvironment();
         } catch(...) {}
 
         // Verify that the window is Tiled
@@ -63,7 +63,7 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
         {
             if (environment.Kind() == winrt::WindowingEnvironmentKind::Tiled)
             {
-                winrt::IVectorView<winrt::Windows::UI::WindowManagement::DisplayRegion> regions = winrt::Windows::UI::WindowManagement::DisplayRegion::GetRegionsForCurrentView();
+                winrt::IVectorView<winrt::Windows::UI::WindowManagement::DisplayRegion> regions = winrt::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView().GetDisplayRegions();
                 info.RegionCount = std::min(regions.Size(), c_maxRegions);
 
                 // More than one region

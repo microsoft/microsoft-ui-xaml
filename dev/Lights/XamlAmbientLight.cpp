@@ -42,11 +42,30 @@ void XamlAmbientLight::OnConnected(winrt::UIElement const& /*newElement*/)
             m_dispatcherQueue = winrt::DispatcherQueue::GetForCurrentThread();
         }
 
-        m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, { this, &XamlAmbientLight::OnTransparencyPolicyChanged });
+        // We might have no dispatcher in XamlPresenter scenarios (currenlty LogonUI/CredUI do not appear to use Acrylic).
+        // In these cases, we will honor the initial policy state but not get change notifications.
+        // This matches the legacy MaterialHelper behavior and should be sufficient for the special case of login screen.
+        if (m_dispatcherQueue)
+        {
+            m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, {
+                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue](const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
+                {
+                    MaterialHelper::LightTemplates<XamlAmbientLight>::OnLightTransparencyPolicyChanged(
+                        weakThis,
+                        sender,
+                        dispatcherQueue,
+                        false /* onUIThread */);
+                }
+            });
+        }
     }
 
     // Apply Initial policy state
-    MaterialHelper::LightTemplates<XamlAmbientLight>::OnLightTransparencyPolicyChanged(this, m_materialProperties, true /* onUIThread */);
+    MaterialHelper::LightTemplates<XamlAmbientLight>::OnLightTransparencyPolicyChanged(
+        get_weak(),
+        m_materialProperties,
+        m_dispatcherQueue,
+        true /* onUIThread */);
     m_additionalMaterialPolicyChangedToken = MaterialHelper::AdditionalPolicyChanged([this](auto sender) { OnAdditionalMaterialPolicyChanged(sender); });
 #else
     m_materialPolicyChangedToken = MaterialHelper::PolicyChanged([this](auto sender, auto args) { OnMaterialPolicyStatusChanged(sender, args); });
@@ -92,13 +111,13 @@ void XamlAmbientLight::ReleaseCompositionResources()
 }
 
 #if BUILD_WINDOWS
-void XamlAmbientLight::OnTransparencyPolicyChanged(const winrt::IMaterialProperties& sender, const winrt::IInspectable& /*args*/)
-{
-    MaterialHelper::LightTemplates<XamlAmbientLight>::OnLightTransparencyPolicyChanged(this, sender, false /* onUIThread */);
-}
 void XamlAmbientLight::OnAdditionalMaterialPolicyChanged(const com_ptr<MaterialHelperBase>& sender)
 {
-    MaterialHelper::LightTemplates<XamlAmbientLight>::OnLightTransparencyPolicyChanged(this, m_materialProperties, true /* onUIThread */);
+    MaterialHelper::LightTemplates<XamlAmbientLight>::OnLightTransparencyPolicyChanged(
+        get_weak(),
+        m_materialProperties,
+        m_dispatcherQueue,
+        true /* onUIThread */);
 }
 #else
 void XamlAmbientLight::OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy)
