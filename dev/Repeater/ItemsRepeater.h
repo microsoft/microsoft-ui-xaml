@@ -76,8 +76,8 @@ public:
     winrt::IElementFactory ItemTemplate();
     void ItemTemplate(winrt::IElementFactory const& value);
 
-    winrt::VirtualizingLayout Layout();
-    void Layout(winrt::VirtualizingLayout const& value);
+    winrt::Layout Layout();
+    void Layout(winrt::Layout const& value);
 
     winrt::ElementAnimator Animator();
     void Animator(winrt::ElementAnimator const& value);
@@ -186,7 +186,7 @@ private:
 
     void OnDataSourcePropertyChanged(const winrt::ItemsSourceView& oldValue, const winrt::ItemsSourceView& newValue);
     void OnItemTemplateChanged(const winrt::IElementFactory& oldValue, const winrt::IElementFactory& newValue);
-    void OnLayoutChanged(const winrt::VirtualizingLayout& oldValue, const winrt::VirtualizingLayout& newValue);
+    void OnLayoutChanged(const winrt::Layout& oldValue, const winrt::Layout& newValue);
     void OnAnimatorChanged(const winrt::ElementAnimator& oldValue, const winrt::ElementAnimator& newValue);
 
     void OnDataSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
@@ -214,7 +214,7 @@ private:
     winrt::Microsoft::UI::Xaml::Controls::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
 #endif
 
-    winrt::VirtualizingLayout m_layout{ nullptr };
+    winrt::Layout m_layout{ nullptr };
     winrt::ElementAnimator m_animator{ nullptr };
 
     tracker_ref<winrt::VirtualizingLayoutContext> m_layoutContext{ this };

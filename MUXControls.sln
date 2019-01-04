@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2006
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28407.52
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dev", "dev", "{67599AD5-51EC-44CB-85CE-B60CD8CBA270}"
 EndProject
@@ -1066,6 +1066,8 @@ Global
 		{DEDC1E4F-CFA5-4443-83EB-E79D425DF7E7}.Debug_test|x64.Build.0 = Debug_test|x64
 		{DEDC1E4F-CFA5-4443-83EB-E79D425DF7E7}.Debug_test|x64.Deploy.0 = Debug_test|x64
 		{DEDC1E4F-CFA5-4443-83EB-E79D425DF7E7}.Debug_test|x86.ActiveCfg = Debug_test|x86
+		{DEDC1E4F-CFA5-4443-83EB-E79D425DF7E7}.Debug_test|x86.Build.0 = Debug_test|x86
+		{DEDC1E4F-CFA5-4443-83EB-E79D425DF7E7}.Debug_test|x86.Deploy.0 = Debug_test|x86
 		{DEDC1E4F-CFA5-4443-83EB-E79D425DF7E7}.Debug|ARM.ActiveCfg = Debug|ARM
 		{DEDC1E4F-CFA5-4443-83EB-E79D425DF7E7}.Debug|ARM.Build.0 = Debug|ARM
 		{DEDC1E4F-CFA5-4443-83EB-E79D425DF7E7}.Debug|ARM.Deploy.0 = Debug|ARM
@@ -1137,6 +1139,7 @@ Global
 		{4D8C5D1B-F982-44A1-B744-DD0E51651BF2}.Debug_test|x64.ActiveCfg = Debug|Any CPU
 		{4D8C5D1B-F982-44A1-B744-DD0E51651BF2}.Debug_test|x64.Build.0 = Debug|Any CPU
 		{4D8C5D1B-F982-44A1-B744-DD0E51651BF2}.Debug_test|x86.ActiveCfg = Debug|Any CPU
+		{4D8C5D1B-F982-44A1-B744-DD0E51651BF2}.Debug_test|x86.Build.0 = Debug|Any CPU
 		{4D8C5D1B-F982-44A1-B744-DD0E51651BF2}.Debug|ARM.ActiveCfg = Debug|Any CPU
 		{4D8C5D1B-F982-44A1-B744-DD0E51651BF2}.Debug|ARM.Build.0 = Debug|Any CPU
 		{4D8C5D1B-F982-44A1-B744-DD0E51651BF2}.Debug|arm64.ActiveCfg = Debug|Any CPU
@@ -1157,6 +1160,8 @@ Global
 		{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|x64.Build.0 = Debug_test|x64
 		{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|x64.Deploy.0 = Debug_test|x64
 		{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|x86.ActiveCfg = Debug_test|x86
+		{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|x86.Build.0 = Debug_test|x86
+		{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|x86.Deploy.0 = Debug_test|x86
 		{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug|ARM.ActiveCfg = Debug|ARM
 		{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug|ARM.Build.0 = Debug|ARM
 		{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug|ARM.Deploy.0 = Debug|ARM
@@ -1185,6 +1190,8 @@ Global
 		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug_test|x64.Build.0 = Debug_test|x64
 		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug_test|x64.Deploy.0 = Debug_test|x64
 		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug_test|x86.ActiveCfg = Debug_test|x86
+		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug_test|x86.Build.0 = Debug_test|x86
+		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug_test|x86.Deploy.0 = Debug_test|x86
 		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug|ARM.ActiveCfg = Debug|ARM
 		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug|ARM.Build.0 = Debug|ARM
 		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Debug|ARM.Deploy.0 = Debug|ARM
