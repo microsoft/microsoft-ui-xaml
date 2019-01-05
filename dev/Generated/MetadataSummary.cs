@@ -273,6 +273,7 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["NavigationViewItem.Icon"] = true;
             NeedsPropChangedCallbackMetadata["NavigationViewItem.IsChildSelected"] = true;
             NeedsPropChangedCallbackMetadata["NavigationViewItem.IsExpanded"] = true;
+            NeedsPropChangedCallbackMetadata["NavigationViewItem.MenuItemsSource"] = true;
             // NavigationViewItem -- DefaultValueMetadata
             DefaultValueMetadata["NavigationViewItem.CompactPaneLength"] = @"48.0";
             DefaultValueMetadata["NavigationViewItem.HasUnrealizedChildren"] = @"false";

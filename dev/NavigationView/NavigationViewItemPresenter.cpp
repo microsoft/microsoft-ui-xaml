@@ -34,7 +34,7 @@ void NavigationViewItemPresenter::OnApplyTemplate()
     if (presenterContentGrid)
     {
         //TODO: Remove Magic Number
-        auto leftIndentation = 15 * m_depth;
+        auto leftIndentation = 16 * m_depth;
         auto thickness = winrt::ThicknessHelper::FromLengths(leftIndentation, 0, 0, 0);
         presenterContentGrid.Margin(thickness);
     }

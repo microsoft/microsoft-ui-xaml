@@ -7,6 +7,8 @@
 #include "TreeViewItem.h"
 #include "VectorChangedEventArgs.h"
 #include "TreeViewList.h"
+#include "NavigationViewList.h"
+#include "NavigationViewItemBase.h"
 
 // Need to update node selection states on UI before vector changes.
 // Listen on vector change events don't solve the problem because the event already happened when the event handler gets called.
@@ -351,7 +353,7 @@ void ViewModel::PrepareView(const winrt::TreeViewNode& originNode)
     }
 }
 
-void ViewModel::SetOwningList(winrt::TreeViewList const& owningList)
+void ViewModel::SetOwningList(winrt::ListView const& owningList)
 {
     m_TreeViewList = winrt::make_weak(owningList);
 }
@@ -629,12 +631,25 @@ void ViewModel::NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targ
 {
     if (m_TreeViewList)
     {
-        auto container = winrt::get_self<TreeViewList>(m_TreeViewList.get())->ContainerFromNode(targetNode);
-        if (container)
+        if (auto tvList = m_TreeViewList.get().try_as<winrt::TreeViewList>())
         {
-            winrt::TreeViewItem targetItem = container.as<winrt::TreeViewItem>();
-            winrt::get_self<TreeViewItem>(targetItem)->UpdateSelection(selectionState);
+            auto container = winrt::get_self<TreeViewList>(tvList)->ContainerFromNode(targetNode);
+            if (container)
+            {
+                winrt::TreeViewItem targetItem = container.as<winrt::TreeViewItem>();
+                winrt::get_self<TreeViewItem>(targetItem)->UpdateSelection(selectionState);
+            }
         }
+        //else if (auto nvList = m_TreeViewList.get().try_as<winrt::NavigationViewList>())
+        //{
+        //    auto container = winrt::get_self<NavigationViewList>(m_TreeViewList.get())->ContainerFromItem(targetNode.Content());
+        //    if (container)
+        //    {
+        //        winrt::NavigationViewItemBase targetItem = container.as<winrt::NavigationViewItemBase>();
+        //        //TODO: Write an implementation for NavigationView
+        //        //winrt::get_self<NavigationViewItemBase>(targetItem)->UpdateSelection(selectionState);
+        //    }
+        //}
     }
 }
 
@@ -883,12 +898,16 @@ void ViewModel::TreeViewNodeHasChildrenPropertyChanged(winrt::TreeViewNode const
     if (m_TreeViewList)
     {
         auto targetNode = sender.as<winrt::TreeViewNode>();
-        auto container = winrt::get_self<TreeViewList>(m_TreeViewList.get())->ContainerFromNode(targetNode);
-        if (container)
+        if (auto tvList = m_TreeViewList.get().try_as<winrt::TreeViewList>())
         {
-            winrt::TreeViewItem targetItem = container.as<winrt::TreeViewItem>();
-            targetItem.GlyphOpacity(targetNode.HasChildren() ? 1.0 : 0.0);
+            auto container = winrt::get_self<TreeViewList>(tvList)->ContainerFromNode(targetNode);
+            if (container)
+            {
+                winrt::TreeViewItem targetItem = container.as<winrt::TreeViewItem>();
+                targetItem.GlyphOpacity(targetNode.HasChildren() ? 1.0 : 0.0);
+            }
         }
+        //TODO: Implement for NavigationViewList
     }
 }
 

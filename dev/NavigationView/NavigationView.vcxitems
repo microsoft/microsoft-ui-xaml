@@ -21,7 +21,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItemPresenter.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewModel.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewTemplateSettings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewBackRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewDisplayModeChangedEventArgs.cpp" />
@@ -35,14 +34,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewList.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewPaneClosingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewSelectionChangedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewNode.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TopNavigationViewDataProvider.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewNode.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewModel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewBackRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewDisplayModeChangedEventArgs.h" />

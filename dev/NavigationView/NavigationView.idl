@@ -362,6 +362,7 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
         Boolean IsChildSelected{ get; set; };
 
         Windows.Foundation.Collections.IVector<Object> MenuItems{ get; };
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         Object MenuItemsSource{ get; set; };
 
         static Windows.UI.Xaml.DependencyProperty IsExpandedProperty{ get; };
