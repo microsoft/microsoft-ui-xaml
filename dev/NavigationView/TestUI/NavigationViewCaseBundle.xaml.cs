@@ -32,6 +32,8 @@ namespace MUXControlsTestApp
             NavigateToTopNavPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewTopNavStorePage), 0); };
             NavigateToAnimationPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewAnimationPage), 0); };
             NavigateToIsPaneOpenPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewIsPaneOpenPage), 0); };
+            NavigateToHierarchicalNavigationViewMarkupPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(HierarchicalNavigationViewMarkup), 0); };
+            NavigateToHierarchicalNavigationViewDataBindingPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(HierarchicalNavigationViewDataBinding), 0); };
         }
 
     }

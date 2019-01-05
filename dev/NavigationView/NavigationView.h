@@ -13,8 +13,8 @@ struct bringintoview_event_revoker;
 #include "TopNavigationViewDataProvider.h"
 #include "NavigationViewHelper.h"
 #include "NavigationView.properties.h"
-#include "NavigationViewModel.h"
-#include "NavigationViewNode.h"
+#include "TreeViewNode.h"
+#include "ViewModel.h"
 
 enum class TopNavigationViewLayoutState
 {
@@ -82,8 +82,6 @@ public:
 
 	void Expand(winrt::NavigationViewItem const& value);
 	void Collapse(winrt::NavigationViewItem const& value);
-
-    NavigationViewModel* GetViewModel();
 
     winrt::NavigationViewItem GetLastExpandedItem();
 
@@ -346,13 +344,12 @@ private:
 
     TopNavigationViewDataProvider m_topDataProvider{ this };
 
-    NavigationViewModel m_viewModel{ this };
     tracker_ref<winrt::NavigationViewItem> m_lastExpandedItem{ this };
 
-    std::vector<NavigationViewNode> m_nodeVector;
-    void UpdateNodeTree();
+    tracker_ref<winrt::TreeViewNode> m_rootNode{ this };
 
-    //tracker_ref<std::vector<NavigationViewNode>> m_nodeVector{ this };
+    void SyncRootNodesWithItemsSource(const winrt::IInspectable& items);
+    winrt::IVector<winrt::TreeViewNode> RootNodes();
 
     bool m_appliedTemplate{ false };
 

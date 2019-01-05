@@ -100,7 +100,7 @@ void NavigationViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationViewItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_SelectsOnInvokedProperty)
     {

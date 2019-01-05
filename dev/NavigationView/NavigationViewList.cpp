@@ -79,12 +79,6 @@ void NavigationViewList::PrepareContainerForItemOverride(winrt::DependencyObject
             auto depth = winrt::get_self<NavigationViewItem>(lastExpandedNavItem)->GetDepth();
             winrt::get_self<NavigationViewItem>(itemContainer)->SetDepth(depth + 1);
         }
-
-        if (itemContainer.MenuItems().Size() > 0 || itemContainer.MenuItemsSource() || itemContainer.HasUnrealizedChildren())
-        {
-            auto viewModel = winrt::get_self<NavigationView>(navigationView)->GetViewModel();
-            viewModel->RegisterItemExpandEventToSelf(itemContainer, *this);
-        }
     }
 
     __super::PrepareContainerForItemOverride(element, item);
@@ -164,4 +158,29 @@ void NavigationViewList::PropagateChangeToAllContainers(std::function<void(typen
             }
         }
     }
+}
+
+com_ptr<ViewModel> NavigationViewList::ListViewModel() const
+{
+    return m_viewModel.get();
+}
+
+void NavigationViewList::ListViewModel(com_ptr<ViewModel> viewModel)
+{
+    m_viewModel.set(viewModel);
+}
+
+winrt::TreeViewNode NavigationViewList::NodeAtFlatIndex(int index) const
+{
+    return ListViewModel()->GetNodeAt(index);
+}
+
+winrt::TreeViewNode NavigationViewList::NodeFromContainer(winrt::DependencyObject const& container)
+{
+    int index = IndexFromContainer(container);
+    if (index >= 0 && index < static_cast<int32_t>(ListViewModel()->Size()))
+    {
+        return NodeAtFlatIndex(index);
+    }
+    return nullptr;
 }

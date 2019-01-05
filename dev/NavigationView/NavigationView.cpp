@@ -135,7 +135,7 @@ NavigationView::NavigationView()
 
     Unloaded({ this, &NavigationView::OnUnloaded });
 
-    m_viewModel.SetNavigationViewParent(*this);
+    m_rootNode.set(winrt::TreeViewNode());
 }
 
 void NavigationView::OnApplyTemplate()
@@ -250,6 +250,17 @@ void NavigationView::OnApplyTemplate()
         m_leftNavListViewItemClickRevoker = leftNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
 
         SetNavigationViewListPosition(leftNavListView, NavigationViewListPosition::LeftNav);
+
+        // Set up the ViewModel for the List
+        auto leftNavigationViewList = leftNavListView.try_as<NavigationViewList>();
+        leftNavigationViewList->ListViewModel(winrt::make_self<ViewModel>());
+        auto viewModel = leftNavigationViewList->ListViewModel();
+        viewModel->IsContentMode(true);
+        viewModel->PrepareView(m_rootNode.get());
+        viewModel->SetOwningList(leftNavListView);
+        leftNavigationViewList->ItemsSource(*viewModel.get());
+        //viewModel->NodeExpanding({ this, &TreeView::OnNodeExpanding });
+        //viewModel->NodeCollapsed({ this, &TreeView::OnNodeCollapsed });
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -1364,16 +1375,16 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
                                 clickedItemContainer.HasUnrealizedChildren());
             if (hasChildren)
             {
-                auto itemBeingExpanded = !clickedItemContainer.IsExpanded();
-                if (itemBeingExpanded)
+                auto isItemBeingExpanded = !clickedItemContainer.IsExpanded();
+                if (isItemBeingExpanded)
                 {
                     RaiseIsExpanding(clickedItemContainer);
                     m_lastExpandedItem.set(clickedItemContainer);
                 }
+                
+                clickedItemContainer.IsExpanded(isItemBeingExpanded);
 
-                m_viewModel.ToggleIsExpanded(clickedItemContainer);
-
-                if (!itemBeingExpanded)
+                if (!isItemBeingExpanded)
                 {
                     RaiseCollapsed(clickedItemContainer);
                     m_lastExpandedItem.set(nullptr);
@@ -3131,17 +3142,11 @@ void NavigationView::UpdatePaneTitleMargins()
 
 void NavigationView::UpdateLeftNavListViewItemSource(const winrt::IInspectable& items)
 {
-    if (m_topDataProvider.ShouldChangeDataSource(items))
-    {
-        // unbinding Data from ListView
-        UpdateListViewItemsSource(m_topNavListView.get(), nullptr);
-        UpdateListViewItemsSource(m_topNavListOverflowView.get(), nullptr);
+    // unbinding Data from ListView
+    UpdateListViewItemsSource(m_topNavListView.get(), nullptr);
+    UpdateListViewItemsSource(m_topNavListOverflowView.get(), nullptr);
 
-        // Change data source and setup vectors
-        m_viewModel.SetDataSource(items);
-
-        UpdateListViewItemsSource(m_leftNavListView.get(), m_viewModel.GetPrimaryItems());
-    }
+    SyncRootNodesWithItemsSource(items);
 }
 
 void NavigationView::UpdateTopNavListViewItemSource(const winrt::IInspectable& items)
@@ -3182,8 +3187,6 @@ void NavigationView::UpdateListViewItemSource()
         dataSource = MenuItems();
     }
 
-    UpdateNodeTree();
-
     // Always unset the data source first from old ListView, then set data source for new ListView.
     if (IsTopNavigationView())
     {
@@ -3203,9 +3206,33 @@ void NavigationView::UpdateListViewItemSource()
     }
 }
 
-void NavigationView::UpdateNodeTree()
+winrt::IVector<winrt::TreeViewNode> NavigationView::RootNodes()
 {
+    auto x = m_rootNode.get().Children();
+    return x;
+}
 
+void NavigationView::SyncRootNodesWithItemsSource(const winrt::IInspectable& items)
+{
+    // All TreeViewNode should be set to 'IsContentMode = true' as we dont want to pass node objects to the list view
+    winrt::get_self<TreeViewNode>(m_rootNode.get())->IsContentMode(true);
+
+    auto children = winrt::get_self<TreeViewNodeVector>(RootNodes());
+    children->ClearCore();
+
+    auto itemDataSource = winrt::ItemsSourceView(items);
+    if (itemDataSource)
+    {
+        int size = itemDataSource.Count();
+        for (int i = 0; i < size; i++)
+        {
+            auto item = itemDataSource.GetAt(i);
+            auto node = winrt::make_self<TreeViewNode>();
+            node->IsContentMode(true);
+            node->Content(item);
+            children->AppendCore(*node);
+        }
+    }
 }
 
 void NavigationView::UpdateListViewItemsSource(const winrt::ListView& listView, 
@@ -3404,11 +3431,6 @@ void NavigationView::Expand(winrt::NavigationViewItem const& value)
 void NavigationView::Collapse(winrt::NavigationViewItem const& value)
 {
 
-}
-
-NavigationViewModel* NavigationView::GetViewModel()
-{
-    return &m_viewModel;
 }
 
 winrt::NavigationViewItem NavigationView::GetLastExpandedItem()

@@ -4,6 +4,7 @@
 #pragma once
 #include "NavigationViewHelper.h"
 #include "NavigationViewList.g.h"
+#include "ViewModel.h"
 
 class NavigationViewList :
     public ReferenceTracker<NavigationViewList, winrt::implementation::NavigationViewListT>
@@ -30,6 +31,12 @@ public:
     // IControlOverrides / IControlOverridesHelper
     void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
 
+    winrt::com_ptr<ViewModel> ListViewModel() const;
+    void ListViewModel(winrt::com_ptr<ViewModel> viewModel);
+
+    winrt::TreeViewNode NodeAtFlatIndex(int index) const;
+    winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
+
 private:
     NavigationViewListPosition m_navigationViewListPosition{ NavigationViewListPosition::LeftNav };
     bool m_showFocusVisual{ true };
@@ -43,5 +50,7 @@ private:
     // Before ListView raises OnItemClick, it checks if IsItemItsOwnContainerOverride in ListViewBase::OnItemClick
     // We assume this is the container of the clicked item.
     tracker_ref<winrt::NavigationViewItemBase> m_lastItemCalledInIsItemItsOwnContainerOverride{ this };
+
+    tracker_com_ref<ViewModel> m_viewModel{ this };
 };
 

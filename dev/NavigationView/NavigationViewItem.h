@@ -9,6 +9,7 @@ struct bringintoview_event_revoker;
 #include "NavigationViewItem.g.h"
 #include "NavigationViewItemPresenter.h"
 #include "NavigationViewItem.properties.h"
+#include "DispatcherHelper.h"
 
 class NavigationViewItem :
     public winrt::implementation::NavigationViewItemT<NavigationViewItem, NavigationViewItemBase>,
@@ -51,12 +52,11 @@ public:
     bool IsContentChangeHandlingDelayedForTopNav() { return m_isContentChangeHandlingDelayedForTopNav; }
     void ClearIsContentChangeHandlingDelayedForTopNavFlag() { m_isContentChangeHandlingDelayedForTopNav = false; }
 
-    winrt::event_token AddExpandedChanged(winrt::TypedEventHandler<winrt::NavigationViewItem, winrt::DependencyPropertyChangedEventArgs> const& value);
-    void RemoveExpandedChanged(winrt::event_token token);
-
     void UpdateItemDepth(int depth);
 
     void SetParentItem(winrt::NavigationViewItem const& item);
+
+    winrt::TreeViewNode TreeNode();
 
 private:
     void UpdateNavigationViewItemToolTip();
@@ -98,8 +98,6 @@ private:
     bool m_appliedTemplate{ false };
     bool m_hasKeyboardFocus{ false };
     bool m_isContentChangeHandlingDelayedForTopNav{ false };
-
-    event_source<winrt::TypedEventHandler<winrt::NavigationViewItem, winrt::DependencyPropertyChangedEventArgs>> m_expandedChangedEventSource{ this };
 
     tracker_ref<winrt::NavigationViewItem> m_parentItem{ this };
 };

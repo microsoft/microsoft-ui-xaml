@@ -1,0 +1,21 @@
+﻿<Page
+    x:Class="MUXControlsTestApp.HierarchicalNavigationViewDataBinding"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:muxcontrols="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <DataTemplate x:Key="NavigationViewMenuItem" x:DataType="local:Category">
+            <muxcontrols:NavigationViewItem Content="{x:Bind Name}" MenuItemsSource="{x:Bind Children}"/>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid>
+        <muxcontrols:NavigationView MenuItemsSource="{x:Bind categories}" MenuItemTemplate="{StaticResource NavigationViewMenuItem}"/>
+    </Grid>
+</Page>

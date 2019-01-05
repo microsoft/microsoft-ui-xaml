@@ -1,0 +1,31 @@
+﻿<Page
+    x:Class="MUXControlsTestApp.HierarchicalNavigationViewMarkup"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:muxcontrols="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <muxcontrols:NavigationView x:Name="navView">
+            <muxcontrols:NavigationView.MenuItems>
+                <muxcontrols:NavigationViewItem Content="Menu Item A" Icon="Home" x:Name="A">
+                    <muxcontrols:NavigationViewItem.MenuItems>
+                        <muxcontrols:NavigationViewItem Content="Menu Item B" Icon="Save" x:Name="B">
+                            <muxcontrols:NavigationViewItem.MenuItems>
+                                <muxcontrols:NavigationViewItem Content="Menu Item C" Icon="Paste" x:Name="C" />
+                                <muxcontrols:NavigationViewItem Content="Menu Item D" Icon="Cut" x:Name="D" />
+                            </muxcontrols:NavigationViewItem.MenuItems>
+                        </muxcontrols:NavigationViewItem>
+                    </muxcontrols:NavigationViewItem.MenuItems>
+                </muxcontrols:NavigationViewItem>
+                <muxcontrols:NavigationViewItem Content="Menu Item E" Icon="Home" x:Name="E"/>
+                <muxcontrols:NavigationViewItem Content="Menu Item F" Icon="Home" x:Name="F"/>
+            </muxcontrols:NavigationView.MenuItems>
+        </muxcontrols:NavigationView>
+
+    </Grid>
+</Page>

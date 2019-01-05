@@ -8,6 +8,7 @@
 #include "NavigationViewItem.h"
 #include "NavigationViewItemAutomationPeer.h"
 #include "Utils.h"
+#include "NavigationViewList.h"
 
 
 static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationViewItemPresenter"sv;
@@ -170,10 +171,55 @@ void NavigationViewItem::OnPropertyChanged(const winrt::DependencyPropertyChange
     {
         UpdateVisualStateNoTransition();
     }
-    else if (property == s_IsExpandedProperty)
+
+    if (auto node = TreeNode())
     {
-        m_expandedChangedEventSource(*this, args);
+        if (property == s_IsExpandedProperty)
+        {
+            winrt::TreeViewNode targetNode = TreeNode();
+            // Make sure children nodes have been created if children exist
+            if (targetNode.Children().Size() == 0 && MenuItems().Size() != 0)
+            {
+                winrt::get_self<TreeViewNode>(node)->ItemsSource(MenuItems());
+            }
+            auto isExpanded = !targetNode.IsExpanded();
+            targetNode.IsExpanded(isExpanded);
+        }
+        //else if (property == s_MenuItemsProperty)
+        //{
+        //    winrt::IInspectable value = args.NewValue();
+
+        //    // MenuItems change happens during measuring.
+        //    // Adding MenuItems to node's children triggers another layout change, so it has to be done async.
+        //    m_dispatcherHelper.RunAsync(
+        //        [node, value]()
+        //    {
+        //        winrt::get_self<TreeViewNode>(node)->ItemsSource(value);
+        //    });
+        //}
+        else if (property == s_MenuItemsSourceProperty)
+        {
+            winrt::IInspectable value = args.NewValue();
+            winrt::get_self<TreeViewNode>(node)->ItemsSource(value);
+            // MenuItemsSource change happens during measuring.
+            // Adding MenuItemsSource to node's children triggers another layout change, so it has to be done async.
+            //m_dispatcherHelper.RunAsync(
+            //    [node, value]()
+            //{
+            //    winrt::get_self<TreeViewNode>(node)->ItemsSource(value);
+            //});
+        }
     }
+}
+
+winrt::TreeViewNode NavigationViewItem::TreeNode()
+{
+    if (auto navViewList = GetNavigationViewList())
+    {
+        return  winrt::get_self<NavigationViewList>(navViewList)->NodeFromContainer(*this);
+    }
+
+    return nullptr;
 }
 
 void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool showContent)
@@ -375,17 +421,6 @@ void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
         m_hasKeyboardFocus = false;
         UpdateVisualStateNoTransition();
     }
-}
-
-winrt::event_token NavigationViewItem::AddExpandedChanged(winrt::TypedEventHandler<winrt::NavigationViewItem, winrt::DependencyPropertyChangedEventArgs> const& value)
-{
-    winrt::event_token token = m_expandedChangedEventSource.add(value);
-    return token;
-}
-
-void NavigationViewItem::RemoveExpandedChanged(winrt::event_token token)
-{
-    m_expandedChangedEventSource.remove(token);
 }
 
 void NavigationViewItem::SetParentItem(winrt::NavigationViewItem const& item)
