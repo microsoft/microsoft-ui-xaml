@@ -367,7 +367,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             // Post RS4 configuration changes will not be raised.
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Comment("Skipping since version is less than RS5 since effective viewport is not available below RS5");
+                Log.Comment("Skipping since version is less than RS5 and effective viewport is not available below RS5");
                 return;
             }
 

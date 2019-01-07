@@ -58,7 +58,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping since version is less than RS5 since effective viewport is not available below RS5");
+                Log.Warning("Skipping since version is less than RS5 and effective viewport is not available below RS5");
                 return;
             }
 
@@ -95,7 +95,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Content = scrollViewer;
             });
 
-            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not recieve measure on layout");
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not receive measure on layout");
 
             RunOnUIThread.Execute(() =>
             {
@@ -111,8 +111,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
 
             IdleSynchronizer.Wait();
-            Verify.IsTrue(viewChanged.WaitOne(), "Did not recieve view changed event");
-            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not recieve measure on layout");
+            Verify.IsTrue(viewChanged.WaitOne(), "Did not receive view changed event");
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not receive measure on layout");
             viewChanged.Reset();
             layoutMeasured.Reset();
 
@@ -127,8 +127,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
 
             IdleSynchronizer.Wait();
-            Verify.IsTrue(viewChanged.WaitOne(), "Did not recieve view changed event");
-            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not recieve measure on layout");
+            Verify.IsTrue(viewChanged.WaitOne(), "Did not receive view changed event");
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not receive measure on layout");
             viewChanged.Reset();
             layoutMeasured.Reset();
 
@@ -141,8 +141,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
 
             IdleSynchronizer.Wait();
-            Verify.IsTrue(viewChanged.WaitOne(), "Did not recieve view changed event");
-            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not recieve measure on layout");
+            Verify.IsTrue(viewChanged.WaitOne(), "Did not receive view changed event");
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not receive measure on layout");
             viewChanged.Reset();
             layoutMeasured.Reset();
 
@@ -158,7 +158,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping since version is less than RS5 since effective viewport is not available below RS5");
+                Log.Warning("Skipping since version is less than RS5 and effective viewport is not available below RS5");
                 return;
             }
 
@@ -230,7 +230,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping since version is less than RS5 since effective viewport is not available below RS5");
+                Log.Warning("Skipping since version is less than RS5 and effective viewport is not available below RS5");
                 return;
             }
 
@@ -320,7 +320,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping since version is less than RS5 since effective viewport is not available below RS5");
+                Log.Warning("Skipping since version is less than RS5 and effective viewport is not available below RS5");
                 return;
             }
 
@@ -418,7 +418,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping since version is less than RS5 since effective viewport is not available below RS5");
+                Log.Warning("Skipping since version is less than RS5 and effective viewport is not available below RS5");
                 return;
             }
 
