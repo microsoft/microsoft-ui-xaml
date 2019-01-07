@@ -788,67 +788,67 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
             {
-                Scroller scroller = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-                AutoResetEvent scrollerViewChangedEvent = new AutoResetEvent(false);
-
-                RunOnUIThread.Execute(() =>
+                using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Scroller"))
                 {
-                    scroller = new Scroller();
+                    Scroller scroller = null;
+                    AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+                    AutoResetEvent scrollerViewChangedEvent = new AutoResetEvent(false);
 
-                    SetupRepeaterAnchoringUI(scroller, scrollerLoadedEvent);
-
-                    scroller.HorizontalAnchorRatio = double.NaN;
-                    scroller.VerticalAnchorRatio = 0.5;
-                });
-
-                WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
-
-                ChangeZoomFactor(scroller, 2.0f, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation);
-                ChangeOffsets(scroller, 0.0, 250.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
-
-                ItemsRepeater repeater = null;
-                TestDataSource dataSource = null;
-
-                RunOnUIThread.Execute(() =>
-                {
-                    repeater = (scroller.Child as Border).Child as ItemsRepeater;
-                    dataSource = repeater.ItemsSource as TestDataSource;
-
-                    scroller.ViewChanged += delegate (Scroller sender, object args)
+                    RunOnUIThread.Execute(() =>
                     {
-                        Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                            sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
-                        scrollerViewChangedEvent.Set();
-                    };
+                        scroller = new Scroller();
 
-                    Log.Comment("Inserting items at the beginning");
-                    dataSource.Insert(0 /*index*/, 2 /*count*/);
-                });
+                        SetupRepeaterAnchoringUI(scroller, scrollerLoadedEvent);
 
-                WaitForEvent("Waiting for Scroller.ViewChanged event", scrollerViewChangedEvent);
+                        scroller.HorizontalAnchorRatio = double.NaN;
+                        scroller.VerticalAnchorRatio = 0.5;
+                    });
 
-                RunOnUIThread.Execute(() =>
-                {
-                    Log.Comment("Scroller offset change expected");
-                    Verify.AreEqual(scroller.VerticalOffset, 520.0);
-                });
+                    WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
-                RunOnUIThread.Execute(() =>
-                {
-                    scrollerViewChangedEvent.Reset();
+                    ChangeZoomFactor(scroller, 2.0f, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation);
+                    ChangeOffsets(scroller, 0.0, 250.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
 
-                    Log.Comment("Removing items from the beginning");
-                    dataSource.Remove(0 /*index*/, 2 /*count*/);
-                });
+                    ItemsRepeater repeater = null;
+                    TestDataSource dataSource = null;
 
-                WaitForEvent("Waiting for Scroller.ViewChanged event", scrollerViewChangedEvent);
+                    RunOnUIThread.Execute(() =>
+                    {
+                        repeater = (scroller.Child as Border).Child as ItemsRepeater;
+                        dataSource = repeater.ItemsSource as TestDataSource;
 
-                RunOnUIThread.Execute(() =>
-                {
-                    Log.Comment("Scroller offset change expected");
-                    Verify.AreEqual(scroller.VerticalOffset, 250.0);
-                });
+                        scroller.ViewChanged += delegate (Scroller sender, object args) {
+                            scrollerViewChangedEvent.Set();
+                        };
+
+                        Log.Comment("Inserting items at the beginning");
+                        dataSource.Insert(0 /*index*/, 2 /*count*/);
+                    });
+
+                    WaitForEvent("Waiting for Scroller.ViewChanged event", scrollerViewChangedEvent);
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment("Scroller offset change expected");
+                        Verify.AreEqual(scroller.VerticalOffset, 520.0);
+                    });
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        scrollerViewChangedEvent.Reset();
+
+                        Log.Comment("Removing items from the beginning");
+                        dataSource.Remove(0 /*index*/, 2 /*count*/);
+                    });
+
+                    WaitForEvent("Waiting for Scroller.ViewChanged event", scrollerViewChangedEvent);
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment("Scroller offset change expected");
+                        Verify.AreEqual(scroller.VerticalOffset, 250.0);
+                    });
+                }
             }
         }
 

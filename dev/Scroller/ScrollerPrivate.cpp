@@ -105,6 +105,8 @@ winrt::UIElement Scroller::AnchorElement()
 
 void Scroller::RegisterAnchorCandidate(winrt::UIElement const& element)
 {
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
+
     if (!element)
     {
         throw winrt::hresult_error(E_INVALIDARG);
