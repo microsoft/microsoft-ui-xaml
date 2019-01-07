@@ -7,8 +7,8 @@
   </PropertyGroup>
   
   <PropertyGroup Label="Version">
-    <VersionMajor>3</VersionMajor>
-    <VersionMinor>0</VersionMinor>
+    <VersionMajor>2</VersionMajor>
+    <VersionMinor>1</VersionMinor>
     <XesUseOneStoreVersioning>true</XesUseOneStoreVersioning>
     <XesBaseYearForStoreVersion>2016</XesBaseYearForStoreVersion>
     <VersionInfoProductName>Microsoft.UI.Xaml</VersionInfoProductName>

@@ -1,6 +1,6 @@
 # Windows UI Library
 
-The Windows UI Library (WinUI) is a set of open source Microsoft UI controls and features for the Windows [UWP platform](https://docs.microsoft.com/windows/uwp/index).
+The Windows UI Library (WinUI) provides official native Microsoft UI controls and features for Windows [UWP apps](https://docs.microsoft.com/windows/uwp/index).
 
 WinUI is the easiest way to build great [Fluent Design](https://docs.microsoft.com/windows/uwp/design/fluent-design-system/) experiences for Windows.
 
@@ -11,14 +11,12 @@ You can download and use WinUI packages in your app using the NuGet package mana
 
 ### Packages
 
-| NuGet Package Name | Description |
-| --- | --- |
-| [Microsoft.UI.Xaml](https://www.nuget.org/packages/Microsoft.UI.Xaml) | Controls and features for building apps for Windows 10 |
-| [Microsoft.UI.Xaml.Core.Direct](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct) | Low-level APIs for creating middleware components. Not intended or required for general application use |
+| NuGet Package | Build Status | Latest Versions |
+| --- | --- | --- |
+| [Microsoft.UI.Xaml](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> Controls and Fluent Design for UWP apps | [![Build Status](https://dev.azure.com/ms/microsoft-ui-xaml/_apis/build/status/WinUI-Public-MUX-CI?branchName=master)](https://dev.azure.com/ms/microsoft-ui-xaml/_build/latest?definitionId=20?branchName=master) | [![latest stable version](https://img.shields.io/nuget/v/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml/absoluteLatest) |
+| [Microsoft.UI.Xaml.Core.Direct](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct) <br /> Low-level APIs for middleware components | | [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.Core.Direct.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct/absoluteLatest) |
 
 You can also build a WinUI package yourself from source. See [Contributing to the Windows UI Library](CONTRIBUTING.md) for more information on building and contributing to WinUI.
-
-### Build Status
 
 ## Documentation
 
@@ -41,7 +39,7 @@ The WinUI Library provides some useful benefits when building apps for Windows 1
 WinUI helps keep your app up to date with the latest versions of key controls and features of [UWP XAML](https://docs.microsoft.com/windows/uwp/xaml-platform/xaml-overview) and the [Fluent Design System](https://www.microsoft.com/design/fluent)
 
 2. **Provides backward compatibility**  
-WinUI is backward-compatible with a wide range of Windows 10 versions: you can start building and shipping apps with new XAML features immediately as soon as they're released, even if your your users aren't on the latest version of Windows 10
+WinUI is backward-compatible with a wide range of Windows 10 versions: you can start building and shipping apps with new XAML features immediately as soon as they're released, even if your users aren't on the latest version of Windows 10
 
 3. **Makes it simpler to build version adaptive apps**  
 You don't need version checks or conditional XAML markup to use WinUI controls or features: WinUI automatically adapts to the user's OS version
@@ -93,7 +91,7 @@ The **Microsoft.UI.Xaml.Core.Direct** package includes:
 
 ## Roadmap
 
-For info on schedules and plans please see the high level plans see the [Windows UI Library Roadmap](docs/roadmap.md).
+For info on the WinUI release schedule and high level plans please see the [Windows UI Library Roadmap](docs/roadmap.md).
 
 ## Data/Telemetry
 

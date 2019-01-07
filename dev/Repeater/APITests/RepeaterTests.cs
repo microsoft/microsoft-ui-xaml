@@ -8,6 +8,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Markup;
 using Common;
+using Windows.UI.Xaml.Media;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -82,6 +83,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void ValidateRepeaterDefaults()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater() 
+                {
+                    ItemsSource = Enumerable.Range(0, 10).Select(i => string.Format("Item #{0}", i)),
+                };
+
+                Content = new ScrollAnchorProvider() {
+                    Width = 400,
+                    Height = 800,
+                    Content = new ScrollViewer {
+                        Content = repeater
+                    }
+                };
+
+                Content.UpdateLayout();
+
+                for (int i = 0; i < 10; i++)
+                {
+                    var element = repeater.TryGetElement(i);
+                    Verify.IsNotNull(element);
+                    Verify.AreEqual(string.Format("Item #{0}", i), ((TextBlock)element).Text);
+                    Verify.AreEqual(i, repeater.GetElementIndex(element));
+                }
+
+                Verify.IsNull(repeater.TryGetElement(20));
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Bug", "12042052")]
         public void CanSetItemsSource()
         {
@@ -116,6 +149,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater.SetValue(ItemsRepeater.ItemsSourceProperty, dataSource);
                 Verify.AreSame(dataSource, repeater.GetValue(ItemsRepeater.ItemsSourceProperty) as ItemsSourceView);
                 Verify.AreSame(dataSource, repeater.ItemsSourceView);
+            });
+        }
+
+        [TestMethod]
+        public void ValidateGetSetBackground()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                ItemsRepeater repeater = new ItemsRepeater();
+                var redBrush = new SolidColorBrush(Colors.Red);
+                repeater.SetValue(ItemsRepeater.BackgroundProperty, redBrush);
+                Verify.AreSame(redBrush, repeater.GetValue(ItemsRepeater.BackgroundProperty) as Brush);
+                Verify.AreSame(redBrush, repeater.Background);
+
+                var blueBrush = new SolidColorBrush(Colors.Blue);
+                repeater.Background = blueBrush;
+                Verify.AreSame(blueBrush, repeater.Background);
             });
         }
     }

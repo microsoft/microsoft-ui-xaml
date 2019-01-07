@@ -12,6 +12,9 @@ public:
     void ItemsJustification(winrt::UniformGridLayoutItemsJustification const& value);
     winrt::UniformGridLayoutItemsJustification ItemsJustification();
 
+    void ItemsStretch(winrt::UniformGridLayoutItemsStretch const& value);
+    winrt::UniformGridLayoutItemsStretch ItemsStretch();
+
     void MinColumnSpacing(double value);
     double MinColumnSpacing();
 
@@ -28,6 +31,7 @@ public:
     winrt::Orientation Orientation();
 
     static winrt::DependencyProperty ItemsJustificationProperty() { return s_ItemsJustificationProperty; }
+    static winrt::DependencyProperty ItemsStretchProperty() { return s_ItemsStretchProperty; }
     static winrt::DependencyProperty MinColumnSpacingProperty() { return s_MinColumnSpacingProperty; }
     static winrt::DependencyProperty MinItemHeightProperty() { return s_MinItemHeightProperty; }
     static winrt::DependencyProperty MinItemWidthProperty() { return s_MinItemWidthProperty; }
@@ -35,6 +39,7 @@ public:
     static winrt::DependencyProperty OrientationProperty() { return s_OrientationProperty; }
 
     static GlobalDependencyProperty s_ItemsJustificationProperty;
+    static GlobalDependencyProperty s_ItemsStretchProperty;
     static GlobalDependencyProperty s_MinColumnSpacingProperty;
     static GlobalDependencyProperty s_MinItemHeightProperty;
     static GlobalDependencyProperty s_MinItemWidthProperty;

@@ -75,8 +75,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(2, realizationRects.Count);
                 Verify.AreEqual(new Rect(0, 0, 0, 0), realizationRects[0]);
                 Verify.AreEqual(0, realizationRects[1].X);
-                // 32 pixel title bar
-                Verify.AreEqual(-32, realizationRects[1].Y);
+                // Account for title bar
+                Verify.AreEqual(-33, realizationRects[1].Y);
                 // Width/Height depends on the window size, so just
                 // validating something reasonable here to avoid flakiness.
                 Verify.IsLessThan(500.0, realizationRects[1].Width);
@@ -89,6 +89,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         public void ValidateBasicScrollViewerScenario()
         {
             var realizationRects = new List<Rect>();
+            var viewChangeCompletedEvent = new AutoResetEvent(false);
             ScrollViewer scrollViewer = null;
 
             RunOnUIThread.Execute(() =>
@@ -109,6 +110,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
                 };
 
+                scrollViewer.ViewChanged += (Object sender, ScrollViewerViewChangedEventArgs args) =>
+                {
+                    if (!args.IsIntermediate)
+                    {
+                        viewChangeCompletedEvent.Set();
+                    }
+                };
+
                 Content = scrollViewer;
                 Content.UpdateLayout();
 
@@ -122,27 +131,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 scrollViewer.ChangeView(null, 100.0, 1.0f, disableAnimation: true);
             });
             IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
 
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(new Rect(0, 100, 200, 300), realizationRects.Last());
                 realizationRects.Clear();
+                viewChangeCompletedEvent.Reset();
 
                 // Max viewport offset is (300, 400). Horizontal viewport offset
                 // is expected to get coerced from 400 to 300.
                 scrollViewer.ChangeView(400, 100.0, 1.0f, disableAnimation: true);
             });
             IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
 
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(new Rect(300, 100, 200, 300), realizationRects.Last());
                 realizationRects.Clear();
+                viewChangeCompletedEvent.Reset();
 
                 scrollViewer.ChangeView(null, null, 2.0f, disableAnimation: true);
             });
             IdleSynchronizer.Wait();
-            IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
 
             RunOnUIThread.Execute(() =>
             {
@@ -302,9 +315,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
-#if BUILD_WINDOWS
-        [TestProperty("Ignore", "True")] // TODO 19581880: Re-enable after investigating and fixing the test failures.
-#endif
         public void CanGrowCacheBufferWithScrollViewer()
         {
             ScrollViewer scroller = null;
@@ -328,14 +338,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     MeasureLayoutFunc = (availableSize, context) =>
                     {
                         var ctx = (VirtualizingLayoutContext)context;
-                        measureRealizationRects.Add(ctx.RealizationRect);
+                        Log.Comment("MeasureLayout - Rect:" +  ctx.RealizationRect);
+                        if(measureRealizationRects.Count == 0 || measureRealizationRects.Last() != ctx.RealizationRect)
+                        {
+                            measureRealizationRects.Add(ctx.RealizationRect);
+                        }
+
                         return new Size(1000, 2000);
                     },
 
                     ArrangeLayoutFunc = (finalSize, context) =>
                     {
                         var ctx = (VirtualizingLayoutContext)context;
-                        arrangeRealizationRects.Add(ctx.RealizationRect);
+                        Log.Comment("ArrangeLayout - Rect:" +  ctx.RealizationRect);
+                        if(arrangeRealizationRects.Count == 0 || arrangeRealizationRects.Last() != ctx.RealizationRect)
+                        {
+                            arrangeRealizationRects.Add(ctx.RealizationRect);
+                        }
 
                         if (ctx.RealizationRect.Height == scroller.Height * (repeater.VerticalCacheLength + 1))
                         {
@@ -369,7 +388,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Log.Comment("Validate that the realization window reached full size.");
                 Verify.AreEqual(expectedRealizationWindow, measureRealizationRects.Last());
-
                 Verify.AreEqual(expectedRealizationWindow, arrangeRealizationRects.Last());
 
                 Log.Comment("Validate that the realization window grew by 40 pixels each time during the process.");
@@ -389,9 +407,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
-#if BUILD_WINDOWS
-        [TestProperty("Ignore", "True")] // TODO 19581880: Re-enable after investigating and fixing the test failures.
-#endif
         public void CanBringIntoViewElements()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
@@ -429,7 +444,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                          <ScrollViewer x:Name='Scroller' Width='400' Height='600' Background='Gray'>
                            <controls:ItemsRepeater
                              x:Name='ItemsRepeater'
-                             ElementFactory='{StaticResource ElementFactory}'
+                             ItemTemplate='{StaticResource ElementFactory}'
                              Layout='{StaticResource VerticalStackLayout}'
                              HorizontalCacheLength='0'
                              VerticalCacheLength='0' />

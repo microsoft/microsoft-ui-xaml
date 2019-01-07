@@ -40,7 +40,11 @@ Copy-IntoNewDirectory FrameworkPackageContents\* $fullOutputPath\PackageContents
 
 Copy-IntoNewDirectory PriConfig\* $fullOutputPath
 
-if (!$WindowsSdkBinDir)
+if (!$WindowsSdkBinDir -and $env:WindowsSdkVerBinPath)
+{
+    $WindowsSdkBinDir = "${env:WindowsSdkVerBinPath}\x86"
+}
+else
 {
     $WindowsSdkBinDir = "${env:ProgramFiles(x86)}\Windows Kits\10\bin\x86"
 }
@@ -252,7 +256,7 @@ Write-Host $makeappx
 cmd /c $makeappx
 if ($LastExitCode -ne 0) { Exit 1 }
 
-if ($env:TFS_ToolsDirectory -and ($env:BUILD_DEFINITIONNAME -match "_release"))
+if ($env:TFS_ToolsDirectory -and ($env:BUILD_DEFINITIONNAME -match "_release") -and $env:UseSimpleSign)
 {
     # From MakeAppxBundle in the XES tools
     $signToolPath = $env:TFS_ToolsDirectory + "\bin\SimpleSign.exe"

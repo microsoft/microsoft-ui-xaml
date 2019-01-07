@@ -179,6 +179,11 @@
                 Color="Transparent"
                 FallbackColor="Transparent"/>
             <local:RevealBorderBrush
+                x:Key="SystemControlForegroundRevealTransparentBorderBrush"
+                TargetTheme="Dark"
+                Color="Transparent"
+                FallbackColor="Transparent"/>
+            <local:RevealBorderBrush
                 x:Key="SystemControlBackgroundTransparentRevealBorderBrush"
                 TargetTheme="Dark"
                 Color="Transparent"
@@ -518,6 +523,11 @@
                 Color="Transparent"
                 FallbackColor="Transparent"/>
             <local:RevealBorderBrush
+                x:Key="SystemControlForegroundRevealTransparentBorderBrush"
+                TargetTheme="Light"
+                Color="Transparent"
+                FallbackColor="Transparent"/>
+            <local:RevealBorderBrush
                 x:Key="SystemControlBackgroundTransparentRevealBorderBrush"
                 TargetTheme="Light"
                 Color="Transparent"
@@ -752,6 +762,7 @@
             <SolidColorBrush x:Key="SystemControlBackgroundListLowRevealBorderBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="SystemControlBackgroundListMediumRevealBorderBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="SystemControlTransparentRevealBorderBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="SystemControlForegroundRevealTransparentBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="SystemControlBackgroundTransparentRevealBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightTransparentRevealBorderBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightAltTransparentRevealBorderBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />

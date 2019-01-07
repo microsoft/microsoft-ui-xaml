@@ -808,7 +808,9 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         viewport.Width          /*viewportWidth*/,
         viewport.Height         /*viewportHeight*/);
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
+#ifdef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
+    m_isAnchorElementDirty = true;
+#else
     ClearAnchorCandidates();
     RaisePostArrange();
 #endif

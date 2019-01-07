@@ -16,7 +16,7 @@
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="-3" />
-        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="IsTabStop" Value="True"/>
         <Setter Property="Padding" Value="{ThemeResource ButtonPadding}"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -271,7 +271,9 @@
                             CommandParameter="{TemplateBinding CommandParameter}"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
-                            Padding="{TemplateBinding Padding}"/>
+                            Padding="{TemplateBinding Padding}"
+                            IsTabStop="False"
+                            AutomationProperties.AccessibilityView="Raw"/>
 
                         <Button x:Name="SecondaryButton"
                             Grid.Column="1"
@@ -283,7 +285,9 @@
                             VerticalContentAlignment="Stretch"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
-                            Padding="0,0,8,0">
+                            Padding="0,0,8,0"
+                            IsTabStop="False"
+                            AutomationProperties.AccessibilityView="Raw">
                             <Button.Content>
                                 <TextBlock
                                     x:Name="ChevronTextBlock"
@@ -291,7 +295,8 @@
                                     FontSize="12"
                                     Text="&#xE70D;"
                                     VerticalAlignment="Center"
-                                    HorizontalAlignment="Right"/>
+                                    HorizontalAlignment="Right"
+                                    AutomationProperties.AccessibilityView="Raw"/>
                             </Button.Content>
                         </Button>
                     </Grid>

@@ -115,18 +115,18 @@ REM Need an explicit full path to MSBuild.exe or it will fall back to 14.0 for s
 set MSBUILDPATH=%VSINSTALLDIR%\MSBuild\15.0\Bin\MSBuild.exe
 
 if "%PROJECTPATH%" NEQ "" (
-    set MSBuildCommand="%MSBUILDPATH%" %PROJECTPATH% /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /p:VisualStudioVersion="15.0" /flp:Verbosity=Diagnostic /fl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
+    set MSBuildCommand="%MSBUILDPATH%" %PROJECTPATH% /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /p:VisualStudioVersion="15.0" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
     echo !MSBuildCommand!
     !MSBuildCommand!
 ) else (
     if "%BUILDALL%" == "" (
         set XES_OUTDIR=%BUILD_BINARIESDIRECTORY%\%BUILDCONFIGURATION%\%BUILDPLATFORM%\
 
-        "%MSBUILDPATH%" .\MUXControls.sln /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /p:VisualStudioVersion="15.0" /flp:Verbosity=Diagnostic /fl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
+        "%MSBUILDPATH%" .\MUXControls.sln /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /p:VisualStudioVersion="15.0" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
 
         if "%ERRORLEVEL%" == "0" call .\tools\MakeAppxHelper.cmd %BUILDPLATFORM% %BUILDCONFIGURATION%
     ) else (
-        "%MSBUILDPATH%" .\build\BuildAll.proj /maxcpucount:12 /p:VisualStudioVersion="15.0" /flp:Verbosity=Diagnostic /fl /verbosity:Minimal
+        "%MSBUILDPATH%" .\build\BuildAll.proj /maxcpucount:12 /p:VisualStudioVersion="15.0" /flp:Verbosity=Diagnostic /fl /bl /verbosity:Minimal
 
         if "%ERRORLEVEL%" == "0" (
             call .\tools\MakeAppxHelper.cmd x86 release
@@ -169,3 +169,4 @@ echo        /project ^<path^> - builds a specific project
 echo.
 
 :end
+

@@ -1,0 +1,115 @@
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+jobs:
+- job: Build
+  pool:
+    vmImage: VS2017-Win2016
+  timeoutInMinutes: 120
+  variables:
+  - group: DotNet-HelixApi-Access
+  - name: appxPackageDir
+    value: $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+  - name: buildOutputDir
+    value: $(Build.SourcesDirectory)\BuildOutput
+  - name: buildPlatform 
+    value: x86
+  - name: buildConfiguration 
+    value: Debug
+
+  steps:
+  - task: CmdLine@1
+    displayName: 'Display build machine environment variables'
+    inputs:
+      filename: 'set'
+
+  - task: powershell@2
+    displayName: 'Install RS5 SDK (17763)'
+    inputs:
+      targetType: filePath
+      filePath: build\Install-WindowsSdkISO.ps1
+      arguments: 17763
+
+  - task: NuGetToolInstaller@0
+    displayName: 'Use NuGet 4.9.1'
+    inputs:
+      versionSpec: 4.9.1
+        
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'NuGet restore MUXControls.sln'
+    inputs:
+      restoreSolution: MUXControls.sln
+      feedsToUse: config
+      nugetConfigPath: nuget.config
+
+  - task: VSBuild@1
+    displayName: 'Build solution MUXControls.sln'
+    inputs:
+      solution: MUXControls.sln
+      vsVersion: 15.0
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
+      msbuildArgs: '/p:AppxPackageDir="$(appxPackageDir)" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false'
+
+  - task: powershell@2
+    displayName: 'Copy files to staging dir'
+    inputs:
+      targetType: filePath
+      filePath: build\CopyFilesToStagingDir.ps1
+      arguments: -BuildOutputDir '$(buildOutputDir)' -PublishDir '$(Build.ArtifactStagingDirectory)' -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artifact: drop'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: 'drop'
+
+
+
+- job: RunTests
+  dependsOn:
+    - Build
+  pool:
+    vmImage: 'VS2017-Win2016'
+  timeoutInMinutes: 120
+  variables:
+  - group: DotNet-HelixApi-Access
+  - name: artifactsDir
+    value: $(Build.SourcesDirectory)\Artifacts
+  - name: buildPlatform 
+    value: x86
+  - name: buildConfiguration 
+    value: Debug
+  steps:
+
+  - task: NuGetToolInstaller@0
+    displayName: 'Use NuGet 4.9.1'
+    inputs:
+      versionSpec: 4.9.1
+
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'NuGet restore build/Helix/packages.config'
+    inputs:
+      restoreSolution: build/Helix/packages.config
+      feedsToUse: config
+      nugetConfigPath: nuget.config
+      restoreDirectory: packages
+
+  - task: DownloadBuildArtifacts@0 
+    inputs: 
+      artifactName: drop 
+      downloadPath: '$(artifactsDir)'
+
+  - task: powershell@2
+    displayName: 'PrepareHelixPayload.ps1'
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\PrepareHelixPayload.ps1
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run tests in Helix'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      command: custom
+      projects: build\Helix\RunTestsInHelix.proj
+      custom: msbuild
+      arguments: '/p:HelixBuild=$(Build.BuildId) /p:Creator=WinUI /p:IsExternal=true'

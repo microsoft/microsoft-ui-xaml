@@ -60,6 +60,7 @@
 #ifdef BUILD_WINDOWS
 #include <staging.h>
 #include <featurestaging-xaml.h>
+#include <featurestaging-comp.h>
 
 #undef CATCH_RETURN // See our implementation in ErrorHandling.h
 

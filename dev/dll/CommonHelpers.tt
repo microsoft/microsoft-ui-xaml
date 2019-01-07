@@ -768,66 +768,6 @@
         return MakeWindowsNamespace(fullName);
     }
 
-    Guid GetDefaultInterfaceUUID(Type type)
-    {
-        uint earliestVersion = uint.MaxValue;
-        Type earliestVersionInterface = null;
-        
-        foreach (var implementedInterface in type.GetInterfaces())
-        {
-            Type exclusiveTo = GetCustomAttributeFirstTypeParam(implementedInterface, "ExclusiveToAttribute", hasVersion: false);
-            if (exclusiveTo != null && exclusiveTo.FullName == type.FullName)
-            {
-                var versionAttribute = GetCustomAttribute(implementedInterface, "ContractVersionAttribute");
-                var versionArg = versionAttribute.ConstructorArguments.Where((arg) => arg.ArgumentType.Name == "UInt32").FirstOrDefault();
-                
-                if (versionArg != null &&
-                    versionArg.Value != null)
-                {
-                    uint version = (uint)versionArg.Value;
-                    
-                    if (version < earliestVersion)
-                    {
-                        earliestVersion = version;
-                        earliestVersionInterface = implementedInterface;
-                    }
-                }
-            }
-        }
-
-        if (earliestVersionInterface != null)
-        {
-            return earliestVersionInterface.GUID;
-        }
-        else
-        {
-            // XCPTypesAutoGen really wants everything to have a UUID. 
-            return type.GUID;
-        }
-    }
-
-    Guid GetStaticsInterfaceUUID(Type type)
-    {
-        Type staticsType = GetCustomAttributeFirstTypeParam(type, "StaticAttribute", hasVersion: true);
-        if (staticsType != null) return staticsType.GUID;
-        
-        // XCPTypesAutoGen really wants everything to have a UUID. Fake up a stable one.
-        var guid = type.GUID.ToByteArray();
-        guid[0] += 1;
-        return new Guid(guid);
-    }
-
-    Guid GetFactoryInterfaceUUID(Type type)
-    {
-        Type factoryType = GetFactoryType(type);
-        if (factoryType != null) return factoryType.GUID;
-        
-        // XCPTypesAutoGen really wants everything to have a UUID. Fake up a stable one.
-        var guid = type.GUID.ToByteArray();
-        guid[0] += 2;
-        return new Guid(guid);
-    }
-
     Type GetFactoryType(Type type)
     {
         Type factoryType = GetCustomAttributeFirstTypeParam(type, "ComposableAttribute", hasVersion: true);

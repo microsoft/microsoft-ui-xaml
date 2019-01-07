@@ -297,10 +297,6 @@ void SplitButton::OnSplitButtonKeyDown(const winrt::IInspectable& sender, const 
         m_isKeyDown = true;
         UpdateVisualStates();
     }
-    else if (key == winrt::VirtualKey::Menu)
-    {
-        m_isAltKeyDown = true;
-    }
 }
 
 void SplitButton::OnSplitButtonKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
@@ -318,18 +314,23 @@ void SplitButton::OnSplitButtonKeyUp(const winrt::IInspectable& sender, const wi
             args.Handled(true);
         }
     }
-    else if (key == winrt::VirtualKey::Menu)
-    {
-        m_isAltKeyDown = false;
-    }
     else if (key == winrt::VirtualKey::Down)
     {
-        if (IsEnabled() && m_isAltKeyDown)
+        winrt::CoreVirtualKeyStates menuState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
+        bool menuKeyDown = (menuState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+
+        if (IsEnabled() && menuKeyDown)
         {
             // Open the menu on alt-down
             OpenFlyout();
             args.Handled(true);
         }
+    }
+    else if (key == winrt::VirtualKey::F4 && IsEnabled())
+    {
+        // Open the menu on F4
+        OpenFlyout();
+        args.Handled(true);
     }
 }
 

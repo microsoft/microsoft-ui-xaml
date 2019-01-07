@@ -34,26 +34,14 @@
     <GenerateAppxPackageOnBuild Condition="'$(IsTDPConfiguration)' == 'true'">true</GenerateAppxPackageOnBuild>
     <!-- Override appx version for PackageES build -->
     <XefAppxManifestVersion>1.1.0.0</XefAppxManifestVersion>
-    <LangVersion>5</LangVersion>
+    <LangVersion>$(CSLangVersion)</LangVersion>
     <!-- Supress xaml warnings of type foo is defined under contract 'Windows.Foundation.UniversalApiContract' version '4.0.0.0', but the contract version for the targeted min version is '3.0.0.0'! -->
     <SuppressXamlWarnings>0151</SuppressXamlWarnings>
   </PropertyGroup>
   <PropertyGroup Condition="$(BuildingWithBuildExe) == 'true'">
     <TargetDestination>NTTEST\WINDOWSTEST\dxaml\controls\test\MUXControlsTestApp</TargetDestination>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
-    <NoWarn>;2008</NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <!-- The PropertyGroup below seems to be required even though we have 
-       IsTDPConfiguration flag and modified the Configuration property in mux.controls.props file -->
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_test|x86'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86' Or '$(Configuration)|$(Platform)' == 'Debug_test|x86'">
     <DebugSymbols>true</DebugSymbols>
     <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <NoWarn>;2008</NoWarn>
@@ -74,7 +62,7 @@
     <Prefer32Bit>true</Prefer32Bit>
     <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM' Or '$(Configuration)|$(Platform)' == 'Debug_test|ARM'">
     <DebugSymbols>true</DebugSymbols>
     <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <NoWarn>;2008</NoWarn>
@@ -95,7 +83,7 @@
     <Prefer32Bit>true</Prefer32Bit>
     <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64' Or '$(Configuration)|$(Platform)' == 'Debug_test|x64'">
     <DebugSymbols>true</DebugSymbols>
     <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <NoWarn>;2008</NoWarn>
@@ -116,7 +104,7 @@
     <Prefer32Bit>true</Prefer32Bit>
     <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|arm64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|arm64' Or '$(Configuration)|$(Platform)' == 'Debug_test|arm64'">
     <DebugSymbols>true</DebugSymbols>
     <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <NoWarn>;2008</NoWarn>
@@ -164,12 +152,6 @@
       <Name>Microsoft.UI.Xaml</Name>
     </ProjectReference>
   </ItemGroup>
-  <PropertyGroup Condition="'$(IsTDPConfiguration)' == 'true'">
-    <AppxPackageName Condition="'$(AppxPackageName)'==''">$(TargetName)</AppxPackageName>
-    <AppxPackageExtension Condition="'$(AppxPackageExtension)'==''">.appx</AppxPackageExtension>
-    <AppxPackageTestDir Condition="'$(AppxPackageTestDir)'==''">$(AppxPackageDir)$(AppxPackageName)_Test\</AppxPackageTestDir>
-    <AppxPackageOutput Condition="'$(AppxPackageOutput)'==''">$(AppxPackageTestDir)$(AppxPackageName)$(AppxPackageExtension)</AppxPackageOutput>
-  </PropertyGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />
   </ItemGroup>
@@ -462,6 +444,13 @@
       <FileWrites Include="$(OutDir)ThemeResourcesTests.g.cs" />
     </ItemGroup>
   </Target>
+  <PropertyGroup Condition="'$(IsTDPConfiguration)' == 'true'">
+    <AppxPackageName Condition="'$(AppxPackageName)'==''">$(TargetName)</AppxPackageName>
+    <AppxPackageExtension Condition="'$(AppxPackageExtension)'==''">.appx</AppxPackageExtension>
+    <AppxPackageTestDir Condition="'$(AppxPackageTestDir)'==''">$(AppxPackageDir)$(AppxPackageName)_Test\</AppxPackageTestDir>
+    <AppxPackageOutput Condition="'$(AppxPackageOutput)'==''">$(AppxPackageTestDir)$(AppxPackageName)$(AppxPackageExtension)</AppxPackageOutput>
+    <AppxIntermediateExtension Condition="'$(AppxIntermediateExtension)'==''">.intermediate</AppxIntermediateExtension>
+  </PropertyGroup>
   <!-- For the purposes of code coverage, we need to know where the intermediates directory is,
        since we need to re-pack MUXControlsTestApp.appx for code coverage.
        We can't get it from any environment variable, so let's write it to a text file as a workaround. -->

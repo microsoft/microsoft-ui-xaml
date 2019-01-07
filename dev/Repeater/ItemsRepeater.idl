@@ -1,4 +1,4 @@
-runtimeclass ItemsSourceView;
+﻿runtimeclass ItemsSourceView;
 runtimeclass ItemsRepeater;
 runtimeclass ElementFactory;
 runtimeclass LayoutContext;
@@ -54,8 +54,8 @@ enum FlowLayoutLineAlignment
     Center = 1,
     End = 2,
     SpaceAround = 3,
-    SpaceBetween = 4
-    // SpaceEvenly = 5 Pending support
+    SpaceBetween = 4,
+    SpaceEvenly = 5
 };
 
 [WUXC_VERSION_MUXONLY]
@@ -66,8 +66,17 @@ enum UniformGridLayoutItemsJustification
     Center = 1,
     End = 2,
     SpaceAround = 3,
-    SpaceBetween = 4
-    // SpaceEvenly = 5 Pending support
+    SpaceBetween = 4,
+    SpaceEvenly = 5
+};
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+enum UniformGridLayoutItemsStretch
+{
+    None = 0,
+    Fill = 1,
+    Uniform = 2
 };
 
 [WUXC_VERSION_PREVIEW]
@@ -121,6 +130,9 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     
     Double HorizontalCacheLength { get; set; };
     Double VerticalCacheLength { get; set; };
+
+    Windows.UI.Xaml.Media.Brush Background{ get; set; };
+
     Int32 GetElementIndex(Windows.UI.Xaml.UIElement element);
     Windows.UI.Xaml.UIElement TryGetElement(Int32 index);
     Windows.UI.Xaml.UIElement GetOrCreateElement(Int32 index);
@@ -134,6 +146,7 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     static Windows.UI.Xaml.DependencyProperty AnimatorProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalCacheLengthProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalCacheLengthProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty BackgroundProperty{ get; };
 }
 
 #ifndef BUILD_WINDOWS
@@ -372,6 +385,7 @@ unsealed runtimeclass UniformGridLayout : VirtualizingLayout
     Double MinRowSpacing { get; set; };
     Double MinColumnSpacing { get; set; };
     UniformGridLayoutItemsJustification ItemsJustification{ get; set; };
+    UniformGridLayoutItemsStretch ItemsStretch{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MinItemWidthProperty { get; };
@@ -379,6 +393,7 @@ unsealed runtimeclass UniformGridLayout : VirtualizingLayout
     static Windows.UI.Xaml.DependencyProperty MinRowSpacingProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MinColumnSpacingProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ItemsJustificationProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ItemsStretchProperty{ get; };
 }
 
 [WUXC_VERSION_PREVIEW]

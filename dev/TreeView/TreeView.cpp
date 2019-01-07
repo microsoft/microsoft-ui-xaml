@@ -246,8 +246,12 @@ void TreeView::OnItemsRemoved(int index, int count)
 
 void TreeView::SyncRootNodesWithItemsSource()
 {
-    bool isContentMode = m_itemsDataSource != nullptr;
-    winrt::get_self<TreeViewNode>(m_rootNode.get())->IsContentMode(isContentMode);
+    winrt::get_self<TreeViewNode>(m_rootNode.get())->IsContentMode(true);
+    if (auto listControl = ListControl())
+    {
+        auto viewModel = listControl->ListViewModel();
+        viewModel->IsContentMode(true);
+    }
 
     auto children = winrt::get_self<TreeViewNodeVector>(RootNodes());
     children->ClearCore();

@@ -60,6 +60,7 @@ static constexpr int c_backButtonPaneButtonMargin = 8;
 static constexpr int c_paneToggleButtonWidth = 48;
 static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior = 56;
 static constexpr int c_backButtonRowDefinition = 1;
+static constexpr float c_paneElevationTranslationZ = 32;
 
 // A tricky to help to stop layout cycle. As we know, we may have this:
 // 1 .. first time invalid measure, normal case because of virtualization
@@ -364,6 +365,24 @@ void NavigationView::OnApplyTemplate()
     }
 
     m_accessKeyInvokedRevoker = AccessKeyInvoked(winrt::auto_revoke, { this, &NavigationView::OnAccessKeyInvoked });
+
+    if (SharedHelpers::IsThemeShadowAvailable())
+    {
+#ifdef USE_INSIDER_SDK
+        if (auto splitView = m_rootSplitView.get())
+        {
+            if (auto contentRoot = splitView.Content())
+            {
+                if (auto paneRoot = splitView.Pane())
+                {
+                    winrt::ThemeShadow shadow;
+                    shadow.Receivers().Append(contentRoot);
+                    paneRoot.Shadow(shadow);
+                }
+            }
+        }
+#endif
+    }
 
     m_appliedTemplate = true;
 
@@ -2719,6 +2738,21 @@ void NavigationView::OnIsPaneOpenChanged()
     SetPaneToggleButtonAutomationName();
     UpdatePaneTabFocusNavigation();
     UpdateSettingsItemToolTip();
+
+    if (SharedHelpers::IsThemeShadowAvailable())
+    {
+#ifdef USE_INSIDER_SDK
+        if (auto splitView = m_rootSplitView.get())
+        {
+            if (auto paneRoot = splitView.Pane())
+            {
+                auto currentTranslation = paneRoot.Translation();
+                auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, IsPaneOpen() ? c_paneElevationTranslationZ : 0.0f };
+                paneRoot.Translation(translation);
+            }
+        }
+#endif
+    }
 }
 
 void NavigationView::UpdatePaneToggleButtonVisibility()

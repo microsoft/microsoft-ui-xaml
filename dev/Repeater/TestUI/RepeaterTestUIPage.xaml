@@ -16,6 +16,7 @@
         </Grid.Resources>
 
         <StackPanel>
+            <Button x:Name="defaultDemo" >Default Demo</Button>
             <Button x:Name="basicDemo" >Basic Demo</Button>
             <Button x:Name="itemTemplateDemo" >ItemTemplate Demo</Button>
             <Button x:Name="collectionChangeDemo" >Collection Changes Demo</Button>
@@ -40,8 +41,8 @@
                 <TextBlock>MinColumnSpacing</TextBlock>
                 <TextBox x:Name="lineSpacing" Text="10"></TextBox>
                 <TextBlock>LineAlignment</TextBlock>
-                <TextBlock>(Near/Middle/Far/SpaceEqually)</TextBlock>
-                <TextBox x:Name="lineAlingment" Text="Near"></TextBox>
+                <TextBlock>(Start/Center/End/SpaceEvenly/SpaceAround/SpaceBetween)</TextBlock>
+                <TextBox x:Name="lineAlingment" Text="Start"></TextBox>
                 <ToggleSwitch x:Name="orientation" OnContent="Horizontal" OffContent="Vertical">Scroll Orientation</ToggleSwitch>
             </StackPanel>
 
