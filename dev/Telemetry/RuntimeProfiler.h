@@ -33,6 +33,7 @@ namespace RuntimeProfiler
         ProfId_TextCommandBarFlyout,
         ProfId_RadioButtons,
         ProfId_RadioMenuFlyoutItem,
+        ProfId_Acrylic_TintLuminosityOpacity_Changed,
         ProfId_Size
     } ProfilerClassId;
 
