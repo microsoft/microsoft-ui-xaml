@@ -24,6 +24,7 @@
   <Import Project="..\..\dev\CommonStyles\InteractionTests\CommonStyles_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="..\..\dev\RadioButtons\InteractionTests\RadioButtons_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="..\..\dev\RadioMenuFlyoutItem\InteractionTests\RadioMenuFlyoutItem_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\TeachingTip\InteractionTests\TeachingTip_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <!-- These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
        We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
        to non-public types.  So for now we'll just exclude these from the OS repo. -->
