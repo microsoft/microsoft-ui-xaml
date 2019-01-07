@@ -376,12 +376,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     effectiveViewChangeCompletedEvent.Set();
                 };
 
-                Content = root;
-
-                root.Loaded += delegate
-                {
+                root.Loaded += delegate {
                     rootLoadedEvent.Set();
                 };
+
+                Content = root;
             });
             Verify.IsTrue(rootLoadedEvent.WaitOne(DefaultWaitTimeInMS));
             IdleSynchronizer.Wait();

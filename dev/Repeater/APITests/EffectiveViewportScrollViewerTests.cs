@@ -84,6 +84,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
                 };
 
+                scrollViewer.ViewChanged += (sender, args) =>
+                {
+                    if (!args.IsIntermediate)
+                    {
+                        Log.Comment("ViewChanged " + scrollViewer.HorizontalOffset + ":" + scrollViewer.VerticalOffset);
+                        viewChanged.Set();
+                    }
+                };
+
                 Content = scrollViewer;
             });
 
@@ -103,6 +112,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
 
             IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChanged.WaitOne(), "Did not receive view changed event");
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not receive measure on layout");
+            viewChanged.Reset();
+            layoutMeasured.Reset();
 
             RunOnUIThread.Execute(() =>
             {
@@ -116,6 +129,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
 
             IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChanged.WaitOne(), "Did not receive view changed event");
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not receive measure on layout");
+            viewChanged.Reset();
+            layoutMeasured.Reset();
 
             RunOnUIThread.Execute(() =>
             {
@@ -125,8 +142,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 scrollViewer.ChangeView(null, null, 2.0f, disableAnimation: true);
             });
+
             IdleSynchronizer.Wait();
-            IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChanged.WaitOne(), "Did not receive view changed event");
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not receive measure on layout");
+            viewChanged.Reset();
+            layoutMeasured.Reset();
 
             RunOnUIThread.Execute(() =>
             {

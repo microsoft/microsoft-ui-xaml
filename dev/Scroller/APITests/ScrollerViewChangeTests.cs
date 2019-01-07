@@ -254,7 +254,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         {
                             Log.Comment("Canceling view change");
                             operationCanceled = true;
-                            sender.ChangeZoomFactor(new ScrollerChangeZoomFactorOptions(0, ScrollerViewKind.RelativeToCurrentView, Vector2.Zero, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));                            
+                            sender.ChangeZoomFactor(new ScrollerChangeZoomFactorOptions(0, ScrollerViewKind.RelativeToCurrentView, Vector2.Zero, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
                         }
                     };
                 });
@@ -940,10 +940,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             // Jump to absolute offsets
             ChangeOffsets(
-                scroller, 
-                c_defaultUIScrollerChildWidth + 200.0 - c_defaultUIScrollerWidth, 
-                c_defaultVerticalOffset, 
-                ScrollerViewKind.Absolute, 
+                scroller,
+                c_defaultUIScrollerChildWidth + 200.0 - c_defaultUIScrollerWidth,
+                c_defaultVerticalOffset,
+                ScrollerViewKind.Absolute,
                 ScrollerViewChangeKind.DisableAnimation,
                 ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints);
         }
@@ -1476,7 +1476,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private void InterruptViewChange(
             ViewChangeInterruptionKind viewChangeInterruptionKind)
         {
-            bool changeOffsetsFirst = 
+            bool changeOffsetsFirst =
                 viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByOffsetsChange || viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByZoomFactorChange;
             bool changeOffsetsSecond =
                 viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByOffsetsChange || viewChangeInterruptionKind == ViewChangeInterruptionKind.ZoomFactorChangeByOffsetsChange;
@@ -1605,7 +1605,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private void WaitForEvent(string logComment, EventWaitHandle eventWaitHandle)
         {
             Log.Comment(logComment);
-            if(Debugger.IsAttached)
+            if (Debugger.IsAttached)
             {
                 eventWaitHandle.WaitOne();
             }
