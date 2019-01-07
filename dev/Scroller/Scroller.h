@@ -582,6 +582,7 @@ private:
 
 #pragma region IRepeaterScrollingSurface Helpers
 #ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
+    void ClearAnchorCandidates();
     void RaiseConfigurationChanged();
     void RaisePostArrange();
     void RaiseViewportChanged(const bool isFinal);
@@ -610,7 +611,6 @@ private:
         double viewportWidth,
         double viewportHeight,
         bool isForPreArrange);
-    void ClearAnchorCandidates();
     void ResetAnchorElement();
     void EnsureAnchorElementSelection();
 
