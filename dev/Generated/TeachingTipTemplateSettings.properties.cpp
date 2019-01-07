@@ -8,8 +8,6 @@
 
 CppWinRTActivatableClassWithDPFactory(TeachingTipTemplateSettings)
 
-GlobalDependencyProperty TeachingTipTemplateSettingsProperties::s_BeakMarginProperty{ nullptr };
-GlobalDependencyProperty TeachingTipTemplateSettingsProperties::s_TopBeakHighlightMarginProperty{ nullptr };
 GlobalDependencyProperty TeachingTipTemplateSettingsProperties::s_TopLeftHighlightMarginProperty{ nullptr };
 GlobalDependencyProperty TeachingTipTemplateSettingsProperties::s_TopRightHighlightMarginProperty{ nullptr };
 
@@ -20,28 +18,6 @@ TeachingTipTemplateSettingsProperties::TeachingTipTemplateSettingsProperties()
 
 void TeachingTipTemplateSettingsProperties::EnsureProperties()
 {
-    if (!s_BeakMarginProperty)
-    {
-        s_BeakMarginProperty =
-            InitializeDependencyProperty(
-                L"BeakMargin",
-                winrt::name_of<winrt::Thickness>(),
-                winrt::name_of<winrt::TeachingTipTemplateSettings>(),
-                false /* isAttached */,
-                ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_TopBeakHighlightMarginProperty)
-    {
-        s_TopBeakHighlightMarginProperty =
-            InitializeDependencyProperty(
-                L"TopBeakHighlightMargin",
-                winrt::name_of<winrt::Thickness>(),
-                winrt::name_of<winrt::TeachingTipTemplateSettings>(),
-                false /* isAttached */,
-                ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
-                nullptr);
-    }
     if (!s_TopLeftHighlightMarginProperty)
     {
         s_TopLeftHighlightMarginProperty =
@@ -68,30 +44,8 @@ void TeachingTipTemplateSettingsProperties::EnsureProperties()
 
 void TeachingTipTemplateSettingsProperties::ClearProperties()
 {
-    s_BeakMarginProperty = nullptr;
-    s_TopBeakHighlightMarginProperty = nullptr;
     s_TopLeftHighlightMarginProperty = nullptr;
     s_TopRightHighlightMarginProperty = nullptr;
-}
-
-void TeachingTipTemplateSettingsProperties::BeakMargin(winrt::Thickness const& value)
-{
-    static_cast<TeachingTipTemplateSettings*>(this)->SetValue(s_BeakMarginProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
-}
-
-winrt::Thickness TeachingTipTemplateSettingsProperties::BeakMargin()
-{
-    return ValueHelper<winrt::Thickness>::CastOrUnbox(static_cast<TeachingTipTemplateSettings*>(this)->GetValue(s_BeakMarginProperty));
-}
-
-void TeachingTipTemplateSettingsProperties::TopBeakHighlightMargin(winrt::Thickness const& value)
-{
-    static_cast<TeachingTipTemplateSettings*>(this)->SetValue(s_TopBeakHighlightMarginProperty, ValueHelper<winrt::Thickness>::BoxValueIfNecessary(value));
-}
-
-winrt::Thickness TeachingTipTemplateSettingsProperties::TopBeakHighlightMargin()
-{
-    return ValueHelper<winrt::Thickness>::CastOrUnbox(static_cast<TeachingTipTemplateSettings*>(this)->GetValue(s_TopBeakHighlightMarginProperty));
 }
 
 void TeachingTipTemplateSettingsProperties::TopLeftHighlightMargin(winrt::Thickness const& value)

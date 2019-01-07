@@ -66,13 +66,9 @@ unsealed runtimeclass TeachingTipTemplateSettings : Windows.UI.Xaml.DependencyOb
 {
     TeachingTipTemplateSettings();
 
-    Windows.UI.Xaml.Thickness BeakMargin;
-    Windows.UI.Xaml.Thickness TopBeakHighlightMargin;
     Windows.UI.Xaml.Thickness TopRightHighlightMargin;
     Windows.UI.Xaml.Thickness TopLeftHighlightMargin;
 
-    static Windows.UI.Xaml.DependencyProperty BeakMarginProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty TopBeakHighlightMarginProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TopRightHighlightMarginProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TopLeftHighlightMarginProperty{ get; };
 }

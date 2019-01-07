@@ -9,25 +9,15 @@ class TeachingTipTemplateSettingsProperties
 public:
     TeachingTipTemplateSettingsProperties();
 
-    void BeakMargin(winrt::Thickness const& value);
-    winrt::Thickness BeakMargin();
-
-    void TopBeakHighlightMargin(winrt::Thickness const& value);
-    winrt::Thickness TopBeakHighlightMargin();
-
     void TopLeftHighlightMargin(winrt::Thickness const& value);
     winrt::Thickness TopLeftHighlightMargin();
 
     void TopRightHighlightMargin(winrt::Thickness const& value);
     winrt::Thickness TopRightHighlightMargin();
 
-    static winrt::DependencyProperty BeakMarginProperty() { return s_BeakMarginProperty; }
-    static winrt::DependencyProperty TopBeakHighlightMarginProperty() { return s_TopBeakHighlightMarginProperty; }
     static winrt::DependencyProperty TopLeftHighlightMarginProperty() { return s_TopLeftHighlightMarginProperty; }
     static winrt::DependencyProperty TopRightHighlightMarginProperty() { return s_TopRightHighlightMarginProperty; }
 
-    static GlobalDependencyProperty s_BeakMarginProperty;
-    static GlobalDependencyProperty s_TopBeakHighlightMarginProperty;
     static GlobalDependencyProperty s_TopLeftHighlightMarginProperty;
     static GlobalDependencyProperty s_TopRightHighlightMarginProperty;
 

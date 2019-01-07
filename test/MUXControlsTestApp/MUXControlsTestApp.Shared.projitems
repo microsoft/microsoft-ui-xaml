@@ -218,7 +218,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\TypeConverters.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="$(MSBuildThisFileDirectory)Assets\AutoSave.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\Assets\AutoSave.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\file.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\folder.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\LargeWisteria.jpg" />
