@@ -75,8 +75,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(2, realizationRects.Count);
                 Verify.AreEqual(new Rect(0, 0, 0, 0), realizationRects[0]);
                 Verify.AreEqual(0, realizationRects[1].X);
-                // 32 pixel title bar
-                Verify.AreEqual(-32, realizationRects[1].Y);
+                // Account for title bar
+                Verify.AreEqual(-33, realizationRects[1].Y);
                 // Width/Height depends on the window size, so just
                 // validating something reasonable here to avoid flakiness.
                 Verify.IsLessThan(500.0, realizationRects[1].Width);
@@ -89,6 +89,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         public void ValidateBasicScrollViewerScenario()
         {
             var realizationRects = new List<Rect>();
+            var viewChangeCompletedEvent = new AutoResetEvent(false);
             ScrollViewer scrollViewer = null;
 
             RunOnUIThread.Execute(() =>
@@ -109,6 +110,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
                 };
 
+                scrollViewer.ViewChanged += (Object sender, ScrollViewerViewChangedEventArgs args) =>
+                {
+                    if (!args.IsIntermediate)
+                    {
+                        viewChangeCompletedEvent.Set();
+                    }
+                };
+
                 Content = scrollViewer;
                 Content.UpdateLayout();
 
@@ -122,27 +131,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 scrollViewer.ChangeView(null, 100.0, 1.0f, disableAnimation: true);
             });
             IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
 
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(new Rect(0, 100, 200, 300), realizationRects.Last());
                 realizationRects.Clear();
+                viewChangeCompletedEvent.Reset();
 
                 // Max viewport offset is (300, 400). Horizontal viewport offset
                 // is expected to get coerced from 400 to 300.
                 scrollViewer.ChangeView(400, 100.0, 1.0f, disableAnimation: true);
             });
             IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
 
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(new Rect(300, 100, 200, 300), realizationRects.Last());
                 realizationRects.Clear();
+                viewChangeCompletedEvent.Reset();
 
                 scrollViewer.ChangeView(null, null, 2.0f, disableAnimation: true);
             });
             IdleSynchronizer.Wait();
-            IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
 
             RunOnUIThread.Execute(() =>
             {

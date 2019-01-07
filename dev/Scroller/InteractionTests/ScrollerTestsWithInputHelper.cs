@@ -603,7 +603,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 PrepareForScrollerManipulationStart("scroller12");
 
                 KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
-                InputHelper.RotateWheel(scroller12UIObject, -mouseWheelDeltaForVelocityUnit);
+                // Starting with 19H1, the InteractionTracker changes the scale by a factor of 1.1 for each 60 mouse wheel delta.
+                // For earlier versions, a mouse wheel delta of 120 is required for the same 1.1 scale change.
+                InputHelper.RotateWheel(scroller12UIObject,
+                    PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5) ? (int) (-mouseWheelDeltaForVelocityUnit / 2) : -mouseWheelDeltaForVelocityUnit);
                 KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
 
                 Log.Comment("Waiting for scroller12 pinch completion");
@@ -691,7 +694,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 PrepareForScrollerManipulationStart("scroller52");
 
                 KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
-                InputHelper.RotateWheel(scroller52UIObject, mouseWheelDeltaForVelocityUnit);
+                // Starting with 19H1, the InteractionTracker changes the scale by a factor of 1.1 for each 60 mouse wheel delta.
+                // For earlier versions, a mouse wheel delta of 120 is required for the same 1.1 scale change.
+                InputHelper.RotateWheel(scroller52UIObject,
+                    PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5) ? mouseWheelDeltaForVelocityUnit / 2 : mouseWheelDeltaForVelocityUnit);
                 KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
 
                 Log.Comment("Waiting for scroller52 stretch completion");
