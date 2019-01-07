@@ -65,7 +65,7 @@ private:
     ItemsRepeater* m_owner{ nullptr };
 
     // List of parent scrollers.
-    // The list stop when we reach the root scroller OR when both m_horizontalScroller
+    // The list stops when we reach the root scroller OR when both m_horizontalScroller
     // and m_verticalScroller are set. In the latter case, we don't care about the other
     // scroller that we haven't reached yet.
     bool m_ensuredScrollers{ false };
