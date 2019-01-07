@@ -63,6 +63,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
 
             var realizationRects = new List<Rect>();
+            var viewChangeCompletedEvent = new AutoResetEvent(false);
             ScrollViewer scrollViewer = null;
             ManualResetEvent viewChanged = new ManualResetEvent(false);
             ManualResetEvent layoutMeasured = new ManualResetEvent(false);
@@ -81,15 +82,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Height = 300,
                     HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
                     VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
-                };
-
-                scrollViewer.ViewChanged += (sender, args) =>
-                {
-                    if (!args.IsIntermediate)
-                    {
-                        Log.Comment("ViewChanged " + scrollViewer.HorizontalOffset + ":" + scrollViewer.VerticalOffset);
-                        viewChanged.Set();
-                    }
                 };
 
                 Content = scrollViewer;
@@ -111,15 +103,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
 
             IdleSynchronizer.Wait();
-            Verify.IsTrue(viewChanged.WaitOne(), "Did not receive view changed event");
-            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not receive measure on layout");
-            viewChanged.Reset();
-            layoutMeasured.Reset();
 
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(new Rect(0, 100, 200, 300), realizationRects.Last());
                 realizationRects.Clear();
+                viewChangeCompletedEvent.Reset();
 
                 // Max viewport offset is (300, 400). Horizontal viewport offset
                 // is expected to get coerced from 400 to 300.
@@ -127,24 +116,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
 
             IdleSynchronizer.Wait();
-            Verify.IsTrue(viewChanged.WaitOne(), "Did not receive view changed event");
-            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not receive measure on layout");
-            viewChanged.Reset();
-            layoutMeasured.Reset();
 
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(new Rect(300, 100, 200, 300), realizationRects.Last());
                 realizationRects.Clear();
+                viewChangeCompletedEvent.Reset();
 
                 scrollViewer.ChangeView(null, null, 2.0f, disableAnimation: true);
             });
-
             IdleSynchronizer.Wait();
-            Verify.IsTrue(viewChanged.WaitOne(), "Did not receive view changed event");
-            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not receive measure on layout");
-            viewChanged.Reset();
-            layoutMeasured.Reset();
+            IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
