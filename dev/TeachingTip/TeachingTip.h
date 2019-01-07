@@ -141,8 +141,8 @@ private:
 
     // These values are shifted by one because this is the 1px highlight that sits adjacent to the tip border.
     static inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (s_beakShortSideLength - 1), 0, 1, 0 }; }
-    static inline winrt::Thickness BottomEdgeAlignedRightPlacementTopRightHighlightMargin(double width, double height) { return { s_minimumTipEdgeToBeakEdgeMargin + s_beakLongSideLength - 1, 0, 0, 0 }; }
-    static inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (s_minimumTipEdgeToBeakEdgeMargin + 1), 0, 0, 0 }; }
+    static inline winrt::Thickness BottomEdgeAlignedRightPlacementTopRightHighlightMargin(double width, double height) { return { s_minimumTipEdgeToBeakEdgeMargin + s_beakLongSideLength - 1, 0, 1, 0 }; }
+    static inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (s_minimumTipEdgeToBeakEdgeMargin + 1), 0, 1, 0 }; }
     static inline winrt::Thickness OtherPlacementTopRightHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
 
     static inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, (width / 2) + (s_beakShortSideLength - 1), 0 }; }
