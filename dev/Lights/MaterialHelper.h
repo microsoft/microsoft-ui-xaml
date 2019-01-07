@@ -31,7 +31,7 @@
 // (2) Serve as host of assorted statics/helpers used by Fluent brushes & lights
 //
 // To support this, the class was factored into MaterialHelperBase (shared functionality), and conditionally compiled
-// derived MaterialHelper (New vs legacy functionality). 
+// derived MaterialHelper (New vs legacy functionality).
 
 class MaterialHelperBase :
     public winrt::implements<MaterialHelperBase, winrt::IInspectable>
@@ -127,7 +127,11 @@ public:
     class LightTemplates
     {
     public:
-        static void OnLightTransparencyPolicyChanged(T* instance, const winrt::IMaterialProperties& materialProperties, bool onUIThread);
+        static void MaterialHelper::LightTemplates<T>::OnLightTransparencyPolicyChanged(
+            const winrt::weak_ref<T> weakInstance,
+            const winrt::IMaterialProperties& materialProperties,
+            const winrt::DispatcherQueue& dispatcherQueue,
+            bool onUIThread);
     };
 
     template <typename T>

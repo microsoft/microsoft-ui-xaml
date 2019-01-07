@@ -353,6 +353,9 @@ void Scroller::EnsureAnchorElementSelection()
         {
             globalTestHooks->NotifyAnchorEvaluated(*this, requestedAnchorElement, viewportAnchorPointHorizontalOffset, viewportAnchorPointVerticalOffset);
         }
+
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str());
+
         return;
     }
 
@@ -405,6 +408,8 @@ void Scroller::EnsureAnchorElementSelection()
     {
         m_anchorElement.set(bestAnchorCandidate);
         m_anchorElementBounds = bestAnchorCandidateBounds;
+
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str());
     }
 
     if (globalTestHooks && globalTestHooks->AreAnchorNotificationsRaised())

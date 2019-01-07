@@ -810,7 +810,11 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
 
     // We do the following only when effective viewport
     // support is not available. This is to provide downlevel support.
-    if (!SharedHelpers::IsRS5OrHigher())
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        m_isAnchorElementDirty = true;
+    }
+    else
     {
         ClearAnchorCandidates();
         RaisePostArrange();
