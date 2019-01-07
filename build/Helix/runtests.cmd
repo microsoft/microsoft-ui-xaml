@@ -8,7 +8,7 @@ dir /b /s
 
 FOR %%I in (WexLogFileOutput\*.jpg) DO (
     echo Uploading %%I
-    echo %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI%%~xI 
+    %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI%%~xI 
 )
 
 cd scripts
