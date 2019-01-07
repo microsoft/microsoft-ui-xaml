@@ -18,42 +18,52 @@ ScrollAnchorProvider::ScrollAnchorProvider()
 
 winrt::Size ScrollAnchorProvider::ArrangeOverride(winrt::Size const& finalSize)
 {
-    const auto scrollViewer = TryGetScrollViewer();    
-    const auto shouldApplyPendingChangeView = scrollViewer && HasPendingBringIntoView() && !m_pendingBringIntoView.ChangeViewCalled();
+    winrt::Size result;
 
-    winrt::Rect anchorElementRelativeBounds{};
-    const auto anchorElement =
-        // BringIntoView takes precedence over tracking.
-        shouldApplyPendingChangeView ?
-        nullptr : 
-        // Pick the best candidate depending on HorizontalAnchorRatio and VerticalAnchorRatio.
-        // The best candidate is the element that's the closest to the edge of interest.
-        GetAnchorElement(&anchorElementRelativeBounds);
-
-    auto result = __super::ArrangeOverride(finalSize);
-
-    m_pendingViewportShift = 0.0;
-
-    
-    if (shouldApplyPendingChangeView)
+    if (SharedHelpers::IsRS5OrHigher())
     {
-        ApplyPendingChangeView(scrollViewer);
+        // Post RS5 is a no-op
+        result = __super::ArrangeOverride(finalSize);        
     }
-    else if (anchorElement)
+    else
     {
-        // The anchor element might have changed its position relative to us.
-        // If that's the case, we should shift the viewport to follow it as much as possible.
-        m_pendingViewportShift = TrackElement(anchorElement, anchorElementRelativeBounds, scrollViewer);
-    }
-    else if (!scrollViewer)
-    {
-        m_pendingBringIntoView.Reset();
-    }
+        const auto scrollViewer = TryGetScrollViewer();
+        const auto shouldApplyPendingChangeView = scrollViewer && HasPendingBringIntoView() && !m_pendingBringIntoView.ChangeViewCalled();
 
-    m_candidates.clear();
-    m_isAnchorElementDirty = true;
+        winrt::Rect anchorElementRelativeBounds{};
+        const auto anchorElement =
+            // BringIntoView takes precedence over tracking.
+            shouldApplyPendingChangeView ?
+            nullptr :
+            // Pick the best candidate depending on HorizontalAnchorRatio and VerticalAnchorRatio.
+            // The best candidate is the element that's the closest to the edge of interest.
+            GetAnchorElement(&anchorElementRelativeBounds);
 
-    m_postArrange(*this);
+        result = __super::ArrangeOverride(finalSize);
+
+        m_pendingViewportShift = 0.0;
+
+
+        if (shouldApplyPendingChangeView)
+        {
+            ApplyPendingChangeView(scrollViewer);
+        }
+        else if (anchorElement)
+        {
+            // The anchor element might have changed its position relative to us.
+            // If that's the case, we should shift the viewport to follow it as much as possible.
+            m_pendingViewportShift = TrackElement(anchorElement, anchorElementRelativeBounds, scrollViewer);
+        }
+        else if (!scrollViewer)
+        {
+            m_pendingBringIntoView.Reset();
+        }
+
+        m_candidates.clear();
+        m_isAnchorElementDirty = true;
+
+        m_postArrange(*this);
+    }
 
     return result;
 }

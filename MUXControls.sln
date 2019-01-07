@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2006
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28407.52
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dev", "dev", "{67599AD5-51EC-44CB-85CE-B60CD8CBA270}"
 EndProject
@@ -566,6 +566,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IXMPTestApp", "test\IXMPTestApp\MSTest\IXMPTestApp.csproj", "{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IXMPTestApp.TAEF", "test\IXMPTestApp\TAEF\IXMPTestApp.TAEF.csproj", "{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ListSample", "C:\Users\ranjeshj\Desktop\MVPScrollingOnXbox\ListSample\ListSample.csproj", "{F74656DC-2EB2-4E87-BC50-7903747936DA}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -1205,6 +1207,38 @@ Global
 		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Release|x86.ActiveCfg = Release|x86
 		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Release|x86.Build.0 = Release|x86
 		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Release|x86.Deploy.0 = Release|x86
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug_test|ARM.ActiveCfg = Debug|ARM
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug_test|ARM.Build.0 = Debug|ARM
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug_test|ARM.Deploy.0 = Debug|ARM
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug_test|arm64.ActiveCfg = Release|x64
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug_test|arm64.Build.0 = Release|x64
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug_test|arm64.Deploy.0 = Release|x64
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug_test|x64.ActiveCfg = Debug|x64
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug_test|x64.Build.0 = Debug|x64
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug_test|x64.Deploy.0 = Debug|x64
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug_test|x86.ActiveCfg = Debug|x86
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug_test|x86.Build.0 = Debug|x86
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug_test|x86.Deploy.0 = Debug|x86
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug|ARM.ActiveCfg = Debug|ARM
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug|ARM.Build.0 = Debug|ARM
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug|ARM.Deploy.0 = Debug|ARM
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug|arm64.ActiveCfg = Debug|x86
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug|x64.ActiveCfg = Debug|x64
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug|x64.Build.0 = Debug|x64
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug|x64.Deploy.0 = Debug|x64
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug|x86.ActiveCfg = Debug|x86
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug|x86.Build.0 = Debug|x86
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Debug|x86.Deploy.0 = Debug|x86
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Release|ARM.ActiveCfg = Release|ARM
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Release|ARM.Build.0 = Release|ARM
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Release|ARM.Deploy.0 = Release|ARM
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Release|arm64.ActiveCfg = Release|x86
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Release|x64.ActiveCfg = Release|x64
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Release|x64.Build.0 = Release|x64
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Release|x64.Deploy.0 = Release|x64
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Release|x86.ActiveCfg = Release|x86
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Release|x86.Build.0 = Release|x86
+		{F74656DC-2EB2-4E87-BC50-7903747936DA}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
