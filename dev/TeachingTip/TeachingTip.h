@@ -79,7 +79,7 @@ private:
     void OnPopupClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args);
 
     void RaiseClosingEvent();
-    void ClosePopupWithAnimation();
+    void ClosePopupWithAnimationIfAvailable();
     void ClosePopup();
 
     void SetBackgroundToDefault();
@@ -97,6 +97,7 @@ private:
 
     tracker_ref<winrt::Popup> m_popup{ this };
 
+    tracker_ref<winrt::Grid> m_rootGrid{ this };
     tracker_ref<winrt::Grid> m_beakOcclusionGrid{ this };
     tracker_ref<winrt::Grid> m_contentRootGrid{ this };
     tracker_ref<winrt::Grid> m_nonBleedingContentRootGrid{ this };
@@ -157,12 +158,13 @@ private:
     static inline double UntargetedTipCenterPlacementOffset(float windowSize, double tipSize, double nearOffset, double farOffset) { return (windowSize / 2) - (tipSize / 2) + nearOffset - farOffset; }
     static inline double UntargetedTipNearPlacementOffset(double offset) { return s_untargetedTipWindowEdgeMargin + offset; }
 
-    static constexpr winrt::TimeSpan s_expandAnimationDuration{ 300ms };
-    static constexpr winrt::TimeSpan s_contractAnimationDuration{ 200ms };
+    static constexpr winrt::TimeSpan s_expandAnimationDuration{ 3000ms };
+    static constexpr winrt::TimeSpan s_contractAnimationDuration{ 2000ms };
 
     static constexpr wstring_view s_scaleTargetName{ L"Scale"sv };
     static constexpr wstring_view s_translationTargetName{ L"Translation"sv };
 
+    static constexpr wstring_view s_rootGridName{ L"RootGrid"sv };
     static constexpr wstring_view s_beakOcclusionGridName{ L"BeakOcclusionGrid"sv };
     static constexpr wstring_view s_contentRootGridName{ L"ContentRootGrid"sv };
     static constexpr wstring_view s_nonBleedingContentRootGridName{ L"NonBleedingContentRootGrid"sv };
@@ -206,9 +208,4 @@ private:
     static constexpr float s_beakLongSideLength = 16;
     static constexpr float s_beakLongSideActualLength = 20;
     static constexpr float s_beakShortSideLength = 8;
-    static constexpr float s_beakShortSideActualLength = 10;
-
-    static constexpr float s_beakOcculsionDistance = 2;
-    // The top edge needs an extra pixel of occlusion because of the top edge highlight.
-    static constexpr float s_beakTopEdgeOcculsionDistance = 3;
 };

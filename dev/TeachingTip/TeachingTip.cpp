@@ -25,6 +25,7 @@ void TeachingTip::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
 
+    m_rootGrid.set(GetTemplateChildT <winrt::Grid>(s_rootGridName, controlProtected));
     m_beakOcclusionGrid.set(GetTemplateChildT<winrt::Grid>(s_beakOcclusionGridName, controlProtected));
     m_contentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_contentRootGridName, controlProtected));
     m_nonBleedingContentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_nonBleedingContentRootGridName, controlProtected));
@@ -165,6 +166,19 @@ void TeachingTip::UpdateBeak()
     float height = static_cast<float>(m_beakOcclusionGrid.get().ActualHeight());
     float width = static_cast<float>(m_beakOcclusionGrid.get().ActualWidth());
 
+    auto columnDefinitions = m_rootGrid.get().ColumnDefinitions();
+    auto rowDefinitions = m_rootGrid.get().RowDefinitions();
+
+    float firstColumnWidth = static_cast<float>(columnDefinitions.GetAt(0).ActualWidth());
+    float secondColumnWidth = static_cast<float>(columnDefinitions.GetAt(1).ActualWidth());
+    float nextToLastColumnWidth = static_cast<float>(columnDefinitions.GetAt(columnDefinitions.Size() - 2).ActualWidth());
+    float lastColumnWidth = static_cast<float>(columnDefinitions.GetAt(columnDefinitions.Size() - 1).ActualWidth());
+
+    float firstRowHeight = static_cast<float>(rowDefinitions.GetAt(0).ActualHeight());
+    float secondRowHeight = static_cast<float>(rowDefinitions.GetAt(1).ActualHeight());
+    float nextToLastRowHeight = static_cast<float>(rowDefinitions.GetAt(rowDefinitions.Size() - 2).ActualHeight());
+    float lastRowHeight = static_cast<float>(rowDefinitions.GetAt(rowDefinitions.Size() - 1).ActualHeight());
+
     UpdateSizeBasedTemplateSettings();
 
     switch (m_currentEffectivePlacementMode)
@@ -182,8 +196,8 @@ void TeachingTip::UpdateBeak()
     case winrt::TeachingTipPlacementMode::Top:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            m_beakOcclusionGrid.get().CenterPoint({ width / 2, height, 0.0f });
-            m_beakEdgeBorder.get().CenterPoint({ width / 2, 0.0f, 0.0f });
+            m_beakOcclusionGrid.get().CenterPoint({ width / 2, height - lastRowHeight, 0.0f });
+            m_beakEdgeBorder.get().CenterPoint({ (width / 2) - firstColumnWidth, 0.0f, 0.0f });
         }
         UpdateDynamicBleedingContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Top"sv, false);
@@ -192,8 +206,8 @@ void TeachingTip::UpdateBeak()
     case winrt::TeachingTipPlacementMode::Bottom:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            m_beakOcclusionGrid.get().CenterPoint({ width / 2, 0.0f, 0.0f });
-            m_beakEdgeBorder.get().CenterPoint({ width / 2, 0.0f, 0.0f });
+            m_beakOcclusionGrid.get().CenterPoint({ width / 2, firstRowHeight, 0.0f });
+            m_beakEdgeBorder.get().CenterPoint({ (width / 2) - firstColumnWidth, 0.0f, 0.0f });
         }
         UpdateDynamicBleedingContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"Bottom"sv, false);
@@ -202,8 +216,8 @@ void TeachingTip::UpdateBeak()
     case winrt::TeachingTipPlacementMode::Left:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            m_beakOcclusionGrid.get().CenterPoint({ width, height / 2, 0.0f });
-            m_beakEdgeBorder.get().CenterPoint({ 0.0f, height / 2, 0.0f });
+            m_beakOcclusionGrid.get().CenterPoint({ width - lastColumnWidth, (height / 2), 0.0f });
+            m_beakEdgeBorder.get().CenterPoint({ 0.0f, (height / 2) - firstRowHeight, 0.0f });
         }
         UpdateDynamicBleedingContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Left"sv, false);
@@ -212,8 +226,8 @@ void TeachingTip::UpdateBeak()
     case winrt::TeachingTipPlacementMode::Right:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            m_beakOcclusionGrid.get().CenterPoint({ 0.0f, height / 2, 0.0f });
-            m_beakEdgeBorder.get().CenterPoint({ 0.0f, height / 2, 0.0f });
+            m_beakOcclusionGrid.get().CenterPoint({ firstColumnWidth, height / 2, 0.0f });
+            m_beakEdgeBorder.get().CenterPoint({ 0.0f, (height / 2) - firstRowHeight, 0.0f });
         }
         UpdateDynamicBleedingContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Right"sv, false);
@@ -222,8 +236,8 @@ void TeachingTip::UpdateBeak()
     case winrt::TeachingTipPlacementMode::TopEdgeAlignedRight:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            m_beakOcclusionGrid.get().CenterPoint({ s_minimumActualTipEdgeToBeakEdgeMargin, height, 0.0f });
-            m_beakEdgeBorder.get().CenterPoint({ s_minimumActualTipEdgeToBeakEdgeMargin, 0.0f, 0.0f });
+            m_beakOcclusionGrid.get().CenterPoint({ firstColumnWidth + secondColumnWidth + 1, height - lastRowHeight, 0.0f });
+            m_beakEdgeBorder.get().CenterPoint({ secondColumnWidth, 0.0f, 0.0f });
         }
         UpdateDynamicBleedingContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"TopEdgeAlignedRight"sv, false);
@@ -232,8 +246,8 @@ void TeachingTip::UpdateBeak()
     case winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            m_beakOcclusionGrid.get().CenterPoint({ width - s_minimumActualTipEdgeToBeakEdgeMargin, height, 0.0f });
-            m_beakEdgeBorder.get().CenterPoint({ width - s_minimumActualTipEdgeToBeakEdgeMargin, 0.0f, 0.0f });
+            m_beakOcclusionGrid.get().CenterPoint({ width - (nextToLastColumnWidth + lastColumnWidth + 1), height - lastRowHeight, 0.0f });
+            m_beakEdgeBorder.get().CenterPoint({ width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
         }
         UpdateDynamicBleedingContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"TopEdgeAlignedLeft"sv, false);
@@ -242,8 +256,8 @@ void TeachingTip::UpdateBeak()
     case winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            m_beakOcclusionGrid.get().CenterPoint({ s_minimumActualTipEdgeToBeakEdgeMargin, 0.0f, 0.0f });
-            m_beakEdgeBorder.get().CenterPoint({ s_minimumActualTipEdgeToBeakEdgeMargin, 0.0f, 0.0f });
+            m_beakOcclusionGrid.get().CenterPoint({ firstColumnWidth + secondColumnWidth + 1, firstRowHeight, 0.0f });
+            m_beakEdgeBorder.get().CenterPoint({ secondColumnWidth, 0.0f, 0.0f });
         }
         UpdateDynamicBleedingContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"BottomEdgeAlignedRight"sv, false);
@@ -252,8 +266,8 @@ void TeachingTip::UpdateBeak()
     case winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            m_beakOcclusionGrid.get().CenterPoint({ width - s_minimumActualTipEdgeToBeakEdgeMargin, 0.0f, 0.0f });
-            m_beakEdgeBorder.get().CenterPoint({ width - s_minimumActualTipEdgeToBeakEdgeMargin, 0.0f, 0.0f });
+            m_beakOcclusionGrid.get().CenterPoint({ width - (nextToLastColumnWidth + lastColumnWidth + 1), firstRowHeight, 0.0f });
+            m_beakEdgeBorder.get().CenterPoint({ width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
         }
         UpdateDynamicBleedingContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"BottomEdgeAlignedLeft"sv, false);
@@ -262,8 +276,8 @@ void TeachingTip::UpdateBeak()
     case winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            m_beakOcclusionGrid.get().CenterPoint({ width,  height - s_minimumActualTipEdgeToBeakEdgeMargin, 0.0f });
-            m_beakEdgeBorder.get().CenterPoint({ 0.0f,  height - s_minimumActualTipEdgeToBeakEdgeMargin, 0.0f });
+            m_beakOcclusionGrid.get().CenterPoint({ width - lastColumnWidth,  height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
+            m_beakEdgeBorder.get().CenterPoint({ 0.0f,  height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         }
         UpdateDynamicBleedingContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"LeftEdgeAlignedTop"sv, false);
@@ -272,8 +286,8 @@ void TeachingTip::UpdateBeak()
     case winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            m_beakOcclusionGrid.get().CenterPoint({ width, s_minimumActualTipEdgeToBeakEdgeMargin, 0.0f });
-            m_beakEdgeBorder.get().CenterPoint({ 0.0f, s_minimumActualTipEdgeToBeakEdgeMargin, 0.0f });
+            m_beakOcclusionGrid.get().CenterPoint({ width - lastColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
+            m_beakEdgeBorder.get().CenterPoint({ 0.0f, secondRowHeight, 0.0f });
         }
         UpdateDynamicBleedingContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"LeftEdgeAlignedBottom"sv, false);
@@ -282,8 +296,8 @@ void TeachingTip::UpdateBeak()
     case winrt::TeachingTipPlacementMode::RightEdgeAlignedTop:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            m_beakOcclusionGrid.get().CenterPoint({ 0.0f, height - s_minimumActualTipEdgeToBeakEdgeMargin, 0.0f });
-            m_beakEdgeBorder.get().CenterPoint({ 0.0f, height - s_minimumActualTipEdgeToBeakEdgeMargin, 0.0f });
+            m_beakOcclusionGrid.get().CenterPoint({ firstColumnWidth, height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
+            m_beakEdgeBorder.get().CenterPoint({ 0.0f, height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         }
         UpdateDynamicBleedingContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"RightEdgeAlignedTop"sv, false);
@@ -292,8 +306,8 @@ void TeachingTip::UpdateBeak()
     case winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            m_beakOcclusionGrid.get().CenterPoint({ 0.0f, s_minimumActualTipEdgeToBeakEdgeMargin, 0.0f });
-            m_beakEdgeBorder.get().CenterPoint({ 0.0f, s_minimumActualTipEdgeToBeakEdgeMargin, 0.0f });
+            m_beakOcclusionGrid.get().CenterPoint({ firstColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
+            m_beakEdgeBorder.get().CenterPoint({ 0.0f, secondRowHeight, 0.0f });
         }
         UpdateDynamicBleedingContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"RightEdgeAlignedBottom"sv, false);
@@ -306,15 +320,18 @@ void TeachingTip::UpdateBeak()
 
 void TeachingTip::PositionPopup()
 {
-    if (m_target)
+    if (m_rootGrid)
     {
-        PositionTargetedPopup();
+        if (m_target)
+        {
+            PositionTargetedPopup();
+        }
+        else
+        {
+            PositionUntargetedPopup();
+        }
+        TeachingTipTestHooks::NotifyOffsetChanged(*this);
     }
-    else
-    {
-        PositionUntargetedPopup();
-    }
-    TeachingTipTestHooks::NotifyOffsetChanged(*this);
 }
 
 void TeachingTip::PositionTargetedPopup()
@@ -865,7 +882,7 @@ void TeachingTip::RaiseClosingEvent()
             strongThis->CheckThread();
             if (!args->Cancel())
             {
-                strongThis->ClosePopupWithAnimation();
+                strongThis->ClosePopupWithAnimationIfAvailable();
             }
             else
             {
@@ -883,11 +900,26 @@ void TeachingTip::RaiseClosingEvent()
     args->DecrementDeferralCount();
 }
 
-void TeachingTip::ClosePopupWithAnimation()
+void TeachingTip::ClosePopupWithAnimationIfAvailable()
 {
     if (m_popup && m_popup.get().IsOpen())
     {
-        StartContractToClose();
+        if (SharedHelpers::IsRS5OrHigher())
+        {
+            StartContractToClose();
+        }
+        else
+        {
+            ClosePopup();
+        }
+
+        // Under normal circumstances we would have launched an animation just now, if we did not then we should make sure
+        // that the idle state is correct.
+        if (!m_isContractAnimationPlaying && !m_isIdle && !m_isExpandAnimationPlaying)
+        {
+            m_isIdle = true;
+            TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
+        }
     }
 }
 
@@ -1083,17 +1115,6 @@ void TeachingTip::StartContractToClose()
                 TeachingTipTestHooks::NotifyIdleStatusChanged(*strongThis);
             }
         });
-    }
-    else
-    {
-        ClosePopup();
-    }
-
-    // Under normal circumstances we would have launched an animation just now, if we did not then we should make sure that the idle state is correct
-    if (!m_isContractAnimationPlaying && !m_isIdle && !m_isExpandAnimationPlaying)
-    {
-        m_isIdle = true;
-        TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
     }
 }
 
