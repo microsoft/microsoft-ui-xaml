@@ -116,7 +116,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        [TestMethod]
+        // Disabled due to: Bug 17808897: Test unreliable in master: MUXControls.ApiTests.LightConfigurationTests.VerifyLightsAfterResettingContentOnSecondaryWindow
+        //[TestMethod]
         public void VerifyLightsAttachedDuringLayoutOnSecondaryWindow()
         {
             using (var config = new SecondaryWindowLightConfiguration())

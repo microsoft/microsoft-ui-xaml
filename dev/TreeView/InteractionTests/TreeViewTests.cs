@@ -508,8 +508,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        //Multiple unreliable TreeView tests #131
+        //[TestMethod]
+        //[TestProperty("TreeViewTestSuite", "A")]
         public void TreeViewKeyDownRightToLeftTest_NodeMode()
         {
             TreeViewKeyDownRightToLeftTest();
@@ -1703,8 +1704,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        // Multiple unreliable TreeView tests #131
+        //[TestMethod]
+        //[TestProperty("TreeViewTestSuite", "B")]
         public void TreeViewMultiSelectGamepadTest_NodeMode()
         {
             TreeViewMultiSelectGamepadTest();
