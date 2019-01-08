@@ -298,6 +298,8 @@ void ViewManager::UpdatePin(const winrt::UIElement& element, bool addPin)
                     repeater.InvalidateMeasure();
                 }
             }
+
+            break;
         }
 
         child = parent;
