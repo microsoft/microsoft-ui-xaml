@@ -246,9 +246,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     Log.Comment("Launch successful!");
                     break;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Log.Comment("UAPApp.Launch failed to find app, dumping UIA tree...");
+                    Log.Comment("Failed to launch app. Exception: " + ex.ToString());
+                    Log.Comment("Dumping UIA tree...");
                     TestEnvironment.LogDumpTree(UIObject.Root);
 
                     if (retries < MaxLaunchRetries)
