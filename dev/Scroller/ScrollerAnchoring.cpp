@@ -12,16 +12,6 @@
 // It is declared at an edge if it's within 1/10th of a pixel.
 const double c_edgeDetectionTolerance = 0.1;
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-
-void Scroller::ClearAnchorCandidates()
-{
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
-
-    m_anchorCandidates.clear();
-    m_isAnchorElementDirty = true;
-}
-
 void Scroller::RaiseConfigurationChanged()
 {
     if (m_configurationChanged)
@@ -51,8 +41,6 @@ void Scroller::RaiseViewportChanged(const bool isFinal)
         m_viewportChanged(*this, isFinal);
     }
 }
-
-#endif 
 
 void Scroller::RaiseAnchorRequested()
 {
@@ -289,6 +277,14 @@ winrt::Size Scroller::ComputeViewportToElementAnchorPointsDistance(
     {
         return winrt::Size{ FloatUtil::NaN, FloatUtil::NaN };
     }
+}
+
+void Scroller::ClearAnchorCandidates()
+{
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    m_anchorCandidates.clear();
+    m_isAnchorElementDirty = true;
 }
 
 void Scroller::ResetAnchorElement()
