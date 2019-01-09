@@ -3,7 +3,6 @@
 
 using MUXControlsTestApp.Utilities;
 using System;
-using System.Runtime.InteropServices;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Common;
@@ -33,16 +32,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Create a bunch of snap points with invalid arguments.")]
         public void SnapPointsWithInvalidArgsThrow()
         {
-            Verify.Throws<COMException>(() => { new ScrollerSnapPointRegular(offset:  10, interval:  0, start:  10, end: 100, alignment: ScrollerSnapPointAlignment.Near); });
-            Verify.Throws<COMException>(() => { new ScrollerSnapPointRegular(offset:  10, interval: -1, start:  10, end: 100, alignment: ScrollerSnapPointAlignment.Near); });
-            Verify.Throws<COMException>(() => { new ScrollerSnapPointRegular(offset:  10, interval: 10, start:  10, end:   1, alignment: ScrollerSnapPointAlignment.Near); });
-            Verify.Throws<COMException>(() => { new ScrollerSnapPointRegular(offset:  10, interval: 10, start:  10, end:  10, alignment: ScrollerSnapPointAlignment.Near); });
-            Verify.Throws<COMException>(() => { new ScrollerSnapPointRegular(offset:   1, interval: 10, start:   1, end:  10, applicableRange: -10, alignment: ScrollerSnapPointAlignment.Near); });
-            Verify.Throws<COMException>(() => { new ScrollerSnapPointRegular(offset:   1, interval: 10, start:   1, end:  10, applicableRange:   0, alignment: ScrollerSnapPointAlignment.Near); });
-            Verify.Throws<COMException>(() => { new ScrollerSnapPointRegular(offset:  50, interval: 10, start: 100, end: 200, applicableRange:   2, alignment: ScrollerSnapPointAlignment.Near); });
-            Verify.Throws<COMException>(() => { new ScrollerSnapPointRegular(offset: 250, interval: 10, start: 100, end: 200, applicableRange:   2, alignment: ScrollerSnapPointAlignment.Near); });
-            Verify.Throws<COMException>(() => { new ScrollerSnapPointIrregular(snapPointValue: 0, applicableRange:  0, alignment: ScrollerSnapPointAlignment.Near); });
-            Verify.Throws<COMException>(() => { new ScrollerSnapPointIrregular(snapPointValue: 0, applicableRange: -1, alignment: ScrollerSnapPointAlignment.Near); });
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.Throws<ArgumentException>(() => { new ScrollerSnapPointRegular(offset:  10, interval:  0, start:  10, end: 100, alignment: ScrollerSnapPointAlignment.Near); });
+                Verify.Throws<ArgumentException>(() => { new ScrollerSnapPointRegular(offset:  10, interval: -1, start:  10, end: 100, alignment: ScrollerSnapPointAlignment.Near); });
+                Verify.Throws<ArgumentException>(() => { new ScrollerSnapPointRegular(offset:  10, interval: 10, start:  10, end:   1, alignment: ScrollerSnapPointAlignment.Near); });
+                Verify.Throws<ArgumentException>(() => { new ScrollerSnapPointRegular(offset:  10, interval: 10, start:  10, end:  10, alignment: ScrollerSnapPointAlignment.Near); });
+                Verify.Throws<ArgumentException>(() => { new ScrollerSnapPointRegular(offset:   1, interval: 10, start:   1, end:  10, applicableRange: -10, alignment: ScrollerSnapPointAlignment.Near); });
+                Verify.Throws<ArgumentException>(() => { new ScrollerSnapPointRegular(offset:   1, interval: 10, start:   1, end:  10, applicableRange:   0, alignment: ScrollerSnapPointAlignment.Near); });
+                Verify.Throws<ArgumentException>(() => { new ScrollerSnapPointRegular(offset:  50, interval: 10, start: 100, end: 200, applicableRange:   2, alignment: ScrollerSnapPointAlignment.Near); });
+                Verify.Throws<ArgumentException>(() => { new ScrollerSnapPointRegular(offset: 250, interval: 10, start: 100, end: 200, applicableRange:   2, alignment: ScrollerSnapPointAlignment.Near); });
+                Verify.Throws<ArgumentException>(() => { new ScrollerSnapPointIrregular(snapPointValue: 0, applicableRange:  0, alignment: ScrollerSnapPointAlignment.Near); });
+                Verify.Throws<ArgumentException>(() => { new ScrollerSnapPointIrregular(snapPointValue: 0, applicableRange: -1, alignment: ScrollerSnapPointAlignment.Near); });
+            });
         }
 
         [TestMethod]
