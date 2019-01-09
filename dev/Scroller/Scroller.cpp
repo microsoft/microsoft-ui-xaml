@@ -808,10 +808,17 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         viewport.Width          /*viewportWidth*/,
         viewport.Height         /*viewportHeight*/);
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-    ClearAnchorCandidates();
-    RaisePostArrange();
-#endif
+    // We do the following only when effective viewport
+    // support is not available. This is to provide downlevel support.
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        m_isAnchorElementDirty = true;
+    }
+    else
+    {
+        ClearAnchorCandidates();
+        RaisePostArrange();
+    }
 
     return viewport;
 }
@@ -3259,9 +3266,13 @@ void Scroller::OnPropertyChanged(
             m_isChildAvailableHeightConstrained = isChildAvailableSizeConstrained;
         }
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-        RaiseConfigurationChanged();
-#endif
+        // Raise configuration changed only when effective viewport
+        // support is not available.
+        if (!SharedHelpers::IsRS5OrHigher())
+        {
+            RaiseConfigurationChanged();
+        }
+
         InvalidateMeasure();
     }
     else if (dependencyProperty == s_HorizontalAnchorRatioProperty ||
@@ -6261,9 +6272,10 @@ void Scroller::RaiseViewChanged()
         m_viewChangedEventSource(*this, nullptr);
     }
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-    RaiseViewportChanged(false /* isFinal */);
-#endif
+    if (!SharedHelpers::IsRS5OrHigher())
+    {
+        RaiseViewportChanged(false /* isFinal */);
+    }
 
     if (SharedHelpers::IsFrameworkElementInvalidateViewportAvailable())
     {
@@ -6354,9 +6366,12 @@ void Scroller::RaiseViewChangeCompleted(
         m_viewChangeCompletedEventSource(*this, *viewChangeCompletedEventArgs);
     }
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-    RaiseViewportChanged(true /* isFinal */);
-#endif
+    // Raise viewport changed only when effective viewport
+    // support is not available.
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        RaiseViewportChanged(true /* isFinal */);
+    }
 
     if (SharedHelpers::IsFrameworkElementInvalidateViewportAvailable())
     {

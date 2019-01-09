@@ -4,6 +4,7 @@
 using Common;
 using MUXControlsTestApp.Utilities;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Threading;
 using Windows.Foundation;
@@ -253,7 +254,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         {
                             Log.Comment("Canceling view change");
                             operationCanceled = true;
-                            sender.ChangeZoomFactor(new ScrollerChangeZoomFactorOptions(0, ScrollerViewKind.RelativeToCurrentView, Vector2.Zero, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));                            
+                            sender.ChangeZoomFactor(new ScrollerChangeZoomFactorOptions(0, ScrollerViewKind.RelativeToCurrentView, Vector2.Zero, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
                         }
                     };
                 });
@@ -939,10 +940,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             // Jump to absolute offsets
             ChangeOffsets(
-                scroller, 
-                c_defaultUIScrollerChildWidth + 200.0 - c_defaultUIScrollerWidth, 
-                c_defaultVerticalOffset, 
-                ScrollerViewKind.Absolute, 
+                scroller,
+                c_defaultUIScrollerChildWidth + 200.0 - c_defaultUIScrollerWidth,
+                c_defaultVerticalOffset,
+                ScrollerViewKind.Absolute,
                 ScrollerViewChangeKind.DisableAnimation,
                 ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints);
         }
@@ -1475,7 +1476,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private void InterruptViewChange(
             ViewChangeInterruptionKind viewChangeInterruptionKind)
         {
-            bool changeOffsetsFirst = 
+            bool changeOffsetsFirst =
                 viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByOffsetsChange || viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByZoomFactorChange;
             bool changeOffsetsSecond =
                 viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByOffsetsChange || viewChangeInterruptionKind == ViewChangeInterruptionKind.ZoomFactorChangeByOffsetsChange;
@@ -1604,9 +1605,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private void WaitForEvent(string logComment, EventWaitHandle eventWaitHandle)
         {
             Log.Comment(logComment);
-            if (!eventWaitHandle.WaitOne(TimeSpan.FromMilliseconds(c_MaxWaitDuration)))
+            if (Debugger.IsAttached)
             {
-                throw new Exception("Timeout expiration in WaitForEvent.");
+                eventWaitHandle.WaitOne();
+            }
+            else
+            {
+                if (!eventWaitHandle.WaitOne(TimeSpan.FromMilliseconds(c_MaxWaitDuration)))
+                {
+                    throw new Exception("Timeout expiration in WaitForEvent.");
+                }
             }
         }
 

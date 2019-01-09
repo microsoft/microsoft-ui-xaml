@@ -4,7 +4,7 @@
 #include <pch.h>
 #include <common.h>
 #include "ItemsRepeater.common.h"
-#include "ViewportManager.h"
+#include "ViewportManagerDownLevel.h"
 #include "ItemsRepeater.h"
 #include "layout.h"
 
@@ -14,7 +14,7 @@
 // properties.
 static double CacheBufferPerSideInflationPixelDelta = 40.0;
 
-ViewportManager::ViewportManager(ItemsRepeater* owner) :
+ViewportManagerDownLevel::ViewportManagerDownLevel(ItemsRepeater* owner) :
     m_owner(owner),
     m_horizontalScroller(owner),
     m_verticalScroller(owner),
@@ -25,7 +25,7 @@ ViewportManager::ViewportManager(ItemsRepeater* owner) :
     // ItemsRepeater is not fully constructed yet. Don't interact with it.
 }
 
-winrt::UIElement ViewportManager::SuggestedAnchor() const
+winrt::UIElement ViewportManagerDownLevel::SuggestedAnchor() const
 {
     // The element generated during the ItemsRepeater.MakeAnchor call has precedence over the next tick.
     winrt::UIElement suggestedAnchor = m_makeAnchorElement.get();
@@ -66,7 +66,7 @@ winrt::UIElement ViewportManager::SuggestedAnchor() const
     return suggestedAnchor;
 }
 
-void ViewportManager::HorizontalCacheLength(double value)
+void ViewportManagerDownLevel::HorizontalCacheLength(double value)
 {
     if (m_maximumHorizontalCacheLength != value)
     {
@@ -76,7 +76,7 @@ void ViewportManager::HorizontalCacheLength(double value)
     }
 }
 
-void ViewportManager::VerticalCacheLength(double value)
+void ViewportManagerDownLevel::VerticalCacheLength(double value)
 {
     if (m_maximumVerticalCacheLength != value)
     {
@@ -86,7 +86,7 @@ void ViewportManager::VerticalCacheLength(double value)
     }
 }
 
-winrt::Rect ViewportManager::GetLayoutVisibleWindow() const
+winrt::Rect ViewportManagerDownLevel::GetLayoutVisibleWindow() const
 {
     auto visibleWindow = m_visibleWindow;
 
@@ -108,7 +108,7 @@ winrt::Rect ViewportManager::GetLayoutVisibleWindow() const
     return visibleWindow;
 }
 
-winrt::Rect ViewportManager::GetLayoutRealizationWindow() const
+winrt::Rect ViewportManagerDownLevel::GetLayoutRealizationWindow() const
 {
     auto realizationWindow = GetLayoutVisibleWindow();
     if (HasScrollers())
@@ -122,7 +122,7 @@ winrt::Rect ViewportManager::GetLayoutRealizationWindow() const
     return realizationWindow;
 }
 
-void ViewportManager::SetLayoutExtent(winrt::Rect extent)
+void ViewportManagerDownLevel::SetLayoutExtent(winrt::Rect extent)
 {
     m_expectedViewportShift.X += m_layoutExtent.X - extent.X;
     m_expectedViewportShift.Y += m_layoutExtent.Y - extent.Y;
@@ -144,14 +144,14 @@ void ViewportManager::SetLayoutExtent(winrt::Rect extent)
     if (m_verticalScroller && m_verticalScroller != outerScroller) { m_verticalScroller.as<winrt::UIElement>().InvalidateArrange(); }
 }
 
-void ViewportManager::OnLayoutChanged()
+void ViewportManagerDownLevel::OnLayoutChanged()
 {
     m_layoutExtent = {};
     m_expectedViewportShift = {};
     ResetCacheBuffer();
 }
 
-void ViewportManager::OnElementCleared(const winrt::UIElement& element)
+void ViewportManagerDownLevel::OnElementCleared(const winrt::UIElement& element)
 {
     if (m_horizontalScroller)
     {
@@ -164,7 +164,7 @@ void ViewportManager::OnElementCleared(const winrt::UIElement& element)
     }
 }
 
-void ViewportManager::OnOwnerArranged()
+void ViewportManagerDownLevel::OnOwnerArranged()
 {
     m_expectedViewportShift = {};
 
@@ -194,13 +194,13 @@ void ViewportManager::OnOwnerArranged()
     }
 }
 
-void ViewportManager::OnMakeAnchor(const winrt::UIElement& anchor, const bool isAnchorOutsideRealizedRange)
+void ViewportManagerDownLevel::OnMakeAnchor(const winrt::UIElement& anchor, const bool isAnchorOutsideRealizedRange)
 {
     m_makeAnchorElement.set(anchor);
     m_isAnchorOutsideRealizedRange = isAnchorOutsideRealizedRange;
 }
 
-void ViewportManager::OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs args)
+void ViewportManagerDownLevel::OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs args)
 {
     // We do not animate bring-into-view operations where the anchor is disconnected because
     // it doesn't look good (the blank space is obvious because the layout can't keep track
@@ -211,7 +211,7 @@ void ViewportManager::OnBringIntoViewRequested(const winrt::BringIntoViewRequest
     }
 }
 
-void ViewportManager::ResetScrollers()
+void ViewportManagerDownLevel::ResetScrollers()
 {
     for (const auto& scrollerInfo : m_parentScrollers)
     {
@@ -228,13 +228,13 @@ void ViewportManager::ResetScrollers()
     m_ensuredScrollers = false;
 }
 
-void ViewportManager::OnCacheBuildActionCompleted()
+void ViewportManagerDownLevel::OnCacheBuildActionCompleted()
 {
     m_cacheBuildAction.set(nullptr);
     m_owner->InvalidateMeasure();
 }
 
-void ViewportManager::OnViewportChanged(const winrt::IRepeaterScrollingSurface&, const bool isFinal)
+void ViewportManagerDownLevel::OnViewportChanged(const winrt::IRepeaterScrollingSurface&, const bool isFinal)
 {
     if (isFinal)
     {
@@ -246,7 +246,7 @@ void ViewportManager::OnViewportChanged(const winrt::IRepeaterScrollingSurface&,
     TryInvalidateMeasure();
 }
 
-void ViewportManager::OnPostArrange(const winrt::IRepeaterScrollingSurface&)
+void ViewportManagerDownLevel::OnPostArrange(const winrt::IRepeaterScrollingSurface&)
 {
     UpdateViewport();
 
@@ -282,13 +282,13 @@ void ViewportManager::OnPostArrange(const winrt::IRepeaterScrollingSurface&)
     }
 }
 
-void ViewportManager::OnConfigurationChanged(const winrt::IRepeaterScrollingSurface& sender)
+void ViewportManagerDownLevel::OnConfigurationChanged(const winrt::IRepeaterScrollingSurface& sender)
 {
     m_ensuredScrollers = false;
     TryInvalidateMeasure();
 }
 
-void ViewportManager::EnsureScrollers()
+void ViewportManagerDownLevel::EnsureScrollers()
 {
     if (!m_ensuredScrollers)
     {
@@ -315,14 +315,14 @@ void ViewportManager::EnsureScrollers()
         else
         {
             auto& outerScrollerInfo = m_parentScrollers.back();
-            outerScrollerInfo.PostArrangeToken(outerScrollerInfo.Scroller().PostArrange({ this, &ViewportManager::OnPostArrange }));
+            outerScrollerInfo.PostArrangeToken(outerScrollerInfo.Scroller().PostArrange({ this, &ViewportManagerDownLevel::OnPostArrange }));
         }
 
         m_ensuredScrollers = true;
     }
 }
 
-bool ViewportManager::AddScroller(const winrt::IRepeaterScrollingSurface& scroller)
+bool ViewportManagerDownLevel::AddScroller(const winrt::IRepeaterScrollingSurface& scroller)
 {
     MUX_ASSERT(!(m_horizontalScroller && m_verticalScroller));
 
@@ -340,13 +340,13 @@ bool ViewportManager::AddScroller(const winrt::IRepeaterScrollingSurface& scroll
     m_parentScrollers.push_back(ScrollerInfo(
         m_owner,
         scroller,
-        setHorizontalScroller || setVerticalScroller ? scroller.ViewportChanged({ this, &ViewportManager::OnViewportChanged }) : winrt::event_token{},
-        scroller.ConfigurationChanged({ this, &ViewportManager::OnConfigurationChanged })));
+        setHorizontalScroller || setVerticalScroller ? scroller.ViewportChanged({ this, &ViewportManagerDownLevel::OnViewportChanged }) : winrt::event_token{},
+        scroller.ConfigurationChanged({ this, &ViewportManagerDownLevel::OnConfigurationChanged })));
 
     return allScrollersSet;
 }
 
-void ViewportManager::UpdateViewport()
+void ViewportManagerDownLevel::UpdateViewport()
 {
     const auto previousVisibleWindow = m_visibleWindow;
     const auto horizontalVisibleWindow =
@@ -397,7 +397,7 @@ void ViewportManager::UpdateViewport()
     }
 }
 
-void ViewportManager::ResetCacheBuffer()
+void ViewportManagerDownLevel::ResetCacheBuffer()
 {
     m_horizontalCacheBufferPerSide = 0.0;
     m_verticalCacheBufferPerSide = 0.0;
@@ -406,7 +406,7 @@ void ViewportManager::ResetCacheBuffer()
     RegisterCacheBuildWork();
 }
 
-void ViewportManager::ValidateCacheLength(double cacheLength)
+void ViewportManagerDownLevel::ValidateCacheLength(double cacheLength)
 {
     if (cacheLength < 0.0 || std::isinf(cacheLength) || std::isnan(cacheLength))
     {
@@ -414,7 +414,7 @@ void ViewportManager::ValidateCacheLength(double cacheLength)
     }
 }
 
-void ViewportManager::RegisterCacheBuildWork()
+void ViewportManagerDownLevel::RegisterCacheBuildWork()
 {
     if (m_owner->Layout() &&
         !m_cacheBuildAction)
@@ -434,7 +434,7 @@ void ViewportManager::RegisterCacheBuildWork()
     }
 }
 
-void ViewportManager::TryInvalidateMeasure()
+void ViewportManagerDownLevel::TryInvalidateMeasure()
 {
     // Don't invalidate measure if we have an invalid window.
     if (m_visibleWindow != winrt::Rect())
@@ -447,7 +447,7 @@ void ViewportManager::TryInvalidateMeasure()
     }
 }
 
-winrt::IRepeaterScrollingSurface ViewportManager::GetOuterScroller() const
+winrt::IRepeaterScrollingSurface ViewportManagerDownLevel::GetOuterScroller() const
 {
     winrt::IRepeaterScrollingSurface scroller = nullptr;
 
@@ -459,7 +459,7 @@ winrt::IRepeaterScrollingSurface ViewportManager::GetOuterScroller() const
     return scroller;
 }
 
-winrt::hstring ViewportManager::GetLayoutId()
+winrt::hstring ViewportManagerDownLevel::GetLayoutId()
 {
     winrt::hstring layoutId{};
     if (auto layout = m_owner->Layout())
