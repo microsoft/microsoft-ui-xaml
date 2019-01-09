@@ -246,9 +246,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     Log.Comment("Launch successful!");
                     break;
                 }
-                catch (UIObjectNotFoundException)
+                catch (Exception ex)
                 {
-                    Log.Comment("UAPApp.Launch failed to find app, dumping UIA tree...");
+                    Log.Comment("Failed to launch app. Exception: " + ex.ToString());
+                    Log.Comment("Dumping UIA tree...");
                     TestEnvironment.LogDumpTree(UIObject.Root);
 
                     if (retries < MaxLaunchRetries)
@@ -367,7 +368,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     }
 
                     Log.Comment("Invoking the back button...");
-                    FindElement.ById<Button>("__GoBackInvoker").InvokeAndWait();
+                    FindElement.ById<Button>("__GoBackInvoker").InvokeAndWait(TimeSpan.FromSeconds(10));
                     Log.Comment("Invoke successful.");
 
                     // We're now exiting the page we were previously on, so everything has changed.  As such, we should clear our

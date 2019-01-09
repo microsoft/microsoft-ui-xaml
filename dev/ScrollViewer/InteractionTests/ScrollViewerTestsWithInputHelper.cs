@@ -436,8 +436,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Tests GamePad interaction")]
+        //Unreliable test: ScrollViewerTestsWithInputHelper.VerifyScrollViewerGamePadInteraction #156
+        //[TestMethod]
+        //[TestProperty("Description", "Tests GamePad interaction")]
         public void VerifyScrollViewerGamePadInteraction()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))

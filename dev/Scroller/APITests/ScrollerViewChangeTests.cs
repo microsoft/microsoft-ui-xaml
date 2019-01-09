@@ -63,8 +63,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Changes Scroller offsets using various ScrollerViewKind and ScrollerViewChangeKind enum values.")]
+        //[TestMethod]
+        //[TestProperty("Description", "Changes Scroller offsets using various ScrollerViewKind and ScrollerViewChangeKind enum values.")]
+        // Disabled due to: Multiple unreliable Scroller tests #136
         public void BasicOffsetChanges()
         {
             Scroller scroller = null;
@@ -106,8 +107,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             ChangeOffsets(scroller, 700.0, -8.0, ScrollerViewKind.RelativeToCurrentView, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.RespectSnapPoints, false /*hookViewChanged*/);
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Changes Scroller zoomFactor using various ScrollerViewKind and ScrollerViewChangeKind enum values.")]
+        //[TestMethod]
+        //[TestProperty("Description", "Changes Scroller zoomFactor using various ScrollerViewKind and ScrollerViewChangeKind enum values.")]
+        // Disabled due to: Multiple unreliable Scroller tests #136
         public void BasicZoomFactorChanges()
         {
             Scroller scroller = null;
