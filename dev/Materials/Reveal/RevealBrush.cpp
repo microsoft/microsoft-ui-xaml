@@ -877,7 +877,7 @@ bool RevealBrush::ValidatePublicRootAncestor()
     auto ancestor = GetAncestor(windowRoot);
     bool windowContentIsCanvas = static_cast<bool>(windowRoot.try_as<winrt::Canvas>());
     bool walkedUpToScrollViewer = winrt::VisualTreeHelper::GetParent(windowRoot) && 
-                                  static_cast<bool>(ancestor.try_as<winrt::Windows::UI::Xaml::Controls::ScrollViewer>());
+                                  static_cast<bool>(ancestor.try_as<winrt::FxScrollViewer>());
 
     // On MUX + RS3/RS4, it's possible XCB::OnConnected is called before visual tree is constructed and the ancestor walk returns a false elemenet.
     return windowContentIsCanvas || walkedUpToScrollViewer;

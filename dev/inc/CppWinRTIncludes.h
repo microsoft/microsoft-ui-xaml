@@ -260,6 +260,7 @@ namespace winrt
     using ScrollContentPresenter = winrt::Windows::UI::Xaml::Controls::ScrollContentPresenter;
     using ScrollIntoViewAlignment = winrt::Windows::UI::Xaml::Controls::ScrollIntoViewAlignment;
     using ScrollMode = winrt::Windows::UI::Xaml::Controls::ScrollMode;
+    using FxScrollViewer = winrt::Windows::UI::Xaml::Controls::ScrollViewer;
     using ScrollViewerViewChangedEventArgs = winrt::Windows::UI::Xaml::Controls::ScrollViewerViewChangedEventArgs;
     using ScrollViewerViewChangingEventArgs = winrt::Windows::UI::Xaml::Controls::ScrollViewerViewChangingEventArgs;
     using SelectionChangedEventArgs = winrt::Windows::UI::Xaml::Controls::SelectionChangedEventArgs;

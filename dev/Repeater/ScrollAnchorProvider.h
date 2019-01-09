@@ -68,9 +68,9 @@ public:
 #pragma endregion
 
 private:
-    void ApplyPendingChangeView(const winrt::Windows::UI::Xaml::Controls::ScrollViewer& scrollViewer);
-    double TrackElement(const winrt::UIElement& element, winrt::Rect previousBounds, const winrt::Windows::UI::Xaml::Controls::ScrollViewer& scrollViewer);
-    winrt::Windows::UI::Xaml::Controls::ScrollViewer TryGetScrollViewer();
+    void ApplyPendingChangeView(const winrt::FxScrollViewer& scrollViewer);
+    double TrackElement(const winrt::UIElement& element, winrt::Rect previousBounds, const winrt::FxScrollViewer& scrollViewer);
+    winrt::FxScrollViewer TryGetScrollViewer();
     winrt::UIElement GetAnchorElement(_Out_opt_ winrt::Rect* relativeBounds = nullptr);
 
     void OnScrollViewerViewChanging(const winrt::IInspectable& sender, const winrt::ScrollViewerViewChangingEventArgs& args);
@@ -151,7 +151,7 @@ private:
 
     std::vector<CandidateInfo> m_candidates;
 
-    tracker_ref<winrt::Windows::UI::Xaml::Controls::ScrollViewer> m_scrollViewer{ this };
+    tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ this };
     tracker_ref<winrt::UIElement> m_anchorElement{ this };
     winrt::Rect m_anchorElementRelativeBounds{};
     // Whenever the m_candidates list changes, we set this to true.

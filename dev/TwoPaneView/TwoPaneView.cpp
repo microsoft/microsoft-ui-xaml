@@ -73,7 +73,7 @@ void TwoPaneView::SetScrollViewerProperties(std::wstring_view const& scrollViewe
 {
     if (SharedHelpers::IsRS5OrHigher())
     {
-        if (auto scrollViewer = GetTemplateChildT<winrt::Windows::UI::Xaml::Controls::ScrollViewer>(scrollViewerName, *this))
+        if (auto scrollViewer = GetTemplateChildT<winrt::FxScrollViewer>(scrollViewerName, *this))
         {
             if (SharedHelpers::IsScrollContentPresenterSizesContentToTemplatedParentAvailable())
             {
