@@ -742,6 +742,21 @@
     <PropertyGroup>
       <GenericWuxcPath>$(OutDir)\GenericWuxcXaml</GenericWuxcPath>
     </PropertyGroup>
+    <ItemGroup>
+      <!-- The WUXC generic.xaml file shouldn't include any non-public types. -->
+      <RS1StylePage Remove="@(RS1StylePage)" Condition="'%(IsPublic)' != 'true'" />
+      <RS2StylePage Remove="@(RS2StylePage)" Condition="'%(IsPublic)' != 'true'" />
+      <RS3StylePage Remove="@(RS3StylePage)" Condition="'%(IsPublic)' != 'true'" />
+      <RS4StylePage Remove="@(RS4StylePage)" Condition="'%(IsPublic)' != 'true'" />
+      <RS5StylePage Remove="@(RS5StylePage)" Condition="'%(IsPublic)' != 'true'" />
+      <NineteenH1StylePage Remove="@(NineteenH1StylePage)" Condition="'%(IsPublic)' != 'true'" />
+      <RS1ThemeResourcePage Remove="@(RS1ThemeResourcePage)" Condition="'%(IsPublic)' != 'true'" />
+      <RS2ThemeResourcePage Remove="@(RS2ThemeResourcePage)" Condition="'%(IsPublic)' != 'true'" />
+      <RS3ThemeResourcePage Remove="@(RS3ThemeResourcePage)" Condition="'%(IsPublic)' != 'true'" />
+      <RS4ThemeResourcePage Remove="@(RS4ThemeResourcePage)" Condition="'%(IsPublic)' != 'true'" />
+      <RS5ThemeResourcePage Remove="@(RS5ThemeResourcePage)" Condition="'%(IsPublic)' != 'true'" />
+      <NineteenH1ThemeResourcePage Remove="@(NineteenH1ThemeResourcePage)" Condition="'%(IsPublic)' != 'true'" />
+    </ItemGroup>
     <MakeDir Directories="$(GenericWuxcPath)" Condition="!Exists('$(GenericWuxcPath)')" />
     <Message Text="Generating $(GenericWuxcPath)\generic_wuxc_rs1.xaml..." />
     <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(GenericWuxcPath)\generic_wuxc_rs1.xaml&quot; -XamlFileList &quot;@(RS1StylePage)&quot; -DependencyHandling Reorder -RemoveComments -RemoveMUXPrefixFromResourceKeys" FilesWritten="$(OutDir)generic_wuxc_rs1.xaml" />
