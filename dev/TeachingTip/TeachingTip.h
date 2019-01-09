@@ -24,7 +24,6 @@ public:
     void OnContentChanged(const winrt::IInspectable& oldContent, const winrt::IInspectable& newContent);
 
     // UIElement
-    void OnBackgroundChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
     winrt::AutomationPeer OnCreateAutomationPeer();
 
     tracker_ref<winrt::UIElement> m_target{ this };
@@ -82,8 +81,6 @@ private:
     void ClosePopupWithAnimationIfAvailable();
     void ClosePopup();
 
-    void SetBackgroundToDefault();
-
     void TargetLayoutUpdated();
 
     void CreateExpandAnimation();
@@ -133,8 +130,6 @@ private:
     bool m_beakShadowTargetsShadowTarget{ false };
 
     bool m_startAnimationInOnApplyTemplate{ false };
-    bool m_hasCustomBackground{ false };
-    bool m_haveSetDefaultBackground{ false };
 
     bool m_isIdle{ true };
 
@@ -158,8 +153,8 @@ private:
     static inline double UntargetedTipCenterPlacementOffset(float windowSize, double tipSize, double nearOffset, double farOffset) { return (windowSize / 2) - (tipSize / 2) + nearOffset - farOffset; }
     static inline double UntargetedTipNearPlacementOffset(double offset) { return s_untargetedTipWindowEdgeMargin + offset; }
 
-    static constexpr winrt::TimeSpan s_expandAnimationDuration{ 3000ms };
-    static constexpr winrt::TimeSpan s_contractAnimationDuration{ 2000ms };
+    static constexpr winrt::TimeSpan s_expandAnimationDuration{ 300ms };
+    static constexpr winrt::TimeSpan s_contractAnimationDuration{ 200ms };
 
     static constexpr wstring_view s_scaleTargetName{ L"Scale"sv };
     static constexpr wstring_view s_translationTargetName{ L"Translation"sv };
@@ -186,8 +181,6 @@ private:
 
     static constexpr wstring_view s_accentButtonStyleName{ L"AccentButtonStyle" };
     static constexpr wstring_view s_teachingTipTopHighlightBrushName{ L"TeachingTipTopHighlightBrush" };
-    static constexpr wstring_view s_teachingTipTransientBackgroundBrushName{ L"TeachingTipTransientBackgroundBrush" };
-    static constexpr wstring_view s_teachingTipStaticBackgroundBrushName{ L"TeachingTipStaticBackgroundBrush" };
 
     static constexpr winrt::float2 s_expandAnimationEasingCurveControlPoint1{ 0.1f, 0.9f };
     static constexpr winrt::float2 s_expandAnimationEasingCurveControlPoint2{ 0.2f, 1.0f };

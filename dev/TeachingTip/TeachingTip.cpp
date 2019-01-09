@@ -84,18 +84,6 @@ void TeachingTip::OnApplyTemplate()
     OnIconSourceChanged();
     EstablishShadows();
 
-    if (Background())
-    {
-        if (!m_haveSetDefaultBackground)
-        {
-            m_hasCustomBackground = true;
-        }
-    }
-    else
-    {
-        SetBackgroundToDefault();
-    }
-
     if (m_startAnimationInOnApplyTemplate)
     {
         StartExpandToOpen();
@@ -152,13 +140,6 @@ void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const 
     {
         winrt::VisualStateManager::GoToState(*this, L"NoContent"sv, false);
     }
-}
-
-void TeachingTip::OnBackgroundChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    // When we set the background to default we go through the property setter as well, however we immediately flip these variable to reflect that.
-    m_haveSetDefaultBackground = false;
-    m_hasCustomBackground = true;
 }
 
 void TeachingTip::UpdateBeak()
@@ -806,9 +787,13 @@ void TeachingTip::OnIsLightDismissEnabledChanged()
         m_popup.get().IsLightDismissEnabled(IsLightDismissEnabled());
     }
 
-    if (!m_hasCustomBackground)
+    if (IsLightDismissEnabled())
     {
-        SetBackgroundToDefault();
+        winrt::VisualStateManager::GoToState(*this, L"LightDismiss"sv, false);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, L"NormalDismiss"sv, false);
     }
 }
 
@@ -937,20 +922,6 @@ void TeachingTip::ClosePopup()
         // small scale.
         m_beakOcclusionGrid.get().Scale({ 1.0f,1.0f,1.0f });
     }
-}
-
-void TeachingTip::SetBackgroundToDefault()
-{
-    if (IsLightDismissEnabled())
-    {
-        Background(winrt::Application::Current().Resources().Lookup(box_value(s_teachingTipTransientBackgroundBrushName)).as<winrt::Brush>());
-    }
-    else
-    {
-        Background(winrt::Application::Current().Resources().Lookup(box_value(s_teachingTipStaticBackgroundBrushName)).as<winrt::Brush>());
-    }
-    m_haveSetDefaultBackground = true;
-    m_hasCustomBackground = false;
 }
 
 void TeachingTip::TargetLayoutUpdated()

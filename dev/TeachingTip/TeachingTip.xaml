@@ -5,6 +5,7 @@
     xmlns:media="using:Microsoft.UI.Xaml.Media">
 
     <Style TargetType="local:TeachingTip">
+        <Setter Property="Background" Value="{ThemeResource TeachingTipStaticBackgroundBrush}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TeachingTip">
@@ -31,6 +32,18 @@
                             <RowDefinition Height="8"/>
                         </Grid.RowDefinitions>
                         <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="LightDismissStates">
+                                <VisualState x:Name="LightDismiss">
+                                    <VisualState.Setters>
+                                        <Setter Target="BeakEdgeBorder.Background" Value="{ThemeResource TeachingTipTransientBackgroundBrush}"/>
+                                        <Setter Target="BeakPolygon.Fill" Value="{ThemeResource TeachingTipTransientBackgroundBrush}"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Fill" Value="{ThemeResource TeachingTipTransientBackgroundBrush}"/>
+                                        <Setter Target="ContentRootGrid.Background" Value="{ThemeResource TeachingTipTransientBackgroundBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="NormalDismiss">
+                                </VisualState>
+                            </VisualStateGroup>
                             <VisualStateGroup x:Name="ButtonsStates">
                                 <VisualState x:Name="NoButtonsVisible">
                                     <VisualState.Setters>
