@@ -173,6 +173,19 @@ namespace CustomTasks
             DefaultValueMetadata["FontIconSource.FontWeight"] = @"{ 400 }";
             DefaultValueMetadata["FontIconSource.IsTextScaleFactorEnabled"] = @"true";
 
+            IncludedTypesMetadata["Forms"] = true;
+            // Forms -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["Forms.Sections"] = true;
+            // Forms -- DefaultValueMetadata
+
+            IncludedTypesMetadata["FormSection"] = true;
+            // FormSection -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["FormSection.Columns"] = true;
+            NeedsPropChangedCallbackMetadata["FormSection.Header"] = true;
+            NeedsPropChangedCallbackMetadata["FormSection.Items"] = true;
+            // FormSection -- DefaultValueMetadata
+            DefaultValueMetadata["FormSection.Columns"] = @"1";
+
             IncludedTypesMetadata["IconSource"] = true;
             // IconSource -- NeedsPropChangedCallbackMetadata
             // IconSource -- DefaultValueMetadata

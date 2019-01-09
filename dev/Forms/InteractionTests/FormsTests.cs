@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -33,7 +33,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     [TestClass]
-    class NEWCONTROLTests
+    class FormsTests
     {
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
@@ -53,7 +53,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void BasicTest()
         {
-            Log.Comment("NEWCONTROL Basic Test");
+            Log.Comment("Forms Basic Test");
         }
     }
 }

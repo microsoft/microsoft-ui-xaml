@@ -33,6 +33,7 @@ namespace MUXControlsTestApp
             Tests.Add(new TestDeclaration("CommonStyles Tests", typeof(CommonStylesPage)));
             Tests.Add(new TestDeclaration("RadioButtons Tests", typeof(RadioButtonsPage)));
             Tests.Add(new TestDeclaration("RadioMenuFlyoutItem Tests", typeof(RadioMenuFlyoutItemPage)));
+            Tests.Add(new TestDeclaration("Forms Tests", typeof(FormsPage)));
 #endif
 
             // These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
@@ -54,4 +55,5 @@ namespace MUXControlsTestApp
         public static List<TestDeclaration> Tests { get; private set; }
     }
 }
+
 

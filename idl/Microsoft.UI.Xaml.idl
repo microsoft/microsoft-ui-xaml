@@ -1,4 +1,4 @@
-#define WUXC_VERSION_RS3_CONTRACT  5
+﻿#define WUXC_VERSION_RS3_CONTRACT  5
 #define WUXC_VERSION_RS4_CONTRACT  6
 #define WUXC_VERSION_RS5_CONTRACT  7
 #define WUXC_VERSION_19H1_CONTRACT 8
@@ -270,6 +270,7 @@ namespace MU_XC_NAMESPACE
 #include <DropDownButton\DropDownButtonAutomationPeer.idl>
 #include <RadioButtons\RadioButtons.idl>
 #include <RadioMenuFlyoutItem\RadioMenuFlyoutItem.idl>
+#include <Forms\Forms.idl>
 #endif
 
 
@@ -357,3 +358,4 @@ namespace MU_PRIVATE_MEDIA_NAMESPACE
 #include <Materials\Reveal\RevealBrushTestApi.idl>
 #include <Materials\Acrylic\AcrylicTestApi.idl>
 }
+

@@ -1,0 +1,30 @@
+﻿[WUXC_VERSION_RS5]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+unsealed runtimeclass Forms : Windows.UI.Xaml.Controls.Control
+{
+    Forms();
+
+    Windows.Foundation.Collections.IVector<Windows.UI.Xaml.Controls.MenuFlyoutItemBase> Sections{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty SectionsProperty{ get; };
+}
+
+[WUXC_VERSION_RS5]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[contentproperty("Items")]
+unsealed runtimeclass FormSection : Windows.UI.Xaml.Controls.Control
+{
+    FormSection();
+
+    String Header{ get; set; };
+    Windows.Foundation.Collections.IVector<Windows.UI.Xaml.FrameworkElement> Items{ get; };
+
+    [MUX_DEFAULT_VALUE("1")]
+    Int32 Columns;
+
+    static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ItemsProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ColumnsProperty{ get; };
+}
