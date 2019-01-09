@@ -1,0 +1,280 @@
+﻿<Page
+    x:Class="DEPControlsTestApp.ItemsViewBasicPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:DEPControlsTestApp.ItemsViewPrototype"
+    xmlns:dep="using:DEPControlsTestApp"
+    xmlns:c="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    x:Name="Root">
+
+    <Page.Resources>
+        <dep:DebugConverter x:Key="DebugConverter"/>
+        <c:StackLayout  x:Name="stackLayout" Spacing="5" />
+        <c:FlowLayout x:Name="flowLayout" MinRowSpacing="5" MinColumnSpacing="5" LineAlignment="Start" />
+        <c:UniformGridLayout x:Name="gridLayout" MinItemWidth="200" MinItemHeight="100" MinRowSpacing="5" MinColumnSpacing="5" ItemsJustification="Start"/>
+        <l:TableRowLayout x:Name="sharedRowLayout" />
+        <l:TableLayout x:Name="tableLayout" Spacing="5" RowLayout="{StaticResource sharedRowLayout}"/>
+        <c:RecyclePool x:Name="recyclePool" />
+        <Style TargetType="l:ItemsView">
+            <Setter Property="Margin" Value="20" />
+        </Style>
+
+        <l:ViewDefinition Layout="{StaticResource stackLayout}" x:Name="stackView1">
+            <l:ViewDefinition.ItemTemplate>
+                <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}" >
+                    <DataTemplate x:Key="StackItemTemplate">
+                        <l:ItemContainer Background="LightGray" Layout="{StaticResource stackLayout}">
+                            <TextBlock Text="{Binding Title}" />
+                        </l:ItemContainer>
+                    </DataTemplate>
+                </c:RecyclingElementFactory>
+            </l:ViewDefinition.ItemTemplate>
+        </l:ViewDefinition>
+
+        <l:ViewDefinition Layout="{StaticResource flowLayout}" x:Name="flowView1">
+            <l:ViewDefinition.ItemTemplate>
+                <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
+                    <DataTemplate x:Key="Flow1ItemTemplate">
+                        <l:ItemContainer Background="LightGray" BorderBrush="Gray" BorderThickness="1" Layout="{StaticResource stackLayout}">
+                            <TextBlock Text="{Binding Title}" />
+                            <TextBlock Text="{Binding Author}" />
+                            <TextBlock Text="{Binding Genre}" />
+                            <TextBlock Text="{Binding Price}" />
+                            <TextBlock Text="{Binding ID}" />
+                        </l:ItemContainer>
+                    </DataTemplate>
+                </c:RecyclingElementFactory>
+            </l:ViewDefinition.ItemTemplate>
+        </l:ViewDefinition>
+
+        <l:ViewDefinition Layout="{StaticResource tableLayout}" x:Name="tableView1">
+            <l:ViewDefinition.Header>
+                <l:TableHeaderRow Layout="{StaticResource sharedRowLayout}" Background="LightGray">
+                    <TextBlock Text="Title" />
+                    <TextBlock Text="Author" />
+                    <TextBlock Text="Genre" />
+                    <TextBlock Text="Price" />
+                    <TextBlock Text="ID" />
+                </l:TableHeaderRow>
+            </l:ViewDefinition.Header>
+            <l:ViewDefinition.ItemTemplate>
+                <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}" >
+                    <DataTemplate x:Key="RowTemplate" >
+                        <l:TableRow Background="LightBlue" Layout="{StaticResource sharedRowLayout}">
+                            <TextBlock Text="{Binding Title}" />
+                            <TextBlock Text="{Binding Author}" />
+                            <TextBlock Text="{Binding Genre}" />
+                            <TextBlock Text="{Binding Price}" />
+                            <TextBlock Text="{Binding ID}" />
+                        </l:TableRow>
+                    </DataTemplate>
+                </c:RecyclingElementFactory>
+            </l:ViewDefinition.ItemTemplate>
+        </l:ViewDefinition>
+
+        <l:ViewDefinition Layout="{StaticResource tableLayout}" x:Name="groupedTable1">
+            <l:ViewDefinition.Header>
+                <l:TableHeaderRow Layout="{StaticResource sharedRowLayout}" Background="LightGray">
+                    <TextBlock Text="Title" />
+                    <TextBlock Text="Author" />
+                    <TextBlock Text="Genre" />
+                    <TextBlock Text="Price" />
+                    <TextBlock Text="ID" />
+                </l:TableHeaderRow>
+            </l:ViewDefinition.Header>
+            <l:ViewDefinition.ItemTemplate>
+                <l:HierarchicalDataTemplate ItemsSource="{Binding}">
+                    <DataTemplate>
+                        <TextBlock  Text="{Binding Key}" FontSize="18" FontWeight="SemiBold"/>
+                    </DataTemplate>
+                    <l:HierarchicalDataTemplate.ItemTemplate>
+                        <DataTemplate>
+                            <l:TableRow Background="LightBlue" Layout="{StaticResource sharedRowLayout}" Margin="10,0,0,0">
+                                <TextBlock Text="{Binding Title}" />
+                                <TextBlock Text="{Binding Author}" />
+                                <TextBlock Text="{Binding Genre}" />
+                                <TextBlock Text="{Binding Price}" />
+                                <TextBlock Text="{Binding ID}" />
+                            </l:TableRow>
+                        </DataTemplate>
+                    </l:HierarchicalDataTemplate.ItemTemplate>
+                </l:HierarchicalDataTemplate>
+            </l:ViewDefinition.ItemTemplate>
+        </l:ViewDefinition>
+
+        <DataTemplate x:Name="authorTemplate">
+            <TextBlock Text="{Binding Author}" />
+        </DataTemplate>
+        <DataTemplate x:Name="titleTemplate">
+            <TextBlock Text="{Binding Title}" />
+        </DataTemplate>
+        <DataTemplate x:Name="genreTemplate">
+            <TextBlock Text="{Binding Genre}" />
+        </DataTemplate>
+        <DataTemplate x:Name="priceTemplate">
+            <TextBlock Text="{Binding Price}" />
+        </DataTemplate>
+        <DataTemplate x:Name="idTemplate">
+            <TextBlock Text="{Binding ID}" />
+        </DataTemplate>
+    </Page.Resources>
+
+    <ScrollViewer>
+        <StackPanel>
+
+            <!--<l:ItemsView x:Name="stackView" ItemsSource="{Binding Books}">
+                <l:ViewDefinition Layout="{StaticResource stackLayout}">
+                    <l:ViewDefinition.ItemTemplate>
+                        <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}" >
+                            <DataTemplate x:Key="StackItemTemplate">
+                                <l:ItemsViewItem Layout="{StaticResource stackLayout}" Background="LightGray">
+                                    <TextBlock Text="{Binding Title}" />
+                                </l:ItemsViewItem>
+                            </DataTemplate>
+                        </c:RecyclingElementFactory>
+                    </l:ViewDefinition.ItemTemplate>
+                </l:ViewDefinition>
+            </l:ItemsView>
+
+            <l:ItemsView x:Name="gridView" ItemsSource="{Binding Books}">
+                <l:ViewDefinition Layout="{StaticResource gridLayout}">
+                    <l:ViewDefinition.ItemTemplate>
+                        <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
+                            <DataTemplate x:Key="FlowItemTemplate">
+                                <l:ItemsViewItem Layout="{StaticResource stackLayout}" Background="LightGray" BorderBrush="Gray" BorderThickness="1">
+                                    <TextBlock Text="{Binding Title}" />
+                                    <TextBlock Text="{Binding Author}" />
+                                    <TextBlock Text="{Binding Genre}" />
+                                    <TextBlock Text="{Binding Price}" />
+                                    <TextBlock Text="{Binding ID}" />
+                                </l:ItemsViewItem>
+                            </DataTemplate>
+                        </c:RecyclingElementFactory>
+                    </l:ViewDefinition.ItemTemplate>
+                </l:ViewDefinition>
+            </l:ItemsView>
+
+            <l:ItemsView x:Name="tableView" ItemsSource="{Binding Books}">
+                <l:ViewDefinition Layout="{StaticResource stackLayout}">
+                    <l:ViewDefinition.Header>
+                        <l:TableHeaderRow Layout="{StaticResource sharedRowLayout}" >
+                            <TextBlock Text="Title"/>
+                            <TextBlock Text="Author" />
+                            <TextBlock Text="Genre"/>
+                            <TextBlock Text="Price" />
+                            <TextBlock Text="ID"/>
+                        </l:TableHeaderRow>
+                    </l:ViewDefinition.Header>
+                    <l:ViewDefinition.ItemTemplate>
+                        <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}" >
+                            <DataTemplate x:Key="RowTemplate" >
+                                <l:TableRow Background="LightBlue" Layout="{StaticResource sharedRowLayout}">
+                                    <TextBlock Text="{Binding Title}" />
+                                    <TextBlock Text="{Binding Author}" />
+                                    <TextBlock Text="{Binding Genre}" />
+                                    <TextBlock Text="{Binding Price}" />
+                                    <TextBlock Text="{Binding ID}" />
+                                </l:TableRow>
+                            </DataTemplate>
+                        </c:RecyclingElementFactory>
+                    </l:ViewDefinition.ItemTemplate>
+                </l:ViewDefinition>
+            </l:ItemsView>
+
+
+            <l:ItemsView x:Name="groupedTableView" ItemsSource="{Binding ByGenre, ElementName=Root}">
+                <l:ViewDefinition Layout="{StaticResource stackLayout}">
+                    <l:ViewDefinition.Header>
+                        <l:TableHeaderRow Layout="{StaticResource sharedRowLayout}" Background="LightGray">
+                            <TextBlock Text="Title" />
+                            <TextBlock Text="Author" />
+                            <TextBlock Text="Genre" />
+                            <TextBlock Text="Price" />
+                            <TextBlock Text="ID" />
+                        </l:TableHeaderRow>
+                    </l:ViewDefinition.Header>
+                    <l:ViewDefinition.ItemTemplate>
+                        <l:HierarchicalDataTemplate ItemsSource="{Binding}">
+                            -->
+        <!-- GroupHeaderTemplate -->
+        <!--
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Key}" FontSize="18" FontWeight="SemiBold"/>
+                            </DataTemplate>
+
+                            <l:HierarchicalDataTemplate.ItemTemplate>
+                                -->
+        <!-- RowTemplate -->
+        <!--
+                                <DataTemplate>
+                                    <l:TableRow Background="LightBlue" Layout="{StaticResource sharedRowLayout}" Margin="10,0,0,0">
+                                        <TextBlock Text="{Binding Title}" />
+                                        <TextBlock Text="{Binding Author}" />
+                                        <TextBlock Text="{Binding Genre}" />
+                                        <TextBlock Text="{Binding Price}" />
+                                        <TextBlock Text="{Binding ID}" />
+                                    </l:TableRow>
+                                </DataTemplate>
+                            </l:HierarchicalDataTemplate.ItemTemplate>
+
+                        </l:HierarchicalDataTemplate>
+                    </l:ViewDefinition.ItemTemplate>
+                </l:ViewDefinition>
+            </l:ItemsView>-->
+
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Stack" Click="OnSwitchViewClicked" Tag="stackView1"/>
+                <Button Content="Flow" Click="OnSwitchViewClicked" Tag="flowView1"/>
+                <Button Content="Table" Click="OnSwitchViewClicked" Tag="tableView1" />
+                <Button Content="Grouped Table" Click="OnSwitchViewClicked" Tag="groupedTable1" />
+            </StackPanel>
+
+
+            <l:ItemsView x:Name="itemsView" ItemsSource="{Binding Books}">
+                <l:ViewDefinition Layout="{StaticResource stackLayout}">
+                    <l:ViewDefinition.ItemTemplate>
+                        <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
+                            <DataTemplate x:Key="StackItemTemplate">
+                                <l:ItemContainer Layout="{StaticResource stackLayout}"  Background="LightGray">
+                                    <TextBlock Text="{Binding Title}" />
+                                </l:ItemContainer>
+                            </DataTemplate>
+                        </c:RecyclingElementFactory>
+                    </l:ViewDefinition.ItemTemplate>
+                </l:ViewDefinition>
+            </l:ItemsView>
+
+
+            <Button Content="Add Author Column" Click="OnAddAuthorClicked" />
+            <l:ItemsView x:Name="itemsViewWithTable" ItemsSource="{Binding Books}">
+                <l:TableDefinition>
+                    <l:ItemsViewColumnDefinition Heading="Title" CellTemplate="{StaticResource titleTemplate}" />
+                    <l:ItemsViewColumnDefinition Heading="Genre" CellTemplate="{StaticResource genreTemplate}" />
+                    <l:ItemsViewColumnDefinition Heading="Price" CellTemplate="{StaticResource priceTemplate}" />
+                    <l:ItemsViewColumnDefinition Heading="ID" CellTemplate="{StaticResource idTemplate}" />
+                </l:TableDefinition>
+            </l:ItemsView>
+
+            <l:ItemsView x:Name="itemsViewWithTableGrouped" ItemsSource="{Binding ByGenre}">
+                <l:TableDefinition IsGroup="TableViewBase_IsGroup">
+
+                    <!-- heading optional Heading="Title"-->
+
+                    <l:ItemsViewTextColumnDefinition DisplayMemberPath="Title" />
+                    <l:ItemsViewTextColumnDefinition DisplayMemberPath="Genre" />
+                    <l:ItemsViewTextColumnDefinition DisplayMemberPath="Price" />
+                    <l:ItemsViewTextColumnDefinition DisplayMemberPath="ID" />
+                    <l:TableDefinition.GroupHeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Key}" FontWeight="Bold"/>
+                        </DataTemplate>
+                    </l:TableDefinition.GroupHeaderTemplate>
+                </l:TableDefinition>
+            </l:ItemsView>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>
