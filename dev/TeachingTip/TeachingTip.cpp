@@ -25,7 +25,6 @@ void TeachingTip::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
 
-    m_rootGrid.set(GetTemplateChildT <winrt::Grid>(s_rootGridName, controlProtected));
     m_beakOcclusionGrid.set(GetTemplateChildT<winrt::Grid>(s_beakOcclusionGridName, controlProtected));
     m_contentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_contentRootGridName, controlProtected));
     m_nonBleedingContentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_nonBleedingContentRootGridName, controlProtected));
@@ -147,8 +146,8 @@ void TeachingTip::UpdateBeak()
     float height = static_cast<float>(m_beakOcclusionGrid.get().ActualHeight());
     float width = static_cast<float>(m_beakOcclusionGrid.get().ActualWidth());
 
-    auto columnDefinitions = m_rootGrid.get().ColumnDefinitions();
-    auto rowDefinitions = m_rootGrid.get().RowDefinitions();
+    auto columnDefinitions = m_beakOcclusionGrid.get().ColumnDefinitions();
+    auto rowDefinitions = m_beakOcclusionGrid.get().RowDefinitions();
 
     float firstColumnWidth = static_cast<float>(columnDefinitions.GetAt(0).ActualWidth());
     float secondColumnWidth = static_cast<float>(columnDefinitions.GetAt(1).ActualWidth());
@@ -301,18 +300,15 @@ void TeachingTip::UpdateBeak()
 
 void TeachingTip::PositionPopup()
 {
-    if (m_rootGrid)
+    if (m_target)
     {
-        if (m_target)
-        {
-            PositionTargetedPopup();
-        }
-        else
-        {
-            PositionUntargetedPopup();
-        }
-        TeachingTipTestHooks::NotifyOffsetChanged(*this);
+        PositionTargetedPopup();
     }
+    else
+    {
+        PositionUntargetedPopup();
+    }
+    TeachingTipTestHooks::NotifyOffsetChanged(*this);
 }
 
 void TeachingTip::PositionTargetedPopup()

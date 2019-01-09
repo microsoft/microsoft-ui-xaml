@@ -94,7 +94,6 @@ private:
 
     tracker_ref<winrt::Popup> m_popup{ this };
 
-    tracker_ref<winrt::Grid> m_rootGrid{ this };
     tracker_ref<winrt::Grid> m_beakOcclusionGrid{ this };
     tracker_ref<winrt::Grid> m_contentRootGrid{ this };
     tracker_ref<winrt::Grid> m_nonBleedingContentRootGrid{ this };
@@ -159,7 +158,6 @@ private:
     static constexpr wstring_view s_scaleTargetName{ L"Scale"sv };
     static constexpr wstring_view s_translationTargetName{ L"Translation"sv };
 
-    static constexpr wstring_view s_rootGridName{ L"RootGrid"sv };
     static constexpr wstring_view s_beakOcclusionGridName{ L"BeakOcclusionGrid"sv };
     static constexpr wstring_view s_contentRootGridName{ L"ContentRootGrid"sv };
     static constexpr wstring_view s_nonBleedingContentRootGridName{ L"NonBleedingContentRootGrid"sv };

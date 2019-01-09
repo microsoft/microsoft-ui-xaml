@@ -9,8 +9,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TeachingTip">
-                    <Grid x:Name="RootGrid"
-                          HorizontalAlignment="Left"
+                    <Grid HorizontalAlignment="Left"
                           VerticalAlignment="Top"
                           MinHeight="{ThemeResource TeachingTipTotalMinHeight}" 
                           MinWidth="{ThemeResource TeachingTipTotalMinWidth}"
