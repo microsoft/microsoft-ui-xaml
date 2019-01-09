@@ -23,7 +23,7 @@ namespace HelixTestHelpers
             public string Details { get; set; }
         }
 
-        public static void ConvertWttLogToXUnitLog(string wttInputPath, string xunitOutputPath)
+        public static void ConvertWttLogToXUnitLog(string wttInputPath, string xunitOutputPath, string testNamePrefix)
         {
             var testPass = TestResultParser.ParseTestWttFile(wttInputPath, true);
             var results = testPass.TestResults;
@@ -64,7 +64,7 @@ namespace HelixTestHelpers
             foreach (var result in results)
             {
                 var test = new XElement("test");
-                test.SetAttributeValue("name", result.Name);
+                test.SetAttributeValue("name", testNamePrefix + "." + result.Name);
 
                 var className = result.Name.Substring(0, result.Name.LastIndexOf('.'));
                 var methodName = result.Name.Substring(result.Name.LastIndexOf('.') + 1);
