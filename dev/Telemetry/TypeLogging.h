@@ -17,9 +17,11 @@ public:
     static winrt::hstring ScrollingIndicatorModeToString(const winrt::ScrollingIndicatorMode& indicatorMode);
 #pragma endregion
 
-#pragma region ScrollerView-specific section
+#pragma region ScrollViewer-specific section
 #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
-    static winrt::hstring ScrollerViewScrollControllerVisibilityToString(const winrt::ScrollerViewScrollControllerVisibility& scrollControllerVisibility);
+#ifndef BUILD_WINDOWS
+static winrt::hstring ScrollBarVisibilityToString(const winrt::ScrollBarVisibility& scrollBarVisibility);
+#endif
 #endif
 #pragma endregion
 

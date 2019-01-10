@@ -15,12 +15,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using ScrollerScrollMode = Microsoft.UI.Xaml.Controls.ScrollerScrollMode;
 using ScrollBar2 = Microsoft.UI.Xaml.Controls.ScrollBar2;
-using IScrollController = Microsoft.UI.Xaml.Controls.IScrollController;
+using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
 using ScrollerRailingMode = Microsoft.UI.Xaml.Controls.ScrollerRailingMode;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

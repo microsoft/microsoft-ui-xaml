@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)Scroller.idl" />
+    <None Include="$(MSBuildThisFileDirectory)ScrollerPrimitives.idl" />
     <None Include="$(MSBuildThisFileDirectory)ScrollerAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
