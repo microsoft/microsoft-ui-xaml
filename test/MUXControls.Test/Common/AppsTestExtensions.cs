@@ -70,7 +70,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             throw new Exception(String.Format("ComboBox.SelectItemById: Could not find {0}", id));
         }
 
-        public static void InvokeAndWait(this Button button)
+        public static void InvokeAndWait(this Button button, TimeSpan? timeout = null)
         {
             if (button == null)
             {
@@ -82,7 +82,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             using (var waiter = button.GetInvokedWaiter())
             {
                 button.Invoke();
-                waiter.Wait();
+                if(timeout == null)
+                {
+                    waiter.Wait();
+                }
+                else
+                {
+                    waiter.Wait(timeout.Value);
+                }
+                
             }
 
             Wait.ForIdle();

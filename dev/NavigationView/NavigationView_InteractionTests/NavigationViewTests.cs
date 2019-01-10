@@ -1483,8 +1483,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        //[TestMethod]
+        //[TestProperty("NavViewTestSuite", "B")]
+        // Disabled due to: Multiple unreliable NavigationView tests #134
         public void SuppressSelectionItemInvokeTest()
         {
             using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
@@ -2647,8 +2648,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        //[TestMethod]
+        //[TestProperty("NavViewTestSuite", "C")]
+        // Disabled due to: Multiple unreliable NavigationView tests #134
         public void KeyboardFocusToolTipTest() // Verify tooltips appear when Keyboard focused
         {
             using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
