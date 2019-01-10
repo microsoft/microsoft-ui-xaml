@@ -43,8 +43,8 @@
             </ScrollViewer>
         </controls:ScrollAnchorProvider>
 
-        <!-- No ScrollAnchorProvider for RS5+. ScrollerView can do the anchoring itself-->
-        <!--controls:ScrollerView x:Name="scrollViewer" Height="500">
+        <!-- No ScrollAnchorProvider for RS5+. ScrollViewer can do the anchoring itself-->
+        <!--controls:ScrollViewer x:Name="scrollViewer" Height="500">
             <controls:ItemsRepeater x:Name="repeater" VerticalCacheLength="0" />
                 <controls:ItemsRepeater.Layout>
                     <controls:StackLayout  />

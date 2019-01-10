@@ -30,13 +30,13 @@ private:
     static void GetChildScrollerOrScrollViewer(
         const winrt::DependencyObject& rootElement,
         _Out_ winrt::Scroller* scroller,
-        _Out_ winrt::ScrollViewer* scrollViewer);
+        _Out_ winrt::FxScrollViewer* scrollViewer);
     winrt::UIElement GetScrollContentElement() const;
     winrt::HorizontalAlignment GetEffectiveHorizontalAlignment() const;
     winrt::VerticalAlignment GetEffectiveVerticalAlignment() const;
     winrt::ZoomMode GetEffectiveZoomMode() const;
     
-    void SetScrollViewer(const winrt::ScrollViewer& scrollViewer);
+    void SetScrollViewer(const winrt::FxScrollViewer& scrollViewer);
     void SetScroller(const winrt::Scroller& scroller);
 
     void UpdateOutOfBoundsPanSize();
@@ -113,7 +113,7 @@ private:
 
     tracker_ref<winrt::UIElement> m_sourceElement{ m_owner };
     tracker_ref<winrt::UIElement> m_targetElement{ m_owner };
-    tracker_ref<winrt::ScrollViewer> m_scrollViewer{ m_owner };
+    tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ m_owner };
     tracker_ref<winrt::Scroller> m_scroller{ m_owner };
     tracker_ref<winrt::FrameworkElement> m_sourceContent{ m_owner };
     tracker_ref<winrt::RichEditBox> m_richEditBox{ m_owner };

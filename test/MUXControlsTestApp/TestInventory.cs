@@ -13,7 +13,7 @@ namespace MUXControlsTestApp
             Tests = new List<TestDeclaration>();
 
             Tests.Add(new TestDeclaration("Sample Tests", typeof(SampleTestUIPage)));
-            #if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
+#if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
             Tests.Add(new TestDeclaration("ColorPicker Tests", typeof(ColorPickerPage)));
             Tests.Add(new TestDeclaration("Leak Tests", typeof(LeakTestPage)));
             Tests.Add(new TestDeclaration("PersonPicture Tests", typeof(PersonPicturePage)));
@@ -25,8 +25,6 @@ namespace MUXControlsTestApp
             Tests.Add(new TestDeclaration("PTR Tests", typeof(PTRPage)));
             Tests.Add(new TestDeclaration("MenuBar Tests", typeof(MenuBarPage)));
             Tests.Add(new TestDeclaration("MenuFlyout Tests", typeof(MenuFlyoutPage)));
-            Tests.Add(new TestDeclaration("ScrollBar2 Tests", typeof(ScrollBar2Page)));
-            Tests.Add(new TestDeclaration("ScrollerView Tests", typeof(ScrollerViewPage)));
             Tests.Add(new TestDeclaration("ScrollViewerAdapter Tests", typeof(ScrollViewerAdapterPage)));
             Tests.Add(new TestDeclaration("SplitButton Tests", typeof(SplitButtonPage)));
             Tests.Add(new TestDeclaration("DropDownButton Tests", typeof(DropDownButtonPage)));
@@ -39,11 +37,14 @@ namespace MUXControlsTestApp
             // These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
             // We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
             // to non-public types.  So for now we'll just exclude these from the OS repo.
-#if (!BUILD_WINDOWS && !BUILD_LEAN_MUX_FOR_THE_STORE_APP && USE_INSIDER_SDK)
+#if (!BUILD_WINDOWS && !BUILD_LEAN_MUX_FOR_THE_STORE_APP)
+            Tests.Add(new TestDeclaration("ScrollBar2 Tests", typeof(ScrollBar2Page)));
+            Tests.Add(new TestDeclaration("ScrollViewer Tests", typeof(ScrollViewerPage)));
+#if (USE_INSIDER_SDK)
             Tests.Add(new TestDeclaration("ButtonInteraction Tests", typeof(ButtonInteractionPage)));
             Tests.Add(new TestDeclaration("SliderInteraction Tests", typeof(SliderInteractionPage)));
 #endif
-
+#endif
             Tests.Add(new TestDeclaration("NavigationView Tests", typeof(NavigationViewCaseBundle)));
             Tests.Add(new TestDeclaration("ParallaxView Tests", typeof(ParallaxViewPage)));
             Tests.Add(new TestDeclaration("Acrylic Tests", typeof(AcrylicPage)));

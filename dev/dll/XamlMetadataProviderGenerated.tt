@@ -39,9 +39,6 @@
 #include "RefreshVisualizer.h"
 #include "MenuBar.h"
 #include "MenuBarItem.h"
-#include "ScrollerView.h"
-#include "ScrollBar2.h"
-#include "ScrollerViewTestHooksFactory.h"
 #include "SplitButton.h"
 #include "SplitButtonTestApi.h"
 #include "ToggleSplitButton.h"
@@ -52,6 +49,11 @@
 #include "RadioButtonsListViewItem.h"
 #include "RadioButtonsListViewItemAutomationPeer.h"
 #include "RadioMenuFlyoutItem.h"
+#ifndef BUILD_WINDOWS
+#include "ScrollViewer.h"
+#include "ScrollBar2.h"
+#include "ScrollViewerTestHooksFactory.h"
+#endif
 #endif
 
 #include "AcrylicBrush.h"

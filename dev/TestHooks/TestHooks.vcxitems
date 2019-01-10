@@ -23,8 +23,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerTestHooksFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerTestHooksAnchorEvaluatedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerTestHooksInteractionSourcesChangedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerViewTestHooks.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerViewTestHooksFactory.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooks.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true'" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooksFactory.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true'" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeTestHooks.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeTestHooksFactory.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
@@ -39,8 +39,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerTestHooksFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerTestHooksAnchorEvaluatedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerTestHooksInteractionSourcesChangedEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerViewTestHooks.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerViewTestHooksFactory.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooks.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true'" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooksFactory.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true'" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeTestHooks.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeTestHooksFactory.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
@@ -49,7 +49,7 @@
     <None Include="$(MSBuildThisFileDirectory)MUXControlsTestHooks.idl" />
     <None Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.idl" />
     <None Include="$(MSBuildThisFileDirectory)ScrollerTestHooks.idl" />
-    <None Include="$(MSBuildThisFileDirectory)ScrollerViewTestHooks.idl" />
+    <None Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooks.idl" Condition="$(BuildingWithBuildExe) != 'true'" />
     <None Include="$(MSBuildThisFileDirectory)SwipeTestHooks.idl" />
     <None Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.idl" />
   </ItemGroup>
