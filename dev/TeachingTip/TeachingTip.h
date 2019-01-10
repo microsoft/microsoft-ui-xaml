@@ -135,14 +135,14 @@ private:
     winrt::TeachingTipCloseReason m_lastCloseReason{ winrt::TeachingTipCloseReason::Programmatic };
 
     // These values are shifted by one because this is the 1px highlight that sits adjacent to the tip border.
-    static inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (s_beakShortSideLength - 1), 0, 1, 0 }; }
-    static inline winrt::Thickness BottomEdgeAlignedRightPlacementTopRightHighlightMargin(double width, double height) { return { s_minimumTipEdgeToBeakEdgeMargin + s_beakLongSideLength - 1, 0, 1, 0 }; }
-    static inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (s_minimumTipEdgeToBeakEdgeMargin + 1), 0, 1, 0 }; }
+    inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (BeakShortSideLength() - 1), 0, 1, 0 }; }
+    inline winrt::Thickness BottomEdgeAlignedRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToBeakEdgeMargin() + BeakLongSideLength() - 1, 0, 1, 0 }; }
+    inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToBeakEdgeMargin() + 1), 0, 1, 0 }; }
     static inline winrt::Thickness OtherPlacementTopRightHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
 
-    static inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, (width / 2) + (s_beakShortSideLength - 1), 0 }; }
-    static inline winrt::Thickness BottomEdgeAlignedRightPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, width - (s_minimumTipEdgeToBeakEdgeMargin + 1), 0 }; }
-    static inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, s_minimumTipEdgeToBeakEdgeMargin + s_beakLongSideLength - 1, 0 }; }
+    inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, (width / 2) + (BeakShortSideLength() - 1), 0 }; }
+    inline winrt::Thickness BottomEdgeAlignedRightPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, width - (MinimumTipEdgeToBeakEdgeMargin() + 1), 0 }; }
+    inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, MinimumTipEdgeToBeakEdgeMargin() + BeakLongSideLength() - 1, 0 }; }
     static inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 1, 0 }; }
     // Shifted by one since the beak edge's border is not accounted for automatically.
     static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 0, 0 }; }
@@ -185,18 +185,21 @@ private:
     static constexpr winrt::float2 s_contractAnimationEasingCurveControlPoint1{ 0.7f, 0.0f };
     static constexpr winrt::float2 s_contractAnimationEasingCurveControlPoint2{ 1.0f, 0.5f };
 
+    //It is possible this should be exposed as a property, but you can adjust what it does with margin.
     static constexpr float s_untargetedTipWindowEdgeMargin = 24;
-
     static constexpr float s_defaultTipHeightAndWidth = 320;
+
+    //Ideally this would be computed from playout but it is difficult to do.
+    static constexpr float s_beakOcclusionAmount = 2;
 
     // The beak is designed as an 8x16 pixel shape, however it is actual a 10x20 shape which is partially occluded by the tip content.
     // This is done to get the border of the tip to follow the beak shape without drawing the border on the tip edge of the beak.
-    static constexpr float s_minimumTipEdgeToBeakEdgeMargin = 12;
-    static constexpr float s_minimumActualTipEdgeToBeakEdgeMargin = 10;
+    inline float MinimumTipEdgeToBeakEdgeMargin() { return static_cast<float>(m_beakOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() + s_beakOcclusionAmount); };
+    inline float MinimumTipEdgeToBeakCenter() { return static_cast<float>(m_beakOcclusionGrid.get().ColumnDefinitions().GetAt(0).ActualWidth() +
+                                                m_beakOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() +
+                                                (std::max(m_beakPolygon.get().ActualHeight(), m_beakPolygon.get().ActualWidth()) / 2)); }
 
-    static constexpr float s_minimumTipEdgeToBeakCenter = 28;
-
-    static constexpr float s_beakLongSideLength = 16;
-    static constexpr float s_beakLongSideActualLength = 20;
-    static constexpr float s_beakShortSideLength = 8;
+    inline float BeakLongSideActualLength() { return static_cast<float>(std::max(m_beakPolygon.get().ActualHeight(), m_beakPolygon.get().ActualWidth())); }
+    inline float BeakLongSideLength() { return static_cast<float>(BeakLongSideActualLength() - (2 * s_beakOcclusionAmount)); }
+    inline float BeakShortSideLength() { return static_cast<float>(std::min(m_beakPolygon.get().ActualHeight(), m_beakPolygon.get().ActualWidth()) - s_beakOcclusionAmount); }
 };

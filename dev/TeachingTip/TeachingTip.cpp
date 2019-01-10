@@ -347,41 +347,41 @@ void TeachingTip::PositionTargetedPopup()
 
         case winrt::TeachingTipPlacementMode::TopEdgeAlignedRight:
             m_popup.get().VerticalOffset(m_currentTargetBounds.Y - tipHeight - offset.Top);
-            m_popup.get().HorizontalOffset(((((m_currentTargetBounds.X * 2) + m_currentTargetBounds.Width) / 2) - s_minimumTipEdgeToBeakCenter));
+            m_popup.get().HorizontalOffset(((((m_currentTargetBounds.X * 2) + m_currentTargetBounds.Width) / 2) - MinimumTipEdgeToBeakCenter()));
             break;
 
         case winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft:
             m_popup.get().VerticalOffset(m_currentTargetBounds.Y - tipHeight - offset.Top);
-            m_popup.get().HorizontalOffset(((((m_currentTargetBounds.X * 2) + m_currentTargetBounds.Width) / 2) - tipWidth + s_minimumTipEdgeToBeakCenter));
+            m_popup.get().HorizontalOffset(((((m_currentTargetBounds.X * 2) + m_currentTargetBounds.Width) / 2) - tipWidth + MinimumTipEdgeToBeakCenter()));
             break;
 
         case winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight:
             m_popup.get().VerticalOffset(m_currentTargetBounds.Y + m_currentTargetBounds.Height + offset.Bottom);
-            m_popup.get().HorizontalOffset(((((m_currentTargetBounds.X * 2) + m_currentTargetBounds.Width) / 2) - s_minimumTipEdgeToBeakCenter));
+            m_popup.get().HorizontalOffset(((((m_currentTargetBounds.X * 2) + m_currentTargetBounds.Width) / 2) - MinimumTipEdgeToBeakCenter()));
             break;
 
         case winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft:
             m_popup.get().VerticalOffset(m_currentTargetBounds.Y + m_currentTargetBounds.Height + offset.Bottom);
-            m_popup.get().HorizontalOffset(((((m_currentTargetBounds.X * 2) + m_currentTargetBounds.Width) / 2) - tipWidth + s_minimumTipEdgeToBeakCenter));
+            m_popup.get().HorizontalOffset(((((m_currentTargetBounds.X * 2) + m_currentTargetBounds.Width) / 2) - tipWidth + MinimumTipEdgeToBeakCenter()));
             break;
 
         case winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop:
-            m_popup.get().VerticalOffset((((m_currentTargetBounds.Y * 2) + m_currentTargetBounds.Height) / 2) - tipHeight + s_minimumTipEdgeToBeakCenter);
+            m_popup.get().VerticalOffset((((m_currentTargetBounds.Y * 2) + m_currentTargetBounds.Height) / 2) - tipHeight + MinimumTipEdgeToBeakCenter());
             m_popup.get().HorizontalOffset(m_currentTargetBounds.X - tipWidth - offset.Left);
             break;
 
         case winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom:
-            m_popup.get().VerticalOffset((((m_currentTargetBounds.Y * 2) + m_currentTargetBounds.Height) / 2) - s_minimumTipEdgeToBeakCenter);
+            m_popup.get().VerticalOffset((((m_currentTargetBounds.Y * 2) + m_currentTargetBounds.Height) / 2) - MinimumTipEdgeToBeakCenter());
             m_popup.get().HorizontalOffset(m_currentTargetBounds.X - tipWidth - offset.Left);
             break;
 
         case winrt::TeachingTipPlacementMode::RightEdgeAlignedTop:
-            m_popup.get().VerticalOffset((((m_currentTargetBounds.Y * 2) + m_currentTargetBounds.Height) / 2) - tipHeight + s_minimumTipEdgeToBeakCenter);
+            m_popup.get().VerticalOffset((((m_currentTargetBounds.Y * 2) + m_currentTargetBounds.Height) / 2) - tipHeight + MinimumTipEdgeToBeakCenter());
             m_popup.get().HorizontalOffset(m_currentTargetBounds.X + m_currentTargetBounds.Width + offset.Right);
             break;
 
         case winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom:
-            m_popup.get().VerticalOffset((((m_currentTargetBounds.Y * 2) + m_currentTargetBounds.Height) / 2) - s_minimumTipEdgeToBeakCenter);
+            m_popup.get().VerticalOffset((((m_currentTargetBounds.Y * 2) + m_currentTargetBounds.Height) / 2) - MinimumTipEdgeToBeakCenter());
             m_popup.get().HorizontalOffset(m_currentTargetBounds.X + m_currentTargetBounds.Width + offset.Right);
             break;
 
@@ -1123,12 +1123,12 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
 
             double contentHeight = m_beakOcclusionGrid.get().ActualHeight();
             double contentWidth = m_beakOcclusionGrid.get().ActualWidth();
-            double tipHeight = contentHeight + s_beakShortSideLength;
-            double tipWidth = contentWidth + s_beakShortSideLength;
+            double tipHeight = contentHeight + BeakShortSideLength();
+            double tipWidth = contentWidth + BeakShortSideLength();
 
             if (BleedingImageContent())
             {
-                if (m_bleedingImageContentPresenter.get().ActualHeight() > m_nonBleedingContentRootGrid.get().ActualHeight() - s_beakLongSideActualLength)
+                if (m_bleedingImageContentPresenter.get().ActualHeight() > m_nonBleedingContentRootGrid.get().ActualHeight() - BeakLongSideActualLength())
                 {
                     leftCenterAvailable = false;
                     rightCenterAvailable = false;
@@ -1183,8 +1183,8 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
             }
 
             // If the horizontal midpoint is out of the window.
-            if (targetBounds.X + (targetBounds.Width / 2) < s_minimumTipEdgeToBeakCenter ||
-                targetBounds.X + (targetBounds.Width / 2) > windowBounds.Width - s_minimumTipEdgeToBeakCenter)
+            if (targetBounds.X + (targetBounds.Width / 2) < MinimumTipEdgeToBeakCenter() ||
+                targetBounds.X + (targetBounds.Width / 2) > windowBounds.Width - MinimumTipEdgeToBeakCenter())
             {
                 topLeftAvailable = false;
                 topCenterAvailable = false;
@@ -1195,8 +1195,8 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
             }
 
             // If the vertical midpoint is out of the window.
-            if (targetBounds.Y + (targetBounds.Height / 2) < s_minimumTipEdgeToBeakCenter ||
-                targetBounds.Y + (targetBounds.Height / 2) > windowBounds.Height - s_minimumTipEdgeToBeakCenter)
+            if (targetBounds.Y + (targetBounds.Height / 2) < MinimumTipEdgeToBeakCenter() ||
+                targetBounds.Y + (targetBounds.Height / 2) > windowBounds.Height - MinimumTipEdgeToBeakCenter())
             {
                 leftBottomAvailable = false;
                 leftCenterAvailable = false;
@@ -1214,7 +1214,7 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
                 topLeftAvailable = false;
             }
             // If the tip is too tall to fit between the center of the target and the top edge of the window.
-            if (contentHeight - s_minimumTipEdgeToBeakCenter > targetBounds.Y + (targetBounds.Height / 2))
+            if (contentHeight - MinimumTipEdgeToBeakCenter() > targetBounds.Y + (targetBounds.Height / 2))
             {
                 rightTopAvailable = false;
                 leftTopAvailable = false;
@@ -1227,7 +1227,7 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
                 leftCenterAvailable = false;
             }
             // If the tip is too tall to fit between the center of the target and the bottom edge of the window.
-            if (contentHeight - s_minimumTipEdgeToBeakCenter > windowBounds.Height - (targetBounds.Y + (targetBounds.Height / 2)))
+            if (contentHeight - MinimumTipEdgeToBeakCenter() > windowBounds.Height - (targetBounds.Y + (targetBounds.Height / 2)))
             {
                 rightBottomAvailable = false;
                 leftBottomAvailable = false;
@@ -1248,7 +1248,7 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
                 leftBottomAvailable = false;
             }
             // If the tip is too wide to fit between the center of the target and the left edge of the window.
-            if (contentWidth - s_minimumTipEdgeToBeakCenter > targetBounds.X + (targetBounds.Width / 2))
+            if (contentWidth - MinimumTipEdgeToBeakCenter() > targetBounds.X + (targetBounds.Width / 2))
             {
                 topLeftAvailable = false;
                 bottomLeftAvailable = false;
@@ -1261,7 +1261,7 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
                 bottomCenterAvailable = false;
             }
             // If the tip is too wide to fit between the center of the target and the right edge of the window.
-            if (contentWidth - s_minimumTipEdgeToBeakCenter > windowBounds.Width - (targetBounds.X + (targetBounds.Width / 2)))
+            if (contentWidth - MinimumTipEdgeToBeakCenter() > windowBounds.Width - (targetBounds.X + (targetBounds.Width / 2)))
             {
                 topRightAvailable = false;
                 bottomRightAvailable = false;
