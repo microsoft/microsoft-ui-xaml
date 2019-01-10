@@ -1488,6 +1488,12 @@ void NavigationView::UpdateVisualStateForDisplayModeGroup(const winrt::Navigatio
             break;
         }
 
+        // When the pane is made invisible we need to collapse the pane part of the SplitView
+        if (!IsPaneVisible())
+        {
+            splitViewDisplayMode = winrt::SplitViewDisplayMode::CompactOverlay;
+        }
+
         auto handled = false;
         if (visualStateName == visualStateNameMinimal && IsTopNavigationView())
         {
@@ -2646,7 +2652,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_IsPaneVisibleProperty)
     {
         UpdatePaneVisibility();
-
+        UpdateVisualStateForDisplayModeGroup(DisplayMode());
     }
     else if (property == s_OverflowLabelModeProperty)
     {
