@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controlsPrimitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -54,7 +55,7 @@
                     <ComboBoxItem>ScrollViewer in Scroller</ComboBoxItem>
                 </ComboBox>
             </StackPanel>
-            <controls:Scroller x:Name="outerScroller" Width="400" Height="400" Margin="1" Background="ForestGreen" VerticalAlignment="Bottom" ZoomMode="Enabled">
+            <controlsPrimitives:Scroller x:Name="outerScroller" Width="400" Height="400" Margin="1" Background="ForestGreen" VerticalAlignment="Bottom" ZoomMode="Enabled">
                 <StackPanel Width="400">
                     <StackPanel Orientation="Horizontal">
                         <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
@@ -96,7 +97,7 @@
                             <TextBox x:Name="TextBox41A" Text="TextBox41" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </StackPanel>
-                    <controls:Scroller x:Name="innerScroller" Width="400" Height="300" Background="AliceBlue"
+                    <controlsPrimitives:Scroller x:Name="innerScroller" Width="400" Height="300" Background="AliceBlue"
                         HorizontalAlignment="Left" VerticalAlignment="Top" IsChildAvailableWidthConstrained="True" ZoomMode="Enabled" VerticalScrollChainingMode="Always">
                         <Border x:Name="border1" BorderThickness="3" BorderBrush="Chartreuse" Margin="15" Background="Beige">
                             <controls:ItemsRepeater x:Name="repeater1" Margin="30">
@@ -105,7 +106,7 @@
                                 </controls:ItemsRepeater.Layout>
                             </controls:ItemsRepeater>
                         </Border>
-                    </controls:Scroller>
+                    </controlsPrimitives:Scroller>
                     <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
                         <TextBox x:Name="TextBox100A" Text="TextBox100" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
@@ -122,7 +123,7 @@
                         <TextBox x:Name="TextBox140A" Text="TextBox140" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </StackPanel>
-            </controls:Scroller>
+            </controlsPrimitives:Scroller>
             <ScrollViewer x:Name="outerScrollViewer" Width="400" Height="400" Margin="1" Background="ForestGreen" VerticalAlignment="Bottom" 
                 HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Auto" ZoomMode="Enabled" Visibility="Collapsed">
                 <StackPanel Width="400">
@@ -166,7 +167,7 @@
                             <TextBox x:Name="TextBox41B" Text="TextBox41" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </StackPanel>
-                    <controls:Scroller x:Name="innerScroller2" Width="400" Height="300" Background="AliceBlue"
+                    <controlsPrimitives:Scroller x:Name="innerScroller2" Width="400" Height="300" Background="AliceBlue"
                         HorizontalAlignment="Left" VerticalAlignment="Top" IsChildAvailableWidthConstrained="True" ZoomMode="Enabled" VerticalScrollChainingMode="Always">
                         <Border x:Name="border2" BorderThickness="3" BorderBrush="Chartreuse" Margin="15" Background="Beige">
                             <controls:ItemsRepeater x:Name="repeater2" Margin="30">
@@ -175,7 +176,7 @@
                                 </controls:ItemsRepeater.Layout>
                             </controls:ItemsRepeater>
                         </Border>
-                    </controls:Scroller>
+                    </controlsPrimitives:Scroller>
                     <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
                         <TextBox x:Name="TextBox100B" Text="TextBox100" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
@@ -193,7 +194,7 @@
                     </Border>
                 </StackPanel>
             </ScrollViewer>
-            <controls:Scroller x:Name="outerScroller2" Width="400" Height="400" Margin="1" Background="ForestGreen" 
+            <controlsPrimitives:Scroller x:Name="outerScroller2" Width="400" Height="400" Margin="1" Background="ForestGreen" 
                 VerticalAlignment="Bottom" ZoomMode="Enabled" Visibility="Collapsed">
                 <StackPanel Width="400">
                     <StackPanel Orientation="Horizontal">
@@ -262,7 +263,7 @@
                         <TextBox x:Name="TextBox140C" Text="TextBox140" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </StackPanel>
-            </controls:Scroller>
+            </controlsPrimitives:Scroller>
         </StackPanel>
 
         <Grid Grid.Column="1" Margin="1">

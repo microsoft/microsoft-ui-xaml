@@ -4,10 +4,10 @@
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
-    <SharedGUID>374B93F8-DD19-5EDA-C56A-1640529D187C</SharedGUID>
+    <SharedGUID>8F6F9336-C45C-40C1-ABDA-3679A20434B1</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>ScrollerView_APITests</Import_RootNamespace>
+    <Import_RootNamespace>CommandBarFlyout_APITests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CommandBarFlyoutTests.cs" />

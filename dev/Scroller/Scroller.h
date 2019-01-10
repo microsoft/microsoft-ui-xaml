@@ -159,11 +159,11 @@ public:
 
 #pragma endregion
 
-    // Invoked by both Scroller and ScrollerView controls
+    // Invoked by both Scroller and ScrollViewer controls
     static bool IsZoomFactorBoundaryValid(double value);
     static void ValidateZoomFactoryBoundary(double value);
 
-    // Invoked by both Scroller and ScrollerView controls
+    // Invoked by both Scroller and ScrollViewer controls
     static bool IsAnchorRatioValid(double value);
     static void ValidateAnchorRatio(double value);
 

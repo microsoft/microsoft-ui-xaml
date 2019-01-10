@@ -230,7 +230,7 @@ winrt::Rect ScrollAnchorProvider::GetRelativeViewport(
 
 #pragma endregion
 
-void ScrollAnchorProvider::ApplyPendingChangeView(const winrt::ScrollViewer& scrollViewer)
+void ScrollAnchorProvider::ApplyPendingChangeView(const winrt::FxScrollViewer& scrollViewer)
 {
     auto bringIntoView = m_pendingBringIntoView;
     MUX_ASSERT(!bringIntoView.ChangeViewCalled());
@@ -270,7 +270,7 @@ void ScrollAnchorProvider::ApplyPendingChangeView(const winrt::ScrollViewer& scr
     m_pendingBringIntoView = std::move(bringIntoView);
 }
 
-double ScrollAnchorProvider::TrackElement(const winrt::UIElement& element, winrt::Rect previousBounds, const winrt::ScrollViewer& scrollViewer)
+double ScrollAnchorProvider::TrackElement(const winrt::UIElement& element, winrt::Rect previousBounds, const winrt::FxScrollViewer& scrollViewer)
 {
     const auto bounds = winrt::LayoutInformation::GetLayoutSlot(element.as<winrt::FrameworkElement>());
     const auto transformer = element.TransformToVisual(scrollViewer.ContentTemplateRoot());
@@ -334,13 +334,13 @@ double ScrollAnchorProvider::TrackElement(const winrt::UIElement& element, winrt
     return pendingViewportShift;
 }
 
-winrt::ScrollViewer ScrollAnchorProvider::TryGetScrollViewer()
+winrt::FxScrollViewer ScrollAnchorProvider::TryGetScrollViewer()
 {
     if (!m_scrollViewer)
     {
         // PERF: This operation is expensive especially since it gets invoked every time
         // CalculateDistance is called.
-        m_scrollViewer.set(Content().try_as<winrt::ScrollViewer>());
+        m_scrollViewer.set(Content().try_as<winrt::FxScrollViewer>());
 
         if (m_scrollViewer)
         {
@@ -356,7 +356,7 @@ winrt::UIElement ScrollAnchorProvider::GetAnchorElement(_Out_opt_ winrt::Rect* r
 {
     if (m_isAnchorElementDirty)
     {
-        winrt::ScrollViewer scrollViewer = TryGetScrollViewer();
+        winrt::FxScrollViewer scrollViewer = TryGetScrollViewer();
 
         if (scrollViewer)
         {
