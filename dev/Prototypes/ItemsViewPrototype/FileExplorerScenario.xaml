@@ -129,7 +129,7 @@
         <l:ItemsView x:Name="itemsView" 
                      Grid.Row="1" 
                      SelectionMode="{x:Bind ConvertToSelectionMode((x:String)((ComboBoxItem)cbSelectionMode.SelectedItem).Content), Mode=OneWay}"
-                     ItemsSource="{x:Bind ItemsGroupedByParentMountain}" 
-                     ViewDefinition="{StaticResource groupedTableDefinition}"/>
+                     ItemsSource="{x:Bind Items}" 
+                     ViewDefinition="{StaticResource flatTableDefinition}"/>
     </Grid>
 </Page>
