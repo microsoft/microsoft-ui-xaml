@@ -318,7 +318,7 @@ void AcrylicBrush::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
         if (property == s_TintLuminosityOpacityProperty)
         {
             //  Logging usage telemetry
-            __RP_Marker_ClassById(RuntimeProfiler::ProfId_Acrylic_TintLuminosityOpacity_Changed);
+            __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_Acrylic, RuntimeProfiler::ProfMemberId_Acrylic_TintLuminosityOpacity_Changed);
         }
     }
     else if (property == s_AlwaysUseFallbackProperty)
