@@ -37,6 +37,13 @@ namespace RuntimeProfiler
         ProfId_Size
     } ProfilerClassId;
 
+    //  Ditto above...
+    typedef enum
+    {
+        ProfMemberId_Acrylic_TintLuminosityOpacity_Changed = 0,
+        ProfMemberId_Size
+    } ProfilerMemberId;
+
     void FireEvent(bool Suspend) noexcept;
     void RegisterMethod(ProfileGroup group, UINT16 TypeIndex, UINT16 MethodIndex, volatile LONG *Count) noexcept;
 }
@@ -51,4 +58,14 @@ namespace RuntimeProfiler
         } \
     }
     
+#define __RP_Marker_ClassMemberById(typeindex, memberindex) \
+    { \
+        __pragma (warning ( suppress : 28112)) \
+        static volatile LONG __RuntimeProfiler_Counter = -1; \
+        if (0 == ::InterlockedIncrement(&__RuntimeProfiler_Counter)) \
+        { \
+            RuntimeProfiler::RegisterMethod(RuntimeProfiler::PG_Class, (UINT16)typeindex, (UINT16)memberindex, &__RuntimeProfiler_Counter); \
+        } \
+    }
+
 
