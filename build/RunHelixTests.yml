@@ -1,8 +1,8 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: Build
-  condition: 
-    False
+  # condition: 
+  #   False
   pool:
     vmImage: VS2017-Win2016
   timeoutInMinutes: 120
@@ -15,12 +15,15 @@ jobs:
   strategy:
     maxParallel: 4
     matrix:
+      Debug_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Debug'
       # Release_x86:
       #   buildPlatform: 'x86'
       #   buildConfiguration: 'Release'
-      Debug_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Debug'
+      # Debug_x64:
+      #   buildPlatform: 'x64'
+      #   buildConfiguration: 'Debug'
       # Release_x64:
       #   buildPlatform: 'x64'
       #   buildConfiguration: 'Release'
@@ -75,8 +78,8 @@ jobs:
 
 
 - job: RunTests
-  # dependsOn:
-  #   - Build
+  dependsOn:
+    - Build
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
@@ -87,14 +90,14 @@ jobs:
   strategy:
     maxParallel: 4
     matrix:
-      # Debug_x86:
-      #   buildPlatform: 'x86'
-      #   buildConfiguration: 'Debug'
-      #   helixTargetQueues: 'Windows.10.Amd64.Open'
-      Release_x86:
+      Debug_x86:
         buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-        helixTargetQueues: 'Windows.10.Amd64.ClientRS4.Open'
+        buildConfiguration: 'Debug'
+        helixTargetQueues: 'Windows.10.Amd64.Open'
+      # Release_x86:
+      #   buildPlatform: 'x86'
+      #   buildConfiguration: 'Release'
+      #   helixTargetQueues: 'Windows.10.Amd64.ClientRS4.Open'
       # Release_x64:
       #   buildPlatform: 'x64'
       #   buildConfiguration: 'Release'
@@ -115,25 +118,24 @@ jobs:
       nugetConfigPath: nuget.config
       restoreDirectory: packages
 
-  - task: DownloadBuildArtifacts@0 
-    displayName: 'Download Build Artifacts from other pipeline'
-    inputs: 
-      buildType: specific
-      buildVersionToDownload: specific
-      project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
-      pipeline: 22
-      buildId: 1298
-      # project: 'f05f4dbf-3077-427d-91e0-b66d9e4ca374'
-      # pipeline: 34322
-      # buildId: 13496210
-      artifactName: drop 
-      downloadPath: '$(artifactsDir)'
-
-
   # - task: DownloadBuildArtifacts@0 
+  #   displayName: 'Download Build Artifacts from other pipeline'
   #   inputs: 
+  #     buildType: specific
+  #     buildVersionToDownload: specific
+  #     project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
+  #     pipeline: 22
+  #     buildId: 1298
+  #     # project: 'f05f4dbf-3077-427d-91e0-b66d9e4ca374'
+  #     # pipeline: 34322
+  #     # buildId: 13496210
   #     artifactName: drop 
   #     downloadPath: '$(artifactsDir)'
+
+  - task: DownloadBuildArtifacts@0 
+    inputs: 
+      artifactName: drop 
+      downloadPath: '$(artifactsDir)'
 
   - task: powershell@2
     displayName: 'PrepareHelixPayload.ps1'
