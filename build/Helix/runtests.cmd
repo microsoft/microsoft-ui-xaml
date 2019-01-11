@@ -1,3 +1,5 @@
+set
+
 robocopy %HELIX_CORRELATION_PAYLOAD% . /s
 
 te MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError %* 
