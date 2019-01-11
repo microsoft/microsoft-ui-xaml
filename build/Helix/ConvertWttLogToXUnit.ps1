@@ -6,9 +6,18 @@ Param(
     [string]$XUnitOutputPath,
 
     [Parameter(Mandatory = $true)] 
-    [string]$testNamePrefix
+    [string]$testNamePrefix,
+
+    [Parameter(Mandatory = $true)] 
+    [string]$linkToUploadedWtlLog,
+
+    [Parameter(Mandatory = $true)] 
+    [string]$helixResultsContainerUri,
+
+    [Parameter(Mandatory = $true)] 
+    [string]$helixResultsContainerRsas
 )
 
 Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xml.Linq (Get-Content .\ConvertWttLogToXUnit.cs -Raw)
 
-[HelixTestHelpers.TestResultParser]::ConvertWttLogToXUnitLog($WttInputPath, $XUnitOutputPath, $testNamePrefix)
+[HelixTestHelpers.TestResultParser]::ConvertWttLogToXUnitLog($WttInputPath, $XUnitOutputPath, $testNamePrefix, $linkToUploadedWtlLog, $helixResultsContainerUri, $helixResultsContainerRsas)
