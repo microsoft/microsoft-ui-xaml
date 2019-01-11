@@ -11,6 +11,12 @@
 CommandBarFlyout::CommandBarFlyout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_CommandBarFlyout);
+
+
+    if (winrt::IFlyoutBase6 thisAsFlyoutBase6 = *this)
+    {
+        thisAsFlyoutBase6.ShouldConstrainToRootBounds(false);
+    }
     
     if (winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this)
     {
