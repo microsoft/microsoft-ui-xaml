@@ -13,8 +13,10 @@ namespace DEPControlsTestApp.ItemsViewPrototype
     [ContentProperty(Name = nameof(HierarchicalDataTemplate.Template))]
     public sealed class HierarchicalDataTemplate : DependencyObject, mux.IElementFactoryShim
     {
-        // Ideally this would be derived from something like FrameworkTemplate and have x:Bind support making
-        // it unnecessary to have this Template property.
+        // Ideally this would be derived from something like FrameworkTemplate 
+        //   Internal issue 18821924: Deriving from DataTemplate does not work when derived type is used in Markup.
+        // And it would have x:Bind support, making it unnecessary to have this Template property.
+        //   Internal issue 19126400 x:Bind support for DataGrid columns
         public DataTemplate Template
         {
             get
