@@ -87,14 +87,14 @@ jobs:
   strategy:
     maxParallel: 4
     matrix:
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
-        helixTargetQueues: 'Windows.10.Amd64.Open'
-      # Release_x86:
+      # Debug_x86:
       #   buildPlatform: 'x86'
-      #   buildConfiguration: 'Release'
-      #   helixTargetQueues: 'Windows.10.Amd64.ClientRS4.Open'
+      #   buildConfiguration: 'Debug'
+      #   helixTargetQueues: 'Windows.10.Amd64.Open'
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+        helixTargetQueues: 'Windows.10.Amd64.ClientRS4.Open'
       # Release_x64:
       #   buildPlatform: 'x64'
       #   buildConfiguration: 'Release'
