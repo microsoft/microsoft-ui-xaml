@@ -685,7 +685,7 @@ void RevealBrush::CreateRevealBrush()
     winrt::CompositionPropertySet compositionPropertySet = compositionObject.Properties();
 
     // Property sets don't support strings as property values, so store our tag as a scalar value.
-    static winrt::hstring brushIdentifier = winrt::hstring(L"Microsoft.UI.Xaml.RevealBrush");
+    static winrt::hstring brushIdentifier = winrt::hstring(L"ShouldRenderAsFallbackInIslands");
     compositionPropertySet.InsertScalar(brushIdentifier, 1.0f);
 #endif
 }
