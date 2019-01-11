@@ -525,7 +525,7 @@
                                         <Viewbox Width="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}"
                                                  Height="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}">
                                             <SymbolIcon Symbol="Cancel"/>
-                                        </Viewbox> IconPresenterMargi
+                                        </Viewbox>
                                     </Button>
                                 </Grid>
                             </Grid>
