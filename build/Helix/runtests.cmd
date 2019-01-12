@@ -13,10 +13,8 @@ FOR %%I in (WexLogFileOutput\*.jpg) DO (
     %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI%%~xI 
 )
 
-set linkToUploadedWtlLog = %HELIX_RESULTS_CONTAINER_URI%te.wtl%HELIX_RESULTS_CONTAINER_RSAS%
-
 cd scripts
-powershell -ExecutionPolicy Bypass .\ConvertWttLogToXUnit.ps1 ..\te.wtl ..\testResults.xml %testnameprefix% %linkToUploadedWtlLog% %HELIX_RESULTS_CONTAINER_URI% %HELIX_RESULTS_CONTAINER_RSAS%
+powershell -ExecutionPolicy Bypass .\ConvertWttLogToXUnit.ps1 ..\te.wtl ..\testResults.xml %testnameprefix%
 cd ..
 
 type testResults.xml
