@@ -31,7 +31,7 @@ namespace HelixTestHelpers
             public List<string> Screenshots { get; private set; }
         }
 
-        public static void ConvertWttLogToXUnitLog(string wttInputPath, string xunitOutputPath, string testNamePrefix, string linkToUploadedWtlLog, string helixResultsContainerUri, string helixResultsContainerRsas)
+        public static void ConvertWttLogToXUnitLog(string wttInputPath, string xunitOutputPath, string testNamePrefix, string helixResultsContainerUri, string helixResultsContainerRsas)
         {
             var testPass = TestResultParser.ParseTestWttFile(wttInputPath, true);
             var results = testPass.TestResults;
@@ -91,14 +91,14 @@ namespace HelixTestHelpers
 
                     StringBuilder errorMessage = new StringBuilder();
 
-                    errorMessage.AppendLine("Log: " + linkToUploadedWtlLog);
+                    errorMessage.AppendLine("Log: " + GetUploadedFileUrl(wttInputPath, helixResultsContainerUri, helixResultsContainerRsas));
                     
                     if(result.Screenshots.Any())
                     {
                         errorMessage.AppendLine("Screenshots:");
                         foreach(var screenshot in result.Screenshots)
                         {
-                            errorMessage.AppendLine(GetUploadedScreenshotUrl(screenshot, helixResultsContainerUri, helixResultsContainerRsas));
+                            errorMessage.AppendLine(GetUploadedFileUrl(screenshot, helixResultsContainerUri, helixResultsContainerRsas));
                         }
                     }
 
@@ -344,10 +344,10 @@ namespace HelixTestHelpers
             return null;
         }
 
-        private static string GetUploadedScreenshotUrl(string screenshotFileName, string helixResultsContainerUri, string helixResultsContainerRsas)
+        private static string GetUploadedFileUrl(string filePath, string helixResultsContainerUri, string helixResultsContainerRsas)
         {
-            screenshotFileName = screenshotFileName.Replace(@"WexLogFileOutput\", "");
-            return string.Format("{0}/{1}{2}", helixResultsContainerUri, screenshotFileName, helixResultsContainerRsas);
+            var filename = Path.GetFileName(filePath);
+            return string.Format("{0}/{1}{2}", helixResultsContainerUri, filename, helixResultsContainerRsas);
         }
     }
 

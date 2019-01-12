@@ -13,8 +13,7 @@ Param(
 # read the values directly from the environment variables
 $helixResultsContainerUri = $Env:HELIX_RESULTS_CONTAINER_URI
 $helixResultsContainerRsas = $Env:HELIX_RESULTS_CONTAINER_RSAS
-$linkToUploadedWtlLog = "$helixResultsContainerUri/te.wtl$helixResultsContainerRsas"
 
 Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xml.Linq (Get-Content .\ConvertWttLogToXUnit.cs -Raw)
 
-[HelixTestHelpers.TestResultParser]::ConvertWttLogToXUnitLog($WttInputPath, $XUnitOutputPath, $testNamePrefix, $linkToUploadedWtlLog, $helixResultsContainerUri, $helixResultsContainerRsas)
+[HelixTestHelpers.TestResultParser]::ConvertWttLogToXUnitLog($WttInputPath, $XUnitOutputPath, $testNamePrefix, $helixResultsContainerUri, $helixResultsContainerRsas)
