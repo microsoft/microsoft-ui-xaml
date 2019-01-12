@@ -1,7 +1,7 @@
 [CmdLetBinding()]
 Param(
-    [string]$Platform = "x86",
-    [string]$Configuration = "Debug"
+    [string]$Platform,
+    [string]$Configuration
 )
 
 $payloadDir = "HelixPayload\$Configuration\$Platform"
