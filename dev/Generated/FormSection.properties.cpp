@@ -8,9 +8,10 @@
 
 CppWinRTActivatableClassWithDPFactory(FormSection)
 
+GlobalDependencyProperty FormSectionProperties::s_BuddiesProperty{ nullptr };
 GlobalDependencyProperty FormSectionProperties::s_ColumnsProperty{ nullptr };
 GlobalDependencyProperty FormSectionProperties::s_HeaderProperty{ nullptr };
-GlobalDependencyProperty FormSectionProperties::s_ItemsProperty{ nullptr };
+GlobalDependencyProperty FormSectionProperties::s_LengthProperty{ nullptr };
 
 FormSectionProperties::FormSectionProperties()
 {
@@ -19,6 +20,17 @@ FormSectionProperties::FormSectionProperties()
 
 void FormSectionProperties::EnsureProperties()
 {
+    if (!s_BuddiesProperty)
+    {
+        s_BuddiesProperty =
+            InitializeDependencyProperty(
+                L"Buddies",
+                winrt::name_of<int>(),
+                winrt::name_of<winrt::FormSection>(),
+                true /* isAttached */,
+                ValueHelper<int>::BoxValueIfNecessary(0),
+                &FormSection::OnBuddiesPropertyChanged);
+    }
     if (!s_ColumnsProperty)
     {
         s_ColumnsProperty =
@@ -41,24 +53,25 @@ void FormSectionProperties::EnsureProperties()
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
-    if (!s_ItemsProperty)
+    if (!s_LengthProperty)
     {
-        s_ItemsProperty =
+        s_LengthProperty =
             InitializeDependencyProperty(
-                L"Items",
-                winrt::name_of<winrt::IVector<winrt::FrameworkElement>>(),
+                L"Length",
+                winrt::name_of<winrt::GridLength>(),
                 winrt::name_of<winrt::FormSection>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IVector<winrt::FrameworkElement>>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                true /* isAttached */,
+                ValueHelper<winrt::GridLength>::BoxValueIfNecessary(FormSection::s_defaultLength),
+                &FormSection::OnLengthPropertyChanged);
     }
 }
 
 void FormSectionProperties::ClearProperties()
 {
+    s_BuddiesProperty = nullptr;
     s_ColumnsProperty = nullptr;
     s_HeaderProperty = nullptr;
-    s_ItemsProperty = nullptr;
+    s_LengthProperty = nullptr;
 }
 
 void FormSectionProperties::OnPropertyChanged(
@@ -67,6 +80,16 @@ void FormSectionProperties::OnPropertyChanged(
 {
     auto owner = sender.as<winrt::FormSection>();
     winrt::get_self<FormSection>(owner)->OnPropertyChanged(args);
+}
+
+void FormSectionProperties::SetBuddies(winrt::UIElement const& target, int value)
+{
+    target.SetValue(s_BuddiesProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+}
+
+int FormSectionProperties::GetBuddies(winrt::UIElement const& target)
+{
+    return ValueHelper<int>::CastOrUnbox(target.GetValue(s_BuddiesProperty));
 }
 
 void FormSectionProperties::Columns(int value)
@@ -89,12 +112,12 @@ winrt::hstring FormSectionProperties::Header()
     return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<FormSection*>(this)->GetValue(s_HeaderProperty));
 }
 
-void FormSectionProperties::Items(winrt::IVector<winrt::FrameworkElement> const& value)
+void FormSectionProperties::SetLength(winrt::UIElement const& target, winrt::GridLength const& value)
 {
-    static_cast<FormSection*>(this)->SetValue(s_ItemsProperty, ValueHelper<winrt::IVector<winrt::FrameworkElement>>::BoxValueIfNecessary(value));
+    target.SetValue(s_LengthProperty, ValueHelper<winrt::GridLength>::BoxValueIfNecessary(value));
 }
 
-winrt::IVector<winrt::FrameworkElement> FormSectionProperties::Items()
+winrt::GridLength FormSectionProperties::GetLength(winrt::UIElement const& target)
 {
-    return ValueHelper<winrt::IVector<winrt::FrameworkElement>>::CastOrUnbox(static_cast<FormSection*>(this)->GetValue(s_ItemsProperty));
+    return ValueHelper<winrt::GridLength>::CastOrUnbox(target.GetValue(s_LengthProperty));
 }

@@ -14,37 +14,4 @@
         </Setter>
     </Style>
 
-    <Style TargetType="local:FormSection">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="local:FormSection">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Text="{TemplateBinding Header}" Style="{ThemeResource SubtitleTextBlockStyle}" Margin="0,0,0,24"/>
-
-                        <ItemsControl Grid.Row="1" ItemsSource="{TemplateBinding Items}" MaxWidth="700" HorizontalAlignment="Left">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="{TemplateBinding Columns}" ItemWidth="300"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-
-                            <ItemsControl.ItemContainerStyle>
-                                <Style TargetType="TextBox">
-                                    <Setter Property="Margin" Value="0,0,12,24"/>
-                                </Style>
-                            </ItemsControl.ItemContainerStyle>
-                        </ItemsControl>
-
-                    </Grid>
-
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
 </ResourceDictionary>

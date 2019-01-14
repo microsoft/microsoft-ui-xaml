@@ -180,11 +180,16 @@ namespace CustomTasks
 
             IncludedTypesMetadata["FormSection"] = true;
             // FormSection -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["FormSection.Buddies"] = true;
+            PropChangedCallbackMethodNameMetadata["FormSection.Buddies"] = "OnBuddiesPropertyChanged";
             NeedsPropChangedCallbackMetadata["FormSection.Columns"] = true;
             NeedsPropChangedCallbackMetadata["FormSection.Header"] = true;
-            NeedsPropChangedCallbackMetadata["FormSection.Items"] = true;
+            NeedsPropChangedCallbackMetadata["FormSection.Length"] = true;
+            PropChangedCallbackMethodNameMetadata["FormSection.Length"] = "OnLengthPropertyChanged";
             // FormSection -- DefaultValueMetadata
+            DefaultValueMetadata["FormSection.Buddies"] = @"0";
             DefaultValueMetadata["FormSection.Columns"] = @"1";
+            DefaultValueMetadata["FormSection.Length"] = @"FormSection::s_defaultLength";
 
             IncludedTypesMetadata["IconSource"] = true;
             // IconSource -- NeedsPropChangedCallbackMetadata

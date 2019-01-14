@@ -18,8 +18,19 @@ public:
     FormSection();
     ~FormSection() {}
 
-    // IFrameworkElement
-    void OnApplyTemplate();
+    static constexpr winrt::GridLength s_defaultLength{ 1, winrt::GridUnitType::Star };
+
+    // IFrameworkElementOverrides
+    winrt::Size MeasureOverride(winrt::Size const& availableSize);
+    winrt::Size ArrangeOverride(winrt::Size const& finalSize);
+
+    static void OnLengthPropertyChanged(
+        const winrt::DependencyObject& sender,
+        const winrt::DependencyPropertyChangedEventArgs& args);
+
+    static void OnBuddiesPropertyChanged(
+        const winrt::DependencyObject& sender,
+        const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 };

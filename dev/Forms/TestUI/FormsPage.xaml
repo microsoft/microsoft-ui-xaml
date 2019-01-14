@@ -26,16 +26,18 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <StackPanel Orientation="Vertical">
-            <!--<controls:Forms />
+            <!--<controls:Forms />-->
 
             <controls:FormSection Header="Section One" Columns="2">
                 <TextBox Header="First Name"/>
                 <TextBox Header="Last Name"/>
-                <TextBox Header="Nickname"/>
+                <TextBox Header="M.I." controls:FormSection.Buddies="1" controls:FormSection.Length="Auto"/>
                 <TextBox Header="Phone Number"/>
-            </controls:FormSection>-->
+                <TextBox Header="Title" controls:FormSection.Buddies="1"/>
+                <TextBox Header="Nickname"/>
+            </controls:FormSection>
 
-            <controls:ItemsRepeater x:Name="Repeater"/>
+            <!--<controls:ItemsRepeater x:Name="Repeater"/>-->
         </StackPanel>
     </Grid>
 </local:TestPage>

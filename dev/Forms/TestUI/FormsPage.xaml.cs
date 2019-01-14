@@ -39,6 +39,7 @@ namespace MUXControlsTestApp
         {
             this.InitializeComponent();
 
+                /*
 #if BUILD_WINDOWS
             Repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
 #else
@@ -55,7 +56,7 @@ namespace MUXControlsTestApp
 
             items.Add(new TextBox() { Header = "Nickname" });
 
-            Repeater.ItemsSource = items;
+            Repeater.ItemsSource = items;*/
         }
     }
 }

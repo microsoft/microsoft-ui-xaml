@@ -271,7 +271,7 @@
       </AdditionalIncludeDirectories>
       <MultiProcessorCompilation Condition="$(BuildingWithBuildExe) == 'true'">true</MultiProcessorCompilation>
       <AdditionalOptions>/std:c++17 /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="$(BuildingWithBuildExe) != 'true'">/Wv:18 /Zm1000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="$(BuildingWithBuildExe) != 'true'">/Wv:18 /Zm2000 %(AdditionalOptions)</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <EnablePREfast Condition="'$(Configuration)'=='Release' And $(BuildingWithBuildExe) != 'true'">true</EnablePREfast>
@@ -482,7 +482,7 @@
       <PRIResource Remove="@(PRIResource)" />
     </ItemGroup>
     <!-- Use CreateItem to expand all the ** to individual full paths -->
-    <CreateItem Include="@(PRIResourceExpanded -&gt; '%(Replaced)')">
+    <CreateItem Include="@(PRIResourceExpanded -> '%(Replaced)')">
       <Output TaskParameter="Include" ItemName="PRIResource" />
     </CreateItem>
     <Message Text="Expanded PRIResource = @(PRIResource)" />
@@ -511,7 +511,7 @@
     <ItemGroup>
       <UndefinedPage Include="@(SharedPage)" Condition="'%(Version)' == 'Undefined' Or '%(Type)' == 'Undefined'" />
     </ItemGroup>
-    <Error File="@(UndefinedPage -&gt; '%(Filename)%(Extension)')" Condition="'%(Filename)%(Extension)' != ''" Text="Version and/or type of %(Filename)%(Extension) was not defined in including .vcxitems file. Please annotate &lt;Page&gt; item tag with &lt;Version&gt; and &lt;Type&gt; item metadata." />
+    <Error File="@(UndefinedPage -> '%(Filename)%(Extension)')" Condition="'%(Filename)%(Extension)' != ''" Text="Version and/or type of %(Filename)%(Extension) was not defined in including .vcxitems file. Please annotate &lt;Page&gt; item tag with &lt;Version&gt; and &lt;Type&gt; item metadata." />
     <ItemGroup>
       <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '1'" />
       <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '2'" />
@@ -825,7 +825,7 @@
     <!-- The Name of the Local Assembly in Managed and Native -->
     <PropertyGroup>
       <LocalAssembly Condition="'$(LocalAssembly)' == '' and Exists(@(XamlIntermediateAssembly))">
-        @(XamlIntermediateAssembly-&gt;'%(Identity)')
+        @(XamlIntermediateAssembly->'%(Identity)')
       </LocalAssembly>
     </PropertyGroup>
     <CallTarget Targets="SDKRedistOutputGroup" Condition="'$(IncludeSDKRedistOutputGroup)' == 'true'">
@@ -881,7 +881,7 @@
       </ClCompile>
     </ItemGroup>
   </Target>
-  <Target Name="mdmerge" AfterTargets="Midl" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(Midl -&gt; '%(MetadataFileName)')" Outputs="$(OutDir)Microsoft.UI.winmd;$(OutDir)\sdk\Microsoft.UI.Xaml.winmd;$(IntermediateOutputPath)CppWinRT\Platform\winrt\base.h;$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.Controls.h">
+  <Target Name="mdmerge" AfterTargets="Midl" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(Midl -> '%(MetadataFileName)')" Outputs="$(OutDir)Microsoft.UI.winmd;$(OutDir)\sdk\Microsoft.UI.Xaml.winmd;$(IntermediateOutputPath)CppWinRT\Platform\winrt\base.h;$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.Controls.h">
     <PropertyGroup>
       <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
       <!-- using an older version of cpp winrt to avoid compiler issues -->
@@ -895,9 +895,9 @@
     <ItemGroup Condition="'$(MiniWindowsSDKWinMDPath)'!=''">
       <MetaDataDir Include="$(MiniWindowsSDKWinMDPath)" />
     </ItemGroup>
-    <Exec Command="$(MdMergeExe) -v @(MetaDataDir -&gt; '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(UnmergedWinmdDirectory)\..&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:3" />
-    <Exec Command="$(MdMergeExe) -v @(MetaDataDir -&gt; '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(UnmergedWinmdDirectory)\..\sdk&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:3 -createPublicMetadata -transformExperimental:transform" />
-    <Exec Command="$(MdMergeExe) -v @(MetaDataDir -&gt; '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(MergedWinmdDirectory)&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:2" />
+    <Exec Command="$(MdMergeExe) -v @(MetaDataDir -> '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(UnmergedWinmdDirectory)\..&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:3" />
+    <Exec Command="$(MdMergeExe) -v @(MetaDataDir -> '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(UnmergedWinmdDirectory)\..\sdk&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:3 -createPublicMetadata -transformExperimental:transform" />
+    <Exec Command="$(MdMergeExe) -v @(MetaDataDir -> '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(MergedWinmdDirectory)&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:2" />
     <!-- UWP projects that reference this project expect the winmd to be in the same directory as the dll. -->
     <Copy SourceFiles="$(MergedWinmdDirectory)\Microsoft.UI.winmd" DestinationFolder="$(OutDir)" />
     <!-- <Exec Command="&quot;$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\winmdidl.exe&quot; @(MetaDataDir -> '/metadata_dir:&quot;%(Identity)&quot;', ' ') &quot;$(UnmergedWinmdDirectory)\..\Microsoft.UI.winmd&quot; /outdir:&quot;$(MergedWinmdDirectory)&quot;"/>
@@ -934,9 +934,9 @@
       <ComponentWinMD Include="$(OutDir)Microsoft.UI.Composition.winmd" />
     </ItemGroup>
     <Message Text="Generating Platform C++/WinRT headers ..." />
-    <Exec Command="$(CppWinRTExe) -overwrite @(ProjectionWinMD -&gt; '-in &quot;%(Identity)&quot;', ' ') -out $(IntermediateOutputPath)\CppWinRT\Platform" />
+    <Exec Command="$(CppWinRTExe) -overwrite @(ProjectionWinMD -> '-in &quot;%(Identity)&quot;', ' ') -out $(IntermediateOutputPath)\CppWinRT\Platform" />
     <Message Text="Generating Projection C++/WinRT headers ..." />
-    <Exec Command="$(CppWinRTExe) -component $(IntermediateOutputPath)\CppWinRT\Reference -overwrite @(ProjectionWinMD -&gt; '-ref &quot;%(Identity)&quot;', ' ') @(ComponentWinMD -&gt; '-in &quot;%(Identity)&quot;', ' ') -out $(IntermediateOutputPath)\CppWinRT\Component" />
+    <Exec Command="$(CppWinRTExe) -component $(IntermediateOutputPath)\CppWinRT\Reference -overwrite @(ProjectionWinMD -> '-ref &quot;%(Identity)&quot;', ' ') @(ComponentWinMD -> '-in &quot;%(Identity)&quot;', ' ') -out $(IntermediateOutputPath)\CppWinRT\Component" />
     <Message Text="Generating C++/WinRT headers complete" />
     <ItemGroup>
       <FileWrites Include="$(OutDir)Microsoft.UI.Xaml.winmd" />
