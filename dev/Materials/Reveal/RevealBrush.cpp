@@ -681,12 +681,8 @@ void RevealBrush::CreateRevealBrush()
     }
 
 #ifndef BUILD_WINDOWS
-    winrt::CompositionObject compositionObject {m_brush.try_as<winrt::CompositionObject>()};
-    winrt::CompositionPropertySet compositionPropertySet = compositionObject.Properties();
-
-    // Property sets don't support strings as property values, so store our tag as a scalar value.
-    static winrt::hstring brushIdentifier = winrt::hstring(L"ShouldRenderAsFallbackInIslands");
-    compositionPropertySet.InsertScalar(brushIdentifier, 1.0f);
+   
+    m_brush.Properties().InsertScalar(L"ShouldRenderAsFallbackInIslands", 1.0f);
 #endif
 }
 
