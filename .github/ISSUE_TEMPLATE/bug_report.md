@@ -35,7 +35,7 @@ NuGet package version:
 | Creators Update (15063)           | <!-- Yes/No? -->   |
 | Anniversary Update (14393)      | <!-- Yes/No? -->   |
 
-<!-- Which device form factors did you see the issue? Leave blank if you didn't try that version. -->
+<!-- Which device form factors did you see the issue on? Leave blank if you didn't try that device. -->
 | Device form factor | Saw the problem? |
 | :-------------------- | :------------------- |
 | Desktop                 | <!-- Yes/No? -->   |
