@@ -5,7 +5,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 #if !BUILD_WINDOWS
-using IScrollController = Microsoft.UI.Xaml.Controls.IScrollController;
+using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
 using ScrollBar2 = Microsoft.UI.Xaml.Controls.ScrollBar2;
 #endif
 

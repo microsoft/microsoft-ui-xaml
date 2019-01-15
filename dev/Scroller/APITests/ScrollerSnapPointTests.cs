@@ -4,6 +4,7 @@
 using MUXControlsTestApp.Utilities;
 using System;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Common;
 
 #if USING_TAEF
@@ -16,11 +17,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 #if !BUILD_WINDOWS
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
-using ScrollerSnapPointBase = Microsoft.UI.Xaml.Controls.ScrollerSnapPointBase;
-using ScrollerSnapPointAlignment = Microsoft.UI.Xaml.Controls.ScrollerSnapPointAlignment;
-using ScrollerSnapPointRegular = Microsoft.UI.Xaml.Controls.ScrollerSnapPointRegular;
-using ScrollerSnapPointIrregular = Microsoft.UI.Xaml.Controls.ScrollerSnapPointIrregular;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollerSnapPointBase = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointBase;
+using ScrollerSnapPointAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment;
+using ScrollerSnapPointRegular = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointRegular;
+using ScrollerSnapPointIrregular = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointIrregular;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests

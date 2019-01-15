@@ -1,0 +1,7 @@
+﻿[WUXC_VERSION_INTERNAL]
+[default_interface]
+[webhosthidden]
+runtimeclass ScrollViewerTestHooks
+{
+    static MU_XCP_NAMESPACE.Scroller GetScrollerPart(MU_XC_NAMESPACE.ScrollViewer scrollViewer);
+}

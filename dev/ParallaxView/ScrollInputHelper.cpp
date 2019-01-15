@@ -115,7 +115,7 @@ void ScrollInputHelper::SetTargetElement(const winrt::UIElement& targetElement)
     }
 }
 
-void ScrollInputHelper::SetScrollViewer(const winrt::ScrollViewer& scrollViewer)
+void ScrollInputHelper::SetScrollViewer(const winrt::FxScrollViewer& scrollViewer)
 {
     if (scrollViewer != m_scrollViewer.get())
     {
@@ -195,7 +195,7 @@ winrt::RichEditBox ScrollInputHelper::GetRichEditBoxParent(const winrt::Dependen
 void ScrollInputHelper::GetChildScrollerOrScrollViewer(
     const winrt::DependencyObject& rootElement,
     _Out_ winrt::Scroller* scroller,
-    _Out_ winrt::ScrollViewer* scrollViewer)
+    _Out_ winrt::FxScrollViewer* scrollViewer)
 {
     *scroller = nullptr;
     *scrollViewer = nullptr;
@@ -206,7 +206,7 @@ void ScrollInputHelper::GetChildScrollerOrScrollViewer(
         for (int i = 0; i < childCount; i++)
         {
             winrt::DependencyObject current = winrt::VisualTreeHelper::GetChild(rootElement, i);
-            *scrollViewer = current.try_as<winrt::ScrollViewer>();
+            *scrollViewer = current.try_as<winrt::FxScrollViewer>();
             if (*scrollViewer)
             {
                 return;
@@ -520,12 +520,12 @@ void ScrollInputHelper::UpdateViewportSize()
 void ScrollInputHelper::UpdateSource(bool allowSourceElementLoadedHookup)
 {
     winrt::Scroller scroller = nullptr;
-    winrt::ScrollViewer scrollViewer = nullptr;
+    winrt::FxScrollViewer scrollViewer = nullptr;
     auto sourceElement = m_sourceElement.get();
     if (sourceElement)
     {
         scroller = sourceElement.try_as<winrt::Scroller>();
-        scrollViewer = sourceElement.try_as<winrt::ScrollViewer>();
+        scrollViewer = sourceElement.try_as<winrt::FxScrollViewer>();
     }
 
     if (scroller || scrollViewer)
@@ -593,7 +593,7 @@ void ScrollInputHelper::UpdateIsTargetElementInSource()
                 {
                     if (sourceIsScrollViewer)
                     {
-                        winrt::ScrollViewer parentAsScrollViewer = parent.try_as<winrt::ScrollViewer>();
+                        winrt::FxScrollViewer parentAsScrollViewer = parent.try_as<winrt::FxScrollViewer>();
 
                         if (parentAsScrollViewer == m_scrollViewer.get())
                         {
@@ -983,7 +983,7 @@ void ScrollInputHelper::OnSourceElementChanged(bool allowSourceElementLoadedHook
     if (sourceElement)
     {
         winrt::Control sourceAsControl = sourceElement.try_as<winrt::Control>();
-        winrt::ScrollViewer sourceAsScrollViewer = sourceElement.try_as<winrt::ScrollViewer>();
+        winrt::FxScrollViewer sourceAsScrollViewer = sourceElement.try_as<winrt::FxScrollViewer>();
 
         if (sourceAsControl && !sourceAsScrollViewer)
         {
@@ -1227,7 +1227,7 @@ void ScrollInputHelper::OnScrollViewerPropertyChanged(const winrt::DependencyObj
     {
         ProcessScrollViewerContentChange();
     }
-    else if (args == winrt::ScrollViewer::ZoomModeProperty())
+    else if (args == winrt::FxScrollViewer::ZoomModeProperty())
     {
         if (!m_isScrollViewerInDirectManipulation)
         {
@@ -1375,7 +1375,7 @@ void ScrollInputHelper::HookScrollViewerPropertyChanged()
         m_scrollViewerVerticalContentAlignmentChangedToken.value = scrollViewer.RegisterPropertyChangedCallback(
             winrt::Control::VerticalContentAlignmentProperty(), { this, &ScrollInputHelper::OnScrollViewerPropertyChanged });
         m_scrollViewerZoomModeChangedToken.value = scrollViewer.RegisterPropertyChangedCallback(
-            winrt::ScrollViewer::ZoomModeProperty(), { this, &ScrollInputHelper::OnScrollViewerPropertyChanged });
+            winrt::FxScrollViewer::ZoomModeProperty(), { this, &ScrollInputHelper::OnScrollViewerPropertyChanged });
         m_sourceSizeChangedToken = scrollViewer.SizeChanged({ this, &ScrollInputHelper::OnSourceSizeChanged });
     }
 }
@@ -1417,7 +1417,7 @@ void ScrollInputHelper::UnhookScrollViewerPropertyChanged()
         }
         if (m_scrollViewerZoomModeChangedToken.value != 0)
         {
-            scrollViewer.UnregisterPropertyChangedCallback(winrt::ScrollViewer::ZoomModeProperty(), m_scrollViewerZoomModeChangedToken.value);
+            scrollViewer.UnregisterPropertyChangedCallback(winrt::FxScrollViewer::ZoomModeProperty(), m_scrollViewerZoomModeChangedToken.value);
             m_scrollViewerZoomModeChangedToken.value = 0;
         }
         if (m_sourceSizeChangedToken.value != 0)

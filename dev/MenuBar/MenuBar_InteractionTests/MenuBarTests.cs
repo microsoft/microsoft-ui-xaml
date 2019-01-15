@@ -165,7 +165,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
         
-        [TestMethod]
+        //[TestMethod]
+        // Disabled due to: MenuBarTests.KeyboardNavigationWithAccessKeysTest unreliable #135
         public void KeyboardNavigationWithAccessKeysTest()
         {
             if (PlatformConfiguration.IsDevice(DeviceType.Phone))

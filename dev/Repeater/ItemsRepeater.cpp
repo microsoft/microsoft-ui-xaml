@@ -12,6 +12,7 @@
 #include "RepeaterAutomationPeer.h"
 #include "ViewportManagerWithPlatformFeatures.h"
 #include "ViewportManagerDownlevel.h"
+#include "RuntimeProfiler.h"
 
 #ifndef BUILD_WINDOWS
 #include "ItemTemplateWrapper.h"
@@ -22,6 +23,8 @@ winrt::Rect ItemsRepeater::InvalidRect = { -1.f, -1.f, -1.f, -1.f };
 
 ItemsRepeater::ItemsRepeater()
 {
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_ItemsRepeater);
+
     if (SharedHelpers::IsRS5OrHigher())
     {
         m_viewportManager = std::make_shared<ViewportManagerWithPlatformFeatures>(this);

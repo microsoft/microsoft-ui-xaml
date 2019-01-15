@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controlsPrimitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -32,7 +33,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <controls:Scroller x:Name="scroller" Width="400" Height="600" Margin="1" Background="AliceBlue"
+        <controlsPrimitives:Scroller x:Name="scroller" Width="400" Height="600" Margin="1" Background="AliceBlue"
             VerticalAlignment="Top" IsChildAvailableWidthConstrained="True" ZoomMode="Enabled">
             <Border x:Name="border" BorderThickness="3" BorderBrush="Chartreuse" Margin="15" Background="Beige">
                 <controls:ItemsRepeater x:Name="repeater" Margin="30">
@@ -43,7 +44,7 @@
                     </controls:ItemsRepeater.Layout>
                 </controls:ItemsRepeater>
             </Border>
-        </controls:Scroller>
+        </controlsPrimitives:Scroller>
 
         <Canvas x:Name="cnsAnchorPoint" IsHitTestVisible="False" Width="400" Height="600" Margin="1" 
             Background="Transparent" VerticalAlignment="Top">

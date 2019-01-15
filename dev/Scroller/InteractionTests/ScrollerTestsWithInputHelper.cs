@@ -357,8 +357,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Pinch a Rectangle in a Scroller.")]
+        //[TestMethod]
+        //[TestProperty("Description", "Pinch a Rectangle in a Scroller.")]
+        // Disabled due to: ScrollerTestsWithInputHelper Pinch/Stretch tests fail on RS5 in Helix #132
         public void PinchRectangle()
         {
             if (PlatformConfiguration.IsDevice(DeviceType.Phone))
@@ -475,8 +476,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             while (additionalAttempts > 0);
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Stretch an Image in a Scroller.")]
+        //[TestMethod]
+        //[TestProperty("Description", "Stretch an Image in a Scroller.")]
+        // Disable due to: ScrollerTestsWithInputHelper Pinch/Stretch tests fail on RS5 in Helix #132
         public void StretchImage()
         {
             if (PlatformConfiguration.IsDevice(DeviceType.Phone))
@@ -572,8 +574,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             while (additionalAttempts > 0);
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Pinch a Rectangle in a Scroller with the mouse wheel.")]
+        //[TestMethod]
+        //[TestProperty("Description", "Pinch a Rectangle in a Scroller with the mouse wheel.")]
+        // Disabled due to: ScrollerTestsWithInputHelper Pinch/Stretch tests fail on RS5 in Helix #132
         public void PinchRectangleWithMouseWheel()
         {
             Log.Comment("Selecting Scroller tests");
