@@ -173,6 +173,12 @@
       <Version>6.0.8</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\dev\dll\Microsoft.UI.Xaml.vcxproj">
+      <Project>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</Project>
+      <Name>Microsoft.UI.Xaml</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
