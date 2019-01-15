@@ -144,7 +144,7 @@ public:
     winrt::ScrollerInputKind InputKind();
     void InputKind(winrt::ScrollerInputKind const& value);
 
-    winrt::ScrollerState State();
+    winrt::InteractionState State();
 
     winrt::IVector<winrt::ScrollerSnapPointBase> HorizontalSnapPoints();
 
@@ -324,7 +324,7 @@ private:
         const winrt::UIElement& oldChild,
         const winrt::UIElement& newChild);
     void UpdateState(
-        const winrt::ScrollerState& state);
+        const winrt::InteractionState& state);
     void UpdateExpressionAnimationSources();
     void UpdateUnzoomedExtentAndViewport(
         double unzoomedExtentWidth, double unzoomedExtentHeight,
@@ -676,7 +676,7 @@ private:
     std::vector<tracker_ref<winrt::UIElement>> m_anchorCandidates;
     std::list<std::shared_ptr<InteractionTrackerAsyncOperation>> m_interactionTrackerAsyncOperations;
     winrt::Rect m_anchorElementBounds{};
-    winrt::ScrollerState m_state{ winrt::ScrollerState::Idle };
+    winrt::InteractionState m_state{ winrt::InteractionState::Idle };
     winrt::IInspectable m_pointerPressedEventHandler{ nullptr };
     winrt::CompositionPropertySet m_expressionAnimationSources{ nullptr };
     winrt::CompositionPropertySet m_horizontalScrollControllerExpressionAnimationSources{ nullptr };

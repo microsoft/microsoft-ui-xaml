@@ -30,7 +30,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 #if !BUILD_WINDOWS
-using ScrollerState = Microsoft.UI.Xaml.Controls.ScrollerState;
+using InteractionState = Microsoft.UI.Xaml.Controls.InteractionState;
 using ScrollerScrollMode = Microsoft.UI.Xaml.Controls.ScrollerScrollMode;
 using ScrollerZoomMode = Microsoft.UI.Xaml.Controls.ScrollerZoomMode;
 using ScrollerChainingMode = Microsoft.UI.Xaml.Controls.ScrollerChainingMode;
@@ -47,7 +47,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public partial class ScrollerTests
     {
-        private const ScrollerState c_defaultState = ScrollerState.Idle;
+        private const InteractionState c_defaultState = InteractionState.Idle;
         private const ScrollerChainingMode c_defaultHorizontalScrollChainingMode = ScrollerChainingMode.Auto;
         private const ScrollerChainingMode c_defaultVerticalScrollChainingMode = ScrollerChainingMode.Auto;
         private const ScrollerRailingMode c_defaultHorizontalScrollRailingMode = ScrollerRailingMode.Enabled;

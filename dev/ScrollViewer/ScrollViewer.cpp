@@ -93,14 +93,14 @@ double ScrollViewer::ExtentHeight()
     return 0.0;
 }
 
-winrt::ScrollerState ScrollViewer::State()
+winrt::InteractionState ScrollViewer::State()
 {
     if (auto scroller = m_scroller.get())
     {
         return scroller.State();
     }
 
-    return winrt::ScrollerState::Idle;
+    return winrt::InteractionState::Idle;
 }
 
 winrt::ScrollerInputKind ScrollViewer::InputKind()
@@ -636,7 +636,7 @@ void ScrollViewer::OnScrollerStateChanged(
 
     if (auto scroller = m_scroller.get())
     {
-        if (scroller.State() == winrt::ScrollerState::Interacting)
+        if (scroller.State() == winrt::InteractionState::Interaction)
         {
             m_preferMouseIndicators = false;
         }
