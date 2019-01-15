@@ -14,7 +14,7 @@ const float c_horizontalScaleAnimationCenterPoint = 0.5f;
 const float c_verticalScaleAnimationCenterPoint = 0.8f;
 const winrt::Thickness c_focusVisualMargin = { -8, -7, -8, 0 };
 const int c_defaultRatingFontSizeForRendering = 32; // (32 = 2 * [default fontsize] -- because of double size rendering), remove when MSFT #10030063 is done
-const int c_itemSpacing = 8;
+const int c_defaultItemSpacing = 8;
 
 const float c_mouseOverScale = 0.8f;
 const float c_touchOverScale = 1.0f;
@@ -44,6 +44,14 @@ float RatingControl::RenderingRatingFontSize()
 float RatingControl::ActualRatingFontSize()
 {
     return RenderingRatingFontSize() / 2;
+}
+
+double RatingControl::ItemSpacing()
+{
+    // TextScaleFactor will change font size but won't affect spacing/margin.
+    // The scaled-up text will grow out to the margin area, so the "actual" margins become smaller.
+    // Therefore we should include TextScaleFactor when calculating item spacing in order to get correct total width and star center positions.
+    return c_defaultItemSpacing / GetUISettings().TextScaleFactor();
 }
 
 void RatingControl::OnApplyTemplate()
@@ -833,7 +841,7 @@ double RatingControl::CalculateTotalRatingControlWidth()
     if (captionAsWinRT.size() > 0)
     {
         // TODO MSFT #10030063: Convert to itemspacing DP
-        textSpacing = c_itemSpacing;
+        textSpacing = ItemSpacing();
     }
 
     double captionWidth = 0.0;
@@ -851,7 +859,7 @@ double RatingControl::CalculateStarCenter(int starIndex)
     // TODO: sub in real API DP values
     // MSFT #10030063
     // [real Rating Size * (starIndex + 0.5)] + (starIndex * itemSpacing)
-    return (ActualRatingFontSize() * (starIndex + 0.5)) + (starIndex * c_itemSpacing);
+    return (ActualRatingFontSize() * (starIndex + 0.5)) + (starIndex * ItemSpacing());
 }
 
 double RatingControl::CalculateActualRatingWidth()
@@ -859,7 +867,7 @@ double RatingControl::CalculateActualRatingWidth()
     // TODO: replace hardcoding
     // MSFT #10030063
     // (max rating * rating size) + ((max rating - 1) * item spacing)
-    return (MaxRating() * ActualRatingFontSize()) + ((MaxRating() - 1) * c_itemSpacing);
+    return (MaxRating() * ActualRatingFontSize()) + ((MaxRating() - 1) * ItemSpacing());
 }
 
 // IControlOverrides
