@@ -317,6 +317,8 @@
         <Setter Property="Content" Value="&#xE11A;"/>
         <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
         <Setter Property="BorderThickness" Value="{ThemeResource NavigationViewToggleBorderThickness}" />
+        <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
     </Style>
 
     <Style x:Key="NavigationViewOverflowButtonStyleWhenPaneOnTop" TargetType="Button">
