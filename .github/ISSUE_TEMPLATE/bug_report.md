@@ -27,7 +27,7 @@ NuGet package version:
 
 <!-- Which Windows versions did you see the issue on? Leave blank if you didn't try that version. -->
 | Windows 10 version                  | Saw the problem? |
-| ---------------------------------- | -------------------- |
+| :--------------------------------- | :-------------------- |
 | Insider Build (xxxxx)                   | <!-- Yes/No? -->   |
 | October 2018 Update (17763)   | <!-- Yes/No? -->   |
 | April 2018 Update (17134)        | <!-- Yes/No? -->   |
@@ -37,7 +37,7 @@ NuGet package version:
 
 <!-- Which device form factors did you see the issue? Leave blank if you didn't try that version. -->
 | Device form factor | Saw the problem? |
-| -------------------- | -------------------- |
+| :-------------------- | :------------------- |
 | Desktop                 | <!-- Yes/No? -->   |
 | Mobile                   | <!-- Yes/No? -->   |
 | Xbox                      | <!-- Yes/No? -->   |
