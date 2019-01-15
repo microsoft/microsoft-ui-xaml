@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>MUXCustomBuildTasks</id>
-    <version>1.0.38</version>
+    <version>1.0.39-test3</version>
     <title>MUXCustomBuildTasks</title>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
@@ -24,5 +24,8 @@
     <!-- You must install the WDK to get this file: https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk -->
     <file target="tools\x86\WttLog.dll" src="$PROGRAMFILES$\Windows Kits\10\Testing\Runtimes\TAEF\x86\wttlog.dll" />
     <file target="tools\x64\WttLog.dll" src="$PROGRAMFILES$\Windows Kits\10\Testing\Runtimes\TAEF\x64\wttlog.dll" />
+
+    <file target="tools\x64\AppxDiag.exe" src="F:\Temp\AppxDiag\testing\AppxDiag.exe" />
+    <file target="tools\x64\TDRDump.exe" src="F:\Temp\AppxDiag\testing\TDRDump.exe" />
   </files>
 </package>
