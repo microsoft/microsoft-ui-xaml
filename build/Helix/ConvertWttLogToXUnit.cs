@@ -307,8 +307,8 @@ namespace HelixTestHelpers
                             if (supportingInfo != null)
                             {
                                 var screenshots = supportingInfo.Elements("Item")
-                                    .Where(item => AttributeValue(item, "Name") == "Screenshot")
-                                    .Select(item => AttributeValue(item, "Value"));
+                                    .Where(item => GetAttributeValue(item, "Name") == "Screenshot")
+                                    .Select(item => GetAttributeValue(item, "Value"));
 
                                 foreach(var screenshot in screenshots)
                                 {
@@ -334,7 +334,7 @@ namespace HelixTestHelpers
             }
         }
 
-        private static string AttributeValue(XElement element, string attributeName)
+        private static string GetAttributeValue(XElement element, string attributeName)
         {
             if(element.Attribute(attributeName) != null)
             {
