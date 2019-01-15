@@ -94,8 +94,8 @@ winrt::hstring TypeLogging::ScrollBarVisibilityToString(const winrt::ScrollBarVi
     {
     case winrt::ScrollBarVisibility::Visible:
         return L"Visible";
-    case winrt::ScrollBarVisibility::Collapsed:
-        return L"Collapsed";
+    case winrt::ScrollBarVisibility::Hidden:
+        return L"Hidden";
     case winrt::ScrollBarVisibility::Auto:
         return L"Auto";
     default:
