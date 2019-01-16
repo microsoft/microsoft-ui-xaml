@@ -1,8 +1,8 @@
 ﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
+using System;
 using System.Numerics;
 using Common;
-using System;
 
 #if USING_TAEF
 using WEX.TestExecution;
