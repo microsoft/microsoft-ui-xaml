@@ -1,9 +1,8 @@
 ﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
+using System.Numerics;
 using Common;
 using System;
-using System.Drawing;
-using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -18,10 +17,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using System.Windows.Automation;
 using MS.Internal.Mita.Foundation;
 using MS.Internal.Mita.Foundation.Controls;
+using MS.Internal.Mita.Foundation.Waiters;
 #else
 using Microsoft.Windows.Apps.Test.Automation;
-using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
+using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
@@ -174,43 +174,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ScrollTargetIntoView();
                 ScrollBy(10);
                 var targetRect = GetTargetBounds();
-                UseTestWindowBounds(targetRect.X - 328, targetRect.Y - 304, targetRect.Width + 656, targetRect.Height + 608);
+                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 304, targetRect.Y + 656, targetRect.Z + 608);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("Top"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.X - 328, targetRect.Y - 300, targetRect.Width + 656, targetRect.Height + 608);
+                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 300, targetRect.Y + 656, targetRect.Z + 608);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("Bottom"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.X - 328, targetRect.Y - 300, targetRect.Width + 656, targetRect.Height + 603);
+                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 300, targetRect.Y + 656, targetRect.Z + 603);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedTop"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.X - 328, targetRect.Y - 100, targetRect.Width + 656, targetRect.Height + 403);
+                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 100, targetRect.Y + 656, targetRect.Z + 403);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedBottom"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.X - 328, targetRect.Y - 100, targetRect.Width + 643, targetRect.Height + 403);
+                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 100, targetRect.Y + 643, targetRect.Z + 403);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedBottom"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.X - 328, targetRect.Y - 300, targetRect.Width + 643, targetRect.Height + 603);
+                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 300, targetRect.Y + 643, targetRect.Z + 603);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedTop"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.X - 328, targetRect.Y - 304, targetRect.Width + 348, targetRect.Height + 608);
+                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 304, targetRect.Y + 348, targetRect.Z + 608);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedLeft"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.X - 20, targetRect.Y - 304, targetRect.Width + 348, targetRect.Height + 608);
+                UseTestWindowBounds(targetRect.W - 20, targetRect.X - 304, targetRect.Y + 348, targetRect.Z + 608);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedRight"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.X - 328, targetRect.Y - 100, targetRect.Width + 348, targetRect.Height + 408);
+                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 408);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedLeft"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.X - 20, targetRect.Y - 100, targetRect.Width + 348, targetRect.Height + 408);
+                UseTestWindowBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 408);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedRight"));
                 CloseTeachingTipProgrammatically();
@@ -218,11 +218,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Remove the bleeding content;
                 SetBleedingContent(BleedingContentOptions.NoContent);
 
-                UseTestWindowBounds(targetRect.X - 328, targetRect.Y - 100, targetRect.Width + 348, targetRect.Height + 20);
+                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 20);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("Left"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.X - 20, targetRect.Y - 100, targetRect.Width + 348, targetRect.Height + 20);
+                UseTestWindowBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 20);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("Right"));
                 CloseTeachingTipProgrammatically();
@@ -608,7 +608,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.useTestWindowBoundsCheckbox.Check();
         }
 
-        Rectangle GetTargetBounds()
+        Vector4 GetTargetBounds()
         {
             if (elements.getTargetBoundsButton == null)
             {
@@ -647,11 +647,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             elements.getTargetBoundsButton.Invoke();
 
-            var retVal = new Rectangle();
-            retVal.X = (int)Math.Floor(double.Parse(elements.targetXOffsetTextBlock.GetText()));
-            retVal.Y = (int)Math.Floor(double.Parse(elements.targetYOffsetTextBlock.GetText()));
-            retVal.Width = (int)Math.Floor(double.Parse(elements.targetWidthTextBlock.GetText()));
-            retVal.Height = (int)Math.Floor(double.Parse(elements.targetHeightTextBlock.GetText()));
+            var retVal = new Vector4();
+            retVal.W = (int)Math.Floor(double.Parse(elements.targetXOffsetTextBlock.GetText()));
+            retVal.X = (int)Math.Floor(double.Parse(elements.targetYOffsetTextBlock.GetText()));
+            retVal.Y = (int)Math.Floor(double.Parse(elements.targetWidthTextBlock.GetText()));
+            retVal.Z = (int)Math.Floor(double.Parse(elements.targetHeightTextBlock.GetText()));
             return retVal;
         }
 
