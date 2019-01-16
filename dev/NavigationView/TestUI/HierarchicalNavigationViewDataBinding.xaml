@@ -11,11 +11,18 @@
 
     <Page.Resources>
         <DataTemplate x:Key="NavigationViewMenuItem" x:DataType="local:Category">
-            <muxcontrols:NavigationViewItem Content="{x:Bind Name}" MenuItemsSource="{x:Bind Children}"/>
+            <muxcontrols:NavigationViewItem Content="{x:Bind Name}" MenuItemsSource="{x:Bind Children}" SelectsOnInvoked="{x:Bind IsLeaf}"/>
         </DataTemplate>
     </Page.Resources>
 
     <Grid>
-        <muxcontrols:NavigationView MenuItemsSource="{x:Bind categories}" MenuItemTemplate="{StaticResource NavigationViewMenuItem}"/>
+        <muxcontrols:NavigationView x:Name="navview" MenuItemsSource="{x:Bind categories, Mode=OneWay}" MenuItemTemplate="{StaticResource NavigationViewMenuItem}" ItemInvoked="{x:Bind ClickedItem}">
+            <StackPanel>
+                <TextBlock x:Name="SelectedItemLabel" Text="uninitialized" Margin="10,10,0,0"/>
+                <Button Content="Get Selected Item Label" Click="PrintSelectedItem" Margin="10,0,0,0"/>
+                <Button Content="Add MenuItem" Click="AddMenuItem" Margin="10,10,0,0"/>
+                <Button Content="Remove Second MenuItem" Click="RemoveSecondMenuItem" Margin="10,10,0,0"/>
+            </StackPanel>
+        </muxcontrols:NavigationView>
     </Grid>
 </Page>

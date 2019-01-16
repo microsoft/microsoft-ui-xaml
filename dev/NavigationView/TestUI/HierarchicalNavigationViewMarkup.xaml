@@ -10,21 +10,36 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <muxcontrols:NavigationView x:Name="navView">
+        <muxcontrols:NavigationView x:Name="navview" ItemInvoked="{x:Bind ClickedItem}">
             <muxcontrols:NavigationView.MenuItems>
-                <muxcontrols:NavigationViewItem Content="Menu Item A" Icon="Home" x:Name="A">
+                <muxcontrols:NavigationViewItem Content="Menu Item 1" Icon="Home" x:Name="MI1" SelectsOnInvoked="False">
                     <muxcontrols:NavigationViewItem.MenuItems>
-                        <muxcontrols:NavigationViewItem Content="Menu Item B" Icon="Save" x:Name="B">
+                        <muxcontrols:NavigationViewItem Content="Menu Item 2" Icon="Save" x:Name="MI2" SelectsOnInvoked="False">
                             <muxcontrols:NavigationViewItem.MenuItems>
-                                <muxcontrols:NavigationViewItem Content="Menu Item C" Icon="Paste" x:Name="C" />
-                                <muxcontrols:NavigationViewItem Content="Menu Item D" Icon="Cut" x:Name="D" />
+                                <muxcontrols:NavigationViewItem Content="Menu Item 3" Icon="Paste" x:Name="MI3" />
+                                <muxcontrols:NavigationViewItem Content="Menu Item 4" Icon="Cut" x:Name="MI4" />
                             </muxcontrols:NavigationViewItem.MenuItems>
                         </muxcontrols:NavigationViewItem>
                     </muxcontrols:NavigationViewItem.MenuItems>
                 </muxcontrols:NavigationViewItem>
-                <muxcontrols:NavigationViewItem Content="Menu Item E" Icon="Home" x:Name="E"/>
-                <muxcontrols:NavigationViewItem Content="Menu Item F" Icon="Home" x:Name="F"/>
+                <muxcontrols:NavigationViewItem Content="Menu Item 5" Icon="Home" x:Name="MI5" SelectsOnInvoked="False">
+                    <muxcontrols:NavigationViewItem.MenuItems>
+                        <muxcontrols:NavigationViewItem Content="Menu Item 6" Icon="Save" x:Name="MI6" SelectsOnInvoked="False">
+                            <muxcontrols:NavigationViewItem.MenuItems>
+                                <muxcontrols:NavigationViewItem Content="Menu Item 7" Icon="Paste" x:Name="MI7" />
+                                <muxcontrols:NavigationViewItem Content="Menu Item 8" Icon="Cut" x:Name="MI8" />
+                            </muxcontrols:NavigationViewItem.MenuItems>
+                        </muxcontrols:NavigationViewItem>
+                    </muxcontrols:NavigationViewItem.MenuItems>
+                </muxcontrols:NavigationViewItem>
+                <muxcontrols:NavigationViewItem Content="Menu Item 9" Icon="Home" x:Name="MI9"/>
             </muxcontrols:NavigationView.MenuItems>
+            <StackPanel>
+                <TextBlock x:Name="SelectedItemLabel" Text="uninitialized"/>
+                <Button Content="Get Selected Item Label" Click="PrintSelectedItem"/>
+                <Button Content="Collapse Selected Item" Click="CollapseSelectedItem" Margin="10,10,0,0"/>
+                <Button Content="Remove Second MenuItem" Click="RemoveSecondMenuItem" Margin="10,10,0,0"/>
+            </StackPanel>
         </muxcontrols:NavigationView>
 
     </Grid>
