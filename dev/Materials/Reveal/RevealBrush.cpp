@@ -681,8 +681,10 @@ void RevealBrush::CreateRevealBrush()
     }
 
 #ifndef BUILD_WINDOWS
-   
-    m_brush.Properties().InsertScalar(L"ShouldRenderAsFallbackInIslands", 1.0f);
+    if (m_brush)
+    {
+        m_brush.Properties().InsertScalar(L"ShouldRenderAsFallbackInIslands", 1.0f);
+    }
 #endif
 }
 
