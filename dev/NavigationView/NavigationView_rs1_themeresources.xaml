@@ -223,11 +223,11 @@
                         Background="{TemplateBinding Background}"
                         HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="40"/> <!-- TODO: How to best get from Double 'PaneToggleButtonWidth' to GridLength in markup? -->
+                            <ColumnDefinition MinWidth="{ThemeResource PaneToggleButtonWidth}" MaxWidth="{ThemeResource PaneToggleButtonWidth}"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="40"/> <!-- TODO: How to best get from Double 'PaneToggleButtonHeight' to GridLength in markup? -->
+                            <RowDefinition MinHeight="{ThemeResource PaneToggleButtonHeight}"/>
                         </Grid.RowDefinitions>
 
                         <VisualStateManager.VisualStateGroups>
