@@ -33,7 +33,7 @@ using ParallaxView = Microsoft.UI.Xaml.Controls.ParallaxView;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
 using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
-using ScrollerState = Microsoft.UI.Xaml.Controls.ScrollerState;
+using InteractionState = Microsoft.UI.Xaml.Controls.InteractionState;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
@@ -1941,7 +1941,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     try
                     { 
                         Log.Comment("Scroller.StateChanged - State={0}", scroller.State);
-                        if (scroller.State == ScrollerState.Idle)
+                        if (scroller.State == InteractionState.Idle)
                         {
                             Log.Comment("Scroller - idling notification. Final view: {0}, {1}, {2}", scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
                             scrollerStateChangedEvent.Set();

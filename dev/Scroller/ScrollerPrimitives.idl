@@ -154,7 +154,7 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     [MUX_DEFAULT_VALUE("Scroller::s_defaultMaxZoomFactor")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateZoomFactoryBoundary")]
     Double MaxZoomFactor { get; set; };
-    MU_XC_NAMESPACE.ScrollerState State { get; };
+    MU_XC_NAMESPACE.InteractionState State { get; };
     IScrollController HorizontalScrollController { get; set; };
     IScrollController VerticalScrollController { get; set; };
     [MUX_DEFAULT_VALUE("Scroller::s_defaultAnchorAtExtent")]

@@ -1,11 +1,11 @@
 ﻿[WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ScrollerState
+enum InteractionState
 {
     Idle = 0,
-    Interacting = 1,
+    Interaction = 1,
     Inertia = 2,
-    CustomAnimation = 3,
+    Animation = 3,
 };
 
 [WUXC_VERSION_PREVIEW]

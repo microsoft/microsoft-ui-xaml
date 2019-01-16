@@ -2,9 +2,9 @@
 [webhosthidden]
 enum ScrollBarVisibility
 {
-    Visible = 0,
-    Collapsed = 1,
-    Auto = 2,
+    Auto = 0,
+    Visible = 1,
+    Hidden = 2,
 };
 
 [WUXC_VERSION_PREVIEW]
@@ -22,7 +22,7 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     Single ZoomFactor { get; };
     Double ExtentWidth { get; };
     Double ExtentHeight { get; };
-    ScrollerState State { get; };
+    InteractionState State { get; };
     MU_XCP_NAMESPACE.IScrollController HorizontalScrollController { get; };
     MU_XCP_NAMESPACE.IScrollController VerticalScrollController { get; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultHorizontalScrollBarVisibility")]

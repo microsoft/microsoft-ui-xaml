@@ -366,7 +366,7 @@ void Scroller::InputKind(winrt::ScrollerInputKind const& value)
     SetValue(s_InputKindProperty, box_value(value));
 }
 
-winrt::ScrollerState Scroller::State()
+winrt::InteractionState Scroller::State()
 {
     return m_state;
 }
@@ -832,7 +832,7 @@ void Scroller::CustomAnimationStateEntered(
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, args.RequestId());
 
-    UpdateState(winrt::ScrollerState::CustomAnimation);
+    UpdateState(winrt::InteractionState::Animation);
 }
 
 void Scroller::IdleStateEntered(
@@ -840,7 +840,7 @@ void Scroller::IdleStateEntered(
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, args.RequestId());
 
-    UpdateState(winrt::ScrollerState::Idle);
+    UpdateState(winrt::InteractionState::Idle);
 
     if (!m_interactionTrackerAsyncOperations.empty())
     {
@@ -897,7 +897,7 @@ void Scroller::InertiaStateEntered(
         TypeLogging::Float2ToString(m_endOfInertiaPosition).c_str(),
         m_endOfInertiaZoomFactor);
 
-    UpdateState(winrt::ScrollerState::Inertia);
+    UpdateState(winrt::InteractionState::Inertia);
 }
 
 void Scroller::InteractingStateEntered(
@@ -905,7 +905,7 @@ void Scroller::InteractingStateEntered(
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, args.RequestId());
 
-    UpdateState(winrt::ScrollerState::Interacting);
+    UpdateState(winrt::InteractionState::Interaction);
 
     if (!m_interactionTrackerAsyncOperations.empty())
     {
@@ -1022,7 +1022,7 @@ float Scroller::ComputeChildLayoutOffsetDelta(ScrollerDimension dimension, float
 
 float Scroller::ComputeEndOfInertiaZoomFactor() const
 {
-    if (m_state == winrt::ScrollerState::Inertia)
+    if (m_state == winrt::InteractionState::Inertia)
     {
         float endOfInertiaZoomFactor = m_endOfInertiaZoomFactor;
 
@@ -1039,7 +1039,7 @@ float Scroller::ComputeEndOfInertiaZoomFactor() const
 
 winrt::float2 Scroller::ComputeEndOfInertiaPosition()
 {
-    if (m_state == winrt::ScrollerState::Inertia)
+    if (m_state == winrt::InteractionState::Inertia)
     {
         float endOfInertiaZoomFactor = ComputeEndOfInertiaZoomFactor();
         winrt::float2 minPosition{};
@@ -4521,7 +4521,7 @@ void Scroller::UpdateTransformSource(
 }
 
 void Scroller::UpdateState(
-    const winrt::ScrollerState& state)
+    const winrt::InteractionState& state)
 {
     if (state != m_state)
     {
@@ -5575,7 +5575,7 @@ void Scroller::PostProcessZoomFactorChange(
 // Returns True when an interruption was performed.
 bool Scroller::InterruptViewChangeWithAnimation(InteractionTrackerAsyncOperationType interactionTrackerAsyncOperationType)
 {
-    if (m_state == winrt::ScrollerState::CustomAnimation &&
+    if (m_state == winrt::InteractionState::Animation &&
         interactionTrackerAsyncOperationType == m_lastInteractionTrackerAsyncOperationType &&
         SharedHelpers::IsRS5OrHigher() &&
         !SharedHelpers::Is19H1OrHigher())
