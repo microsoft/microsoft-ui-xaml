@@ -521,7 +521,8 @@ echo.
 echo Pulling latest from %1...
 echo.
 
-call git pull --force
+call git fetch
+call git merge FETCH_HEAD
 call :CheckErrorLevel "Pull" || goto Cleanup
 goto:eof
 
