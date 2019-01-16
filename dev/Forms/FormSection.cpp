@@ -94,6 +94,7 @@ winrt::Size FormSection::ArrangeOverride(winrt::Size const& finalSize)
                 else if (gl.GridUnitType == winrt::GridUnitType::Pixel)
                 {
                     widths[n] = (float)gl.Value;
+                    requiredWidth += widths[n];
                 }
                 else if (gl.GridUnitType == winrt::GridUnitType::Star)
                 {
