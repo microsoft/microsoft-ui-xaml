@@ -36,6 +36,7 @@ public:
 
     winrt::TreeViewNode NodeAtFlatIndex(int index) const;
     winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
+    winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
 
 private:
     NavigationViewListPosition m_navigationViewListPosition{ NavigationViewListPosition::LeftNav };

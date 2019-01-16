@@ -77,6 +77,10 @@
       <Version>RS5</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationView_19h1_themeresources.xaml" >
+      <Version>19H1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>

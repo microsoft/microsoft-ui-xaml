@@ -53,32 +53,26 @@ void NavigationViewList::ClearContainerForItemOverride(winrt::DependencyObject c
         auto itemContainerImplementation = winrt::get_self<NavigationViewItem>(itemContainer);
         itemContainerImplementation->ClearIsContentChangeHandlingDelayedForTopNavFlag();
         itemContainerImplementation->SetDepth(0);
-        itemContainerImplementation->SetParentItem(nullptr);
+        itemContainerImplementation->IsChildSelected(false);
     }
     __super::PrepareContainerForItemOverride(element, item);
 }
 
 void NavigationViewList::PrepareContainerForItemOverride(winrt::DependencyObject const& element, winrt::IInspectable const& item)
 {
+    auto nvNode = winrt::get_self<TreeViewNode>(NodeFromContainer(element));
     if (auto itemContainer = element.try_as<winrt::NavigationViewItemBase>())
     {
         winrt::get_self<NavigationViewItemBase>(itemContainer)->Position(m_navigationViewListPosition);
+        
+        winrt::get_self<NavigationViewItemBase>(itemContainer)->SetDepth(nvNode->Depth());
     }
     if (auto itemContainer = element.try_as<winrt::NavigationViewItem>())
     {
         itemContainer.UseSystemFocusVisuals(m_showFocusVisual);
         winrt::get_self<NavigationViewItem>(itemContainer)->ClearIsContentChangeHandlingDelayedForTopNavFlag();
 
-        //Update Item depth and set item parent
-        auto navigationView = GetNavigationViewParent();
-        auto lastExpandedNavItem = winrt::get_self<NavigationView>(navigationView)->GetLastExpandedItem();
-        if (lastExpandedNavItem)
-        {
-            winrt::get_self<NavigationViewItem>(itemContainer)->SetParentItem(lastExpandedNavItem);
-
-            auto depth = winrt::get_self<NavigationViewItem>(lastExpandedNavItem)->GetDepth();
-            winrt::get_self<NavigationViewItem>(itemContainer)->SetDepth(depth + 1);
-        }
+        winrt::get_self<NavigationViewItem>(itemContainer)->IsChildSelected(nvNode->IsChildSelected());
     }
 
     __super::PrepareContainerForItemOverride(element, item);
@@ -183,4 +177,9 @@ winrt::TreeViewNode NavigationViewList::NodeFromContainer(winrt::DependencyObjec
         return NodeAtFlatIndex(index);
     }
     return nullptr;
+}
+
+winrt::DependencyObject NavigationViewList::ContainerFromNode(winrt::TreeViewNode const& node)
+{
+    return ContainerFromItem(node.Content());
 }

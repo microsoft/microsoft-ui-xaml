@@ -1290,6 +1290,12 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
             // Undo only happened when customer clicked a selectionsuppressed item. 
             // To simplify the logic, OnItemClick didn't raise the event and it's been delayed to here.
             RaiseItemInvoked(nextActualItem, isSettingsItem);
+
+            auto container = NavigationViewItemOrSettingsContentFromData(nextActualItem);
+            if (container)
+            {
+                ToggleIsExpanded(container);
+            }
         }
         else
         {
@@ -1345,12 +1351,34 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
                 RaiseSelectionChangedEvent(nextActualItem, isSettingsItem, recommendedDirection);
             }
 
+            UpdateIsChildSelectedForItem(nextActualItem, true);
+            UpdateIsChildSelectedForItem(prevItem, false);
+            auto container = NavigationViewItemOrSettingsContentFromData(nextActualItem);
+            if (container)
+            {
+                ToggleIsExpanded(container);
+            }
+
             AnimateSelectionChanged(prevItem, nextActualItem);
 
             if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded)
             {
                 ClosePane();
             }
+        }
+    }
+}
+
+void NavigationView::UpdateIsChildSelectedForItem(const winrt::IInspectable& item, bool isChildSelected)
+{
+    // Update the 'IsChildSelected' property of all parents
+    if (auto container = ContainerFromMenuItem(item))
+    {
+        auto node = NodeFromContainer(container);
+        while (auto nodeParent = node.Parent())
+        {
+            ChangeIsChildSelectedForNode(nodeParent, isChildSelected);
+            node = nodeParent;
         }
     }
 }
@@ -1364,34 +1392,18 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
 
     auto selectedItem = SelectedItem();
 
-    // We want to expand/collapse items with children regardless of selection logic.
-    // In order to determine if the item has children, we need access to the item's container.
-    if (itemContainer)
-    {
-        if (auto clickedItemContainer = itemContainer.try_as<winrt::NavigationViewItem>())
-        {
-            bool hasChildren = (clickedItemContainer.MenuItems().Size() > 0 ||
-                                clickedItemContainer.MenuItemsSource() ||
-                                clickedItemContainer.HasUnrealizedChildren());
-            if (hasChildren)
-            {
-                auto isItemBeingExpanded = !clickedItemContainer.IsExpanded();
-                if (isItemBeingExpanded)
-                {
-                    RaiseIsExpanding(clickedItemContainer);
-                    m_lastExpandedItem.set(clickedItemContainer);
-                }
-                
-                clickedItemContainer.IsExpanded(isItemBeingExpanded);
-
-                if (!isItemBeingExpanded)
-                {
-                    RaiseCollapsed(clickedItemContainer);
-                    m_lastExpandedItem.set(nullptr);
-                }
-            }
-        }
-    }
+    // TODO: There is bug in the above method of retrieving an item container when using databinding.
+    //       For now, retrieving container by bypassing the buggy method.
+    // Explanation:
+    //      The container retrieval workaround in 'GetContainerForClickedItem' does not work in a
+    //      databinding scenario. 'NavigationViewItemBaseOrSettingsContentFromData' doesn't work
+    //      in this function in a markup scenario. So we first try the ListView API to retrieve
+    //      a container and if that fails, we use the workaround.
+    //auto itemContainerForExpanding = NavigationViewItemBaseOrSettingsContentFromData(clickedItem);
+    //if (!itemContainerForExpanding)
+    //{
+    //    itemContainerForExpanding = itemContainer;
+    //}
 
     // If SelectsOnInvoked and previous item(selected item) == new item(clicked item), raise OnItemClicked (same item would not have selectchange event)
     // Others would be invoked by SelectionChanged. Please see ChangeSelection for more details.
@@ -1401,7 +1413,37 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
     // If selecteditem.content == item, selecteditem is used to deduce the selectionsuppressed flag
     if (!m_shouldIgnoreNextSelectionChange && DoesSelectedItemContainContent(clickedItem, itemContainer) && !IsSelectionSuppressed(selectedItem))
     {
+        auto containterContent = itemContainer.Content();
         RaiseItemInvoked(selectedItem, false /*isSettings*/, itemContainer);
+        if (auto nviExpanding = itemContainer.try_as<winrt::NavigationViewItem>())
+        {
+            ToggleIsExpanded(nviExpanding);
+        }
+    }
+}
+
+void NavigationView::ToggleIsExpanded(winrt::NavigationViewItem const& item)
+{
+    if (item)
+    {
+        bool hasChildren = (item.MenuItems().Size() > 0 ||
+                            item.MenuItemsSource() ||
+                            item.HasUnrealizedChildren());
+        if (hasChildren)
+        {
+            auto isItemBeingExpanded = !item.IsExpanded();
+            if (isItemBeingExpanded)
+            {
+                RaiseIsExpanding(item);
+            }
+
+            item.IsExpanded(isItemBeingExpanded);
+
+            if (!isItemBeingExpanded)
+            {
+                RaiseCollapsed(item);
+            }
+        }
     }
 }
 
@@ -1875,7 +1917,7 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForClickedItem(winrt::
         container = listView.ContainerFromItem(itemData).try_as<winrt::NavigationViewItemBase>();
     }
 
-    MUX_ASSERT(container && container.Content() == itemData);
+    MUX_ASSERT(container);
     return container;
 }
 
@@ -1999,6 +2041,16 @@ void NavigationView::ChangeSelectStatusForItem(winrt::IInspectable const& item, 
         container.IsSelected(selected);
     }
  }
+
+void NavigationView::ChangeIsChildSelectedForNode(winrt::TreeViewNode const& node, bool const selected)
+{
+    winrt::get_self<TreeViewNode>(node)->IsChildSelected(selected);
+    auto container = ContainerFromNode(node);
+    if (auto navViewItem = container.try_as<winrt::NavigationViewItem>())
+    {
+        navViewItem.IsChildSelected(selected);
+    }
+}
 
 bool NavigationView::IsSettingsItem(winrt::IInspectable const& item)
 {
@@ -3216,23 +3268,8 @@ void NavigationView::SyncRootNodesWithItemsSource(const winrt::IInspectable& ite
 {
     // All TreeViewNode should be set to 'IsContentMode = true' as we dont want to pass node objects to the list view
     winrt::get_self<TreeViewNode>(m_rootNode.get())->IsContentMode(true);
+    winrt::get_self<TreeViewNode>(m_rootNode.get())->ItemsSource(items);
 
-    auto children = winrt::get_self<TreeViewNodeVector>(RootNodes());
-    children->ClearCore();
-
-    auto itemDataSource = winrt::ItemsSourceView(items);
-    if (itemDataSource)
-    {
-        int size = itemDataSource.Count();
-        for (int i = 0; i < size; i++)
-        {
-            auto item = itemDataSource.GetAt(i);
-            auto node = winrt::make_self<TreeViewNode>();
-            node->IsContentMode(true);
-            node->Content(item);
-            children->AppendCore(*node);
-        }
-    }
 }
 
 void NavigationView::UpdateListViewItemsSource(const winrt::ListView& listView, 
@@ -3433,7 +3470,28 @@ void NavigationView::Collapse(winrt::NavigationViewItem const& value)
 
 }
 
-winrt::NavigationViewItem NavigationView::GetLastExpandedItem()
+winrt::TreeViewNode NavigationView::NodeFromContainer(winrt::DependencyObject const& container)
 {
-    return m_lastExpandedItem.get();
+    //TODO: Update to work with Overflow Popup
+    if (auto lv = IsTopNavigationView() ? m_topNavListView.get() : m_leftNavListView.get())
+    {
+        if (auto navListView = lv.try_as<winrt::NavigationViewList>())
+        {
+            return winrt::get_self<NavigationViewList>(navListView)->NodeFromContainer(container);
+        }
+    }
+    return nullptr;
+}
+
+winrt::DependencyObject NavigationView::ContainerFromNode(winrt::TreeViewNode const& node)
+{
+    //TODO: Update to work with Overflow Popup
+    if (auto lv = IsTopNavigationView() ? m_topNavListView.get() : m_leftNavListView.get())
+    {
+        if (auto navListView = lv.try_as<winrt::NavigationViewList>())
+        {
+            return winrt::get_self<NavigationViewList>(navListView)->ContainerFromNode(node);
+        }
+    }
+    return nullptr;
 }

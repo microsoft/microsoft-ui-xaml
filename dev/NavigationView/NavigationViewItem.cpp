@@ -176,38 +176,22 @@ void NavigationViewItem::OnPropertyChanged(const winrt::DependencyPropertyChange
     {
         if (property == s_IsExpandedProperty)
         {
-            winrt::TreeViewNode targetNode = TreeNode();
-            // Make sure children nodes have been created if children exist
-            if (targetNode.Children().Size() == 0 && MenuItems().Size() != 0)
-            {
-                winrt::get_self<TreeViewNode>(node)->ItemsSource(MenuItems());
-            }
-            auto isExpanded = !targetNode.IsExpanded();
-            targetNode.IsExpanded(isExpanded);
+            ToggleIsExpanded(node);
+            UpdateSelectionIndicatorVisiblity();
         }
-        //else if (property == s_MenuItemsProperty)
-        //{
-        //    winrt::IInspectable value = args.NewValue();
-
-        //    // MenuItems change happens during measuring.
-        //    // Adding MenuItems to node's children triggers another layout change, so it has to be done async.
-        //    m_dispatcherHelper.RunAsync(
-        //        [node, value]()
-        //    {
-        //        winrt::get_self<TreeViewNode>(node)->ItemsSource(value);
-        //    });
-        //}
         else if (property == s_MenuItemsSourceProperty)
         {
             winrt::IInspectable value = args.NewValue();
             winrt::get_self<TreeViewNode>(node)->ItemsSource(value);
-            // MenuItemsSource change happens during measuring.
-            // Adding MenuItemsSource to node's children triggers another layout change, so it has to be done async.
             //m_dispatcherHelper.RunAsync(
             //    [node, value]()
             //{
             //    winrt::get_self<TreeViewNode>(node)->ItemsSource(value);
             //});
+        }
+        else if (property == s_IsChildSelectedProperty)
+        {
+            UpdateSelectionIndicatorVisiblity();
         }
     }
 }
@@ -423,7 +407,33 @@ void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
     }
 }
 
-void NavigationViewItem::SetParentItem(winrt::NavigationViewItem const& item)
+void NavigationViewItem::ToggleIsExpanded(winrt::TreeViewNode node)
 {
-    m_parentItem.set(item);
+    VerifyOrCreateChildrenNodes(node);
+    auto isExpanded = !node.IsExpanded();
+    node.IsExpanded(isExpanded);
+}
+
+// This function allows the TreeViewNode tree to be created dynamically in the
+// scenario where Navigation View is declared in markup
+void NavigationViewItem::VerifyOrCreateChildrenNodes(winrt::TreeViewNode node)
+{
+    // Make sure children nodes have been created if children exist
+    if (node.Children().Size() == 0 && MenuItems().Size() != 0)
+    {
+        winrt::get_self<TreeViewNode>(node)->ItemsSource(MenuItems());
+    }
+}
+
+void NavigationViewItem::UpdateSelectionIndicatorVisiblity()
+{
+    auto selectionIndicator = GetSelectionIndicator();
+    if (IsChildSelected() && !IsExpanded())
+    {
+        selectionIndicator.Opacity(1);
+    }
+    else
+    {
+        selectionIndicator.Opacity(0);
+    }
 }

@@ -8,7 +8,8 @@
 #include "SharedHelpers.h"
 
 static constexpr wstring_view c_navigationViewItemPresenterContentGridName = L"ContentGrid"sv;
-
+static constexpr wstring_view c_selectionIndicatorWrapperName = L"SelectionIndicatorWrapper"sv;
+static constexpr int s_indentation = 16;
 
 NavigationViewItemPresenter::NavigationViewItemPresenter()
 {
@@ -34,9 +35,19 @@ void NavigationViewItemPresenter::OnApplyTemplate()
     if (presenterContentGrid)
     {
         //TODO: Remove Magic Number
-        auto leftIndentation = 16 * m_depth;
+        auto leftIndentation = s_indentation * m_depth;
         auto thickness = winrt::ThicknessHelper::FromLengths(leftIndentation, 0, 0, 0);
         presenterContentGrid.Margin(thickness);
+    }
+
+    auto selectionIndicatorWrapper = GetTemplateChildT<winrt::Grid>(c_selectionIndicatorWrapperName, controlProtected);
+    if (selectionIndicatorWrapper)
+    {
+        auto leftIndentation = s_indentation * m_depth;
+        auto existingMargin = selectionIndicatorWrapper.Margin().Left;
+        auto newLeftMargin = existingMargin + leftIndentation;
+        auto thickness = winrt::ThicknessHelper::FromLengths(newLeftMargin, 0, 0, 0);
+        selectionIndicatorWrapper.Margin(thickness);
     }
 
 }
