@@ -6,15 +6,14 @@
 	<SDKVersionRS3>10.0.16299.0</SDKVersionRS3>
 	<SDKVersionRS4>10.0.17134.0</SDKVersionRS4>
 	<SDKVersionRS5>10.0.17763.0</SDKVersionRS5>
-	<SDKVersion19H1Insider>10.0.18283.0</SDKVersion19H1Insider>
+	<SDKVersion19H1Insider>10.0.18309.0</SDKVersion19H1Insider>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- By default we use the publicly shipped SDK version which is RS5 now -->
-    <MuxSdkVersion Condition="$(UseInsiderSDK) != 'true'">$(SDKVersionRS5)</MuxSdkVersion>
+    <UseInsiderSDK>true</UseInsiderSDK>
 
     <!-- Setting UseInsiderSDK will allow the code to build to the newest RS6 SDK 
          In order to get this from a cmd prompt run 
          set UseInsiderSDK=true and then launch muxcontrols.sln from that cmd prompt-->
-    <MuxSdkVersion Condition="$(UseInsiderSDK)=='true'">$(SDKVersion19H1Insider)</MuxSdkVersion>
+    <MuxSdkVersion>$(SDKVersion19H1Insider)</MuxSdkVersion>
   </PropertyGroup>
 </Project>
