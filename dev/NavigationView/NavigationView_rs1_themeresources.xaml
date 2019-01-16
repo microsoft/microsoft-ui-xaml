@@ -223,11 +223,11 @@
                         Background="{TemplateBinding Background}"
                         HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition MinWidth="{ThemeResource PaneToggleButtonWidth}" MaxWidth="{ThemeResource PaneToggleButtonWidth}"/>
+                            <ColumnDefinition Width="{ThemeResource PaneToggleButtonWidth}"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition MinHeight="{ThemeResource PaneToggleButtonHeight}"/>
+                            <RowDefinition Height="{ThemeResource PaneToggleButtonHeight}"/>
                         </Grid.RowDefinitions>
 
                         <VisualStateManager.VisualStateGroups>
