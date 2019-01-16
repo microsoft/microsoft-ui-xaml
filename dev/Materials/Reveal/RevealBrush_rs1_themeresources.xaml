@@ -33,6 +33,7 @@
             <!-- Background Brushes -->
             <SolidColorBrush x:Key="SystemControlBackgroundBaseLowRevealBackgroundBrush" Color="{StaticResource SystemBaseLowColor}" />
             <SolidColorBrush x:Key="SystemControlTransparentRevealBackgroundBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="SystemControlBackgroundAltHighRevealBackgroundBrush" Color="{StaticResource SystemAltHighColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightAccentRevealBackgroundBrush" Color="{ThemeResource SystemAccentColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightAccent3RevealBackgroundBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.6" />
             <SolidColorBrush x:Key="SystemControlHighlightAccent2RevealBackgroundBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.8" />
@@ -234,6 +235,7 @@
             <!-- Background Brushes -->
             <SolidColorBrush x:Key="SystemControlBackgroundBaseLowRevealBackgroundBrush" Color="{StaticResource SystemBaseLowColor}" />
             <SolidColorBrush x:Key="SystemControlTransparentRevealBackgroundBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="SystemControlBackgroundAltHighRevealBackgroundBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightAccentRevealBackgroundBrush" Color="{ThemeResource SystemAccentColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightAccent3RevealBackgroundBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.6" />
             <SolidColorBrush x:Key="SystemControlHighlightAccent2RevealBackgroundBrush" Color="{ThemeResource SystemAccentColor}" Opacity="0.8" />
@@ -435,6 +437,7 @@
             <!-- Background Brushes -->
             <SolidColorBrush x:Key="SystemControlBackgroundBaseLowRevealBackgroundBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="SystemControlTransparentRevealBackgroundBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="SystemControlBackgroundAltHighRevealBackgroundBrush" Color="{StaticResource SystemAltHighColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightAccentRevealBackgroundBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightAccent3RevealBackgroundBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightAccent2RevealBackgroundBrush" Color="{ThemeResource SystemColorHighlightColor}" />
