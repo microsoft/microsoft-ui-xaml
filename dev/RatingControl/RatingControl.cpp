@@ -19,6 +19,7 @@ const int c_defaultItemSpacing = 8;
 const float c_mouseOverScale = 0.8f;
 const float c_touchOverScale = 1.0f;
 const float c_noPointerOverMagicNumber = -100;
+const float c_defaultCaptionTopMargin = 9;
 
 const int c_noValueSetSentinel = -1;
 
@@ -54,6 +55,23 @@ double RatingControl::ItemSpacing()
     return c_defaultItemSpacing / GetUISettings().TextScaleFactor();
 }
 
+void RatingControl::UpdateCaptionMargins()
+{
+    if (auto captionTextBlock = m_captionTextBlock.safe_get())
+    {
+        double textScaleFactor = GetUISettings().TextScaleFactor();
+        winrt::Thickness margin = captionTextBlock.Margin();
+        margin.Top = c_defaultCaptionTopMargin;
+
+        if (textScaleFactor > 1.01)
+        {
+            margin.Top -= ActualRatingFontSize()*textScaleFactor*(1-c_verticalScaleAnimationCenterPoint);
+        }
+
+        captionTextBlock.Margin(margin);
+    }
+}
+
 void RatingControl::OnApplyTemplate()
 {
     RecycleEvents();
@@ -65,6 +83,7 @@ void RatingControl::OnApplyTemplate()
     {
         m_captionTextBlock.set(captionTextBlock);
         m_captionSizeChangedToken = captionTextBlock.SizeChanged({ this, &RatingControl::OnCaptionSizeChanged });
+        UpdateCaptionMargins();
     }
 
     if (auto backgroundStackPanel = GetTemplateChildT<winrt::StackPanel>(L"RatingBackgroundStackPanel", thisAsControlProtected))
@@ -1149,6 +1168,7 @@ void RatingControl::OnTextScaleFactorChanged(const winrt::UISettings& setting, c
     m_dispatcherHelper.RunAsync([strongThis]()
     {
         strongThis->StampOutRatingItems();
+        strongThis->UpdateCaptionMargins();
     });
     
 }
