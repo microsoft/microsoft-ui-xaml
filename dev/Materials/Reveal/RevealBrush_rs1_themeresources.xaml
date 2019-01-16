@@ -88,7 +88,9 @@
             <Thickness x:Key="ComboBoxItemRevealThemePadding">11,5,11,7</Thickness>
             <Thickness x:Key="ComboBoxItemRevealThemeTouchPadding">11,11,11,13</Thickness>
             <Thickness x:Key="ComboBoxItemRevealThemeGameControllerPadding">11,11,11,13</Thickness>
-            
+
+            <StaticResource x:Key="CalendarViewCalendarItemRevealBackground" ResourceKey="SystemControlBackgroundAltHighRevealBackgroundBrush" />
+
             <!-- Resources for Windows.UI.Xaml.Controls.Button -->
             <StaticResource x:Key="ButtonRevealBackground" ResourceKey="SystemControlBackgroundBaseLowRevealBackgroundBrush" />
             <StaticResource x:Key="ButtonRevealBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowRevealBackgroundBrush" />
@@ -290,7 +292,9 @@
             <Thickness x:Key="ComboBoxItemRevealThemePadding">11,5,11,7</Thickness>
             <Thickness x:Key="ComboBoxItemRevealThemeTouchPadding">11,11,11,13</Thickness>
             <Thickness x:Key="ComboBoxItemRevealThemeGameControllerPadding">11,11,11,13</Thickness>
-            
+
+            <StaticResource x:Key="CalendarViewCalendarItemRevealBackground" ResourceKey="SystemControlBackgroundAltHighRevealBackgroundBrush" />
+
             <!-- Resources for Windows.UI.Xaml.Controls.Button -->
             <StaticResource x:Key="ButtonRevealBackground" ResourceKey="SystemControlBackgroundBaseLowRevealBackgroundBrush" />
             <StaticResource x:Key="ButtonRevealBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowRevealBackgroundBrush" />
@@ -492,7 +496,9 @@
             <Thickness x:Key="ComboBoxItemRevealThemePadding">11,5,11,7</Thickness>
             <Thickness x:Key="ComboBoxItemRevealThemeTouchPadding">11,11,11,13</Thickness>
             <Thickness x:Key="ComboBoxItemRevealThemeGameControllerPadding">11,11,11,13</Thickness>
-            
+
+            <StaticResource x:Key="CalendarViewCalendarItemRevealBackground" ResourceKey="SystemControlBackgroundAltHighRevealBackgroundBrush" />
+
             <!-- Resources for Windows.UI.Xaml.Controls.Button -->
             <StaticResource x:Key="ButtonRevealBackground" ResourceKey="SystemControlBackgroundBaseLowRevealBackgroundBrush" />
             <StaticResource x:Key="ButtonRevealBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowRevealBackgroundBrush" />
