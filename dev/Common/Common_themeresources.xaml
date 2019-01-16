@@ -9,12 +9,15 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
+            <StaticResource x:Key="CalendarViewCalendarItemRevealBackground" ResourceKey="SystemControlBackgroundAltHighRevealBackgroundBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
+            <StaticResource x:Key="CalendarViewCalendarItemRevealBackground" ResourceKey="SystemControlBackgroundAltHighRevealBackgroundBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
+            <StaticResource x:Key="CalendarViewCalendarItemRevealBackground" ResourceKey="SystemControlBackgroundAltHighRevealBackgroundBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>
