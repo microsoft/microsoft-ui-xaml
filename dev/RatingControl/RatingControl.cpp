@@ -50,13 +50,16 @@ float RatingControl::ActualRatingFontSize()
 double RatingControl::ItemSpacing()
 {
     // TextScaleFactor will change font size but won't affect spacing/margin.
-    // The scaled-up text will grow out to the margin area, so the "actual" margins become smaller.
+    // The scaled-up glyph will grow out to the margin area, so the "actual" margins become smaller.
     // Therefore we should include TextScaleFactor when calculating item spacing in order to get correct total width and star center positions.
     return c_defaultItemSpacing / GetUISettings().TextScaleFactor();
 }
 
 void RatingControl::UpdateCaptionMargins()
 {
+    // star glyph's vertical center position is set to 0.8 per redline, but caption text's center is 0.5 (default value).
+    // when they scale up the stars and caption text won't be vertically aligned since the vertical center is different.
+    // Update caption text top margin here to fix the alignment.
     if (auto captionTextBlock = m_captionTextBlock.safe_get())
     {
         double textScaleFactor = GetUISettings().TextScaleFactor();
