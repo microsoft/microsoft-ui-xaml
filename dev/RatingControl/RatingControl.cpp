@@ -71,7 +71,7 @@ void RatingControl::UpdateCaptionMargins()
     {
         double textScaleFactor = GetUISettings().TextScaleFactor();
         winrt::Thickness margin = captionTextBlock.Margin();
-        margin.Top = c_defaultCaptionTopMargin - ActualRatingFontSize()*c_verticalScaleAnimationCenterPoint;
+        margin.Top = c_defaultCaptionTopMargin - (ActualRatingFontSize() * c_verticalScaleAnimationCenterPoint);
 
         captionTextBlock.Margin(margin);
     }
