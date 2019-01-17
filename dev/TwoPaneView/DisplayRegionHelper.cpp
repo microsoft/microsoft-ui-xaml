@@ -52,10 +52,10 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
     else if (SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable())
     {
         // ApplicationView::GetForCurrentView throws on failure; in that case we just won't do anything.
-        winrt::ApplicationView view{ nullptr }; djsakldjsakld
+        winrt::ApplicationView view{ nullptr };
         try
         {
-            environment = winrt::ApplicationView::GetForCurrentView();
+            view = winrt::ApplicationView::GetForCurrentView();
         } catch(...) {}
 
         // Verify that the window is Tiled
