@@ -499,7 +499,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             // so we're bound to run into rounding errors along the way, which is what accounts for the slightly
             // different values we get in RTL where our x-axis is flipped.
             setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.5, 0.5));
-            VerifySelectedColorIsNear(127, 255, 252);
+            VerifySelectedColorIsNear(0, 255, 252);
             VerifySelectionEllipseIsNear(127, 127);
             setup.ExecuteAndWaitForColorChange(() => TapOnColorSpectrum(0.25, 0.25));
             VerifySelectedColorIsNear(163, isRTL ? 63 : 255, isRTL ? 255 : 63);
