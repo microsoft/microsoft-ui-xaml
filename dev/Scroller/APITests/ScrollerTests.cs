@@ -13,6 +13,7 @@ using Windows.UI.Composition;
 using Windows.UI.Composition.Interactions;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
@@ -29,7 +30,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 #if !BUILD_WINDOWS
-using ScrollerState = Microsoft.UI.Xaml.Controls.ScrollerState;
+using InteractionState = Microsoft.UI.Xaml.Controls.InteractionState;
 using ScrollerScrollMode = Microsoft.UI.Xaml.Controls.ScrollerScrollMode;
 using ScrollerZoomMode = Microsoft.UI.Xaml.Controls.ScrollerZoomMode;
 using ScrollerChainingMode = Microsoft.UI.Xaml.Controls.ScrollerChainingMode;
@@ -38,7 +39,7 @@ using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 using ScrollerInputKind = Microsoft.UI.Xaml.Controls.ScrollerInputKind;
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
@@ -46,7 +47,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public partial class ScrollerTests
     {
-        private const ScrollerState c_defaultState = ScrollerState.Idle;
+        private const InteractionState c_defaultState = InteractionState.Idle;
         private const ScrollerChainingMode c_defaultHorizontalScrollChainingMode = ScrollerChainingMode.Auto;
         private const ScrollerChainingMode c_defaultVerticalScrollChainingMode = ScrollerChainingMode.Auto;
         private const ScrollerRailingMode c_defaultHorizontalScrollRailingMode = ScrollerRailingMode.Enabled;
@@ -765,15 +766,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var rootPanel = (Grid)XamlReader.Load(TestUtilities.ProcessTestXamlForRepo(
-                    @"<Grid Width='600' Height='600' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                    @"<Grid Width='600' Height='600' 
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:controlsPrimitives='using:Microsoft.UI.Xaml.Controls.Primitives'>
                         <Button Content='Outer Left Button' HorizontalAlignment='Left' VerticalAlignment='Center' />
                         <Button Content='Outer Top Button' HorizontalAlignment='Center' VerticalAlignment='Top' />
                         <Button Content='Outer Right Button' HorizontalAlignment='Right' VerticalAlignment='Center' />
                         <Button Content='Outer Bottom Button' HorizontalAlignment='Center' VerticalAlignment='Bottom' />
 
-                        <controls:Scroller x:Name='scroller' Width='200' Height='200' HorizontalAlignment='Center' VerticalAlignment='Center'>
+                        <controlsPrimitives:Scroller x:Name='scroller' Width='200' Height='200' HorizontalAlignment='Center' VerticalAlignment='Center'>
                             <Grid Width='600' Height='600' Background='Gray'>
-
                                 
                                 <!-- Inner buttons are larger than the outer so that they get ranked better by the XY focus algorithm. -->
                                 <Button Content='Inner Left Button' HorizontalAlignment='Left' VerticalAlignment='Center'  Width='180' Height='180' />
@@ -783,7 +786,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                                 <Button x:Name='innerCenterButton' Content='Inner Center Button' HorizontalAlignment='Center' VerticalAlignment='Center' />
                             </Grid>
-                        </controls:Scroller>
+                        </controlsPrimitives:Scroller>
                     </Grid>"));
 
                 innerCenterButton = (Button)rootPanel.FindName("innerCenterButton");

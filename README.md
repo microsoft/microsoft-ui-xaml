@@ -81,7 +81,7 @@ Prerelease Microsoft.UI.Xaml packages also include previews of features and cont
 * [LayoutPanel](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.layoutpanel),
 [Repeater](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.repeater),
 [Scroller](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scroller),
-[ScrollerView](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollerview),
+[ScrollViewer](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollviewer),
 and
 [ScrollBar2](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollbar2)
 

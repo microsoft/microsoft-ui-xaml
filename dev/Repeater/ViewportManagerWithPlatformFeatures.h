@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "ViewportManager.h"
+
 class ItemsRepeater;
 
 // Manages the virtualization windows (visible/realization). This class essentially is 
@@ -11,37 +13,36 @@ class ItemsRepeater;
 // We also do not use the IRepeaterScrollingSurface internal API used by ViewManager.
 // Not that this class is used when built in the OS build (under wuxc) and ViewManager
 // is used when building in MUX to keep down level support.
-class ViewportManagerWithPlatformFeatures final
+class ViewportManagerWithPlatformFeatures : public ViewportManager
 {
 public:
     ViewportManagerWithPlatformFeatures(ItemsRepeater* owner);
 
-    winrt::UIElement SuggestedAnchor() const;
+    winrt::UIElement SuggestedAnchor() const override;
 
-    double HorizontalCacheLength() const { return m_maximumHorizontalCacheLength; }
-    void HorizontalCacheLength(double value);
+    double HorizontalCacheLength() const override { return m_maximumHorizontalCacheLength; }
+    void HorizontalCacheLength(double value) override;
 
-    double VerticalCacheLength() const { return m_maximumVerticalCacheLength; }
-    void VerticalCacheLength(double value);
+    double VerticalCacheLength() const override { return m_maximumVerticalCacheLength; }
+    void VerticalCacheLength(double value) override;
 
-    winrt::Rect GetLayoutVisibleWindow() const;
-    winrt::Rect GetLayoutRealizationWindow() const;
+    winrt::Rect GetLayoutVisibleWindow() const override;
+    winrt::Rect GetLayoutRealizationWindow() const override;
 
-    void SetLayoutExtent(winrt::Rect extent);
-    winrt::Point GetOrigin() const { return winrt::Point(m_layoutExtent.X, m_layoutExtent.Y); }
+    void SetLayoutExtent(winrt::Rect extent) override;
+    winrt::Point GetOrigin() const override { return winrt::Point(m_layoutExtent.X, m_layoutExtent.Y); }
 
-    void OnLayoutChanged();
-    void OnElementPrepared(const winrt::UIElement& element);
-    void OnElementCleared(const winrt::UIElement& element);
-    void OnOwnerMeasuring();
-    void OnOwnerArranged();
-    void OnMakeAnchor(const winrt::UIElement& anchor, const bool isAnchorOutsideRealizedRange);
-    void OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs args);
+    void OnLayoutChanged() override;
+    void OnElementPrepared(const winrt::UIElement& element) override;
+    void OnElementCleared(const winrt::UIElement& element) override;
+    void OnOwnerMeasuring() override;
+    void OnOwnerArranged() override;
+    void OnMakeAnchor(const winrt::UIElement& anchor, const bool isAnchorOutsideRealizedRange) override;
+    void OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs args) override;
 
-    void ResetScrollers();
-    void EnsureScroller();
+    void ResetScrollers() override;
 
-    winrt::UIElement MadeAnchor() const { return m_makeAnchorElement.get(); }
+    winrt::UIElement MadeAnchor() const override { return m_makeAnchorElement.get(); }
 
 private:
     struct ScrollerInfo;
@@ -49,7 +50,8 @@ private:
     void OnCacheBuildActionCompleted();
     void OnEffectiveViewportChanged(winrt::FrameworkElement const& sender, winrt::EffectiveViewportChangedEventArgs const& args);
     void OnLayoutUpdated(winrt::IInspectable const& sender, winrt::IInspectable const& args);
-    
+
+    void EnsureScroller();
     bool HasScroller() const { return m_scroller != nullptr; }
     void UpdateViewport(winrt::Rect const& args);
     void ResetCacheBuffer();

@@ -16,18 +16,8 @@
 #include "Scroller.g.h"
 #include "Scroller.properties.h"
 
-#ifdef BUILD_WINDOWS
-#define USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-#endif
-
 class Scroller :
-    public ReferenceTracker<Scroller, DeriveFromPanelHelper_base, winrt::Scroller,
-#ifdef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-    winrt::Controls::IScrollAnchorProvider
-#else
-    winrt::IRepeaterScrollingSurface
-#endif
-    >,
+    public ReferenceTracker<Scroller, DeriveFromPanelHelper_base, winrt::Scroller, winrt::Controls::IScrollAnchorProvider, winrt::IRepeaterScrollingSurface>,
     public ScrollerProperties
 {
 public:
@@ -84,8 +74,6 @@ public:
     // 0.999972 closely matches the built-in InteractionTracker zooming behavior introduced in RS5.
     static constexpr float s_mouseWheelInertiaDecayRate = 0.999972f;
 
-#ifdef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-
 #pragma region IScrollAnchorProvider
     void RegisterAnchorCandidate(winrt::UIElement const& element);
     void UnregisterAnchorCandidate(winrt::UIElement const& element);
@@ -96,7 +84,6 @@ public:
     void Parent(winrt::Controls::IScrollAnchorProvider const& value) {}
 #pragma endregion
 
-#else
 #pragma region IRepeaterScrollingSurface
     bool IsHorizontallyScrollable();
 
@@ -116,15 +103,9 @@ public:
 
     void ConfigurationChanged(winrt::event_token const& token);
 
-    void RegisterAnchorCandidate(winrt::UIElement const& element);
-
-    void UnregisterAnchorCandidate(winrt::UIElement const& element);
-
     winrt::Rect GetRelativeViewport(
         winrt::UIElement const& child);
 #pragma endregion
-
-#endif
 
 #pragma region IFrameworkElementOverridesHelper
     // IFrameworkElementOverrides (unoverridden methods provided by FrameworkElementOverridesHelper)
@@ -163,7 +144,7 @@ public:
     winrt::ScrollerInputKind InputKind();
     void InputKind(winrt::ScrollerInputKind const& value);
 
-    winrt::ScrollerState State();
+    winrt::InteractionState State();
 
     winrt::IVector<winrt::ScrollerSnapPointBase> HorizontalSnapPoints();
 
@@ -178,11 +159,11 @@ public:
 
 #pragma endregion
 
-    // Invoked by both Scroller and ScrollerView controls
+    // Invoked by both Scroller and ScrollViewer controls
     static bool IsZoomFactorBoundaryValid(double value);
     static void ValidateZoomFactoryBoundary(double value);
 
-    // Invoked by both Scroller and ScrollerView controls
+    // Invoked by both Scroller and ScrollViewer controls
     static bool IsAnchorRatioValid(double value);
     static void ValidateAnchorRatio(double value);
 
@@ -343,7 +324,7 @@ private:
         const winrt::UIElement& oldChild,
         const winrt::UIElement& newChild);
     void UpdateState(
-        const winrt::ScrollerState& state);
+        const winrt::InteractionState& state);
     void UpdateExpressionAnimationSources();
     void UpdateUnzoomedExtentAndViewport(
         double unzoomedExtentWidth, double unzoomedExtentHeight,
@@ -581,11 +562,9 @@ private:
         std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator>* internalSet);
 
 #pragma region IRepeaterScrollingSurface Helpers
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
     void RaiseConfigurationChanged();
     void RaisePostArrange();
     void RaiseViewportChanged(const bool isFinal);
-#endif
     void RaiseAnchorRequested();
 
     void IsAnchoring(
@@ -697,7 +676,7 @@ private:
     std::vector<tracker_ref<winrt::UIElement>> m_anchorCandidates;
     std::list<std::shared_ptr<InteractionTrackerAsyncOperation>> m_interactionTrackerAsyncOperations;
     winrt::Rect m_anchorElementBounds{};
-    winrt::ScrollerState m_state{ winrt::ScrollerState::Idle };
+    winrt::InteractionState m_state{ winrt::InteractionState::Idle };
     winrt::IInspectable m_pointerPressedEventHandler{ nullptr };
     winrt::CompositionPropertySet m_expressionAnimationSources{ nullptr };
     winrt::CompositionPropertySet m_horizontalScrollControllerExpressionAnimationSources{ nullptr };

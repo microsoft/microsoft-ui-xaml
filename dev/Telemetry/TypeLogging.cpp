@@ -84,24 +84,26 @@ winrt::hstring TypeLogging::ScrollingIndicatorModeToString(const winrt::Scrollin
 
 #pragma endregion
 
-#pragma region ScrollerView-specific section
+#pragma region ScrollViewer-specific section
 
 #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
-winrt::hstring TypeLogging::ScrollerViewScrollControllerVisibilityToString(const winrt::ScrollerViewScrollControllerVisibility& scrollControllerVisibility)
+#ifndef BUILD_WINDOWS
+winrt::hstring TypeLogging::ScrollBarVisibilityToString(const winrt::ScrollBarVisibility& scrollBarVisibility)
 {
-    switch (scrollControllerVisibility)
+    switch (scrollBarVisibility)
     {
-    case winrt::ScrollerViewScrollControllerVisibility::Visible:
+    case winrt::ScrollBarVisibility::Visible:
         return L"Visible";
-    case winrt::ScrollerViewScrollControllerVisibility::Collapsed:
-        return L"Collapsed";
-    case winrt::ScrollerViewScrollControllerVisibility::Auto:
+    case winrt::ScrollBarVisibility::Hidden:
+        return L"Hidden";
+    case winrt::ScrollBarVisibility::Auto:
         return L"Auto";
     default:
         MUX_ASSERT(false);
         return L"";
     }
 }
+#endif
 #endif
 
 #pragma endregion

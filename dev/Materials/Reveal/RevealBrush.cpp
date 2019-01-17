@@ -195,7 +195,27 @@ void RevealBrush::OnElementConnected(winrt::DependencyObject element) noexcept
 
     if (hasNewMaterialPolicy)
     {
-        m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, { this, &RevealBrush::OnTransparencyPolicyChanged });
+        // We might have no dispatcher in XamlPresenter scenarios (currenlty LogonUI/CredUI do not appear to use Acrylic).
+        // In these cases, we will honor the initial policy state but not get change notifications.
+        // This matches the legacy MaterialHelper behavior and should be sufficient for the special case of login screen.
+        if (m_dispatcherQueue)
+        {
+            m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, {
+                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue](const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
+                {
+                    dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler([weakThis]()
+                    {
+                        auto target = weakThis.get();
+                        if (target)
+                        {
+                            target->PolicyStatusChangedHelper(MaterialHelper::BrushTemplates<RevealBrush>::IsDisabledByInAppTransparencyPolicy(target.get()));
+                        }
+                    }));
+                }
+            });
+        }
+
+
         m_additionalMaterialPolicyChangedToken = MaterialHelper::AdditionalPolicyChanged([this](auto sender) { OnAdditionalMaterialPolicyChanged(sender); });
     }
 
@@ -857,7 +877,7 @@ bool RevealBrush::ValidatePublicRootAncestor()
     auto ancestor = GetAncestor(windowRoot);
     bool windowContentIsCanvas = static_cast<bool>(windowRoot.try_as<winrt::Canvas>());
     bool walkedUpToScrollViewer = winrt::VisualTreeHelper::GetParent(windowRoot) && 
-                                  static_cast<bool>(ancestor.try_as<winrt::ScrollViewer>());
+                                  static_cast<bool>(ancestor.try_as<winrt::FxScrollViewer>());
 
     // On MUX + RS3/RS4, it's possible XCB::OnConnected is called before visual tree is constructed and the ancestor walk returns a false elemenet.
     return windowContentIsCanvas || walkedUpToScrollViewer;

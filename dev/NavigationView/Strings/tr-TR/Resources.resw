@@ -141,6 +141,10 @@
     <value>Geri düğmesi</value>
     <comment>Automation name for the nav view provided back button</comment>
   </data>
+  <data name="NavigationBackButtonToolTip" xml:space="preserve">
+    <value>Geri</value>
+    <comment>ToolTip caption for the back button</comment>
+  </data>
   <data name="NavigationOverflowButtonName" xml:space="preserve">
     <value>Diğer Düğmesi</value>
     <comment>Automation name for the nav view more button when panel is on top</comment>

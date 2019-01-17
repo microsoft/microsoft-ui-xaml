@@ -1,0 +1,207 @@
+﻿[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum ScrollerSnapPointApplicableRangeType
+{
+    Mandatory = 0,
+    MandatorySingle = 1,
+    Optional = 2,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum ScrollerSnapPointAlignment
+{
+    Near = 0,
+    Center = 1,
+    Far = 2,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[marshaling_behavior(agile)]
+[threading(both)]
+unsealed runtimeclass ScrollerSnapPointBase
+    // All composable classes must derrive from a Windows base class to pass WACK.
+    : Windows.UI.Xaml.DependencyObject
+{
+    ScrollerSnapPointAlignment Alignment{ get; set; };
+    Double SpecifiedApplicableRange{ get; };
+    ScrollerSnapPointApplicableRangeType ApplicableRangeType{ get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[marshaling_behavior(agile)]
+[threading(both)]
+unsealed runtimeclass ScrollerSnapPointIrregular : ScrollerSnapPointBase
+{
+    ScrollerSnapPointIrregular(Double snapPointValue, ScrollerSnapPointAlignment alignment);
+    ScrollerSnapPointIrregular(Double snapPointValue, Double applicableRange, ScrollerSnapPointAlignment alignment);
+    Double Value{ get; }; 
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[marshaling_behavior(agile)]
+[threading(both)]
+unsealed runtimeclass ScrollerSnapPointRegular : ScrollerSnapPointBase
+{
+    ScrollerSnapPointRegular(Double offset, Double interval, Double start, Double end, ScrollerSnapPointAlignment alignment);
+    ScrollerSnapPointRegular(Double offset, Double interval, Double start, Double end, Double applicableRange, ScrollerSnapPointAlignment alignment);
+    Double Offset{ get; };
+    Double Interval{ get; };
+    Double Start{ get; };
+    Double End{ get; }; 
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollControllerOffsetChangeRequestedEventArgs
+{
+    ScrollControllerOffsetChangeRequestedEventArgs(Double offset, MU_XC_NAMESPACE.ScrollerViewKind offsetKind, MU_XC_NAMESPACE.ScrollerViewChangeKind offsetChangeKind);
+
+    Double Offset { get; };
+    MU_XC_NAMESPACE.ScrollerViewKind OffsetKind { get; };
+    MU_XC_NAMESPACE.ScrollerViewChangeKind OffsetChangeKind { get; };
+    Int32 ViewChangeId { get; set; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs
+{
+    ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs(Single additionalVelocity, Windows.Foundation.IReference<Single> inertiaDecayRate);
+
+    Single AdditionalVelocity { get; };
+    Windows.Foundation.IReference<Single> InertiaDecayRate { get; };
+    Int32 ViewChangeId { get; set; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollControllerInteractionRequestedEventArgs
+{
+    ScrollControllerInteractionRequestedEventArgs(Windows.UI.Input.PointerPoint pointerPoint);
+
+    Windows.UI.Input.PointerPoint PointerPoint { get; };
+    Boolean Handled { get; set; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+interface IScrollController
+{
+    Boolean AreScrollerInteractionsAllowed { get; };
+    Boolean IsInteracting { get; };
+    Windows.UI.Composition.Visual InteractionVisual { get; };
+    Windows.UI.Xaml.Controls.Orientation InteractionVisualScrollOrientation { get; };
+    MU_XC_NAMESPACE.ScrollerRailingMode InteractionVisualScrollRailingMode { get; };
+    void SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet propertySet, String minOffsetPropertyName, String maxOffsetPropertyName, String offsetPropertyName, String multiplierPropertyName);
+    void SetValues(Double minOffset, Double maxOffset, Double offset, Double viewport);
+    Windows.UI.Composition.CompositionAnimation GetOffsetChangeAnimation(Int32 offsetChangeId, Windows.Foundation.Numerics.Vector2 currentPosition, Windows.UI.Composition.CompositionAnimation defaultAnimation);
+    void OnOffsetChangeCompleted(Int32 offsetChangeId, MU_XC_NAMESPACE.ScrollerViewChangeResult result);
+    event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerOffsetChangeRequestedEventArgs> OffsetChangeRequested;
+    event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs> OffsetChangeWithAdditionalVelocityRequested;
+    event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerInteractionRequestedEventArgs> InteractionRequested;
+    event Windows.Foundation.TypedEventHandler<IScrollController, Object> InteractionInfoChanged;
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[contentproperty("Child")]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
+{
+    Scroller();
+
+    Windows.UI.Xaml.Media.Brush Background { get; set; };
+    Windows.UI.Xaml.UIElement Child { get; set; };
+    Windows.UI.Composition.CompositionPropertySet ExpressionAnimationSources { get; };
+    Double HorizontalOffset { get; };
+    Double VerticalOffset { get; };
+    Single ZoomFactor { get; };
+    Double ExtentWidth { get; };
+    Double ExtentHeight { get; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultIsChildAvailableWidthConstrained")]
+    Boolean IsChildAvailableWidthConstrained { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultIsChildAvailableHeightConstrained")]
+    Boolean IsChildAvailableHeightConstrained { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultHorizontalScrollChainingMode")]
+    MU_XC_NAMESPACE.ScrollerChainingMode HorizontalScrollChainingMode { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultVerticalScrollChainingMode")]
+    MU_XC_NAMESPACE.ScrollerChainingMode VerticalScrollChainingMode { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultHorizontalScrollRailingMode")]
+    MU_XC_NAMESPACE.ScrollerRailingMode HorizontalScrollRailingMode { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultVerticalScrollRailingMode")]
+    MU_XC_NAMESPACE.ScrollerRailingMode VerticalScrollRailingMode { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultHorizontalScrollMode")]
+    MU_XC_NAMESPACE.ScrollerScrollMode HorizontalScrollMode { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultVerticalScrollMode")]
+    MU_XC_NAMESPACE.ScrollerScrollMode VerticalScrollMode { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultComputedVerticalScrollMode")]
+    MU_XC_NAMESPACE.ScrollerScrollMode ComputedHorizontalScrollMode { get; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultComputedVerticalScrollMode")]
+    MU_XC_NAMESPACE.ScrollerScrollMode ComputedVerticalScrollMode { get; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultZoomChainingMode")]
+    MU_XC_NAMESPACE.ScrollerChainingMode ZoomChainingMode { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultZoomMode")]
+    MU_XC_NAMESPACE.ScrollerZoomMode ZoomMode { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultInputKind")]
+    MU_XC_NAMESPACE.ScrollerInputKind InputKind { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultMinZoomFactor")]
+    [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateZoomFactoryBoundary")]
+    Double MinZoomFactor { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultMaxZoomFactor")]
+    [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateZoomFactoryBoundary")]
+    Double MaxZoomFactor { get; set; };
+    MU_XC_NAMESPACE.InteractionState State { get; };
+    IScrollController HorizontalScrollController { get; set; };
+    IScrollController VerticalScrollController { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultAnchorAtExtent")]
+    Boolean IsAnchoredAtHorizontalExtent { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultAnchorAtExtent")]
+    Boolean IsAnchoredAtVerticalExtent { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultAnchorRatio")]
+    [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateAnchorRatio")]
+    Double HorizontalAnchorRatio { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultAnchorRatio")]
+    [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateAnchorRatio")]
+    Double VerticalAnchorRatio { get; set; };
+    Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> HorizontalSnapPoints{ get; };
+    Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> VerticalSnapPoints{ get; };
+    Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> ZoomSnapPoints{ get; };
+    Int32 ChangeOffsets(MU_XC_NAMESPACE.ScrollerChangeOffsetsOptions options);
+    Int32 ChangeOffsetsWithAdditionalVelocity(MU_XC_NAMESPACE.ScrollerChangeOffsetsWithAdditionalVelocityOptions options);
+    Int32 ChangeZoomFactor(MU_XC_NAMESPACE.ScrollerChangeZoomFactorOptions options);
+    Int32 ChangeZoomFactorWithAdditionalVelocity(MU_XC_NAMESPACE.ScrollerChangeZoomFactorWithAdditionalVelocityOptions options);
+    event Windows.Foundation.TypedEventHandler<Scroller, Object> ExtentChanged;
+    event Windows.Foundation.TypedEventHandler<Scroller, Object> StateChanged;
+    event Windows.Foundation.TypedEventHandler<Scroller, Object> ViewChanged;
+    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollerChangingOffsetsEventArgs> ChangingOffsets;
+    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollerChangingZoomFactorEventArgs> ChangingZoomFactor;
+    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollerViewChangeCompletedEventArgs> ViewChangeCompleted;
+    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollerBringingIntoViewEventArgs> BringingIntoView;
+    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollerAnchorRequestedEventArgs> AnchorRequested;
+
+    static Windows.UI.Xaml.DependencyProperty BackgroundProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ChildProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsChildAvailableWidthConstrainedProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsChildAvailableHeightConstrainedProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty HorizontalScrollChainingModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty VerticalScrollChainingModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty HorizontalScrollRailingModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty VerticalScrollRailingModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty HorizontalScrollModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty VerticalScrollModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ComputedHorizontalScrollModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ComputedVerticalScrollModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ZoomChainingModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ZoomModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty InputKindProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MinZoomFactorProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MaxZoomFactorProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsAnchoredAtHorizontalExtentProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IsAnchoredAtVerticalExtentProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty HorizontalAnchorRatioProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty VerticalAnchorRatioProperty { get; };
+}

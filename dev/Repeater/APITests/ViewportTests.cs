@@ -39,7 +39,7 @@ using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFacto
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
@@ -79,7 +79,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Verify.AreEqual(2, realizationRects.Count);
                 Verify.AreEqual(new Rect(0, 0, 0, 0), realizationRects[0]);
-                Verify.AreEqual(new Rect(0, 0, float.MaxValue, float.MaxValue), realizationRects[1]);
+
+                if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                {
+                    Verify.AreEqual(new Rect(0, 0, float.MaxValue, float.MaxValue), realizationRects[1]);
+                }
+                else
+                {
+                    // Using Effective Viewport
+                    Verify.AreEqual(0, realizationRects[1].X);
+                    // 32 pixel title bar and some tolerance for borders
+                    Verify.IsLessThan(2.0, Math.Abs(realizationRects[1].Y - 32));
+                    // Width/Height depends on the window size, so just
+                    // validating something reasonable here to avoid flakiness.
+                    Verify.IsLessThan(500.0, realizationRects[1].Width);
+                    Verify.IsLessThan(500.0, realizationRects[1].Height);
+                }
+
                 realizationRects.Clear();
             });
         }
@@ -177,7 +193,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        [TestMethod]
+        //Unreliable test: RepeaterTests.ViewportTests.ValidateOneScrollerScenario #158
+        //[TestMethod]
         public void ValidateOneScrollerScenario()
         {
             var realizationRects = new List<Rect>();
@@ -345,6 +362,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             if(!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
             {
                 Log.Warning("Skipping ValidateSupportForScrollerConfigurationChanges");
+                return;
+            }
+
+            // Post RS4 configuration changes will not be raised.
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Comment("Skipping since version is less than RS5 and effective viewport is not available below RS5");
                 return;
             }
 
@@ -522,6 +546,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void CanRegisterElementsWithScrollingSurfaces()
         {
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since RS5+ we use effective viewport instead of IRepeaterScrollingSurface");
+                return;
+            }
+
             // In this test, we validate that ItemsRepeater can register and unregister its children
             // with one or two scrollers.
             // The initial setup is 4 nested scrollers with a root repeater under which
@@ -698,6 +728,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateSuggestedElement()
         {
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since RS5+ we use effective viewport instead of IRepeaterScrollingSurface");
+                return;
+            }
+
             // In this test, we validate that ItemsRepeater can suggested the correct anchor element
             // to its layout.
             // The initial setup is 4 nested scrollers with a root repeater under which

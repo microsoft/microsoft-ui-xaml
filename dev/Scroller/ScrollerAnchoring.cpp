@@ -12,8 +12,6 @@
 // It is declared at an edge if it's within 1/10th of a pixel.
 const double c_edgeDetectionTolerance = 0.1;
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-
 void Scroller::RaiseConfigurationChanged()
 {
     if (m_configurationChanged)
@@ -43,8 +41,6 @@ void Scroller::RaiseViewportChanged(const bool isFinal)
         m_viewportChanged(*this, isFinal);
     }
 }
-
-#endif 
 
 void Scroller::RaiseAnchorRequested()
 {
@@ -91,7 +87,7 @@ void Scroller::IsAnchoring(
     // removing the check is the correct fix due to dcomp bug 17523225. I filed a 
     // tracking bug to follow up once the dcomp bug is fixed.
     // Bug 17523266: Scroller is not anchoring during mouse wheel
-    if (!m_interactionTracker || m_state == winrt::ScrollerState::CustomAnimation)
+    if (!m_interactionTracker || m_state == winrt::InteractionState::Animation)
     {
         // Skip calls to SetChildLayoutOffsetX / SetChildLayoutOffsetY when the InteractionTracker has not been set up yet,
         // or when it is performing a custom animation because if would result in a visual flicker.
@@ -357,6 +353,9 @@ void Scroller::EnsureAnchorElementSelection()
         {
             globalTestHooks->NotifyAnchorEvaluated(*this, requestedAnchorElement, viewportAnchorPointHorizontalOffset, viewportAnchorPointVerticalOffset);
         }
+
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str());
+
         return;
     }
 
@@ -409,6 +408,8 @@ void Scroller::EnsureAnchorElementSelection()
     {
         m_anchorElement.set(bestAnchorCandidate);
         m_anchorElementBounds = bestAnchorCandidateBounds;
+
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str());
     }
 
     if (globalTestHooks && globalTestHooks->AreAnchorNotificationsRaised())

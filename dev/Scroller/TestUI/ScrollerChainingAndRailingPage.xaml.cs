@@ -5,9 +5,10 @@ using System;
 using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 
 #if !BUILD_WINDOWS
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerChainingMode = Microsoft.UI.Xaml.Controls.ScrollerChainingMode;
 using ScrollerRailingMode = Microsoft.UI.Xaml.Controls.ScrollerRailingMode;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
@@ -47,7 +48,7 @@ namespace MUXControlsTestApp
 
         private void ScrollViewer2_DirectManipulationStarted(object sender, object e)
         {
-            txtScrollViewer2State.Text = (sender as ScrollViewer).Name + " Interacting";
+            txtScrollViewer2State.Text = (sender as ScrollViewer).Name + " Interaction";
             txtScrollViewer2HSP.Text = String.Format("{0,5:N1}%", (sender as ScrollViewer).HorizontalOffset / (sender as ScrollViewer).ScrollableWidth * 100.0);
             txtScrollViewer2VSP.Text = String.Format("{0,5:N1}%", (sender as ScrollViewer).VerticalOffset / (sender as ScrollViewer).ScrollableHeight * 100.0);
         }

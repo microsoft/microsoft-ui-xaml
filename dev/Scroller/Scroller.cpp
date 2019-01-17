@@ -366,7 +366,7 @@ void Scroller::InputKind(winrt::ScrollerInputKind const& value)
     SetValue(s_InputKindProperty, box_value(value));
 }
 
-winrt::ScrollerState Scroller::State()
+winrt::InteractionState Scroller::State()
 {
     return m_state;
 }
@@ -808,10 +808,17 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         viewport.Width          /*viewportWidth*/,
         viewport.Height         /*viewportHeight*/);
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-    ClearAnchorCandidates();
-    RaisePostArrange();
-#endif
+    // We do the following only when effective viewport
+    // support is not available. This is to provide downlevel support.
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        m_isAnchorElementDirty = true;
+    }
+    else
+    {
+        ClearAnchorCandidates();
+        RaisePostArrange();
+    }
 
     return viewport;
 }
@@ -825,7 +832,7 @@ void Scroller::CustomAnimationStateEntered(
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, args.RequestId());
 
-    UpdateState(winrt::ScrollerState::CustomAnimation);
+    UpdateState(winrt::InteractionState::Animation);
 }
 
 void Scroller::IdleStateEntered(
@@ -833,7 +840,7 @@ void Scroller::IdleStateEntered(
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, args.RequestId());
 
-    UpdateState(winrt::ScrollerState::Idle);
+    UpdateState(winrt::InteractionState::Idle);
 
     if (!m_interactionTrackerAsyncOperations.empty())
     {
@@ -890,7 +897,7 @@ void Scroller::InertiaStateEntered(
         TypeLogging::Float2ToString(m_endOfInertiaPosition).c_str(),
         m_endOfInertiaZoomFactor);
 
-    UpdateState(winrt::ScrollerState::Inertia);
+    UpdateState(winrt::InteractionState::Inertia);
 }
 
 void Scroller::InteractingStateEntered(
@@ -898,7 +905,7 @@ void Scroller::InteractingStateEntered(
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, args.RequestId());
 
-    UpdateState(winrt::ScrollerState::Interacting);
+    UpdateState(winrt::InteractionState::Interaction);
 
     if (!m_interactionTrackerAsyncOperations.empty())
     {
@@ -1015,7 +1022,7 @@ float Scroller::ComputeChildLayoutOffsetDelta(ScrollerDimension dimension, float
 
 float Scroller::ComputeEndOfInertiaZoomFactor() const
 {
-    if (m_state == winrt::ScrollerState::Inertia)
+    if (m_state == winrt::InteractionState::Inertia)
     {
         float endOfInertiaZoomFactor = m_endOfInertiaZoomFactor;
 
@@ -1032,7 +1039,7 @@ float Scroller::ComputeEndOfInertiaZoomFactor() const
 
 winrt::float2 Scroller::ComputeEndOfInertiaPosition()
 {
-    if (m_state == winrt::ScrollerState::Inertia)
+    if (m_state == winrt::InteractionState::Inertia)
     {
         float endOfInertiaZoomFactor = ComputeEndOfInertiaZoomFactor();
         winrt::float2 minPosition{};
@@ -3137,7 +3144,7 @@ wstring_view Scroller::GetVisualTargetedPropertyName(ScrollerDimension dimension
     }
 }
 
-// Invoked by both Scroller and ScrollerView controls
+// Invoked by both Scroller and ScrollViewer controls
 bool Scroller::IsAnchorRatioValid(
     double value)
 {
@@ -3259,9 +3266,13 @@ void Scroller::OnPropertyChanged(
             m_isChildAvailableHeightConstrained = isChildAvailableSizeConstrained;
         }
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-        RaiseConfigurationChanged();
-#endif
+        // Raise configuration changed only when effective viewport
+        // support is not available.
+        if (!SharedHelpers::IsRS5OrHigher())
+        {
+            RaiseConfigurationChanged();
+        }
+
         InvalidateMeasure();
     }
     else if (dependencyProperty == s_HorizontalAnchorRatioProperty ||
@@ -4510,7 +4521,7 @@ void Scroller::UpdateTransformSource(
 }
 
 void Scroller::UpdateState(
-    const winrt::ScrollerState& state)
+    const winrt::InteractionState& state)
 {
     if (state != m_state)
     {
@@ -5564,7 +5575,7 @@ void Scroller::PostProcessZoomFactorChange(
 // Returns True when an interruption was performed.
 bool Scroller::InterruptViewChangeWithAnimation(InteractionTrackerAsyncOperationType interactionTrackerAsyncOperationType)
 {
-    if (m_state == winrt::ScrollerState::CustomAnimation &&
+    if (m_state == winrt::InteractionState::Animation &&
         interactionTrackerAsyncOperationType == m_lastInteractionTrackerAsyncOperationType &&
         SharedHelpers::IsRS5OrHigher() &&
         !SharedHelpers::Is19H1OrHigher())
@@ -6261,9 +6272,10 @@ void Scroller::RaiseViewChanged()
         m_viewChangedEventSource(*this, nullptr);
     }
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-    RaiseViewportChanged(false /* isFinal */);
-#endif
+    if (!SharedHelpers::IsRS5OrHigher())
+    {
+        RaiseViewportChanged(false /* isFinal */);
+    }
 
     if (SharedHelpers::IsFrameworkElementInvalidateViewportAvailable())
     {
@@ -6354,9 +6366,12 @@ void Scroller::RaiseViewChangeCompleted(
         m_viewChangeCompletedEventSource(*this, *viewChangeCompletedEventArgs);
     }
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-    RaiseViewportChanged(true /* isFinal */);
-#endif
+    // Raise viewport changed only when effective viewport
+    // support is not available.
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        RaiseViewportChanged(true /* isFinal */);
+    }
 
     if (SharedHelpers::IsFrameworkElementInvalidateViewportAvailable())
     {

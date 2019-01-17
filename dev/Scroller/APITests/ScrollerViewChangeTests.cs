@@ -4,11 +4,13 @@
 using Common;
 using MUXControlsTestApp.Utilities;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Threading;
 using Windows.Foundation;
 using Windows.UI.Composition;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Shapes;
 
 #if USING_TAEF
@@ -21,7 +23,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 #if !BUILD_WINDOWS
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
 using ScrollerChangeOffsetsWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions;
 using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
@@ -61,8 +63,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Changes Scroller offsets using various ScrollerViewKind and ScrollerViewChangeKind enum values.")]
+        //[TestMethod]
+        //[TestProperty("Description", "Changes Scroller offsets using various ScrollerViewKind and ScrollerViewChangeKind enum values.")]
+        // Disabled due to: Multiple unreliable Scroller tests #136
         public void BasicOffsetChanges()
         {
             Scroller scroller = null;
@@ -104,8 +107,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             ChangeOffsets(scroller, 700.0, -8.0, ScrollerViewKind.RelativeToCurrentView, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.RespectSnapPoints, false /*hookViewChanged*/);
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Changes Scroller zoomFactor using various ScrollerViewKind and ScrollerViewChangeKind enum values.")]
+        //[TestMethod]
+        //[TestProperty("Description", "Changes Scroller zoomFactor using various ScrollerViewKind and ScrollerViewChangeKind enum values.")]
+        // Disabled due to: Multiple unreliable Scroller tests #136
         public void BasicZoomFactorChanges()
         {
             Scroller scroller = null;
@@ -253,7 +257,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         {
                             Log.Comment("Canceling view change");
                             operationCanceled = true;
-                            sender.ChangeZoomFactor(new ScrollerChangeZoomFactorOptions(0, ScrollerViewKind.RelativeToCurrentView, Vector2.Zero, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));                            
+                            sender.ChangeZoomFactor(new ScrollerChangeZoomFactorOptions(0, ScrollerViewKind.RelativeToCurrentView, Vector2.Zero, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
                         }
                     };
                 });
@@ -939,10 +943,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             // Jump to absolute offsets
             ChangeOffsets(
-                scroller, 
-                c_defaultUIScrollerChildWidth + 200.0 - c_defaultUIScrollerWidth, 
-                c_defaultVerticalOffset, 
-                ScrollerViewKind.Absolute, 
+                scroller,
+                c_defaultUIScrollerChildWidth + 200.0 - c_defaultUIScrollerWidth,
+                c_defaultVerticalOffset,
+                ScrollerViewKind.Absolute,
                 ScrollerViewChangeKind.DisableAnimation,
                 ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints);
         }
@@ -1475,7 +1479,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private void InterruptViewChange(
             ViewChangeInterruptionKind viewChangeInterruptionKind)
         {
-            bool changeOffsetsFirst = 
+            bool changeOffsetsFirst =
                 viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByOffsetsChange || viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByZoomFactorChange;
             bool changeOffsetsSecond =
                 viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByOffsetsChange || viewChangeInterruptionKind == ViewChangeInterruptionKind.ZoomFactorChangeByOffsetsChange;
@@ -1604,9 +1608,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private void WaitForEvent(string logComment, EventWaitHandle eventWaitHandle)
         {
             Log.Comment(logComment);
-            if (!eventWaitHandle.WaitOne(TimeSpan.FromMilliseconds(c_MaxWaitDuration)))
+            if (Debugger.IsAttached)
             {
-                throw new Exception("Timeout expiration in WaitForEvent.");
+                eventWaitHandle.WaitOne();
+            }
+            else
+            {
+                if (!eventWaitHandle.WaitOne(TimeSpan.FromMilliseconds(c_MaxWaitDuration)))
+                {
+                    throw new Exception("Timeout expiration in WaitForEvent.");
+                }
             }
         }
 

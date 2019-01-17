@@ -169,7 +169,8 @@
                                 Foreground="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForeground}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                Visibility="Collapsed" />
+                                Visibility="Collapsed"
+                                AutomationProperties.AccessibilityView="Raw" />
                         </Grid>
 
                     </Grid>

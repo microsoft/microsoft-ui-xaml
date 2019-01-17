@@ -7,7 +7,6 @@
 #include "Scroller.h"
 #include "DoubleUtil.h"
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
 bool Scroller::IsHorizontallyScrollable()
 {
     return !m_isChildAvailableWidthConstrained;
@@ -79,13 +78,12 @@ winrt::Rect Scroller::GetRelativeViewport(
     return result;
 }
 
-#endif
-
-#ifdef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
 winrt::UIElement Scroller::CurrentAnchor()
-#else
+{
+    return AnchorElement();
+}
+
 winrt::UIElement Scroller::AnchorElement()
-#endif
 {
     bool isAnchoringElementHorizontally = false;
     bool isAnchoringElementVertically = false;
@@ -105,6 +103,8 @@ winrt::UIElement Scroller::AnchorElement()
 
 void Scroller::RegisterAnchorCandidate(winrt::UIElement const& element)
 {
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
+
     if (!element)
     {
         throw winrt::hresult_error(E_INVALIDARG);

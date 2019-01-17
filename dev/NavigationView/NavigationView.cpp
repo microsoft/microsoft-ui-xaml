@@ -280,6 +280,13 @@ void NavigationView::OnApplyTemplate()
         topNavOverflowButton.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_NavigationOverflowButtonText)));
         auto visual = winrt::ElementCompositionPreview::GetElementVisual(topNavOverflowButton);
         CreateAndAttachHeaderAnimation(visual);
+
+#ifdef USE_INSIDER_SDK
+        if (winrt::IFlyoutBase6 topNavOverflowButtonAsFlyoutBase6 = topNavOverflowButton.Flyout())
+        {
+            topNavOverflowButtonAsFlyoutBase6.ShouldConstrainToRootBounds(false);
+        }
+#endif
     }
 
     if (auto topNavGrid = GetTemplateChildT<winrt::Grid>(c_topNavGrid, controlProtected))
