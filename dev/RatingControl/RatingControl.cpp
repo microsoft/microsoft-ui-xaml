@@ -47,9 +47,9 @@ float RatingControl::ActualRatingFontSize()
     return RenderingRatingFontSize() / 2;
 }
 
-inline double RatingControl::ItemSpacing()
+double RatingControl::ItemSpacing()
 {
-    // stars are rendered 2x size and we use expression animation to shrink them down to desired size, which will create those spacings (not system margin).
+    // Stars are rendered 2x size and we use expression animation to shrink them down to desired size, which will create those spacings (not system margin).
     // Since text scale factor won't affect system margins, when stars get bigger, the spacing will become smaller.
     // Therefore we should include TextScaleFactor when calculating item spacing in order to get correct total width and star center positions.
     double defaultFontSize = c_defaultRatingFontSizeForRendering / 2;
