@@ -19,6 +19,8 @@ const int c_defaultItemSpacing = 8;
 const float c_mouseOverScale = 0.8f;
 const float c_touchOverScale = 1.0f;
 const float c_noPointerOverMagicNumber = -100;
+
+// 22 = 20(compensate for the -20 margin on StackPanel) + 2(magic number makes the text and star center-aligned)
 const float c_defaultCaptionTopMargin = 22;
 
 const int c_noValueSetSentinel = -1;
@@ -47,18 +49,23 @@ float RatingControl::ActualRatingFontSize()
     return RenderingRatingFontSize() / 2;
 }
 
+// TODO MSFT #10030063: Convert to itemspacing DP
 double RatingControl::ItemSpacing()
 {
-    // Stars are rendered 2x size and we use expression animation to shrink them down to desired size, which will create those spacings (not system margin).
-    // Since text scale factor won't affect system margins, when stars get bigger, the spacing will become smaller.
-    // Therefore we should include TextScaleFactor when calculating item spacing in order to get correct total width and star center positions.
+    // Stars are rendered 2x size and we use expression animation to shrink them down to desired size,
+    // which will create those spacings (not system margin).
+    // Since text scale factor won't affect system margins,
+    // when stars get bigger, the spacing will become smaller.
+    // Therefore we should include TextScaleFactor when calculating item spacing
+    // in order to get correct total width and star center positions.
     double defaultFontSize = c_defaultRatingFontSizeForRendering / 2;
     return c_defaultItemSpacing - (GetUISettings().TextScaleFactor() - 1.0) * defaultFontSize / 2;
 }
 
 void RatingControl::UpdateCaptionMargins()
 {
-    // We manually set margins to caption text to make it center-aligned with the stars because star vertical center is 0.8 instead of the normal 0.5.
+    // We manually set margins to caption text to make it center-aligned with the stars
+    // because star vertical center is 0.8 instead of the normal 0.5.
     // When text scale changes we need to update top margin to make the text follow start center.
     if (auto captionTextBlock = m_captionTextBlock.safe_get())
     {
@@ -857,7 +864,6 @@ double RatingControl::CalculateTotalRatingControlWidth()
 
     if (captionAsWinRT.size() > 0)
     {
-        // TODO MSFT #10030063: Convert to itemspacing DP
         textSpacing = ItemSpacing();
     }
 
