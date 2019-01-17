@@ -4,6 +4,7 @@
     <HelixType>test/product/</HelixType>
     <EnableXUnitReporter>true</EnableXUnitReporter>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
     <HelixPreCommands>$(HelixPreCommands);set testnameprefix=$(Configuration).$(Platform)</HelixPreCommands>
   </PropertyGroup>
 
