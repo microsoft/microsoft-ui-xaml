@@ -146,7 +146,7 @@ jobs:
 
   - task: CmdLine@1
     displayName: 'dir'
-    condition: succeededOrFailed
+    condition: succeededOrFailed()
     inputs:
       filename: 'dir /b /s *log'
 
