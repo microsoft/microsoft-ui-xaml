@@ -1345,11 +1345,17 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
                 RaiseSelectionChangedEvent(nextActualItem, isSettingsItem, recommendedDirection);
             }
 
-            UpdateIsChildSelectedForItem(nextActualItem, true);
-            UpdateIsChildSelectedForItem(prevItem, false);
+            UpdateIsChildSelected(prevItem, nextActualItem);
             auto container = NavigationViewItemOrSettingsContentFromData(nextActualItem);
             if (container)
             {
+                // Simply Expanding and Collapsing should never change the selection state of the NavigationView itself (aka the 'SelectedItem' property).
+                // In the case where the parent items are selectable, that has already been taken care of before this gets executed.
+                auto scopeGuard = gsl::finally([this]()
+                {
+                    m_shouldIgnoreNextSelectionChange = false;
+                });
+                m_shouldIgnoreNextSelectionChange = true;
                 ToggleIsExpanded(container);
             }
 
@@ -1361,6 +1367,57 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
             }
         }
     }
+}
+
+void NavigationView::UpdateIsChildSelected(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem)
+{
+    // Determine if previously selected item is in listview
+    if (prevItem)
+    {
+        //TODO: Extract this to separate function that determines whether item came from leftnav or popup listview
+        if (auto lv = IsTopNavigationView() ? m_topNavListView.get() : m_leftNavListView.get())
+        {
+            if (auto container = NavigationViewItemOrSettingsContentFromData(prevItem))
+            {
+                auto index = lv.IndexFromContainer(container);
+                if (index >= 0)
+                {
+                    UpdateIsChildSelectedForItem(prevItem, false);
+                    container.IsSelected(false);
+                }
+                else
+                {
+                    // Test code (proof of concept)
+                    auto nodeList = RootNodes();
+
+                    bool foundItem = false;
+                    while (!foundItem)
+                    {
+                        for (uint32_t i = 0; i < nodeList.Size(); i++)
+                        {
+                            auto node = nodeList.GetAt(i);
+                            if (winrt::get_self<TreeViewNode>(node)->IsChildSelected())
+                            {
+                                if (auto item = ContainerFromNode(node))
+                                {
+
+                                }
+                                winrt::get_self<TreeViewNode>(node)->IsChildSelected(false);
+                                nodeList = winrt::get_self<TreeViewNode>(node)->Children();
+                                break;
+                            }
+                            if (winrt::get_self<TreeViewNode>(node)->Content() == prevItem)
+                            {
+                                foundItem = true;
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+    UpdateIsChildSelectedForItem(nextItem, true);
 }
 
 void NavigationView::UpdateIsChildSelectedForItem(const winrt::IInspectable& item, bool isChildSelected)
@@ -2062,6 +2119,7 @@ void NavigationView::UnselectPrevItem(winrt::IInspectable const& prevItem, winrt
     // 3, select from listviewitem to null from API.
     if (prevItem && prevItem != nextItem)
     {
+        // TODO: Add Check for where above selection case 2 & 3 start from listviewitem that is hidden
         if (IsSettingsItem(prevItem) || (nextItem && IsSettingsItem(nextItem)) || !nextItem)
         {
             ChangeSelectStatusForItem(prevItem, false /*selected*/);
@@ -2080,6 +2138,13 @@ void NavigationView::UndoSelectionAndRevertSelectionTo(winrt::IInspectable const
         }
         else
         {
+            // In the case of hierarchical nav view, there is a possibility that the previously selected item
+            // is hidden (hence not in the listview). This 'if' clause guarantees that the items that needs to be unselected
+            // gets unselected.
+            if (nextItem)
+            {
+                ChangeSelectStatusForItem(nextItem, false /*selected*/);
+            }
             ChangeSelectStatusForItem(prevSelectedItem, true /*selected*/);
             AnimateSelectionChangedToItem(prevSelectedItem);
             selectedItem = prevSelectedItem;

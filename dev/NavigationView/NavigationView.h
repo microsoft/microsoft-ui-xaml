@@ -358,7 +358,7 @@ private:
     void ChangeIsChildSelectedForNode(winrt::TreeViewNode const& node, bool const selected);
     void UpdateIsChildSelectedForItem(const winrt::IInspectable& item, bool isChildSelected);
     void ToggleIsExpanded(winrt::NavigationViewItem const& item);
-
+    void UpdateIsChildSelected(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
 
     bool m_appliedTemplate{ false };
 
