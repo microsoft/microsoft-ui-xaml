@@ -1058,7 +1058,7 @@ void NavigationView::PlayIndicatorAnimations(const winrt::UIElement& indicator, 
 
     float beginScale = 1.0f;
     float endScale = 1.0f;
-    if (IsTopNavigationView())
+    if (IsTopNavigationView() && fabs(size.Width) > 0.001f)
     {
         beginScale = beginSize.Width / size.Width;
         endScale = endSize.Width / size.Width;
