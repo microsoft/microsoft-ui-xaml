@@ -143,6 +143,10 @@ jobs:
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
       arguments: '/binaryLogger /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues)'
+  - task: CmdLine@1
+    displayName: 'dir'
+    inputs:
+      filename: 'dir /b /s *log'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish artifact: drop'
