@@ -19,7 +19,7 @@ const int c_defaultItemSpacing = 8;
 const float c_mouseOverScale = 0.8f;
 const float c_touchOverScale = 1.0f;
 const float c_noPointerOverMagicNumber = -100;
-const float c_defaultCaptionTopMargin = 9;
+const float c_defaultCaptionTopMargin = 22;
 
 const int c_noValueSetSentinel = -1;
 
@@ -47,29 +47,24 @@ float RatingControl::ActualRatingFontSize()
     return RenderingRatingFontSize() / 2;
 }
 
-double RatingControl::ItemSpacing()
+inline double RatingControl::ItemSpacing()
 {
-    // TextScaleFactor will change font size but won't affect spacing/margin.
-    // The scaled-up glyph will grow out to the margin area, so the "actual" margins become smaller.
+    // stars are rendered 2x size and we use expression animation to shrink them down to desired size, which will create those spacings (not system margin).
+    // Since text scale factor won't affect system margins, when stars get bigger, the spacing will become smaller.
     // Therefore we should include TextScaleFactor when calculating item spacing in order to get correct total width and star center positions.
-    return c_defaultItemSpacing / GetUISettings().TextScaleFactor();
+    double defaultFontSize = c_defaultRatingFontSizeForRendering / 2;
+    return c_defaultItemSpacing - (GetUISettings().TextScaleFactor() - 1.0) * defaultFontSize / 2;
 }
 
 void RatingControl::UpdateCaptionMargins()
 {
-    // star glyph's vertical center position is set to 0.8 per redline, but caption text's center is 0.5 (default value).
-    // when they scale up the stars and caption text won't be vertically aligned since the vertical center is different.
-    // Update caption text top margin here to fix the alignment.
+    // We manually set margins to caption text to make it center-aligned with the stars because star vertical center is 0.8 instead of the normal 0.5.
+    // When text scale changes we need to update top margin to make the text follow start center.
     if (auto captionTextBlock = m_captionTextBlock.safe_get())
     {
         double textScaleFactor = GetUISettings().TextScaleFactor();
         winrt::Thickness margin = captionTextBlock.Margin();
-        margin.Top = c_defaultCaptionTopMargin;
-
-        if (textScaleFactor > 1.01)
-        {
-            margin.Top -= ActualRatingFontSize()*textScaleFactor*(1-c_verticalScaleAnimationCenterPoint);
-        }
+        margin.Top = c_defaultCaptionTopMargin - ActualRatingFontSize()*c_verticalScaleAnimationCenterPoint;
 
         captionTextBlock.Margin(margin);
     }
