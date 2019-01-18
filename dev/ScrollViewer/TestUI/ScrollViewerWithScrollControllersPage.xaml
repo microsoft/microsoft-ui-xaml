@@ -48,7 +48,7 @@
                             <controlsPrimitives:Scroller x:Name="PART_Scroller"
                                 Grid.ColumnSpan="2" Grid.RowSpan="2"
                                 Background="{TemplateBinding Background}"
-                                Child="{TemplateBinding Content}"
+                                Content="{TemplateBinding Content}"
                                 IsChildAvailableWidthConstrained="{TemplateBinding IsChildAvailableWidthConstrained}"
                                 IsChildAvailableHeightConstrained="{TemplateBinding IsChildAvailableHeightConstrained}"
                                 Margin="{TemplateBinding Padding}"

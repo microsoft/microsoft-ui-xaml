@@ -332,7 +332,7 @@ namespace MUXControlsTestApp
             s.Margin = new Thickness(4);
             s.HorizontalScrollMode = ScrollerScrollMode.Enabled;
             s.VerticalScrollMode = ScrollerScrollMode.Enabled;
-            s.Child = rectSC;
+            s.Content = rectSC;
             s.ViewChanged += Scroller_ViewChanged;
 
             sp.Children.Insert(0, s);

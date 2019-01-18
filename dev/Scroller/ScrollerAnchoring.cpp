@@ -8,7 +8,7 @@
 #include "DoubleUtil.h"
 #include "ScrollerTestHooks.h"
 
-// Used when Scroller.IsAnchoredAtHorizontalExtent or Scroller.IsAnchoredAtVerticalExtent is True to determine whether the Child is scrolled to an edge.
+// Used when Scroller.IsAnchoredAtHorizontalExtent or Scroller.IsAnchoredAtVerticalExtent is True to determine whether the Content is scrolled to an edge.
 // It is declared at an edge if it's within 1/10th of a pixel.
 const double c_edgeDetectionTolerance = 0.1;
 
@@ -62,7 +62,7 @@ void Scroller::RaiseAnchorRequested()
 }
 
 // Computes the type of anchoring to perform, if any, based on Scroller.HorizontalAnchorRatio, Scroller.VerticalAnchorRatio, 
-// Scroller.IsAnchoredAtHorizontalExtent, Scroller.IsAnchoredAtVerticalExtent, the current offsets, zoomFactor, viewport size, child size and state.
+// Scroller.IsAnchoredAtHorizontalExtent, Scroller.IsAnchoredAtVerticalExtent, the current offsets, zoomFactor, viewport size, content size and state.
 // When all 4 returned booleans are False, no element anchoring is performed, no far edge anchoring is performed. There may still be anchoring at near edges.
 void Scroller::IsAnchoring(
     _Out_ bool* isAnchoringElementHorizontally,
@@ -89,7 +89,7 @@ void Scroller::IsAnchoring(
     // Bug 17523266: Scroller is not anchoring during mouse wheel
     if (!m_interactionTracker || m_state == winrt::InteractionState::Animation)
     {
-        // Skip calls to SetChildLayoutOffsetX / SetChildLayoutOffsetY when the InteractionTracker has not been set up yet,
+        // Skip calls to SetContentLayoutOffsetX / SetContentLayoutOffsetY when the InteractionTracker has not been set up yet,
         // or when it is performing a custom animation because if would result in a visual flicker.
         return;
     }
@@ -151,8 +151,8 @@ void Scroller::IsAnchoring(
 }
 
 // Returns:
-// - viewportAnchorPointHorizontalOffset: unzoomed horizontal offset of the anchor point within the Scroller.Child. NaN if there is no horizontal anchoring.
-// - viewportAnchorPointVerticalOffset: unzoomed vertical offset of the anchor point within the Scroller.Child. NaN if there is no vertical anchoring.
+// - viewportAnchorPointHorizontalOffset: unzoomed horizontal offset of the anchor point within the Scroller.Content. NaN if there is no horizontal anchoring.
+// - viewportAnchorPointVerticalOffset: unzoomed vertical offset of the anchor point within the Scroller.Content. NaN if there is no vertical anchoring.
 void Scroller::ComputeViewportAnchorPoint(
     double viewportWidth,
     double viewportHeight,
@@ -175,8 +175,8 @@ void Scroller::ComputeViewportAnchorPoint(
 }
 
 // Returns:
-// - elementAnchorPointHorizontalOffset: unzoomed horizontal offset of the anchor element's anchor point within the Scroller.Child. NaN if there is no horizontal anchoring.
-// - elementAnchorPointVerticalOffset: unzoomed vertical offset of the anchor element's point within the Scroller.Child. NaN if there is no vertical anchoring.
+// - elementAnchorPointHorizontalOffset: unzoomed horizontal offset of the anchor element's anchor point within the Scroller.Content. NaN if there is no horizontal anchoring.
+// - elementAnchorPointVerticalOffset: unzoomed vertical offset of the anchor element's point within the Scroller.Content. NaN if there is no vertical anchoring.
 void Scroller::ComputeElementAnchorPoint(
     bool isForPreArrange,
     _Out_ double* elementAnchorPointHorizontalOffset,
@@ -189,7 +189,7 @@ void Scroller::ComputeElementAnchorPoint(
 
     if (m_anchorElement.get())
     {
-        winrt::Rect anchorElementBounds = isForPreArrange ? m_anchorElementBounds : GetDescendantBounds(Child(), m_anchorElement.get());
+        winrt::Rect anchorElementBounds = isForPreArrange ? m_anchorElementBounds : GetDescendantBounds(Content(), m_anchorElement.get());
 
         ComputeAnchorPoint(anchorElementBounds, elementAnchorPointHorizontalOffset, elementAnchorPointVerticalOffset);
 
@@ -336,7 +336,7 @@ void Scroller::EnsureAnchorElementSelection()
     auto anchorRequestedEventArgs = winrt::get_self<ScrollerAnchorRequestedEventArgs>(m_anchorRequestedEventArgs.get());
     winrt::UIElement requestedAnchorElement{ nullptr };
     winrt::IVector<winrt::UIElement> anchorCandidates{ nullptr };
-    const winrt::UIElement child = Child();
+    const winrt::UIElement content = Content();
 
     if (anchorRequestedEventArgs)
     {
@@ -347,7 +347,7 @@ void Scroller::EnsureAnchorElementSelection()
     if (requestedAnchorElement)
     {
         m_anchorElement.set(requestedAnchorElement);
-        m_anchorElementBounds = GetDescendantBounds(child, requestedAnchorElement);
+        m_anchorElementBounds = GetDescendantBounds(content, requestedAnchorElement);
 
         if (globalTestHooks && globalTestHooks->AreAnchorNotificationsRaised())
         {
@@ -369,7 +369,7 @@ void Scroller::EnsureAnchorElementSelection()
         static_cast<float>(m_viewportHeight / m_zoomFactor)
     };
 
-    MUX_ASSERT(child);
+    MUX_ASSERT(content);
 
     if (anchorCandidates)
     {
@@ -377,7 +377,7 @@ void Scroller::EnsureAnchorElementSelection()
         {
             ProcessAnchorCandidate(
                 anchorCandidate,
-                child,
+                content,
                 viewportAnchorBounds,
                 viewportAnchorPointHorizontalOffset,
                 viewportAnchorPointVerticalOffset,
@@ -394,7 +394,7 @@ void Scroller::EnsureAnchorElementSelection()
 
             ProcessAnchorCandidate(
                 anchorCandidate,
-                child,
+                content,
                 viewportAnchorBounds,
                 viewportAnchorPointHorizontalOffset,
                 viewportAnchorPointVerticalOffset,
@@ -422,7 +422,7 @@ void Scroller::EnsureAnchorElementSelection()
 // and potentially updates the best candidate and its bounds.
 void Scroller::ProcessAnchorCandidate(
     const winrt::UIElement& anchorCandidate,
-    const winrt::UIElement& child,
+    const winrt::UIElement& content,
     const winrt::Rect& viewportAnchorBounds,
     double viewportAnchorPointHorizontalOffset,
     double viewportAnchorPointVerticalOffset,
@@ -431,15 +431,15 @@ void Scroller::ProcessAnchorCandidate(
     _Inout_ winrt::Rect* bestAnchorCandidateBounds) const
 {
     MUX_ASSERT(anchorCandidate);
-    MUX_ASSERT(child);
+    MUX_ASSERT(content);
 
-    if (!IsElementValidAnchor(anchorCandidate, child))
+    if (!IsElementValidAnchor(anchorCandidate, content))
     {
-        // Ignore candidates that are collapsed or do not belong to the Child element and are not the Child itself. 
+        // Ignore candidates that are collapsed or do not belong to the Content element and are not the Content itself. 
         return;
     }
 
-    winrt::Rect anchorCandidateBounds = GetDescendantBounds(child, anchorCandidate);
+    winrt::Rect anchorCandidateBounds = GetDescendantBounds(content, anchorCandidate);
 
     if (!SharedHelpers::DoRectsIntersect(viewportAnchorBounds, anchorCandidateBounds))
     {
@@ -470,13 +470,13 @@ void Scroller::ProcessAnchorCandidate(
     }
 }
 
-// Returns the bounds of a Scroller.Child descendant in respect to that child.
+// Returns the bounds of a Scroller.Content descendant in respect to that content.
 winrt::Rect Scroller::GetDescendantBounds(
-    const winrt::UIElement& child,
+    const winrt::UIElement& content,
     const winrt::UIElement& descendant)
 {
-    MUX_ASSERT(child);
-    MUX_ASSERT(IsElementValidAnchor(descendant, child));
+    MUX_ASSERT(content);
+    MUX_ASSERT(IsElementValidAnchor(descendant, content));
 
     const winrt::FrameworkElement descendantAsFE = descendant.as<winrt::FrameworkElement>();
     const winrt::Rect descendantRect{
@@ -486,13 +486,13 @@ winrt::Rect Scroller::GetDescendantBounds(
         descendantAsFE ? static_cast<float>(descendantAsFE.ActualHeight()) : 0.0f
     };
 
-    return GetDescendantBounds(child, descendant, descendantRect);
+    return GetDescendantBounds(content, descendant, descendantRect);
 }
 
-bool Scroller::IsElementValidAnchor(const winrt::UIElement& element, const winrt::UIElement& child)
+bool Scroller::IsElementValidAnchor(const winrt::UIElement& element, const winrt::UIElement& content)
 {
     MUX_ASSERT(element);
-    MUX_ASSERT(child);
+    MUX_ASSERT(content);
 
-    return element.Visibility() == winrt::Visibility::Visible && (element == child || SharedHelpers::IsAncestor(element, child));
+    return element.Visibility() == winrt::Visibility::Visible && (element == content || SharedHelpers::IsAncestor(element, content));
 }
