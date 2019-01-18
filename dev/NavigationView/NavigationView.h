@@ -287,6 +287,8 @@ private:
     tracker_ref<winrt::ListView> m_topNavListOverflowView{ this };
     tracker_ref<winrt::Grid> m_topNavGrid{ this };
     tracker_ref<winrt::Border> m_topNavContentOverlayAreaGrid{ this };
+    tracker_ref<winrt::ListView> m_overflowListView{ this };
+    tracker_ref<winrt::FlyoutBase> m_overflowFlyout{ this };
 
     tracker_ref<winrt::UIElement> m_prevIndicator{ this };
     tracker_ref<winrt::UIElement> m_nextIndicator{ this };
@@ -349,16 +351,24 @@ private:
     // Hierarchical Nav Additions
 
     tracker_ref<winrt::TreeViewNode> m_rootNode{ this };
-    tracker_ref<winrt::TreeViewNode> m_lastSelectedNode{ this };
+    tracker_ref<winrt::TreeViewNode> m_overflowRootNode{ this };
 
     winrt::IVector<winrt::TreeViewNode> RootNodes();
-    void SyncRootNodesWithItemsSource(const winrt::IInspectable& items);
+
+    winrt::FlyoutBase::Closed_revoker m_flyoutClosedRevoker{};
+    winrt::ListView::SelectionChanged_revoker m_overflowNavListViewSelectionChangedRevoker{};
+    winrt::ListView::ItemClick_revoker m_overflowNavListViewItemClickRevoker{};
+
+    void SyncRootNodesWithItemsSource(winrt::IInspectable const& items);
     winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
     winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
     void ChangeIsChildSelectedForNode(winrt::TreeViewNode const& node, bool const selected);
-    void UpdateIsChildSelectedForItem(const winrt::IInspectable& item, bool isChildSelected);
+    void UpdateIsChildSelectedForItem(winrt::IInspectable const& item, bool isChildSelected);
     void ToggleIsExpanded(winrt::NavigationViewItem const& item);
     void UpdateIsChildSelected(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
+    void OnOverflowFlyoutClosed(winrt::IInspectable const& sender, winrt::IInspectable const& args);
+    void OnOverflowSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
+    void OnOverflowItemClick(const winrt::IInspectable& sender, const winrt::ItemClickEventArgs& args);
 
     bool m_appliedTemplate{ false };
 

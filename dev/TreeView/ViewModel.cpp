@@ -9,6 +9,7 @@
 #include "TreeViewList.h"
 #include "NavigationViewList.h"
 #include "NavigationViewItemBase.h"
+#include "NavigationViewItem.h"
 
 // Need to update node selection states on UI before vector changes.
 // Listen on vector change events don't solve the problem because the event already happened when the event handler gets called.
@@ -645,9 +646,11 @@ void ViewModel::NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targ
         //    auto container = winrt::get_self<NavigationViewList>(m_TreeViewList.get())->ContainerFromItem(targetNode.Content());
         //    if (container)
         //    {
-        //        winrt::NavigationViewItemBase targetItem = container.as<winrt::NavigationViewItemBase>();
-        //        //TODO: Write an implementation for NavigationView
-        //        //winrt::get_self<NavigationViewItemBase>(targetItem)->UpdateSelection(selectionState);
+        //        if (auto targetItem = container.try_as<winrt::NavigationViewItem>())
+        //        {
+        //            //TODO: Write an implementation for NavigationView
+        //            winrt::get_self<NavigationViewItem>(targetItem)->UpdateSelection(selectionState);
+        //        }
         //    }
         //}
     }

@@ -37,6 +37,7 @@ static constexpr auto c_headerContent = L"HeaderContent"sv;
 static constexpr auto c_navViewBackButton = L"NavigationViewBackButton"sv;
 static constexpr auto c_navViewBackButtonToolTip = L"NavigationViewBackButtonToolTip"sv;
 static constexpr auto c_buttonHolderGrid = L"ButtonHolderGrid"sv;
+static constexpr auto c_overflowListView = L"OverflowListView"sv;
 
 static constexpr auto c_topNavMenuItemsHost = L"TopNavMenuItemsHost"sv;
 static constexpr auto c_topNavOverflowButton = L"TopNavOverflowButton"sv;
@@ -136,6 +137,7 @@ NavigationView::NavigationView()
     Unloaded({ this, &NavigationView::OnUnloaded });
 
     m_rootNode.set(winrt::TreeViewNode());
+    m_overflowRootNode.set(winrt::TreeViewNode());
 }
 
 void NavigationView::OnApplyTemplate()
@@ -317,6 +319,28 @@ void NavigationView::OnApplyTemplate()
     // Get pointer to the pane content area, for use in the selection indicator animation
     m_paneContentGrid.set(GetTemplateChildT<winrt::UIElement>(c_paneContentGridName, controlProtected));
 
+    auto flyout = m_paneContentGrid.get().ContextFlyout();
+    m_overflowFlyout.set(flyout);
+    m_flyoutClosedRevoker = flyout.Closed(winrt::auto_revoke, { this, &NavigationView::OnOverflowFlyoutClosed });
+
+    if (auto overflowListView = GetTemplateChildT<winrt::ListView>(c_overflowListView, controlProtected))
+    {
+        m_overflowListView.set(overflowListView);
+        auto overflowNavListView = overflowListView.try_as<winrt::NavigationViewList>();
+
+        m_overflowNavListViewSelectionChangedRevoker = overflowListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnOverflowSelectionChanged });
+        m_overflowNavListViewItemClickRevoker = overflowListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnOverflowItemClick });
+
+
+        auto overflowNavListViewImpl = winrt::get_self<NavigationViewList>(overflowNavListView);
+        overflowNavListViewImpl->ListViewModel(winrt::make_self<ViewModel>());
+        auto viewModel = overflowNavListViewImpl->ListViewModel();
+        viewModel->IsContentMode(true);
+        viewModel->PrepareView(m_overflowRootNode.get());
+        viewModel->SetOwningList(overflowListView);
+        overflowListView.ItemsSource(*viewModel.get());
+    }
+
     // Set automation name on search button
     if (auto button = GetTemplateChildT<winrt::Button>(c_searchButtonName, controlProtected))
     {
@@ -355,6 +379,7 @@ void NavigationView::OnApplyTemplate()
             m_buttonHolderGettingFocusRevoker = buttonHolderGrid.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnButtonHolderGridGettingFocus });
         }
     }
+
 
     if (SharedHelpers::IsRS2OrHigher())
     {
@@ -1280,7 +1305,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         if (isSelectionSuppressed)
         {
             UndoSelectionAndRevertSelectionTo(prevItem, nextActualItem);
-
+            
             // Undo only happened when customer clicked a selectionsuppressed item. 
             // To simplify the logic, OnItemClick didn't raise the event and it's been delayed to here.
             RaiseItemInvoked(nextActualItem, isSettingsItem);
@@ -1400,6 +1425,10 @@ void NavigationView::UpdateIsChildSelected(winrt::IInspectable const& prevItem, 
                             {
                                 if (auto item = ContainerFromNode(node))
                                 {
+                                    if (auto nvi = item.try_as<winrt::NavigationViewItem>())
+                                    {
+                                        nvi.IsChildSelected(false);
+                                    }
 
                                 }
                                 winrt::get_self<TreeViewNode>(node)->IsChildSelected(false);
@@ -1420,7 +1449,7 @@ void NavigationView::UpdateIsChildSelected(winrt::IInspectable const& prevItem, 
     UpdateIsChildSelectedForItem(nextItem, true);
 }
 
-void NavigationView::UpdateIsChildSelectedForItem(const winrt::IInspectable& item, bool isChildSelected)
+void NavigationView::UpdateIsChildSelectedForItem(winrt::IInspectable const& item, bool isChildSelected)
 {
     // Update the 'IsChildSelected' property of all parents
     if (auto container = ContainerFromMenuItem(item))
@@ -1488,7 +1517,28 @@ void NavigationView::ToggleIsExpanded(winrt::NavigationViewItem const& item)
                 RaiseIsExpanding(item);
             }
 
-            item.IsExpanded(isItemBeingExpanded);
+
+            // If user is trying to expand a NavigationViewItem with children that is in the top
+            // level of the tree while in compact mode, we want to expand items into the flyout
+            if (!IsPaneOpen() &&
+                winrt::get_self<NavigationViewItem>(item)->GetDepth() == 0 &&
+                isItemBeingExpanded)
+            {
+                auto node = NodeFromContainer(item);
+                auto children = node.Children();
+                auto overflowChildrenVector = m_overflowRootNode.get().Children();
+
+                for (uint32_t i = 0; i < children.Size(); i++)
+                {
+                    overflowChildrenVector.Append(children.GetAt(i));
+                }
+
+                m_overflowFlyout.get().ShowAt(item);
+            }
+            else
+            {
+                item.IsExpanded(isItemBeingExpanded);
+            }
 
             if (!isItemBeingExpanded)
             {
@@ -3298,7 +3348,7 @@ winrt::IVector<winrt::TreeViewNode> NavigationView::RootNodes()
     return x;
 }
 
-void NavigationView::SyncRootNodesWithItemsSource(const winrt::IInspectable& items)
+void NavigationView::SyncRootNodesWithItemsSource(winrt::IInspectable const& items)
 {
     // All TreeViewNode should be set to 'IsContentMode = true' as we dont want to pass node objects to the list view
     winrt::get_self<TreeViewNode>(m_rootNode.get())->IsContentMode(true);
@@ -3528,4 +3578,22 @@ winrt::DependencyObject NavigationView::ContainerFromNode(winrt::TreeViewNode co
         }
     }
     return nullptr;
+}
+
+void NavigationView::OnOverflowFlyoutClosed(winrt::IInspectable const& sender, winrt::IInspectable const& args)
+{
+    //TODO: Toggle isExpanded property of required node
+    m_overflowRootNode.get().Children().Clear();
+}
+
+void NavigationView::OnOverflowSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
+{
+    //TODO: Add bool variable that indicates that this came from the overflow popup
+    OnSelectionChanged(sender, args);
+}
+
+void NavigationView::OnOverflowItemClick(const winrt::IInspectable& sender, const winrt::ItemClickEventArgs& args)
+{
+    //TODO: Add bool variable that indicates that this came from the overflow popup
+    OnItemClick(sender, args);
 }

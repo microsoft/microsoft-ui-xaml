@@ -420,6 +420,20 @@
                                             x:Name="SettingsNavPaneItem"
                                             Grid.Row="8"
                                             Icon="Setting"/>
+
+                                        <Grid.ContextFlyout>
+                                            <Flyout x:Name="OverflowFlyout" Placement="Right">
+                                                <local:NavigationViewList                                                     
+                                                        x:Name="OverflowListView" 
+                                                        ItemTemplate="{TemplateBinding MenuItemTemplate}"
+                                                        ItemTemplateSelector="{TemplateBinding MenuItemTemplateSelector}"
+                                                        ItemContainerStyle="{TemplateBinding MenuItemContainerStyle}"
+                                                        ItemContainerStyleSelector="{TemplateBinding MenuItemContainerStyleSelector}"
+                                                        SingleSelectionFollowsFocus="False"
+                                                        IsItemClickEnabled="True">
+                                                </local:NavigationViewList>
+                                            </Flyout>
+                                        </Grid.ContextFlyout>
                                     </Grid>
                                 </SplitView.Pane>
 

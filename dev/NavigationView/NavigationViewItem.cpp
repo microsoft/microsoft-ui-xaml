@@ -66,6 +66,8 @@ void NavigationViewItem::OnApplyTemplate()
 
     winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get())->SetDepth(GetDepth());
 
+    //RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &NavigationViewItem::OnIsSelectedChanged });
+
     m_appliedTemplate = true;
     UpdateVisualStateNoTransition();
 
@@ -437,3 +439,30 @@ void NavigationViewItem::UpdateSelectionIndicatorVisiblity()
         selectionIndicator.Opacity(0);
     }
 }
+
+void NavigationViewItem::OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
+{
+    auto selectionIndicator = GetSelectionIndicator();
+    bool isSelected = unbox_value<bool>(GetValue(args));
+    if (isSelected)
+    {
+        selectionIndicator.Opacity(1);
+    }
+    else
+    {
+        selectionIndicator.Opacity(0);
+    }
+}
+
+//void NavigationViewItem::UpdateSelection(TreeNodeSelectionState const& state)
+//{
+//    auto selectionIndicator = GetSelectionIndicator();
+//    if (state == TreeNodeSelectionState::PartialSelected)
+//    {
+//        selectionIndicator.Opacity(1);
+//    }
+//    else if (state == TreeNodeSelectionState::UnSelected)
+//    {
+//        selectionIndicator.Opacity(0);
+//    }
+//}
