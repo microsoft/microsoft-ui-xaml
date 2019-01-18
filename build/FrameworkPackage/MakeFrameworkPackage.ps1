@@ -113,7 +113,6 @@ ForEach ($input in ($inputs -split ";"))
 
 
 Copy-IntoNewDirectory ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png $fullOutputPath\Assets
-Copy-IntoNewDirectory ..\..\dev\dll\Density\Normal.xaml $fullOutputPath\Density
 
 # Calculate the version the same as our nuget package.
 
@@ -224,7 +223,6 @@ Set-Content -Value $manifestContents $fullOutputPath\PackageContents\AppxManifes
 $priConfigPath = [IO.Path]::GetFullPath("$fullOutputPath\priconfig.xml")
 $priOutputPath = [IO.Path]::GetFullPath("$fullOutputPath\resources.pri")
 $noiseAssetPath = [IO.Path]::GetFullPath("$fullOutputPath\Assets\NoiseAsset_256x256_PNG.png")
-$NormalPath = [IO.Path]::GetFullPath("$fullOutputPath\Density\Normal.xaml")
 $resourceContents = [IO.Path]::GetFullPath("$fullOutputPath\Resources")
 $pfxPath = [IO.Path]::GetFullPath("..\MSTest.pfx")
 
@@ -243,11 +241,6 @@ if (($Configuration -ilike "debug") -and (Test-Path $xbfFilesPath))
 @"
 "$priOutputPath" "resources.pri"
 "$noiseAssetPath" "Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png"
-"@ | Out-File -Append -Encoding "UTF8" $fullOutputPath\PackageContents\FrameworkPackageFiles.txt
-
-@"
-"$priOutputPath" "resources.pri"
-"$NormalPath" "Microsoft.UI.Xaml\Density\Normal.xaml"
 "@ | Out-File -Append -Encoding "UTF8" $fullOutputPath\PackageContents\FrameworkPackageFiles.txt
 
 $makepriNew = "`"" + (Join-Path $WindowsSdkBinDir "makepri.exe") + "`" new /pr $fullOutputPath /cf $priConfigPath /of $priOutputPath /in $PackageName /o"
