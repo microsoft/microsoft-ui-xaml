@@ -33,7 +33,10 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
     });
     
     SizeChanged({ [this](auto const&, auto const&) { UpdateUI(); } });
-    Closed({ [this](auto const&, auto const&) { m_secondaryItemsRootSized = false; } });
+    Closed({ [this](auto const&, auto const&) 
+    { 
+        m_secondaryItemsRootSized = false; 
+    } });
 
     RegisterPropertyChangedCallback(
         winrt::AppBar::IsOpenProperty(),
@@ -45,6 +48,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
     // in fact, if we tried to remove these handlers in our destructor,
     // these properties will have already been cleared, and we'll nullref.
     PrimaryCommands().VectorChanged({ [this](auto const&, auto const&) { UpdateUI(); } });
+
     SecondaryCommands().VectorChanged({
         [this](auto const&, auto const&)
         {
@@ -190,6 +194,7 @@ void CommandBarFlyoutCommandBar::UpdateUI(bool useTransitions)
 {
     UpdateTemplateSettings();
     UpdateVisualState(useTransitions);
+    UpdateShadow();
 }
 
 void CommandBarFlyoutCommandBar::UpdateVisualState(bool useTransitions)
@@ -388,6 +393,54 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
         else
         {
             flyoutTemplateSettings->ExpandDownOverflowVerticalPosition(0);
+        }
+    }
+}
+
+void CommandBarFlyoutCommandBar::UpdateShadow()
+{
+    if (PrimaryCommands().Size() > 0)
+    {
+        AddShadow();
+    }
+    else if (PrimaryCommands().Size() == 0)
+    {
+        ClearShadow();
+    }
+}
+
+void CommandBarFlyoutCommandBar::AddShadow()
+{
+    if (SharedHelpers::IsThemeShadowAvailable())
+    {
+        //Apply Shadow on the Grid named "ContentRoot", this is the first element below
+        //the clip animation of the commandBar. This guarantees that shadow respects the 
+        //animation
+        winrt::IControlProtected thisAsControlProtected = *this;
+        auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
+
+        if (grid != nullptr && grid.Shadow() == nullptr)
+        {
+            winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
+            grid.Shadow(shadow);
+            auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 32.0f };
+            grid.Translation(translation);
+        }
+    }
+}
+
+void CommandBarFlyoutCommandBar::ClearShadow()
+{
+    if (SharedHelpers::IsThemeShadowAvailable())
+    {
+        winrt::IControlProtected thisAsControlProtected = *this;
+        auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
+        if (grid!= nullptr && grid.Shadow() != nullptr)
+        {
+            grid.Shadow(nullptr);
+            //Undo the elevation
+            auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 0.0f };
+            grid.Translation(translation);
         }
     }
 }

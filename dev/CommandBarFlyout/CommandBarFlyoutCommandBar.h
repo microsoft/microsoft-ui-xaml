@@ -23,14 +23,18 @@ public:
     void PlayOpenAnimation();
     bool HasCloseAnimation();
     void PlayCloseAnimation(std::function<void()> onCompleteFunc);
+    void ClearShadow();
 
 private:
     void AttachEventHandlers();
     void DetachEventHandlers(bool useSafeGet = false);
 
+    void AddShadow();
+
     void UpdateUI(bool useTransitions = true);
     void UpdateVisualState(bool useTransitions);
     void UpdateTemplateSettings();
+    void UpdateShadow();
 
     tracker_ref<winrt::FrameworkElement> m_primaryItemsRoot{ this };
     tracker_ref<winrt::FrameworkElement> m_secondaryItemsRoot{ this };

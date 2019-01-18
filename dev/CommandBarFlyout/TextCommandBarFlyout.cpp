@@ -556,20 +556,11 @@ void TextCommandBarFlyout::ExecuteCutCommand()
     }
     else if (auto richEditBoxTarget = safe_try_cast<winrt::RichEditBox>(target))
     {
-#ifdef BUILD_WINDOWS
-        if (auto richEditBoxCutCopyPaste = richEditBoxTarget.try_as<winrt::IRichEditBoxFeature_RichEditBoxCutCopyPasteAPIs>())
-        {
-            richEditBoxCutCopyPaste.CutSelectionToClipboard();
-        }
-        else
-#endif
-        {
-            auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
+        auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
-            if (selection)
-            {
-                selection.Cut();
-            }
+        if (selection)
+        {
+            selection.Cut();
         }
     }
 
@@ -634,20 +625,11 @@ void TextCommandBarFlyout::ExecuteCopyCommand()
     }
     else if (auto richEditBoxTarget = safe_try_cast<winrt::RichEditBox>(target))
     {
-#ifdef BUILD_WINDOWS
-        if (auto richEditBoxCutCopyPaste = richEditBoxTarget.try_as<winrt::IRichEditBoxFeature_RichEditBoxCutCopyPasteAPIs>())
-        {
-            richEditBoxCutCopyPaste.CopySelectionToClipboard();
-        }
-        else
-#endif
-        {
-            auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
+        auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
-            if (selection)
-            {
-                selection.Copy();
-            }
+        if (selection)
+        {
+            selection.Copy();
         }
     }
     else if (auto richTextBlockTarget = safe_try_cast<winrt::RichTextBlock>(target))
@@ -706,20 +688,11 @@ void TextCommandBarFlyout::ExecutePasteCommand()
     }
     else if (auto richEditBoxTarget = safe_try_cast<winrt::RichEditBox>(target))
     {
-#ifdef BUILD_WINDOWS
-        if (auto richEditBoxCutCopyPaste = richEditBoxTarget.try_as<winrt::IRichEditBoxFeature_RichEditBoxCutCopyPasteAPIs>())
-        {
-            richEditBoxCutCopyPaste.PasteFromClipboard();
-        }
-        else
-#endif
-        {
-            auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
+        auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
-            if (selection)
-            {
-                selection.Paste(0);
-            }
+        if (selection)
+        {
+            selection.Paste(0);
         }
     }
     else if (auto passwordBoxTarget = safe_try_cast<winrt::PasswordBox>(target))
