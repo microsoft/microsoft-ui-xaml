@@ -235,7 +235,7 @@ void CommandBarFlyoutCommandBar::UpdateFlowsFromAndFlowsTo()
         else
         {
             auto primaryCommands = PrimaryCommands();
-            for (uint32_t i = primaryCommands.Size() - 1; i >= 0; i--)
+            for (int i = static_cast<int>(primaryCommands.Size() - 1); i >= 0; i--)
             {
                 auto primaryCommand = primaryCommands.GetAt(i);
                 if (isElementFocusable(primaryCommand))
