@@ -363,6 +363,11 @@
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
     </Page>
+    <Page Include="$(MSBuildProjectDirectory)\Density\Normal.xaml">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Density\%(Filename)%(Extension)</Link>
+    </Page>
     <Page Include="$(OutDir)rs1_themeresources.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
