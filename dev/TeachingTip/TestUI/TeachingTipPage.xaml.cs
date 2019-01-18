@@ -87,6 +87,14 @@ namespace MUXControlsTestApp
         private void ContentScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
             this.ScrollViewerOffsetTextBox.Text = this.ContentScrollViewer.VerticalOffset.ToString();
+            if(e.IsIntermediate)
+            {
+                this.ScrollViewerStateTextBox.Text = "Scrolling";
+            }
+            else
+            {
+                this.ScrollViewerStateTextBox.Text = "Idle";
+            }
             OnGetTargetBoundsButtonClicked(null, null);
         }
 

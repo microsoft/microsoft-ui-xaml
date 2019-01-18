@@ -211,25 +211,27 @@
                 <TextBlock Grid.Row="28" Text="Bleeding Placement:"/>
                 <TextBlock x:Name="EffectiveBleedingPlacementTextBlock" AutomationProperties.Name="EffectiveBleedingPlacementTextBlock" Grid.Row="28" Grid.Column="1" />
                 <TextBlock Grid.Row="29" Text="--------------------------------------" Foreground="Red" Grid.ColumnSpan="2"/>
-                <TextBlock Grid.Row="30" Text="ScrollViewerOffset:" Foreground="Red"/>
-                <TextBox x:Name="ScrollViewerOffsetTextBox" AutomationProperties.Name="ScrollViewerOffsetTextBox" Grid.Row="31" Text="750"/>
-                <Button AutomationProperties.Name="ScrollViewerOffsetButton" Grid.Row="31" Grid.Column="1" Click="OnSetScrollViewerOffsetButtonClicked" Margin="0,0,0,1">Set</Button>
-                <Button AutomationProperties.Name="BringTargetIntoViewButton" Grid.Row="32" Click="OnBringTargetIntoViewButtonClicked">BringIntoView</Button>
-                <TextBlock Text="UseTestWindowBounds:" Grid.Row="33" Foreground="Red"/>
-                <CheckBox x:Name="UseTestWindowBoundsCheckBox" AutomationProperties.Name="UseTestWindowBoundsCheckbox" Grid.Row="33" Grid.Column="1" Checked="OnUseTestWindowBoundsCheckBoxChecked" Unchecked="OnUseTestWindowBoundsCheckBoxUnchecked"/>
-                <StackPanel Orientation="Horizontal" Grid.Row="34">
+                <TextBlock Grid.Row="30" Text="ScrollViewerState" Foreground="Red"/>
+                <TextBlock Grid.Row="30" Grid.Column="1" x:Name="ScrollViewerStateTextBox" AutomationProperties.Name="ScrollViewerStateTextBox" Text="Idle"/>
+                <TextBlock Grid.Row="31" Text="ScrollViewerOffset:" Foreground="Red"/>
+                <TextBox x:Name="ScrollViewerOffsetTextBox" AutomationProperties.Name="ScrollViewerOffsetTextBox" Grid.Row="32" Text="750"/>
+                <Button AutomationProperties.Name="ScrollViewerOffsetButton" Grid.Row="32" Grid.Column="1" Click="OnSetScrollViewerOffsetButtonClicked" Margin="0,0,0,1">Set</Button>
+                <Button AutomationProperties.Name="BringTargetIntoViewButton" Grid.Row="33" Click="OnBringTargetIntoViewButtonClicked">BringIntoView</Button>
+                <TextBlock Text="UseTestWindowBounds:" Grid.Row="34" Foreground="Red"/>
+                <CheckBox x:Name="UseTestWindowBoundsCheckBox" AutomationProperties.Name="UseTestWindowBoundsCheckbox" Grid.Row="34" Grid.Column="1" Checked="OnUseTestWindowBoundsCheckBoxChecked" Unchecked="OnUseTestWindowBoundsCheckBoxUnchecked"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="35">
                     <TextBlock Text="X        :" VerticalAlignment="Center"/>
                     <TextBox x:Name="TestWindowBoundsXTextBox" AutomationProperties.Name="TestWindowBoundsXTextBox" Text="0"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="34" Grid.Column="1">
+                <StackPanel Orientation="Horizontal" Grid.Row="35" Grid.Column="1">
                     <TextBlock Text="Y         :" VerticalAlignment="Center"/>
                     <TextBox x:Name="TestWindowBoundsYTextBox" AutomationProperties.Name="TestWindowBoundsYTextBox" Text="0"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="35">
+                <StackPanel Orientation="Horizontal" Grid.Row="36">
                     <TextBlock Text="Width:"/>
                     <TextBox x:Name="TestWindowBoundsWidthTextBox" AutomationProperties.Name="TestWindowBoundsWidthTextBox" Text="0"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="35" Grid.Column="1">
+                <StackPanel Orientation="Horizontal" Grid.Row="36" Grid.Column="1">
                     <TextBlock Text="Height:"/>
                     <TextBox x:Name="TestWindowBoundsHeightTextBox" AutomationProperties.Name="TestWindowBoundsHeightTextBox" Text="0"/>
                 </StackPanel>

@@ -29,6 +29,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
     [TestClass]
     public class TeachingTipTests
     {
+        // The longest observed animated view change took 5.4 seconds, so 9 seconds is picked
+        // as the default timeout so there is a reasonable margin for reliability.
+        const double defaultAnimatedViewChangeTimeout = 9000;
+
         private struct TeachingTipTestPageElements
         {
             public ListBox lstTeachingTipEvents;
@@ -49,6 +53,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             public TextBlock tipWidthTextBlock;
 
+            public TextBlock scrollViewerStateTextBox;
             public Edit scrollViewerOffsetTextBox;
             public Button scrollViewerOffsetButton;
 
@@ -158,8 +163,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 OpenTeachingTip();
                 double initialVerticalOffset = GetVerticalOffset();
                 ScrollBy(10);
+                WaitForOffsetUpdated(initialVerticalOffset - 10);
                 Verify.IsLessThan(GetVerticalOffset(), initialVerticalOffset);
                 ScrollBy(-20);
+                WaitForOffsetUpdated(initialVerticalOffset + 10);
+                Wait.ForIdle();
                 Verify.IsGreaterThan(GetVerticalOffset(), initialVerticalOffset);
             }
         }
@@ -174,43 +182,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ScrollTargetIntoView();
                 ScrollBy(10);
                 var targetRect = GetTargetBounds();
-                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 304, targetRect.Y + 656, targetRect.Z + 608);
+                UseTestWindowBounds(targetRect.W - 329, targetRect.X - 340, targetRect.Y + 656, targetRect.Z + 680);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("Top"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 300, targetRect.Y + 656, targetRect.Z + 608);
+                UseTestWindowBounds(targetRect.W - 329, targetRect.X - 336, targetRect.Y + 656, targetRect.Z + 680);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("Bottom"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 300, targetRect.Y + 656, targetRect.Z + 603);
+                UseTestWindowBounds(targetRect.W - 329, targetRect.X - 318, targetRect.Y + 658, targetRect.Z + 640);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedTop"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 100, targetRect.Y + 656, targetRect.Z + 403);
+                UseTestWindowBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 658, targetRect.Z + 403);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedBottom"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 100, targetRect.Y + 643, targetRect.Z + 403);
+                UseTestWindowBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 643, targetRect.Z + 403);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedBottom"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 300, targetRect.Y + 643, targetRect.Z + 603);
+                UseTestWindowBounds(targetRect.W - 329, targetRect.X - 300, targetRect.Y + 643, targetRect.Z + 603);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedTop"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 304, targetRect.Y + 348, targetRect.Z + 608);
+                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 340, targetRect.Y + 348, targetRect.Z + 608);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedLeft"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 20, targetRect.X - 304, targetRect.Y + 348, targetRect.Z + 608);
+                UseTestWindowBounds(targetRect.W - 20, targetRect.X - 340, targetRect.Y + 348, targetRect.Z + 608);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedRight"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 408);
+                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 444);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedLeft"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 408);
+                UseTestWindowBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 444);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedRight"));
                 CloseTeachingTipProgrammatically();
@@ -218,11 +226,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Remove the bleeding content;
                 SetBleedingContent(BleedingContentOptions.NoContent);
 
-                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 20);
+                UseTestWindowBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("Left"));
                 CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 20);
+                UseTestWindowBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20);
                 OpenTeachingTip();
                 Verify.IsTrue(GetEffectivePlacement().Equals("Right"));
                 CloseTeachingTipProgrammatically();
@@ -715,6 +723,98 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
             return true;
+        }
+
+        private int WaitForOffsetUpdated(
+        double expectedValue,
+        double millisecondsTimeout = defaultAnimatedViewChangeTimeout,
+        bool failOnError = true)
+        {
+            Log.Comment("WaitForOffsetUpdated with expectedValue: " + expectedValue);
+            if (elements.scrollViewerOffsetTextBox == null)
+            {
+                Log.Comment("Find the ScrollViewerOffsetTextBox");
+                elements.scrollViewerOffsetTextBox = new Edit(FindElement.ByName("ScrollViewerOffsetTextBox"));
+                Verify.IsNotNull(elements.scrollViewerOffsetTextBox);
+            }
+
+            int warningCount = 0;
+            bool success = WaitForOffsetToSettle(elements.scrollViewerOffsetTextBox, millisecondsTimeout, failOnError);
+            double value = Convert.ToDouble(elements.popupVerticalOffsetTextBlock.GetText());
+            bool goodValue = value == expectedValue;
+            Verify.IsTrue(goodValue);
+            return warningCount;
+        }
+
+        private bool WaitForOffsetToSettle(Edit text, double millisecondsTimeout, bool failOnError)
+        {
+            if (elements.scrollViewerStateTextBox == null)
+            {
+                Log.Comment("Find the scrollViewerStateTextBox");
+                elements.scrollViewerStateTextBox = new TextBlock(FindElement.ByName("ScrollViewerStateTextBox"));
+                Verify.IsNotNull(elements.scrollViewerStateTextBox);
+            }
+
+            Wait.ForIdle();
+
+            const double millisecondsNormalStepTimeout = 100;
+            const double millisecondsIdleStepTimeout = 600;
+            ValueChangedEventWaiter waiter = new ValueChangedEventWaiter(text);
+            int unsuccessfulWaits = 0;
+            int maxUnsuccessfulWaits = (int)(millisecondsIdleStepTimeout / millisecondsNormalStepTimeout);
+
+            Log.Comment("Original State: " + elements.scrollViewerStateTextBox.GetText());
+            Log.Comment("Original Offset: " + text.Value);
+
+            // When the initial State is still Idle, use a longer timeout to allow it to transition out of Idle.
+            double millisecondsWait = (elements.scrollViewerStateTextBox.GetText() == "Idle") ? millisecondsIdleStepTimeout : millisecondsNormalStepTimeout;
+            double millisecondsCumulatedWait = 0;
+
+            do
+            {
+                Log.Comment("Waiting for Offset change.");
+                waiter.Reset();
+                if (waiter.TryWait(TimeSpan.FromMilliseconds(millisecondsWait)))
+                {
+                    unsuccessfulWaits = 0;
+                }
+                else
+                {
+                    unsuccessfulWaits++;
+                }
+                millisecondsCumulatedWait += millisecondsWait;
+                millisecondsWait = millisecondsNormalStepTimeout;
+
+                Log.Comment("Current State: " + elements.scrollViewerStateTextBox.GetText());
+                Log.Comment("Current Offset: " + text.Value);
+
+                Wait.ForIdle();
+            }
+            while (elements.scrollViewerStateTextBox.GetText() != "Idle" &&
+                   millisecondsCumulatedWait < millisecondsTimeout &&
+                   unsuccessfulWaits <= maxUnsuccessfulWaits);
+
+            if (elements.scrollViewerStateTextBox.GetText() == "Idle")
+            {
+                Log.Comment("Idle State reached after " + millisecondsCumulatedWait + " out of " + millisecondsTimeout + " milliseconds. Final Offset: " + text.Value);
+                return true;
+            }
+            else
+            {
+                string message = unsuccessfulWaits > maxUnsuccessfulWaits ?
+                    "Offset has not changed within " + millisecondsIdleStepTimeout + " milliseconds outside of Idle State." :
+                    "Idle State was not reached within " + millisecondsTimeout + " milliseconds.";
+                if (failOnError)
+                {
+                    Log.Error(message);
+                }
+                else
+                {
+                    Log.Warning(message);
+                }
+
+                return false;
+            }
         }
     }
 }
