@@ -840,18 +840,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Pans an inner Scroller and chains to an outer ScrollViewer.")]
         public void PanWithChainingFromScrollerToScrollViewer()
         {
-            // Inner Scroller uses ScrollerChainingMode.Always
-            PanWithChainingFromScrollerToScrollViewerWithChainingMode(useScrollerChainingModeAlways: true);
+            // Inner Scroller uses ChainingMode.Always
+            PanWithChainingFromScrollerToScrollViewerWithChainingMode(useChainingModeAlways: true);
 
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
-                // Inner Scroller uses ScrollerChainingMode.Auto
+                // Inner Scroller uses ChainingMode.Auto
                 // Only running this case in RS4+ since the Auto behavior changed in RS4
-                PanWithChainingFromScrollerToScrollViewerWithChainingMode(useScrollerChainingModeAlways: false);
+                PanWithChainingFromScrollerToScrollViewerWithChainingMode(useChainingModeAlways: false);
             }
         }
 
-        public void PanWithChainingFromScrollerToScrollViewerWithChainingMode(bool useScrollerChainingModeAlways)
+        public void PanWithChainingFromScrollerToScrollViewerWithChainingMode(bool useChainingModeAlways)
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
             {
@@ -914,7 +914,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     Wait.ForIdle();
 
-                    if (useScrollerChainingModeAlways)
+                    if (useChainingModeAlways)
                     {
                         Log.Comment("Changing horizontal chaining to Always");
                         cmbHorizontalScrollChainingMode1.SelectItemByName("Always");

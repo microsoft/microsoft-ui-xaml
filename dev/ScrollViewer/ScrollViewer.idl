@@ -34,27 +34,27 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultIsChildAvailableHeightConstrained")]
     Boolean IsChildAvailableHeightConstrained { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultHorizontalScrollChainingMode")]
-    ScrollerChainingMode HorizontalScrollChainingMode { get; set; };
+    ChainingMode HorizontalScrollChainingMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultVerticalScrollChainingMode")]
-    ScrollerChainingMode VerticalScrollChainingMode { get; set; };
+    ChainingMode VerticalScrollChainingMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultHorizontalScrollRailingMode")]
-    ScrollerRailingMode HorizontalScrollRailingMode { get; set; };
+    RailingMode HorizontalScrollRailingMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultVerticalScrollRailingMode")]
-    ScrollerRailingMode VerticalScrollRailingMode { get; set; };
+    RailingMode VerticalScrollRailingMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultHorizontalScrollMode")]
-    ScrollerScrollMode HorizontalScrollMode { get; set; };
+    ScrollMode HorizontalScrollMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultVerticalScrollMode")]
-    ScrollerScrollMode VerticalScrollMode { get; set; };
+    ScrollMode VerticalScrollMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultComputedHorizontalScrollMode")]
-    ScrollerScrollMode ComputedHorizontalScrollMode { get; };
+    ScrollMode ComputedHorizontalScrollMode { get; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultComputedVerticalScrollMode")]
-    ScrollerScrollMode ComputedVerticalScrollMode { get; };
+    ScrollMode ComputedVerticalScrollMode { get; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultZoomChainingMode")]
-    ScrollerChainingMode ZoomChainingMode { get; set; };
+    ChainingMode ZoomChainingMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultZoomMode")]
-    ScrollerZoomMode ZoomMode { get; set; };
+    ZoomMode ZoomMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultInputKind")]
-    ScrollerInputKind InputKind { get; set; };
+    InputKind InputKind { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultMinZoomFactor")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateZoomFactoryBoundary")]
     Double MinZoomFactor { get; set; };
