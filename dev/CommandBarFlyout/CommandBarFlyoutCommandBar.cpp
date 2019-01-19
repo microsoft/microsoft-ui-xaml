@@ -194,7 +194,10 @@ void CommandBarFlyoutCommandBar::UpdateUI(bool useTransitions)
 {
     UpdateTemplateSettings();
     UpdateVisualState(useTransitions);
+
+#ifdef USE_INSIDER_SDK
     UpdateShadow();
+#endif
 }
 
 void CommandBarFlyoutCommandBar::UpdateVisualState(bool useTransitions)
@@ -397,6 +400,7 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
     }
 }
 
+#ifdef USE_INSIDER_SDK
 void CommandBarFlyoutCommandBar::UpdateShadow()
 {
     if (PrimaryCommands().Size() > 0)
@@ -444,3 +448,4 @@ void CommandBarFlyoutCommandBar::ClearShadow()
         }
     }
 }
+#endif
