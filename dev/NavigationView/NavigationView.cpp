@@ -340,17 +340,6 @@ void NavigationView::OnApplyTemplate()
         backButtonToolTip.Content(box_value(navigationBackButtonToolTip));
     }
 
-    if (auto buttonHolderGrid = GetTemplateChildT<winrt::Grid>(c_buttonHolderGrid, controlProtected))
-    {
-        // TrySetNewFocusedElement call in OnButtonHolderGridGettingFocus is RS4 only
-        if (buttonHolderGrid.try_as<winrt::IUIElement8>())
-        {
-            buttonHolderGrid.XYFocusKeyboardNavigation(winrt::XYFocusKeyboardNavigationMode::Enabled);
-            buttonHolderGrid.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);       
-            m_buttonHolderGettingFocusRevoker = buttonHolderGrid.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnButtonHolderGridGettingFocus });
-        }
-    }
-
     if (SharedHelpers::IsRS2OrHigher())
     {
         // Get hold of the outermost grid and enable XYKeyboardNavigationMode
@@ -642,24 +631,6 @@ void NavigationView::OnPaneSearchButtonClick(const winrt::IInspectable& /*sender
     if (auto autoSuggestBox = AutoSuggestBox())
     {
         autoSuggestBox.Focus(winrt::FocusState::Keyboard);
-    }
-}
-
-void NavigationView::OnButtonHolderGridGettingFocus(winrt::UIElement const& sender, winrt::GettingFocusEventArgs const& args)
-{
-    if (auto backButton = m_backButton.get())
-    {
-        auto paneButton = m_paneToggleButton.get();
-        if (paneButton && paneButton.Visibility() == winrt::Visibility::Visible)
-        {
-            // We want the back button to only be able to receive focus from
-            // arrowing from the pane toggle button, not from tabbing there.
-            if (args.NewFocusedElement() == backButton &&
-                (args.Direction() == winrt::FocusNavigationDirection::Previous || args.Direction() == winrt::FocusNavigationDirection::Next))
-            {
-                args.TrySetNewFocusedElement(paneButton);
-            }
-        }
     }
 }
 

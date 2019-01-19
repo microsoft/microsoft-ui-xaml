@@ -171,7 +171,6 @@ private:
     void OnSettingsKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnSettingsKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnPaneSearchButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void NavigationView::OnButtonHolderGridGettingFocus(winrt::UIElement const& sender, winrt::GettingFocusEventArgs const& args);
 
     void OnItemClick(const winrt::IInspectable& sender, const winrt::ItemClickEventArgs& args);
     void RaiseItemInvoked(winrt::IInspectable const& item, 
