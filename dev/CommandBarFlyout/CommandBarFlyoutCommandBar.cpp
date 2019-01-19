@@ -246,10 +246,8 @@ void CommandBarFlyoutCommandBar::UpdateFlowsFromAndFlowsTo()
             }
         }
 
-        auto secondaryCommands = SecondaryCommands();
-        for (uint32_t i = 0; i < secondaryCommands.Size(); i++)
+        for (const auto& secondaryCommand : SecondaryCommands())
         {
-            auto secondaryCommand = secondaryCommands.GetAt(i);
             if (isElementFocusable(secondaryCommand))
             {
                 m_currentSecondaryItemsStartElement.set(secondaryCommand.try_as<winrt::FrameworkElement>());
