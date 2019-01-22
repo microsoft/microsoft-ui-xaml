@@ -15,7 +15,7 @@ using Windows.UI.Xaml.Input;
 
 #if !BUILD_WINDOWS
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
-using ScrollerRailingMode = Microsoft.UI.Xaml.Controls.ScrollerRailingMode;
+using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewChangeResult = Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult;
@@ -126,12 +126,12 @@ namespace MUXControlsTestApp.Utilities
                 }
             }
 
-            public ScrollerRailingMode InteractionVisualScrollRailingMode
+            public RailingMode InteractionVisualScrollRailingMode
             {
                 get
                 {
                     RaiseLogMessage("UniScrollController: get_InteractionVisualScrollRailingMode for Orientation=" + Orientation);
-                    return Owner.IsRailing ? ScrollerRailingMode.Enabled : ScrollerRailingMode.Disabled;
+                    return Owner.IsRailing ? RailingMode.Enabled : RailingMode.Disabled;
                 }
             }
 
