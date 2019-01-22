@@ -137,16 +137,16 @@
 
             <TextBlock Text="HorizontalScrollBarVisibility:" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center"/>
             <ComboBox x:Name="cmbHorizontalScrollBarVisibility" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,1,0,1" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbHorizontalScrollBarVisibility_SelectionChanged">
-                <ComboBoxItem>Visible</ComboBoxItem>
-                <ComboBoxItem>Collapsed</ComboBoxItem>
                 <ComboBoxItem>Auto</ComboBoxItem>
+                <ComboBoxItem>Visible</ComboBoxItem>
+                <ComboBoxItem>Hidden</ComboBoxItem>
             </ComboBox>
 
             <TextBlock Text="VerticalScrollBarVisibility:" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center"/>
             <ComboBox x:Name="cmbVerticalScrollBarVisibility" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,1,0,1" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbVerticalScrollBarVisibility_SelectionChanged">
-                <ComboBoxItem>Visible</ComboBoxItem>
-                <ComboBoxItem>Collapsed</ComboBoxItem>
                 <ComboBoxItem>Auto</ComboBoxItem>
+                <ComboBoxItem>Visible</ComboBoxItem>
+                <ComboBoxItem>Hidden</ComboBoxItem>
             </ComboBox>
 
             <TextBlock Text="Margin:" Grid.Row="7" Grid.Column="0" VerticalAlignment="Center"/>

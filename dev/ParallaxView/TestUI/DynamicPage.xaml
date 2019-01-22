@@ -333,15 +333,15 @@
                         <TextBlock Text="HorizontalScrollMode:" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center"/>
                         <ComboBox x:Name="cmbHorizontalScrollMode" Grid.Column="1" Grid.Row="0" MinWidth="125" Margin="1" SelectedIndex="0" SelectionChanged="cmbHorizontalScrollMode_SelectionChanged">
                             <ComboBoxItem AutomationProperties.Name="Disabled">Disabled</ComboBoxItem>
-                            <ComboBoxItem AutomationProperties.Name="Auto">Auto</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="Enabled">Enabled</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="Auto">Auto</ComboBoxItem>
                         </ComboBox>
 
                         <TextBlock Text="VerticalScrollMode:" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center"/>
                         <ComboBox x:Name="cmbVerticalScrollMode" Grid.Column="1" Grid.Row="1" MinWidth="125" Margin="1" SelectedIndex="0" SelectionChanged="cmbVerticalScrollMode_SelectionChanged">
                             <ComboBoxItem AutomationProperties.Name="Disabled">Disabled</ComboBoxItem>
-                            <ComboBoxItem AutomationProperties.Name="Auto">Auto</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="Enabled">Enabled</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="Auto">Auto</ComboBoxItem>
                         </ComboBox>
 
                         <TextBlock Text="ZoomMode/ZoomMode:" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center"/>

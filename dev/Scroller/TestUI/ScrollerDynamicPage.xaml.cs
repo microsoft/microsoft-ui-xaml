@@ -20,11 +20,11 @@ using MUXControlsTestApp.Utilities;
 #if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ScrollerChainingMode = Microsoft.UI.Xaml.Controls.ScrollerChainingMode;
-using ScrollerRailingMode = Microsoft.UI.Xaml.Controls.ScrollerRailingMode;
-using ScrollerScrollMode = Microsoft.UI.Xaml.Controls.ScrollerScrollMode;
-using ScrollerZoomMode = Microsoft.UI.Xaml.Controls.ScrollerZoomMode;
-using ScrollerInputKind = Microsoft.UI.Xaml.Controls.ScrollerInputKind;
+using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
+using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
+using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
+using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
 using ScrollerChangeOffsetsWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions;
 using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
@@ -371,7 +371,7 @@ namespace MUXControlsTestApp
         private void CmbHorizontalScrollMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scroller != null)
-                scroller.HorizontalScrollMode = (ScrollerScrollMode)cmbHorizontalScrollMode.SelectedIndex;
+                scroller.HorizontalScrollMode = (ScrollMode)cmbHorizontalScrollMode.SelectedIndex;
         }
 
         private void BtnGetContentOrientation_Click(object sender, RoutedEventArgs e)
@@ -414,7 +414,7 @@ namespace MUXControlsTestApp
         private void CmbHorizontalScrollChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scroller != null)
-                scroller.HorizontalScrollChainingMode = (ScrollerChainingMode)cmbHorizontalScrollChainingMode.SelectedIndex;
+                scroller.HorizontalScrollChainingMode = (ChainingMode)cmbHorizontalScrollChainingMode.SelectedIndex;
         }
 
         private void UpdateCmbHorizontalScrollChainingMode()
@@ -425,7 +425,7 @@ namespace MUXControlsTestApp
         private void CmbHorizontalScrollRailingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scroller != null)
-                scroller.HorizontalScrollRailingMode = (ScrollerRailingMode)cmbHorizontalScrollRailingMode.SelectedIndex;
+                scroller.HorizontalScrollRailingMode = (RailingMode)cmbHorizontalScrollRailingMode.SelectedIndex;
         }
 
         private void UpdateCmbHorizontalScrollRailingMode()
@@ -436,7 +436,7 @@ namespace MUXControlsTestApp
         private void CmbVerticalScrollMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scroller != null)
-                scroller.VerticalScrollMode = (ScrollerScrollMode)cmbVerticalScrollMode.SelectedIndex;
+                scroller.VerticalScrollMode = (ScrollMode)cmbVerticalScrollMode.SelectedIndex;
         }
 
         private void UpdateCmbVerticalScrollMode()
@@ -447,7 +447,7 @@ namespace MUXControlsTestApp
         private void CmbVerticalScrollChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scroller != null)
-                scroller.VerticalScrollChainingMode = (ScrollerChainingMode)cmbVerticalScrollChainingMode.SelectedIndex;
+                scroller.VerticalScrollChainingMode = (ChainingMode)cmbVerticalScrollChainingMode.SelectedIndex;
         }
 
         private void UpdateCmbVerticalScrollChainingMode()
@@ -458,7 +458,7 @@ namespace MUXControlsTestApp
         private void CmbVerticalScrollRailingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scroller != null)
-                scroller.VerticalScrollRailingMode = (ScrollerRailingMode)cmbVerticalScrollRailingMode.SelectedIndex;
+                scroller.VerticalScrollRailingMode = (RailingMode)cmbVerticalScrollRailingMode.SelectedIndex;
         }
 
         private void UpdateCmbVerticalScrollRailingMode()
@@ -469,7 +469,7 @@ namespace MUXControlsTestApp
         private void CmbZoomMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scroller != null)
-                scroller.ZoomMode = (ScrollerZoomMode)cmbZoomMode.SelectedIndex;
+                scroller.ZoomMode = (ZoomMode)cmbZoomMode.SelectedIndex;
         }
 
         private void UpdateCmbZoomMode()
@@ -480,7 +480,7 @@ namespace MUXControlsTestApp
         private void CmbZoomChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scroller != null)
-                scroller.ZoomChainingMode = (ScrollerChainingMode)cmbZoomChainingMode.SelectedIndex;
+                scroller.ZoomChainingMode = (ChainingMode)cmbZoomChainingMode.SelectedIndex;
         }
 
         private void UpdateCmbZoomChainingMode()
@@ -495,28 +495,28 @@ namespace MUXControlsTestApp
                 switch (cmbInputKind.SelectedIndex)
                 {
                     case 0:
-                        scroller.InputKind = ScrollerInputKind.All;
+                        scroller.InputKind = InputKind.All;
                         break;
                     case 1:
-                        scroller.InputKind = ScrollerInputKind.Touch;
+                        scroller.InputKind = InputKind.Touch;
                         break;
                     case 2:
-                        scroller.InputKind = ScrollerInputKind.Pen;
+                        scroller.InputKind = InputKind.Pen;
                         break;
                     case 3:
-                        scroller.InputKind = ScrollerInputKind.MouseWheel;
+                        scroller.InputKind = InputKind.MouseWheel;
                         break;
                     case 4:
-                        scroller.InputKind = ScrollerInputKind.Touch | ScrollerInputKind.MouseWheel;
+                        scroller.InputKind = InputKind.Touch | InputKind.MouseWheel;
                         break;
                     case 5:
-                        scroller.InputKind = ScrollerInputKind.Touch | ScrollerInputKind.Pen;
+                        scroller.InputKind = InputKind.Touch | InputKind.Pen;
                         break;
                     case 6:
-                        scroller.InputKind = ScrollerInputKind.Pen | ScrollerInputKind.MouseWheel;
+                        scroller.InputKind = InputKind.Pen | InputKind.MouseWheel;
                         break;
                     case 7:
-                        scroller.InputKind = ScrollerInputKind.Touch | ScrollerInputKind.Pen | ScrollerInputKind.MouseWheel;
+                        scroller.InputKind = InputKind.Touch | InputKind.Pen | InputKind.MouseWheel;
                         break;
                 }
             }
@@ -526,28 +526,28 @@ namespace MUXControlsTestApp
         {
             switch (scroller.InputKind)
             {
-                case ScrollerInputKind.All:
+                case InputKind.All:
                     cmbInputKind.SelectedIndex = 0;
                     break;
-                case ScrollerInputKind.Touch:
+                case InputKind.Touch:
                     cmbInputKind.SelectedIndex = 1;
                     break;
-                case ScrollerInputKind.Pen:
+                case InputKind.Pen:
                     cmbInputKind.SelectedIndex = 2;
                     break;
-                case ScrollerInputKind.MouseWheel:
+                case InputKind.MouseWheel:
                     cmbInputKind.SelectedIndex = 3;
                     break;
-                case ScrollerInputKind.Touch | ScrollerInputKind.MouseWheel:
+                case InputKind.Touch | InputKind.MouseWheel:
                     cmbInputKind.SelectedIndex = 4;
                     break;
-                case ScrollerInputKind.Touch | ScrollerInputKind.Pen:
+                case InputKind.Touch | InputKind.Pen:
                     cmbInputKind.SelectedIndex = 5;
                     break;
-                case ScrollerInputKind.Pen | ScrollerInputKind.MouseWheel:
+                case InputKind.Pen | InputKind.MouseWheel:
                     cmbInputKind.SelectedIndex = 6;
                     break;
-                case ScrollerInputKind.Touch | ScrollerInputKind.Pen | ScrollerInputKind.MouseWheel:
+                case InputKind.Touch | InputKind.Pen | InputKind.MouseWheel:
                     cmbInputKind.SelectedIndex = 7;
                     break;
             }

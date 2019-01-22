@@ -18,10 +18,10 @@
             <Setter Property="UseSystemFocusVisuals" Value="True"/>
             <Setter Property="ContentOrientation" Value="Vertical"/>
             <Setter Property="HorizontalScrollChainingMode" Value="Auto"/>
-            <Setter Property="HorizontalScrollMode" Value="Auto"/>
+            <Setter Property="HorizontalScrollMode" Value="Enabled"/>
             <Setter Property="HorizontalScrollRailingMode" Value="Enabled"/>
             <Setter Property="VerticalScrollChainingMode" Value="Auto"/>
-            <Setter Property="VerticalScrollMode" Value="Auto"/>
+            <Setter Property="VerticalScrollMode" Value="Enabled"/>
             <Setter Property="VerticalScrollRailingMode" Value="Enabled"/>
             <Setter Property="ZoomChainingMode" Value="Auto"/>
             <Setter Property="ZoomMode" Value="Disabled"/>
@@ -182,18 +182,18 @@
 
             <TextBlock Text="HorizontalScrollBarVisibility:" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center"/>
             <ComboBox x:Name="cmbHorizontalScrollBarVisibility" Width="105" Margin="0,1,0,1" Grid.Row="4" Grid.Column="1" VerticalAlignment="Center">
-                <ComboBoxItem>Visible</ComboBoxItem>
-                <ComboBoxItem>Collapsed</ComboBoxItem>
                 <ComboBoxItem>Auto</ComboBoxItem>
+                <ComboBoxItem>Visible</ComboBoxItem>
+                <ComboBoxItem>Hidden</ComboBoxItem>
             </ComboBox>
             <Button x:Name="btnGetHorizontalScrollBarVisibility" Content="G" Margin="1" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetHorizontalScrollBarVisibility_Click"/>
             <Button x:Name="btnSetHorizontalScrollBarVisibility" Content="S" Margin="1" Grid.Row="4" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetHorizontalScrollBarVisibility_Click"/>
 
             <TextBlock Text="VerticalScrollBarVisibility:" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center"/>
             <ComboBox x:Name="cmbVerticalScrollBarVisibility" Width="105" Margin="0,1,0,1" Grid.Row="5" Grid.Column="1" VerticalAlignment="Center">
-                <ComboBoxItem>Visible</ComboBoxItem>
-                <ComboBoxItem>Collapsed</ComboBoxItem>
                 <ComboBoxItem>Auto</ComboBoxItem>
+                <ComboBoxItem>Visible</ComboBoxItem>
+                <ComboBoxItem>Hidden</ComboBoxItem>
             </ComboBox>
             <Button x:Name="btnGetVerticalScrollBarVisibility" Content="G" Margin="1" Grid.Row="5" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetVerticalScrollBarVisibility_Click"/>
             <Button x:Name="btnSetVerticalScrollBarVisibility" Content="S" Margin="1" Grid.Row="5" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetVerticalScrollBarVisibility_Click"/>

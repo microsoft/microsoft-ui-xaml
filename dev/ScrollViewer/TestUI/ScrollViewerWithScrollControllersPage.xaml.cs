@@ -8,8 +8,8 @@ using Windows.UI.Xaml.Controls;
 
 using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ScrollerScrollMode = Microsoft.UI.Xaml.Controls.ScrollerScrollMode;
-using ScrollerZoomMode = Microsoft.UI.Xaml.Controls.ScrollerZoomMode;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
+using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
 using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
@@ -114,7 +114,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerScrollMode ssm = (ScrollerScrollMode)cmbHorizontalScrollMode.SelectedIndex;
+                ScrollMode ssm = (ScrollMode)cmbHorizontalScrollMode.SelectedIndex;
                 scrollViewer.HorizontalScrollMode = ssm;
             }
             catch (Exception ex)
@@ -128,7 +128,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerScrollMode ssm = (ScrollerScrollMode)cmbVerticalScrollMode.SelectedIndex;
+                ScrollMode ssm = (ScrollMode)cmbVerticalScrollMode.SelectedIndex;
                 scrollViewer.VerticalScrollMode = ssm;
             }
             catch (Exception ex)
@@ -142,7 +142,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerZoomMode ssm = (ScrollerZoomMode)cmbZoomMode.SelectedIndex;
+                ZoomMode ssm = (ZoomMode)cmbZoomMode.SelectedIndex;
                 scrollViewer.ZoomMode = ssm;
             }
             catch (Exception ex)

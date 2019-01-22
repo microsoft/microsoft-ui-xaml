@@ -141,10 +141,6 @@
     <value>பின்செல் பொத்தான்</value>
     <comment>Automation name for the nav view provided back button</comment>
   </data>
-  <data name="NavigationBackButtonToolTip" xml:space="preserve">
-    <value>பின்</value>
-    <comment>ToolTip caption for the back button</comment>
-  </data>
   <data name="NavigationOverflowButtonName" xml:space="preserve">
     <value>மேலும் பொத்தான்</value>
     <comment>Automation name for the nav view more button when panel is on top</comment>

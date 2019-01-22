@@ -284,7 +284,7 @@ winrt::VerticalAlignment ScrollInputHelper::GetEffectiveVerticalAlignment() cons
 }
 
 // Returns the effective zoom mode of the ScrollViewer.
-winrt::ZoomMode ScrollInputHelper::GetEffectiveZoomMode() const
+winrt::FxZoomMode ScrollInputHelper::GetEffectiveZoomMode() const
 {
     if (m_isScrollViewerInDirectManipulation)
     {
@@ -304,7 +304,7 @@ void ScrollInputHelper::UpdateOutOfBoundsPanSize()
         double viewportWith = GetViewportSize(winrt::Orientation::Horizontal);
         double viewportHeight = GetViewportSize(winrt::Orientation::Vertical);
 
-        if (m_scrollViewer && GetEffectiveZoomMode() == winrt::ZoomMode::Disabled)
+        if (m_scrollViewer && GetEffectiveZoomMode() == winrt::FxZoomMode::Disabled)
         {
             // A ScrollViewer can under/overpan up to 10% of its viewport size
             m_outOfBoundsPanSize.Width = static_cast<float>(0.1 * viewportWith);
@@ -803,9 +803,9 @@ winrt::VerticalAlignment ScrollInputHelper::ComputeVerticalContentAlignment() co
     return verticalAlignment;
 }
 
-winrt::ZoomMode ScrollInputHelper::ComputeZoomMode() const
+winrt::FxZoomMode ScrollInputHelper::ComputeZoomMode() const
 {
-    return m_scrollViewer ? m_scrollViewer.get().ZoomMode() : winrt::ZoomMode::Disabled;
+    return m_scrollViewer ? m_scrollViewer.get().ZoomMode() : winrt::FxZoomMode::Disabled;
 }
 
 // Determines whether the ScrollViewer's ScrollContentPresenter is the IScrollInfo implementer used by the ScrollViewer.
@@ -1170,7 +1170,7 @@ void ScrollInputHelper::OnScrollViewerDirectManipulationCompleted(const winrt::I
 
     winrt::HorizontalAlignment oldEffectiveHorizontalAlignment = winrt::HorizontalAlignment::Left;
     winrt::VerticalAlignment oldEffectiveVerticalAlignment = winrt::VerticalAlignment::Top;
-    winrt::ZoomMode oldZoomMode = winrt::ZoomMode::Disabled;
+    winrt::FxZoomMode oldZoomMode = winrt::FxZoomMode::Disabled;
 
     if (m_targetElement)
     {
@@ -1183,7 +1183,7 @@ void ScrollInputHelper::OnScrollViewerDirectManipulationCompleted(const winrt::I
 
     if (m_targetElement)
     {
-        winrt::ZoomMode newZoomMode = GetEffectiveZoomMode();
+        winrt::FxZoomMode newZoomMode = GetEffectiveZoomMode();
 
         if (oldZoomMode != newZoomMode)
         {

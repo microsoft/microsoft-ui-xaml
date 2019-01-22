@@ -141,10 +141,6 @@
     <value>Botón Atrás</value>
     <comment>Automation name for the nav view provided back button</comment>
   </data>
-  <data name="NavigationBackButtonToolTip" xml:space="preserve">
-    <value>Atrás</value>
-    <comment>ToolTip caption for the back button</comment>
-  </data>
   <data name="NavigationOverflowButtonName" xml:space="preserve">
     <value>Botón máis</value>
     <comment>Automation name for the nav view more button when panel is on top</comment>

@@ -15,10 +15,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using ScrollerScrollMode = Microsoft.UI.Xaml.Controls.ScrollerScrollMode;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using ScrollBar2 = Microsoft.UI.Xaml.Controls.ScrollBar2;
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
-using ScrollerRailingMode = Microsoft.UI.Xaml.Controls.ScrollerRailingMode;
+using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -27,7 +27,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     {
         private const ScrollingIndicatorMode c_defaultIndicatorMode = ScrollingIndicatorMode.None;
         private const Orientation c_defaultOrientation = Orientation.Vertical;
-        private const ScrollerScrollMode c_defaultScrollMode = ScrollerScrollMode.Disabled;
+        private const ScrollMode c_defaultScrollMode = ScrollMode.Disabled;
         private const double c_defaultOffset = 0.0;
         private const double c_defaultMinOffset = 0.0;
         private const double c_defaultMaxOffset = 100.0;
@@ -70,7 +70,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Setting ScrollBar2 properties to non-default values");
                 scrollBar2.IndicatorMode = ScrollingIndicatorMode.TouchIndicator;
                 scrollBar2.Orientation = Orientation.Horizontal;
-                scrollBar2.ScrollMode = ScrollerScrollMode.Disabled;
+                scrollBar2.ScrollMode = ScrollMode.Disabled;
                 scrollBar2.IsEnabled = !c_defaultIsEnabled;
             });
 
@@ -81,7 +81,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Verifying ScrollBar2 non-default property values");
                 Verify.AreEqual(scrollBar2.IndicatorMode, ScrollingIndicatorMode.TouchIndicator);
                 Verify.AreEqual(scrollBar2.Orientation, Orientation.Horizontal);
-                Verify.AreEqual(scrollBar2.ScrollMode, ScrollerScrollMode.Disabled);
+                Verify.AreEqual(scrollBar2.ScrollMode, ScrollMode.Disabled);
                 Verify.AreEqual(scrollBar2.IsEnabled, !c_defaultIsEnabled);
             });
         }
@@ -102,7 +102,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(scrollBar2AsIScrollController.AreScrollerInteractionsAllowed);
                 Verify.IsNull(scrollBar2AsIScrollController.InteractionVisual);
                 Verify.AreEqual(scrollBar2AsIScrollController.InteractionVisualScrollOrientation, c_defaultOrientation);
-                Verify.AreEqual(scrollBar2AsIScrollController.InteractionVisualScrollRailingMode, ScrollerRailingMode.Enabled);
+                Verify.AreEqual(scrollBar2AsIScrollController.InteractionVisualScrollRailingMode, RailingMode.Enabled);
                 Verify.IsFalse(scrollBar2AsIScrollController.IsInteracting);
 
                 Log.Comment("Invoking ScrollBar2's IScrollController.SetValues method");

@@ -11,10 +11,10 @@
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}"/>
         <Setter Property="ContentOrientation" Value="Vertical"/>
         <Setter Property="HorizontalScrollChainingMode" Value="Auto"/>
-        <Setter Property="HorizontalScrollMode" Value="Auto"/>
+        <Setter Property="HorizontalScrollMode" Value="Enabled"/>
         <Setter Property="HorizontalScrollRailingMode" Value="Enabled"/>
         <Setter Property="VerticalScrollChainingMode" Value="Auto"/>
-        <Setter Property="VerticalScrollMode" Value="Auto"/>
+        <Setter Property="VerticalScrollMode" Value="Enabled"/>
         <Setter Property="VerticalScrollRailingMode" Value="Enabled"/>
         <Setter Property="ZoomChainingMode" Value="Auto"/>
         <Setter Property="ZoomMode" Value="Disabled"/>

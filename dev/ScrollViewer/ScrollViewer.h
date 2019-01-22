@@ -19,17 +19,22 @@ public:
     // Properties' default values.
     static const winrt::Microsoft::UI::Xaml::Controls::ScrollBarVisibility s_defaultHorizontalScrollBarVisibility{ winrt::Microsoft::UI::Xaml::Controls::ScrollBarVisibility::Auto };
     static const winrt::Microsoft::UI::Xaml::Controls::ScrollBarVisibility s_defaultVerticalScrollBarVisibility{ winrt::Microsoft::UI::Xaml::Controls::ScrollBarVisibility::Auto };
-    static const winrt::ScrollerChainingMode s_defaultHorizontalScrollChainingMode{ winrt::ScrollerChainingMode::Auto };
-    static const winrt::ScrollerChainingMode s_defaultVerticalScrollChainingMode{ winrt::ScrollerChainingMode::Auto };
-    static const winrt::ScrollerRailingMode s_defaultHorizontalScrollRailingMode{ winrt::ScrollerRailingMode::Enabled };
-    static const winrt::ScrollerRailingMode s_defaultVerticalScrollRailingMode{ winrt::ScrollerRailingMode::Enabled };
-    static const winrt::ScrollerScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollerScrollMode::Auto };
-    static const winrt::ScrollerScrollMode s_defaultVerticalScrollMode{ winrt::ScrollerScrollMode::Auto };
-    static const winrt::ScrollerScrollMode s_defaultComputedHorizontalScrollMode{ winrt::ScrollerScrollMode::Disabled };
-    static const winrt::ScrollerScrollMode s_defaultComputedVerticalScrollMode{ winrt::ScrollerScrollMode::Disabled };
-    static const winrt::ScrollerChainingMode s_defaultZoomChainingMode{ winrt::ScrollerChainingMode::Auto };
-    static const winrt::ScrollerZoomMode s_defaultZoomMode{ winrt::ScrollerZoomMode::Disabled };
-    static const winrt::ScrollerInputKind s_defaultInputKind{ winrt::ScrollerInputKind::All };
+    static const winrt::ChainingMode s_defaultHorizontalScrollChainingMode{ winrt::ChainingMode::Auto };
+    static const winrt::ChainingMode s_defaultVerticalScrollChainingMode{ winrt::ChainingMode::Auto };
+    static const winrt::RailingMode s_defaultHorizontalScrollRailingMode{ winrt::RailingMode::Enabled };
+    static const winrt::RailingMode s_defaultVerticalScrollRailingMode{ winrt::RailingMode::Enabled };
+#ifdef USE_SCROLLMODE_AUTO
+    static const winrt::ScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollMode::Auto };
+    static const winrt::ScrollMode s_defaultVerticalScrollMode{ winrt::ScrollMode::Auto };
+#else
+    static const winrt::ScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollMode::Enabled };
+    static const winrt::ScrollMode s_defaultVerticalScrollMode{ winrt::ScrollMode::Enabled };
+#endif
+    static const winrt::ScrollMode s_defaultComputedHorizontalScrollMode{ winrt::ScrollMode::Disabled };
+    static const winrt::ScrollMode s_defaultComputedVerticalScrollMode{ winrt::ScrollMode::Disabled };
+    static const winrt::ChainingMode s_defaultZoomChainingMode{ winrt::ChainingMode::Auto };
+    static const winrt::ZoomMode s_defaultZoomMode{ winrt::ZoomMode::Disabled };
+    static const winrt::InputKind s_defaultInputKind{ winrt::InputKind::All };
     static const winrt::ContentOrientation s_defaultContentOrientation{ winrt::ContentOrientation::Vertical };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
     static constexpr double s_defaultMaxZoomFactor{ 10.0 };
@@ -52,8 +57,8 @@ public:
 
     winrt::InteractionState State();
 
-    winrt::ScrollerInputKind InputKind();
-    void InputKind(winrt::ScrollerInputKind const& value);
+    winrt::InputKind InputKind();
+    void InputKind(winrt::InputKind const& value);
 
     int32_t ChangeOffsets(winrt::ScrollerChangeOffsetsOptions const& options);
     int32_t ChangeOffsetsWithAdditionalVelocity(winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions const& options);
