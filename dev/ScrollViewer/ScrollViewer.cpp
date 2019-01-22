@@ -1507,7 +1507,7 @@ winrt::DependencyObject ScrollViewer::GetNextFocusCandidate(winrt::FocusNavigati
     winrt::FocusNavigationDirection focusDirection = navigationDirection;
 
     winrt::FindNextElementOptions findNextElementOptions;
-    findNextElementOptions.SearchRoot(scroller.Child());
+    findNextElementOptions.SearchRoot(scroller.Content());
 
     if (isPageNavigation)
     {

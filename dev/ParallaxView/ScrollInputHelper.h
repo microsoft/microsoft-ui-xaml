@@ -63,7 +63,7 @@ private:
     void ProcessTargetElementChange();
     void ProcessContentSizeChange();
     void ProcessScrollViewerContentChange();
-    void ProcessScrollerChildChange();
+    void ProcessScrollerContentChange();
     void ProcessScrollViewerZoomModeChange();
 
     void OnSourceElementChanged(bool allowSourceElementLoadedHookup);
@@ -92,8 +92,8 @@ private:
     void UnhookTargetElementLoaded();
     void HookScrollerPropertyChanged();
     void UnhookScrollerPropertyChanged();
-    void HookScrollerChildPropertyChanged();
-    void UnhookScrollerChildPropertyChanged();
+    void HookScrollerContentPropertyChanged();
+    void UnhookScrollerContentPropertyChanged();
     void HookScrollViewerPropertyChanged();
     void UnhookScrollViewerPropertyChanged();
     void HookScrollViewerContentPropertyChanged();
@@ -141,7 +141,7 @@ private:
     winrt::event_token m_scrollViewerContentHorizontalAlignmentChangedToken{ 0 };
     winrt::event_token m_scrollViewerContentVerticalAlignmentChangedToken{ 0 };
     winrt::event_token m_scrollViewerContentChangedToken{ 0 };
-    winrt::event_token m_scrollerChildChangedToken{ 0 };
+    winrt::event_token m_scrollerContentChangedToken{ 0 };
     winrt::event_token m_scrollViewerHorizontalContentAlignmentChangedToken{ 0 };
     winrt::event_token m_scrollViewerVerticalContentAlignmentChangedToken{ 0 };
     winrt::event_token m_scrollViewerZoomModeChangedToken{ 0 };

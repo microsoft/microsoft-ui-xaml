@@ -11,8 +11,8 @@ CppWinRTActivatableClassWithBasicFactory(ScrollerTestHooks)
 
 ScrollerTestHooksProperties::ScrollerTestHooksProperties()
     : m_anchorEvaluatedEventSource{static_cast<ScrollerTestHooks*>(this)}
-    , m_childLayoutOffsetXChangedEventSource{static_cast<ScrollerTestHooks*>(this)}
-    , m_childLayoutOffsetYChangedEventSource{static_cast<ScrollerTestHooks*>(this)}
+    , m_contentLayoutOffsetXChangedEventSource{static_cast<ScrollerTestHooks*>(this)}
+    , m_contentLayoutOffsetYChangedEventSource{static_cast<ScrollerTestHooks*>(this)}
     , m_interactionSourcesChangedEventSource{static_cast<ScrollerTestHooks*>(this)}
 {
 }
@@ -35,24 +35,24 @@ void ScrollerTestHooksProperties::AnchorEvaluated(winrt::event_token const& toke
     m_anchorEvaluatedEventSource.remove(token);
 }
 
-winrt::event_token ScrollerTestHooksProperties::ChildLayoutOffsetXChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value)
+winrt::event_token ScrollerTestHooksProperties::ContentLayoutOffsetXChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value)
 {
-    return m_childLayoutOffsetXChangedEventSource.add(value);
+    return m_contentLayoutOffsetXChangedEventSource.add(value);
 }
 
-void ScrollerTestHooksProperties::ChildLayoutOffsetXChanged(winrt::event_token const& token)
+void ScrollerTestHooksProperties::ContentLayoutOffsetXChanged(winrt::event_token const& token)
 {
-    m_childLayoutOffsetXChangedEventSource.remove(token);
+    m_contentLayoutOffsetXChangedEventSource.remove(token);
 }
 
-winrt::event_token ScrollerTestHooksProperties::ChildLayoutOffsetYChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value)
+winrt::event_token ScrollerTestHooksProperties::ContentLayoutOffsetYChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value)
 {
-    return m_childLayoutOffsetYChangedEventSource.add(value);
+    return m_contentLayoutOffsetYChangedEventSource.add(value);
 }
 
-void ScrollerTestHooksProperties::ChildLayoutOffsetYChanged(winrt::event_token const& token)
+void ScrollerTestHooksProperties::ContentLayoutOffsetYChanged(winrt::event_token const& token)
 {
-    m_childLayoutOffsetYChangedEventSource.remove(token);
+    m_contentLayoutOffsetYChangedEventSource.remove(token);
 }
 
 winrt::event_token ScrollerTestHooksProperties::InteractionSourcesChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksInteractionSourcesChangedEventArgs> const& value)

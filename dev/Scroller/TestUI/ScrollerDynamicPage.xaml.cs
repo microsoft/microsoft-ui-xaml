@@ -51,14 +51,14 @@ namespace MUXControlsTestApp
             SetMaxZoomFactor,
             SetWidth,
             SetHeight,
-            SetChildMargin,
-            SetChildPadding,
-            SetChildMinWidth,
-            SetChildMinHeight,
-            SetChildWidth,
-            SetChildHeight,
-            SetChildMaxWidth,
-            SetChildMaxHeight,
+            SetContentMargin,
+            SetContentPadding,
+            SetContentMinWidth,
+            SetContentMinHeight,
+            SetContentWidth,
+            SetContentHeight,
+            SetContentMaxWidth,
+            SetContentMaxHeight,
         }
 
         private class QueuedOperation
@@ -224,43 +224,43 @@ namespace MUXControlsTestApp
             scroller.ChangingZoomFactor -= Scroller_ChangingZoomFactor;
         }
 
-        private void ChkLogChildEffectiveViewportChangedEvent_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogContentEffectiveViewportChangedEvent_Checked(object sender, RoutedEventArgs e)
         {
-            HookChildEffectiveViewportChanged();
+            HookContentEffectiveViewportChanged();
         }
 
-        private void ChkLogChildEffectiveViewportChangedEvent_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogContentEffectiveViewportChangedEvent_Unchecked(object sender, RoutedEventArgs e)
         {
-            UnhookChildEffectiveViewportChanged();
+            UnhookContentEffectiveViewportChanged();
         }
 
-        private void HookChildEffectiveViewportChanged()
+        private void HookContentEffectiveViewportChanged()
         {
             if (scroller != null)
             {
-                FrameworkElement childAsFE = scroller.Child as FrameworkElement;
-                if (childAsFE != null)
+                FrameworkElement contentAsFE = scroller.Content as FrameworkElement;
+                if (contentAsFE != null)
                 {
-                    childAsFE.EffectiveViewportChanged += Child_EffectiveViewportChanged;
+                    contentAsFE.EffectiveViewportChanged += Content_EffectiveViewportChanged;
                 }
             }
         }
 
-        private void UnhookChildEffectiveViewportChanged()
+        private void UnhookContentEffectiveViewportChanged()
         {
             if (scroller != null)
             {
-                FrameworkElement childAsFE = scroller.Child as FrameworkElement;
-                if (childAsFE != null)
+                FrameworkElement contentAsFE = scroller.Content as FrameworkElement;
+                if (contentAsFE != null)
                 {
-                    childAsFE.EffectiveViewportChanged -= Child_EffectiveViewportChanged;
+                    contentAsFE.EffectiveViewportChanged -= Content_EffectiveViewportChanged;
                 }
             }
         }
 
-        private void Child_EffectiveViewportChanged(FrameworkElement sender, EffectiveViewportChangedEventArgs args)
+        private void Content_EffectiveViewportChanged(FrameworkElement sender, EffectiveViewportChangedEventArgs args)
         {
-            AppendAsyncEventMessage("Child_EffectiveViewportChanged: BringIntoViewDistance=" + 
+            AppendAsyncEventMessage("Content_EffectiveViewportChanged: BringIntoViewDistance=" + 
                 args.BringIntoViewDistanceX + "," + args.BringIntoViewDistanceY + ", EffectiveViewport=" +
                 args.EffectiveViewport.ToString() + ", MaxViewport=" + args.MaxViewport.ToString());
         }
@@ -307,16 +307,16 @@ namespace MUXControlsTestApp
                 svScrollerProperties.Visibility = Visibility.Collapsed;
         }
 
-        private void ChkChildProperties_Checked(object sender, RoutedEventArgs e)
+        private void ChkContentProperties_Checked(object sender, RoutedEventArgs e)
         {
-            if (grdChildProperties != null)
-                grdChildProperties.Visibility = Visibility.Visible;
+            if (grdContentProperties != null)
+                grdContentProperties.Visibility = Visibility.Visible;
         }
 
-        private void ChkChildProperties_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkContentProperties_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (grdChildProperties != null)
-                grdChildProperties.Visibility = Visibility.Collapsed;
+            if (grdContentProperties != null)
+                grdContentProperties.Visibility = Visibility.Collapsed;
         }
 
         private void ChkScrollerMethods_Checked(object sender, RoutedEventArgs e)
@@ -585,35 +585,35 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void CmbChildHorizontalAlignment_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbContentHorizontalAlignment_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller.Child is FrameworkElement)
+            if (scroller.Content is FrameworkElement)
             {
-                ((FrameworkElement)scroller.Child).HorizontalAlignment = (HorizontalAlignment)cmbChildHorizontalAlignment.SelectedIndex;
+                ((FrameworkElement)scroller.Content).HorizontalAlignment = (HorizontalAlignment)cmbContentHorizontalAlignment.SelectedIndex;
             }
         }
 
-        private void UpdateCmbChildHorizontalAlignment()
+        private void UpdateCmbContentHorizontalAlignment()
         {
-            if (scroller.Child is FrameworkElement)
+            if (scroller.Content is FrameworkElement)
             {
-                cmbChildHorizontalAlignment.SelectedIndex = (int)((FrameworkElement)scroller.Child).HorizontalAlignment;
+                cmbContentHorizontalAlignment.SelectedIndex = (int)((FrameworkElement)scroller.Content).HorizontalAlignment;
             }
         }
 
-        private void CmbChildVerticalAlignment_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbContentVerticalAlignment_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller.Child is FrameworkElement)
+            if (scroller.Content is FrameworkElement)
             {
-                ((FrameworkElement)scroller.Child).VerticalAlignment = (VerticalAlignment)cmbChildVerticalAlignment.SelectedIndex;
+                ((FrameworkElement)scroller.Content).VerticalAlignment = (VerticalAlignment)cmbContentVerticalAlignment.SelectedIndex;
             }
         }
 
-        private void UpdateCmbChildVerticalAlignment()
+        private void UpdateCmbContentVerticalAlignment()
         {
-            if (scroller.Child is FrameworkElement)
+            if (scroller.Content is FrameworkElement)
             {
-                cmbChildVerticalAlignment.SelectedIndex = (int)((FrameworkElement)scroller.Child).VerticalAlignment;
+                cmbContentVerticalAlignment.SelectedIndex = (int)((FrameworkElement)scroller.Content).VerticalAlignment;
             }
         }
 
@@ -643,33 +643,33 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void CmbChildManipulationMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbContentManipulationMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller.Child is FrameworkElement)
+            if (scroller.Content is FrameworkElement)
             {
-                switch (cmbChildManipulationMode.SelectedIndex)
+                switch (cmbContentManipulationMode.SelectedIndex)
                 {
                     case 0:
-                        scroller.Child.ManipulationMode = ManipulationModes.System;
+                        scroller.Content.ManipulationMode = ManipulationModes.System;
                         break;
                     case 1:
-                        scroller.Child.ManipulationMode = ManipulationModes.None;
+                        scroller.Content.ManipulationMode = ManipulationModes.None;
                         break;
                 }
             }
         }
 
-        private void UpdateCmbChildManipulationMode()
+        private void UpdateCmbContentManipulationMode()
         {
-            if (scroller.Child != null)
+            if (scroller.Content != null)
             {
-                switch (scroller.Child.ManipulationMode)
+                switch (scroller.Content.ManipulationMode)
                 {
                     case ManipulationModes.System:
-                        cmbChildManipulationMode.SelectedIndex = 0;
+                        cmbContentManipulationMode.SelectedIndex = 0;
                         break;
                     case ManipulationModes.None:
-                        cmbChildManipulationMode.SelectedIndex = 1;
+                        cmbContentManipulationMode.SelectedIndex = 1;
                         break;
                 }
             }
@@ -716,68 +716,68 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void CmbChild_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbContent_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
-                FrameworkElement currentChild = scroller.Child as FrameworkElement;
-                FrameworkElement newChild = null;
+                FrameworkElement currentContent = scroller.Content as FrameworkElement;
+                FrameworkElement newContent = null;
 
-                switch (cmbChild.SelectedIndex)
+                switch (cmbContent.SelectedIndex)
                 {
                     case 0:
-                        newChild = null;
+                        newContent = null;
                         break;
                     case 1:
-                        newChild = smallImg;
+                        newContent = smallImg;
                         break;
                     case 2:
-                        newChild = largeImg;
+                        newContent = largeImg;
                         break;
                     case 3:
-                        newChild = rectangle;
+                        newContent = rectangle;
                         break;
                     case 4:
-                        newChild = button;
+                        newContent = button;
                         break;
                     case 5:
-                        newChild = border;
+                        newContent = border;
                         break;
                     case 6:
-                        newChild = populatedBorder;
+                        newContent = populatedBorder;
                         break;
                     case 7:
-                        newChild = verticalStackPanel;
+                        newContent = verticalStackPanel;
                         break;
                     case 8:
-                        newChild = tilePanel;
+                        newContent = tilePanel;
                         break;
                 }
 
-                if (chkPreserveProperties.IsChecked == true && currentChild != null && newChild != null)
+                if (chkPreserveProperties.IsChecked == true && currentContent != null && newContent != null)
                 {
-                    newChild.Width = currentChild.Width;
-                    newChild.Height = currentChild.Height;
-                    newChild.Margin = currentChild.Margin;
-                    newChild.HorizontalAlignment = currentChild.HorizontalAlignment;
-                    newChild.VerticalAlignment = currentChild.VerticalAlignment;
+                    newContent.Width = currentContent.Width;
+                    newContent.Height = currentContent.Height;
+                    newContent.Margin = currentContent.Margin;
+                    newContent.HorizontalAlignment = currentContent.HorizontalAlignment;
+                    newContent.VerticalAlignment = currentContent.VerticalAlignment;
 
-                    if (currentChild is Control && newChild is Control)
+                    if (currentContent is Control && newContent is Control)
                     {
-                        ((Control)newChild).Padding = ((Control)currentChild).Padding;
+                        ((Control)newContent).Padding = ((Control)currentContent).Padding;
                     }
                 }
 
                 if (chkLogScrollerEvents.IsChecked == true)
                 {
-                    UnhookChildEffectiveViewportChanged();
+                    UnhookContentEffectiveViewportChanged();
                 }
 
-                scroller.Child = newChild;
+                scroller.Content = newContent;
 
                 if (chkLogScrollerEvents.IsChecked == true)
                 {
-                    HookChildEffectiveViewportChanged();
+                    HookContentEffectiveViewportChanged();
                 }
             }
             catch (Exception ex)
@@ -785,87 +785,87 @@ namespace MUXControlsTestApp
                 txtExceptionReport.Text = ex.ToString();
                 lstScrollerEvents.Items.Add(ex.ToString());
 
-                UpdateCmbChild();
+                UpdateCmbContent();
             }
         }
 
-        private void UpdateCmbChild()
+        private void UpdateCmbContent()
         {
-            if (scroller.Child == null)
+            if (scroller.Content == null)
             {
-                cmbChild.SelectedIndex = 0;
+                cmbContent.SelectedIndex = 0;
             }
-            else if (scroller.Child is Image)
+            else if (scroller.Content is Image)
             {
-                if (((scroller.Child as Image).Source as BitmapImage).UriSource.AbsolutePath.ToLower().Contains("large"))
+                if (((scroller.Content as Image).Source as BitmapImage).UriSource.AbsolutePath.ToLower().Contains("large"))
                 {
-                    cmbChild.SelectedIndex = 2;
+                    cmbContent.SelectedIndex = 2;
                 }
                 else
                 {
-                    cmbChild.SelectedIndex = 1;
+                    cmbContent.SelectedIndex = 1;
                 }
             }
-            else if (scroller.Child is Rectangle)
+            else if (scroller.Content is Rectangle)
             {
-                cmbChild.SelectedIndex = 3;
+                cmbContent.SelectedIndex = 3;
             }
-            else if (scroller.Child is Button)
+            else if (scroller.Content is Button)
             {
-                cmbChild.SelectedIndex = 4;
+                cmbContent.SelectedIndex = 4;
             }
-            else if (scroller.Child is Border)
+            else if (scroller.Content is Border)
             {
-                if ((scroller.Child as Border).Child is Rectangle)
+                if ((scroller.Content as Border).Child is Rectangle)
                 {
-                    cmbChild.SelectedIndex = 5;
+                    cmbContent.SelectedIndex = 5;
                 }
                 else
                 {
-                    cmbChild.SelectedIndex = 6;
+                    cmbContent.SelectedIndex = 6;
                 }
             }
-            else if (scroller.Child is StackPanel)
+            else if (scroller.Content is StackPanel)
             {
-                cmbChild.SelectedIndex = 7;
+                cmbContent.SelectedIndex = 7;
             }
-            else if (scroller.Child is TilePanel)
+            else if (scroller.Content is TilePanel)
             {
-                cmbChild.SelectedIndex = 8;
+                cmbContent.SelectedIndex = 8;
             }
         }
 
-        private void BtnGetChildMinWidth_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentMinWidth_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Child == null || !(scroller.Child is FrameworkElement))
-                txtChildMinWidth.Text = string.Empty;
+            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+                txtContentMinWidth.Text = string.Empty;
             else
-                txtChildMinWidth.Text = ((FrameworkElement)(scroller.Child)).MinWidth.ToString();
+                txtContentMinWidth.Text = ((FrameworkElement)(scroller.Content)).MinWidth.ToString();
         }
 
-        private void BtnGetChildWidth_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentWidth_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Child == null || !(scroller.Child is FrameworkElement))
-                txtChildWidth.Text = string.Empty;
+            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+                txtContentWidth.Text = string.Empty;
             else
-                txtChildWidth.Text = ((FrameworkElement)(scroller.Child)).Width.ToString();
+                txtContentWidth.Text = ((FrameworkElement)(scroller.Content)).Width.ToString();
         }
 
-        private void BtnGetChildMaxWidth_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentMaxWidth_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Child == null || !(scroller.Child is FrameworkElement))
-                txtChildMaxWidth.Text = string.Empty;
+            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+                txtContentMaxWidth.Text = string.Empty;
             else
-                txtChildMaxWidth.Text = ((FrameworkElement)(scroller.Child)).MaxWidth.ToString();
+                txtContentMaxWidth.Text = ((FrameworkElement)(scroller.Content)).MaxWidth.ToString();
         }
 
-        private void BtnSetChildMinWidth_Click(object sender, RoutedEventArgs e)
+        private void BtnSetContentMinWidth_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (scroller.Child is FrameworkElement)
+                if (scroller.Content is FrameworkElement)
                 {
-                    ((FrameworkElement)(scroller.Child)).MinWidth = Convert.ToDouble(txtChildMinWidth.Text);
+                    ((FrameworkElement)(scroller.Content)).MinWidth = Convert.ToDouble(txtContentMinWidth.Text);
                 }
             }
             catch (Exception ex)
@@ -875,13 +875,13 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnSetChildWidth_Click(object sender, RoutedEventArgs e)
+        private void BtnSetContentWidth_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (scroller.Child is FrameworkElement)
+                if (scroller.Content is FrameworkElement)
                 {
-                    ((FrameworkElement)(scroller.Child)).Width = Convert.ToDouble(txtChildWidth.Text);
+                    ((FrameworkElement)(scroller.Content)).Width = Convert.ToDouble(txtContentWidth.Text);
                 }
             }
             catch (Exception ex)
@@ -891,13 +891,13 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnSetChildMaxWidth_Click(object sender, RoutedEventArgs e)
+        private void BtnSetContentMaxWidth_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (scroller.Child is FrameworkElement)
+                if (scroller.Content is FrameworkElement)
                 {
-                    ((FrameworkElement)(scroller.Child)).MaxWidth = Convert.ToDouble(txtChildMaxWidth.Text);
+                    ((FrameworkElement)(scroller.Content)).MaxWidth = Convert.ToDouble(txtContentMaxWidth.Text);
                 }
             }
             catch (Exception ex)
@@ -907,13 +907,13 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnQueueChildMinWidth_Click(object sender, RoutedEventArgs e)
+        private void BtnQueueContentMinWidth_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                double value = Convert.ToDouble(txtChildMinWidth.Text);
-                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetChildMinWidth, value));
-                AppendAsyncEventMessage("Queued SetChildMinWidth " + value);
+                double value = Convert.ToDouble(txtContentMinWidth.Text);
+                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetContentMinWidth, value));
+                AppendAsyncEventMessage("Queued SetContentMinWidth " + value);
             }
             catch (Exception ex)
             {
@@ -922,13 +922,13 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnQueueChildWidth_Click(object sender, RoutedEventArgs e)
+        private void BtnQueueContentWidth_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                double value = Convert.ToDouble(txtChildWidth.Text);
-                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetChildWidth, value));
-                AppendAsyncEventMessage("Queued SetChildWidth " + value);
+                double value = Convert.ToDouble(txtContentWidth.Text);
+                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetContentWidth, value));
+                AppendAsyncEventMessage("Queued SetContentWidth " + value);
             }
             catch (Exception ex)
             {
@@ -937,13 +937,13 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnQueueChildMaxWidth_Click(object sender, RoutedEventArgs e)
+        private void BtnQueueContentMaxWidth_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                double value = Convert.ToDouble(txtChildMaxWidth.Text);
-                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetChildMaxWidth, value));
-                AppendAsyncEventMessage("Queued SetChildMaxWidth " + value);
+                double value = Convert.ToDouble(txtContentMaxWidth.Text);
+                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetContentMaxWidth, value));
+                AppendAsyncEventMessage("Queued SetContentMaxWidth " + value);
             }
             catch (Exception ex)
             {
@@ -952,37 +952,37 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnGetChildMinHeight_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentMinHeight_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Child == null || !(scroller.Child is FrameworkElement))
-                txtChildMinHeight.Text = string.Empty;
+            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+                txtContentMinHeight.Text = string.Empty;
             else
-                txtChildMinHeight.Text = ((FrameworkElement)(scroller.Child)).MinHeight.ToString();
+                txtContentMinHeight.Text = ((FrameworkElement)(scroller.Content)).MinHeight.ToString();
         }
 
-        private void BtnGetChildHeight_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentHeight_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Child == null || !(scroller.Child is FrameworkElement))
-                txtChildHeight.Text = string.Empty;
+            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+                txtContentHeight.Text = string.Empty;
             else
-                txtChildHeight.Text = ((FrameworkElement)(scroller.Child)).Height.ToString();
+                txtContentHeight.Text = ((FrameworkElement)(scroller.Content)).Height.ToString();
         }
 
-        private void BtnGetChildMaxHeight_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentMaxHeight_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Child == null || !(scroller.Child is FrameworkElement))
-                txtChildMaxHeight.Text = string.Empty;
+            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+                txtContentMaxHeight.Text = string.Empty;
             else
-                txtChildMaxHeight.Text = ((FrameworkElement)(scroller.Child)).MaxHeight.ToString();
+                txtContentMaxHeight.Text = ((FrameworkElement)(scroller.Content)).MaxHeight.ToString();
         }
 
-        private void BtnSetChildMinHeight_Click(object sender, RoutedEventArgs e)
+        private void BtnSetContentMinHeight_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (scroller.Child is FrameworkElement)
+                if (scroller.Content is FrameworkElement)
                 {
-                    ((FrameworkElement)(scroller.Child)).MinHeight = Convert.ToDouble(txtChildMinHeight.Text);
+                    ((FrameworkElement)(scroller.Content)).MinHeight = Convert.ToDouble(txtContentMinHeight.Text);
                 }
             }
             catch (Exception ex)
@@ -992,13 +992,13 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnSetChildHeight_Click(object sender, RoutedEventArgs e)
+        private void BtnSetContentHeight_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (scroller.Child is FrameworkElement)
+                if (scroller.Content is FrameworkElement)
                 {
-                    ((FrameworkElement)(scroller.Child)).Height = Convert.ToDouble(txtChildHeight.Text);
+                    ((FrameworkElement)(scroller.Content)).Height = Convert.ToDouble(txtContentHeight.Text);
                 }
             }
             catch (Exception ex)
@@ -1008,13 +1008,13 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnSetChildMaxHeight_Click(object sender, RoutedEventArgs e)
+        private void BtnSetContentMaxHeight_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (scroller.Child is FrameworkElement)
+                if (scroller.Content is FrameworkElement)
                 {
-                    ((FrameworkElement)(scroller.Child)).MaxHeight = Convert.ToDouble(txtChildMaxHeight.Text);
+                    ((FrameworkElement)(scroller.Content)).MaxHeight = Convert.ToDouble(txtContentMaxHeight.Text);
                 }
             }
             catch (Exception ex)
@@ -1024,13 +1024,13 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnQueueChildMinHeight_Click(object sender, RoutedEventArgs e)
+        private void BtnQueueContentMinHeight_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                double value = Convert.ToDouble(txtChildMinHeight.Text);
-                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetChildMinHeight, value));
-                AppendAsyncEventMessage("Queued SetChildMinHeight " + value);
+                double value = Convert.ToDouble(txtContentMinHeight.Text);
+                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetContentMinHeight, value));
+                AppendAsyncEventMessage("Queued SetContentMinHeight " + value);
             }
             catch (Exception ex)
             {
@@ -1039,13 +1039,13 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnQueueChildHeight_Click(object sender, RoutedEventArgs e)
+        private void BtnQueueContentHeight_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                double value = Convert.ToDouble(txtChildHeight.Text);
-                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetChildHeight, value));
-                AppendAsyncEventMessage("Queued SetChildHeight " + value);
+                double value = Convert.ToDouble(txtContentHeight.Text);
+                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetContentHeight, value));
+                AppendAsyncEventMessage("Queued SetContentHeight " + value);
             }
             catch (Exception ex)
             {
@@ -1054,13 +1054,13 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnQueueChildMaxHeight_Click(object sender, RoutedEventArgs e)
+        private void BtnQueueContentMaxHeight_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                double value = Convert.ToDouble(txtChildMaxHeight.Text);
-                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetChildMaxHeight, value));
-                AppendAsyncEventMessage("Queued SetChildMaxHeight " + value);
+                double value = Convert.ToDouble(txtContentMaxHeight.Text);
+                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetContentMaxHeight, value));
+                AppendAsyncEventMessage("Queued SetContentMaxHeight " + value);
             }
             catch (Exception ex)
             {
@@ -1069,21 +1069,21 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnGetChildMargin_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentMargin_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Child == null || !(scroller.Child is FrameworkElement))
-                txtChildMargin.Text = string.Empty;
+            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+                txtContentMargin.Text = string.Empty;
             else
-                txtChildMargin.Text = ((FrameworkElement)(scroller.Child)).Margin.ToString();
+                txtContentMargin.Text = ((FrameworkElement)(scroller.Content)).Margin.ToString();
         }
 
-        private void BtnSetChildMargin_Click(object sender, RoutedEventArgs e)
+        private void BtnSetContentMargin_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (scroller.Child is FrameworkElement)
+                if (scroller.Content is FrameworkElement)
                 {
-                    ((FrameworkElement)(scroller.Child)).Margin = GetThicknessFromString(txtChildMargin.Text);
+                    ((FrameworkElement)(scroller.Content)).Margin = GetThicknessFromString(txtContentMargin.Text);
                 }
             }
             catch (Exception ex)
@@ -1093,12 +1093,12 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnQueueChildMargin_Click(object sender, RoutedEventArgs e)
+        private void BtnQueueContentMargin_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetChildMargin, txtChildMargin.Text));
-                AppendAsyncEventMessage("Queued SetChildMargin " + txtChildMargin.Text);
+                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetContentMargin, txtContentMargin.Text));
+                AppendAsyncEventMessage("Queued SetContentMargin " + txtContentMargin.Text);
             }
             catch (Exception ex)
             {
@@ -1107,33 +1107,33 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnGetChildPadding_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentPadding_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Child == null || !(scroller.Child is Control || scroller.Child is Border || scroller.Child is StackPanel))
-                txtChildPadding.Text = string.Empty;
-            else if (scroller.Child is Control)
-                txtChildPadding.Text = ((Control)(scroller.Child)).Padding.ToString();
-            else if (scroller.Child is Border)
-                txtChildPadding.Text = ((Border)(scroller.Child)).Padding.ToString();
+            if (scroller.Content == null || !(scroller.Content is Control || scroller.Content is Border || scroller.Content is StackPanel))
+                txtContentPadding.Text = string.Empty;
+            else if (scroller.Content is Control)
+                txtContentPadding.Text = ((Control)(scroller.Content)).Padding.ToString();
+            else if (scroller.Content is Border)
+                txtContentPadding.Text = ((Border)(scroller.Content)).Padding.ToString();
             else
-                txtChildPadding.Text = ((StackPanel)(scroller.Child)).Padding.ToString();
+                txtContentPadding.Text = ((StackPanel)(scroller.Content)).Padding.ToString();
         }
 
-        private void BtnSetChildPadding_Click(object sender, RoutedEventArgs e)
+        private void BtnSetContentPadding_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (scroller.Child is Control)
+                if (scroller.Content is Control)
                 {
-                    ((Control)(scroller.Child)).Padding = GetThicknessFromString(txtChildPadding.Text);
+                    ((Control)(scroller.Content)).Padding = GetThicknessFromString(txtContentPadding.Text);
                 }
-                else if (scroller.Child is Border)
+                else if (scroller.Content is Border)
                 {
-                    ((Border)(scroller.Child)).Padding = GetThicknessFromString(txtChildPadding.Text);
+                    ((Border)(scroller.Content)).Padding = GetThicknessFromString(txtContentPadding.Text);
                 }
-                else if (scroller.Child is StackPanel)
+                else if (scroller.Content is StackPanel)
                 {
-                    ((StackPanel)(scroller.Child)).Padding = GetThicknessFromString(txtChildPadding.Text);
+                    ((StackPanel)(scroller.Content)).Padding = GetThicknessFromString(txtContentPadding.Text);
                 }
             }
             catch (Exception ex)
@@ -1143,12 +1143,12 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnQueueChildPadding_Click(object sender, RoutedEventArgs e)
+        private void BtnQueueContentPadding_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetChildPadding, txtChildPadding.Text));
-                AppendAsyncEventMessage("Queued SetChildPadding " + txtChildPadding.Text);
+                lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetContentPadding, txtContentPadding.Text));
+                AppendAsyncEventMessage("Queued SetContentPadding " + txtContentPadding.Text);
             }
             catch (Exception ex)
             {
@@ -1157,36 +1157,36 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnGetChildActualWidth_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentActualWidth_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Child == null || !(scroller.Child is FrameworkElement))
-                txtChildActualWidth.Text = string.Empty;
+            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+                txtContentActualWidth.Text = string.Empty;
             else
-                txtChildActualWidth.Text = (scroller.Child as FrameworkElement).ActualWidth.ToString();
+                txtContentActualWidth.Text = (scroller.Content as FrameworkElement).ActualWidth.ToString();
         }
 
-        private void BtnGetChildActualHeight_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentActualHeight_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Child == null || !(scroller.Child is FrameworkElement))
-                txtChildActualHeight.Text = string.Empty;
+            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+                txtContentActualHeight.Text = string.Empty;
             else
-                txtChildActualHeight.Text = (scroller.Child as FrameworkElement).ActualHeight.ToString();
+                txtContentActualHeight.Text = (scroller.Content as FrameworkElement).ActualHeight.ToString();
         }
 
-        private void BtnGetChildDesiredSize_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentDesiredSize_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Child == null)
-                txtChildDesiredSize.Text = string.Empty;
+            if (scroller.Content == null)
+                txtContentDesiredSize.Text = string.Empty;
             else
-                txtChildDesiredSize.Text = scroller.Child.DesiredSize.ToString();
+                txtContentDesiredSize.Text = scroller.Content.DesiredSize.ToString();
         }
 
-        private void BtnGetChildRenderSize_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentRenderSize_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Child == null)
-                txtChildRenderSize.Text = string.Empty;
+            if (scroller.Content == null)
+                txtContentRenderSize.Text = string.Empty;
             else
-                txtChildRenderSize.Text = scroller.Child.RenderSize.ToString();
+                txtContentRenderSize.Text = scroller.Content.RenderSize.ToString();
         }
 
         private void UpdateMinZoomFactor()
@@ -1563,32 +1563,32 @@ namespace MUXControlsTestApp
 
         private float ComputeMinHorizontalPosition(float zoomFactor)
         {
-            UIElement child = scroller.Child;
+            UIElement content = scroller.Content;
 
-            if (child == null)
+            if (content == null)
             {
                 return 0;
             }
 
-            FrameworkElement childAsFE = child as FrameworkElement;
+            FrameworkElement contentAsFE = content as FrameworkElement;
 
-            if (childAsFE == null)
+            if (contentAsFE == null)
             {
                 return 0;
             }
 
-            Thickness childMargin = childAsFE.Margin;
+            Thickness contentMargin = contentAsFE.Margin;
             Visual scrollerVisual = ElementCompositionPreview.GetElementVisual(scroller);
-            double childWidth = double.IsNaN(childAsFE.Width) ? childAsFE.ActualWidth : childAsFE.Width;
+            double contentWidth = double.IsNaN(contentAsFE.Width) ? contentAsFE.ActualWidth : contentAsFE.Width;
             float minPosX = 0.0f;
-            float extentWidth = Math.Max(0.0f, (float)(childWidth + childMargin.Left + childMargin.Right));
+            float extentWidth = Math.Max(0.0f, (float)(contentWidth + contentMargin.Left + contentMargin.Right));
 
-            if (childAsFE.HorizontalAlignment == HorizontalAlignment.Center ||
-                childAsFE.HorizontalAlignment == HorizontalAlignment.Stretch)
+            if (contentAsFE.HorizontalAlignment == HorizontalAlignment.Center ||
+                contentAsFE.HorizontalAlignment == HorizontalAlignment.Stretch)
             {
                 minPosX = Math.Min(0.0f, (extentWidth * zoomFactor - scrollerVisual.Size.X) / 2.0f);
             }
-            else if (childAsFE.HorizontalAlignment == HorizontalAlignment.Right)
+            else if (contentAsFE.HorizontalAlignment == HorizontalAlignment.Right)
             {
                 minPosX = Math.Min(0.0f, extentWidth * zoomFactor - scrollerVisual.Size.X);
             }
@@ -1598,32 +1598,32 @@ namespace MUXControlsTestApp
 
         private float ComputeMinVerticalPosition(float zoomFactor)
         {
-            UIElement child = scroller.Child;
+            UIElement content = scroller.Content;
 
-            if (child == null)
+            if (content == null)
             {
                 return 0;
             }
 
-            FrameworkElement childAsFE = child as FrameworkElement;
+            FrameworkElement contentAsFE = content as FrameworkElement;
 
-            if (childAsFE == null)
+            if (contentAsFE == null)
             {
                 return 0;
             }
 
-            Thickness childMargin = childAsFE.Margin;
+            Thickness contentMargin = contentAsFE.Margin;
             Visual scrollerVisual = ElementCompositionPreview.GetElementVisual(scroller);
-            double childHeight = double.IsNaN(childAsFE.Height) ? childAsFE.ActualHeight : childAsFE.Height;
+            double contentHeight = double.IsNaN(contentAsFE.Height) ? contentAsFE.ActualHeight : contentAsFE.Height;
             float minPosY = 0.0f;
-            float extentHeight = Math.Max(0.0f, (float)(childHeight + childMargin.Top + childMargin.Bottom));
+            float extentHeight = Math.Max(0.0f, (float)(contentHeight + contentMargin.Top + contentMargin.Bottom));
 
-            if (childAsFE.VerticalAlignment == VerticalAlignment.Center ||
-                childAsFE.VerticalAlignment == VerticalAlignment.Stretch)
+            if (contentAsFE.VerticalAlignment == VerticalAlignment.Center ||
+                contentAsFE.VerticalAlignment == VerticalAlignment.Stretch)
             {
                 minPosY = Math.Min(0.0f, (extentHeight * zoomFactor - scrollerVisual.Size.Y) / 2.0f);
             }
-            else if (childAsFE.VerticalAlignment == VerticalAlignment.Bottom)
+            else if (contentAsFE.VerticalAlignment == VerticalAlignment.Bottom)
             {
                 minPosY = Math.Min(0.0f, extentHeight * zoomFactor - scrollerVisual.Size.Y);
             }
@@ -2027,15 +2027,15 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage("Queued operations cleared.");
         }
 
-        private void BtnGetChildLayoutOffsetX_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentLayoutOffsetX_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                float childLayoutOffsetX = 0.0f;
+                float contentLayoutOffsetX = 0.0f;
 
-                ScrollerTestHooks.GetChildLayoutOffsetX(scroller, out childLayoutOffsetX);
+                ScrollerTestHooks.GetContentLayoutOffsetX(scroller, out contentLayoutOffsetX);
 
-                txtChildLayoutOffsetX.Text = childLayoutOffsetX.ToString();
+                txtContentLayoutOffsetX.Text = contentLayoutOffsetX.ToString();
             }
             catch (Exception ex)
             {
@@ -2044,11 +2044,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnSetChildLayoutOffsetX_Click(object sender, RoutedEventArgs e)
+        private void BtnSetContentLayoutOffsetX_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                ScrollerTestHooks.SetChildLayoutOffsetX(scroller, Convert.ToSingle(txtChildLayoutOffsetX.Text));
+                ScrollerTestHooks.SetContentLayoutOffsetX(scroller, Convert.ToSingle(txtContentLayoutOffsetX.Text));
             }
             catch (Exception ex)
             {
@@ -2057,15 +2057,15 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnGetChildLayoutOffsetY_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentLayoutOffsetY_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                float childLayoutOffsetY = 0.0f;
+                float contentLayoutOffsetY = 0.0f;
 
-                ScrollerTestHooks.GetChildLayoutOffsetY(scroller, out childLayoutOffsetY);
+                ScrollerTestHooks.GetContentLayoutOffsetY(scroller, out contentLayoutOffsetY);
 
-                txtChildLayoutOffsetY.Text = childLayoutOffsetY.ToString();
+                txtContentLayoutOffsetY.Text = contentLayoutOffsetY.ToString();
             }
             catch (Exception ex)
             {
@@ -2074,11 +2074,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnSetChildLayoutOffsetY_Click(object sender, RoutedEventArgs e)
+        private void BtnSetContentLayoutOffsetY_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                ScrollerTestHooks.SetChildLayoutOffsetY(scroller, Convert.ToSingle(txtChildLayoutOffsetY.Text));
+                ScrollerTestHooks.SetContentLayoutOffsetY(scroller, Convert.ToSingle(txtContentLayoutOffsetY.Text));
             }
             catch (Exception ex)
             {
@@ -2114,7 +2114,7 @@ namespace MUXControlsTestApp
 
                     if (chkLogScrollerEvents.IsChecked == true)
                     {
-                        UnhookChildEffectiveViewportChanged();
+                        UnhookContentEffectiveViewportChanged();
                     }
                 }
 
@@ -2137,12 +2137,12 @@ namespace MUXControlsTestApp
                 UpdateCmbZoomMode();
                 UpdateCmbZoomChainingMode();
                 UpdateCmbInputKind();
-                UpdateCmbChildHorizontalAlignment();
-                UpdateCmbChildVerticalAlignment();
+                UpdateCmbContentHorizontalAlignment();
+                UpdateCmbContentVerticalAlignment();
                 UpdateCmbScrollerManipulationMode();
-                UpdateCmbChildManipulationMode();
+                UpdateCmbContentManipulationMode();
                 UpdateCmbBackground();
-                UpdateCmbChild();
+                UpdateCmbContent();
                 UpdateMinZoomFactor();
                 UpdateMaxZoomFactor();
 
@@ -2163,7 +2163,7 @@ namespace MUXControlsTestApp
 
                     if (chkLogScrollerEvents.IsChecked == true)
                     {
-                        HookChildEffectiveViewportChanged();
+                        HookContentEffectiveViewportChanged();
                     }
                 }
             }
@@ -2210,41 +2210,41 @@ namespace MUXControlsTestApp
                             scroller.Height = qo.DoubleValue;
                             AppendAsyncEventMessage("Unqueued SetHeight " + qo.DoubleValue);
                             break;
-                        case QueuedOperationType.SetChildWidth:
-                            if (scroller.Child is FrameworkElement)
+                        case QueuedOperationType.SetContentWidth:
+                            if (scroller.Content is FrameworkElement)
                             {
-                                ((FrameworkElement)(scroller.Child)).Width = qo.DoubleValue;
+                                ((FrameworkElement)(scroller.Content)).Width = qo.DoubleValue;
                             }
-                            AppendAsyncEventMessage("Unqueued SetChildWidth " + qo.DoubleValue);
+                            AppendAsyncEventMessage("Unqueued SetContentWidth " + qo.DoubleValue);
                             break;
-                        case QueuedOperationType.SetChildHeight:
-                            if (scroller.Child is FrameworkElement)
+                        case QueuedOperationType.SetContentHeight:
+                            if (scroller.Content is FrameworkElement)
                             {
-                                ((FrameworkElement)(scroller.Child)).Height = qo.DoubleValue;
+                                ((FrameworkElement)(scroller.Content)).Height = qo.DoubleValue;
                             }
-                            AppendAsyncEventMessage("Unqueued SetChildHeight " + qo.DoubleValue);
+                            AppendAsyncEventMessage("Unqueued SetContentHeight " + qo.DoubleValue);
                             break;
-                        case QueuedOperationType.SetChildMargin:
-                            if (scroller.Child is FrameworkElement)
+                        case QueuedOperationType.SetContentMargin:
+                            if (scroller.Content is FrameworkElement)
                             {
-                                ((FrameworkElement)(scroller.Child)).Margin = GetThicknessFromString(qo.StringValue);
+                                ((FrameworkElement)(scroller.Content)).Margin = GetThicknessFromString(qo.StringValue);
                             }
-                            AppendAsyncEventMessage("Unqueued SetChildMargin " + qo.StringValue);
+                            AppendAsyncEventMessage("Unqueued SetContentMargin " + qo.StringValue);
                             break;
-                        case QueuedOperationType.SetChildPadding:
-                            if (scroller.Child is Control)
+                        case QueuedOperationType.SetContentPadding:
+                            if (scroller.Content is Control)
                             {
-                                ((Control)(scroller.Child)).Padding = GetThicknessFromString(qo.StringValue);
+                                ((Control)(scroller.Content)).Padding = GetThicknessFromString(qo.StringValue);
                             }
-                            else if (scroller.Child is Border)
+                            else if (scroller.Content is Border)
                             {
-                                ((Border)(scroller.Child)).Padding = GetThicknessFromString(qo.StringValue);
+                                ((Border)(scroller.Content)).Padding = GetThicknessFromString(qo.StringValue);
                             }
-                            else if (scroller.Child is StackPanel)
+                            else if (scroller.Content is StackPanel)
                             {
-                                ((StackPanel)(scroller.Child)).Padding = GetThicknessFromString(qo.StringValue);
+                                ((StackPanel)(scroller.Content)).Padding = GetThicknessFromString(qo.StringValue);
                             }
-                            AppendAsyncEventMessage("Unqueued SetChildPadding " + qo.StringValue);
+                            AppendAsyncEventMessage("Unqueued SetContentPadding " + qo.StringValue);
                             break;
                     }
 

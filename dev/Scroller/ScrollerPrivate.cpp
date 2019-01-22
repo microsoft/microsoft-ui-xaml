@@ -51,12 +51,12 @@ winrt::Rect Scroller::GetRelativeViewport(
     winrt::UIElement const& child)
 {
     // The commented out code is expected to work but somehow the child.TransformToVisual(*this)
-    // transform returns unexpected values shortly after a Scroller.Child layout offset change.
-    // Bug 14999031 is tracking this issue. For now the m_childLayoutOffsetX/Y, m_zoomedHorizontalOffset,
+    // transform returns unexpected values shortly after a Scroller.Content layout offset change.
+    // Bug 14999031 is tracking this issue. For now the m_contentLayoutOffsetX/Y, m_zoomedHorizontalOffset,
     // m_zoomedVerticalOffset usage below mitigates the problem.
 
     //const winrt::GeneralTransform transform = child.TransformToVisual(*this);
-    const winrt::GeneralTransform transform = child.TransformToVisual(Child());
+    const winrt::GeneralTransform transform = child.TransformToVisual(Content());
     const winrt::Point elementOffset = transform.TransformPoint(winrt::Point{});
     const float viewportWidth = static_cast<float>(m_viewportWidth / m_zoomFactor);
     const float viewportHeight = static_cast<float>(m_viewportHeight / m_zoomFactor);
@@ -69,8 +69,8 @@ winrt::Rect Scroller::GetRelativeViewport(
 
     ComputeMinMaxPositions(m_zoomFactor, &minPosition, nullptr);
 
-    winrt::Rect result = { (minPosition.x - m_childLayoutOffsetX + static_cast<float>(m_zoomedHorizontalOffset) - elementOffset.X) / m_zoomFactor,
-        (minPosition.y - m_childLayoutOffsetY + static_cast<float>(m_zoomedVerticalOffset) - elementOffset.Y) / m_zoomFactor,
+    winrt::Rect result = { (minPosition.x - m_contentLayoutOffsetX + static_cast<float>(m_zoomedHorizontalOffset) - elementOffset.X) / m_zoomFactor,
+        (minPosition.y - m_contentLayoutOffsetY + static_cast<float>(m_zoomedVerticalOffset) - elementOffset.Y) / m_zoomFactor,
         viewportWidth, viewportHeight };
 
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, child, TypeLogging::RectToString(result).c_str());

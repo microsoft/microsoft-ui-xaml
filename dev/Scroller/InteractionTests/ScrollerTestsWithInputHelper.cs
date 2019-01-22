@@ -141,7 +141,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         Verify.IsTrue(scroller11.VerticalScrollPercent > minVerticalScrollPercent, "Verifying scroller11 VerticalScrollPercent is greater than " + minVerticalScrollPercent + "%");
                     }
 
-                    // scroller11's Child height is 1000px.
+                    // scroller11's Content height is 1000px.
                     double horizontalOffset;
                     double verticalOffset;
                     double minVerticalOffset = 1000.0 * (1.0 - scroller11.VerticalViewSize / 100.0) * minVerticalScrollPercent / 100.0;
@@ -248,7 +248,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         Verify.IsTrue(scroller51.VerticalScrollPercent > minVerticalScrollPercent, "Verifying scroller51 VerticalScrollPercent is greater than " + minVerticalScrollPercent + "%");
                     }
 
-                    // scroller51's Child size is 800x800px.
+                    // scroller51's Content size is 800x800px.
                     double horizontalOffset;
                     double verticalOffset;
                     double minHorizontalOffset = 800.0 * (1.0 - scroller51.HorizontalViewSize / 100.0) * minHorizontalScrollPercent / 100.0;
@@ -337,7 +337,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(scroller11.HorizontalScrollPercent, 0.0, "Verifying scroller11 HorizontalScrollPercent is 0%");
                 Verify.IsTrue(scroller11.VerticalScrollPercent > minVerticalScrollPercent, "Verifying scroller11 VerticalScrollPercent is greater than " + minVerticalScrollPercent + "%");
 
-                // scroller11's Child height is 1000px.
+                // scroller11's Content height is 1000px.
                 double horizontalOffset;
                 double verticalOffset;
                 double minVerticalOffset = 1000.0 * (1.0 - scroller11.VerticalViewSize / 100.0) * minVerticalScrollPercent / 100.0;

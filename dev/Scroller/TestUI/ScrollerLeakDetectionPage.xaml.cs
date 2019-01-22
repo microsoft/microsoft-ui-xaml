@@ -37,7 +37,7 @@ namespace MUXControlsTestApp
             rect.Width = 900.0;
             rect.Height = 1200.0;
             rect.Fill = new SolidColorBrush(Colors.DarkRed);
-            scroller.Child = rect;
+            scroller.Content = rect;
 
             btnCreateScroller.IsEnabled = false;
             btnAddScroller.IsEnabled = true;
@@ -68,7 +68,7 @@ namespace MUXControlsTestApp
             if (scroller == null || grid.Children.Count == 6)
                 return;
 
-            scroller.Child = null;
+            scroller.Content = null;
             scroller = null;
 
             btnDeleteScroller.IsEnabled = false;

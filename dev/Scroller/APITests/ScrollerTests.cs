@@ -72,8 +72,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const double c_defaultVerticalOffset = 0.0;
         private const double c_defaultAnchorRatio = 0.0;
 
-        private const double c_defaultUIScrollerChildWidth = 1200.0;
-        private const double c_defaultUIScrollerChildHeight = 600.0;
+        private const double c_defaultUIScrollerContentWidth = 1200.0;
+        private const double c_defaultUIScrollerContentHeight = 600.0;
         private const double c_defaultUIScrollerWidth = 300.0;
         private const double c_defaultUIScrollerHeight = 200.0;
         private const double c_defaultUIScrollControllerThickness = 44.0;
@@ -104,7 +104,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Verifying Scroller default property values");
                 Verify.IsNull(scroller.HorizontalScrollController);
                 Verify.IsNull(scroller.VerticalScrollController);
-                Verify.IsNull(scroller.Child);
+                Verify.IsNull(scroller.Content);
                 Verify.IsNotNull(scroller.ExpressionAnimationSources);
                 Verify.AreEqual(scroller.State, c_defaultState);
                 Verify.AreEqual(scroller.HorizontalScrollChainingMode, c_defaultHorizontalScrollChainingMode);
@@ -146,7 +146,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(rectangle);
 
                 Log.Comment("Setting Scroller properties to non-default values");
-                scroller.Child = rectangle;
+                scroller.Content = rectangle;
                 scroller.HorizontalScrollChainingMode = ChainingMode.Always;
                 scroller.VerticalScrollChainingMode = ChainingMode.Never;
                 scroller.HorizontalScrollRailingMode = RailingMode.Disabled;
@@ -171,7 +171,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Verifying Scroller non-default property values");
-                Verify.AreEqual(scroller.Child, rectangle);
+                Verify.AreEqual(scroller.Content, rectangle);
                 Verify.AreEqual(scroller.State, c_defaultState);
                 Verify.AreEqual(scroller.HorizontalScrollChainingMode, ChainingMode.Always);
                 Verify.AreEqual(scroller.VerticalScrollChainingMode, ChainingMode.Never);
@@ -286,15 +286,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(enableAnchorNotifications: false, enableInteractionSourcesNotifications: true))
             {
                 Scroller scroller = null;
-                Rectangle rectangleScrollerChild = null;
+                Rectangle rectangleScrollerContent = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    rectangleScrollerChild = new Rectangle();
+                    rectangleScrollerContent = new Rectangle();
                     scroller = new Scroller();
 
-                    SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                    SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
                 });
 
                 WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -372,8 +372,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Decreases the Scroller.MaxZoomFactor property and verifies the Scroller.ZoomFactor value decreases accordingly. Verifies the impact on the Scroller.Child Visual.")]
-        public void PinchChildThroughMaxZoomFactor()
+        [TestProperty("Description", "Decreases the Scroller.MaxZoomFactor property and verifies the Scroller.ZoomFactor value decreases accordingly. Verifies the impact on the Scroller.Content Visual.")]
+        public void PinchContentThroughMaxZoomFactor()
         {
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
             {
@@ -389,18 +389,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             const double newMaxZoomFactor = 0.5;
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
-            Visual visualScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
+            Visual visualScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
             Compositor compositor = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
                 SetupDefaultUI(
-                    scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                    scroller, rectangleScrollerContent, scrollerLoadedEvent);
                 compositor = Window.Current.Compositor;
             });
 
@@ -422,8 +422,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Log.Comment("Setting up spy on translation and scale facades");
 
-                    CompositionPropertySpy.StartSpyingTranslationFacade(rectangleScrollerChild, compositor, Vector3.Zero);
-                    CompositionPropertySpy.StartSpyingScaleFacade(rectangleScrollerChild, compositor, Vector3.One);
+                    CompositionPropertySpy.StartSpyingTranslationFacade(rectangleScrollerContent, compositor, Vector3.Zero);
+                    CompositionPropertySpy.StartSpyingScaleFacade(rectangleScrollerContent, compositor, Vector3.One);
                 });
             }
             else
@@ -431,11 +431,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Setting up spy property set");
-                    visualScrollerChild = ElementCompositionPreview.GetElementVisual(rectangleScrollerChild);
+                    visualScrollerContent = ElementCompositionPreview.GetElementVisual(rectangleScrollerContent);
 
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerChild, c_visualHorizontalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerChild, c_visualVerticalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerChild, c_visualScaleTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualScaleTargetedPropertyName);
                 });
             }
 
@@ -447,8 +447,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    CompositionPropertySpy.StopSpyingTranslationFacade(rectangleScrollerChild);
-                    CompositionPropertySpy.StopSpyingScaleFacade(rectangleScrollerChild);
+                    CompositionPropertySpy.StopSpyingTranslationFacade(rectangleScrollerContent);
+                    CompositionPropertySpy.StopSpyingScaleFacade(rectangleScrollerContent);
                 });
             }
             else
@@ -456,9 +456,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Cancelling spying");
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerChild, c_visualHorizontalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerChild, c_visualVerticalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerChild, c_visualScaleTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualScaleTargetedPropertyName);
                 });
             }
 
@@ -472,7 +472,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scroller.MaxZoomFactor, newMaxZoomFactor);
             });
 
-            Log.Comment("Validating final transform of Scroller.Child's Visual after MaxZoomFactor change");
+            Log.Comment("Validating final transform of Scroller.Content's Visual after MaxZoomFactor change");
             CompositionGetValueStatus status;
             float offset;
             float zoomFactor;
@@ -482,14 +482,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Vector3 translation;
-                    status = CompositionPropertySpy.TryGetTranslationFacade(rectangleScrollerChild, out translation);
+                    status = CompositionPropertySpy.TryGetTranslationFacade(rectangleScrollerContent, out translation);
                     Log.Comment("status={0}, horizontal offset={1}", status, translation.X);
                     Log.Comment("status={0}, vertical offset={1}", status, translation.Y);
                     Verify.AreEqual(translation.X, c_defaultHorizontalOffset);
                     Verify.AreEqual(translation.Y, c_defaultVerticalOffset);
 
                     Vector3 scale;
-                    status = CompositionPropertySpy.TryGetScaleFacade(rectangleScrollerChild, out scale);
+                    status = CompositionPropertySpy.TryGetScaleFacade(rectangleScrollerContent, out scale);
                     Log.Comment("status={0}, vertical offset={1}", status, scale.X);
                     Verify.AreEqual(scale.X, newMaxZoomFactor);
                 });
@@ -498,15 +498,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerChild, c_visualHorizontalOffsetTargetedPropertyName, out offset);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName, out offset);
                     Log.Comment("status={0}, horizontal offset={1}", status, offset);
                     Verify.AreEqual(offset, c_defaultHorizontalOffset);
 
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerChild, c_visualVerticalOffsetTargetedPropertyName, out offset);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName, out offset);
                     Log.Comment("status={0}, vertical offset={1}", status, offset);
                     Verify.AreEqual(offset, c_defaultVerticalOffset);
 
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerChild, c_visualScaleTargetedPropertyName, out zoomFactor);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualScaleTargetedPropertyName, out zoomFactor);
                     Log.Comment("status={0}, zoomFactor={1}", status, zoomFactor);
                     Verify.AreEqual(zoomFactor, newMaxZoomFactor);
                 });
@@ -514,8 +514,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Increases the Scroller.MinZoomFactor property and verifies the Scroller.ZoomFactor value increases accordingly. Verifies the impact on the Scroller.Child Visual.")]
-        public void StretchChildThroughMinZoomFactor()
+        [TestProperty("Description", "Increases the Scroller.MinZoomFactor property and verifies the Scroller.ZoomFactor value increases accordingly. Verifies the impact on the Scroller.Content Visual.")]
+        public void StretchContentThroughMinZoomFactor()
         {
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
             {
@@ -531,18 +531,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             const double newMinZoomFactor = 2.0;
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
-            Visual visualScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
+            Visual visualScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
             Compositor compositor = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
                 SetupDefaultUI(
-                    scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                    scroller, rectangleScrollerContent, scrollerLoadedEvent);
                 compositor = Window.Current.Compositor;
             });
 
@@ -564,8 +564,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Log.Comment("Setting up spy on translation and scale facades");
 
-                    CompositionPropertySpy.StartSpyingTranslationFacade(rectangleScrollerChild, compositor, Vector3.Zero);
-                    CompositionPropertySpy.StartSpyingScaleFacade(rectangleScrollerChild, compositor, Vector3.One);
+                    CompositionPropertySpy.StartSpyingTranslationFacade(rectangleScrollerContent, compositor, Vector3.Zero);
+                    CompositionPropertySpy.StartSpyingScaleFacade(rectangleScrollerContent, compositor, Vector3.One);
                 });
             }
             else
@@ -573,11 +573,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Setting up spy property set");
-                    visualScrollerChild = ElementCompositionPreview.GetElementVisual(rectangleScrollerChild);
+                    visualScrollerContent = ElementCompositionPreview.GetElementVisual(rectangleScrollerContent);
 
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerChild, c_visualHorizontalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerChild, c_visualVerticalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerChild, c_visualScaleTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualScaleTargetedPropertyName);
                 });
             }
 
@@ -589,17 +589,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    CompositionPropertySpy.StopSpyingTranslationFacade(rectangleScrollerChild);
-                    CompositionPropertySpy.StopSpyingScaleFacade(rectangleScrollerChild);
+                    CompositionPropertySpy.StopSpyingTranslationFacade(rectangleScrollerContent);
+                    CompositionPropertySpy.StopSpyingScaleFacade(rectangleScrollerContent);
                 });
             }
             else
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerChild, c_visualHorizontalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerChild, c_visualVerticalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerChild, c_visualScaleTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualScaleTargetedPropertyName);
                 });
             }
 
@@ -613,7 +613,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scroller.MaxZoomFactor, c_defaultMaxZoomFactor);
             });
             
-            Log.Comment("Validating final transform of Scroller.Child's Visual after MinZoomFactor change");
+            Log.Comment("Validating final transform of Scroller.Content's Visual after MinZoomFactor change");
             CompositionGetValueStatus status;
             float offset;
             float zoomFactor;
@@ -623,14 +623,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Vector3 translation;
-                    status = CompositionPropertySpy.TryGetTranslationFacade(rectangleScrollerChild, out translation);
+                    status = CompositionPropertySpy.TryGetTranslationFacade(rectangleScrollerContent, out translation);
                     Log.Comment("status={0}, horizontal offset={1}", status, translation.X);
                     Log.Comment("status={0}, vertical offset={1}", status, translation.Y);
                     Verify.AreEqual(translation.X, c_defaultHorizontalOffset);
                     Verify.AreEqual(translation.Y, c_defaultVerticalOffset);
 
                     Vector3 scale;
-                    status = CompositionPropertySpy.TryGetScaleFacade(rectangleScrollerChild, out scale);
+                    status = CompositionPropertySpy.TryGetScaleFacade(rectangleScrollerContent, out scale);
                     Log.Comment("status={0}, vertical offset={1}", status, scale.X);
                     Verify.AreEqual(scale.X, newMinZoomFactor);
                 });
@@ -639,15 +639,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerChild, c_visualHorizontalOffsetTargetedPropertyName, out offset);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName, out offset);
                     Log.Comment("status={0}, horizontal offset={1}", status, offset);
                     Verify.AreEqual(offset, c_defaultHorizontalOffset);
 
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerChild, c_visualVerticalOffsetTargetedPropertyName, out offset);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName, out offset);
                     Log.Comment("status={0}, vertical offset={1}", status, offset);
                     Verify.AreEqual(offset, c_defaultVerticalOffset);
 
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerChild, c_visualScaleTargetedPropertyName, out zoomFactor);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualScaleTargetedPropertyName, out zoomFactor);
                     Log.Comment("status={0}, zoomFactor={1}", status, zoomFactor);
                     Verify.AreEqual(zoomFactor, newMinZoomFactor);
                 });
@@ -659,16 +659,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public void ReadExpressionAnimationSources()
         {
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
                 SetupDefaultUI(
-                    scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                    scroller, rectangleScrollerContent, scrollerLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -746,8 +746,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Validating final extent");
                 status = scroller.ExpressionAnimationSources.TryGetVector2(c_expressionAnimationSourcesExtentPropertyName, out extent);
                 Log.Comment("status={0}, extent={1}", status, extent);
-                Verify.AreEqual(extent.X, c_defaultUIScrollerChildWidth);
-                Verify.AreEqual(extent.Y, c_defaultUIScrollerChildHeight);
+                Verify.AreEqual(extent.X, c_defaultUIScrollerContentWidth);
+                Verify.AreEqual(extent.Y, c_defaultUIScrollerContentHeight);
 
                 Log.Comment("Validating final viewport");
                 status = scroller.ExpressionAnimationSources.TryGetVector2(c_expressionAnimationSourcesViewportPropertyName, out viewport);
@@ -813,8 +813,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Listens to the Scroller.Child.EffectiveViewportChanged event and expects it to be raised while changing offsets.")]
-        public void ListenToChildEffectiveViewportChanged()
+        [TestProperty("Description", "Listens to the Scroller.Content.EffectiveViewportChanged event and expects it to be raised while changing offsets.")]
+        public void ListenToContentEffectiveViewportChanged()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
@@ -823,20 +823,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
             int effectiveViewportChangedCount = 0;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
-                SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
 
-                rectangleScrollerChild.EffectiveViewportChanged += (FrameworkElement sender, EffectiveViewportChangedEventArgs args) =>
+                rectangleScrollerContent.EffectiveViewportChanged += (FrameworkElement sender, EffectiveViewportChangedEventArgs args) =>
                 {
-                    Log.Comment("Scroller.Child.EffectiveViewportChanged: BringIntoViewDistance=" +
+                    Log.Comment("Scroller.Content.EffectiveViewportChanged: BringIntoViewDistance=" +
                         args.BringIntoViewDistanceX + "," + args.BringIntoViewDistanceY + ", EffectiveViewport=" +
                         args.EffectiveViewport.ToString() + ", MaxViewport=" + args.MaxViewport.ToString());
                     effectiveViewportChangedCount++;
@@ -863,13 +863,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void SetupDefaultUI(
             Scroller scroller,
-            Rectangle rectangleScrollerChild,
+            Rectangle rectangleScrollerContent,
             AutoResetEvent scrollerLoadedEvent,
             bool setAsContentRoot = true)
         {
-            Log.Comment("Setting up default UI with Scroller" + (rectangleScrollerChild == null ? "" : " and Rectangle"));
+            Log.Comment("Setting up default UI with Scroller" + (rectangleScrollerContent == null ? "" : " and Rectangle"));
 
-            if (rectangleScrollerChild != null)
+            if (rectangleScrollerContent != null)
             {
                 LinearGradientBrush twoColorLGB = new LinearGradientBrush() { StartPoint = new Point(0, 0), EndPoint = new Point(1, 1) };
 
@@ -879,17 +879,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 GradientStop orangeGS = new GradientStop() { Color = Colors.Orange, Offset = 1.0 };
                 twoColorLGB.GradientStops.Add(orangeGS);
 
-                rectangleScrollerChild.Width = c_defaultUIScrollerChildWidth;
-                rectangleScrollerChild.Height = c_defaultUIScrollerChildHeight;
-                rectangleScrollerChild.Fill = twoColorLGB;
+                rectangleScrollerContent.Width = c_defaultUIScrollerContentWidth;
+                rectangleScrollerContent.Height = c_defaultUIScrollerContentHeight;
+                rectangleScrollerContent.Fill = twoColorLGB;
             }
 
             Verify.IsNotNull(scroller);
             scroller.Width = c_defaultUIScrollerWidth;
             scroller.Height = c_defaultUIScrollerHeight;
-            if (rectangleScrollerChild != null)
+            if (rectangleScrollerContent != null)
             {
-                scroller.Child = rectangleScrollerChild;
+                scroller.Content = rectangleScrollerContent;
             }
 
             if (scrollerLoadedEvent != null)
@@ -919,19 +919,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             horizontalOffset = verticalOffset = 0.0f;
             zoomFactor = 0.0f;
             
-            Visual visualScrollerChild = null;
+            Visual visualScrollerContent = null;
 
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
             {
                 RunOnUIThread.Execute(() =>
                 {
                     Verify.IsNotNull(scroller);
-                    Verify.IsNotNull(scroller.Child);
+                    Verify.IsNotNull(scroller.Content);
 
                     Log.Comment("Setting up spying on facades");
 
-                    CompositionPropertySpy.StartSpyingTranslationFacade(scroller.Child, compositor, Vector3.Zero);
-                    CompositionPropertySpy.StartSpyingScaleFacade(scroller.Child, compositor, Vector3.One);
+                    CompositionPropertySpy.StartSpyingTranslationFacade(scroller.Content, compositor, Vector3.Zero);
+                    CompositionPropertySpy.StartSpyingScaleFacade(scroller.Content, compositor, Vector3.One);
                 });
             }
             else
@@ -939,13 +939,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Verify.IsNotNull(scroller);
-                    Verify.IsNotNull(scroller.Child);
+                    Verify.IsNotNull(scroller.Content);
 
                     Log.Comment("Setting up spy property set");
-                    visualScrollerChild = ElementCompositionPreview.GetElementVisual(scroller.Child);
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerChild, c_visualHorizontalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerChild, c_visualVerticalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerChild, c_visualScaleTargetedPropertyName);
+                    visualScrollerContent = ElementCompositionPreview.GetElementVisual(scroller.Content);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualScaleTargetedPropertyName);
                 });
             }
 
@@ -957,17 +957,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    CompositionPropertySpy.StopSpyingTranslationFacade(scroller.Child);
-                    CompositionPropertySpy.StopSpyingScaleFacade(scroller.Child);
+                    CompositionPropertySpy.StopSpyingTranslationFacade(scroller.Content);
+                    CompositionPropertySpy.StopSpyingScaleFacade(scroller.Content);
                 });
             }
             else
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerChild, c_visualHorizontalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerChild, c_visualVerticalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerChild, c_visualScaleTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualScaleTargetedPropertyName);
                 });
             }
 
@@ -975,7 +975,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             CompositionPropertySpy.SynchronouslyTickUIThread(10);
 
 
-            Log.Comment("Reading Scroller.Child's Visual Transform");
+            Log.Comment("Reading Scroller.Content's Visual Transform");
             CompositionGetValueStatus status;
 
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
@@ -983,14 +983,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Vector3 translation = Vector3.Zero;
-                    status = CompositionPropertySpy.TryGetTranslationFacade(scroller.Child, out translation);
+                    status = CompositionPropertySpy.TryGetTranslationFacade(scroller.Content, out translation);
                     Log.Comment("status={0}, horizontal offset={1}", status, translation.X);
                     Log.Comment("status={0}, vertical offset={1}", status, translation.Y);
                     horizontalOffsetTmp = translation.X;
                     verticalOffsetTmp = translation.Y;
 
                     Vector3 scale = Vector3.One;
-                    status = CompositionPropertySpy.TryGetScaleFacade(scroller.Child, out scale);
+                    status = CompositionPropertySpy.TryGetScaleFacade(scroller.Content, out scale);
                     Log.Comment("status={0}, zoomFactor={1}", status, zoomFactorTmp);
                     zoomFactorTmp = scale.X;
                 });
@@ -999,13 +999,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerChild, c_visualHorizontalOffsetTargetedPropertyName, out horizontalOffsetTmp);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName, out horizontalOffsetTmp);
                     Log.Comment("status={0}, horizontal offset={1}", status, horizontalOffsetTmp);
 
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerChild, c_visualVerticalOffsetTargetedPropertyName, out verticalOffsetTmp);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName, out verticalOffsetTmp);
                     Log.Comment("status={0}, vertical offset={1}", status, verticalOffsetTmp);
 
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerChild, c_visualScaleTargetedPropertyName, out zoomFactorTmp);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualScaleTargetedPropertyName, out zoomFactorTmp);
                     Log.Comment("status={0}, zoomFactor={1}", status, zoomFactorTmp);
                 });
             }
