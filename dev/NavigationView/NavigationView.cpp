@@ -280,7 +280,7 @@ void NavigationView::OnApplyTemplate()
         auto visual = winrt::ElementCompositionPreview::GetElementVisual(topNavOverflowButton);
         CreateAndAttachHeaderAnimation(visual);
 
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
         if (winrt::IFlyoutBase6 topNavOverflowButtonAsFlyoutBase6 = topNavOverflowButton.Flyout())
         {
             topNavOverflowButtonAsFlyoutBase6.ShouldConstrainToRootBounds(false);

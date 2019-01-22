@@ -321,7 +321,7 @@ namespace winrt
     using FlyoutShowOptions = winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutShowOptions;
     using IFlyoutBase3 = winrt::Windows::UI::Xaml::Controls::Primitives::IFlyoutBase3;
     using IFlyoutBase5 = winrt::Windows::UI::Xaml::Controls::Primitives::IFlyoutBase5;
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
     using IFlyoutBase6 = winrt::Windows::UI::Xaml::Controls::Primitives::IFlyoutBase6;
 #endif
     using ILayoutInformationStatics = winrt::Windows::UI::Xaml::Controls::Primitives::ILayoutInformationStatics;
