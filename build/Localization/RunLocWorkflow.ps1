@@ -4,10 +4,8 @@ param(
     [switch]$CopyBackOnly
 )
 
-$vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-
-$rootPath = & $vswhere -Latest -requires Microsoft.Component.MSBuild -property InstallationPath
-$MSBuildPath="$rootPath\MSBuild\15.0\Bin\MSBuild.exe"
+$VSDIR=(Get-ItemProperty "HKLM:\software\wow6432node\Microsoft\VisualStudio\SxS\vs7" -Name "15.0").'15.0';
+$MSBuildPath=$VSDIR + '\MSBuild\15.0\Bin\MSBuild.exe'
 
 if (-not (Test-Path $MSBuildPath))
 {

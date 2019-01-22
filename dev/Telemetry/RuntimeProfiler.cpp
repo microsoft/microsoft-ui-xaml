@@ -178,7 +178,7 @@ namespace RuntimeProfiler {
 
     //  Yes, we're declaring this as a global, the ctor/dtor are implemented
     //  very carefully and this will not create issues with DllMain().
-    DEFINE_PROFILEGROUP(gGroupClasses, PG_Class, ProfId_Size + ProfMemberId_Size);
+    DEFINE_PROFILEGROUP(gGroupClasses, PG_Class, ProfId_Size);
 
     struct ProfileGroupInfo
     {
