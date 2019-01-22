@@ -9,7 +9,8 @@ class TreeViewListAutomationPeer :
     public ReferenceTracker<
         TreeViewListAutomationPeer,
         winrt::implementation::TreeViewListAutomationPeerT,
-        winrt::IDropTargetProvider>
+        winrt::IDropTargetProvider,
+        winrt::ISelectionProvider>
 {
 public:
     TreeViewListAutomationPeer(winrt::TreeViewList const& owner);
@@ -21,7 +22,15 @@ public:
     // IItemsControlAutomationPeerOverrides2
     winrt::ItemAutomationPeer OnCreateItemAutomationPeer(winrt::IInspectable const& item);
 
-    //DropTargetProvider methods
+    // IDropTargetProvider
     winrt::hstring DropEffect();
     winrt::com_array<winrt::hstring> DropEffects();
+
+    // ISelectionProvider
+    bool CanSelectMultiple();
+    bool IsSelectionRequried();
+    winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProviderSimple> GetSelection();
+
+private:
+    bool IsMultiselect();
 };
