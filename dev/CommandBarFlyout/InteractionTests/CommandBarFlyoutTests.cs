@@ -241,20 +241,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var flowsToCollection = (AutomationElementCollection)moreButtonElement.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_FlowsToPropertyId));
 
                 Verify.AreEqual(1, flowsToCollection.Count);
-
-                foreach (object obj in flowsToCollection)
-                {
-                    Verify.AreEqual(undoButtonElement, obj);
-                }
+                Verify.AreEqual(undoButtonElement, flowsToCollection[0]);
 
                 var flowsFromCollection = (AutomationElementCollection)undoButtonElement.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_FlowsFromPropertyId));
 
                 Verify.AreEqual(1, flowsFromCollection.Count);
-
-                foreach (object obj in flowsFromCollection)
-                {
-                    Verify.AreEqual(moreButtonElement, obj);
-                }
+                Verify.AreEqual(moreButtonElement, flowsFromCollection[0]);
 
                 Log.Comment("Tapping on a button to hide the CommandBarFlyout.");
                 InputHelper.Tap(showCommandBarFlyoutButton);
