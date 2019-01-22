@@ -61,7 +61,7 @@ bool TreeViewListAutomationPeer::IsSelectionRequried()
 winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProviderSimple> TreeViewListAutomationPeer::GetSelection()
 {
     // The selected items might be collapsed, virtualized, so getting an accurate list of selected items is not possible.
-    return winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProviderSimple>();
+    return {};
 }
 
 bool TreeViewListAutomationPeer::IsMultiselect()
