@@ -37,7 +37,7 @@ using InteractionState = Microsoft.UI.Xaml.Controls.InteractionState;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
-using ScrollerZoomMode = Microsoft.UI.Xaml.Controls.ScrollerZoomMode;
+using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 #endif
@@ -440,7 +440,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     parallaxView, rectanglePVChild, scrollViewer, rectangleSVContent,
                     parallaxViewLoadedEvent, scrollViewerLoadedEvent);
 
-                scrollViewer.ZoomMode = ZoomMode.Enabled;
+                scrollViewer.ZoomMode = Windows.UI.Xaml.Controls.ZoomMode.Enabled;
             });
 
             Log.Comment("Waiting for Loaded events");
@@ -1433,7 +1433,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             scrollViewer.Height = c_defaultUIScrollViewerHeight;
             scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
             scrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-            scrollViewer.ZoomMode = ZoomMode.Disabled;
+            scrollViewer.ZoomMode = Windows.UI.Xaml.Controls.ZoomMode.Disabled;
             scrollViewer.Content = rectangleSVContent;
 
             Verify.IsNotNull(rectanglePVChild);
@@ -1506,7 +1506,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             scroller.Width = c_defaultUIScrollerWidth;
             scroller.Height = c_defaultUIScrollerHeight;
-            scroller.ZoomMode = ScrollerZoomMode.Disabled;
+            scroller.ZoomMode = ZoomMode.Disabled;
             scroller.Content = rectangleScrollerContent;
 
             Verify.IsNotNull(rectanglePVChild);
@@ -1573,7 +1573,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             scroller.Width = c_defaultUIScrollerWidth;
             scroller.Height = c_defaultUIScrollerHeight;
-            scroller.ZoomMode = ScrollerZoomMode.Disabled;
+            scroller.ZoomMode = ZoomMode.Disabled;
 
             Grid gridScrollerContent = new Grid();
             scroller.Content = gridScrollerContent;
@@ -1668,7 +1668,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             scrollViewer.Height = c_defaultUIScrollViewerHeight;
             scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
             scrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-            scrollViewer.ZoomMode = ZoomMode.Disabled;
+            scrollViewer.ZoomMode = Windows.UI.Xaml.Controls.ZoomMode.Disabled;
             scrollViewer.Content = stackPanelSVContent;
 
             if (parallaxViewLoadedEvent != null)

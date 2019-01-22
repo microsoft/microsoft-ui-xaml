@@ -9,11 +9,11 @@ class ScrollViewerProperties
 public:
     ScrollViewerProperties();
 
-    void ComputedHorizontalScrollMode(winrt::ScrollerScrollMode const& value);
-    winrt::ScrollerScrollMode ComputedHorizontalScrollMode();
+    void ComputedHorizontalScrollMode(winrt::ScrollMode const& value);
+    winrt::ScrollMode ComputedHorizontalScrollMode();
 
-    void ComputedVerticalScrollMode(winrt::ScrollerScrollMode const& value);
-    winrt::ScrollerScrollMode ComputedVerticalScrollMode();
+    void ComputedVerticalScrollMode(winrt::ScrollMode const& value);
+    winrt::ScrollMode ComputedVerticalScrollMode();
 
     void Content(winrt::UIElement const& value);
     winrt::UIElement Content();
@@ -24,20 +24,20 @@ public:
     void HorizontalScrollBarVisibility(winrt::ScrollBarVisibility const& value);
     winrt::ScrollBarVisibility HorizontalScrollBarVisibility();
 
-    void HorizontalScrollChainingMode(winrt::ScrollerChainingMode const& value);
-    winrt::ScrollerChainingMode HorizontalScrollChainingMode();
+    void HorizontalScrollChainingMode(winrt::ChainingMode const& value);
+    winrt::ChainingMode HorizontalScrollChainingMode();
 
     void HorizontalScrollController(winrt::IScrollController const& value);
     winrt::IScrollController HorizontalScrollController();
 
-    void HorizontalScrollMode(winrt::ScrollerScrollMode const& value);
-    winrt::ScrollerScrollMode HorizontalScrollMode();
+    void HorizontalScrollMode(winrt::ScrollMode const& value);
+    winrt::ScrollMode HorizontalScrollMode();
 
-    void HorizontalScrollRailingMode(winrt::ScrollerRailingMode const& value);
-    winrt::ScrollerRailingMode HorizontalScrollRailingMode();
+    void HorizontalScrollRailingMode(winrt::RailingMode const& value);
+    winrt::RailingMode HorizontalScrollRailingMode();
 
-    void InputKind(winrt::ScrollerInputKind const& value);
-    winrt::ScrollerInputKind InputKind();
+    void InputKind(winrt::InputKind const& value);
+    winrt::InputKind InputKind();
 
     void IsAnchoredAtHorizontalExtent(bool value);
     bool IsAnchoredAtHorizontalExtent();
@@ -63,23 +63,23 @@ public:
     void VerticalScrollBarVisibility(winrt::ScrollBarVisibility const& value);
     winrt::ScrollBarVisibility VerticalScrollBarVisibility();
 
-    void VerticalScrollChainingMode(winrt::ScrollerChainingMode const& value);
-    winrt::ScrollerChainingMode VerticalScrollChainingMode();
+    void VerticalScrollChainingMode(winrt::ChainingMode const& value);
+    winrt::ChainingMode VerticalScrollChainingMode();
 
     void VerticalScrollController(winrt::IScrollController const& value);
     winrt::IScrollController VerticalScrollController();
 
-    void VerticalScrollMode(winrt::ScrollerScrollMode const& value);
-    winrt::ScrollerScrollMode VerticalScrollMode();
+    void VerticalScrollMode(winrt::ScrollMode const& value);
+    winrt::ScrollMode VerticalScrollMode();
 
-    void VerticalScrollRailingMode(winrt::ScrollerRailingMode const& value);
-    winrt::ScrollerRailingMode VerticalScrollRailingMode();
+    void VerticalScrollRailingMode(winrt::RailingMode const& value);
+    winrt::RailingMode VerticalScrollRailingMode();
 
-    void ZoomChainingMode(winrt::ScrollerChainingMode const& value);
-    winrt::ScrollerChainingMode ZoomChainingMode();
+    void ZoomChainingMode(winrt::ChainingMode const& value);
+    winrt::ChainingMode ZoomChainingMode();
 
-    void ZoomMode(winrt::ScrollerZoomMode const& value);
-    winrt::ScrollerZoomMode ZoomMode();
+    void ZoomMode(winrt::ZoomMode const& value);
+    winrt::ZoomMode ZoomMode();
 
     static winrt::DependencyProperty ComputedHorizontalScrollModeProperty() { return s_ComputedHorizontalScrollModeProperty; }
     static winrt::DependencyProperty ComputedVerticalScrollModeProperty() { return s_ComputedVerticalScrollModeProperty; }

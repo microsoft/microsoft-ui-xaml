@@ -9,7 +9,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
-using ScrollerScrollMode = Microsoft.UI.Xaml.Controls.ScrollerScrollMode;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using ScrollerViewChangeResult = Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerOffsetChangeRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeRequestedEventArgs;
@@ -221,7 +221,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                scrollBar2.ScrollMode = (ScrollerScrollMode)cmbScrollMode.SelectedIndex;
+                scrollBar2.ScrollMode = (ScrollMode)cmbScrollMode.SelectedIndex;
             }
             catch (Exception ex)
             {

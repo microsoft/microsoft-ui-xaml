@@ -103,22 +103,22 @@ winrt::InteractionState ScrollViewer::State()
     return winrt::InteractionState::Idle;
 }
 
-winrt::ScrollerInputKind ScrollViewer::InputKind()
+winrt::InputKind ScrollViewer::InputKind()
 {
     // Workaround for Bug 17377013: XamlCompiler codegen for Enum CreateFromString always returns boxed int which is wrong for [flags] enums (should be uint)
     // Check if the boxed InputKind is an IReference<int> first in which case we unbox as int.
     auto boxedKind = GetValue(s_InputKindProperty);
     if (auto boxedInt = boxedKind.try_as<winrt::IReference<int32_t>>())
     {
-        return winrt::ScrollerInputKind{ static_cast<uint32_t>(unbox_value<int32_t>(boxedInt)) };
+        return winrt::InputKind{ static_cast<uint32_t>(unbox_value<int32_t>(boxedInt)) };
     }
 
     return auto_unbox(boxedKind);
 }
 
-void ScrollViewer::InputKind(winrt::ScrollerInputKind const& value)
+void ScrollViewer::InputKind(winrt::InputKind const& value)
 {
-    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::ScrollerInputKindToString(value).c_str());
+    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::InputKindToString(value).c_str());
     SetValue(s_InputKindProperty, box_value(value));
 }
 
@@ -1161,7 +1161,7 @@ void ScrollViewer::UpdateScrollControllersVisibility(
                 unbox_value<winrt::ScrollBarVisibility>(GetValue(s_HorizontalScrollBarVisibilityProperty));
 
             if (scrollBarVisibility == winrt::ScrollBarVisibility::Auto &&
-                ComputedHorizontalScrollMode() == winrt::ScrollerScrollMode::Enabled)
+                ComputedHorizontalScrollMode() == winrt::ScrollMode::Enabled)
             {
                 isHorizontalScrollControllerVisible = true;
             }
@@ -1189,7 +1189,7 @@ void ScrollViewer::UpdateScrollControllersVisibility(
                 unbox_value<winrt::ScrollBarVisibility>(GetValue(s_VerticalScrollBarVisibilityProperty));
 
             if (scrollBarVisibility == winrt::ScrollBarVisibility::Auto &&
-                ComputedVerticalScrollMode() == winrt::ScrollerScrollMode::Enabled)
+                ComputedVerticalScrollMode() == winrt::ScrollMode::Enabled)
             {
                 isVerticalScrollControllerVisible = true;
             }
@@ -1592,7 +1592,7 @@ bool ScrollViewer::DoScrollForKey(winrt::VirtualKey key, double scrollProportion
     else if (key == winrt::VirtualKey::Home)
     {
         bool canScrollUp = CanScrollUp();
-        if (canScrollUp || (ComputedVerticalScrollMode() == winrt::ScrollerScrollMode::Disabled && CanScrollLeft()))
+        if (canScrollUp || (ComputedVerticalScrollMode() == winrt::ScrollMode::Disabled && CanScrollLeft()))
         {
             isScrollTriggered = true;
             auto horizontalOffset = canScrollUp ? scroller.HorizontalOffset() : 0.0;
@@ -1610,7 +1610,7 @@ bool ScrollViewer::DoScrollForKey(winrt::VirtualKey key, double scrollProportion
     else if (key == winrt::VirtualKey::End)
     {
         bool canScrollDown = CanScrollDown();
-        if (canScrollDown || (ComputedVerticalScrollMode() == winrt::ScrollerScrollMode::Disabled && CanScrollRight()))
+        if (canScrollDown || (ComputedVerticalScrollMode() == winrt::ScrollMode::Disabled && CanScrollRight()))
         {
             isScrollTriggered = true;
             auto zoomedExtent = (canScrollDown ? scroller.ExtentHeight() : scroller.ExtentWidth()) * scroller.ZoomFactor();
@@ -1732,7 +1732,7 @@ bool ScrollViewer::CanScrollVerticallyInDirection(bool inPositiveDirection)
     if (m_scroller)
     {
         auto scroller = m_scroller.get().as<winrt::Scroller>();
-        if (ComputedVerticalScrollMode() == winrt::ScrollerScrollMode::Enabled)
+        if (ComputedVerticalScrollMode() == winrt::ScrollMode::Enabled)
         {
             auto zoomedExtentHeight = scroller.ExtentHeight() * scroller.ZoomFactor();
             auto viewportHeight = scroller.ActualHeight();
@@ -1772,7 +1772,7 @@ bool ScrollViewer::CanScrollHorizontallyInDirection(bool inPositiveDirection)
     if (m_scroller)
     {
         auto scroller = m_scroller.get().as<winrt::Scroller>();
-        if (ComputedHorizontalScrollMode() == winrt::ScrollerScrollMode::Enabled)
+        if (ComputedHorizontalScrollMode() == winrt::ScrollMode::Enabled)
         {
             auto zoomedExtentWidth = scroller.ExtentWidth() * scroller.ZoomFactor();
             auto viewportWidth = scroller.ActualWidth();

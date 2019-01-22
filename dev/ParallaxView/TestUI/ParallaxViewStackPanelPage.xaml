@@ -93,8 +93,7 @@
 
         <StackPanel Grid.Column="3">
             <TextBlock Text="Parallaxing children of a StackPanel horizontally inside a Scroller" Margin="10"/>
-            <muxprimitives:Scroller x:Name="scrollerH" Width="400" Height="220" Margin="10" Background="Beige"
-                VerticalAlignment="Top" HorizontalScrollMode="Auto">
+            <muxprimitives:Scroller x:Name="scrollerH" Width="400" Height="220" Margin="10" Background="Beige" VerticalAlignment="Top">
                 <StackPanel Orientation="Horizontal">
                     <muxcontrols:ParallaxView Width="150" Height="200" Margin="10"
                         Source="{x:Bind scrollerH}" HorizontalShift="50">

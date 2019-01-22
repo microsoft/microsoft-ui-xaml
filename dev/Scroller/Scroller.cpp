@@ -348,20 +348,20 @@ void Scroller::VerticalScrollController(winrt::IScrollController const& value)
 }
 
 
-winrt::ScrollerInputKind Scroller::InputKind()
+winrt::InputKind Scroller::InputKind()
 {
     // Workaround for Bug 17377013: XamlCompiler codegen for Enum CreateFromString always returns boxed int which is wrong for [flags] enums (should be uint)
     // Check if the boxed InputKind is an IReference<int> first in which case we unbox as int.
     auto boxedKind = GetValue(s_InputKindProperty);
     if (auto boxedInt = boxedKind.try_as<winrt::IReference<int32_t>>())
     {
-        return winrt::ScrollerInputKind{ static_cast<uint32_t>(unbox_value<int32_t>(boxedInt)) };
+        return winrt::InputKind{ static_cast<uint32_t>(unbox_value<int32_t>(boxedInt)) };
     }
 
     return auto_unbox(boxedKind);
 }
 
-void Scroller::InputKind(winrt::ScrollerInputKind const& value)
+void Scroller::InputKind(winrt::InputKind const& value)
 {
     SetValue(s_InputKindProperty, box_value(value));
 }
@@ -1961,7 +1961,7 @@ void Scroller::SetupScrollControllerVisualInterationSource(
         }
 
         winrt::Orientation orientation;
-        winrt::ScrollerRailingMode railingMode;
+        winrt::RailingMode railingMode;
 
         // Setup the VisualInteractionSource instance.
         if (dimension == ScrollerDimension::HorizontalScroll)
@@ -1972,12 +1972,12 @@ void Scroller::SetupScrollControllerVisualInterationSource(
             if (orientation == winrt::Orientation::Horizontal)
             {
                 m_horizontalScrollControllerVisualInteractionSource.PositionXSourceMode(winrt::InteractionSourceMode::EnabledWithoutInertia);
-                m_horizontalScrollControllerVisualInteractionSource.IsPositionXRailsEnabled(railingMode == winrt::ScrollerRailingMode::Enabled);
+                m_horizontalScrollControllerVisualInteractionSource.IsPositionXRailsEnabled(railingMode == winrt::RailingMode::Enabled);
             }
             else
             {
                 m_horizontalScrollControllerVisualInteractionSource.PositionYSourceMode(winrt::InteractionSourceMode::EnabledWithoutInertia);
-                m_horizontalScrollControllerVisualInteractionSource.IsPositionYRailsEnabled(railingMode == winrt::ScrollerRailingMode::Enabled);
+                m_horizontalScrollControllerVisualInteractionSource.IsPositionYRailsEnabled(railingMode == winrt::RailingMode::Enabled);
             }
         }
         else
@@ -1988,12 +1988,12 @@ void Scroller::SetupScrollControllerVisualInterationSource(
             if (orientation == winrt::Orientation::Horizontal)
             {
                 m_verticalScrollControllerVisualInteractionSource.PositionXSourceMode(winrt::InteractionSourceMode::EnabledWithoutInertia);
-                m_verticalScrollControllerVisualInteractionSource.IsPositionXRailsEnabled(railingMode == winrt::ScrollerRailingMode::Enabled);
+                m_verticalScrollControllerVisualInteractionSource.IsPositionXRailsEnabled(railingMode == winrt::RailingMode::Enabled);
             }
             else
             {
                 m_verticalScrollControllerVisualInteractionSource.PositionYSourceMode(winrt::InteractionSourceMode::EnabledWithoutInertia);
-                m_verticalScrollControllerVisualInteractionSource.IsPositionYRailsEnabled(railingMode == winrt::ScrollerRailingMode::Enabled);
+                m_verticalScrollControllerVisualInteractionSource.IsPositionYRailsEnabled(railingMode == winrt::RailingMode::Enabled);
             }
         }
 
@@ -2154,29 +2154,29 @@ void Scroller::SetupScrollControllerVisualInterationSourcePositionModifiers(
 void Scroller::SetupVisualInteractionSourceRailingMode(
     const winrt::VisualInteractionSource& visualInteractionSource,
     ScrollerDimension dimension,
-    const winrt::ScrollerRailingMode& railingMode)
+    const winrt::RailingMode& railingMode)
 {
     MUX_ASSERT(visualInteractionSource);
     MUX_ASSERT(dimension == ScrollerDimension::HorizontalScroll || dimension == ScrollerDimension::VerticalScroll);
 
     if (dimension == ScrollerDimension::HorizontalScroll)
     {
-        visualInteractionSource.IsPositionXRailsEnabled(railingMode == winrt::ScrollerRailingMode::Enabled);
+        visualInteractionSource.IsPositionXRailsEnabled(railingMode == winrt::RailingMode::Enabled);
     }
     else
     {
-        visualInteractionSource.IsPositionYRailsEnabled(railingMode == winrt::ScrollerRailingMode::Enabled);
+        visualInteractionSource.IsPositionYRailsEnabled(railingMode == winrt::RailingMode::Enabled);
     }
 }
 
 void Scroller::SetupVisualInteractionSourceChainingMode(
     const winrt::VisualInteractionSource& visualInteractionSource,
     ScrollerDimension dimension,
-    const winrt::ScrollerChainingMode& chainingMode)
+    const winrt::ChainingMode& chainingMode)
 {
     MUX_ASSERT(visualInteractionSource);
 
-    winrt::InteractionChainingMode interactionChainingMode = InteractionChainingModeFromScrollerChainingMode(chainingMode);
+    winrt::InteractionChainingMode interactionChainingMode = InteractionChainingModeFromChainingMode(chainingMode);
 
     switch (dimension)
     {
@@ -2197,12 +2197,12 @@ void Scroller::SetupVisualInteractionSourceChainingMode(
 void Scroller::SetupVisualInteractionSourceMode(
     const winrt::VisualInteractionSource& visualInteractionSource,
     ScrollerDimension dimension,
-    const winrt::ScrollerScrollMode& scrollMode)
+    const winrt::ScrollMode& scrollMode)
 {
     MUX_ASSERT(visualInteractionSource);
-    MUX_ASSERT(scrollMode == winrt::ScrollerScrollMode::Enabled || scrollMode == winrt::ScrollerScrollMode::Disabled);
+    MUX_ASSERT(scrollMode == winrt::ScrollMode::Enabled || scrollMode == winrt::ScrollMode::Disabled);
 
-    winrt::InteractionSourceMode interactionSourceMode = InteractionSourceModeFromScrollerScrollMode(scrollMode);
+    winrt::InteractionSourceMode interactionSourceMode = InteractionSourceModeFromScrollMode(scrollMode);
 
     switch (dimension)
     {
@@ -2219,24 +2219,24 @@ void Scroller::SetupVisualInteractionSourceMode(
 
 void Scroller::SetupVisualInteractionSourceMode(
     const winrt::VisualInteractionSource& visualInteractionSource,
-    const winrt::ScrollerZoomMode& zoomMode)
+    const winrt::ZoomMode& zoomMode)
 {
     MUX_ASSERT(visualInteractionSource);
 
-    visualInteractionSource.ScaleSourceMode(InteractionSourceModeFromScrollerZoomMode(zoomMode));
+    visualInteractionSource.ScaleSourceMode(InteractionSourceModeFromZoomMode(zoomMode));
 }
 
 #ifdef IsMouseWheelScrollDisabled
 void Scroller::SetupVisualInteractionSourcePointerWheelConfig(
     const winrt::VisualInteractionSource& visualInteractionSource,
     ScrollerDimension dimension,
-    const winrt::ScrollerScrollMode& scrollMode)
+    const winrt::ScrollMode& scrollMode)
 {
     MUX_ASSERT(visualInteractionSource);
-    MUX_ASSERT(scrollMode == winrt::ScrollerScrollMode::Enabled || scrollMode == winrt::ScrollerScrollMode::Disabled);
+    MUX_ASSERT(scrollMode == winrt::ScrollMode::Enabled || scrollMode == winrt::ScrollMode::Disabled);
     MUX_ASSERT(SharedHelpers::IsRS5OrHigher());
 
-    winrt::InteractionSourceRedirectionMode interactionSourceRedirectionMode = InteractionSourceRedirectionModeFromScrollerScrollMode(scrollMode);
+    winrt::InteractionSourceRedirectionMode interactionSourceRedirectionMode = InteractionSourceRedirectionModeFromScrollMode(scrollMode);
 
     switch (dimension)
     {
@@ -2255,23 +2255,23 @@ void Scroller::SetupVisualInteractionSourcePointerWheelConfig(
 #ifdef IsMouseWheelZoomDisabled
 void Scroller::SetupVisualInteractionSourcePointerWheelConfig(
     const winrt::VisualInteractionSource& visualInteractionSource,
-    const winrt::ScrollerZoomMode& zoomMode)
+    const winrt::ZoomMode& zoomMode)
 {
     MUX_ASSERT(visualInteractionSource);
     MUX_ASSERT(Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
 
-    visualInteractionSource.PointerWheelConfig().ScaleSourceMode(InteractionSourceRedirectionModeFromScrollerZoomMode(zoomMode));
+    visualInteractionSource.PointerWheelConfig().ScaleSourceMode(InteractionSourceRedirectionModeFromZoomMode(zoomMode));
 }
 #endif
 
 void Scroller::SetupVisualInteractionSourceRedirectionMode(
     const winrt::VisualInteractionSource& visualInteractionSource,
-    const winrt::ScrollerInputKind& inputKind)
+    const winrt::InputKind& inputKind)
 {
     winrt::VisualInteractionSourceRedirectionMode redirectionMode = winrt::VisualInteractionSourceRedirectionMode::CapableTouchpadOnly;
 
     if (SharedHelpers::AreInteractionTrackerPointerWheelRedirectionModesAvailable() &&
-        (inputKind & winrt::ScrollerInputKind::MouseWheel) == winrt::ScrollerInputKind::MouseWheel)
+        (inputKind & winrt::InputKind::MouseWheel) == winrt::InputKind::MouseWheel)
     {
         redirectionMode = winrt::VisualInteractionSourceRedirectionMode::CapableTouchpadAndPointerWheel;
     }
@@ -2335,10 +2335,10 @@ void Scroller::SetupVisualInteractionSourceCenterPointModifier(
     }
 }
 
-winrt::ScrollerScrollMode Scroller::GetComputedScrollMode(ScrollerDimension dimension, bool ignoreZoomMode)
+winrt::ScrollMode Scroller::GetComputedScrollMode(ScrollerDimension dimension, bool ignoreZoomMode)
 {
-    winrt::ScrollerScrollMode oldComputedScrollMode;
-    winrt::ScrollerScrollMode newComputedScrollMode;
+    winrt::ScrollMode oldComputedScrollMode;
+    winrt::ScrollMode newComputedScrollMode;
 
     if (dimension == ScrollerDimension::HorizontalScroll)
     {
@@ -2352,28 +2352,30 @@ winrt::ScrollerScrollMode Scroller::GetComputedScrollMode(ScrollerDimension dime
         newComputedScrollMode = VerticalScrollMode();
     }
 
-    if (newComputedScrollMode == winrt::ScrollerScrollMode::Auto)
+#ifdef USE_SCROLLMODE_AUTO
+    if (newComputedScrollMode == winrt::ScrollMode::Auto)
     {
-        if (!ignoreZoomMode && ZoomMode() == winrt::ScrollerZoomMode::Enabled)
+        if (!ignoreZoomMode && ZoomMode() == winrt::ZoomMode::Enabled)
         {
             // Allow scrolling when zooming is turned on so that the Content does not get stuck in the given dimension
             // when it becomes smaller than the viewport.
-            newComputedScrollMode = winrt::ScrollerScrollMode::Enabled;
+            newComputedScrollMode = winrt::ScrollMode::Enabled;
         }
         else
         {
             if (dimension == ScrollerDimension::HorizontalScroll)
             {
                 // Enable horizontal scrolling only when the Content's width is larger than the Scroller's width
-                newComputedScrollMode = GetZoomedExtentWidth() > GetViewportWidth() ? winrt::ScrollerScrollMode::Enabled : winrt::ScrollerScrollMode::Disabled;
+                newComputedScrollMode = GetZoomedExtentWidth() > GetViewportWidth() ? winrt::ScrollMode::Enabled : winrt::ScrollMode::Disabled;
             }
             else
             {
                 // Enable vertical scrolling only when the Content's height is larger than the Scroller's height
-                newComputedScrollMode = GetZoomedExtentHeight() > GetViewportHeight() ? winrt::ScrollerScrollMode::Enabled : winrt::ScrollerScrollMode::Disabled;
+                newComputedScrollMode = GetZoomedExtentHeight() > GetViewportHeight() ? winrt::ScrollMode::Enabled : winrt::ScrollMode::Disabled;
             }
         }
     }
+#endif
 
     if (oldComputedScrollMode != newComputedScrollMode)
     {
@@ -2391,7 +2393,7 @@ winrt::ScrollerScrollMode Scroller::GetComputedScrollMode(ScrollerDimension dime
 }
 
 #ifdef IsMouseWheelScrollDisabled
-winrt::ScrollerScrollMode Scroller::GetComputedMouseWheelScrollMode(ScrollerDimension dimension)
+winrt::ScrollMode Scroller::GetComputedMouseWheelScrollMode(ScrollerDimension dimension)
 {
     MUX_ASSERT(SharedHelpers::IsRS5OrHigher());
 
@@ -2401,7 +2403,7 @@ winrt::ScrollerScrollMode Scroller::GetComputedMouseWheelScrollMode(ScrollerDime
 #endif
 
 #ifdef IsMouseWheelZoomDisabled
-winrt::ScrollerZoomMode Scroller::GetMouseWheelZoomMode()
+winrt::ZoomMode Scroller::GetMouseWheelZoomMode()
 {
     MUX_ASSERT(Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
 
@@ -2978,14 +2980,14 @@ void Scroller::StopScrollControllerExpressionAnimationSourcesAnimations(
     }
 }
 
-winrt::InteractionChainingMode Scroller::InteractionChainingModeFromScrollerChainingMode(
-    const winrt::ScrollerChainingMode& chainingMode)
+winrt::InteractionChainingMode Scroller::InteractionChainingModeFromChainingMode(
+    const winrt::ChainingMode& chainingMode)
 {
     switch (chainingMode)
     {
-        case winrt::ScrollerChainingMode::Always:
+        case winrt::ChainingMode::Always:
             return winrt::InteractionChainingMode::Always;
-        case winrt::ScrollerChainingMode::Auto:
+        case winrt::ChainingMode::Auto:
             return winrt::InteractionChainingMode::Auto;
         default:
             return winrt::InteractionChainingMode::Never;
@@ -2993,36 +2995,36 @@ winrt::InteractionChainingMode Scroller::InteractionChainingModeFromScrollerChai
 }
 
 #ifdef IsMouseWheelScrollDisabled
-winrt::InteractionSourceRedirectionMode Scroller::InteractionSourceRedirectionModeFromScrollerScrollMode(
-    const winrt::ScrollerScrollMode& scrollMode)
+winrt::InteractionSourceRedirectionMode Scroller::InteractionSourceRedirectionModeFromScrollMode(
+    const winrt::ScrollMode& scrollMode)
 {
     MUX_ASSERT(SharedHelpers::IsRS5OrHigher());
-    MUX_ASSERT(scrollMode == winrt::ScrollerScrollMode::Enabled || scrollMode == winrt::ScrollerScrollMode::Disabled);
+    MUX_ASSERT(scrollMode == winrt::ScrollMode::Enabled || scrollMode == winrt::ScrollMode::Disabled);
 
-    return scrollMode == winrt::ScrollerScrollMode::Enabled ? winrt::InteractionSourceRedirectionMode::Enabled : winrt::InteractionSourceRedirectionMode::Disabled;
+    return scrollMode == winrt::ScrollMode::Enabled ? winrt::InteractionSourceRedirectionMode::Enabled : winrt::InteractionSourceRedirectionMode::Disabled;
 }
 #endif
 
 #ifdef IsMouseWheelZoomDisabled
-winrt::InteractionSourceRedirectionMode Scroller::InteractionSourceRedirectionModeFromScrollerZoomMode(
-    const winrt::ScrollerZoomMode& zoomMode)
+winrt::InteractionSourceRedirectionMode Scroller::InteractionSourceRedirectionModeFromZoomMode(
+    const winrt::ZoomMode& zoomMode)
 {
     MUX_ASSERT(Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
 
-    return zoomMode == winrt::ScrollerZoomMode::Enabled ? winrt::InteractionSourceRedirectionMode::Enabled : winrt::InteractionSourceRedirectionMode::Disabled;
+    return zoomMode == winrt::ZoomMode::Enabled ? winrt::InteractionSourceRedirectionMode::Enabled : winrt::InteractionSourceRedirectionMode::Disabled;
 }
 #endif
 
-winrt::InteractionSourceMode Scroller::InteractionSourceModeFromScrollerScrollMode(
-    const winrt::ScrollerScrollMode& scrollMode)
+winrt::InteractionSourceMode Scroller::InteractionSourceModeFromScrollMode(
+    const winrt::ScrollMode& scrollMode)
 {
-    return scrollMode == winrt::ScrollerScrollMode::Enabled ? winrt::InteractionSourceMode::EnabledWithInertia : winrt::InteractionSourceMode::Disabled;
+    return scrollMode == winrt::ScrollMode::Enabled ? winrt::InteractionSourceMode::EnabledWithInertia : winrt::InteractionSourceMode::Disabled;
 }
 
-winrt::InteractionSourceMode Scroller::InteractionSourceModeFromScrollerZoomMode(
-    const winrt::ScrollerZoomMode& zoomMode)
+winrt::InteractionSourceMode Scroller::InteractionSourceModeFromZoomMode(
+    const winrt::ZoomMode& zoomMode)
 {
-    return zoomMode == winrt::ScrollerZoomMode::Enabled ? winrt::InteractionSourceMode::EnabledWithInertia : winrt::InteractionSourceMode::Disabled;
+    return zoomMode == winrt::ZoomMode::Enabled ? winrt::InteractionSourceMode::EnabledWithInertia : winrt::InteractionSourceMode::Disabled;
 }
 
 double Scroller::ComputeZoomedOffsetWithMinimalChange(
@@ -3564,9 +3566,9 @@ void Scroller::OnPointerWheelChangedHandler(
         return;
     }
 
-    if ((InputKind() & winrt::ScrollerInputKind::MouseWheel) != winrt::ScrollerInputKind::MouseWheel)
+    if ((InputKind() & winrt::InputKind::MouseWheel) != winrt::InputKind::MouseWheel)
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"ScrollerInputKind::MouseWheel off");
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"InputKind::MouseWheel off");
 
         // MouseWheel input is ignored.
         return;
@@ -3584,9 +3586,9 @@ void Scroller::OnPointerWheelChangedHandler(
         return;
     }
 
-    if (ZoomMode() == winrt::ScrollerZoomMode::Disabled)
+    if (ZoomMode() == winrt::ZoomMode::Disabled)
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"ScrollerZoomMode off");
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"ZoomMode off");
 
         return;
     }
@@ -3863,9 +3865,9 @@ void Scroller::OnPointerPressed(
     const winrt::UIElement content = Content();
 
     if (!content ||
-        (GetComputedScrollMode(ScrollerDimension::HorizontalScroll) == winrt::ScrollerScrollMode::Disabled &&
-            GetComputedScrollMode(ScrollerDimension::VerticalScroll) == winrt::ScrollerScrollMode::Disabled &&
-            ZoomMode() == winrt::ScrollerZoomMode::Disabled))
+        (GetComputedScrollMode(ScrollerDimension::HorizontalScroll) == winrt::ScrollMode::Disabled &&
+            GetComputedScrollMode(ScrollerDimension::VerticalScroll) == winrt::ScrollMode::Disabled &&
+            ZoomMode() == winrt::ZoomMode::Disabled))
     {
         return;
     }
@@ -3873,11 +3875,11 @@ void Scroller::OnPointerPressed(
     switch (args.Pointer().PointerDeviceType())
     {
         case winrt::Devices::Input::PointerDeviceType::Touch:
-            if ((InputKind() & winrt::ScrollerInputKind::Touch) != winrt::ScrollerInputKind::Touch)
+            if ((InputKind() & winrt::InputKind::Touch) != winrt::InputKind::Touch)
                 return;
             break;
         case winrt::Devices::Input::PointerDeviceType::Pen:
-            if ((InputKind() & winrt::ScrollerInputKind::Pen) != winrt::ScrollerInputKind::Pen)
+            if ((InputKind() & winrt::InputKind::Pen) != winrt::InputKind::Pen)
                 return;
             break;
         default:
@@ -4703,9 +4705,9 @@ void Scroller::UpdateManipulationRedirectionMode()
 {
     if (m_scrollerVisualInteractionSource)
     {
-        winrt::ScrollerInputKind inputKind = InputKind();
+        winrt::InputKind inputKind = InputKind();
 
-        if ((inputKind & winrt::ScrollerInputKind::MouseWheel) == winrt::ScrollerInputKind::MouseWheel)
+        if ((inputKind & winrt::InputKind::MouseWheel) == winrt::InputKind::MouseWheel)
         {
             bool suppressMouseWheel = true;
 
@@ -4728,7 +4730,7 @@ void Scroller::UpdateManipulationRedirectionMode()
 
             if (suppressMouseWheel)
             {
-                inputKind &= ~winrt::ScrollerInputKind::MouseWheel;
+                inputKind &= ~winrt::InputKind::MouseWheel;
             }
         }
 
@@ -4744,7 +4746,7 @@ void Scroller::UpdateKeyEvents()
 
     if (SharedHelpers::IsRS4OrHigher() && !Scroller::IsInteractionTrackerMouseWheelZoomingEnabled())
     {
-        if ((InputKind() & winrt::ScrollerInputKind::MouseWheel) == winrt::ScrollerInputKind::MouseWheel)
+        if ((InputKind() & winrt::InputKind::MouseWheel) == winrt::InputKind::MouseWheel)
         {
             SetKeyEvents();
         }
