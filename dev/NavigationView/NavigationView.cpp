@@ -110,7 +110,6 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_paneSearchButtonClickRevoker.revoke();
     m_paneSearchButton.set(nullptr);
 
-    m_buttonHolderGettingFocusRevoker.revoke();
     m_buttonHolderGrid.set(nullptr);
 }
 

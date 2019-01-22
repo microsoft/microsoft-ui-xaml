@@ -311,7 +311,6 @@ private:
     winrt::CoreApplicationViewTitleBar::LayoutMetricsChanged_revoker m_titleBarMetricsChangedRevoker{};
     winrt::CoreApplicationViewTitleBar::IsVisibleChanged_revoker m_titleBarIsVisibleChangedRevoker{};
     winrt::Button::Click_revoker m_backButtonClickedRevoker{};
-    winrt::Button::GettingFocus_revoker m_buttonHolderGettingFocusRevoker{};
     winrt::ListView::ItemClick_revoker m_leftNavListViewItemClickRevoker{};
     winrt::ListView::Loaded_revoker m_leftNavListViewLoadedRevoker{};
     winrt::ListView::SelectionChanged_revoker m_leftNavListViewSelectionChangedRevoker{};
