@@ -6487,6 +6487,10 @@ winrt::hstring Scroller::DependencyPropertyToString(const winrt::IDependencyProp
     {
         return L"Background";
     }
+    else if (dependencyProperty == s_ContentOrientationProperty)
+    {
+        return L"ContentOrientation";
+    }
     else if (dependencyProperty == s_IsChildAvailableWidthConstrainedProperty)
     {
         return L"IsChildAvailableWidthConstrained";

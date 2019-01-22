@@ -12,6 +12,7 @@ GlobalDependencyProperty ScrollerProperties::s_BackgroundProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_ChildProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_ComputedHorizontalScrollModeProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_ComputedVerticalScrollModeProperty{ nullptr };
+GlobalDependencyProperty ScrollerProperties::s_ContentOrientationProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_HorizontalAnchorRatioProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_HorizontalScrollChainingModeProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_HorizontalScrollModeProperty{ nullptr };
@@ -87,6 +88,17 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ScrollerScrollMode>::BoxValueIfNecessary(Scroller::s_defaultComputedVerticalScrollMode),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
+    }
+    if (!s_ContentOrientationProperty)
+    {
+        s_ContentOrientationProperty =
+            InitializeDependencyProperty(
+                L"ContentOrientation",
+                winrt::name_of<winrt::ContentOrientation>(),
+                winrt::name_of<winrt::Scroller>(),
+                false /* isAttached */,
+                ValueHelper<winrt::ContentOrientation>::BoxValueIfNecessary(Scroller::s_defaultContentOrientation),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_HorizontalAnchorRatioProperty)
@@ -284,6 +296,7 @@ void ScrollerProperties::ClearProperties()
     s_ChildProperty = nullptr;
     s_ComputedHorizontalScrollModeProperty = nullptr;
     s_ComputedVerticalScrollModeProperty = nullptr;
+    s_ContentOrientationProperty = nullptr;
     s_HorizontalAnchorRatioProperty = nullptr;
     s_HorizontalScrollChainingModeProperty = nullptr;
     s_HorizontalScrollModeProperty = nullptr;
@@ -383,6 +396,16 @@ void ScrollerProperties::ComputedVerticalScrollMode(winrt::ScrollerScrollMode co
 winrt::ScrollerScrollMode ScrollerProperties::ComputedVerticalScrollMode()
 {
     return ValueHelper<winrt::ScrollerScrollMode>::CastOrUnbox(static_cast<Scroller*>(this)->GetValue(s_ComputedVerticalScrollModeProperty));
+}
+
+void ScrollerProperties::ContentOrientation(winrt::ContentOrientation const& value)
+{
+    static_cast<Scroller*>(this)->SetValue(s_ContentOrientationProperty, ValueHelper<winrt::ContentOrientation>::BoxValueIfNecessary(value));
+}
+
+winrt::ContentOrientation ScrollerProperties::ContentOrientation()
+{
+    return ValueHelper<winrt::ContentOrientation>::CastOrUnbox(static_cast<Scroller*>(this)->GetValue(s_ContentOrientationProperty));
 }
 
 void ScrollerProperties::HorizontalAnchorRatio(double value)

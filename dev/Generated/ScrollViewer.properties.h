@@ -18,6 +18,9 @@ public:
     void Content(winrt::UIElement const& value);
     winrt::UIElement Content();
 
+    void ContentOrientation(winrt::ContentOrientation const& value);
+    winrt::ContentOrientation ContentOrientation();
+
     void HorizontalAnchorRatio(double value);
     double HorizontalAnchorRatio();
 
@@ -84,6 +87,7 @@ public:
     static winrt::DependencyProperty ComputedHorizontalScrollModeProperty() { return s_ComputedHorizontalScrollModeProperty; }
     static winrt::DependencyProperty ComputedVerticalScrollModeProperty() { return s_ComputedVerticalScrollModeProperty; }
     static winrt::DependencyProperty ContentProperty() { return s_ContentProperty; }
+    static winrt::DependencyProperty ContentOrientationProperty() { return s_ContentOrientationProperty; }
     static winrt::DependencyProperty HorizontalAnchorRatioProperty() { return s_HorizontalAnchorRatioProperty; }
     static winrt::DependencyProperty HorizontalScrollBarVisibilityProperty() { return s_HorizontalScrollBarVisibilityProperty; }
     static winrt::DependencyProperty HorizontalScrollChainingModeProperty() { return s_HorizontalScrollChainingModeProperty; }
@@ -110,6 +114,7 @@ public:
     static GlobalDependencyProperty s_ComputedHorizontalScrollModeProperty;
     static GlobalDependencyProperty s_ComputedVerticalScrollModeProperty;
     static GlobalDependencyProperty s_ContentProperty;
+    static GlobalDependencyProperty s_ContentOrientationProperty;
     static GlobalDependencyProperty s_HorizontalAnchorRatioProperty;
     static GlobalDependencyProperty s_HorizontalScrollBarVisibilityProperty;
     static GlobalDependencyProperty s_HorizontalScrollChainingModeProperty;

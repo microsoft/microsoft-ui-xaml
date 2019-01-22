@@ -1829,6 +1829,10 @@ winrt::hstring ScrollViewer::DependencyPropertyToString(const winrt::IDependency
     {
         return L"VerticalScrollBarVisibility";
     }
+    else if (dependencyProperty == s_ContentOrientationProperty)
+    {
+        return L"ContentOrientation";
+    }
     else if (dependencyProperty == s_IsChildAvailableWidthConstrainedProperty)
     {
         return L"IsChildAvailableWidthConstrained";

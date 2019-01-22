@@ -48,6 +48,7 @@ public:
     static constexpr winrt::ScrollerChainingMode s_defaultZoomChainingMode{ winrt::ScrollerChainingMode::Auto };
     static constexpr winrt::ScrollerZoomMode s_defaultZoomMode{ winrt::ScrollerZoomMode::Disabled };
     static constexpr winrt::ScrollerInputKind s_defaultInputKind{ winrt::ScrollerInputKind::All };
+    static constexpr winrt::ContentOrientation s_defaultContentOrientation{ winrt::ContentOrientation::None };
     static constexpr bool s_defaultIsChildAvailableWidthConstrained{ false };
     static constexpr bool s_defaultIsChildAvailableHeightConstrained{ false };
     static constexpr bool s_defaultAnchorAtExtent{ true };

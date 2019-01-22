@@ -11,6 +11,7 @@ CppWinRTActivatableClassWithDPFactory(ScrollViewer)
 GlobalDependencyProperty ScrollViewerProperties::s_ComputedHorizontalScrollModeProperty{ nullptr };
 GlobalDependencyProperty ScrollViewerProperties::s_ComputedVerticalScrollModeProperty{ nullptr };
 GlobalDependencyProperty ScrollViewerProperties::s_ContentProperty{ nullptr };
+GlobalDependencyProperty ScrollViewerProperties::s_ContentOrientationProperty{ nullptr };
 GlobalDependencyProperty ScrollViewerProperties::s_HorizontalAnchorRatioProperty{ nullptr };
 GlobalDependencyProperty ScrollViewerProperties::s_HorizontalScrollBarVisibilityProperty{ nullptr };
 GlobalDependencyProperty ScrollViewerProperties::s_HorizontalScrollChainingModeProperty{ nullptr };
@@ -80,6 +81,17 @@ void ScrollViewerProperties::EnsureProperties()
                 winrt::name_of<winrt::ScrollViewer>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
+    }
+    if (!s_ContentOrientationProperty)
+    {
+        s_ContentOrientationProperty =
+            InitializeDependencyProperty(
+                L"ContentOrientation",
+                winrt::name_of<winrt::ContentOrientation>(),
+                winrt::name_of<winrt::ScrollViewer>(),
+                false /* isAttached */,
+                ValueHelper<winrt::ContentOrientation>::BoxValueIfNecessary(ScrollViewer::s_defaultContentOrientation),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_HorizontalAnchorRatioProperty)
@@ -331,6 +343,7 @@ void ScrollViewerProperties::ClearProperties()
     s_ComputedHorizontalScrollModeProperty = nullptr;
     s_ComputedVerticalScrollModeProperty = nullptr;
     s_ContentProperty = nullptr;
+    s_ContentOrientationProperty = nullptr;
     s_HorizontalAnchorRatioProperty = nullptr;
     s_HorizontalScrollBarVisibilityProperty = nullptr;
     s_HorizontalScrollChainingModeProperty = nullptr;
@@ -425,6 +438,16 @@ void ScrollViewerProperties::Content(winrt::UIElement const& value)
 winrt::UIElement ScrollViewerProperties::Content()
 {
     return ValueHelper<winrt::UIElement>::CastOrUnbox(static_cast<ScrollViewer*>(this)->GetValue(s_ContentProperty));
+}
+
+void ScrollViewerProperties::ContentOrientation(winrt::ContentOrientation const& value)
+{
+    static_cast<ScrollViewer*>(this)->SetValue(s_ContentOrientationProperty, ValueHelper<winrt::ContentOrientation>::BoxValueIfNecessary(value));
+}
+
+winrt::ContentOrientation ScrollViewerProperties::ContentOrientation()
+{
+    return ValueHelper<winrt::ContentOrientation>::CastOrUnbox(static_cast<ScrollViewer*>(this)->GetValue(s_ContentOrientationProperty));
 }
 
 void ScrollViewerProperties::HorizontalAnchorRatio(double value)
