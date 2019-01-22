@@ -368,29 +368,16 @@ namespace MUXControlsTestApp
                 grdScrollerTestHooks.Visibility = Visibility.Collapsed;
         }
 
+        private void CmbContentOrientation_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (scroller != null)
+                scroller.ContentOrientation = (ContentOrientation)cmbContentOrientation.SelectedIndex;
+        }
+
         private void CmbHorizontalScrollMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scroller != null)
                 scroller.HorizontalScrollMode = (ScrollMode)cmbHorizontalScrollMode.SelectedIndex;
-        }
-
-        private void BtnGetContentOrientation_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateCmbContentOrientation();
-        }
-
-        private void BtnSetContentOrientation_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (scroller != null)
-                    scroller.ContentOrientation = (ContentOrientation)cmbContentOrientation.SelectedIndex;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
         }
 
         private void UpdateCmbContentOrientation()
