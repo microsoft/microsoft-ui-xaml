@@ -355,7 +355,7 @@ winrt::Brush ScrollerProperties::Background()
     return ValueHelper<winrt::Brush>::CastOrUnbox(static_cast<Scroller*>(this)->GetValue(s_BackgroundProperty));
 }
 
-void ScrollerProperties::ComputedHorizontalScrollMode(winrt::ScrollerScrollMode const& value)
+void ScrollerProperties::ComputedHorizontalScrollMode(winrt::ScrollMode const& value)
 {
     static_cast<Scroller*>(this)->SetValue(s_ComputedHorizontalScrollModeProperty, ValueHelper<winrt::ScrollMode>::BoxValueIfNecessary(value));
 }

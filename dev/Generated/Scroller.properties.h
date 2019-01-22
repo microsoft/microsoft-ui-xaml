@@ -12,8 +12,8 @@ public:
     void Background(winrt::Brush const& value);
     winrt::Brush Background();
 
-    void ComputedHorizontalScrollMode(winrt::ScrollerScrollMode const& value);
-    winrt::ScrollerScrollMode ComputedHorizontalScrollMode();
+    void ComputedHorizontalScrollMode(winrt::ScrollMode const& value);
+    winrt::ScrollMode ComputedHorizontalScrollMode();
 
     void ComputedVerticalScrollMode(winrt::ScrollMode const& value);
     winrt::ScrollMode ComputedVerticalScrollMode();
