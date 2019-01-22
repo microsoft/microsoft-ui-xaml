@@ -124,10 +124,6 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     Double ExtentHeight { get; };
     [MUX_DEFAULT_VALUE("Scroller::s_defaultContentOrientation")]
     MU_XC_NAMESPACE.ContentOrientation ContentOrientation { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultIsChildAvailableWidthConstrained")]
-    Boolean IsChildAvailableWidthConstrained { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultIsChildAvailableHeightConstrained")]
-    Boolean IsChildAvailableHeightConstrained { get; set; };
     [MUX_DEFAULT_VALUE("Scroller::s_defaultHorizontalScrollChainingMode")]
     MU_XC_NAMESPACE.ScrollerChainingMode HorizontalScrollChainingMode { get; set; };
     [MUX_DEFAULT_VALUE("Scroller::s_defaultVerticalScrollChainingMode")]
@@ -188,8 +184,6 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     static Windows.UI.Xaml.DependencyProperty BackgroundProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ChildProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ContentOrientationProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty IsChildAvailableWidthConstrainedProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty IsChildAvailableHeightConstrainedProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalScrollChainingModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalScrollChainingModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalScrollRailingModeProperty { get; };

@@ -23,7 +23,7 @@
         </Grid.ColumnDefinitions>
 
         <controlsPrimitives:Scroller x:Name="scroller" Width="300" Height="600" Margin="1" Background="AliceBlue" Grid.Row="1"
-            VerticalAlignment="Top" IsChildAvailableWidthConstrained="True" ZoomMode="Enabled">
+            VerticalAlignment="Top" ContentOrientation="Vertical" ZoomMode="Enabled">
             <Border x:Name="border" BorderThickness="3" BorderBrush="Chartreuse" Margin="15" Background="Beige">
                 <StackPanel x:Name="stackPanel" Margin="30"/>
             </Border>

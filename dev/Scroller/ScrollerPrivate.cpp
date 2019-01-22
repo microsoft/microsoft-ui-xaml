@@ -9,12 +9,12 @@
 
 bool Scroller::IsHorizontallyScrollable()
 {
-    return !m_isChildAvailableWidthConstrained;
+    return m_contentOrientation != winrt::ContentOrientation::Vertical;
 }
 
 bool Scroller::IsVerticallyScrollable()
 {
-    return !m_isChildAvailableHeightConstrained;
+    return m_contentOrientation != winrt::ContentOrientation::Horizontal;
 }
 
 winrt::event_token Scroller::ViewportChanged(winrt::ViewportChangedEventHandler const& value)

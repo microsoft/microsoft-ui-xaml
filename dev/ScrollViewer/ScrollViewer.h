@@ -31,8 +31,6 @@ public:
     static const winrt::ScrollerZoomMode s_defaultZoomMode{ winrt::ScrollerZoomMode::Disabled };
     static const winrt::ScrollerInputKind s_defaultInputKind{ winrt::ScrollerInputKind::All };
     static const winrt::ContentOrientation s_defaultContentOrientation{ winrt::ContentOrientation::Vertical };
-    static constexpr bool s_defaultIsChildAvailableWidthConstrained{ true };
-    static constexpr bool s_defaultIsChildAvailableHeightConstrained{ false };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
     static constexpr double s_defaultMaxZoomFactor{ 10.0 };
     static constexpr bool s_defaultAnchorAtExtent{ true };

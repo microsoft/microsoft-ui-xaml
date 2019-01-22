@@ -43,6 +43,7 @@ using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
@@ -293,7 +294,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 horizontalScroller = new Scroller
                 {
                     Child = repeater,
-                    IsChildAvailableHeightConstrained = true
+                    ContentOrientation = ContentOrientation.Horizontal
                 };
 
                 var grid = new Grid();
@@ -304,7 +305,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Child = grid,
                     Width = 200,
                     Height = 200,
-                    IsChildAvailableWidthConstrained = true
+                    ContentOrientation = ContentOrientation.Vertical
                 };
 
                 Content = verticalScroller;
@@ -395,8 +396,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     scrollers[i] = new Scroller()
                     {
                         Child = grids[i],
-                        IsChildAvailableWidthConstrained = true,
-                        IsChildAvailableHeightConstrained = true
                     };
                 }
 
@@ -425,8 +424,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    scrollers[1].IsChildAvailableHeightConstrained = (scrollOrientation == ScrollOrientation.Horizontal);
-                    scrollers[2].IsChildAvailableWidthConstrained = (scrollOrientation == ScrollOrientation.Vertical);
+                    if (scrollOrientation == ScrollOrientation.Horizontal)
+                    {
+                        scrollers[1].ContentOrientation = ContentOrientation.Horizontal;
+                        scrollers[2].ContentOrientation = ContentOrientation.None;
+                    }
+                    else
+                    {
+                        scrollers[1].ContentOrientation = ContentOrientation.None;
+                        scrollers[2].ContentOrientation = ContentOrientation.Vertical;
+                    }
                 });
                 IdleSynchronizer.Wait();
 

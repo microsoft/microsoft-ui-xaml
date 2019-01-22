@@ -48,12 +48,6 @@ public:
     void IsAnchoredAtVerticalExtent(bool value);
     bool IsAnchoredAtVerticalExtent();
 
-    void IsChildAvailableHeightConstrained(bool value);
-    bool IsChildAvailableHeightConstrained();
-
-    void IsChildAvailableWidthConstrained(bool value);
-    bool IsChildAvailableWidthConstrained();
-
     void MaxZoomFactor(double value);
     double MaxZoomFactor();
 
@@ -97,8 +91,6 @@ public:
     static winrt::DependencyProperty InputKindProperty() { return s_InputKindProperty; }
     static winrt::DependencyProperty IsAnchoredAtHorizontalExtentProperty() { return s_IsAnchoredAtHorizontalExtentProperty; }
     static winrt::DependencyProperty IsAnchoredAtVerticalExtentProperty() { return s_IsAnchoredAtVerticalExtentProperty; }
-    static winrt::DependencyProperty IsChildAvailableHeightConstrainedProperty() { return s_IsChildAvailableHeightConstrainedProperty; }
-    static winrt::DependencyProperty IsChildAvailableWidthConstrainedProperty() { return s_IsChildAvailableWidthConstrainedProperty; }
     static winrt::DependencyProperty MaxZoomFactorProperty() { return s_MaxZoomFactorProperty; }
     static winrt::DependencyProperty MinZoomFactorProperty() { return s_MinZoomFactorProperty; }
     static winrt::DependencyProperty ScrollerProperty() { return s_ScrollerProperty; }
@@ -124,8 +116,6 @@ public:
     static GlobalDependencyProperty s_InputKindProperty;
     static GlobalDependencyProperty s_IsAnchoredAtHorizontalExtentProperty;
     static GlobalDependencyProperty s_IsAnchoredAtVerticalExtentProperty;
-    static GlobalDependencyProperty s_IsChildAvailableHeightConstrainedProperty;
-    static GlobalDependencyProperty s_IsChildAvailableWidthConstrainedProperty;
     static GlobalDependencyProperty s_MaxZoomFactorProperty;
     static GlobalDependencyProperty s_MinZoomFactorProperty;
     static GlobalDependencyProperty s_ScrollerProperty;

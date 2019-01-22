@@ -30,6 +30,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 #if !BUILD_WINDOWS
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using InteractionState = Microsoft.UI.Xaml.Controls.InteractionState;
 using ScrollerScrollMode = Microsoft.UI.Xaml.Controls.ScrollerScrollMode;
 using ScrollerZoomMode = Microsoft.UI.Xaml.Controls.ScrollerZoomMode;
@@ -57,8 +58,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const ScrollerChainingMode c_defaultZoomChainingMode = ScrollerChainingMode.Auto;
         private const ScrollerZoomMode c_defaultZoomMode = ScrollerZoomMode.Disabled;
         private const ScrollerInputKind c_defaultInputKind = ScrollerInputKind.All;
-        private const bool c_defaultIsChildAvailableWidthConstrained = false;
-        private const bool c_defaultIsChildAvailableHeightConstrained = false;
+        private const ContentOrientation c_defaultContentOrientation = ContentOrientation.None;
         private const bool c_defaultIsAnchoredAtExtent = true;
         private const double c_defaultMinZoomFactor = 0.1;
         private const double c_defaultZoomFactor = 1.0;
@@ -109,8 +109,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scroller.HorizontalScrollMode, c_defaultHorizontalScrollMode);
                 Verify.AreEqual(scroller.VerticalScrollMode, c_defaultVerticalScrollMode);
                 Verify.AreEqual(scroller.ZoomChainingMode, c_defaultZoomChainingMode);
-                Verify.AreEqual(scroller.IsChildAvailableWidthConstrained, c_defaultIsChildAvailableWidthConstrained);
-                Verify.AreEqual(scroller.IsChildAvailableHeightConstrained, c_defaultIsChildAvailableHeightConstrained);
+                Verify.AreEqual(scroller.ContentOrientation, c_defaultContentOrientation);
                 Verify.AreEqual(scroller.ZoomMode, c_defaultZoomMode);
                 Verify.AreEqual(scroller.InputKind, c_defaultInputKind);
                 Verify.AreEqual(scroller.MinZoomFactor, c_defaultMinZoomFactor);
@@ -151,8 +150,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scroller.ZoomChainingMode = ScrollerChainingMode.Never;
                 scroller.ZoomMode = ScrollerZoomMode.Enabled;
                 scroller.InputKind = ScrollerInputKind.MouseWheel;
-                scroller.IsChildAvailableWidthConstrained = !c_defaultIsChildAvailableWidthConstrained;
-                scroller.IsChildAvailableHeightConstrained = !c_defaultIsChildAvailableHeightConstrained;
+                scroller.ContentOrientation = ContentOrientation.Horizontal;
                 scroller.MinZoomFactor = 0.5f;
                 scroller.MaxZoomFactor = 2.0f;
                 scroller.HorizontalAnchorRatio = 0.25f;
@@ -177,8 +175,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scroller.ZoomChainingMode, ScrollerChainingMode.Never);
                 Verify.AreEqual(scroller.ZoomMode, ScrollerZoomMode.Enabled);
                 Verify.AreEqual(scroller.InputKind, ScrollerInputKind.MouseWheel);
-                Verify.AreEqual(scroller.IsChildAvailableWidthConstrained, !c_defaultIsChildAvailableWidthConstrained);
-                Verify.AreEqual(scroller.IsChildAvailableHeightConstrained, !c_defaultIsChildAvailableHeightConstrained);
+                Verify.AreEqual(scroller.ContentOrientation, ContentOrientation.Horizontal);
                 Verify.AreEqual(scroller.MinZoomFactor, 0.5f);
                 Verify.AreEqual(scroller.MaxZoomFactor, 2.0f);
                 Verify.AreEqual(scroller.HorizontalAnchorRatio, 0.25f);

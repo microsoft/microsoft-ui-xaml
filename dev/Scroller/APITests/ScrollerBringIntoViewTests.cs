@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 #if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
 using ScrollerBringingIntoViewEventArgs = Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs;
@@ -1071,13 +1072,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             scroller.Name = "scroller";
             if (orientation == Orientation.Vertical)
             {
-                scroller.IsChildAvailableWidthConstrained = true;
+                scroller.ContentOrientation = ContentOrientation.Vertical;
                 scroller.Width = c_defaultBringIntoViewUIScrollerConstrainedSize;
                 scroller.Height = c_defaultBringIntoViewUIScrollerNonConstrainedSize;
             }
             else
             {
-                scroller.IsChildAvailableHeightConstrained = true;
+                scroller.ContentOrientation = ContentOrientation.Horizontal;
                 scroller.Width = c_defaultBringIntoViewUIScrollerNonConstrainedSize;
                 scroller.Height = c_defaultBringIntoViewUIScrollerConstrainedSize;
             }
@@ -1210,13 +1211,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             outerScroller.Name = "outerScroller";
             if (orientation == Orientation.Vertical)
             {
-                outerScroller.IsChildAvailableWidthConstrained = true;
+                outerScroller.ContentOrientation = ContentOrientation.Vertical;
                 outerScroller.Width = c_defaultBringIntoViewUIScrollerConstrainedSize;
                 outerScroller.Height = c_defaultBringIntoViewUIScrollerNonConstrainedSize;
             }
             else
             {
-                outerScroller.IsChildAvailableHeightConstrained = true;
+                outerScroller.ContentOrientation = ContentOrientation.Horizontal;
                 outerScroller.Width = c_defaultBringIntoViewUIScrollerNonConstrainedSize;
                 outerScroller.Height = c_defaultBringIntoViewUIScrollerConstrainedSize;
             }

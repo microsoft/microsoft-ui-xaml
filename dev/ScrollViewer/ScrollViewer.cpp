@@ -1833,14 +1833,6 @@ winrt::hstring ScrollViewer::DependencyPropertyToString(const winrt::IDependency
     {
         return L"ContentOrientation";
     }
-    else if (dependencyProperty == s_IsChildAvailableWidthConstrainedProperty)
-    {
-        return L"IsChildAvailableWidthConstrained";
-    }
-    else if (dependencyProperty == s_IsChildAvailableHeightConstrainedProperty)
-    {
-        return L"IsChildAvailableHeightConstrained";
-    }
     else if (dependencyProperty == s_VerticalScrollChainingModeProperty)
     {
         return L"VerticalScrollChainingMode";

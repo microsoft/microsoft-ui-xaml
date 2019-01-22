@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 #if !BUILD_WINDOWS
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
@@ -435,8 +436,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", 
-            "Sets Scroller.IsChildAvailableWidthConstrained to True and verifies Image positioning for various alignments and zoom factors.")]
+        [TestProperty("Description",
+            "Sets Scroller.ContentOrientation to Vertical and verifies Image positioning for various alignments and zoom factors.")]
         public void ImageWithConstrainedWidth()
         {
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
@@ -478,7 +479,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Constraining the Image width and making the Scroller smaller than the Image
                 imageScrollerChild.Height = c_imageHeight;
-                scroller.IsChildAvailableWidthConstrained = true;
+                scroller.ContentOrientation = ContentOrientation.Vertical;
                 scroller.Width = c_scrollerWidth;
                 compositor = Window.Current.Compositor;
             });
@@ -607,7 +608,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Constraining the Image height and making the Scroller smaller than the Image
                 imageScrollerChild.Width = c_imageWidth;
-                scroller.IsChildAvailableHeightConstrained = true;
+                scroller.ContentOrientation = ContentOrientation.Horizontal;
                 compositor = Window.Current.Compositor;
             });
 

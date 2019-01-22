@@ -19,6 +19,7 @@ using MUXControlsTestApp.Utilities;
 
 #if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollerChainingMode = Microsoft.UI.Xaml.Controls.ScrollerChainingMode;
 using ScrollerRailingMode = Microsoft.UI.Xaml.Controls.ScrollerRailingMode;
 using ScrollerScrollMode = Microsoft.UI.Xaml.Controls.ScrollerScrollMode;
@@ -373,49 +374,17 @@ namespace MUXControlsTestApp
                 scroller.HorizontalScrollMode = (ScrollerScrollMode)cmbHorizontalScrollMode.SelectedIndex;
         }
 
-        private void BtnGetIsChildAvailableWidthConstrained_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentOrientation_Click(object sender, RoutedEventArgs e)
         {
-            UpdateCmbIsChildAvailableWidthConstrained();
+            UpdateCmbContentOrientation();
         }
 
-        private void BtnSetIsChildAvailableWidthConstrained_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (scroller != null)
-                    scroller.IsChildAvailableWidthConstrained = cmbIsChildAvailableWidthConstrained.SelectedIndex == 0;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
-        }
-
-        private void UpdateCmbIsChildAvailableWidthConstrained()
-        {
-            try
-            {
-                cmbIsChildAvailableWidthConstrained.SelectedIndex = scroller.IsChildAvailableWidthConstrained ? 0 : 1;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
-        }
-
-        private void BtnGetIsChildAvailableHeightConstrained_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateCmbIsChildAvailableHeightConstrained();
-        }
-
-        private void BtnSetIsChildAvailableHeightConstrained_Click(object sender, RoutedEventArgs e)
+        private void BtnSetContentOrientation_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 if (scroller != null)
-                    scroller.IsChildAvailableHeightConstrained = cmbIsChildAvailableHeightConstrained.SelectedIndex == 0;
+                    scroller.ContentOrientation = (ContentOrientation)cmbContentOrientation.SelectedIndex;
             }
             catch (Exception ex)
             {
@@ -424,11 +393,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void UpdateCmbIsChildAvailableHeightConstrained()
+        private void UpdateCmbContentOrientation()
         {
             try
             {
-                cmbIsChildAvailableHeightConstrained.SelectedIndex = scroller.IsChildAvailableHeightConstrained ? 0 : 1;
+                cmbContentOrientation.SelectedIndex = (int)scroller.ContentOrientation;
             }
             catch (Exception ex)
             {
@@ -436,7 +405,6 @@ namespace MUXControlsTestApp
                 lstScrollerEvents.Items.Add(ex.ToString());
             }
         }
-
 
         private void UpdateCmbHorizontalScrollMode()
         {
@@ -2126,8 +2094,7 @@ namespace MUXControlsTestApp
                     MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
                 }
 
-                UpdateCmbIsChildAvailableWidthConstrained();
-                UpdateCmbIsChildAvailableHeightConstrained();
+                UpdateCmbContentOrientation();
                 UpdateCmbHorizontalScrollMode();
                 UpdateCmbHorizontalScrollChainingMode();
                 UpdateCmbHorizontalScrollRailingMode();
