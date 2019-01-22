@@ -3,6 +3,9 @@
 
 using MUXControlsTestApp.Utilities;
 
+using System;
+using System.Collections.Generic;
+using Windows.Foundation.Metadata;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Markup;
@@ -362,5 +365,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 #endif
 
+#if !BUILD_WINDOWS
+        [TestMethod]
+        public void VerifyCanNotAddWUXItems()
+        {
+            if (!ApiInformation.IsTypePresent("Windows.UI.Xaml.Controls.NavigationViewItem"))
+            {
+                Log.Warning("WUX version of NavigationViewItem only available starting in RS3.");
+                return;
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+
+                var muxItem = new Microsoft.UI.Xaml.Controls.NavigationViewItem { Content = "MUX Item" };
+                navView.MenuItems.Add(muxItem);
+
+                navView.MenuItems.Add(new Microsoft.UI.Xaml.Controls.NavigationViewItemSeparator());
+
+                // No errors should occur here when we only use MUX items
+                navView.UpdateLayout();
+
+                var wuxItem = new Windows.UI.Xaml.Controls.NavigationViewItem { Content = "WUX Item" };
+                navView.MenuItems.Add(wuxItem);
+
+                // But adding a WUX item should generate an exception (as soon as the new item gets processed)
+                Verify.Throws<Exception>(() => { navView.UpdateLayout(); });
+            });
+        }
+#endif
     }
 }
