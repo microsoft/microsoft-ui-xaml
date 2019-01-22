@@ -72,6 +72,7 @@
 
 #include "CppWinRTIncludes.h"
 
+#ifndef BUILD_WINDOWS
 // This function is a compile time optimization. These GUID calculations are very expensive (each takes about .5-1s to compile)
 // and many appear in multiple compilation units so the work is duplicated across invocations of the compiler. I used the
 // MSVC compiler option "/d1reportTime" to get a dump of all the work and then searched for "pinterface_guid" invocations to
@@ -282,3 +283,4 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::UIElement,struct winrt::Windows::UI::Xaml::Input::AccessKeyInvokedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::UIElement,struct winrt::Windows::UI::Xaml::Input::GettingFocusEventArgs>>();
 }
+#endif
