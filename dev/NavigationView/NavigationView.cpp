@@ -966,6 +966,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& prevItem
 
             winrt::Point prevPosPoint = prevIndicator.TransformToVisual(paneContentGrid).TransformPoint(point);
             winrt::Point nextPosPoint = nextIndicator.TransformToVisual(paneContentGrid).TransformPoint(point);
+            winrt::Size prevSize = prevIndicator.RenderSize();
+            winrt::Size nextSize = nextIndicator.RenderSize();
 
             if (IsTopNavigationView())
             {
@@ -982,8 +984,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& prevItem
             winrt::CompositionScopedBatch scopedBatch = visual.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
 
             // Play the animation on both the previous and next indicators
-            PlayIndicatorAnimations(prevIndicator, 0, nextPos - prevPos, true);
-            PlayIndicatorAnimations(nextIndicator, prevPos - nextPos, 0, false);
+            PlayIndicatorAnimations(prevIndicator, 0, nextPos - prevPos, prevSize, nextSize, true);
+            PlayIndicatorAnimations(nextIndicator, prevPos - nextPos, 0, prevSize, nextSize, false);
 
             scopedBatch.End();
             m_prevIndicator.set(prevIndicator);
@@ -1016,13 +1018,21 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& prevItem
     }
 }
 
-void NavigationView::PlayIndicatorAnimations(const winrt::UIElement& indicator, float from, float to, bool isOutgoing)
+void NavigationView::PlayIndicatorAnimations(const winrt::UIElement& indicator, float from, float to, winrt::Size beginSize, winrt::Size endSize, bool isOutgoing)
 {
     winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(indicator);
     winrt::Compositor comp = visual.Compositor();
 
     winrt::Size size = indicator.RenderSize();
     float dimension = IsTopNavigationView() ? size.Width : size.Height;
+
+    float beginScale = 1.0f;
+    float endScale = 1.0f;
+    if (IsTopNavigationView() && fabs(size.Width) > 0.001f)
+    {
+        beginScale = beginSize.Width / size.Width;
+        endScale = endSize.Width / size.Width;
+    }
 
     winrt::StepEasingFunction singleStep = comp.CreateStepEasingFunction();
     singleStep.IsFinalStepSingleFrame(true);
@@ -1040,14 +1050,14 @@ void NavigationView::PlayIndicatorAnimations(const winrt::UIElement& indicator, 
     }
 
     winrt::ScalarKeyFrameAnimation posAnim = comp.CreateScalarKeyFrameAnimation();
-    posAnim.InsertKeyFrame(0.0f, from);
-    posAnim.InsertKeyFrame(0.333f, to, singleStep);
+    posAnim.InsertKeyFrame(0.0f, from < to ? from : (from + (dimension * (beginScale - 1))));
+    posAnim.InsertKeyFrame(0.333f, from < to ? (to + (dimension * (endScale - 1))) : to, singleStep);
     posAnim.Duration(600ms);
 
     winrt::ScalarKeyFrameAnimation scaleAnim = comp.CreateScalarKeyFrameAnimation();
-    scaleAnim.InsertKeyFrame(0.0f, 1);
-    scaleAnim.InsertKeyFrame(0.333f, abs(to - from) / dimension + 1, comp.CreateCubicBezierEasingFunction(c_frame1point1, c_frame1point2));
-    scaleAnim.InsertKeyFrame(1.0f, 1, comp.CreateCubicBezierEasingFunction(c_frame2point1, c_frame2point2));
+    scaleAnim.InsertKeyFrame(0.0f, beginScale);
+    scaleAnim.InsertKeyFrame(0.333f, abs(to - from) / dimension + (from < to ? endScale : beginScale), comp.CreateCubicBezierEasingFunction(c_frame1point1, c_frame1point2));
+    scaleAnim.InsertKeyFrame(1.0f, endScale, comp.CreateCubicBezierEasingFunction(c_frame2point1, c_frame2point2));
     scaleAnim.Duration(600ms);
 
     winrt::ScalarKeyFrameAnimation centerAnim = comp.CreateScalarKeyFrameAnimation();
