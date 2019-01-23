@@ -10,6 +10,7 @@ struct bringintoview_event_revoker;
 #include "NavigationViewItemPresenter.h"
 #include "NavigationViewItem.properties.h"
 #include "DispatcherHelper.h"
+#include "TreeViewNode.h"
 
 class NavigationViewItem :
     public winrt::implementation::NavigationViewItemT<NavigationViewItem, NavigationViewItemBase>,
@@ -100,4 +101,7 @@ private:
     void ToggleIsExpanded(winrt::TreeViewNode node);
     void VerifyOrCreateChildrenNodes(winrt::TreeViewNode node);
     void UpdateSelectionIndicatorVisiblity();
+    void OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args);
+
+    //void UpdateSelection(TreeNodeSelectionState const& state);
 };

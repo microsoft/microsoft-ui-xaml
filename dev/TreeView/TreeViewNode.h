@@ -53,10 +53,6 @@ public:
     hstring ToString();
 #pragma endregion
 
-    // Required for use in Hierarchical Navigation View
-    void IsChildSelected(bool isChildSelected) { m_IsChildSelected = isChildSelected; };
-    bool IsChildSelected() { return m_IsChildSelected; };
-
 private:
     // Variables
     winrt::weak_ref<winrt::TreeViewNode> m_parentNode{ nullptr };
@@ -75,9 +71,6 @@ private:
     bool m_isContentMode{ false };
     TreeNodeSelectionState m_multiSelectionState{ TreeNodeSelectionState::UnSelected };
     hstring GetContentAsString();
-
-    // Required for use in Hierarchical Navigation View
-    bool m_IsChildSelected{ false };
 
 public:
     // Impls and Helpers

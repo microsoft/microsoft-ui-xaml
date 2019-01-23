@@ -66,6 +66,8 @@ void NavigationViewItem::OnApplyTemplate()
 
     winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get())->SetDepth(GetDepth());
 
+    //RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &NavigationViewItem::OnIsSelectedChanged });
+
     m_appliedTemplate = true;
     UpdateVisualStateNoTransition();
 
@@ -176,7 +178,9 @@ void NavigationViewItem::OnPropertyChanged(const winrt::DependencyPropertyChange
     {
         if (property == s_IsExpandedProperty)
         {
+            //TODO: Instead of toggling, read specific bool value
             ToggleIsExpanded(node);
+            
             UpdateSelectionIndicatorVisiblity();
         }
         else if (property == s_MenuItemsSourceProperty)
@@ -191,6 +195,13 @@ void NavigationViewItem::OnPropertyChanged(const winrt::DependencyPropertyChange
         }
         else if (property == s_IsChildSelectedProperty)
         {
+            // Update the corresponding node
+            if (auto navViewList = GetNavigationViewList())
+            {
+                auto viewModel = winrt::get_self<NavigationViewList>(navViewList)->ListViewModel();
+                TreeNodeSelectionState selectionState = IsChildSelected() ? TreeNodeSelectionState::PartialSelected : TreeNodeSelectionState::UnSelected;
+                viewModel->UpdateSelection(node, selectionState);
+            }
             UpdateSelectionIndicatorVisiblity();
         }
     }
@@ -409,7 +420,7 @@ void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
 
 void NavigationViewItem::ToggleIsExpanded(winrt::TreeViewNode node)
 {
-    VerifyOrCreateChildrenNodes(node);
+    //VerifyOrCreateChildrenNodes(node);
     auto isExpanded = !node.IsExpanded();
     node.IsExpanded(isExpanded);
 }
@@ -437,3 +448,30 @@ void NavigationViewItem::UpdateSelectionIndicatorVisiblity()
         selectionIndicator.Opacity(0);
     }
 }
+
+void NavigationViewItem::OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
+{
+    auto selectionIndicator = GetSelectionIndicator();
+    bool isSelected = unbox_value<bool>(GetValue(args));
+    if (isSelected)
+    {
+        selectionIndicator.Opacity(1);
+    }
+    else
+    {
+        selectionIndicator.Opacity(0);
+    }
+}
+
+//void NavigationViewItem::UpdateSelection(TreeNodeSelectionState const& state)
+//{
+//    auto selectionIndicator = GetSelectionIndicator();
+//    if (state == TreeNodeSelectionState::PartialSelected)
+//    {
+//        selectionIndicator.Opacity(1);
+//    }
+//    else if (state == TreeNodeSelectionState::UnSelected)
+//    {
+//        selectionIndicator.Opacity(0);
+//    }
+//}

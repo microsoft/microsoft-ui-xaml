@@ -53,7 +53,7 @@ void NavigationViewList::ClearContainerForItemOverride(winrt::DependencyObject c
         auto itemContainerImplementation = winrt::get_self<NavigationViewItem>(itemContainer);
         itemContainerImplementation->ClearIsContentChangeHandlingDelayedForTopNavFlag();
         itemContainerImplementation->SetDepth(0);
-        itemContainerImplementation->IsChildSelected(false);
+        itemContainerImplementation->IsSelected(false);
     }
     __super::PrepareContainerForItemOverride(element, item);
 }
@@ -72,7 +72,9 @@ void NavigationViewList::PrepareContainerForItemOverride(winrt::DependencyObject
         itemContainer.UseSystemFocusVisuals(m_showFocusVisual);
         winrt::get_self<NavigationViewItem>(itemContainer)->ClearIsContentChangeHandlingDelayedForTopNavFlag();
 
-        winrt::get_self<NavigationViewItem>(itemContainer)->IsChildSelected(nvNode->IsChildSelected());
+        bool isChildSelected = nvNode->SelectionState() == TreeNodeSelectionState::PartialSelected ? true : false;
+        winrt::get_self<NavigationViewItem>(itemContainer)->IsChildSelected(isChildSelected);
+        
     }
 
     __super::PrepareContainerForItemOverride(element, item);

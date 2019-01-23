@@ -9,6 +9,7 @@
 #include "TreeViewList.h"
 #include "NavigationViewList.h"
 #include "NavigationViewItemBase.h"
+#include "NavigationViewItem.h"
 
 // Need to update node selection states on UI before vector changes.
 // Listen on vector change events don't solve the problem because the event already happened when the event handler gets called.
@@ -640,16 +641,24 @@ void ViewModel::NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targ
                 winrt::get_self<TreeViewItem>(targetItem)->UpdateSelection(selectionState);
             }
         }
-        //else if (auto nvList = m_TreeViewList.get().try_as<winrt::NavigationViewList>())
-        //{
-        //    auto container = winrt::get_self<NavigationViewList>(m_TreeViewList.get())->ContainerFromItem(targetNode.Content());
-        //    if (container)
-        //    {
-        //        winrt::NavigationViewItemBase targetItem = container.as<winrt::NavigationViewItemBase>();
-        //        //TODO: Write an implementation for NavigationView
-        //        //winrt::get_self<NavigationViewItemBase>(targetItem)->UpdateSelection(selectionState);
-        //    }
-        //}
+        else if (auto nvList = m_TreeViewList.get().try_as<winrt::NavigationViewList>())
+        {
+            // For NavigationView, TreeNodeSelectionState is only used for determining the parents of a selected item
+            bool isChildSelected = selectionState == TreeNodeSelectionState::PartialSelected ? true : false;
+            auto container = winrt::get_self<NavigationViewList>(nvList)->ContainerFromItem(targetNode.Content());
+            if (container)
+            {
+                if (auto targetItem = container.try_as<winrt::NavigationViewItem>())
+                {
+                    winrt::get_self<NavigationViewItem>(targetItem)->IsChildSelected(isChildSelected);
+                }
+            }
+            // This is special case for when a MenuItem is declared in markup and is hidden
+            else if (auto nviContainerParent = targetNode.Content().try_as<winrt::NavigationViewItem>())
+            {
+                nviContainerParent.IsChildSelected(isChildSelected);
+            }
+        }
     }
 }
 

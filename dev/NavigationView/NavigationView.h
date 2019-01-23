@@ -347,16 +347,18 @@ private:
     // Hierarchical Nav Additions
 
     tracker_ref<winrt::TreeViewNode> m_rootNode{ this };
-    tracker_ref<winrt::TreeViewNode> m_lastSelectedNode{ this };
 
     winrt::IVector<winrt::TreeViewNode> RootNodes();
-    void SyncRootNodesWithItemsSource(const winrt::IInspectable& items);
+
+    void SyncRootNodesWithItemsSource(winrt::IInspectable const& items);
+
     winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
     winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
-    void ChangeIsChildSelectedForNode(winrt::TreeViewNode const& node, bool const selected);
-    void UpdateIsChildSelectedForItem(const winrt::IInspectable& item, bool isChildSelected);
-    void ToggleIsExpanded(winrt::NavigationViewItem const& item);
+    winrt::TreeViewNode NodeFromPreviouslySelectedItem(winrt::IInspectable const& item);
 
+    void ToggleIsExpanded(winrt::NavigationViewItem const& item);
+    void UpdateIsChildSelected(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
+    winrt::ListView GetActiveListView();
 
     bool m_appliedTemplate{ false };
 
