@@ -78,7 +78,6 @@ jobs:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
   variables:
-  - group: DotNet-HelixApi-Access
   - name: artifactsDir
     value: $(Build.SourcesDirectory)\Artifacts
   strategy:
@@ -142,11 +141,11 @@ jobs:
       command: custom
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
-      arguments: '/binaryLogger:$(Build.SourcesDirectory)/$(build.buildNumber).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues)'
+      arguments: '/binaryLogger:$(Build.SourcesDirectory)/RunTestsInHelix.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues)'
 
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish binlog'
+    displayName: 'Publish RunTestsInHelix binlog'
     condition: succeededOrFailed()
     inputs:
-      PathtoPublish: $(Build.SourcesDirectory)/$(build.buildNumber).binlog
+      PathtoPublish: $(Build.SourcesDirectory)/RunTestsInHelix.$(buildPlatform).$(buildConfiguration).binlog
       artifactName: 'drop'
