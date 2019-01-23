@@ -288,7 +288,7 @@ void ViewManager::UpdatePin(const winrt::UIElement& element, bool addPin)
                 {
                     virtInfo->AddPin();
                 }
-                else
+                else if(virtInfo->IsPinned())
                 {
                     if (virtInfo->RemovePin() == 0)
                     {
