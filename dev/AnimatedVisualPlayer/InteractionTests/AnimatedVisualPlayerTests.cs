@@ -23,7 +23,6 @@ using System.Windows.Automation;
 using MS.Internal.Mita.Foundation;
 using MS.Internal.Mita.Foundation.Controls;
 using MS.Internal.Mita.Foundation.Waiters;
-using Windows.Foundation.Metadata;
 #else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
