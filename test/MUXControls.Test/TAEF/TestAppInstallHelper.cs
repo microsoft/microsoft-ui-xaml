@@ -3,6 +3,7 @@
 
 using Microsoft.Win32;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
@@ -34,35 +35,45 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 {
                     PackageManager packageManager = new PackageManager();
                     DeploymentResult result = null;
-                    
+
                     var installedPackages = packageManager.FindPackagesForUser(string.Empty, packageFamilyName);
+                    //foreach (var installedPackage in installedPackages)
+                    //{
+                    //    Log.Comment("Test AppX package already installed. Removing existing package by name: {0}", installedPackage.Id.FullName);
+
+                    //    AutoResetEvent removePackageCompleteEvent = new AutoResetEvent(false);
+                    //    var removePackageOperation = packageManager.RemovePackageAsync(installedPackage.Id.FullName);
+                    //    removePackageOperation.Completed = (operation, status) =>
+                    //    {
+                    //        if (status != AsyncStatus.Started)
+                    //        {
+                    //            result = operation.GetResults();
+                    //            removePackageCompleteEvent.Set();
+                    //        }
+                    //    };
+                    //    removePackageCompleteEvent.WaitOne();
+
+                    //    if (!string.IsNullOrEmpty(result.ErrorText))
+                    //    {
+                    //        Log.Error("Removal failed!");
+                    //        Log.Error("Package removal ActivityId = {0}", result.ActivityId);
+                    //        Log.Error("Package removal ErrorText = {0}", result.ErrorText);
+                    //        Log.Error("Package removal ExtendedErrorCode = {0}", result.ExtendedErrorCode);
+                    //    }
+                    //    else
+                    //    {
+                    //        Log.Comment("Removal successful.");
+                    //    }
+                    //}
                     foreach (var installedPackage in installedPackages)
                     {
-                        Log.Comment("Test AppX package already installed. Removing existing package by name: {0}", installedPackage.Id.FullName);
+                        Log.Comment("!!!!Test AppX package already installed. {0}", installedPackage.Id.FullName);
+                    }
 
-                        AutoResetEvent removePackageCompleteEvent = new AutoResetEvent(false);
-                        var removePackageOperation = packageManager.RemovePackageAsync(installedPackage.Id.FullName);
-                        removePackageOperation.Completed = (operation, status) =>
-                        {
-                            if (status != AsyncStatus.Started)
-                            {
-                                result = operation.GetResults();
-                                removePackageCompleteEvent.Set();
-                            }
-                        };
-                        removePackageCompleteEvent.WaitOne();
-
-                        if (!string.IsNullOrEmpty(result.ErrorText))
-                        {
-                            Log.Error("Removal failed!");
-                            Log.Error("Package removal ActivityId = {0}", result.ActivityId);
-                            Log.Error("Package removal ErrorText = {0}", result.ErrorText);
-                            Log.Error("Package removal ExtendedErrorCode = {0}", result.ExtendedErrorCode);
-                        }
-                        else
-                        {
-                            Log.Comment("Removal successful.");
-                        }
+                    if(installedPackages.Any())
+                    {
+                        TestAppxInstalled.Add(packageFamilyName);
+                        Log.Comment("Test app is already installed. Skipping installation");
                     }
 
                     // The test app has not been installed yet. Install it so tests can pass
@@ -117,7 +128,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 TestAppxInstalled.Add(packageFamilyName);
             }
         }
-        
+
         public static void InstallCert(string certFilePath)
         {
             Log.Comment("Installing cert: {0}", certFilePath);
