@@ -8,7 +8,6 @@
 
 #include "AnimatedVisualPlayer.g.h"
 #include "AnimatedVisualPlayer.properties.h"
-#include <winrt\Windows.UI.Xaml.Controls.h>
 
 
 // Derive from DeriveFromPanelHelper_base so that we get access to Children collection
