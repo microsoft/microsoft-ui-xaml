@@ -17,10 +17,10 @@ jobs:
     matrix:
       Release_x86:
         buildPlatform: 'x86'
-        buildConfiguration: 'Release'
+        buildConfiguration: 'release'
       Release_x64:
         buildPlatform: 'x64'
-        buildConfiguration: 'Release'
+        buildConfiguration: 'release'
 
   steps:
   - task: CmdLine@1
@@ -85,7 +85,7 @@ jobs:
     matrix:
       Release_x86:
         buildPlatform: 'x86'
-        buildConfiguration: 'Release'
+        buildConfiguration: 'release'
         helixTargetQueues: 'Windows.10.Amd64.ClientRS4.Open'
       # Release_x64:
       #   buildPlatform: 'x64'
