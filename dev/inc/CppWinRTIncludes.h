@@ -257,11 +257,10 @@ namespace winrt
     using RichTextBlock = winrt::Windows::UI::Xaml::Controls::RichTextBlock;
     using RichTextBlockOverflow = winrt::Windows::UI::Xaml::Controls::RichTextBlockOverflow;
     using RowDefinition = winrt::Windows::UI::Xaml::Controls::RowDefinition;
-    using ScrollBarVisibility = winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility;
     using ScrollContentPresenter = winrt::Windows::UI::Xaml::Controls::ScrollContentPresenter;
     using ScrollIntoViewAlignment = winrt::Windows::UI::Xaml::Controls::ScrollIntoViewAlignment;
-    using ScrollMode = winrt::Windows::UI::Xaml::Controls::ScrollMode;
-    using ScrollViewer = winrt::Windows::UI::Xaml::Controls::ScrollViewer;
+    using FxZoomMode = winrt::Windows::UI::Xaml::Controls::ZoomMode;
+    using FxScrollViewer = winrt::Windows::UI::Xaml::Controls::ScrollViewer;
     using ScrollViewerViewChangedEventArgs = winrt::Windows::UI::Xaml::Controls::ScrollViewerViewChangedEventArgs;
     using ScrollViewerViewChangingEventArgs = winrt::Windows::UI::Xaml::Controls::ScrollViewerViewChangingEventArgs;
     using SelectionChangedEventArgs = winrt::Windows::UI::Xaml::Controls::SelectionChangedEventArgs;
@@ -283,7 +282,6 @@ namespace winrt
     using ToolTip = winrt::Windows::UI::Xaml::Controls::ToolTip;
     using ToolTipService = winrt::Windows::UI::Xaml::Controls::ToolTipService;
     using VirtualizingStackPanel = winrt::Windows::UI::Xaml::Controls::VirtualizingStackPanel;
-    using ZoomMode = winrt::Windows::UI::Xaml::Controls::ZoomMode;
 
     // using namespace ::winrt::Windows::UI::Xaml::Media;
     using Brush = winrt::Windows::UI::Xaml::Media::Brush;

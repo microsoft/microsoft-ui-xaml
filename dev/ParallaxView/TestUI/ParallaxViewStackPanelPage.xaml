@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
     xmlns:muxcontrols="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxprimitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -43,7 +44,7 @@
 
         <StackPanel Grid.Column="1">
             <TextBlock Text="Parallaxing children of a StackPanel vertically inside a Scroller" Margin="10"/>
-            <muxcontrols:Scroller x:Name="scrollerV" Width="220" Height="400" Margin="10" Background="Bisque" VerticalAlignment="Top">
+            <muxprimitives:Scroller x:Name="scrollerV" Width="220" Height="400" Margin="10" Background="Bisque" VerticalAlignment="Top">
                 <StackPanel>
                     <muxcontrols:ParallaxView Width="200" Height="150" Margin="10"
                         Source="{x:Bind scrollerV}" VerticalShift="50">
@@ -62,7 +63,7 @@
                         <Image Source="Assets/ingredient7.png"/>
                     </muxcontrols:ParallaxView>
                 </StackPanel>
-            </muxcontrols:Scroller>
+            </muxprimitives:Scroller>
         </StackPanel>
 
         <StackPanel Grid.Column="2">
@@ -92,8 +93,7 @@
 
         <StackPanel Grid.Column="3">
             <TextBlock Text="Parallaxing children of a StackPanel horizontally inside a Scroller" Margin="10"/>
-            <muxcontrols:Scroller x:Name="scrollerH" Width="400" Height="220" Margin="10" Background="Beige"
-                VerticalAlignment="Top" HorizontalScrollMode="Auto">
+            <muxprimitives:Scroller x:Name="scrollerH" Width="400" Height="220" Margin="10" Background="Beige" VerticalAlignment="Top">
                 <StackPanel Orientation="Horizontal">
                     <muxcontrols:ParallaxView Width="150" Height="200" Margin="10"
                         Source="{x:Bind scrollerH}" HorizontalShift="50">
@@ -112,7 +112,7 @@
                         <Image Source="Assets/ingredient8.png"/>
                     </muxcontrols:ParallaxView>
                 </StackPanel>
-            </muxcontrols:Scroller>
+            </muxprimitives:Scroller>
         </StackPanel>
     </Grid>
 </local:TestPage>

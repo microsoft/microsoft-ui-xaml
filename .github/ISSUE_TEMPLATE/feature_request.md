@@ -1,6 +1,9 @@
 ---
 name: Feature request
 about: Suggest a new feature or idea
+title: 'Proposal:'
+labels: feature request
+assignees: ''
 
 ---
 
@@ -32,17 +35,12 @@ All sections are required before we'll accept a PR to master, but aren't necessa
 ## Functional Requirements
 <!-- Please include a prioritized list of what the feature should and shouldn't do -->
 
-## Usage Examples
-<!-- Please include one or more examples showing how you would use the feature.
-You can include code examples or screenshots if that helps -->
-
-## Detailed Feature Design
-<!-- Please include any important design details.
-
+## Important Notes
+<!-- Please include any other important design details.
 This could include one or more of:
+- usage examples
 - an API proposal (any supported language or pseudocode is fine)
-- design mockups for a new user experience
-- details on accessibility compliance for new UI
+- design mockups or example screenshots
 - other implementation notes
 -->
 

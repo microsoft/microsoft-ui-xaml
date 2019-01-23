@@ -7,6 +7,7 @@ using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using System.Threading;
 using System.Collections.Generic;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
@@ -36,7 +37,7 @@ using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFacto
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
@@ -49,8 +50,6 @@ using ViewportChangedEventHandler = Microsoft.UI.Private.Controls.ViewportChange
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 #endif
 
-#if BUILD_WINDOWS
-
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
@@ -59,6 +58,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateOneScrollerScenario()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5 and effective viewport feature is not available below RS5");
+                return;
+            }
+
             var realizationRects = new List<Rect>();
             Scroller scroller = null;
             var viewChangeCompletedEvent = new AutoResetEvent(false);
@@ -74,7 +79,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 scroller = new Scroller
                 {
-                    Child = repeater,
+                    Content = repeater,
                     Width = 200,
                     Height = 300
                 };
@@ -122,6 +127,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateTwoScrollersScenario()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5 and effective viewport feature is not available below RS5");
+                return;
+            }
+
             var realizationRects = new List<Rect>();
             Scroller horizontalScroller = null;
             Scroller verticalScroller = null;
@@ -139,7 +150,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 horizontalScroller = new Scroller
                 {
-                    Child = repeater,
+                    Content = repeater,
                     IsChildAvailableHeightConstrained = true
                 };
 
@@ -150,7 +161,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 verticalScroller = new Scroller
                 {
-                    Child = grid,
+                    Content = grid,
                     Width = 200,
                     Height = 200,
                     IsChildAvailableWidthConstrained = true
@@ -203,6 +214,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void CanGrowCacheBuffer()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5 and effective viewport feature is not available below RS5");
+                return;
+            }
+
             Scroller scroller = null;
             ItemsRepeater repeater = null;
             var measureRealizationRects = new List<Rect>();
@@ -247,7 +264,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Layout = layout
                 };
 
-                scroller.Child = repeater;
+                scroller.Content = repeater;
                 Content = scroller;
             });
 
@@ -285,9 +302,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void CanBringIntoViewElements()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("Skipping CanBringIntoViewElements because UIElement.BringIntoViewRequested was added in RS4.");
+                // Note that UIElement.BringIntoViewRequested was added in RS4, and effective viewport was added in RS5
+                Log.Warning("Skipping since version is less than RS5 and effective viewport feature is not available below RS5");
                 return;
             }
 
@@ -359,12 +377,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     effectiveViewChangeCompletedEvent.Set();
                 };
 
-                Content = root;
-
-                root.Loaded += delegate
-                {
+                root.Loaded += delegate {
                     rootLoadedEvent.Set();
                 };
+
+                Content = root;
             });
             Verify.IsTrue(rootLoadedEvent.WaitOne(DefaultWaitTimeInMS));
             IdleSynchronizer.Wait();
@@ -483,5 +500,3 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
     }
 }
-
-#endif

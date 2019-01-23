@@ -252,32 +252,50 @@
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.Indentation}">
 
                                 <Grid>
-                                    <CheckBox x:Name="MultiSelectCheckBox" Width="32" VerticalAlignment="Stretch" Style="{StaticResource TreeViewMultiSelectCheckBox}" Visibility="Collapsed" IsTabStop="False"/>
+                                    <CheckBox x:Name="MultiSelectCheckBox"
+                                              Width="32"
+                                              VerticalAlignment="Stretch"
+                                              Style="{StaticResource TreeViewMultiSelectCheckBox}"
+                                              Visibility="Collapsed"
+                                              IsTabStop="False"
+                                              AutomationProperties.AccessibilityView="Raw" />
                                     <Border x:Name="MultiArrangeOverlayTextBorder"
-                                    Opacity="0"
-                                    IsHitTestVisible="False"
-                                    MinWidth="20"
-                                    Height="20"
-                                    VerticalAlignment="Center"
-                                    HorizontalAlignment="Center"
-                                    Background="{ThemeResource SystemControlBackgroundAccentBrush}"
-                                    BorderThickness="2"
-                                    BorderBrush="{ThemeResource SystemControlBackgroundChromeWhiteBrush}">
-                                        <TextBlock x:Name="MultiArrangeOverlayText"
-                                        Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.DragItemsCount}"
-                                        Style="{ThemeResource CaptionTextBlockStyle}"
+                                        Opacity="0"
                                         IsHitTestVisible="False"
+                                        MinWidth="20"
+                                        Height="20"
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Center"
-                                        AutomationProperties.AccessibilityView="Raw" />
+                                        Background="{ThemeResource SystemControlBackgroundAccentBrush}"
+                                        BorderThickness="2"
+                                        BorderBrush="{ThemeResource SystemControlBackgroundChromeWhiteBrush}">
+                                        <TextBlock x:Name="MultiArrangeOverlayText"
+                                                Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.DragItemsCount}"
+                                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                                IsHitTestVisible="False"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center"
+                                                AutomationProperties.AccessibilityView="Raw" />
                                     </Border>
                                 </Grid>
 
                                 <Grid x:Name="ExpandCollapseChevron" Padding="12,0,12,0" Width="Auto" Opacity="{TemplateBinding GlyphOpacity}" Background="Transparent">
-                                    <TextBlock Foreground="{TemplateBinding GlyphBrush}" Width="12" Height="12" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.CollapsedGlyphVisibility}" 
-                                               FontSize="{TemplateBinding GlyphSize}" Text="{TemplateBinding CollapsedGlyph}" FontFamily="{StaticResource SymbolThemeFontFamily}" VerticalAlignment="Center"/>
-                                    <TextBlock Foreground="{TemplateBinding GlyphBrush}" Width="12" Height="12" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.ExpandedGlyphVisibility}" 
-                                               FontSize="{TemplateBinding GlyphSize}" Text="{TemplateBinding ExpandedGlyph}" FontFamily="{StaticResource SymbolThemeFontFamily}" VerticalAlignment="Center"/>
+                                    <TextBlock Foreground="{TemplateBinding GlyphBrush}"
+                                               Width="12" Height="12"
+                                               Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.CollapsedGlyphVisibility}" 
+                                               FontSize="{TemplateBinding GlyphSize}"
+                                               Text="{TemplateBinding CollapsedGlyph}"
+                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               VerticalAlignment="Center"
+                                               AutomationProperties.AccessibilityView="Raw" />
+                                    <TextBlock Foreground="{TemplateBinding GlyphBrush}"
+                                               Width="12" Height="12"
+                                               Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.ExpandedGlyphVisibility}" 
+                                               FontSize="{TemplateBinding GlyphSize}"
+                                               Text="{TemplateBinding ExpandedGlyph}"
+                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               VerticalAlignment="Center"
+                                               AutomationProperties.AccessibilityView="Raw" />
                                 </Grid>
 
                                 <ContentPresenter x:Name="ContentPresenter"

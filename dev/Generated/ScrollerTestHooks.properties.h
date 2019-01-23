@@ -13,16 +13,16 @@ public:
 
     winrt::event_token AnchorEvaluated(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksAnchorEvaluatedEventArgs> const& value);
     void AnchorEvaluated(winrt::event_token const& token);
-    winrt::event_token ChildLayoutOffsetXChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
-    void ChildLayoutOffsetXChanged(winrt::event_token const& token);
-    winrt::event_token ChildLayoutOffsetYChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
-    void ChildLayoutOffsetYChanged(winrt::event_token const& token);
+    winrt::event_token ContentLayoutOffsetXChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
+    void ContentLayoutOffsetXChanged(winrt::event_token const& token);
+    winrt::event_token ContentLayoutOffsetYChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
+    void ContentLayoutOffsetYChanged(winrt::event_token const& token);
     winrt::event_token InteractionSourcesChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksInteractionSourcesChangedEventArgs> const& value);
     void InteractionSourcesChanged(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksAnchorEvaluatedEventArgs>> m_anchorEvaluatedEventSource;
-    event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_childLayoutOffsetXChangedEventSource;
-    event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_childLayoutOffsetYChangedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_contentLayoutOffsetXChangedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_contentLayoutOffsetYChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksInteractionSourcesChangedEventArgs>> m_interactionSourcesChangedEventSource;
 
     static void EnsureProperties();

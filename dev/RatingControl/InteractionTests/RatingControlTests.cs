@@ -276,7 +276,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
+        //RatingControlTests.GamepadTest unreliable test #155
+        //[TestMethod]
         public void GamepadTest()
         {
             using (var setup = new TestSetupHelper("RatingControl Tests")) // This literally clicks the button corresponding to the test page.

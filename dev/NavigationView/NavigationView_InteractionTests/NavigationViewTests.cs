@@ -1483,8 +1483,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        //[TestMethod]
+        //[TestProperty("NavViewTestSuite", "B")]
+        // Disabled due to: Multiple unreliable NavigationView tests #134
         public void SuppressSelectionItemInvokeTest()
         {
             using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
@@ -2647,8 +2648,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        //[TestMethod]
+        //[TestProperty("NavViewTestSuite", "C")]
+        // Disabled due to: Multiple unreliable NavigationView tests #134
         public void KeyboardFocusToolTipTest() // Verify tooltips appear when Keyboard focused
         {
             using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
@@ -3170,64 +3172,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                             Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
                             Verify.AreEqual(expectedString, closingCounts.GetText());
                         });
-                }
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
-        public void VerifyBackButtonAccessibleOnlyViaXYKeyboard()
-        {
-            var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
-            foreach (var testScenario in testScenarios)
-            {
-                using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
-                 page2 = new TestSetupHelper(testScenario.TestPageName))
-                {
-                    bool doVerfications = true;
-
-                    if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
-                    {
-                        // I want the test to still run, just to uncover any crashes that could occur
-                        Log.Warning("This test only works on RS4, but is running without 'verifications' on RS3 and below to weasel our crashes");
-                        doVerfications = false;
-                    }
-
-                    Button backButton = new Button(FindElement.ByName("NavigationViewBackButton"));
-                    Button navButton = new Button(FindElement.ById("TogglePaneButton"));
-                    Button systemBackButton = new Button(UIObject.Root.Descendants.Find(UICondition.CreateFromId("__BackButton")));
-                    UIObject searchBox = FindElement.ByNameAndClassName("PaneAutoSuggestBox", "TextBox");
-
-                    CheckBox checkBox = new CheckBox(FindElement.ByName("BackButtonEnabledCheckbox"));
-                    checkBox.Toggle();
-                    searchBox.SetFocus();
-                    Wait.ForIdle();
-                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-                    if (doVerfications) Verify.AreEqual(true, navButton.HasKeyboardFocus);
-
-                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-                    if (doVerfications) Verify.AreEqual(true, systemBackButton.HasKeyboardFocus);
-
-                    KeyboardHelper.PressKey(Key.Tab);
-                    if (doVerfications) Verify.AreEqual(true, navButton.HasKeyboardFocus);
-
-                    KeyboardHelper.PressKey(Key.Up);
-                    if (doVerfications) Verify.AreEqual(true, backButton.HasKeyboardFocus);
-
-                    Log.Comment("Test that it works with left/right in minimal closed mode");
-                    SetNavViewWidth(ControlWidth.Narrow);
-                    Wait.ForIdle();
-
-                    navButton.SetFocus();
-                    Wait.ForIdle();
-                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-                    if (doVerfications) Verify.AreEqual(true, systemBackButton.HasKeyboardFocus);
-
-                    KeyboardHelper.PressKey(Key.Tab);
-                    if (doVerfications) Verify.AreEqual(true, navButton.HasKeyboardFocus);
-
-                    KeyboardHelper.PressKey(Key.Left);
-                    if (doVerfications) Verify.AreEqual(true, backButton.HasKeyboardFocus);
                 }
             }
         }

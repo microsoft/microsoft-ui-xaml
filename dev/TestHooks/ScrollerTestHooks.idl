@@ -1,4 +1,4 @@
-[WUXC_VERSION_INTERNAL]
+﻿[WUXC_VERSION_INTERNAL]
 [webhosthidden]
 enum ScrollerSnapPointDimension
 {
@@ -37,17 +37,17 @@ runtimeclass ScrollerTestHooks
     static void SetOffsetsChangeVelocityParameters(Int32 millisecondsPerUnit, Int32 minMilliseconds, Int32 maxMilliseconds);
     static void GetZoomFactorChangeVelocityParameters(out Int32 millisecondsPerUnit, out Int32 minMilliseconds, out Int32 maxMilliseconds);
     static void SetZoomFactorChangeVelocityParameters(Int32 millisecondsPerUnit, Int32 minMilliseconds, Int32 maxMilliseconds);
-    static void GetChildLayoutOffsetX(MU_XC_NAMESPACE.Scroller scroller, out Single childLayoutOffsetX);
-    static void SetChildLayoutOffsetX(MU_XC_NAMESPACE.Scroller scroller, Single childLayoutOffsetX);
-    static void GetChildLayoutOffsetY(MU_XC_NAMESPACE.Scroller scroller, out Single childLayoutOffsetY);
-    static void SetChildLayoutOffsetY(MU_XC_NAMESPACE.Scroller scroller, Single childLayoutOffsetY);
-    static Windows.Foundation.Collections.IVector<MU_XC_NAMESPACE.ScrollerSnapPointBase> GetConsolidatedSnapPoints(MU_XC_NAMESPACE.Scroller scroller, ScrollerSnapPointDimension dimension);
-    static Windows.Foundation.Numerics.Vector2 GetSnapPointActualApplicableZone(MU_XC_NAMESPACE.ScrollerSnapPointBase snapPoint);
-    static Int32 GetSnapPointCombinationCount(MU_XC_NAMESPACE.ScrollerSnapPointBase snapPoint);
-    static Windows.UI.Color GetSnapPointVisualizationColor(MU_XC_NAMESPACE.ScrollerSnapPointBase snapPoint);
-    static void SetSnapPointVisualizationColor(MU_XC_NAMESPACE.ScrollerSnapPointBase snapPoint, Windows.UI.Color color);
-    static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.Scroller, ScrollerTestHooksAnchorEvaluatedEventArgs> AnchorEvaluated;
-    static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.Scroller, ScrollerTestHooksInteractionSourcesChangedEventArgs> InteractionSourcesChanged;
-    static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.Scroller, Object> ChildLayoutOffsetXChanged;
-    static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.Scroller, Object> ChildLayoutOffsetYChanged;
+    static void GetContentLayoutOffsetX(MU_XCP_NAMESPACE.Scroller scroller, out Single contentLayoutOffsetX);
+    static void SetContentLayoutOffsetX(MU_XCP_NAMESPACE.Scroller scroller, Single contentLayoutOffsetX);
+    static void GetContentLayoutOffsetY(MU_XCP_NAMESPACE.Scroller scroller, out Single contentLayoutOffsetY);
+    static void SetContentLayoutOffsetY(MU_XCP_NAMESPACE.Scroller scroller, Single contentLayoutOffsetY);
+    static Windows.Foundation.Collections.IVector<MU_XCP_NAMESPACE.ScrollerSnapPointBase> GetConsolidatedSnapPoints(MU_XCP_NAMESPACE.Scroller scroller, ScrollerSnapPointDimension dimension);
+    static Windows.Foundation.Numerics.Vector2 GetSnapPointActualApplicableZone(MU_XCP_NAMESPACE.ScrollerSnapPointBase snapPoint);
+    static Int32 GetSnapPointCombinationCount(MU_XCP_NAMESPACE.ScrollerSnapPointBase snapPoint);
+    static Windows.UI.Color GetSnapPointVisualizationColor(MU_XCP_NAMESPACE.ScrollerSnapPointBase snapPoint);
+    static void SetSnapPointVisualizationColor(MU_XCP_NAMESPACE.ScrollerSnapPointBase snapPoint, Windows.UI.Color color);
+    static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, ScrollerTestHooksAnchorEvaluatedEventArgs> AnchorEvaluated;
+    static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, ScrollerTestHooksInteractionSourcesChangedEventArgs> InteractionSourcesChanged;
+    static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, Object> ContentLayoutOffsetXChanged;
+    static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, Object> ContentLayoutOffsetYChanged;
 }

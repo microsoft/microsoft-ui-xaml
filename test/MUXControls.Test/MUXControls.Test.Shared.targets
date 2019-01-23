@@ -5,8 +5,8 @@
   <Import Project="..\..\dev\RatingControl\InteractionTests\RatingControl_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="..\..\dev\ParallaxView\InteractionTests\ParallaxView_InteractionTests.projitems" Label="Shared" />
   <Import Project="..\..\dev\Scroller\InteractionTests\Scroller_InteractionTests.projitems" Label="Shared" />
-  <Import Project="..\..\dev\ScrollBar2\InteractionTests\ScrollBar2_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-  <Import Project="..\..\dev\ScrollerView\InteractionTests\ScrollerView_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="..\..\dev\ScrollBar2\InteractionTests\ScrollBar2_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true'" />
+  <Import Project="..\..\dev\ScrollViewer\InteractionTests\ScrollViewer_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true'" />
   <Import Project="..\..\dev\PersonPicture\InteractionTests\PersonPicture_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="..\..\dev\TreeView\InteractionTests\TreeView_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="..\..\dev\NavigationView\NavigationView_InteractionTests\NavigationView_InteractionTests.projitems" Label="Shared" />

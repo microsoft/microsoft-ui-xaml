@@ -30,13 +30,13 @@ private:
     static void GetChildScrollerOrScrollViewer(
         const winrt::DependencyObject& rootElement,
         _Out_ winrt::Scroller* scroller,
-        _Out_ winrt::ScrollViewer* scrollViewer);
+        _Out_ winrt::FxScrollViewer* scrollViewer);
     winrt::UIElement GetScrollContentElement() const;
     winrt::HorizontalAlignment GetEffectiveHorizontalAlignment() const;
     winrt::VerticalAlignment GetEffectiveVerticalAlignment() const;
-    winrt::ZoomMode GetEffectiveZoomMode() const;
+    winrt::FxZoomMode GetEffectiveZoomMode() const;
     
-    void SetScrollViewer(const winrt::ScrollViewer& scrollViewer);
+    void SetScrollViewer(const winrt::FxScrollViewer& scrollViewer);
     void SetScroller(const winrt::Scroller& scroller);
 
     void UpdateOutOfBoundsPanSize();
@@ -50,7 +50,7 @@ private:
 
     winrt::HorizontalAlignment ComputeHorizontalContentAlignment() const;
     winrt::VerticalAlignment ComputeVerticalContentAlignment() const;
-    winrt::ZoomMode ComputeZoomMode() const;
+    winrt::FxZoomMode ComputeZoomMode() const;
 
     bool IsScrollContentPresenterIScrollInfoProvider() const;
 
@@ -63,7 +63,7 @@ private:
     void ProcessTargetElementChange();
     void ProcessContentSizeChange();
     void ProcessScrollViewerContentChange();
-    void ProcessScrollerChildChange();
+    void ProcessScrollerContentChange();
     void ProcessScrollViewerZoomModeChange();
 
     void OnSourceElementChanged(bool allowSourceElementLoadedHookup);
@@ -92,8 +92,8 @@ private:
     void UnhookTargetElementLoaded();
     void HookScrollerPropertyChanged();
     void UnhookScrollerPropertyChanged();
-    void HookScrollerChildPropertyChanged();
-    void UnhookScrollerChildPropertyChanged();
+    void HookScrollerContentPropertyChanged();
+    void UnhookScrollerContentPropertyChanged();
     void HookScrollViewerPropertyChanged();
     void UnhookScrollViewerPropertyChanged();
     void HookScrollViewerContentPropertyChanged();
@@ -113,7 +113,7 @@ private:
 
     tracker_ref<winrt::UIElement> m_sourceElement{ m_owner };
     tracker_ref<winrt::UIElement> m_targetElement{ m_owner };
-    tracker_ref<winrt::ScrollViewer> m_scrollViewer{ m_owner };
+    tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ m_owner };
     tracker_ref<winrt::Scroller> m_scroller{ m_owner };
     tracker_ref<winrt::FrameworkElement> m_sourceContent{ m_owner };
     tracker_ref<winrt::RichEditBox> m_richEditBox{ m_owner };
@@ -123,7 +123,7 @@ private:
     winrt::ExpressionAnimation m_internalTranslationXExpressionAnimation{ nullptr };
     winrt::ExpressionAnimation m_internalTranslationYExpressionAnimation{ nullptr };
     winrt::ExpressionAnimation m_internalScaleExpressionAnimation{ nullptr };
-    winrt::ZoomMode m_manipulationZoomMode{ winrt::ZoomMode::Disabled };
+    winrt::FxZoomMode m_manipulationZoomMode{ winrt::FxZoomMode::Disabled };
     winrt::HorizontalAlignment m_manipulationHorizontalAlignment{ winrt::HorizontalAlignment::Stretch };
     winrt::VerticalAlignment m_manipulationVerticalAlignment{ winrt::VerticalAlignment::Stretch };
     winrt::Size m_viewportSize{ 0.0f, 0.0f };
@@ -141,7 +141,7 @@ private:
     winrt::event_token m_scrollViewerContentHorizontalAlignmentChangedToken{ 0 };
     winrt::event_token m_scrollViewerContentVerticalAlignmentChangedToken{ 0 };
     winrt::event_token m_scrollViewerContentChangedToken{ 0 };
-    winrt::event_token m_scrollerChildChangedToken{ 0 };
+    winrt::event_token m_scrollerContentChangedToken{ 0 };
     winrt::event_token m_scrollViewerHorizontalContentAlignmentChangedToken{ 0 };
     winrt::event_token m_scrollViewerVerticalContentAlignmentChangedToken{ 0 };
     winrt::event_token m_scrollViewerZoomModeChangedToken{ 0 };

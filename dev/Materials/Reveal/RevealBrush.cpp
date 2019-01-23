@@ -699,6 +699,13 @@ void RevealBrush::CreateRevealBrush()
             m_brush = compositor.CreateColorBrush(fallbackColor);
         }
     }
+
+#ifndef BUILD_WINDOWS
+    if (m_brush)
+    {
+        m_brush.Properties().InsertScalar(L"ShouldRenderAsFallbackInIslands", 1.0f);
+    }
+#endif
 }
 
 void RevealBrush::UpdateRevealBrush()
@@ -877,7 +884,7 @@ bool RevealBrush::ValidatePublicRootAncestor()
     auto ancestor = GetAncestor(windowRoot);
     bool windowContentIsCanvas = static_cast<bool>(windowRoot.try_as<winrt::Canvas>());
     bool walkedUpToScrollViewer = winrt::VisualTreeHelper::GetParent(windowRoot) && 
-                                  static_cast<bool>(ancestor.try_as<winrt::ScrollViewer>());
+                                  static_cast<bool>(ancestor.try_as<winrt::FxScrollViewer>());
 
     // On MUX + RS3/RS4, it's possible XCB::OnConnected is called before visual tree is constructed and the ancestor walk returns a false elemenet.
     return windowContentIsCanvas || walkedUpToScrollViewer;

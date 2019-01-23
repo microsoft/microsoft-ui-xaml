@@ -171,8 +171,8 @@
         </ScrollViewer>-->
 
         <!-- No Element Tracker for RS5+. ScrollViewer can do the anchoring itself -->
-        <!--<controls:ScrollerView x:Name="scrollViewer" Grid.Row="1">
+        <!--<controls:ScrollViewer x:Name="scrollViewer" Grid.Row="1">
             <controls:ItemsRepeater x:Name="rootRepeater" VerticalCacheLength="0" />
-        </controls:ScrollerView >-->
+        </controls:ScrollViewer >-->
     </Grid>
 </Page>

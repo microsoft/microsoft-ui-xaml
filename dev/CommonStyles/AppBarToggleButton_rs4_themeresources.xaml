@@ -401,7 +401,8 @@
                                 Foreground="{ThemeResource AppBarToggleButtonKeyboardAcceleratorTextForeground}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
-                                Visibility="Collapsed" />
+                                Visibility="Collapsed"
+                                AutomationProperties.AccessibilityView="Raw" />
                         </Grid>
                     
                     </Grid>
