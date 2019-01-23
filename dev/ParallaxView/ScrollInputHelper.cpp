@@ -21,7 +21,7 @@ ScrollInputHelper::ScrollInputHelper(
 ScrollInputHelper::~ScrollInputHelper()
 {
     UnhookScrollerPropertyChanged();
-    UnhookScrollerChildPropertyChanged();
+    UnhookScrollerContentPropertyChanged();
     UnhookScrollViewerPropertyChanged();
     UnhookScrollViewerContentPropertyChanged();
     UnhookScrollViewerDirectManipulationStarted();
@@ -167,7 +167,7 @@ void ScrollInputHelper::SetScroller(const winrt::Scroller& scroller)
             HookScrollerPropertyChanged();
         }
 
-        ProcessScrollerChildChange();
+        ProcessScrollerContentChange();
     }
 }
 
@@ -237,7 +237,7 @@ void ScrollInputHelper::GetChildScrollerOrScrollViewer(
     }
 }
 
-// Returns the ScrollViewer content as a UIElement, if any. Or Scroller.Child, if any.
+// Returns the ScrollViewer content as a UIElement, if any. Or Scroller.Content, if any.
 winrt::UIElement ScrollInputHelper::GetScrollContentElement() const
 {
     if (m_scrollViewer)
@@ -252,7 +252,7 @@ winrt::UIElement ScrollInputHelper::GetScrollContentElement() const
     }
     else if (auto scroller = m_scroller.get())
     {
-        return scroller.Child();
+        return scroller.Content();
     }
     return nullptr;
 }
@@ -959,7 +959,7 @@ void ScrollInputHelper::ProcessTargetElementChange()
     }
 }
 
-// Invoked when the ScrollViewer.Content or Scroller.Child size changed.
+// Invoked when the ScrollViewer.Content or Scroller.Content size changed.
 void ScrollInputHelper::ProcessContentSizeChange()
 {
     double oldContentWidth = GetContentSize(winrt::Orientation::Horizontal);
@@ -1098,22 +1098,22 @@ void ScrollInputHelper::ProcessScrollViewerContentChange()
     OnSourceInfoChanged(true /*horizontalInfoChanged*/, true /*verticalInfoChanged*/, true /*zoomInfoChanged*/);
 }
 
-void ScrollInputHelper::ProcessScrollerChildChange()
+void ScrollInputHelper::ProcessScrollerContentChange()
 {
     auto scroller = m_scroller.get();
-    UnhookScrollerChildPropertyChanged();
+    UnhookScrollerContentPropertyChanged();
 
     m_sourceContent.set(nullptr);
 
     if (scroller)
     {
-        winrt::UIElement newChild = scroller.Child();
+        winrt::UIElement newContent = scroller.Content();
 
-        if (newChild)
+        if (newContent)
         {
-            m_sourceContent.set(newChild.try_as<winrt::FrameworkElement>());
+            m_sourceContent.set(newContent.try_as<winrt::FrameworkElement>());
 
-            HookScrollerChildPropertyChanged();
+            HookScrollerContentPropertyChanged();
         }
     }
 
@@ -1253,9 +1253,9 @@ void ScrollInputHelper::OnScrollViewerPropertyChanged(const winrt::DependencyObj
 // Invoked when a tracked dependency property changes for the Scroller dependency object.
 void ScrollInputHelper::OnScrollerPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
 {
-    if (args == winrt::Scroller::ChildProperty())
+    if (args == winrt::Scroller::ContentProperty())
     {
-        ProcessScrollerChildChange();
+        ProcessScrollerContentChange();
     }
 }
 
@@ -1386,11 +1386,11 @@ void ScrollInputHelper::HookScrollerPropertyChanged()
 
     if (scroller)
     {
-        MUX_ASSERT(m_scrollerChildChangedToken.value == 0);
+        MUX_ASSERT(m_scrollerContentChangedToken.value == 0);
         MUX_ASSERT(m_sourceSizeChangedToken.value == 0);
 
-        m_scrollerChildChangedToken.value = scroller.RegisterPropertyChangedCallback(
-            winrt::Scroller::ChildProperty(), { this, &ScrollInputHelper::OnScrollerPropertyChanged });
+        m_scrollerContentChangedToken.value = scroller.RegisterPropertyChangedCallback(
+            winrt::Scroller::ContentProperty(), { this, &ScrollInputHelper::OnScrollerPropertyChanged });
         m_sourceSizeChangedToken = scroller.SizeChanged({ this, &ScrollInputHelper::OnSourceSizeChanged });
     }
 }
@@ -1434,10 +1434,10 @@ void ScrollInputHelper::UnhookScrollerPropertyChanged()
 
     if (scroller)
     {
-        if (m_scrollerChildChangedToken.value != 0)
+        if (m_scrollerContentChangedToken.value != 0)
         {
-            scroller.UnregisterPropertyChangedCallback(winrt::Scroller::ChildProperty(), m_scrollerChildChangedToken.value);
-            m_scrollerChildChangedToken.value = 0;
+            scroller.UnregisterPropertyChangedCallback(winrt::Scroller::ContentProperty(), m_scrollerContentChangedToken.value);
+            m_scrollerContentChangedToken.value = 0;
         }
         if (m_sourceSizeChangedToken.value != 0)
         {
@@ -1469,7 +1469,7 @@ void ScrollInputHelper::HookScrollViewerContentPropertyChanged()
     }
 }
 
-void ScrollInputHelper::HookScrollerChildPropertyChanged()
+void ScrollInputHelper::HookScrollerContentPropertyChanged()
 {
     auto sourceContent = m_sourceContent.get();
 
@@ -1507,10 +1507,10 @@ void ScrollInputHelper::UnhookScrollViewerContentPropertyChanged()
 }
 
 // Note that if in the future the Scroller supports a virtual mode where the extent does not
-// correspond to its Child size, the Scroller will need to raise an event when its virtual extent
+// correspond to its Content size, the Scroller will need to raise an event when its virtual extent
 // changes so that the Scroller.ExpressionAnimationSources's Extent composition property can
-// be read. This should replace hooking up the SizeChanged event on the Scroller.Child altogether.
-void ScrollInputHelper::UnhookScrollerChildPropertyChanged()
+// be read. This should replace hooking up the SizeChanged event on the Scroller.Content altogether.
+void ScrollInputHelper::UnhookScrollerContentPropertyChanged()
 {
     auto sourceContent = m_sourceContent.safe_get();
 

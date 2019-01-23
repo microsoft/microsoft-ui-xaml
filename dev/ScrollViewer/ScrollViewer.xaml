@@ -207,7 +207,7 @@
                         <localPrimitives:Scroller x:Name="PART_Scroller"
                             Grid.ColumnSpan="2" Grid.RowSpan="2"
                             Background="{TemplateBinding Background}"
-                            Child="{TemplateBinding Content}"
+                            Content="{TemplateBinding Content}"
                             Margin="{TemplateBinding Padding}"
                             ContentOrientation="{TemplateBinding ContentOrientation}"
                             HorizontalScrollChainingMode="{TemplateBinding HorizontalScrollChainingMode}"

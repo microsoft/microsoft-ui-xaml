@@ -108,7 +108,7 @@ public:
     void ConfigurationChanged(winrt::event_token const& token);
 
     winrt::Rect GetRelativeViewport(
-        winrt::UIElement const& child);
+        winrt::UIElement const& content);
 #pragma endregion
 
 #pragma region IFrameworkElementOverridesHelper
@@ -175,18 +175,18 @@ public:
         const winrt::UIElement& element);
 
     // Invoked by ScrollerTestHooks
-    float GetChildLayoutOffsetX()
+    float GetContentLayoutOffsetX()
     {
-        return m_childLayoutOffsetX;
+        return m_contentLayoutOffsetX;
     }
 
-    float GetChildLayoutOffsetY()
+    float GetContentLayoutOffsetY()
     {
-        return m_childLayoutOffsetY;
+        return m_contentLayoutOffsetY;
     }
 
-    void SetChildLayoutOffsetX(float childLayoutOffsetX);
-    void SetChildLayoutOffsetY(float childLayoutOffsetY);
+    void SetContentLayoutOffsetX(float contentLayoutOffsetX);
+    void SetContentLayoutOffsetY(float contentLayoutOffsetY);
 
     winrt::IVector<winrt::ScrollerSnapPointBase> GetConsolidatedSnapPoints(winrt::ScrollerSnapPointDimension dimension);
 
@@ -194,7 +194,7 @@ public:
     void OnPropertyChanged(
         const winrt::DependencyPropertyChangedEventArgs& args);
 
-    void OnChildPropertyChanged(
+    void OnContentPropertyChanged(
         const winrt::DependencyObject& sender,
         const winrt::DependencyProperty& args);
 
@@ -236,15 +236,15 @@ private:
         ZoomFactor
     };
 
-    float ComputeChildLayoutOffsetDelta(ScrollerDimension dimension, float unzoomedDelta) const;
+    float ComputeContentLayoutOffsetDelta(ScrollerDimension dimension, float unzoomedDelta) const;
     float ComputeEndOfInertiaZoomFactor() const;
     winrt::float2 ComputeEndOfInertiaPosition();
     void ComputeMinMaxPositions(float zoomFactor, _Out_opt_ winrt::float2* minPosition, _Out_opt_ winrt::float2* maxPosition);
     winrt::float2 ComputePositionFromOffsets(double zoomedHorizontalOffset, double zoomedVerticalOffset);
     double ComputeValueAfterSnapPoints(double value, const std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator>& snapPoints);
-    winrt::float2 ComputeCenterPointerForMouseWheelZooming(const winrt::UIElement& child, const winrt::Point& pointerPosition) const;
+    winrt::float2 ComputeCenterPointerForMouseWheelZooming(const winrt::UIElement& content, const winrt::Point& pointerPosition) const;
     void ComputeBringIntoViewTargetOffsets(
-        const winrt::UIElement& child,
+        const winrt::UIElement& content,
         const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
         _Out_ double* targetZoomedHorizontalOffset,
         _Out_ double* targetZoomedVerticalOffset,
@@ -306,27 +306,27 @@ private:
         const winrt::VisualInteractionSource& visualInteractionSource,
         ScrollerDimension dimension);
     void SetupPositionBoundariesExpressionAnimations(
-        const winrt::UIElement& child);
+        const winrt::UIElement& content);
     void SetupTransformExpressionAnimations(
-        const winrt::UIElement& child);
+        const winrt::UIElement& content);
     void StartTransformExpressionAnimations(
-        const winrt::UIElement& child);
+        const winrt::UIElement& content);
     void StopTransformExpressionAnimations(
-        const winrt::UIElement& child);
+        const winrt::UIElement& content);
     void StartExpressionAnimationSourcesAnimations();
     void StopExpressionAnimationSourcesAnimations();
     void StartScrollControllerExpressionAnimationSourcesAnimations(
         ScrollerDimension dimension);
     void StopScrollControllerExpressionAnimationSourcesAnimations(
         ScrollerDimension dimension);
-    void UpdateChild(
-        const winrt::UIElement& oldChild,
-        const winrt::UIElement& newChild);
+    void UpdateContent(
+        const winrt::UIElement& oldContent,
+        const winrt::UIElement& newContent);
     void UpdatePositionBoundaries(
-        const winrt::UIElement& child);
+        const winrt::UIElement& content);
     void UpdateTransformSource(
-        const winrt::UIElement& oldChild,
-        const winrt::UIElement& newChild);
+        const winrt::UIElement& oldContent,
+        const winrt::UIElement& newContent);
     void UpdateState(
         const winrt::InteractionState& state);
     void UpdateExpressionAnimationSources();
@@ -339,10 +339,10 @@ private:
     void UpdateVisualInteractionSourceMode(ScrollerDimension dimension);
     void UpdateManipulationRedirectionMode();
     void UpdateKeyEvents();
-    void OnChildSizeChanged(
-        const winrt::UIElement& child);
+    void OnContentSizeChanged(
+        const winrt::UIElement& content);
     void OnViewChanged(bool horizontalOffsetChanged, bool verticalOffsetChanged);
-    void OnChildLayoutOffsetChanged(ScrollerDimension dimension);
+    void OnContentLayoutOffsetChanged(ScrollerDimension dimension);
 
     void ChangeOffsetsPrivate(
         InteractionTrackerAsyncOperationTrigger operationTrigger,
@@ -417,24 +417,24 @@ private:
 
     double GetComputedMaxWidth(
         double defaultMaxWidth,
-        const winrt::FrameworkElement& child) const;
+        const winrt::FrameworkElement& content) const;
     double GetComputedMaxHeight(
         double defaultMaxHeight,
-        const winrt::FrameworkElement& child) const;
+        const winrt::FrameworkElement& content) const;
     winrt::float2 GetArrangeRenderSizesDelta(
-        const winrt::UIElement& child) const;
+        const winrt::UIElement& content) const;
     winrt::hstring GetMinPositionExpression(
-        const winrt::UIElement& child) const;
+        const winrt::UIElement& content) const;
     winrt::hstring GetMinPositionXExpression(
-        const winrt::UIElement& child) const;
+        const winrt::UIElement& content) const;
     winrt::hstring GetMinPositionYExpression(
-        const winrt::UIElement& child) const;
+        const winrt::UIElement& content) const;
     winrt::hstring GetMaxPositionExpression(
-        const winrt::UIElement& child) const;
+        const winrt::UIElement& content) const;
     winrt::hstring GetMaxPositionXExpression(
-        const winrt::UIElement& child) const;
+        const winrt::UIElement& content) const;
     winrt::hstring GetMaxPositionYExpression(
-        const winrt::UIElement& child) const;
+        const winrt::UIElement& content) const;
 
     winrt::CompositionAnimation GetPositionAnimation(
         double zoomedHorizontalOffset,
@@ -456,8 +456,8 @@ private:
 
     void HookCompositionTargetRendering();
     void HookScrollerEvents();
-    void HookChildPropertyChanged(
-        const winrt::UIElement& child);
+    void HookContentPropertyChanged(
+        const winrt::UIElement& content);
     void HookHorizontalScrollControllerEvents(
         const winrt::IScrollController& horizontalScrollController,
         bool hasInteractionVisual);
@@ -465,8 +465,8 @@ private:
         const winrt::IScrollController& verticalScrollController,
         bool hasInteractionVisual);
     void UnhookCompositionTargetRendering();
-    void UnhookChildPropertyChanged(
-        const winrt::UIElement& child);
+    void UnhookContentPropertyChanged(
+        const winrt::UIElement& content);
     void UnhookScrollerEvents();
     void UnhookHorizontalScrollControllerEvents(
         const winrt::IScrollController& horizontalScrollController);
@@ -599,7 +599,7 @@ private:
 
     void ProcessAnchorCandidate(
         const winrt::UIElement& anchorCandidate,
-        const winrt::UIElement& child,
+        const winrt::UIElement& content,
         const winrt::Rect& viewportAnchorBounds,
         double viewportAnchorPointHorizontalOffset,
         double viewportAnchorPointVerticalOffset,
@@ -608,12 +608,12 @@ private:
         _Inout_ winrt::Rect* bestAnchorCandidateBounds) const;
 
     static winrt::Rect GetDescendantBounds(
-        const winrt::UIElement& child,
+        const winrt::UIElement& content,
         const winrt::UIElement& descendant);
 
     static bool IsElementValidAnchor(
         const winrt::UIElement& element,
-        const winrt::UIElement& child);
+        const winrt::UIElement& content);
 #pragma endregion
 
     static winrt::InteractionChainingMode InteractionChainingModeFromChainingMode(
@@ -638,7 +638,7 @@ private:
         double childEnd);
 
     static winrt::Rect GetDescendantBounds(
-        const winrt::UIElement& child,
+        const winrt::UIElement& content,
         const winrt::UIElement& descendant,
         const winrt::Rect& descendantRect);
 
@@ -657,8 +657,8 @@ private:
     winrt::float2 m_endOfInertiaPosition{ 0.0f, 0.0f };
     float m_endOfInertiaZoomFactor{ 1.0f };
     float m_zoomFactor{ 1.0f };
-    float m_childLayoutOffsetX{ 0.0f };
-    float m_childLayoutOffsetY{ 0.0f };
+    float m_contentLayoutOffsetX{ 0.0f };
+    float m_contentLayoutOffsetY{ 0.0f };
     double m_zoomedHorizontalOffset{ 0.0 };
     double m_zoomedVerticalOffset{ 0.0 };
     double m_unzoomedExtentWidth{ 0.0 };
@@ -718,8 +718,8 @@ private:
     winrt::event_token m_unloadedToken{};
     winrt::event_token m_bringIntoViewRequested{};
     winrt::event_token m_pointerWheelChangedToken{};
-    winrt::event_token m_childHorizontalAlignmentChangedToken{};
-    winrt::event_token m_childVerticalAlignmentChangedToken{};
+    winrt::event_token m_contentHorizontalAlignmentChangedToken{};
+    winrt::event_token m_contentVerticalAlignmentChangedToken{};
 
     winrt::event_token m_horizontalScrollControllerOffsetChangeRequestedToken{};
     winrt::event_token m_horizontalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken{};
@@ -753,7 +753,7 @@ private:
     std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator> m_sortedConsolidatedVerticalSnapPoints{};
     std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator> m_sortedConsolidatedZoomSnapPoints{};
 
-    // Property names being targeted for the Scroller.Child's Visual.
+    // Property names being targeted for the Scroller.Content's Visual.
     // RedStone v1 case:
     static constexpr std::wstring_view s_transformMatrixTranslateXPropertyName{ L"TransformMatrix._41"sv };
     static constexpr std::wstring_view s_transformMatrixTranslateYPropertyName{ L"TransformMatrix._42"sv };

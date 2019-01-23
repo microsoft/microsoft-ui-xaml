@@ -444,9 +444,9 @@ namespace CustomTasks
             IncludedTypesMetadata["Scroller"] = true;
             // Scroller -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["Scroller.Background"] = true;
-            NeedsPropChangedCallbackMetadata["Scroller.Child"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.ComputedHorizontalScrollMode"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.ComputedVerticalScrollMode"] = true;
+            NeedsPropChangedCallbackMetadata["Scroller.Content"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.ContentOrientation"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.HorizontalAnchorRatio"] = true;
             PropValidationCallbackMetadata["Scroller.HorizontalAnchorRatio"] = "ValidateAnchorRatio";

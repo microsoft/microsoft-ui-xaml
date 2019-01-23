@@ -35,6 +35,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
     [TestClass]
     public class CommandBarFlyoutTests
     {
+        // Values taken from https://docs.microsoft.com/en-us/windows/desktop/winauto/uiauto-automation-element-propids
+        private const int UIA_FlowsFromPropertyId = 30148;
+        private const int UIA_FlowsToPropertyId = 30106;
+
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
@@ -196,6 +200,56 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
                 
                 Verify.IsTrue(isFlyoutOpenCheckBox.ToggleState == ToggleState.Off);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyFlowsToAndFromConnectsPrimaryAndSecondaryCommands()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout");
+                ToggleButton isFlyoutOpenCheckBox = FindElement.ById<ToggleButton>("IsFlyoutOpenCheckBox");
+                
+                Log.Comment("Tapping on a button to show the CommandBarFlyout.");
+                InputHelper.Tap(showCommandBarFlyoutButton);
+
+                // Pre-RS5, CommandBarFlyouts always open expanded,
+                // so we don't need to tap on the more button in that case.
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                {
+                    Log.Comment("Expanding the CommandBar by invoking the more button.");
+                    FindElement.ById<Button>("MoreButton").InvokeAndWait();
+                }
+
+                Log.Comment("Retrieving the more button and undo button's automation element objects.");
+                FindElement.ById("MoreButton").SetFocus();
+                Wait.ForIdle();
+                var moreButtonElement = AutomationElement.FocusedElement;
+
+                FindElement.ById("UndoButton1").SetFocus();
+                Wait.ForIdle();
+                var undoButtonElement = AutomationElement.FocusedElement;
+
+                Log.Comment("Verifying that the two elements point at each other using FlowsTo and FlowsFrom.");
+                var flowsToCollection = (AutomationElementCollection)moreButtonElement.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_FlowsToPropertyId));
+
+                Verify.AreEqual(1, flowsToCollection.Count);
+                Verify.AreEqual(undoButtonElement, flowsToCollection[0]);
+
+                var flowsFromCollection = (AutomationElementCollection)undoButtonElement.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_FlowsFromPropertyId));
+
+                Verify.AreEqual(1, flowsFromCollection.Count);
+                Verify.AreEqual(moreButtonElement, flowsFromCollection[0]);
+
+                Log.Comment("Tapping on a button to hide the CommandBarFlyout.");
+                InputHelper.Tap(showCommandBarFlyoutButton);
             }
         }
     }

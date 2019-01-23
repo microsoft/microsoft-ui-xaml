@@ -224,7 +224,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment("Verifying ScrollViewer property values after Loaded event");
                     Verify.AreEqual(scrollViewer.Content, rectangleScrollViewerContent);
                     Verify.IsNotNull(ScrollViewerTestHooks.GetScrollerPart(scrollViewer));
-                    Verify.AreEqual(ScrollViewerTestHooks.GetScrollerPart(scrollViewer).Child, rectangleScrollViewerContent);
+                    Verify.AreEqual(ScrollViewerTestHooks.GetScrollerPart(scrollViewer).Content, rectangleScrollViewerContent);
                     Verify.IsNotNull(scrollViewer.HorizontalScrollController);
                     Verify.IsNotNull(scrollViewer.VerticalScrollController);
 

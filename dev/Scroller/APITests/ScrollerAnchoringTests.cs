@@ -81,7 +81,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Inserting child at near edge");
-                    InsertStackPanelChild((scroller.Child as Border).Child as StackPanel, 1 /*operationCount*/, 0 /*newIndex*/, 1 /*newCount*/);
+                    InsertStackPanelChild((scroller.Content as Border).Child as StackPanel, 1 /*operationCount*/, 0 /*newIndex*/, 1 /*newCount*/);
                 });
 
                 IdleSynchronizer.Wait();
@@ -201,7 +201,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     };
 
                     Log.Comment("Inserting child at far edge");
-                    InsertStackPanelChild((scroller.Child as Border).Child as StackPanel, 1 /*operationCount*/, c_defaultAnchoringUIStackPanelChildrenCount /*newIndex*/, 1 /*newCount*/);
+                    InsertStackPanelChild((scroller.Content as Border).Child as StackPanel, 1 /*operationCount*/, c_defaultAnchoringUIStackPanelChildrenCount /*newIndex*/, 1 /*newCount*/);
 
                     if (viewportSizeChange != 0)
                     {
@@ -385,7 +385,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     };
 
                     Log.Comment("Inserting child at near edge");
-                    InsertStackPanelChild((scroller.Child as Border).Child as StackPanel, 1 /*operationCount*/, 0 /*newIndex*/, 1 /*newCount*/);
+                    InsertStackPanelChild((scroller.Content as Border).Child as StackPanel, 1 /*operationCount*/, 0 /*newIndex*/, 1 /*newCount*/);
                 });
 
                 WaitForEvent("Waiting for Scroller.ViewChanged event", scrollerViewChangedEvent);
@@ -460,7 +460,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Inserting child at far edge");
-                    InsertStackPanelChild((scroller.Child as Border).Child as StackPanel, 1 /*operationCount*/, c_defaultAnchoringUIStackPanelChildrenCount /*newIndex*/, 1 /*newCount*/);
+                    InsertStackPanelChild((scroller.Content as Border).Child as StackPanel, 1 /*operationCount*/, c_defaultAnchoringUIStackPanelChildrenCount /*newIndex*/, 1 /*newCount*/);
                 });
 
                 IdleSynchronizer.Wait();
@@ -611,7 +611,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scroller.Height = c_defaultAnchoringUIScrollerConstrainedSize;
             }
             scroller.Background = new SolidColorBrush(Colors.AliceBlue);
-            scroller.Child = border;
+            scroller.Content = border;
 
             InsertStackPanelChild(stackPanel, 0 /*operationCount*/, 0 /*newIndex*/, c_defaultAnchoringUIStackPanelChildrenCount /*newCount*/);
 
@@ -631,7 +631,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(args.AnchorElement);
                 Verify.AreEqual(args.AnchorCandidates.Count, 0);
 
-                StackPanel sp = (sender.Child as Border).Child as StackPanel;
+                StackPanel sp = (sender.Content as Border).Child as StackPanel;
                 foreach (Border b in sp.Children)
                 {
                     args.AnchorCandidates.Add(b);
@@ -697,8 +697,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 AutoResetEvent scrollerViewChangedEvent = new AutoResetEvent(false);
                 AutoResetEvent scrollerAnchorRequestedEvent = new AutoResetEvent(false);
 
-                // This test validates that the Scroller accounts for maximum vertical offset (based on viewport and child extent) 
-                // when calculating the vertical offset shift for anchoring. The vertical offset cannot exceed child extent - viewport.
+                // This test validates that the Scroller accounts for maximum vertical offset (based on viewport and content extent) 
+                // when calculating the vertical offset shift for anchoring. The vertical offset cannot exceed content extent - viewport.
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -720,7 +720,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     scroller = new Scroller
                     {
-                        Child = grid,
+                        Content = grid,
                         Width = 200,
                         Height = 200
                     };
@@ -762,11 +762,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Verify.AreEqual(600, scroller.VerticalOffset);
 
-                    Log.Comment("Scroller.Child height is reduced by 300px. Scroller.VerticalOffset is expected to be reduced by 100px (600 -> 500).");
-                    (scroller.Child as Grid).Height = 700;
+                    Log.Comment("Scroller.Content height is reduced by 300px. Scroller.VerticalOffset is expected to be reduced by 100px (600 -> 500).");
+                    (scroller.Content as Grid).Height = 700;
                     if (reduceAnchorOffset)
                     {
-                        Log.Comment("Tracked element is shifted up by 200px within the Scroller.Child (600 -> 400). Anchoring is expected to reduce the VerticalOffset by half of that (500 -> 400).");
+                        Log.Comment("Tracked element is shifted up by 200px within the Scroller.Content (600 -> 400). Anchoring is expected to reduce the VerticalOffset by half of that (500 -> 400).");
                         anchorElement.Margin = new Thickness(0, 400, 0, 0);
                     }
                     scrollerViewChangedEvent.Reset();
@@ -815,7 +815,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     RunOnUIThread.Execute(() =>
                     {
-                        repeater = (scroller.Child as Border).Child as ItemsRepeater;
+                        repeater = (scroller.Content as Border).Child as ItemsRepeater;
                         dataSource = repeater.ItemsSource as TestDataSource;
 
                         scroller.ViewChanged += delegate (Scroller sender, object args) {
@@ -906,7 +906,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             scroller.Width = 400;
             scroller.Height = 600;
             scroller.Background = new SolidColorBrush(Colors.AliceBlue);
-            scroller.Child = border;
+            scroller.Content = border;
 
             if (scrollerLoadedEvent != null)
             {

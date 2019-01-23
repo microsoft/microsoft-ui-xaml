@@ -80,7 +80,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 scroller = new Scroller
                 {
-                    Child = repeater,
+                    Content = repeater,
                     Width = 200,
                     Height = 300
                 };
@@ -151,7 +151,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 horizontalScroller = new Scroller
                 {
-                    Child = repeater,
+                    Content = repeater,
                     ContentOrientation = ContentOrientation.Horizontal
                 };
 
@@ -162,7 +162,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 verticalScroller = new Scroller
                 {
-                    Child = grid,
+                    Content = grid,
                     Width = 200,
                     Height = 200,
                     ContentOrientation = ContentOrientation.Vertical
@@ -265,7 +265,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Layout = layout
                 };
 
-                scroller.Child = repeater;
+                scroller.Content = repeater;
                 Content = scroller;
             });
 

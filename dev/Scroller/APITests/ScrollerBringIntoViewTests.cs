@@ -796,7 +796,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 };
 
-                UIElement targetElement = ((scroller.Child as Border).Child as StackPanel).Children[12];
+                UIElement targetElement = ((scroller.Content as Border).Child as StackPanel).Children[12];
                 BringIntoViewOptions startingOptions = null;
 
                 if (options == null)
@@ -933,7 +933,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     outerBringIntoViewChangeId = args.ViewChangeId;
                 };
 
-                UIElement targetElement = ((innerScroller.Child as Border).Child as StackPanel).Children[12];
+                UIElement targetElement = ((innerScroller.Content as Border).Child as StackPanel).Children[12];
 
                 if (options == null)
                 {
@@ -1083,7 +1083,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scroller.Height = c_defaultBringIntoViewUIScrollerConstrainedSize;
             }
             scroller.Background = new SolidColorBrush(Colors.AliceBlue);
-            scroller.Child = border;
+            scroller.Content = border;
 
             InsertStackPanelChild(stackPanel, 0 /*operationCount*/, 0 /*newIndex*/, c_defaultBringIntoViewUIStackPanelChildrenCount /*newCount*/);
 
@@ -1222,7 +1222,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 outerScroller.Height = c_defaultBringIntoViewUIScrollerConstrainedSize;
             }
             outerScroller.Background = new SolidColorBrush(Colors.AliceBlue);
-            outerScroller.Child = border;
+            outerScroller.Content = border;
 
             InsertStackPanelChild(stackPanel, 0 /*operationCount*/, 0 /*newIndex*/, c_defaultBringIntoViewUIStackPanelChildrenCount / 2 /*newCount*/, "outer" /*namePrefix*/);
 
