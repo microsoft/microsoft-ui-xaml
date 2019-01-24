@@ -37,44 +37,47 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     DeploymentResult result = null;
 
                     var installedPackages = packageManager.FindPackagesForUser(string.Empty, packageFamilyName);
-                    //foreach (var installedPackage in installedPackages)
-                    //{
-                    //    Log.Comment("Test AppX package already installed. Removing existing package by name: {0}", installedPackage.Id.FullName);
 
-                    //    AutoResetEvent removePackageCompleteEvent = new AutoResetEvent(false);
-                    //    var removePackageOperation = packageManager.RemovePackageAsync(installedPackage.Id.FullName);
-                    //    removePackageOperation.Completed = (operation, status) =>
-                    //    {
-                    //        if (status != AsyncStatus.Started)
-                    //        {
-                    //            result = operation.GetResults();
-                    //            removePackageCompleteEvent.Set();
-                    //        }
-                    //    };
-                    //    removePackageCompleteEvent.WaitOne();
-
-                    //    if (!string.IsNullOrEmpty(result.ErrorText))
-                    //    {
-                    //        Log.Error("Removal failed!");
-                    //        Log.Error("Package removal ActivityId = {0}", result.ActivityId);
-                    //        Log.Error("Package removal ErrorText = {0}", result.ErrorText);
-                    //        Log.Error("Package removal ExtendedErrorCode = {0}", result.ExtendedErrorCode);
-                    //    }
-                    //    else
-                    //    {
-                    //        Log.Comment("Removal successful.");
-                    //    }
-                    //}
                     foreach (var installedPackage in installedPackages)
                     {
                         Log.Comment("!!!!Test AppX package already installed. {0}", installedPackage.Id.FullName);
                     }
 
-                    if(installedPackages.Any())
+                    //if (installedPackages.Any())
+                    //{
+                    //    TestAppxInstalled.Add(packageFamilyName);
+                    //    Log.Comment("Test app is already installed. Skipping installation");
+                    //    return;
+                    //}
+
+
+                    foreach (var installedPackage in installedPackages)
                     {
-                        TestAppxInstalled.Add(packageFamilyName);
-                        Log.Comment("Test app is already installed. Skipping installation");
-                        return;
+                        Log.Comment("Test AppX package already installed. Removing existing package by name: {0}", installedPackage.Id.FullName);
+
+                        AutoResetEvent removePackageCompleteEvent = new AutoResetEvent(false);
+                        var removePackageOperation = packageManager.RemovePackageAsync(installedPackage.Id.FullName);
+                        removePackageOperation.Completed = (operation, status) =>
+                        {
+                            if (status != AsyncStatus.Started)
+                            {
+                                result = operation.GetResults();
+                                removePackageCompleteEvent.Set();
+                            }
+                        };
+                        removePackageCompleteEvent.WaitOne();
+
+                        if (!string.IsNullOrEmpty(result.ErrorText))
+                        {
+                            Log.Error("Removal failed!");
+                            Log.Error("Package removal ActivityId = {0}", result.ActivityId);
+                            Log.Error("Package removal ErrorText = {0}", result.ErrorText);
+                            Log.Error("Package removal ExtendedErrorCode = {0}", result.ExtendedErrorCode);
+                        }
+                        else
+                        {
+                            Log.Comment("Removal successful.");
+                        }
                     }
 
                     // The test app has not been installed yet. Install it so tests can pass
