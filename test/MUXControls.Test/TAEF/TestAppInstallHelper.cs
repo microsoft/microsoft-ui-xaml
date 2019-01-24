@@ -74,6 +74,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     {
                         TestAppxInstalled.Add(packageFamilyName);
                         Log.Comment("Test app is already installed. Skipping installation");
+                        return;
                     }
 
                     // The test app has not been installed yet. Install it so tests can pass
