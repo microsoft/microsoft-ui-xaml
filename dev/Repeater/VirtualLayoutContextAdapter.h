@@ -24,6 +24,7 @@ public:
 
 private:
     winrt::weak_ref<winrt::VirtualizingLayoutContext> m_virtualizingContext{ nullptr };
+    winrt::IVectorView<winrt::UIElement> m_children{ nullptr };
 
     template <typename T>
     class ChildrenCollection :
@@ -84,10 +85,9 @@ private:
 
             T Current()
             {
-                auto items = m_childCollection;
                 if (m_currentIndex < m_childCollection.Size())
                 {
-                    return items.GetAt(m_currentIndex);
+                    return m_childCollection.GetAt(m_currentIndex);
                 }
                 else
                 {

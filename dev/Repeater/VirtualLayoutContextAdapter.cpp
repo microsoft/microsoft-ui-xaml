@@ -37,8 +37,12 @@ void VirtualLayoutContextAdapter::LayoutStateCore(winrt::IInspectable const& sta
 
 winrt::IVectorView<winrt::UIElement> VirtualLayoutContextAdapter::ChildrenCore()
 {
-    auto children = winrt::make<ChildrenCollection<winrt::UIElement>>(m_virtualizingContext.get());
-    return children;
+    if (!m_children)
+    {
+        m_children = winrt::make<ChildrenCollection<winrt::UIElement>>(m_virtualizingContext.get());
+    }
+
+    return m_children;
 }
 
 #pragma endregion
