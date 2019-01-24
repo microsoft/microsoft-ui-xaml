@@ -83,6 +83,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)VirtualizationInfo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)VirtualizingLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)VirtualizingLayoutContext.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)VirtualLayoutContextAdapter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimationManager.cpp" />
@@ -145,5 +146,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)VirtualizationInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)VirtualizingLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)VirtualizingLayoutContext.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)VirtualLayoutContextAdapter.cpp" />
   </ItemGroup>
 </Project>
