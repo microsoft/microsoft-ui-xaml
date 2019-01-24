@@ -84,18 +84,19 @@ winrt::hstring TypeLogging::ScrollingIndicatorModeToString(const winrt::Scrollin
 
 #pragma endregion
 
-#pragma region ScrollerView-specific section
+#pragma region ScrollViewer-specific section
 
 #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
-winrt::hstring TypeLogging::ScrollerViewScrollControllerVisibilityToString(const winrt::ScrollerViewScrollControllerVisibility& scrollControllerVisibility)
+#ifndef BUILD_WINDOWS
+winrt::hstring TypeLogging::ScrollBarVisibilityToString(const winrt::ScrollBarVisibility& scrollBarVisibility)
 {
-    switch (scrollControllerVisibility)
+    switch (scrollBarVisibility)
     {
-    case winrt::ScrollerViewScrollControllerVisibility::Visible:
+    case winrt::ScrollBarVisibility::Visible:
         return L"Visible";
-    case winrt::ScrollerViewScrollControllerVisibility::Collapsed:
-        return L"Collapsed";
-    case winrt::ScrollerViewScrollControllerVisibility::Auto:
+    case winrt::ScrollBarVisibility::Hidden:
+        return L"Hidden";
+    case winrt::ScrollBarVisibility::Auto:
         return L"Auto";
     default:
         MUX_ASSERT(false);
@@ -103,20 +104,21 @@ winrt::hstring TypeLogging::ScrollerViewScrollControllerVisibilityToString(const
     }
 }
 #endif
+#endif
 
 #pragma endregion
 
 #pragma region Scroller-specific section
 
-winrt::hstring TypeLogging::ScrollerChainingModeToString(const winrt::ScrollerChainingMode& chainingMode)
+winrt::hstring TypeLogging::ChainingModeToString(const winrt::ChainingMode& chainingMode)
 {
     switch (chainingMode)
     {
-    case winrt::ScrollerChainingMode::Always:
+    case winrt::ChainingMode::Always:
         return L"Always";
-    case winrt::ScrollerChainingMode::Auto:
+    case winrt::ChainingMode::Auto:
         return L"Auto";
-    case winrt::ScrollerChainingMode::Never:
+    case winrt::ChainingMode::Never:
         return L"Never";
     default:
         MUX_ASSERT(false);
@@ -124,13 +126,13 @@ winrt::hstring TypeLogging::ScrollerChainingModeToString(const winrt::ScrollerCh
     }
 }
 
-winrt::hstring TypeLogging::ScrollerRailingModeToString(const winrt::ScrollerRailingMode& railingMode)
+winrt::hstring TypeLogging::RailingModeToString(const winrt::RailingMode& railingMode)
 {
     switch (railingMode)
     {
-    case winrt::ScrollerRailingMode::Disabled:
+    case winrt::RailingMode::Disabled:
         return L"Disabled";
-    case winrt::ScrollerRailingMode::Enabled:
+    case winrt::RailingMode::Enabled:
         return L"Enabled";
     default:
         MUX_ASSERT(false);
@@ -138,29 +140,31 @@ winrt::hstring TypeLogging::ScrollerRailingModeToString(const winrt::ScrollerRai
     }
 }
 
-winrt::hstring TypeLogging::ScrollerScrollModeToString(const winrt::ScrollerScrollMode& scrollMode)
+winrt::hstring TypeLogging::ScrollModeToString(const winrt::ScrollMode& scrollMode)
 {
     switch (scrollMode)
     {
-    case winrt::ScrollerScrollMode::Disabled:
+    case winrt::ScrollMode::Disabled:
         return L"Disabled";
-    case winrt::ScrollerScrollMode::Enabled:
+    case winrt::ScrollMode::Enabled:
         return L"Enabled";
-    case winrt::ScrollerScrollMode::Auto:
+#ifdef USE_SCROLLMODE_AUTO
+    case winrt::ScrollMode::Auto:
         return L"Auto";
+#endif
     default:
         MUX_ASSERT(false);
         return L"";
     }
 }
 
-winrt::hstring TypeLogging::ScrollerZoomModeToString(const winrt::ScrollerZoomMode& scrollMode)
+winrt::hstring TypeLogging::ZoomModeToString(const winrt::ZoomMode& zoomMode)
 {
-    switch (scrollMode)
+    switch (zoomMode)
     {
-    case winrt::ScrollerZoomMode::Disabled:
+    case winrt::ZoomMode::Disabled:
         return L"Disabled";
-    case winrt::ScrollerZoomMode::Enabled:
+    case winrt::ZoomMode::Enabled:
         return L"Enabled";
     default:
         MUX_ASSERT(false);
@@ -168,23 +172,23 @@ winrt::hstring TypeLogging::ScrollerZoomModeToString(const winrt::ScrollerZoomMo
     }
 }
 
-winrt::hstring TypeLogging::ScrollerInputKindToString(const winrt::ScrollerInputKind& inputKind)
+winrt::hstring TypeLogging::InputKindToString(const winrt::InputKind& inputKind)
 {
     switch (static_cast<int>(inputKind))
     {
-    case static_cast<int>(winrt::ScrollerInputKind::All):
+    case static_cast<int>(winrt::InputKind::All):
         return L"All";
-    case static_cast<int>(winrt::ScrollerInputKind::Touch):
+    case static_cast<int>(winrt::InputKind::Touch):
         return L"Touch";
-    case static_cast<int>(winrt::ScrollerInputKind::Pen):
+    case static_cast<int>(winrt::InputKind::Pen):
         return L"Pen";
-    case static_cast<int>(winrt::ScrollerInputKind::Touch | winrt::ScrollerInputKind::MouseWheel):
+    case static_cast<int>(winrt::InputKind::Touch | winrt::InputKind::MouseWheel):
         return L"Touch|MouseWheel";
-    case static_cast<int>(winrt::ScrollerInputKind::Touch | winrt::ScrollerInputKind::Pen):
+    case static_cast<int>(winrt::InputKind::Touch | winrt::InputKind::Pen):
         return L"Touch|Pen";
-    case static_cast<int>(winrt::ScrollerInputKind::Pen | winrt::ScrollerInputKind::MouseWheel) :
+    case static_cast<int>(winrt::InputKind::Pen | winrt::InputKind::MouseWheel) :
         return L"Pen|MouseWheel";
-    case static_cast<int>(winrt::ScrollerInputKind::Touch | winrt::ScrollerInputKind::Pen | winrt::ScrollerInputKind::MouseWheel) :
+    case static_cast<int>(winrt::InputKind::Touch | winrt::InputKind::Pen | winrt::InputKind::MouseWheel) :
         return L"Touch|Pen|MouseWheel";
     default:
         MUX_ASSERT(false);

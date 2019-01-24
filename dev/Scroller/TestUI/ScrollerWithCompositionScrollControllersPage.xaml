@@ -6,7 +6,7 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:localUtilities="using:MUXControlsTestApp.Utilities"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controlsPrimitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
@@ -40,13 +40,13 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <controls:Scroller x:Name="scroller1" ZoomMode="Enabled" Width="300" Height="500" Background="AliceBlue" Margin="2">
+                <controlsPrimitives:Scroller x:Name="scroller1" ZoomMode="Enabled" Width="300" Height="500" Background="AliceBlue" Margin="2">
                     <Image x:Name="img1" Source="Assets/ingredient8.png" Width="1200" Height="1200"/>
-                </controls:Scroller>
-                <controls:Scroller x:Name="scroller2" ZoomMode="Enabled" Width="200" Height="200" Background="Bisque" Margin="2" 
+                </controlsPrimitives:Scroller>
+                <controlsPrimitives:Scroller x:Name="scroller2" ZoomMode="Enabled" Width="200" Height="200" Background="Bisque" Margin="2" 
                     Grid.Column="1" Grid.Row="1" Visibility="Collapsed">
                     <Image x:Name="img2" Source="Assets/ingredient7.png" Width="1000" Height="1000"/>
-                </controls:Scroller>
+                </controlsPrimitives:Scroller>
             </Grid>
 
             <localUtilities:CompositionScrollController x:Name="horizontalCompositionScrollController" Orientation="Horizontal" Margin="2" Grid.Row="1" HorizontalAlignment="Stretch" Height="40"/>

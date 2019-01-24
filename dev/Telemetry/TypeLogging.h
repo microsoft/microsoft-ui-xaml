@@ -17,18 +17,20 @@ public:
     static winrt::hstring ScrollingIndicatorModeToString(const winrt::ScrollingIndicatorMode& indicatorMode);
 #pragma endregion
 
-#pragma region ScrollerView-specific section
+#pragma region ScrollViewer-specific section
 #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
-    static winrt::hstring ScrollerViewScrollControllerVisibilityToString(const winrt::ScrollerViewScrollControllerVisibility& scrollControllerVisibility);
+#ifndef BUILD_WINDOWS
+static winrt::hstring ScrollBarVisibilityToString(const winrt::ScrollBarVisibility& scrollBarVisibility);
+#endif
 #endif
 #pragma endregion
 
 #pragma region Scroller-specific section
-    static winrt::hstring ScrollerChainingModeToString(const winrt::ScrollerChainingMode& chainingMode);
-    static winrt::hstring ScrollerRailingModeToString(const winrt::ScrollerRailingMode& railingMode);
-    static winrt::hstring ScrollerScrollModeToString(const winrt::ScrollerScrollMode& scrollMode);
-    static winrt::hstring ScrollerZoomModeToString(const winrt::ScrollerZoomMode& scrollMode);
-    static winrt::hstring ScrollerInputKindToString(const winrt::ScrollerInputKind& inputKind);
+    static winrt::hstring ChainingModeToString(const winrt::ChainingMode& chainingMode);
+    static winrt::hstring RailingModeToString(const winrt::RailingMode& railingMode);
+    static winrt::hstring ScrollModeToString(const winrt::ScrollMode& scrollMode);
+    static winrt::hstring ZoomModeToString(const winrt::ZoomMode& zoomMode);
+    static winrt::hstring InputKindToString(const winrt::InputKind& inputKind);
     static winrt::hstring ScrollerViewKindToString(const winrt::ScrollerViewKind& offsetKind);
     static winrt::hstring ScrollerViewChangeKindToString(const winrt::ScrollerViewChangeKind& viewChangeKind);
     static winrt::hstring ScrollerViewChangeSnapPointRespectToString(const winrt::ScrollerViewChangeSnapPointRespect& snapPointRespect);

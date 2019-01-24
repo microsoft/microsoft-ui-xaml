@@ -8,6 +8,7 @@ using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 
 #if USING_TAEF
@@ -20,7 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 #if !BUILD_WINDOWS
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
 using ScrollerBringingIntoViewEventArgs = Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs;
@@ -794,7 +795,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 };
 
-                UIElement targetElement = ((scroller.Child as Border).Child as StackPanel).Children[12];
+                UIElement targetElement = ((scroller.Content as Border).Child as StackPanel).Children[12];
                 BringIntoViewOptions startingOptions = null;
 
                 if (options == null)
@@ -931,7 +932,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     outerBringIntoViewChangeId = args.ViewChangeId;
                 };
 
-                UIElement targetElement = ((innerScroller.Child as Border).Child as StackPanel).Children[12];
+                UIElement targetElement = ((innerScroller.Content as Border).Child as StackPanel).Children[12];
 
                 if (options == null)
                 {
@@ -1081,7 +1082,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scroller.Height = c_defaultBringIntoViewUIScrollerConstrainedSize;
             }
             scroller.Background = new SolidColorBrush(Colors.AliceBlue);
-            scroller.Child = border;
+            scroller.Content = border;
 
             InsertStackPanelChild(stackPanel, 0 /*operationCount*/, 0 /*newIndex*/, c_defaultBringIntoViewUIStackPanelChildrenCount /*newCount*/);
 
@@ -1220,7 +1221,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 outerScroller.Height = c_defaultBringIntoViewUIScrollerConstrainedSize;
             }
             outerScroller.Background = new SolidColorBrush(Colors.AliceBlue);
-            outerScroller.Child = border;
+            outerScroller.Content = border;
 
             InsertStackPanelChild(stackPanel, 0 /*operationCount*/, 0 /*newIndex*/, c_defaultBringIntoViewUIStackPanelChildrenCount / 2 /*newCount*/, "outer" /*namePrefix*/);
 

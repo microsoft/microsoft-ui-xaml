@@ -8,10 +8,11 @@
 
 #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
 #include "SwipeControlTrace.h"
-#include "ScrollerViewTrace.h"
+#ifndef BUILD_WINDOWS
+#include "ScrollViewerTrace.h"
 #include "ScrollBar2Trace.h"
 #endif
-
+#endif
 
 /*static*/
 UCHAR MUXControlsTestHooks::GetLoggingLevelForType(const wstring_view& type)
@@ -69,16 +70,18 @@ void MUXControlsTestHooks::SetOutputDebugStringLevelForTypeImpl(const wstring_vi
         SwipeControlTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
         SwipeControlTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
     }
-    if (type == L"ScrollerView" || type.empty())
+    #ifndef BUILD_WINDOWS
+    if (type == L"ScrollViewer" || type.empty())
     {
-        ScrollerViewTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
-        ScrollerViewTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
+        ScrollViewerTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
+        ScrollViewerTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
     }
     if (type == L"ScrollBar2" || type.empty())
     {
         ScrollBar2Trace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
         ScrollBar2Trace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
     }
+    #endif
     #endif
 }
 

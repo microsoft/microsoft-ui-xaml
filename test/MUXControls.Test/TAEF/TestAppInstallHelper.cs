@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Win32;
@@ -25,9 +25,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         /// <summary>
         /// Installs the unit test app
         /// </summary>
-        public static void InstallTestAppIfNeeded(string deploymentDir, string packageName, string packageFullName)
+        public static void InstallTestAppIfNeeded(string deploymentDir, string packageName, string packageFamilyName)
         {
-            if (!TestAppxInstalled.Contains(packageFullName))
+            if (!TestAppxInstalled.Contains(packageFamilyName))
             {
                 FileInfo appxFile = new FileInfo(Path.Combine(deploymentDir, packageName + ".appx"));
                 if (appxFile.Exists)
@@ -35,12 +35,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     PackageManager packageManager = new PackageManager();
                     DeploymentResult result = null;
                     
-                    if (packageManager.FindPackageForUser(string.Empty, packageFullName) != null)
+                    var installedPackages = packageManager.FindPackagesForUser(string.Empty, packageFamilyName);
+                    foreach (var installedPackage in installedPackages)
                     {
-                        Log.Comment("Test AppX package already installed. Removing existing package by name: {0}", packageFullName);
+                        Log.Comment("Test AppX package already installed. Removing existing package by name: {0}", installedPackage.Id.FullName);
 
                         AutoResetEvent removePackageCompleteEvent = new AutoResetEvent(false);
-                        var removePackageOperation = packageManager.RemovePackageAsync(packageFullName);
+                        var removePackageOperation = packageManager.RemovePackageAsync(installedPackage.Id.FullName);
                         removePackageOperation.Completed = (operation, status) =>
                         {
                             if (status != AsyncStatus.Started)
@@ -84,7 +85,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     Log.Comment("Installing Test Appx Package: {0}", packageUri.AbsolutePath);
 
                     AutoResetEvent addPackageCompleteEvent = new AutoResetEvent(false);
-                    var addPackageOperation = packageManager.AddPackageAsync(packageUri, depsPackages, DeploymentOptions.None);
+                    var addPackageOperation = packageManager.AddPackageAsync(packageUri, depsPackages, DeploymentOptions.ForceApplicationShutdown);
                     addPackageOperation.Completed = (operation, status) =>
                     {
                         if (status != AsyncStatus.Started)
@@ -101,6 +102,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                         Log.Error("Package installation ActivityId = {0}", result.ActivityId);
                         Log.Error("Package installation ErrorText = {0}", result.ErrorText);
                         Log.Error("Package installation ExtendedErrorCode = {0}", result.ExtendedErrorCode);
+                        throw new Exception("Failed to install Test Appx Package: " + result.ErrorText);
                     }
                     else
                     {
@@ -112,7 +114,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     Log.Comment("Test Appx Package was not found in {0}.", deploymentDir);
                 }
 
-                TestAppxInstalled.Add(packageFullName);
+                TestAppxInstalled.Add(packageFamilyName);
             }
         }
         

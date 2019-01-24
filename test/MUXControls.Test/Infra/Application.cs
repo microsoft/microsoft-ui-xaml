@@ -48,17 +48,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
     public class Application
     {
         private readonly string _packageName;
-        private readonly string _packageFullName;
+        private readonly string _packageFamilyName;
         private readonly string _appName;
         private readonly bool _isUWPApp;
 
         private readonly UICondition _windowCondition = null;
         private readonly UICondition _appFrameWindowCondition = null;
 
-        public Application(string packageName, string packageFullName, string appName, bool isUWPApp = true)
+        public Application(string packageName, string packageFamilyName, string appName, bool isUWPApp = true)
         {
             _packageName = packageName;
-            _packageFullName = packageFullName;
+            _packageFamilyName = packageFamilyName;
             _appName = appName;
             _isUWPApp = isUWPApp;
 
@@ -167,10 +167,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 #if BUILD_WINDOWS
             if (TestEnvironment.TestContext.Properties.Contains("RunFromTestMD"))
             {
-                TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFullName);
+                TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName);
             }
 #elif USING_TAEF
-            TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFullName);
+            TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName);
 #else
             BuildAndInstallTestAppIfNeeded();
 #endif
@@ -246,9 +246,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     Log.Comment("Launch successful!");
                     break;
                 }
-                catch (UIObjectNotFoundException)
+                catch (Exception ex)
                 {
-                    Log.Comment("UAPApp.Launch failed to find app, dumping UIA tree...");
+                    Log.Comment("Failed to launch app. Exception: " + ex.ToString());
+                    Log.Comment("Dumping UIA tree...");
                     TestEnvironment.LogDumpTree(UIObject.Root);
 
                     if (retries < MaxLaunchRetries)
@@ -367,7 +368,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     }
 
                     Log.Comment("Invoking the back button...");
-                    FindElement.ById<Button>("__GoBackInvoker").InvokeAndWait();
+                    FindElement.ById<Button>("__GoBackInvoker").InvokeAndWait(TimeSpan.FromSeconds(10));
                     Log.Comment("Invoke successful.");
 
                     // We're now exiting the page we were previously on, so everything has changed.  As such, we should clear our
@@ -493,8 +494,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                             buildAndInstallScript,
                             _packageName,
                             mostRecentlyBuiltArchitecture,
-                            _packageName == "MUXControlsTestApp" ? "407b1cc5-f51e-4bfa-b5d2-04afa83fe380" : _appName,
-                            _packageFullName));
+                            _appName,
+                            _packageFamilyName));
 
                 powershellProcessStartInfo.UseShellExecute = true;
 
@@ -509,7 +510,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             else
             {
                 PackageManager packageManager = new PackageManager();
-                if (packageManager.FindPackageForUser(string.Empty, _packageFullName) == null)
+                if (packageManager.FindPackagesForUser(string.Empty, _packageFamilyName).Count() == 0)
                 {
                     Log.Comment("Packaging and installing AppX...");
 

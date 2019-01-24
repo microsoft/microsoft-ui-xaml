@@ -36,10 +36,10 @@ public:
     static void SetOffsetsChangeVelocityParameters(int millisecondsPerUnit, int minMilliseconds, int maxMilliseconds);
     static void GetZoomFactorChangeVelocityParameters(_Out_ int& millisecondsPerUnit, _Out_ int& minMilliseconds, _Out_ int& maxMilliseconds);
     static void SetZoomFactorChangeVelocityParameters(int millisecondsPerUnit, int minMilliseconds, int maxMilliseconds);
-    static void GetChildLayoutOffsetX(const winrt::Scroller& scroller, _Out_ float& childLayoutOffsetX);
-    static void SetChildLayoutOffsetX(const winrt::Scroller& scroller, float childLayoutOffsetX);
-    static void GetChildLayoutOffsetY(const winrt::Scroller& scroller, _Out_ float& childLayoutOffsetY);
-    static void SetChildLayoutOffsetY(const winrt::Scroller& scroller, float childLayoutOffsetY);
+    static void GetContentLayoutOffsetX(const winrt::Scroller& scroller, _Out_ float& contentLayoutOffsetX);
+    static void SetContentLayoutOffsetX(const winrt::Scroller& scroller, float contentLayoutOffsetX);
+    static void GetContentLayoutOffsetY(const winrt::Scroller& scroller, _Out_ float& contentLayoutOffsetY);
+    static void SetContentLayoutOffsetY(const winrt::Scroller& scroller, float contentLayoutOffsetY);
 
     static void NotifyAnchorEvaluated(const winrt::Scroller& sender, const winrt::UIElement& anchorElement, double viewportAnchorPointHorizontalOffset, double viewportAnchorPointVerticalOffset);
     static winrt::event_token AnchorEvaluated(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksAnchorEvaluatedEventArgs> const& value);
@@ -48,13 +48,13 @@ public:
     static winrt::event_token InteractionSourcesChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksInteractionSourcesChangedEventArgs> const& value);
     static void InteractionSourcesChanged(winrt::event_token const& token);
 
-    static void NotifyChildLayoutOffsetXChanged(const winrt::Scroller& sender);
-    static winrt::event_token ChildLayoutOffsetXChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
-    static void ChildLayoutOffsetXChanged(winrt::event_token const& token);
+    static void NotifyContentLayoutOffsetXChanged(const winrt::Scroller& sender);
+    static winrt::event_token ContentLayoutOffsetXChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
+    static void ContentLayoutOffsetXChanged(winrt::event_token const& token);
 
-    static void NotifyChildLayoutOffsetYChanged(const winrt::Scroller& sender);
-    static winrt::event_token ChildLayoutOffsetYChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
-    static void ChildLayoutOffsetYChanged(winrt::event_token const& token);
+    static void NotifyContentLayoutOffsetYChanged(const winrt::Scroller& sender);
+    static winrt::event_token ContentLayoutOffsetYChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
+    static void ContentLayoutOffsetYChanged(winrt::event_token const& token);
 
     static winrt::IVector<winrt::ScrollerSnapPointBase> GetConsolidatedSnapPoints(const winrt::Scroller& scroller, const winrt::ScrollerSnapPointDimension& dimension);
     static winrt::float2 GetSnapPointActualApplicableZone(const winrt::ScrollerSnapPointBase& snapPoint);
@@ -65,8 +65,8 @@ private:
     static com_ptr<ScrollerTestHooks> s_testHooks;
     winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksAnchorEvaluatedEventArgs>> m_anchorEvaluatedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksInteractionSourcesChangedEventArgs>> m_interactionSourcesChangedEventSource;
-    winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_childLayoutOffsetXChangedEventSource;
-    winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_childLayoutOffsetYChangedEventSource;
+    winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_contentLayoutOffsetXChangedEventSource;
+    winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_contentLayoutOffsetYChangedEventSource;
     bool m_areAnchorNotificationsRaised{ false };
     bool m_areInteractionSourcesNotificationsRaised{ false };
     bool m_isInteractionTrackerMouseWheelZoomingEnabled{ true };

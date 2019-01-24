@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 
 namespace HelixTestHelpers
@@ -16,14 +17,21 @@ namespace HelixTestHelpers
 
         public class TestResult
         {
+            public TestResult()
+            {
+                Screenshots = new List<string>();
+            }
+
             public string Name { get; set; }
             public bool Passed { get; set; }
             public bool CleanupPassed { get; set; }
             public TimeSpan ExecutionTime { get; set; }
             public string Details { get; set; }
+
+            public List<string> Screenshots { get; private set; }
         }
 
-        public static void ConvertWttLogToXUnitLog(string wttInputPath, string xunitOutputPath)
+        public static void ConvertWttLogToXUnitLog(string wttInputPath, string xunitOutputPath, string testNamePrefix, string helixResultsContainerUri, string helixResultsContainerRsas)
         {
             var testPass = TestResultParser.ParseTestWttFile(wttInputPath, true);
             var results = testPass.TestResults;
@@ -64,7 +72,7 @@ namespace HelixTestHelpers
             foreach (var result in results)
             {
                 var test = new XElement("test");
-                test.SetAttributeValue("name", result.Name);
+                test.SetAttributeValue("name", testNamePrefix + "." + result.Name);
 
                 var className = result.Name.Substring(0, result.Name.LastIndexOf('.'));
                 var methodName = result.Name.Substring(result.Name.LastIndexOf('.') + 1);
@@ -80,7 +88,24 @@ namespace HelixTestHelpers
                     failure.SetAttributeValue("exception-type", "Exception");
 
                     var message = new XElement("message");
-                    message.Add(new XCData(result.Details));
+
+                    StringBuilder errorMessage = new StringBuilder();
+
+                    errorMessage.AppendLine("Log: " + GetUploadedFileUrl(wttInputPath, helixResultsContainerUri, helixResultsContainerRsas));
+                    
+                    if(result.Screenshots.Any())
+                    {
+                        errorMessage.AppendLine("Screenshots:");
+                        foreach(var screenshot in result.Screenshots)
+                        {
+                            errorMessage.AppendLine(GetUploadedFileUrl(screenshot, helixResultsContainerUri, helixResultsContainerRsas));
+                        }
+                    }
+
+                    errorMessage.AppendLine("Error Log: ");
+                    errorMessage.AppendLine(result.Details);
+
+                    message.Add(new XCData(errorMessage.ToString()));
                     failure.Add(message);
 
                     test.Add(failure);
@@ -272,6 +297,26 @@ namespace HelixTestHelpers
                             currentResult.Details += "]";
                         }
                     }
+
+                    if (currentResult != null && element.Name == "Msg")
+                    {
+                        var dataElement = element.Element("Data");
+                        if (dataElement != null)
+                        {
+                            var supportingInfo = dataElement.Element("SupportingInfo");
+                            if (supportingInfo != null)
+                            {
+                                var screenshots = supportingInfo.Elements("Item")
+                                    .Where(item => GetAttributeValue(item, "Name") == "Screenshot")
+                                    .Select(item => GetAttributeValue(item, "Value"));
+
+                                foreach(var screenshot in screenshots)
+                                {
+                                    currentResult.Screenshots.Add(screenshot);
+                                }
+                            }
+                        }
+                    }
                 }
 
                 testPassStartTime = Int64.Parse(doc.Root.Descendants("WexTraceInfo").First().Attribute("TimeStamp").Value);
@@ -288,5 +333,23 @@ namespace HelixTestHelpers
                 return testpass;
             }
         }
+
+        private static string GetAttributeValue(XElement element, string attributeName)
+        {
+            if(element.Attribute(attributeName) != null)
+            {
+                return element.Attribute(attributeName).Value;
+            }
+
+            return null;
+        }
+
+        private static string GetUploadedFileUrl(string filePath, string helixResultsContainerUri, string helixResultsContainerRsas)
+        {
+            var filename = Path.GetFileName(filePath);
+            return string.Format("{0}/{1}{2}", helixResultsContainerUri, filename, helixResultsContainerRsas);
+        }
     }
+
+
 }
