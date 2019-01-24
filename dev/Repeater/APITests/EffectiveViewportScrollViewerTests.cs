@@ -36,7 +36,7 @@ using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFacto
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
@@ -48,60 +48,35 @@ using PostArrangeEventHandler = Microsoft.UI.Private.Controls.PostArrangeEventHa
 using ViewportChangedEventHandler = Microsoft.UI.Private.Controls.ViewportChangedEventHandler;
 #endif
 
-#if BUILD_WINDOWS
-
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
     public class EffectiveViewportTests : TestsBase
     {
         [TestMethod]
-        public void ValidateNoScrollingSurfaceScenario()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                var realizationRects = new List<Rect>();
-
-                var repeater = new ItemsRepeater()
-                {
-                    Layout = GetMonitoringLayout(new Size(500, 500), realizationRects),
-                    HorizontalCacheLength = 0.0,
-                    VerticalCacheLength = 0.0
-                };
-
-                Content = repeater;
-                Content.UpdateLayout();
-
-                Verify.AreEqual(2, realizationRects.Count);
-                Verify.AreEqual(new Rect(0, 0, 0, 0), realizationRects[0]);
-                Verify.AreEqual(0, realizationRects[1].X);
-                // 32 pixel title bar
-                Verify.AreEqual(-32, realizationRects[1].Y);
-                // Width/Height depends on the window size, so just
-                // validating something reasonable here to avoid flakiness.
-                Verify.IsLessThan(500.0, realizationRects[1].Width);
-                Verify.IsLessThan(500.0, realizationRects[1].Height);
-                realizationRects.Clear();
-            });
-        }
-
-        [TestMethod]
         public void ValidateBasicScrollViewerScenario()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5 and effective viewport is not available below RS5");
+                return;
+            }
+
             var realizationRects = new List<Rect>();
+            var viewChangeCompletedEvent = new AutoResetEvent(false);
             ScrollViewer scrollViewer = null;
+            ManualResetEvent viewChanged = new ManualResetEvent(false);
+            ManualResetEvent layoutMeasured = new ManualResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                var repeater = new ItemsRepeater()
-                {
-                    Layout = GetMonitoringLayout(new Size(500, 600), realizationRects),
+                var repeater = new ItemsRepeater() {
+                    Layout = GetMonitoringLayout(new Size(500, 600), realizationRects, layoutMeasured),
                     HorizontalCacheLength = 0.0,
                     VerticalCacheLength = 0.0
                 };
 
-                scrollViewer = new ScrollViewer
-                {
+                scrollViewer = new ScrollViewer {
                     Content = repeater,
                     Width = 200,
                     Height = 300,
@@ -109,40 +84,70 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
                 };
 
-                Content = scrollViewer;
-                Content.UpdateLayout();
+                scrollViewer.ViewChanged += (sender, args) =>
+                {
+                    if (!args.IsIntermediate)
+                    {
+                        Log.Comment("ViewChanged " + scrollViewer.HorizontalOffset + ":" + scrollViewer.VerticalOffset);
+                        viewChanged.Set();
+                    }
+                };
 
+                Content = scrollViewer;
+            });
+
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not receive measure on layout");
+
+            RunOnUIThread.Execute(() =>
+            {
                 // First layout pass will invalidate measure during the first arrange
                 // so that we can get a viewport during the second measure/arrange pass.
-                Verify.AreEqual(2, realizationRects.Count);
                 Verify.AreEqual(new Rect(0, 0, 0, 0), realizationRects[0]);
                 Verify.AreEqual(new Rect(0, 0, 200, 300), realizationRects[1]);
                 realizationRects.Clear();
 
+                viewChanged.Reset();
+                layoutMeasured.Reset();
                 scrollViewer.ChangeView(null, 100.0, 1.0f, disableAnimation: true);
             });
+
             IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChanged.WaitOne(), "Did not receive view changed event");
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not receive measure on layout");
+            viewChanged.Reset();
+            layoutMeasured.Reset();
 
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(new Rect(0, 100, 200, 300), realizationRects.Last());
                 realizationRects.Clear();
+                viewChangeCompletedEvent.Reset();
 
                 // Max viewport offset is (300, 400). Horizontal viewport offset
                 // is expected to get coerced from 400 to 300.
                 scrollViewer.ChangeView(400, 100.0, 1.0f, disableAnimation: true);
             });
+
             IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChanged.WaitOne(), "Did not receive view changed event");
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not receive measure on layout");
+            viewChanged.Reset();
+            layoutMeasured.Reset();
 
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(new Rect(300, 100, 200, 300), realizationRects.Last());
                 realizationRects.Clear();
+                viewChangeCompletedEvent.Reset();
 
                 scrollViewer.ChangeView(null, null, 2.0f, disableAnimation: true);
             });
+
             IdleSynchronizer.Wait();
-            IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChanged.WaitOne(), "Did not receive view changed event");
+            Verify.IsTrue(layoutMeasured.WaitOne(), "Did not receive measure on layout");
+            viewChanged.Reset();
+            layoutMeasured.Reset();
 
             RunOnUIThread.Execute(() =>
             {
@@ -154,6 +159,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateOneScrollViewerScenario()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5 and effective viewport is not available below RS5");
+                return;
+            }
+
             var realizationRects = new List<Rect>();
             ScrollViewer scrollViewer = null;
             var viewChangeCompletedEvent = new AutoResetEvent(false);
@@ -220,6 +231,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateTwoScrollViewerScenario()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5 and effective viewport is not available below RS5");
+                return;
+            }
+
             var realizationRects = new List<Rect>();
             ScrollViewer horizontalScroller = null;
             ScrollViewer verticalScroller = null;
@@ -304,6 +321,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void CanGrowCacheBufferWithScrollViewer()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5 and effective viewport is not available below RS5");
+                return;
+            }
+
             ScrollViewer scroller = null;
             ItemsRepeater repeater = null;
             var measureRealizationRects = new List<Rect>();
@@ -396,6 +419,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void CanBringIntoViewElements()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since version is less than RS5 and effective viewport is not available below RS5");
+                return;
+            }
+
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
                 Log.Warning("Skipping CanBringIntoViewElements because UIElement.BringIntoViewRequested was added in RS4.");
@@ -570,14 +599,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             Verify.AreEqual(expectedLastItemIndex, actualLastItemIndex);
         }
 
-        private static VirtualizingLayout GetMonitoringLayout(Size desiredSize, List<Rect> realizationRects)
+        private static VirtualizingLayout GetMonitoringLayout(Size desiredSize, List<Rect> realizationRects, ManualResetEvent layoutMeasured = null)
         {
             return new MockVirtualizingLayout
             {
                 MeasureLayoutFunc = (availableSize, context) =>
                 {
                     var ctx = (VirtualizingLayoutContext)context;
+                    Log.Comment("MeasureLayout:" + ctx.RealizationRect);
                     realizationRects.Add(ctx.RealizationRect);
+                    if (layoutMeasured != null)
+                    {
+                        layoutMeasured.Set();
+                    }
                     return desiredSize;
                 },
 
@@ -586,4 +620,3 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
     }
 }
-#endif

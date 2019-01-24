@@ -37,18 +37,28 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 
     RegisterPropertyChangedCallback(
         winrt::AppBar::IsOpenProperty(),
-        [this](auto const&, auto const&) { UpdateUI(); });
-
-    auto vectorChangedHandler = [this](auto const&, auto const&) { UpdateUI(); };
+        [this](auto const&, auto const&)
+        {
+            UpdateFlowsFromAndFlowsTo();
+            UpdateUI();
+        });
 
     // Since we own these vectors, we don't need to cache the event tokens -
     // in fact, if we tried to remove these handlers in our destructor,
     // these properties will have already been cleared, and we'll nullref.
-    PrimaryCommands().VectorChanged({ [this](auto const&, auto const&) { UpdateUI(); } });
+    PrimaryCommands().VectorChanged({
+        [this](auto const&, auto const&)
+        {
+            UpdateFlowsFromAndFlowsTo();
+            UpdateUI();
+        }
+    });
+
     SecondaryCommands().VectorChanged({
         [this](auto const&, auto const&)
         {
             m_secondaryItemsRootSized = false;
+            UpdateFlowsFromAndFlowsTo();
             UpdateUI();
         }
     });
@@ -68,10 +78,12 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
 
     m_primaryItemsRoot.set(GetTemplateChildT<winrt::FrameworkElement>(L"PrimaryItemsRoot", thisAsControlProtected));
     m_secondaryItemsRoot.set(GetTemplateChildT<winrt::FrameworkElement>(L"OverflowContentRoot", thisAsControlProtected));
+    m_moreButton.set(GetTemplateChildT<winrt::ButtonBase>(L"MoreButton", thisAsControlProtected));
     m_openingStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"OpeningStoryboard", thisAsControlProtected));
     m_closingStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"ClosingStoryboard", thisAsControlProtected));
 
     AttachEventHandlers();
+    UpdateFlowsFromAndFlowsTo();
     UpdateUI(false /* useTransitions */);
 }
 
@@ -183,6 +195,71 @@ void CommandBarFlyoutCommandBar::PlayCloseAnimation(std::function<void()> onComp
     else
     {
         onCompleteFunc();
+    }
+}
+
+void CommandBarFlyoutCommandBar::UpdateFlowsFromAndFlowsTo()
+{
+    if (m_currentPrimaryItemsEndElement)
+    {
+        winrt::AutomationProperties::GetFlowsTo(m_currentPrimaryItemsEndElement.get()).Clear();
+        m_currentPrimaryItemsEndElement.set(nullptr);
+    }
+
+    if (m_currentSecondaryItemsStartElement)
+    {
+        winrt::AutomationProperties::GetFlowsFrom(m_currentSecondaryItemsStartElement.get()).Clear();
+        m_currentSecondaryItemsStartElement.set(nullptr);
+    }
+
+    // If we're not open, then we don't want to do anything special - the only time we do need to do something special
+    // is when the secondary commands are showing, in which case we want to connect the primary and secondary command lists.
+    if (IsOpen())
+    {
+        auto isElementFocusable = [](winrt::ICommandBarElement const& element)
+        {
+            winrt::Control primaryCommandAsControl = element.try_as<winrt::Control>();
+            return
+                primaryCommandAsControl &&
+                primaryCommandAsControl.Visibility() == winrt::Visibility::Visible &&
+                (primaryCommandAsControl.IsEnabled() || primaryCommandAsControl.AllowFocusWhenDisabled()) &&
+                primaryCommandAsControl.IsTabStop();
+        };
+
+        // If we have a more button, then that's the last element in our primary items list.
+        // Otherwise, we'll find the last focusable element in the primary commands.
+        if (m_moreButton)
+        {
+            m_currentPrimaryItemsEndElement.set(m_moreButton.get());
+        }
+        else
+        {
+            auto primaryCommands = PrimaryCommands();
+            for (int i = static_cast<int>(primaryCommands.Size() - 1); i >= 0; i--)
+            {
+                auto primaryCommand = primaryCommands.GetAt(i);
+                if (isElementFocusable(primaryCommand))
+                {
+                    m_currentPrimaryItemsEndElement.set(primaryCommand.try_as<winrt::FrameworkElement>());
+                    break;
+                }
+            }
+        }
+
+        for (const auto& secondaryCommand : SecondaryCommands())
+        {
+            if (isElementFocusable(secondaryCommand))
+            {
+                m_currentSecondaryItemsStartElement.set(secondaryCommand.try_as<winrt::FrameworkElement>());
+                break;
+            }
+        }
+
+        if (m_currentPrimaryItemsEndElement && m_currentSecondaryItemsStartElement)
+        {
+            winrt::AutomationProperties::GetFlowsTo(m_currentPrimaryItemsEndElement.get()).Append(m_currentSecondaryItemsStartElement.get());
+            winrt::AutomationProperties::GetFlowsFrom(m_currentSecondaryItemsStartElement.get()).Append(m_currentPrimaryItemsEndElement.get());
+        }
     }
 }
 

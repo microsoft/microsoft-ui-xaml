@@ -161,12 +161,12 @@ bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
     return s_isFrameworkElementInvalidateViewportAvailable;
 }
 
-bool SharedHelpers::IsDisplayRegionGetForCurrentViewAvailable()
+bool SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable()
 {
-    static bool s_isDisplayRegionGetForCurrentViewAvailable =
+    static bool s_isApplicationViewGetDisplayRegionsAvailable =
         Is19H1OrHigher() ||
-        winrt::ApiInformation::IsMethodPresent(L"Windows.ApplicationModel.Core.DisplayRegion", L"GetForCurrentView");
-    return s_isDisplayRegionGetForCurrentViewAvailable;
+        winrt::ApiInformation::IsMethodPresent(L"Windows.UI.ViewManagement.ApplicationView", L"GetDisplayRegions");
+    return s_isApplicationViewGetDisplayRegionsAvailable;
 }
 
 bool SharedHelpers::IsTranslationFacadeAvailable(const winrt::UIElement& element)

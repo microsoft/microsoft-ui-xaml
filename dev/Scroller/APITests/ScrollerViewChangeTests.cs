@@ -4,11 +4,13 @@
 using Common;
 using MUXControlsTestApp.Utilities;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Threading;
 using Windows.Foundation;
 using Windows.UI.Composition;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Shapes;
 
 #if USING_TAEF
@@ -21,7 +23,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 #if !BUILD_WINDOWS
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
 using ScrollerChangeOffsetsWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions;
 using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
@@ -61,20 +63,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Changes Scroller offsets using various ScrollerViewKind and ScrollerViewChangeKind enum values.")]
+        //[TestMethod]
+        //[TestProperty("Description", "Changes Scroller offsets using various ScrollerViewKind and ScrollerViewChangeKind enum values.")]
+        // Disabled due to: Multiple unreliable Scroller tests #136
         public void BasicOffsetChanges()
         {
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
-                SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -104,20 +107,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             ChangeOffsets(scroller, 700.0, -8.0, ScrollerViewKind.RelativeToCurrentView, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.RespectSnapPoints, false /*hookViewChanged*/);
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Changes Scroller zoomFactor using various ScrollerViewKind and ScrollerViewChangeKind enum values.")]
+        //[TestMethod]
+        //[TestProperty("Description", "Changes Scroller zoomFactor using various ScrollerViewKind and ScrollerViewChangeKind enum values.")]
+        // Disabled due to: Multiple unreliable Scroller tests #136
         public void BasicZoomFactorChanges()
         {
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
-                SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -146,17 +150,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public void BasicOffsetsChangeCancelation()
         {
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
             AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
             ScrollerOperation operation = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
-                SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -215,18 +219,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Scroller"))
             {
                 Scroller scroller = null;
-                Rectangle rectangleScrollerChild = null;
+                Rectangle rectangleScrollerContent = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
                 AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
                 ScrollerOperation operation = null;
 
                 RunOnUIThread.Execute(() =>
                 {
-                    rectangleScrollerChild = new Rectangle();
+                    rectangleScrollerContent = new Rectangle();
                     scroller = new Scroller();
                     scroller.Name = "scr";
 
-                    SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                    SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
                 });
 
                 WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -253,7 +257,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         {
                             Log.Comment("Canceling view change");
                             operationCanceled = true;
-                            sender.ChangeZoomFactor(new ScrollerChangeZoomFactorOptions(0, ScrollerViewKind.RelativeToCurrentView, Vector2.Zero, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));                            
+                            sender.ChangeZoomFactor(new ScrollerChangeZoomFactorOptions(0, ScrollerViewKind.RelativeToCurrentView, Vector2.Zero, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
                         }
                     };
                 });
@@ -284,7 +288,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             int numOffsetChanges = 0;
             int numZoomFactorChanges = 0;
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
             Point newPosition1 = new Point(100, 150);
             Point newPosition2 = new Point(50, 100);
@@ -293,11 +297,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
                 SetupDefaultUI(
-                    scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                    scroller, rectangleScrollerContent, scrollerLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -373,7 +377,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Scroller"))
             {
                 Scroller scroller = null;
-                Rectangle rectangleScrollerChild = null;
+                Rectangle rectangleScrollerContent = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
                 AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
                 ScrollerOperation operation = null;
@@ -381,10 +385,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    rectangleScrollerChild = new Rectangle();
+                    rectangleScrollerContent = new Rectangle();
                     scroller = new Scroller();
 
-                    SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                    SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
                 });
 
                 WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -451,7 +455,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Scroller"))
             {
                 Scroller scroller = null;
-                Rectangle rectangleScrollerChild = null;
+                Rectangle rectangleScrollerContent = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
                 AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
                 ScrollerOperation operation = null;
@@ -459,10 +463,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    rectangleScrollerChild = new Rectangle();
+                    rectangleScrollerContent = new Rectangle();
                     scroller = new Scroller();
 
-                    SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                    SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
                 });
 
                 WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -520,17 +524,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public void InterruptViewChangeWithUnloading()
         {
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
             AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
             ScrollerOperation operation = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
-                SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent, setAsContentRoot: true);
+                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent, setAsContentRoot: true);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -599,8 +603,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Attempts an offsets change while there is no child.")]
-        public void OffsetsChangeWithNoChild()
+        [TestProperty("Description", "Attempts an offsets change while there is no content.")]
+        public void OffsetsChangeWithNoContent()
         {
             Scroller scroller = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
@@ -611,7 +615,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scroller = new Scroller();
 
-                SetupDefaultUI(scroller, null /*rectangleScrollerChild*/, scrollerLoadedEvent);
+                SetupDefaultUI(scroller, null /*rectangleScrollerContent*/, scrollerLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -643,8 +647,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Attempts a zoomFactor change while there is no child.")]
-        public void ZoomFactorChangeWithNoChild()
+        [TestProperty("Description", "Attempts a zoomFactor change while there is no content.")]
+        public void ZoomFactorChangeWithNoContent()
         {
             Scroller scroller = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
@@ -655,7 +659,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scroller = new Scroller();
 
-                SetupDefaultUI(scroller, null /*rectangleScrollerChild*/, scrollerLoadedEvent);
+                SetupDefaultUI(scroller, null /*rectangleScrollerContent*/, scrollerLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -691,17 +695,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public void ConsecutiveOffsetJumps()
         {
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
             AutoResetEvent[] scrollerViewChangeOperationEvents = null;
             ScrollerOperation[] operations = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
-                SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -791,17 +795,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
             AutoResetEvent[] scrollerViewChangeOperationEvents = null;
             ScrollerOperation[] operations = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
-                SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -915,34 +919,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Requests a non-animated offset change immediately after increasing child size.")]
-        public void OffsetJumpAfterChildResizing()
+        [TestProperty("Description", "Requests a non-animated offset change immediately after increasing content size.")]
+        public void OffsetJumpAfterContentResizing()
         {
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
-                SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild.Width = c_defaultUIScrollerChildWidth + 200.0;
+                rectangleScrollerContent.Width = c_defaultUIScrollerContentWidth + 200.0;
             });
 
             // Jump to absolute offsets
             ChangeOffsets(
-                scroller, 
-                c_defaultUIScrollerChildWidth + 200.0 - c_defaultUIScrollerWidth, 
-                c_defaultVerticalOffset, 
-                ScrollerViewKind.Absolute, 
+                scroller,
+                c_defaultUIScrollerContentWidth + 200.0 - c_defaultUIScrollerWidth,
+                c_defaultVerticalOffset,
+                ScrollerViewKind.Absolute,
                 ScrollerViewChangeKind.DisableAnimation,
                 ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints);
         }
@@ -950,17 +954,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private void ChangeOffsetsBeforeLoading(bool animate)
         {
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
             AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
             ScrollerOperation operation = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
-                SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent, false /*setAsContentRoot*/);
+                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent, false /*setAsContentRoot*/);
 
                 scroller.ViewChanged += (sender, args) =>
                 {
@@ -1000,17 +1004,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private void ChangeZoomFactorBeforeLoading(bool animate)
         {
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
             AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
             ScrollerOperation operation = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
-                SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent, false /*setAsContentRoot*/);
+                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent, false /*setAsContentRoot*/);
 
                 scroller.ViewChanged += (sender, args) =>
                 {
@@ -1475,12 +1479,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private void InterruptViewChange(
             ViewChangeInterruptionKind viewChangeInterruptionKind)
         {
-            bool changeOffsetsFirst = 
+            bool changeOffsetsFirst =
                 viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByOffsetsChange || viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByZoomFactorChange;
             bool changeOffsetsSecond =
                 viewChangeInterruptionKind == ViewChangeInterruptionKind.OffsetsChangeByOffsetsChange || viewChangeInterruptionKind == ViewChangeInterruptionKind.ZoomFactorChangeByOffsetsChange;
             Scroller scroller = null;
-            Rectangle rectangleScrollerChild = null;
+            Rectangle rectangleScrollerContent = null;
             AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
             AutoResetEvent[] scrollerViewChangeOperationEvents = null;
             ScrollerOperation[] operations = null;
@@ -1488,10 +1492,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerChild = new Rectangle();
+                rectangleScrollerContent = new Rectangle();
                 scroller = new Scroller();
 
-                SetupDefaultUI(scroller, rectangleScrollerChild, scrollerLoadedEvent);
+                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -1604,9 +1608,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private void WaitForEvent(string logComment, EventWaitHandle eventWaitHandle)
         {
             Log.Comment(logComment);
-            if (!eventWaitHandle.WaitOne(TimeSpan.FromMilliseconds(c_MaxWaitDuration)))
+            if (Debugger.IsAttached)
             {
-                throw new Exception("Timeout expiration in WaitForEvent.");
+                eventWaitHandle.WaitOne();
+            }
+            else
+            {
+                if (!eventWaitHandle.WaitOne(TimeSpan.FromMilliseconds(c_MaxWaitDuration)))
+                {
+                    throw new Exception("Timeout expiration in WaitForEvent.");
+                }
             }
         }
 

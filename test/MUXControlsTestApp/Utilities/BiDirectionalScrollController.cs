@@ -14,14 +14,14 @@ using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 
 #if !BUILD_WINDOWS
-using IScrollController = Microsoft.UI.Xaml.Controls.IScrollController;
-using ScrollerRailingMode = Microsoft.UI.Xaml.Controls.ScrollerRailingMode;
+using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
+using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewChangeResult = Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult;
-using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollControllerInteractionRequestedEventArgs;
-using ScrollControllerOffsetChangeRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollControllerOffsetChangeRequestedEventArgs;
-using ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs;
+using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
+using ScrollControllerOffsetChangeRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeRequestedEventArgs;
+using ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
 using ScrollerChangeOffsetsWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions;
 #endif
@@ -126,12 +126,12 @@ namespace MUXControlsTestApp.Utilities
                 }
             }
 
-            public ScrollerRailingMode InteractionVisualScrollRailingMode
+            public RailingMode InteractionVisualScrollRailingMode
             {
                 get
                 {
                     RaiseLogMessage("UniScrollController: get_InteractionVisualScrollRailingMode for Orientation=" + Orientation);
-                    return Owner.IsRailing ? ScrollerRailingMode.Enabled : ScrollerRailingMode.Disabled;
+                    return Owner.IsRailing ? RailingMode.Enabled : RailingMode.Disabled;
                 }
             }
 
