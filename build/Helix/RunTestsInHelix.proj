@@ -99,7 +99,7 @@
       <Timeout>00:20:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.SliderInteractionTests.*</Command>
     </HelixWorkItem>
-    <!-- <HelixWorkItem Include="ApiTests.ThemeResourcesTests">
+    <HelixWorkItem Include="ApiTests.ThemeResourcesTests">
       <Timeout>00:20:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.ThemeResourcesTests.*</Command>
     </HelixWorkItem>
@@ -246,7 +246,7 @@
     <HelixWorkItem Include="ApiTests.RepeaterTests.ViewportTests">
       <Timeout>00:20:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.ViewportTests.*</Command>
-    </HelixWorkItem> -->
+    </HelixWorkItem>
 
     <HelixWorkItem Include="IXMPTestApp.Tests">
       <Timeout>00:20:00</Timeout>
