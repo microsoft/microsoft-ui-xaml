@@ -98,10 +98,7 @@ private:
     bool m_hasKeyboardFocus{ false };
     bool m_isContentChangeHandlingDelayedForTopNav{ false };
 
-    void ToggleIsExpanded(winrt::TreeViewNode node);
-    void VerifyOrCreateChildrenNodes(winrt::TreeViewNode node);
+    void UpdateIsExpanded(winrt::TreeViewNode node);
     void UpdateSelectionIndicatorVisiblity();
     void OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args);
-
-    //void UpdateSelection(TreeNodeSelectionState const& state);
 };

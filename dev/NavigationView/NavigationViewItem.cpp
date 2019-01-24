@@ -66,7 +66,7 @@ void NavigationViewItem::OnApplyTemplate()
 
     winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get())->SetDepth(GetDepth());
 
-    //RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &NavigationViewItem::OnIsSelectedChanged });
+    RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &NavigationViewItem::OnIsSelectedChanged });
 
     m_appliedTemplate = true;
     UpdateVisualStateNoTransition();
@@ -178,9 +178,7 @@ void NavigationViewItem::OnPropertyChanged(const winrt::DependencyPropertyChange
     {
         if (property == s_IsExpandedProperty)
         {
-            //TODO: Instead of toggling, read specific bool value
-            ToggleIsExpanded(node);
-            
+            UpdateIsExpanded(node);            
             UpdateSelectionIndicatorVisiblity();
         }
         else if (property == s_MenuItemsSourceProperty)
@@ -418,21 +416,11 @@ void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
     }
 }
 
-void NavigationViewItem::ToggleIsExpanded(winrt::TreeViewNode node)
+void NavigationViewItem::UpdateIsExpanded(winrt::TreeViewNode node)
 {
-    //VerifyOrCreateChildrenNodes(node);
-    auto isExpanded = !node.IsExpanded();
-    node.IsExpanded(isExpanded);
-}
-
-// This function allows the TreeViewNode tree to be created dynamically in the
-// scenario where Navigation View is declared in markup
-void NavigationViewItem::VerifyOrCreateChildrenNodes(winrt::TreeViewNode node)
-{
-    // Make sure children nodes have been created if children exist
-    if (node.Children().Size() == 0 && MenuItems().Size() != 0)
+    if (node.IsExpanded() != IsExpanded())
     {
-        winrt::get_self<TreeViewNode>(node)->ItemsSource(MenuItems());
+        node.IsExpanded(IsExpanded());
     }
 }
 
@@ -462,16 +450,3 @@ void NavigationViewItem::OnIsSelectedChanged(const winrt::DependencyObject& /*se
         selectionIndicator.Opacity(0);
     }
 }
-
-//void NavigationViewItem::UpdateSelection(TreeNodeSelectionState const& state)
-//{
-//    auto selectionIndicator = GetSelectionIndicator();
-//    if (state == TreeNodeSelectionState::PartialSelected)
-//    {
-//        selectionIndicator.Opacity(1);
-//    }
-//    else if (state == TreeNodeSelectionState::UnSelected)
-//    {
-//        selectionIndicator.Opacity(0);
-//    }
-//}

@@ -29,7 +29,6 @@ namespace MUXControlsTestApp
         public String Name { get; set; }
         public String Icon { get; set; }
         public ObservableCollection<Category> Children { get; set; }
-
         public bool IsLeaf { get; set; }
 
         public Category(String name, String icon, ObservableCollection<Category> children, bool isLeaf)

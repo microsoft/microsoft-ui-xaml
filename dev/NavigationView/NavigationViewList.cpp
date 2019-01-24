@@ -74,7 +74,7 @@ void NavigationViewList::PrepareContainerForItemOverride(winrt::DependencyObject
 
         bool isChildSelected = nvNode->SelectionState() == TreeNodeSelectionState::PartialSelected ? true : false;
         winrt::get_self<NavigationViewItem>(itemContainer)->IsChildSelected(isChildSelected);
-        
+        winrt::get_self<NavigationViewItem>(itemContainer)->IsExpanded(nvNode->IsExpanded());
     }
 
     __super::PrepareContainerForItemOverride(element, item);

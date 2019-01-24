@@ -526,6 +526,7 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
     {
         // For some unknown reason, ListView may not always selected a item on the first time when we update the datasource.
         // If it's not selected, we re-selected it.
+        // This is also used when a previously selected MenuItem was hidden and is now being shown.
         auto selectedItem = SelectedItem();
         if (selectedItem)
         {
@@ -1448,23 +1449,16 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
 {
     auto clickedItem = args.ClickedItem();
 
-    //TODO: Update container retrieval logic to work with popup listviews
-    auto itemContainer = GetContainerForClickedItem(clickedItem);
+    // 'GetContainerForClickedItem' was introduced to fix a bug for TopNav (see NavigationViewList.h, m_lastItemCalledInIsItemItsOwnContainerOverride).
+    // However, this workaround returns the wrong container when databinding is used. So in order to have functional behavior without removing the previous
+    // bug fix, first we try the standard approach of finding the container, and if that fails, we attempt the workaround.
+    auto itemContainer = NavigationViewItemBaseOrSettingsContentFromData(clickedItem);
+    if (!itemContainer)
+    {
+        itemContainer = GetContainerForClickedItem(clickedItem);
+    }
 
     auto selectedItem = SelectedItem();
-
-    // TODO: There is bug in the above method of retrieving an item container when using databinding.
-    //       For now, retrieving container by bypassing the buggy method.
-    // Explanation:
-    //      The container retrieval workaround in 'GetContainerForClickedItem' does not work in a
-    //      databinding scenario. 'NavigationViewItemBaseOrSettingsContentFromData' doesn't work
-    //      in this function in a markup scenario. So we first try the ListView API to retrieve
-    //      a container and if that fails, we use the workaround.
-    //auto itemContainerForExpanding = NavigationViewItemBaseOrSettingsContentFromData(clickedItem);
-    //if (!itemContainerForExpanding)
-    //{
-    //    itemContainerForExpanding = itemContainer;
-    //}
 
     // If SelectsOnInvoked and previous item(selected item) == new item(clicked item), raise OnItemClicked (same item would not have selectchange event)
     // Others would be invoked by SelectionChanged. Please see ChangeSelection for more details.
@@ -1474,7 +1468,6 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
     // If selecteditem.content == item, selecteditem is used to deduce the selectionsuppressed flag
     if (!m_shouldIgnoreNextSelectionChange && DoesSelectedItemContainContent(clickedItem, itemContainer) && !IsSelectionSuppressed(selectedItem))
     {
-        auto containterContent = itemContainer.Content();
         RaiseItemInvoked(selectedItem, false /*isSettings*/, itemContainer);
         if (auto nviExpanding = itemContainer.try_as<winrt::NavigationViewItem>())
         {
