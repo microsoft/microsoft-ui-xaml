@@ -220,6 +220,10 @@ namespace DEPControlsTestApp.ItemsViewPrototype
             {
                 VisualStateManager.GoToState(this, "Selected", true);
             }
+            else if (m_isPointerOver)
+            {
+                VisualStateManager.GoToState(this, "PointerOver", true);
+            }
             else
             {
                 VisualStateManager.GoToState(this, "Normal", true);
@@ -294,6 +298,20 @@ namespace DEPControlsTestApp.ItemsViewPrototype
             raiseInvoke = false;
         }
 
+        protected override void OnPointerEntered(PointerRoutedEventArgs e)
+        {
+            m_isPointerOver = true;
+            UpdateVisualStates();
+            base.OnPointerEntered(e);
+        }
+
+        protected override void OnPointerExited(PointerRoutedEventArgs e)
+        {
+            m_isPointerOver = false;
+            UpdateVisualStates();
+            base.OnPointerExited(e);
+        }
+
         // Invoke on Enter key down
         protected override void OnKeyDown(KeyRoutedEventArgs e)
         {
@@ -333,5 +351,6 @@ namespace DEPControlsTestApp.ItemsViewPrototype
 
         private LayoutPanel m_layoutPanel;
         private Selector m_selector;
+        private bool m_isPointerOver = false;
     }
 }

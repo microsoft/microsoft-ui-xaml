@@ -12,6 +12,30 @@ namespace DEPControlsTestApp.ItemsViewPrototype
             this.DefaultStyleKey = typeof(TableHeaderCell);
         }
 
+        public void UpdateSortState()
+        {
+            if (m_needsSorting)
+            {
+                // do a sort operation on this column
+                var itemsView = TreeHelper.FindItemsView(this);
+                if (itemsView != null)
+                {
+                    m_currentSortState = (m_currentSortState == SortState.Unsorted || m_currentSortState == SortState.SortedDescending) ? SortState.SortedAscending : SortState.SortedDescending;
+
+                    // TODO:Temporary sort call here is hacky. Need to move to new UX 
+                    // that we come up with. Task 15867030: TableView: Sorting/Filtering
+                    itemsView.SortFunc(ColumnIndex, m_currentSortState == SortState.SortedAscending);
+                }
+
+                m_needsSorting = false;
+            }
+            else
+            {
+                m_currentSortState = SortState.Unsorted;
+            }
+            UpdateVisualStates();
+        }
+
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new TableHeaderCellAutomationPeer(this);
@@ -49,6 +73,7 @@ namespace DEPControlsTestApp.ItemsViewPrototype
                 if (m_previousX != 0)
                 {
                     UpdateColumnWidth(point.Position.X - m_previousX);
+                    m_pointerMoved = true;
                 }
                 m_previousX = point.Position.X;
             }
@@ -58,9 +83,9 @@ namespace DEPControlsTestApp.ItemsViewPrototype
 
         protected override void OnPointerReleased(PointerRoutedEventArgs e)
         {
+            e.Handled = m_pointerMoved;
             ReleasePointerCapturePrivate(e.Pointer);
 
-            // do a sort operation on this column
             if (!e.Handled)
             {
                 // hacky way to get to the tableview.
@@ -69,12 +94,7 @@ namespace DEPControlsTestApp.ItemsViewPrototype
                 {
                     if (itemsView.SortFunc != null)
                     {
-                        m_currentSortState = m_currentSortState == SortState.Unsorted || m_currentSortState == SortState.SortedDescending ? SortState.SortedAscending : SortState.SortedDescending;
-
-                        // TODO:Temporary sort call here is hacky. Need to move to new UX 
-                        // that we come up with. Task 15867030: TableView: Sorting/Filtering
-                        itemsView.SortFunc(ColumnIndex, m_currentSortState == SortState.SortedAscending);
-                        UpdateVisualStates();
+                        m_needsSorting = true;
                     }
                 }
             }
@@ -152,6 +172,7 @@ namespace DEPControlsTestApp.ItemsViewPrototype
                 // New Pointer press, capture.
                 // We ignore pointer pressed if one pointer is already captured.
                 m_previousX = 0;
+                m_pointerMoved = false;
                 CapturePointer(pointer);
                 m_capturedPointerId = pointer.PointerId;
             }
@@ -162,11 +183,14 @@ namespace DEPControlsTestApp.ItemsViewPrototype
             if (pointer.PointerId == m_capturedPointerId)
             {
                 m_capturedPointerId = uint.MaxValue;
+                m_pointerMoved = false;
                 ReleasePointerCapture(pointer);
             }
         }
 
         uint m_capturedPointerId = uint.MaxValue;
+        bool m_pointerMoved = false;
+        bool m_needsSorting = false;
         double m_previousX = 0.0;
         TextBox m_filterTb = null;
         SortState m_currentSortState = SortState.Unsorted;
