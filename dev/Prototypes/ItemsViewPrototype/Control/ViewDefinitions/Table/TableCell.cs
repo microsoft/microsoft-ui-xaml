@@ -71,7 +71,6 @@ namespace DEPControlsTestApp.ItemsViewPrototype
         protected override void OnPointerCaptureLost(PointerRoutedEventArgs e)
         {
             m_isPressed = false;
-            m_isPointerOver = false;
             UpdateVisualStates();
             base.OnPointerCaptureLost(e);
         }
@@ -94,7 +93,7 @@ namespace DEPControlsTestApp.ItemsViewPrototype
             // TODO: Not wise to walk the tree every time.
             var itemsView = TreeHelper.FindItemsView(this);
 
-            if (itemsView != null && itemsView.FilterFunc != null)
+            if (m_isPointerOver && itemsView != null && itemsView.FilterFunc != null)
             {
                 VisualStateManager.GoToState(this, "FilterEnabled", true);
             }
