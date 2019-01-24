@@ -137,24 +137,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-                // Recycle focused element 0.0 and validate it's still realized because
-                // it's pinned.
+                Log.Comment("Recycle focused element 0.0 and validate it's still realized because it is pinned.");
                 {
                     var ctx = (VirtualizingLayoutContext)innerRepeaters[0].Tag;
                     ctx.RecycleElement(itemElements[0][0]);
                     Verify.AreEqual(0, innerRepeaters[0].GetElementIndex(itemElements[0][0]));
                 }
 
-                // Recycle element 0.1 and validate it's no longer realized because it's
-                // not pinned.
+                Log.Comment("Recycle element 0.1 and validate it's no longer realized because it is not pinned.");
                 {
                     var ctx = (VirtualizingLayoutContext)innerRepeaters[0].Tag;
                     ctx.RecycleElement(itemElements[0][1]);
                     Verify.AreEqual(-1, innerRepeaters[0].GetElementIndex(itemElements[0][1]));
                 }
 
-                // Recycle group 0 and validate it's still realized because one of its items
-                // is pinned.
+                Log.Comment("Recycle group 0 and validate it's still realized because one of its items is pinned.");
                 {
                     var ctx = (VirtualizingLayoutContext)rootRepeater.Tag;
                     ctx.RecycleElement(groupElements[0]);
@@ -170,8 +167,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-                // Move focus to item 1.1 and validate item 0.0 and group 0 are recycled because
-                // the only thing keeping them around is the fact that item 0.0 was focus pinned.
+                Log.Comment(@"Move focus to item 1.1 and validate item 0.0 and group 0 are recycled because 
+                 the only thing keeping them around is the fact that item 0.0 was focus pinned");
                 {
                     ((VirtualizingLayoutContext)rootRepeater.Tag).RecycleElement(groupElements[0]);
                     ((VirtualizingLayoutContext)innerRepeaters[0].Tag).RecycleElement(itemElements[0][0]);
@@ -181,8 +178,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Verify.AreEqual(1, innerRepeaters[0].GetElementIndex(itemElements[1][1]));
                 }
 
-                // Delete item 1.1 from the data.
-                // This will force the element to get recycled even if it's pinned.
+                Log.Comment(@"Delete item 1.1 from the data. This will force the element to get recycled even if it's pinned.");
                 {
                     data[1].RemoveAt(1);
                     rootRepeater.UpdateLayout();
