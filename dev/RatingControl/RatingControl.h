@@ -125,6 +125,8 @@ private:
 
     float RenderingRatingFontSize();
     float ActualRatingFontSize();
+    double ItemSpacing();
+    void UpdateCaptionMargins();
 
     // Private members
     tracker_ref<winrt::TextBlock> m_captionTextBlock{ this };
