@@ -71,7 +71,6 @@ namespace DEPControlsTestApp.ItemsViewPrototype
         protected override void OnPointerCaptureLost(PointerRoutedEventArgs e)
         {
             m_isPressed = false;
-            m_isPointerOver = false;
             UpdateVisualStates();
             base.OnPointerCaptureLost(e);
         }
