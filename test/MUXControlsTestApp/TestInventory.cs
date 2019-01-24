@@ -31,7 +31,6 @@ namespace MUXControlsTestApp
             Tests.Add(new TestDeclaration("CommonStyles Tests", typeof(CommonStylesPage)));
             Tests.Add(new TestDeclaration("RadioButtons Tests", typeof(RadioButtonsPage)));
             Tests.Add(new TestDeclaration("RadioMenuFlyoutItem Tests", typeof(RadioMenuFlyoutItemPage)));
-            Tests.Add(new TestDeclaration("AnimatedVisualPlayer Tests", typeof(AnimatedVisualPlayerPage)));
 #endif
 
             // These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
@@ -43,6 +42,7 @@ namespace MUXControlsTestApp
 #if (USE_INSIDER_SDK)
             Tests.Add(new TestDeclaration("ButtonInteraction Tests", typeof(ButtonInteractionPage)));
             Tests.Add(new TestDeclaration("SliderInteraction Tests", typeof(SliderInteractionPage)));
+            Tests.Add(new TestDeclaration("AnimatedVisualPlayer Tests", typeof(AnimatedVisualPlayerPage)));
 #endif
 #endif
             Tests.Add(new TestDeclaration("NavigationView Tests", typeof(NavigationViewCaseBundle)));
