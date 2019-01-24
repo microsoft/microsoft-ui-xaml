@@ -1,5 +1,12 @@
 robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP
 
+reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1
+
+cd scripts
+powershell -Command Add-AppxPackage ../Microsoft.VCLibs.x86.14.00.appx
+powershell -Command Add-AppxPackage ../Microsoft.NET.CoreRuntime.1.1.appx
+cd ..
+
 te MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /APPX:Unregister=false %* 
 
 %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te.wtl -result_name te.wtl
