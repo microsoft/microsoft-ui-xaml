@@ -30,7 +30,6 @@ namespace DEPControlsTestApp.ItemsViewPrototype
 
         protected override void OnPointerReleased(PointerRoutedEventArgs e)
         {
-            bool handled = e.Handled;
             if (!e.Handled)
             {
                 foreach (var child in LayoutPanel.Children)

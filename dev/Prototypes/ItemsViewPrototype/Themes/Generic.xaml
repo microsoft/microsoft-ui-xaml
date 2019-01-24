@@ -52,7 +52,6 @@
     </Style>
 
     <Style TargetType="l:TableHeaderCell">
-        <Setter Property="Margin" Value="0" />
         <Setter Property="MinWidth" Value="40" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="Template">
