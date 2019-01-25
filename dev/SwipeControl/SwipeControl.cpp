@@ -673,7 +673,7 @@ void SwipeControl::AttachDismissingHandlers()
 
     DetachDismissingHandlers();
 
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
     if (SharedHelpers::IsXamlRootAvailable())
     {
         if (auto xamlRoot = XamlRoot())
@@ -717,7 +717,7 @@ void SwipeControl::DetachDismissingHandlers()
 {
     SWIPECONTROL_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
     if (SharedHelpers::IsXamlRootAvailable())
     {
         if (auto xamlRoot = this->XamlRoot())
@@ -752,7 +752,7 @@ void SwipeControl::DismissSwipeOnAcceleratorKeyActivator(const winrt::Windows::U
     CloseIfNotRemainOpenExecuteItem();
 }
 
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
 
 void SwipeControl::DismissSwipeOnXamlRootKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {

@@ -6153,7 +6153,7 @@ void Scroller::SetKeyEvents()
 
     if (!m_isListeningToKeystrokes)
     {
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
         if (SharedHelpers::IsXamlRootAvailable())
 
         {
@@ -6193,7 +6193,7 @@ void Scroller::ResetKeyEvents()
 
     if (m_isListeningToKeystrokes)
     {
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
         if (SharedHelpers::IsXamlRootAvailable())
         {
             if (auto xamlRoot = XamlRoot())
