@@ -1,8 +1,6 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: Build
-  condition: 
-    False
   pool:
     vmImage: VS2017-Win2016
   timeoutInMinutes: 120
@@ -72,8 +70,8 @@ jobs:
 
 
 - job: RunTests
-  # dependsOn:
-  #   - Build
+  dependsOn:
+    - Build
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
@@ -87,11 +85,11 @@ jobs:
         buildPlatform: 'x86'
         buildConfiguration: 'release'
         # %3b is the escape code for ';' which is used as the delimiter
-        helixTargetQueues: 'Windows.10.Amd64.Open%3bWindows.10.Amd64.ServerRS5.Open%3bWindows.10.Amd64.ClientRS3.DevEx.Open'
+        helixTargetQueues: 'Windows.10.Amd64.Open%3bWindows.10.Amd64.ClientRS3.DevEx.Open%3bWindows.10.Amd64.ServerRS5.Open'
       Release_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'release'
-        helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open%3bWindows.10.Amd64.ClientRS3.DevEx.Open'
+        helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open'
   steps:
 
   - task: NuGetToolInstaller@0
@@ -107,24 +105,10 @@ jobs:
       nugetConfigPath: nuget.config
       restoreDirectory: packages
 
-  - task: DownloadBuildArtifacts@0
-    displayName: 'Download Build Artifacts from other pipeline'
-    inputs:
-      buildType: specific
-      buildVersionToDownload: specific
-      project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
-      pipeline: 22
-      buildId: 1722
-      # project: 'f05f4dbf-3077-427d-91e0-b66d9e4ca374'
-      # pipeline: 34322
-      # buildId: 13870621
-      artifactName: drop
+  - task: DownloadBuildArtifacts@0 
+    inputs: 
+      artifactName: drop 
       downloadPath: '$(artifactsDir)'
-
-  # - task: DownloadBuildArtifacts@0 
-  #   inputs: 
-  #     artifactName: drop 
-  #     downloadPath: '$(artifactsDir)'
 
   - task: powershell@2
     displayName: 'PrepareHelixPayload.ps1'

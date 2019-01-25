@@ -3,7 +3,6 @@
 
 using Microsoft.Win32;
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
@@ -35,22 +34,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 {
                     PackageManager packageManager = new PackageManager();
                     DeploymentResult result = null;
-
+                    
                     var installedPackages = packageManager.FindPackagesForUser(string.Empty, packageFamilyName);
-
-                    foreach (var installedPackage in installedPackages)
-                    {
-                        Log.Comment("!!!!Test AppX package already installed. {0}", installedPackage.Id.FullName);
-                    }
-
-                    //if (installedPackages.Any())
-                    //{
-                    //    TestAppxInstalled.Add(packageFamilyName);
-                    //    Log.Comment("Test app is already installed. Skipping installation");
-                    //    return;
-                    //}
-
-
                     foreach (var installedPackage in installedPackages)
                     {
                         Log.Comment("Test AppX package already installed. Removing existing package by name: {0}", installedPackage.Id.FullName);
@@ -132,7 +117,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 TestAppxInstalled.Add(packageFamilyName);
             }
         }
-
+        
         public static void InstallCert(string certFilePath)
         {
             Log.Comment("Installing cert: {0}", certFilePath);
