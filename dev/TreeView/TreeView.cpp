@@ -56,6 +56,27 @@ winrt::DependencyObject TreeView::ContainerFromNode(winrt::TreeViewNode const& n
     return ListControl()->ContainerFromNode(node);
 }
 
+void TreeView::SelectedNode(winrt::TreeViewNode const& node)
+{
+    if (auto listControl = ListControl())
+    {
+        listControl->SelectedItem(listControl->IsContentMode() ? node.Content() : node);
+    }
+}
+
+winrt::TreeViewNode TreeView::SelectedNode()
+{
+    if (auto listControl = ListControl())
+    {
+        auto selectedItem = listControl->SelectedItem();
+        auto container = ContainerFromItem(selectedItem);
+        return NodeFromContainer(container);
+    }
+
+    return nullptr;
+}
+
+
 winrt::IVector<winrt::TreeViewNode> TreeView::SelectedNodes()
 {
     if (auto listControl = ListControl())

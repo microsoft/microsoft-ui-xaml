@@ -27,7 +27,10 @@ public:
     winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
     winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
 
+    void SelectedNode(winrt::TreeViewNode const& node);
+    winrt::TreeViewNode SelectedNode();
     winrt::IVector<winrt::TreeViewNode> SelectedNodes();
+
     void Expand(winrt::TreeViewNode const& value);
     void Collapse(winrt::TreeViewNode const& value);
     void SelectAll();
