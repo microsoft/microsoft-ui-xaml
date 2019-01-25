@@ -109,8 +109,8 @@ namespace DEPControlsTestApp
                         ItemsViewColumnDefinitionBase toRemove = null;
                         foreach (var columnDef in table.ColumnDefinitions)
                         {
-                            var textColumn = columnDef as ItemsViewTextColumnDefinition;
-                            if (textColumn != null && textColumn.DisplayMemberPath == columnName)
+                            var column = columnDef as ItemsViewColumnDefinitionBase;
+                            if (column != null && column.ColumnName == columnName)
                             {
                                 toRemove = columnDef;
                                 break;
