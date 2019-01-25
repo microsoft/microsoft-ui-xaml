@@ -16,13 +16,12 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="UseSystemFocusVisuals" Value="True"/>
-            <Setter Property="IsChildAvailableWidthConstrained" Value="True"/>
-            <Setter Property="IsChildAvailableHeightConstrained" Value="False"/>
+            <Setter Property="ContentOrientation" Value="Vertical"/>
             <Setter Property="HorizontalScrollChainingMode" Value="Auto"/>
-            <Setter Property="HorizontalScrollMode" Value="Auto"/>
+            <Setter Property="HorizontalScrollMode" Value="Enabled"/>
             <Setter Property="HorizontalScrollRailingMode" Value="Enabled"/>
             <Setter Property="VerticalScrollChainingMode" Value="Auto"/>
-            <Setter Property="VerticalScrollMode" Value="Auto"/>
+            <Setter Property="VerticalScrollMode" Value="Enabled"/>
             <Setter Property="VerticalScrollRailingMode" Value="Enabled"/>
             <Setter Property="ZoomChainingMode" Value="Auto"/>
             <Setter Property="ZoomMode" Value="Disabled"/>
@@ -48,9 +47,8 @@
                             <controlsPrimitives:Scroller x:Name="PART_Scroller"
                                 Grid.ColumnSpan="2" Grid.RowSpan="2"
                                 Background="{TemplateBinding Background}"
-                                Child="{TemplateBinding Content}"
-                                IsChildAvailableWidthConstrained="{TemplateBinding IsChildAvailableWidthConstrained}"
-                                IsChildAvailableHeightConstrained="{TemplateBinding IsChildAvailableHeightConstrained}"
+                                Content="{TemplateBinding Content}"
+                                ContentOrientation="{TemplateBinding ContentOrientation}"
                                 Margin="{TemplateBinding Padding}"
                                 HorizontalScrollChainingMode="{TemplateBinding HorizontalScrollChainingMode}"
                                 HorizontalScrollMode="{TemplateBinding HorizontalScrollMode}"
@@ -184,18 +182,18 @@
 
             <TextBlock Text="HorizontalScrollBarVisibility:" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center"/>
             <ComboBox x:Name="cmbHorizontalScrollBarVisibility" Width="105" Margin="0,1,0,1" Grid.Row="4" Grid.Column="1" VerticalAlignment="Center">
-                <ComboBoxItem>Visible</ComboBoxItem>
-                <ComboBoxItem>Collapsed</ComboBoxItem>
                 <ComboBoxItem>Auto</ComboBoxItem>
+                <ComboBoxItem>Visible</ComboBoxItem>
+                <ComboBoxItem>Hidden</ComboBoxItem>
             </ComboBox>
             <Button x:Name="btnGetHorizontalScrollBarVisibility" Content="G" Margin="1" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetHorizontalScrollBarVisibility_Click"/>
             <Button x:Name="btnSetHorizontalScrollBarVisibility" Content="S" Margin="1" Grid.Row="4" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetHorizontalScrollBarVisibility_Click"/>
 
             <TextBlock Text="VerticalScrollBarVisibility:" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center"/>
             <ComboBox x:Name="cmbVerticalScrollBarVisibility" Width="105" Margin="0,1,0,1" Grid.Row="5" Grid.Column="1" VerticalAlignment="Center">
-                <ComboBoxItem>Visible</ComboBoxItem>
-                <ComboBoxItem>Collapsed</ComboBoxItem>
                 <ComboBoxItem>Auto</ComboBoxItem>
+                <ComboBoxItem>Visible</ComboBoxItem>
+                <ComboBoxItem>Hidden</ComboBoxItem>
             </ComboBox>
             <Button x:Name="btnGetVerticalScrollBarVisibility" Content="G" Margin="1" Grid.Row="5" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetVerticalScrollBarVisibility_Click"/>
             <Button x:Name="btnSetVerticalScrollBarVisibility" Content="S" Margin="1" Grid.Row="5" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetVerticalScrollBarVisibility_Click"/>
@@ -222,21 +220,14 @@
 
             <TextBlock Text="Scroller Cloned Properties" Grid.Row="0" Grid.ColumnSpan="4" Foreground="Red"/>
 
-            <TextBlock Text="IsChildAvailableWidthConstrained:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
-            <ComboBox x:Name="cmbIsChildAvailableWidthConstrained" Width="105" Margin="1" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">
-                <ComboBoxItem>Yes</ComboBoxItem>
-                <ComboBoxItem>No</ComboBoxItem>
+            <TextBlock Text="ContentOrientation:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbContentOrientation" Width="105" Margin="1" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">
+                <ComboBoxItem>Vertical</ComboBoxItem>
+                <ComboBoxItem>Horizontal</ComboBoxItem>
+                <ComboBoxItem>None</ComboBoxItem>
             </ComboBox>
-            <Button x:Name="btnGetIsChildAvailableWidthConstrained" Content="G" Margin="1" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetIsChildAvailableWidthConstrained_Click"/>
-            <Button x:Name="btnSetIsChildAvailableWidthConstrained" Content="S" Margin="1" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetIsChildAvailableWidthConstrained_Click"/>
-
-            <TextBlock Text="IsChildAvailableHeightConstrained:" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
-            <ComboBox x:Name="cmbIsChildAvailableHeightConstrained" Width="105" Margin="1" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center">
-                <ComboBoxItem>Yes</ComboBoxItem>
-                <ComboBoxItem>No</ComboBoxItem>
-            </ComboBox>
-            <Button x:Name="btnGetIsChildAvailableHeightConstrained" Content="G" Margin="1" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetIsChildAvailableHeightConstrained_Click"/>
-            <Button x:Name="btnSetIsChildAvailableHeightConstrained" Content="S" Margin="1" Grid.Row="2" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetIsChildAvailableHeightConstrained_Click"/>
+            <Button x:Name="btnGetContentOrientation" Content="G" Margin="1" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetContentOrientation_Click"/>
+            <Button x:Name="btnSetContentOrientation" Content="S" Margin="1" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetContentOrientation_Click"/>
 
             <TextBlock Text="HorizontalScrollMode:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center"/>
             <ComboBox x:Name="cmbHorizontalScrollMode" Width="105" Margin="1" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center">

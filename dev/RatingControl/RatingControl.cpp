@@ -14,11 +14,14 @@ const float c_horizontalScaleAnimationCenterPoint = 0.5f;
 const float c_verticalScaleAnimationCenterPoint = 0.8f;
 const winrt::Thickness c_focusVisualMargin = { -8, -7, -8, 0 };
 const int c_defaultRatingFontSizeForRendering = 32; // (32 = 2 * [default fontsize] -- because of double size rendering), remove when MSFT #10030063 is done
-const int c_itemSpacing = 8;
+const int c_defaultItemSpacing = 8;
 
 const float c_mouseOverScale = 0.8f;
 const float c_touchOverScale = 1.0f;
 const float c_noPointerOverMagicNumber = -100;
+
+// 22 = 20(compensate for the -20 margin on StackPanel) + 2(magic number makes the text and star center-aligned)
+const float c_defaultCaptionTopMargin = 22;
 
 const int c_noValueSetSentinel = -1;
 
@@ -46,6 +49,34 @@ float RatingControl::ActualRatingFontSize()
     return RenderingRatingFontSize() / 2;
 }
 
+// TODO MSFT #10030063: Convert to itemspacing DP
+double RatingControl::ItemSpacing()
+{
+    // Stars are rendered 2x size and we use expression animation to shrink them down to desired size,
+    // which will create those spacings (not system margin).
+    // Since text scale factor won't affect system margins,
+    // when stars get bigger, the spacing will become smaller.
+    // Therefore we should include TextScaleFactor when calculating item spacing
+    // in order to get correct total width and star center positions.
+    double defaultFontSize = c_defaultRatingFontSizeForRendering / 2;
+    return c_defaultItemSpacing - (GetUISettings().TextScaleFactor() - 1.0) * defaultFontSize / 2;
+}
+
+void RatingControl::UpdateCaptionMargins()
+{
+    // We manually set margins to caption text to make it center-aligned with the stars
+    // because star vertical center is 0.8 instead of the normal 0.5.
+    // When text scale changes we need to update top margin to make the text follow start center.
+    if (auto captionTextBlock = m_captionTextBlock.safe_get())
+    {
+        double textScaleFactor = GetUISettings().TextScaleFactor();
+        winrt::Thickness margin = captionTextBlock.Margin();
+        margin.Top = c_defaultCaptionTopMargin - (ActualRatingFontSize() * c_verticalScaleAnimationCenterPoint);
+
+        captionTextBlock.Margin(margin);
+    }
+}
+
 void RatingControl::OnApplyTemplate()
 {
     RecycleEvents();
@@ -57,6 +88,7 @@ void RatingControl::OnApplyTemplate()
     {
         m_captionTextBlock.set(captionTextBlock);
         m_captionSizeChangedToken = captionTextBlock.SizeChanged({ this, &RatingControl::OnCaptionSizeChanged });
+        UpdateCaptionMargins();
     }
 
     if (auto backgroundStackPanel = GetTemplateChildT<winrt::StackPanel>(L"RatingBackgroundStackPanel", thisAsControlProtected))
@@ -832,8 +864,7 @@ double RatingControl::CalculateTotalRatingControlWidth()
 
     if (captionAsWinRT.size() > 0)
     {
-        // TODO MSFT #10030063: Convert to itemspacing DP
-        textSpacing = c_itemSpacing;
+        textSpacing = ItemSpacing();
     }
 
     double captionWidth = 0.0;
@@ -851,7 +882,7 @@ double RatingControl::CalculateStarCenter(int starIndex)
     // TODO: sub in real API DP values
     // MSFT #10030063
     // [real Rating Size * (starIndex + 0.5)] + (starIndex * itemSpacing)
-    return (ActualRatingFontSize() * (starIndex + 0.5)) + (starIndex * c_itemSpacing);
+    return (ActualRatingFontSize() * (starIndex + 0.5)) + (starIndex * ItemSpacing());
 }
 
 double RatingControl::CalculateActualRatingWidth()
@@ -859,7 +890,7 @@ double RatingControl::CalculateActualRatingWidth()
     // TODO: replace hardcoding
     // MSFT #10030063
     // (max rating * rating size) + ((max rating - 1) * item spacing)
-    return (MaxRating() * ActualRatingFontSize()) + ((MaxRating() - 1) * c_itemSpacing);
+    return (MaxRating() * ActualRatingFontSize()) + ((MaxRating() - 1) * ItemSpacing());
 }
 
 // IControlOverrides
@@ -1141,6 +1172,7 @@ void RatingControl::OnTextScaleFactorChanged(const winrt::UISettings& setting, c
     m_dispatcherHelper.RunAsync([strongThis]()
     {
         strongThis->StampOutRatingItems();
+        strongThis->UpdateCaptionMargins();
     });
     
 }

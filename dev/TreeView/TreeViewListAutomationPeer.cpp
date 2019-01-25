@@ -33,7 +33,8 @@ winrt::com_array<winrt::hstring> TreeViewListAutomationPeer::DropEffects()
 
 winrt::IInspectable TreeViewListAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
-    if (patternInterface == winrt::PatternInterface::DropTarget)
+    if (patternInterface == winrt::PatternInterface::DropTarget ||
+       (patternInterface == winrt::PatternInterface::Selection && IsMultiselect()))
     {
         return *this;
     }
@@ -44,4 +45,26 @@ winrt::IInspectable TreeViewListAutomationPeer::GetPatternCore(winrt::PatternInt
 winrt::AutomationControlType TreeViewListAutomationPeer::GetAutomationControlTypeCore()
 {
     return winrt::AutomationControlType::Tree;
+}
+
+// ISelectionProvider
+bool TreeViewListAutomationPeer::CanSelectMultiple()
+{
+    return IsMultiselect()? true: __super::CanSelectMultiple();
+}
+
+bool TreeViewListAutomationPeer::IsSelectionRequried()
+{
+    return IsMultiselect()? false : __super::CanSelectMultiple();
+}
+
+winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProviderSimple> TreeViewListAutomationPeer::GetSelection()
+{
+    // The selected items might be collapsed, virtualized, so getting an accurate list of selected items is not possible.
+    return {};
+}
+
+bool TreeViewListAutomationPeer::IsMultiselect()
+{
+    return winrt::get_self<TreeViewList>(Owner().as<winrt::TreeViewList>())->IsMultiselect();
 }
