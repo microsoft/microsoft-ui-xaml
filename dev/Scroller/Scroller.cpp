@@ -533,8 +533,7 @@ winrt::Size Scroller::MeasureOverride(winrt::Size const& availableSize)
                     // potentially set on the content so it is allowed to grow accordingly.
                     contentAvailableSize.Width = static_cast<float>(GetComputedMaxWidth(availableSize.Width, contentAsFE));
                 }
-
-                if (m_contentOrientation == winrt::ContentOrientation::Horizontal)
+                else if (m_contentOrientation == winrt::ContentOrientation::Horizontal)
                 {
                     // Even though the content's Height is constrained, take into account the MinHeight, Height and MaxHeight values
                     // potentially set on the content so it is allowed to grow accordingly.

@@ -360,7 +360,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             // will force the viewport offset to a smaller value).
             // In this test, we are not testing a behavior that's specific to an OS version,
             // so we will run this test in RS2+ to keep it simple.
-            if(!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
             {
                 Log.Warning("Skipping ValidateSupportForScrollerConfigurationChanges");
                 return;
@@ -369,7 +369,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             // Post RS4 configuration changes will not be raised.
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Comment("Skipping since version is less than RS5 and effective viewport is not available below RS5");
+                Log.Comment("Skipping since version is greater than RS4 and configuration changes would not be raised.");
                 return;
             }
 
@@ -390,12 +390,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 for (int i = 0; i < scrollers.Length; ++i)
                 {
-                    grids[i] = new Grid();
+                    grids[i] = new Grid()
+                    {
+                        Name = "grid" + i,
+                        MaxWidth = 200,
+                        MaxHeight = 200
+                    };
                     grids[i].Children.Add(i > 0 ? (UIElement)scrollers[i - 1] : repeater);
-                    
+                    grids[i].SizeChanged += (sender, args) =>
+                    {
+                        Grid grid = sender as Grid;
+                        Log.Comment("Grid_SizeChanged for " + grid.Name + ", size=(" + grid.ActualWidth + ", " + grid.ActualHeight + ")");
+                    };
+
                     scrollers[i] = new Scroller()
                     {
+                        Name = "scroller" + i,
                         Content = grids[i],
+                    };
+                    scrollers[i].SizeChanged += (sender, args) =>
+                    {
+                        Scroller scroller = sender as Scroller;
+                        string scrollerName = scroller.Name;
+                        Log.Comment("Scroller_SizeChanged for " + scrollerName + ", size=(" + scroller.ActualWidth + ", " + scroller.ActualHeight + ")");
                     };
                 }
 
@@ -408,7 +425,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Verify.AreEqual(2, realizationRects.Count);
                 Verify.AreEqual(new Rect(0, 0, 0, 0), realizationRects[0]);
-                Verify.AreEqual(new Rect(0, 0, float.MaxValue, float.MaxValue), realizationRects[1]);
+                Verify.AreEqual(new Rect(0, 0, 200, 200), realizationRects[1]);
                 realizationRects.Clear();
 
                 for (int i = 0; i < scrollers.Length; ++i)
@@ -426,13 +443,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 {
                     if (scrollOrientation == ScrollOrientation.Horizontal)
                     {
-                        scrollers[1].ContentOrientation = ContentOrientation.Horizontal;
-                        scrollers[2].ContentOrientation = ContentOrientation.None;
+                        grids[0].MaxWidth = double.PositiveInfinity;
+                        grids[0].MaxHeight = 200;
+                        grids[1].MaxHeight = 200;
+                        grids[2].MaxWidth = double.PositiveInfinity;
+                        grids[2].MaxHeight = double.PositiveInfinity;
+                        scrollers[1].ContentOrientation = ContentOrientation.None;
+                        scrollers[2].ContentOrientation = ContentOrientation.Horizontal;
                     }
                     else
                     {
-                        scrollers[1].ContentOrientation = ContentOrientation.None;
-                        scrollers[2].ContentOrientation = ContentOrientation.Vertical;
+                        grids[0].MaxHeight = double.PositiveInfinity;
+                        grids[1].MaxWidth = double.PositiveInfinity;
+                        grids[1].MaxHeight = double.PositiveInfinity;
+                        scrollers[1].ContentOrientation = ContentOrientation.Vertical;
                     }
                 });
                 IdleSynchronizer.Wait();
@@ -442,11 +466,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     viewChangeCompletedEvent.Reset();
                     if (scrollOrientation == ScrollOrientation.Vertical)
                     {
+                        Log.Comment("Scrolling Scroller #1 to vertical offset 100");
                         scrollers[1].ChangeOffsets(new ScrollerChangeOffsetsOptions(0.0, 100.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
                     }
                     else
                     {
-                        scrollers[2].ChangeOffsets(new ScrollerChangeOffsetsOptions(150.0, 0.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints)); 
+                        Log.Comment("Scrolling Scroller #2 to horizontal offset 150");
+                        scrollers[2].ChangeOffsets(new ScrollerChangeOffsetsOptions(150.0, 0.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
                     }
                 });
                 Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
@@ -455,11 +481,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 {
                     if (scrollOrientation == ScrollOrientation.Vertical)
                     {
-                        Verify.AreEqual(new Rect(0, 100, 200, 200), realizationRects.Last());
+                        Verify.AreEqual(scrollers[1].VerticalOffset, 100.0);
+                        Verify.AreEqual(new Rect(0, 0, 200, 500), realizationRects.Last());
                     }
                     else
                     {
-                        Verify.AreEqual(new Rect(150, 0, 200, 200), realizationRects.Last());
+                        Verify.AreEqual(scrollers[2].HorizontalOffset, 150.0);
+                        Verify.AreEqual(new Rect(0, -150, 500, 200), realizationRects.Last());
                     }
 
                     realizationRects.Clear();
