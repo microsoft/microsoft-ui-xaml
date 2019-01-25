@@ -23,7 +23,7 @@ namespace AnimatedVisuals
             diagnostics = null;
             if (!IsRuntimeCompatible())
             {
-                //return null;
+                return null;
             }
             return new AnimatedVisual(compositor);
         }
