@@ -699,6 +699,13 @@ void RevealBrush::CreateRevealBrush()
             m_brush = compositor.CreateColorBrush(fallbackColor);
         }
     }
+
+#ifndef BUILD_WINDOWS
+    if (m_brush)
+    {
+        m_brush.Properties().InsertScalar(L"ShouldRenderAsFallbackInIslands", 1.0f);
+    }
+#endif
 }
 
 void RevealBrush::UpdateRevealBrush()

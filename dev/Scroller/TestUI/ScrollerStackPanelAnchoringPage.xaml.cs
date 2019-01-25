@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Navigation;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
 using ScrollerChangeOffsetsWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions;
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
@@ -956,8 +957,7 @@ namespace MUXControlsTestApp
         private void ChkHorizontalOrientation_Checked(object sender, RoutedEventArgs e)
         {
             stackPanel.Orientation = Orientation.Horizontal;
-            scroller.IsChildAvailableWidthConstrained = false;
-            scroller.IsChildAvailableHeightConstrained = true;
+            scroller.ContentOrientation = ContentOrientation.Horizontal;
             scroller.Width = 600;
             scroller.Height = 300;
             cnsAnchorPoint.Width = 600;
@@ -977,8 +977,7 @@ namespace MUXControlsTestApp
         private void ChkHorizontalOrientation_Unchecked(object sender, RoutedEventArgs e)
         {
             stackPanel.Orientation = Orientation.Vertical;
-            scroller.IsChildAvailableWidthConstrained = true;
-            scroller.IsChildAvailableHeightConstrained = false;
+            scroller.ContentOrientation = ContentOrientation.Vertical;
             scroller.Width = 300;
             scroller.Height = 600;
             cnsAnchorPoint.Width = 300;

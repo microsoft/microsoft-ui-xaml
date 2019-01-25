@@ -14,11 +14,12 @@ using Windows.UI.Xaml.Shapes;
 
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
-using ScrollerChainingMode = Microsoft.UI.Xaml.Controls.ScrollerChainingMode;
-using ScrollerRailingMode = Microsoft.UI.Xaml.Controls.ScrollerRailingMode;
-using ScrollerScrollMode = Microsoft.UI.Xaml.Controls.ScrollerScrollMode;
-using ScrollerZoomMode = Microsoft.UI.Xaml.Controls.ScrollerZoomMode;
-using ScrollerInputKind = Microsoft.UI.Xaml.Controls.ScrollerInputKind;
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
+using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
+using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
+using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
+using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using ScrollerChangingOffsetsEventArgs = Microsoft.UI.Xaml.Controls.ScrollerChangingOffsetsEventArgs;
 using ScrollerChangingZoomFactorEventArgs = Microsoft.UI.Xaml.Controls.ScrollerChangingZoomFactorEventArgs;
@@ -95,14 +96,9 @@ namespace MUXControlsTestApp
                 grdLogs.Visibility = Visibility.Collapsed;
         }
 
-        private void BtnGetIsChildAvailableWidthConstrained_Click(object sender, RoutedEventArgs e)
+        private void BtnGetContentOrientation_Click(object sender, RoutedEventArgs e)
         {
-            UpdateIsChildAvailableWidthConstrained();
-        }
-
-        private void BtnGetIsChildAvailableHeightConstrained_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateIsChildAvailableHeightConstrained();
+            UpdateContentOrientation();
         }
 
         private void BtnGetHorizontalScrollMode_Click(object sender, RoutedEventArgs e)
@@ -160,24 +156,12 @@ namespace MUXControlsTestApp
             UpdateMaxZoomFactor();
         }
 
-        private void BtnSetIsChildAvailableWidthConstrained_Click(object sender, RoutedEventArgs e)
+        private void BtnSetContentOrientation_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                scrollViewer.IsChildAvailableWidthConstrained = cmbIsChildAvailableWidthConstrained.SelectedIndex == 0;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstLogs.Items.Add(ex.ToString());
-            }
-        }
-
-        private void BtnSetIsChildAvailableHeightConstrained_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                scrollViewer.IsChildAvailableHeightConstrained = cmbIsChildAvailableHeightConstrained.SelectedIndex == 0;
+                ContentOrientation co = (ContentOrientation)cmbContentOrientation.SelectedIndex;
+                scrollViewer.ContentOrientation = co;
             }
             catch (Exception ex)
             {
@@ -190,7 +174,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerScrollMode ssm = (ScrollerScrollMode)cmbHorizontalScrollMode.SelectedIndex;
+                ScrollMode ssm = (ScrollMode)cmbHorizontalScrollMode.SelectedIndex;
                 scrollViewer.HorizontalScrollMode = ssm;
             }
             catch (Exception ex)
@@ -204,7 +188,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerChainingMode scm = (ScrollerChainingMode)cmbHorizontalScrollChainingMode.SelectedIndex;
+                ChainingMode scm = (ChainingMode)cmbHorizontalScrollChainingMode.SelectedIndex;
                 scrollViewer.HorizontalScrollChainingMode = scm;
             }
             catch (Exception ex)
@@ -218,7 +202,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerRailingMode srm = (ScrollerRailingMode)cmbHorizontalScrollRailingMode.SelectedIndex;
+                RailingMode srm = (RailingMode)cmbHorizontalScrollRailingMode.SelectedIndex;
                 scrollViewer.HorizontalScrollRailingMode = srm;
             }
             catch (Exception ex)
@@ -232,7 +216,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerScrollMode ssm = (ScrollerScrollMode)cmbVerticalScrollMode.SelectedIndex;
+                ScrollMode ssm = (ScrollMode)cmbVerticalScrollMode.SelectedIndex;
                 scrollViewer.VerticalScrollMode = ssm;
             }
             catch (Exception ex)
@@ -246,7 +230,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerChainingMode scm = (ScrollerChainingMode)cmbVerticalScrollChainingMode.SelectedIndex;
+                ChainingMode scm = (ChainingMode)cmbVerticalScrollChainingMode.SelectedIndex;
                 scrollViewer.VerticalScrollChainingMode = scm;
             }
             catch (Exception ex)
@@ -260,7 +244,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerRailingMode srm = (ScrollerRailingMode)cmbVerticalScrollRailingMode.SelectedIndex;
+                RailingMode srm = (RailingMode)cmbVerticalScrollRailingMode.SelectedIndex;
                 scrollViewer.VerticalScrollRailingMode = srm;
             }
             catch (Exception ex)
@@ -274,7 +258,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerZoomMode ssm = (ScrollerZoomMode)cmbZoomMode.SelectedIndex;
+                ZoomMode ssm = (ZoomMode)cmbZoomMode.SelectedIndex;
                 scrollViewer.ZoomMode = ssm;
             }
             catch (Exception ex)
@@ -288,7 +272,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerChainingMode scm = (ScrollerChainingMode)cmbZoomChainingMode.SelectedIndex;
+                ChainingMode scm = (ChainingMode)cmbZoomChainingMode.SelectedIndex;
                 scrollViewer.ZoomChainingMode = scm;
             }
             catch (Exception ex)
@@ -302,33 +286,33 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerInputKind sik;
+                InputKind sik;
 
                 switch (cmbInputKind.SelectedIndex)
                 {
                     case 0:
-                        sik = ScrollerInputKind.All;
+                        sik = InputKind.All;
                         break;
                     case 1:
-                        sik = ScrollerInputKind.Touch;
+                        sik = InputKind.Touch;
                         break;
                     case 2:
-                        sik = ScrollerInputKind.Pen;
+                        sik = InputKind.Pen;
                         break;
                     case 3:
-                        sik = ScrollerInputKind.MouseWheel;
+                        sik = InputKind.MouseWheel;
                         break;
                     case 4:
-                        sik = ScrollerInputKind.Touch | ScrollerInputKind.MouseWheel;
+                        sik = InputKind.Touch | InputKind.MouseWheel;
                         break;
                     case 5:
-                        sik = ScrollerInputKind.Touch | ScrollerInputKind.Pen;
+                        sik = InputKind.Touch | InputKind.Pen;
                         break;
                     case 6:
-                        sik = ScrollerInputKind.Pen | ScrollerInputKind.MouseWheel;
+                        sik = InputKind.Pen | InputKind.MouseWheel;
                         break;
                     default:
-                        sik = ScrollerInputKind.Touch | ScrollerInputKind.Pen | ScrollerInputKind.MouseWheel;
+                        sik = InputKind.Touch | InputKind.Pen | InputKind.MouseWheel;
                         break;
                 }
 
@@ -981,24 +965,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void UpdateIsChildAvailableWidthConstrained()
+        private void UpdateContentOrientation()
         {
             try
             {
-                cmbIsChildAvailableWidthConstrained.SelectedIndex = scrollViewer.IsChildAvailableWidthConstrained ? 0 : 1;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstLogs.Items.Add(ex.ToString());
-            }
-        }
-
-        private void UpdateIsChildAvailableHeightConstrained()
-        {
-            try
-            {
-                cmbIsChildAvailableHeightConstrained.SelectedIndex = scrollViewer.IsChildAvailableHeightConstrained ? 0 : 1;
+                cmbContentOrientation.SelectedIndex = (int)scrollViewer.ContentOrientation;
             }
             catch (Exception ex)
             {
@@ -1143,28 +1114,28 @@ namespace MUXControlsTestApp
             {
                 switch (scrollViewer.InputKind)
                 {
-                    case ScrollerInputKind.All:
+                    case InputKind.All:
                         cmbInputKind.SelectedIndex = 0;
                         break;
-                    case ScrollerInputKind.Touch:
+                    case InputKind.Touch:
                         cmbInputKind.SelectedIndex = 1;
                         break;
-                    case ScrollerInputKind.Pen:
+                    case InputKind.Pen:
                         cmbInputKind.SelectedIndex = 2;
                         break;
-                    case ScrollerInputKind.MouseWheel:
+                    case InputKind.MouseWheel:
                         cmbInputKind.SelectedIndex = 3;
                         break;
-                    case ScrollerInputKind.Touch | ScrollerInputKind.MouseWheel:
+                    case InputKind.Touch | InputKind.MouseWheel:
                         cmbInputKind.SelectedIndex = 4;
                         break;
-                    case ScrollerInputKind.Touch | ScrollerInputKind.Pen:
+                    case InputKind.Touch | InputKind.Pen:
                         cmbInputKind.SelectedIndex = 5;
                         break;
-                    case ScrollerInputKind.Pen | ScrollerInputKind.MouseWheel:
+                    case InputKind.Pen | InputKind.MouseWheel:
                         cmbInputKind.SelectedIndex = 6;
                         break;
-                    case ScrollerInputKind.Touch | ScrollerInputKind.Pen | ScrollerInputKind.MouseWheel:
+                    case InputKind.Touch | InputKind.Pen | InputKind.MouseWheel:
                         cmbInputKind.SelectedIndex = 7;
                         break;
                 }
@@ -1349,8 +1320,7 @@ namespace MUXControlsTestApp
 
                 scrollViewer = sv2;
 
-                UpdateIsChildAvailableWidthConstrained();
-                UpdateIsChildAvailableHeightConstrained();
+                UpdateContentOrientation();
                 UpdateHorizontalScrollMode();
                 UpdateHorizontalScrollChainingMode();
                 UpdateHorizontalScrollRailingMode();

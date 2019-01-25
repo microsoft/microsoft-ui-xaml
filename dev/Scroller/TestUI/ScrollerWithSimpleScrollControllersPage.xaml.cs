@@ -19,7 +19,7 @@ using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollControlle
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerOffsetChangeRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeRequestedEventArgs;
 using ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs;
-using ScrollerRailingMode = Microsoft.UI.Xaml.Controls.ScrollerRailingMode;
+using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
 using ScrollerViewChangeResult = Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
@@ -654,12 +654,12 @@ namespace MUXControlsTestApp
             }
         }
 
-        public ScrollerRailingMode InteractionVisualScrollRailingMode
+        public RailingMode InteractionVisualScrollRailingMode
         {
             get
             {
                 // Unused because InteractionVisual returns null.
-                return ScrollerRailingMode.Disabled;
+                return RailingMode.Disabled;
             }
         }
 

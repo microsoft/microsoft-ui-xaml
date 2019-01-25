@@ -1,6 +1,10 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
-<ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:media="using:Microsoft.UI.Xaml.Media"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls">
+    
     <Style x:Key="CommandBarRevealStyle" TargetType="CommandBar">
         <Setter Property="Background" Value="{ThemeResource CommandBarBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource CommandBarForeground}" />
@@ -133,7 +137,7 @@
                                         </Storyboard>
                                     </VisualTransition>
                                     <VisualTransition From="CompactOpenDown" To="CompactClosed" GeneratedDuration="0:0:0.167">
-                                        <Storyboard>  
+                                        <Storyboard>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MoreButton" Storyboard.TargetProperty="VerticalAlignment">
                                                 <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Stretch" />
                                             </ObjectAnimationUsingKeyFrames>
@@ -680,12 +684,12 @@
                             </RectangleGeometry>
                         </Grid.Clip>
                         <Grid x:Name="ContentRoot"
-                            VerticalAlignment="Top"
-                            Margin="{TemplateBinding Padding}"
-                            Height="{TemplateBinding Height}"
-                            MinHeight="{ThemeResource AppBarThemeCompactHeight}"
-                            Background="{TemplateBinding Background}"
-                            XYFocusKeyboardNavigation="Enabled">
+                              VerticalAlignment="Top"
+                              Margin="{TemplateBinding Padding}"
+                              Height="{TemplateBinding Height}"
+                              MinHeight="{ThemeResource AppBarThemeCompactHeight}"
+                              Background="{TemplateBinding Background}"
+                              XYFocusKeyboardNavigation="Enabled">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -701,20 +705,20 @@
                                 <!-- Use a ContentControl rather than a ContentPresenter so that IsEnabled can be set to false
                                      in the Minimal/HiddenClosed states to remove it from being a tab-stop candidate. -->
                                 <ContentControl x:Name="ContentControl"
-                                    Content="{TemplateBinding Content}"
-                                    ContentTemplate="{TemplateBinding ContentTemplate}"
-                                    ContentTransitions="{TemplateBinding ContentTransitions}"
-                                    Foreground="{TemplateBinding Foreground}"
-                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    IsTabStop="False" />
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      ContentTransitions="{TemplateBinding ContentTransitions}"
+                                      Foreground="{TemplateBinding Foreground}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      IsTabStop="False" />
                                 <ItemsControl x:Name="PrimaryItemsControl"
-                                    HorizontalAlignment="Right"
-                                    MinHeight="{ThemeResource AppBarThemeCompactHeight}"
-                                    IsTabStop="False"
-                                    Grid.Column="1">
+                                      HorizontalAlignment="Right"
+                                      MinHeight="{ThemeResource AppBarThemeCompactHeight}"
+                                      IsTabStop="False"
+                                      Grid.Column="1">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <StackPanel Orientation="Horizontal" />
@@ -749,10 +753,10 @@
                         </Grid>
                         <Popup x:Name="OverflowPopup">
                             <Popup.RenderTransform>
-                                <TransformGroup>
-                                    <TranslateTransform x:Name="OverflowContentRootMarginOffsetTransform" />
-                                    <TranslateTransform x:Name="OverflowContentRootTransform" X="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentHorizontalOffset}" />
-                                </TransformGroup>
+                              <TransformGroup>
+                                <TranslateTransform x:Name="OverflowContentRootMarginOffsetTransform" />
+                                <TranslateTransform x:Name="OverflowContentRootTransform" X="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentHorizontalOffset}" />
+                              </TransformGroup>
                             </Popup.RenderTransform>
                             <Grid x:Name="OverflowContentRoot"
                                 Opacity="0"
@@ -1452,12 +1456,12 @@
                             </RectangleGeometry>
                         </Grid.Clip>
                         <Grid x:Name="ContentRoot"
-                              VerticalAlignment="Top"
-                              Margin="{TemplateBinding Padding}"
-                              Height="{TemplateBinding Height}"
-                              MinHeight="{ThemeResource AppBarThemeCompactHeight}"
-                              Background="{TemplateBinding Background}"
-                              XYFocusKeyboardNavigation="Enabled">
+                          VerticalAlignment="Top"
+                          Margin="{TemplateBinding Padding}"
+                          Height="{TemplateBinding Height}"
+                          MinHeight="{ThemeResource AppBarThemeCompactHeight}"
+                          Background="{TemplateBinding Background}"
+                          XYFocusKeyboardNavigation="Enabled">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -1553,5 +1557,5 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
 </ResourceDictionary>

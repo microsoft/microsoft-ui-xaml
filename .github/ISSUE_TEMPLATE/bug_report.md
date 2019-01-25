@@ -1,6 +1,9 @@
 ---
 name: Bug report
 about: File a bug report
+title: ''
+labels: ''
+assignees: ''
 
 ---
 
@@ -25,20 +28,25 @@ Steps to reproduce the behavior:
 NuGet package version: 
 <!-- [e.g. Microsoft.UI.Xaml 2.0.181011001] -->
 
-Windows 10 version:
-- [ ] Insider Build (xxxxx)
-- [ ] October 2018 Update (17763)
-- [ ] April 2018 Update (17134)
-- [ ] Fall Creators Update (16299)
-- [ ] Creators Update (15063)
-- [ ] Anniversary Update (14393)
+<!-- Which Windows versions did you see the issue on? Leave blank if you didn't try that version. -->
+| Windows 10 version                  | Saw the problem? |
+| :--------------------------------- | :-------------------- |
+| Insider Build (xxxxx)                   | <!-- Yes/No? -->   |
+| October 2018 Update (17763)   | <!-- Yes/No? -->   |
+| April 2018 Update (17134)        | <!-- Yes/No? -->   |
+| Fall Creators Update (16299)     | <!-- Yes/No? -->   |
+| Creators Update (15063)           | <!-- Yes/No? -->   |
+| Anniversary Update (14393)      | <!-- Yes/No? -->   |
 
-Device form factor:
-- [ ] Desktop
-- [ ] Mobile
-- [ ] Xbox
-- [ ] Surface Hub
-- [ ] IoT
+<!-- Which device form factors did you see the issue on? Leave blank if you didn't try that device. -->
+| Device form factor | Saw the problem? |
+| :-------------------- | :------------------- |
+| Desktop                 | <!-- Yes/No? -->   |
+| Mobile                   | <!-- Yes/No? -->   |
+| Xbox                      | <!-- Yes/No? -->   |
+| Surface Hub          | <!-- Yes/No? -->    |
+| IoT                         | <!-- Yes/No? -->    |
+
 
 **Additional context**
 <!-- Enter any other applicable info here -->
