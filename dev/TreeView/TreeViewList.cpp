@@ -62,11 +62,10 @@ void TreeViewList::OnDragItemsStarting(const winrt::IInspectable& /*sender*/, co
                 // TreeViewList has no knowledge about item selections happened in TreeView, no matter how many items are actually selected, args.Items() always contains only one item that is currently being dragged by cursor.
                 // Here, we manually add selected nodes to args.Items in order to expose all selected (and dragged) items to outside handlers.
                 args.Items().Clear();
-                bool isContentMode = ListViewModel()->IsContentMode();
 
                 for (auto const& node : ListViewModel()->GetSelectedNodes())
                 {
-                    if (isContentMode)
+                    if (IsContentMode())
                     {
                         args.Items().Append(node.Content());
                     }
@@ -335,7 +334,7 @@ void TreeViewList::PrepareContainerForItemOverride(winrt::DependencyObject const
     //Set the expanded property to match that of the Node, and enable Drop by default
     itemContainer.AllowDrop(true);
 
-    if (ListViewModel()->IsContentMode())
+    if (IsContentMode())
     {
         bool hasChildren = itemContainer.HasUnrealizedChildren() || itemNode.HasChildren();
         itemContainer.GlyphOpacity(hasChildren ? 1.0 : 0.0);
@@ -677,9 +676,19 @@ winrt::TreeViewNode TreeViewList::NodeFromContainer(winrt::DependencyObject cons
 
 winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode const& node)
 {
-    if (ListViewModel()->IsContentMode())
+    if (IsContentMode())
     {
         return ContainerFromItem(node.Content());
     }
     return ContainerFromItem(node);
+}
+
+bool TreeViewList::IsContentMode()
+{
+    if (auto viewModel = ListViewModel())
+    {
+        return viewModel->IsContentMode();
+    }
+
+    return false;
 }

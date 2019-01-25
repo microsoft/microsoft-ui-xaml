@@ -50,6 +50,7 @@ public:
     void ListViewModel(com_ptr<ViewModel> viewModel);
     winrt::TreeViewNode DraggedTreeViewNode();
     void DraggedTreeViewNode(winrt::TreeViewNode const& node);
+    bool IsContentMode();
 
 private:
     bool IsIndexValid(int index);
