@@ -3,8 +3,7 @@ robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP
 reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
 
 cd scripts
-powershell -Command Add-AppxPackage ../Microsoft.VCLibs.%testbuildplatform%.14.00.appx
-powershell -Command Add-AppxPackage ../Microsoft.NET.CoreRuntime.1.1.appx
+powershell -ExecutionPolicy Bypass .\InstallTestAppDependencies.ps1
 cd ..
 
 te MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /APPX:Unregister=false %* 
