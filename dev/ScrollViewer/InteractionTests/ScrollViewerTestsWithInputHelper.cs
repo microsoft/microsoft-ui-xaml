@@ -81,7 +81,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 if (PlatformConfiguration.IsOsVersion(OSVersion.Redstone1))
                 {
-                    Log.Comment("On RS1 the Scroller's child is centered in an animated way when it's smaller than the viewport. Waiting for those animations to complete.");
+                    Log.Comment("On RS1 the Scroller's content is centered in an animated way when it's smaller than the viewport. Waiting for those animations to complete.");
                     WaitForScrollViewerManipulationEnd("scrollViewer21");
                 }
 
@@ -120,7 +120,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(scroller51.HorizontalScrollPercent > minHorizontalScrollPercent, "Verifying scroller51 HorizontalScrollPercent is greater than " + minHorizontalScrollPercent + "%");
                 Verify.IsTrue(scroller51.VerticalScrollPercent > minVerticalScrollPercent, "Verifying scroller51 VerticalScrollPercent is greater than " + minVerticalScrollPercent + "%");
 
-                // scroller51's Child size is 800x800px.
+                // scroller51's Content size is 800x800px.
                 double horizontalOffset;
                 double verticalOffset;
                 double minHorizontalOffset = 800.0 * (1.0 - scroller51.HorizontalViewSize / 100.0) * minHorizontalScrollPercent / 100.0;
@@ -170,7 +170,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 if (PlatformConfiguration.IsOsVersion(OSVersion.Redstone1))
                 {
-                    Log.Comment("On RS1 the Scroller's child is centered in an animated way when it's smaller than the viewport. Waiting for those animations to complete.");
+                    Log.Comment("On RS1 the Scroller's content is centered in an animated way when it's smaller than the viewport. Waiting for those animations to complete.");
                     WaitForScrollViewerManipulationEnd("scrollViewer21");
                 }
 
@@ -234,7 +234,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(scroller51.VerticalScrollPercent > minVerticalScrollPercentAfterPan, "Verifying scroller51 VerticalScrollPercent is greater than " + minVerticalScrollPercentAfterPan + "%");
                 Verify.IsTrue(scroller51.VerticalScrollPercent > verticalScrollPercentAfterScroll, "Verifying scroller51 VerticalScrollPercent is greater than " + verticalScrollPercentAfterScroll + "%");
 
-                // scroller51's Child size is 800x800px.
+                // scroller51's Content size is 800x800px.
                 double horizontalOffset;
                 double verticalOffset;
                 double minHorizontalOffset = 800.0 * (1.0 - scroller51.HorizontalViewSize / 100.0) * minHorizontalScrollPercentAfterPan / 100.0;

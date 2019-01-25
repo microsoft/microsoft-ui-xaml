@@ -53,6 +53,11 @@
       <Type>ThemeResources</Type>
       <Priority>5</Priority>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RevealBrush_19h1_themeresources.xaml">
+      <Version>19H1</Version>
+      <Type>ThemeResources</Type>
+      <Priority>6</Priority>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)RevealControls.idl" />

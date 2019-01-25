@@ -49,42 +49,39 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
         }
     }
 #ifdef USE_INSIDER_SDK
-    else if (SharedHelpers::IsDisplayRegionGetForCurrentViewAvailable())
+    else if (SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable())
     {
-        // TODO: remove try/catch after bug 14084372 is fixed. These APIs currently throw on failure.
-        winrt::WindowingEnvironment environment{ nullptr };
+        // ApplicationView::GetForCurrentView throws on failure; in that case we just won't do anything.
+        winrt::ApplicationView view{ nullptr };
         try
         {
-            environment = winrt::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView().WindowingEnvironment();
+            view = winrt::ApplicationView::GetForCurrentView();
         } catch(...) {}
 
         // Verify that the window is Tiled
-        if (environment)
+        if (view)
         {
-            if (environment.Kind() == winrt::WindowingEnvironmentKind::Tiled)
+            auto regions = view.GetDisplayRegions();
+            info.RegionCount = std::min(regions.Size(), c_maxRegions);
+
+            // More than one region
+            if (info.RegionCount == 2)
             {
-                winrt::IVectorView<winrt::Windows::UI::WindowManagement::DisplayRegion> regions = winrt::Windows::UI::ViewManagement::ApplicationView::GetForCurrentView().GetDisplayRegions();
-                info.RegionCount = std::min(regions.Size(), c_maxRegions);
+                winrt::Rect windowRect = WindowRect();
 
-                // More than one region
-                if (info.RegionCount == 2)
+                if (windowRect.Width > windowRect.Height)
                 {
-                    winrt::Rect windowRect = WindowRect();
-
-                    if (windowRect.Width > windowRect.Height)
-                    {
-                        info.Mode = winrt::TwoPaneViewMode::Wide;
-                        float width = windowRect.Width / 2;
-                        info.Regions[0] = { 0, 0, width, windowRect.Height };
-                        info.Regions[1] = { width, 0, width, windowRect.Height };
-                    }
-                    else
-                    {
-                        info.Mode = winrt::TwoPaneViewMode::Tall;
-                        float height = windowRect.Height / 2;
-                        info.Regions[0] = { 0, 0, windowRect.Width, height };
-                        info.Regions[1] = { 0, height, windowRect.Width, height };
-                    }
+                    info.Mode = winrt::TwoPaneViewMode::Wide;
+                    float width = windowRect.Width / 2;
+                    info.Regions[0] = { 0, 0, width, windowRect.Height };
+                    info.Regions[1] = { width, 0, width, windowRect.Height };
+                }
+                else
+                {
+                    info.Mode = winrt::TwoPaneViewMode::Tall;
+                    float height = windowRect.Height / 2;
+                    info.Regions[0] = { 0, 0, windowRect.Width, height };
+                    info.Regions[1] = { 0, height, windowRect.Width, height };
                 }
             }
         }

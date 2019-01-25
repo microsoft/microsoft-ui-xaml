@@ -123,43 +123,43 @@ void ScrollerTestHooks::SetZoomFactorChangeVelocityParameters(int millisecondsPe
     hooks->m_zoomFactorChangeMaxMs = maxMilliseconds;
 }
 
-void ScrollerTestHooks::GetChildLayoutOffsetX(const winrt::Scroller& scroller, _Out_ float& childLayoutOffsetX)
+void ScrollerTestHooks::GetContentLayoutOffsetX(const winrt::Scroller& scroller, _Out_ float& contentLayoutOffsetX)
 {
     if (scroller)
     {
-        childLayoutOffsetX = winrt::get_self<Scroller>(scroller)->GetChildLayoutOffsetX();
+        contentLayoutOffsetX = winrt::get_self<Scroller>(scroller)->GetContentLayoutOffsetX();
     }
     else
     {
-        childLayoutOffsetX = 0.0f;
+        contentLayoutOffsetX = 0.0f;
     }
 }
 
-void ScrollerTestHooks::SetChildLayoutOffsetX(const winrt::Scroller& scroller, float childLayoutOffsetX)
+void ScrollerTestHooks::SetContentLayoutOffsetX(const winrt::Scroller& scroller, float contentLayoutOffsetX)
 {
     if (scroller)
     {
-        winrt::get_self<Scroller>(scroller)->SetChildLayoutOffsetX(childLayoutOffsetX);
+        winrt::get_self<Scroller>(scroller)->SetContentLayoutOffsetX(contentLayoutOffsetX);
     }
 }
 
-void ScrollerTestHooks::GetChildLayoutOffsetY(const winrt::Scroller& scroller, _Out_ float& childLayoutOffsetY)
+void ScrollerTestHooks::GetContentLayoutOffsetY(const winrt::Scroller& scroller, _Out_ float& contentLayoutOffsetY)
 {
     if (scroller)
     {
-        childLayoutOffsetY = winrt::get_self<Scroller>(scroller)->GetChildLayoutOffsetY();
+        contentLayoutOffsetY = winrt::get_self<Scroller>(scroller)->GetContentLayoutOffsetY();
     }
     else
     {
-        childLayoutOffsetY = 0.0f;
+        contentLayoutOffsetY = 0.0f;
     }
 }
 
-void ScrollerTestHooks::SetChildLayoutOffsetY(const winrt::Scroller& scroller, float childLayoutOffsetY)
+void ScrollerTestHooks::SetContentLayoutOffsetY(const winrt::Scroller& scroller, float contentLayoutOffsetY)
 {
     if (scroller)
     {
-        winrt::get_self<Scroller>(scroller)->SetChildLayoutOffsetY(childLayoutOffsetY);
+        winrt::get_self<Scroller>(scroller)->SetContentLayoutOffsetY(contentLayoutOffsetY);
     }
 }
 
@@ -217,46 +217,46 @@ void ScrollerTestHooks::InteractionSourcesChanged(winrt::event_token const& toke
     hooks->m_interactionSourcesChangedEventSource.remove(token);
 }
 
-void ScrollerTestHooks::NotifyChildLayoutOffsetXChanged(const winrt::Scroller& sender)
+void ScrollerTestHooks::NotifyContentLayoutOffsetXChanged(const winrt::Scroller& sender)
 {
     auto hooks = EnsureGlobalTestHooks();
-    if (hooks->m_childLayoutOffsetXChangedEventSource)
+    if (hooks->m_contentLayoutOffsetXChangedEventSource)
     {
-        hooks->m_childLayoutOffsetXChangedEventSource(sender, nullptr);
+        hooks->m_contentLayoutOffsetXChangedEventSource(sender, nullptr);
     }
 }
 
-winrt::event_token ScrollerTestHooks::ChildLayoutOffsetXChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value)
+winrt::event_token ScrollerTestHooks::ContentLayoutOffsetXChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
-    return hooks->m_childLayoutOffsetXChangedEventSource.add(value);
+    return hooks->m_contentLayoutOffsetXChangedEventSource.add(value);
 }
 
-void ScrollerTestHooks::ChildLayoutOffsetXChanged(winrt::event_token const& token)
+void ScrollerTestHooks::ContentLayoutOffsetXChanged(winrt::event_token const& token)
 {
     auto hooks = EnsureGlobalTestHooks();
-    hooks->m_childLayoutOffsetXChangedEventSource.remove(token);
+    hooks->m_contentLayoutOffsetXChangedEventSource.remove(token);
 }
 
-void ScrollerTestHooks::NotifyChildLayoutOffsetYChanged(const winrt::Scroller& sender)
+void ScrollerTestHooks::NotifyContentLayoutOffsetYChanged(const winrt::Scroller& sender)
 {
     auto hooks = EnsureGlobalTestHooks();
-    if (hooks->m_childLayoutOffsetYChangedEventSource)
+    if (hooks->m_contentLayoutOffsetYChangedEventSource)
     {
-        hooks->m_childLayoutOffsetYChangedEventSource(sender, nullptr);
+        hooks->m_contentLayoutOffsetYChangedEventSource(sender, nullptr);
     }
 }
 
-winrt::event_token ScrollerTestHooks::ChildLayoutOffsetYChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value)
+winrt::event_token ScrollerTestHooks::ContentLayoutOffsetYChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
-    return hooks->m_childLayoutOffsetYChangedEventSource.add(value);
+    return hooks->m_contentLayoutOffsetYChangedEventSource.add(value);
 }
 
-void ScrollerTestHooks::ChildLayoutOffsetYChanged(winrt::event_token const& token)
+void ScrollerTestHooks::ContentLayoutOffsetYChanged(winrt::event_token const& token)
 {
     auto hooks = EnsureGlobalTestHooks();
-    hooks->m_childLayoutOffsetYChangedEventSource.remove(token);
+    hooks->m_contentLayoutOffsetYChangedEventSource.remove(token);
 }
 
 

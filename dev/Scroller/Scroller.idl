@@ -1,33 +1,48 @@
 ﻿[WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ScrollerState
+enum ContentOrientation
+{
+    Vertical = 0,
+    Horizontal = 1,
+    None = 2,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum InteractionState
 {
     Idle = 0,
-    Interacting = 1,
+    Interaction = 1,
     Inertia = 2,
-    CustomAnimation = 3,
+    Animation = 3,
 };
+
+#ifndef BUILD_WINDOWS
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ScrollerScrollMode
+enum ScrollMode
 {
-    Auto = 0,
-    Enabled = 1,
-    Disabled = 2,
+    Enabled = 0,
+    Disabled = 1,
+#ifdef USE_SCROLLMODE_AUTO
+    Auto = 2,
+#endif
 };
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ScrollerZoomMode
+enum ZoomMode
 {
     Enabled = 0,
     Disabled = 1,
 };
 
+#endif
+
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ScrollerChainingMode
+enum ChainingMode
 {
     Auto = 0,
     Always = 1,
@@ -36,7 +51,7 @@ enum ScrollerChainingMode
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ScrollerRailingMode
+enum RailingMode
 {
     Enabled = 0,
     Disabled = 1,
@@ -45,7 +60,7 @@ enum ScrollerRailingMode
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [flags]
-enum ScrollerInputKind
+enum InputKind
 {
     Touch = 1,
     Pen = 2,
@@ -93,7 +108,12 @@ enum ScrollerViewChangeResult
 [threading(both)]
 runtimeclass ScrollerChangeOffsetsOptions
 {
-    ScrollerChangeOffsetsOptions(Double horizontalOffset, Double verticalOffset, ScrollerViewKind offsetsKind, ScrollerViewChangeKind viewChangeKind, ScrollerViewChangeSnapPointRespect snapPointRespect);
+    ScrollerChangeOffsetsOptions(
+        Double horizontalOffset,
+        Double verticalOffset,
+        ScrollerViewKind offsetsKind,
+        ScrollerViewChangeKind viewChangeKind,
+        ScrollerViewChangeSnapPointRespect snapPointRespect);
 
     Double HorizontalOffset { get; set; };
     Double VerticalOffset { get; set; };
@@ -116,7 +136,12 @@ runtimeclass ScrollerChangeOffsetsWithAdditionalVelocityOptions
 [webhosthidden]
 runtimeclass ScrollerChangeZoomFactorOptions
 {
-    ScrollerChangeZoomFactorOptions(Single zoomFactor, ScrollerViewKind zoomFactorKind, Windows.Foundation.Numerics.Vector2 centerPoint, ScrollerViewChangeKind viewChangeKind, ScrollerViewChangeSnapPointRespect snapPointRespect);
+    ScrollerChangeZoomFactorOptions(
+        Single zoomFactor,
+        ScrollerViewKind zoomFactorKind,
+        Windows.Foundation.Numerics.Vector2 centerPoint,
+        ScrollerViewChangeKind viewChangeKind,
+        ScrollerViewChangeSnapPointRespect snapPointRespect);
 
     Single ZoomFactor { get; set; };
     ScrollerViewKind ZoomFactorKind { get; set; };

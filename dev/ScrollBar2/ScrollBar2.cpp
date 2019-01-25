@@ -66,10 +66,10 @@ winrt::Orientation ScrollBar2::InteractionVisualScrollOrientation()
     return Orientation();
 }
 
-winrt::ScrollerRailingMode ScrollBar2::InteractionVisualScrollRailingMode()
+winrt::RailingMode ScrollBar2::InteractionVisualScrollRailingMode()
 {
     // Unused because InteractionVisual returns null.
-    return winrt::ScrollerRailingMode::Enabled;
+    return winrt::RailingMode::Enabled;
 }
 
 void ScrollBar2::SetExpressionAnimationSources(
@@ -363,7 +363,9 @@ void ScrollBar2::OnPropertyChanged(
     {
         SCROLLBAR2_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, s_ScrollModePropertyName);
         
-        MUX_ASSERT(unbox_value<winrt::ScrollerScrollMode>(args.OldValue()) != winrt::ScrollerScrollMode::Auto);
+#ifdef USE_SCROLLMODE_AUTO
+        MUX_ASSERT(unbox_value<winrt::ScrollMode>(args.OldValue()) != winrt::ScrollMode::Auto);
+#endif
     }
 #ifdef _DEBUG
     else
@@ -373,12 +375,14 @@ void ScrollBar2::OnPropertyChanged(
 #endif
 }
 
-void ScrollBar2::ValidateScrollMode(winrt::ScrollerScrollMode mode)
+void ScrollBar2::ValidateScrollMode(winrt::ScrollMode mode)
 {
-    if (mode == winrt::ScrollerScrollMode::Auto)
+#ifdef USE_SCROLLMODE_AUTO
+    if (mode == winrt::ScrollMode::Auto)
     {
         throw winrt::hresult_error(E_INVALIDARG);
     }
+#endif
 }
 
 void ScrollBar2::CreateAndInitializeScrollBar()
@@ -512,7 +516,7 @@ void ScrollBar2::OnScroll(
         return;
     }
 
-    if (ScrollMode() == winrt::ScrollerScrollMode::Disabled &&
+    if (ScrollMode() == winrt::ScrollMode::Disabled &&
         scrollEventType != winrt::ScrollEventType::ThumbPosition)
     {
         // This ScrollBar2 is not interactive. Restore its previous Value.

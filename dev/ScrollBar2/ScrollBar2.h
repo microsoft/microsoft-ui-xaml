@@ -37,7 +37,7 @@ public:
     static constexpr double s_defaultLargeChange{ std::numeric_limits<double>::quiet_NaN() };
     static constexpr bool s_defaultIsEnabled{ true };
     static constexpr winrt::Orientation s_defaultOrientation{ winrt::Orientation::Vertical };
-    static constexpr winrt::ScrollerScrollMode s_defaultScrollMode{ winrt::ScrollerScrollMode::Disabled };
+    static constexpr winrt::ScrollMode s_defaultScrollMode{ winrt::ScrollMode::Disabled };
     static constexpr winrt::ScrollingIndicatorMode s_defaultIndicatorMode{ winrt::ScrollingIndicatorMode::None };
 
 #pragma region IFrameworkElementOverridesHelper
@@ -55,7 +55,7 @@ public:
 
     winrt::Orientation InteractionVisualScrollOrientation();
 
-    winrt::ScrollerRailingMode InteractionVisualScrollRailingMode();
+    winrt::RailingMode InteractionVisualScrollRailingMode();
 
     void SetExpressionAnimationSources(
         winrt::CompositionPropertySet const& propertySet,
@@ -96,7 +96,7 @@ public:
     void OnPropertyChanged(
         const winrt::DependencyPropertyChangedEventArgs& args);
 
-    static void ValidateScrollMode(winrt::ScrollerScrollMode mode);
+    static void ValidateScrollMode(winrt::ScrollMode mode);
 
 private:
 #ifdef _DEBUG

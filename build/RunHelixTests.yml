@@ -15,10 +15,10 @@ jobs:
     matrix:
       Release_x86:
         buildPlatform: 'x86'
-        buildConfiguration: 'Release'
+        buildConfiguration: 'release'
       Release_x64:
         buildPlatform: 'x64'
-        buildConfiguration: 'Release'
+        buildConfiguration: 'release'
 
   steps:
   - task: CmdLine@1
@@ -76,7 +76,6 @@ jobs:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
   variables:
-  - group: DotNet-HelixApi-Access
   - name: artifactsDir
     value: $(Build.SourcesDirectory)\Artifacts
   strategy:
@@ -84,11 +83,11 @@ jobs:
     matrix:
       Release_x86:
         buildPlatform: 'x86'
-        buildConfiguration: 'Release'
+        buildConfiguration: 'release'
         helixTargetQueues: 'Windows.10.Amd64.ClientRS4.Open'
       Release_x64:
         buildPlatform: 'x64'
-        buildConfiguration: 'Release'
+        buildConfiguration: 'release'
         # %3b is the escape code for ';' which is used as the delimiter
         helixTargetQueues: 'Windows.10.Amd64.Open%3bWindows.10.Amd64.ServerRS5.Open'
   steps:
@@ -126,5 +125,11 @@ jobs:
       command: custom
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
-      arguments: '/p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues)'
-      
+      arguments: '/binaryLogger:$(Build.SourcesDirectory)/RunTestsInHelix.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish RunTestsInHelix binlog'
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)/RunTestsInHelix.$(buildPlatform).$(buildConfiguration).binlog
+      artifactName: 'drop'
