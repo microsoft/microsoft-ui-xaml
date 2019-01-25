@@ -916,7 +916,6 @@ void ViewModel::TreeViewNodeHasChildrenPropertyChanged(winrt::TreeViewNode const
                 targetItem.GlyphOpacity(targetNode.HasChildren() ? 1.0 : 0.0);
             }
         }
-        //TODO: Implement for NavigationViewList
     }
 }
 

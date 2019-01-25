@@ -80,8 +80,8 @@ public:
 
     void CoerceToGreaterThanZero(double& value);
 
-	void Expand(winrt::NavigationViewItem const& value);
-	void Collapse(winrt::NavigationViewItem const& value);
+    void Expand(winrt::NavigationViewItem const& value);
+    void Collapse(winrt::NavigationViewItem const& value);
 
     winrt::NavigationViewItem GetLastExpandedItem();
 

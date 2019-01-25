@@ -38,12 +38,6 @@
             <muxcontrols:NavigationView.MenuItems>
                 <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
                 <muxcontrols:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
-                <muxcontrols:NavigationViewItem x:Name="GroupItem" Content="Group" Icon="Home">
-                    <muxcontrols:NavigationViewItem.MenuItems>
-                        <muxcontrols:NavigationViewItem x:Name="SubItem1" Content="SubItem1" Icon="Home"/>
-                        <muxcontrols:NavigationViewItem x:Name="SubItem2" Content="SubItem2" Icon="Shop" />
-                    </muxcontrols:NavigationViewItem.MenuItems>
-                </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
                 <muxcontrols:NavigationViewItemSeparator />
                 <muxcontrols:NavigationViewItemHeader x:Name="HeaderTextItem" Content="Header Text" />
@@ -57,19 +51,6 @@
                     </muxcontrols:NavigationViewItem.Content>
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem x:Name="IntegerItem" AutomationProperties.Name="Integer" Icon="Accept"/>
-                <muxcontrols:NavigationViewItem Content="E Menu Item" Icon="Home" x:Name="E"/>
-                <muxcontrols:NavigationViewItem Content="F Menu Item" Icon="Home" x:Name="F"/>
-                <muxcontrols:NavigationViewItem Content="G Menu Item" Icon="Home" x:Name="G"/>
-                <muxcontrols:NavigationViewItem Content="H Menu Item" Icon="Home" x:Name="H"/>
-                <muxcontrols:NavigationViewItem Content="I Menu Item" Icon="Home" x:Name="I"/>
-                <muxcontrols:NavigationViewItem Content="J Menu Item" Icon="Home" x:Name="J"/>
-                <muxcontrols:NavigationViewItem Content="K Menu Item" Icon="Home" x:Name="K"/>
-                <muxcontrols:NavigationViewItem Content="L Menu Item" Icon="Home" x:Name="L"/>
-                <muxcontrols:NavigationViewItem Content="M Menu Item" Icon="Home" x:Name="M"/>
-                <muxcontrols:NavigationViewItem Content="N Menu Item" Icon="Home" x:Name="N"/>
-                <muxcontrols:NavigationViewItem Content="O Menu Item" Icon="Home" x:Name="O"/>
-                <muxcontrols:NavigationViewItem Content="P Menu Item" Icon="Home" x:Name="P"/>
-                <muxcontrols:NavigationViewItem Content="Q Menu Item" Icon="Home" x:Name="Q"/>
             </muxcontrols:NavigationView.MenuItems>
 
             <ScrollViewer Margin="8,0,0,0">

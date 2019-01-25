@@ -259,8 +259,6 @@ void NavigationView::OnApplyTemplate()
         viewModel->PrepareView(m_rootNode.get());
         viewModel->SetOwningList(leftNavListView);
         leftNavigationViewList->ItemsSource(*viewModel.get());
-        //viewModel->NodeExpanding({ this, &TreeView::OnNodeExpanding });
-        //viewModel->NodeCollapsed({ this, &TreeView::OnNodeCollapsed });
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -1422,9 +1420,10 @@ winrt::TreeViewNode NavigationView::NodeFromPreviouslySelectedItem(winrt::IInspe
 {
     auto nodeList = RootNodes();
 
-    bool foundItem = false;
-    while (!foundItem && nodeList && nodeList.Size() > 0)
+    bool updatedNodeList = true;
+    while (updatedNodeList && nodeList && nodeList.Size() > 0)
     {
+        updatedNodeList = false;
         for (uint32_t i = 0; i < nodeList.Size(); i++)
         {
             auto node = nodeList.GetAt(i);
@@ -1437,6 +1436,7 @@ winrt::TreeViewNode NavigationView::NodeFromPreviouslySelectedItem(winrt::IInspe
             if (winrt::get_self<TreeViewNode>(node)->SelectionState() == TreeNodeSelectionState::PartialSelected)
             {
                 nodeList = winrt::get_self<TreeViewNode>(node)->Children();
+                updatedNodeList = true;
                 break;
             }
         }
@@ -1448,6 +1448,8 @@ winrt::TreeViewNode NavigationView::NodeFromPreviouslySelectedItem(winrt::IInspe
 void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const winrt::ItemClickEventArgs& args)
 {
     auto clickedItem = args.ClickedItem();
+
+    auto test = GetContainerForClickedItem(clickedItem);
 
     // 'GetContainerForClickedItem' was introduced to fix a bug for TopNav (see NavigationViewList.h, m_lastItemCalledInIsItemItsOwnContainerOverride).
     // However, this workaround returns the wrong container when databinding is used. So in order to have functional behavior without removing the previous
@@ -3312,8 +3314,7 @@ void NavigationView::UpdateListViewItemSource()
 
 winrt::IVector<winrt::TreeViewNode> NavigationView::RootNodes()
 {
-    auto x = m_rootNode.get().Children();
-    return x;
+    return m_rootNode.get().Children();
 }
 
 void NavigationView::SyncRootNodesWithItemsSource(winrt::IInspectable const& items)

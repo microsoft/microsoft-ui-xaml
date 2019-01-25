@@ -20,6 +20,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItemBase.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItemPresenter.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewTemplateSettings.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewCollapsedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewExpandingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewTemplateSettings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewBackRequestedEventArgs.cpp" />
@@ -37,6 +39,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TopNavigationViewDataProvider.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewCollapsedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewExpandingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewTemplateSettings.h" />
@@ -75,10 +79,6 @@
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs5_themeresources.xaml">
       <Version>RS5</Version>
-      <Type>ThemeResources</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationView_19h1_themeresources.xaml" >
-      <Version>19H1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton.xaml">

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -15,15 +18,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using mux = Microsoft.UI.Xaml.Controls;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
-
 namespace MUXControlsTestApp
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    /// 
-
     public class Category
     {
         public String Name { get; set; }
@@ -44,7 +40,6 @@ namespace MUXControlsTestApp
     {
 
         ObservableCollection<Category> categories = new ObservableCollection<Category>();
-        int test = 0;
 
         public HierarchicalNavigationViewDataBinding()
         {
@@ -75,8 +70,6 @@ namespace MUXControlsTestApp
         {
             var clickedItem = e.InvokedItem;
             var clickedItemContainer = e.InvokedItemContainer;
-            //clickedItemContainer.Content = "I was clicked: " + test;
-            test++;
         }
 
         private void PrintSelectedItem(object sender, RoutedEventArgs e)
