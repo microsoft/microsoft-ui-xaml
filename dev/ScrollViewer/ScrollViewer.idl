@@ -2,9 +2,9 @@
 [webhosthidden]
 enum ScrollBarVisibility
 {
-    Visible = 0,
-    Collapsed = 1,
-    Auto = 2,
+    Auto = 0,
+    Visible = 1,
+    Hidden = 2,
 };
 
 [WUXC_VERSION_PREVIEW]
@@ -22,39 +22,37 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     Single ZoomFactor { get; };
     Double ExtentWidth { get; };
     Double ExtentHeight { get; };
-    ScrollerState State { get; };
+    InteractionState State { get; };
     MU_XCP_NAMESPACE.IScrollController HorizontalScrollController { get; };
     MU_XCP_NAMESPACE.IScrollController VerticalScrollController { get; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultHorizontalScrollBarVisibility")]
     ScrollBarVisibility HorizontalScrollBarVisibility { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultVerticalScrollBarVisibility")]
     ScrollBarVisibility VerticalScrollBarVisibility { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultIsChildAvailableWidthConstrained")]
-    Boolean IsChildAvailableWidthConstrained { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultIsChildAvailableHeightConstrained")]
-    Boolean IsChildAvailableHeightConstrained { get; set; };
+    [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultContentOrientation")]
+    MU_XC_NAMESPACE.ContentOrientation ContentOrientation { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultHorizontalScrollChainingMode")]
-    ScrollerChainingMode HorizontalScrollChainingMode { get; set; };
+    ChainingMode HorizontalScrollChainingMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultVerticalScrollChainingMode")]
-    ScrollerChainingMode VerticalScrollChainingMode { get; set; };
+    ChainingMode VerticalScrollChainingMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultHorizontalScrollRailingMode")]
-    ScrollerRailingMode HorizontalScrollRailingMode { get; set; };
+    RailingMode HorizontalScrollRailingMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultVerticalScrollRailingMode")]
-    ScrollerRailingMode VerticalScrollRailingMode { get; set; };
+    RailingMode VerticalScrollRailingMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultHorizontalScrollMode")]
-    ScrollerScrollMode HorizontalScrollMode { get; set; };
+    ScrollMode HorizontalScrollMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultVerticalScrollMode")]
-    ScrollerScrollMode VerticalScrollMode { get; set; };
+    ScrollMode VerticalScrollMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultComputedHorizontalScrollMode")]
-    ScrollerScrollMode ComputedHorizontalScrollMode { get; };
+    ScrollMode ComputedHorizontalScrollMode { get; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultComputedVerticalScrollMode")]
-    ScrollerScrollMode ComputedVerticalScrollMode { get; };
+    ScrollMode ComputedVerticalScrollMode { get; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultZoomChainingMode")]
-    ScrollerChainingMode ZoomChainingMode { get; set; };
+    ChainingMode ZoomChainingMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultZoomMode")]
-    ScrollerZoomMode ZoomMode { get; set; };
+    ZoomMode ZoomMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultInputKind")]
-    ScrollerInputKind InputKind { get; set; };
+    InputKind InputKind { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultMinZoomFactor")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateZoomFactoryBoundary")]
     Double MinZoomFactor { get; set; };
@@ -91,8 +89,7 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty VerticalScrollControllerProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalScrollBarVisibilityProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalScrollBarVisibilityProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty IsChildAvailableWidthConstrainedProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty IsChildAvailableHeightConstrainedProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty ContentOrientationProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalScrollChainingModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalScrollChainingModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalScrollRailingModeProperty { get; };

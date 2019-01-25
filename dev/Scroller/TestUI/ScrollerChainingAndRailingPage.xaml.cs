@@ -9,8 +9,8 @@ using Windows.UI.Xaml.Controls.Primitives;
 
 #if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
-using ScrollerChainingMode = Microsoft.UI.Xaml.Controls.ScrollerChainingMode;
-using ScrollerRailingMode = Microsoft.UI.Xaml.Controls.ScrollerRailingMode;
+using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
+using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
 using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
@@ -48,7 +48,7 @@ namespace MUXControlsTestApp
 
         private void ScrollViewer2_DirectManipulationStarted(object sender, object e)
         {
-            txtScrollViewer2State.Text = (sender as ScrollViewer).Name + " Interacting";
+            txtScrollViewer2State.Text = (sender as ScrollViewer).Name + " Interaction";
             txtScrollViewer2HSP.Text = String.Format("{0,5:N1}%", (sender as ScrollViewer).HorizontalOffset / (sender as ScrollViewer).ScrollableWidth * 100.0);
             txtScrollViewer2VSP.Text = String.Format("{0,5:N1}%", (sender as ScrollViewer).VerticalOffset / (sender as ScrollViewer).ScrollableHeight * 100.0);
         }
@@ -95,7 +95,7 @@ namespace MUXControlsTestApp
             Scroller scroller = GetScrollerWithSuffix(suffix);
             if (scroller != null)
             {
-                scroller.HorizontalScrollChainingMode = (ScrollerChainingMode)cmb.SelectedIndex;
+                scroller.HorizontalScrollChainingMode = (ChainingMode)cmb.SelectedIndex;
             }
             else
             {
@@ -114,7 +114,7 @@ namespace MUXControlsTestApp
             Scroller scroller = GetScrollerWithSuffix(suffix);
             if (scroller != null)
             {
-                scroller.VerticalScrollChainingMode = (ScrollerChainingMode)cmb.SelectedIndex;
+                scroller.VerticalScrollChainingMode = (ChainingMode)cmb.SelectedIndex;
             }
             else
             {
@@ -133,7 +133,7 @@ namespace MUXControlsTestApp
             Scroller scroller = GetScrollerWithSuffix(suffix);
             if (scroller != null)
             {
-                scroller.ZoomChainingMode = (ScrollerChainingMode)cmb.SelectedIndex;
+                scroller.ZoomChainingMode = (ChainingMode)cmb.SelectedIndex;
             }
             else
             {
@@ -152,7 +152,7 @@ namespace MUXControlsTestApp
             Scroller scroller = GetScrollerWithSuffix(suffix);
             if (scroller != null)
             {
-                scroller.HorizontalScrollRailingMode = (ScrollerRailingMode)cmb.SelectedIndex;
+                scroller.HorizontalScrollRailingMode = (RailingMode)cmb.SelectedIndex;
             }
             else
             {
@@ -171,7 +171,7 @@ namespace MUXControlsTestApp
             Scroller scroller = GetScrollerWithSuffix(suffix);
             if (scroller != null)
             {
-                scroller.VerticalScrollRailingMode = (ScrollerRailingMode)cmb.SelectedIndex;
+                scroller.VerticalScrollRailingMode = (RailingMode)cmb.SelectedIndex;
             }
             else
             {

@@ -57,6 +57,11 @@
                 Color="Transparent"
                 FallbackColor="Transparent"/>
             <local:RevealBackgroundBrush
+                x:Key="SystemControlBackgroundAltHighRevealBackgroundBrush"
+                TargetTheme="Dark" 
+                Color="{StaticResource SystemAltHighColor}" 
+                FallbackColor="{StaticResource SystemAltHighColor}" />
+            <local:RevealBackgroundBrush
                 x:Key="SystemControlHighlightAccentRevealBackgroundBrush"
                 TargetTheme="Dark"
                 Color="{ThemeResource SystemAccentColor}"
@@ -401,6 +406,11 @@
                 Color="Transparent"
                 FallbackColor="Transparent"/>
             <local:RevealBackgroundBrush
+                x:Key="SystemControlBackgroundAltHighRevealBackgroundBrush"
+                TargetTheme="Light" 
+                Color="{StaticResource SystemAltHighColor}" 
+                FallbackColor="{StaticResource SystemAltHighColor}" />
+            <local:RevealBackgroundBrush
                 x:Key="SystemControlHighlightAccentRevealBackgroundBrush"
                 TargetTheme="Light"
                 Color="{ThemeResource SystemAccentColor}"
@@ -736,6 +746,7 @@
             <!-- Background Brushes -->
             <SolidColorBrush x:Key="SystemControlBackgroundBaseLowRevealBackgroundBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="SystemControlTransparentRevealBackgroundBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="SystemControlBackgroundAltHighRevealBackgroundBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightAccentRevealBackgroundBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightAccent3RevealBackgroundBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="SystemControlHighlightAccent2RevealBackgroundBrush" Color="{ThemeResource SystemColorHighlightColor}" />
