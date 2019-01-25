@@ -5,6 +5,7 @@
 #include <common.h>
 #include "ItemsRepeater.common.h"
 #include "VirtualizingLayoutContext.h"
+#include "VirtualLayoutContextAdapter.h"
 
 CppWinRTActivatableClassWithBasicFactory(VirtualizingLayoutContext);
 
@@ -104,3 +105,13 @@ int32_t VirtualizingLayoutContext::ItemCountCore()
 }
 
 #pragma endregion
+
+winrt::NonVirtualizingLayoutContext VirtualizingLayoutContext::GetNonVirtualizingContextAdapter()
+{
+    if (!m_contextAdapter)
+    {
+        m_contextAdapter = winrt::make<VirtualLayoutContextAdapter>(get_strong().as<winrt::VirtualizingLayoutContext>());
+    }
+
+    return m_contextAdapter;
+}
