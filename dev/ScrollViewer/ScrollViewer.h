@@ -35,8 +35,7 @@ public:
     static const winrt::ChainingMode s_defaultZoomChainingMode{ winrt::ChainingMode::Auto };
     static const winrt::ZoomMode s_defaultZoomMode{ winrt::ZoomMode::Disabled };
     static const winrt::InputKind s_defaultInputKind{ winrt::InputKind::All };
-    static constexpr bool s_defaultIsChildAvailableWidthConstrained{ true };
-    static constexpr bool s_defaultIsChildAvailableHeightConstrained{ false };
+    static const winrt::ContentOrientation s_defaultContentOrientation{ winrt::ContentOrientation::Vertical };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
     static constexpr double s_defaultMaxZoomFactor{ 10.0 };
     static constexpr bool s_defaultAnchorAtExtent{ true };

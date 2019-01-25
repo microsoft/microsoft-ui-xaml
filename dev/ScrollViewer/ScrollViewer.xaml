@@ -9,8 +9,7 @@
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}"/>
-        <Setter Property="IsChildAvailableWidthConstrained" Value="True"/>
-        <Setter Property="IsChildAvailableHeightConstrained" Value="False"/>
+        <Setter Property="ContentOrientation" Value="Vertical"/>
         <Setter Property="HorizontalScrollChainingMode" Value="Auto"/>
         <Setter Property="HorizontalScrollMode" Value="Enabled"/>
         <Setter Property="HorizontalScrollRailingMode" Value="Enabled"/>
@@ -210,8 +209,7 @@
                             Background="{TemplateBinding Background}"
                             Content="{TemplateBinding Content}"
                             Margin="{TemplateBinding Padding}"
-                            IsChildAvailableWidthConstrained="{TemplateBinding IsChildAvailableWidthConstrained}"
-                            IsChildAvailableHeightConstrained="{TemplateBinding IsChildAvailableHeightConstrained}"
+                            ContentOrientation="{TemplateBinding ContentOrientation}"
                             HorizontalScrollChainingMode="{TemplateBinding HorizontalScrollChainingMode}"
                             HorizontalScrollMode="{TemplateBinding HorizontalScrollMode}"
                             HorizontalScrollRailingMode="{TemplateBinding HorizontalScrollRailingMode}"

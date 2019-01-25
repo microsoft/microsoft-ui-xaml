@@ -27,6 +27,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 #if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
@@ -599,13 +600,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             scroller.Name = "scroller";
             if (orientation == Orientation.Vertical)
             {
-                scroller.IsChildAvailableWidthConstrained = true;
+                scroller.ContentOrientation = ContentOrientation.Vertical;
                 scroller.Width = c_defaultAnchoringUIScrollerConstrainedSize;
                 scroller.Height = c_defaultAnchoringUIScrollerNonConstrainedSize;
             }
             else
             {
-                scroller.IsChildAvailableHeightConstrained = true;
+                scroller.ContentOrientation = ContentOrientation.Horizontal;
                 scroller.Width = c_defaultAnchoringUIScrollerNonConstrainedSize;
                 scroller.Height = c_defaultAnchoringUIScrollerConstrainedSize;
             }
@@ -901,7 +902,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Verify.IsNotNull(scroller);
             scroller.Name = "scroller";
-            scroller.IsChildAvailableWidthConstrained = true;
+            scroller.ContentOrientation = ContentOrientation.Vertical;
             scroller.Width = 400;
             scroller.Height = 600;
             scroller.Background = new SolidColorBrush(Colors.AliceBlue);

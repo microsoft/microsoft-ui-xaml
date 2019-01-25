@@ -34,7 +34,7 @@
         </Grid.ColumnDefinitions>
 
         <controlsPrimitives:Scroller x:Name="scroller" Width="400" Height="600" Margin="1" Background="AliceBlue"
-            VerticalAlignment="Top" IsChildAvailableWidthConstrained="True" ZoomMode="Enabled">
+            VerticalAlignment="Top" ContentOrientation="Vertical" ZoomMode="Enabled">
             <Border x:Name="border" BorderThickness="3" BorderBrush="Chartreuse" Margin="15" Background="Beige">
                 <controls:ItemsRepeater x:Name="repeater" Margin="30">
                     <controls:ItemsRepeater.Layout>

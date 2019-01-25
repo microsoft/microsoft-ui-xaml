@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
@@ -54,8 +55,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 #endif
         private const ChainingMode c_defaultZoomChainingMode = ChainingMode.Auto;
         private const ZoomMode c_defaultZoomMode = ZoomMode.Disabled;
-        private const bool c_defaultIsChildAvailableWidthConstrained = true;
-        private const bool c_defaultIsChildAvailableHeightConstrained = false;
+        private const ContentOrientation c_defaultContentOrientation = ContentOrientation.Vertical;
         private const bool c_defaultIsAnchoredAtExtent = true;
         private const double c_defaultMinZoomFactor = 0.1;
         private const double c_defaultMaxZoomFactor = 10.0;
@@ -95,8 +95,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scrollViewer.ComputedHorizontalScrollMode, c_defaultComputedHorizontalScrollMode);
                 Verify.AreEqual(scrollViewer.ComputedVerticalScrollMode, c_defaultComputedVerticalScrollMode);
                 Verify.AreEqual(scrollViewer.InputKind, c_defaultInputKind);
-                Verify.AreEqual(scrollViewer.IsChildAvailableWidthConstrained, c_defaultIsChildAvailableWidthConstrained);
-                Verify.AreEqual(scrollViewer.IsChildAvailableHeightConstrained, c_defaultIsChildAvailableHeightConstrained);
+                Verify.AreEqual(scrollViewer.ContentOrientation, c_defaultContentOrientation);
                 Verify.AreEqual(scrollViewer.HorizontalScrollChainingMode, c_defaultHorizontalScrollChainingMode);
                 Verify.AreEqual(scrollViewer.VerticalScrollChainingMode, c_defaultVerticalScrollChainingMode);
                 Verify.AreEqual(scrollViewer.HorizontalScrollRailingMode, c_defaultHorizontalScrollRailingMode);
@@ -147,8 +146,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Log.Comment("Setting Scroller-cloned properties to non-default values");
                     scrollViewer.InputKind = InputKind.MouseWheel | InputKind.Pen;
-                    scrollViewer.IsChildAvailableWidthConstrained = !c_defaultIsChildAvailableWidthConstrained;
-                    scrollViewer.IsChildAvailableHeightConstrained = !c_defaultIsChildAvailableHeightConstrained;
+                    scrollViewer.ContentOrientation = ContentOrientation.Horizontal;
                     scrollViewer.HorizontalScrollChainingMode = ChainingMode.Always;
                     scrollViewer.VerticalScrollChainingMode = ChainingMode.Never;
                     scrollViewer.HorizontalScrollRailingMode = RailingMode.Disabled;
@@ -162,8 +160,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Log.Comment("Verifying Scroller-cloned non-default properties");
                     Verify.AreEqual(scrollViewer.InputKind, InputKind.MouseWheel | InputKind.Pen);
-                    Verify.AreEqual(scrollViewer.IsChildAvailableWidthConstrained, !c_defaultIsChildAvailableWidthConstrained);
-                    Verify.AreEqual(scrollViewer.IsChildAvailableHeightConstrained, !c_defaultIsChildAvailableHeightConstrained);
+                    Verify.AreEqual(scrollViewer.ContentOrientation, ContentOrientation.Horizontal);
                     Verify.AreEqual(scrollViewer.HorizontalScrollChainingMode, ChainingMode.Always);
                     Verify.AreEqual(scrollViewer.VerticalScrollChainingMode, ChainingMode.Never);
                     Verify.AreEqual(scrollViewer.HorizontalScrollRailingMode, RailingMode.Disabled);

@@ -41,6 +41,7 @@ using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
 using IRepeaterScrollingSurface = Microsoft.UI.Private.Controls.IRepeaterScrollingSurface;
@@ -151,7 +152,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 horizontalScroller = new Scroller
                 {
                     Content = repeater,
-                    IsChildAvailableHeightConstrained = true
+                    ContentOrientation = ContentOrientation.Horizontal
                 };
 
                 // Placing a Grid in between two Scroller controls to avoid
@@ -164,7 +165,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Content = grid,
                     Width = 200,
                     Height = 200,
-                    IsChildAvailableWidthConstrained = true
+                    ContentOrientation = ContentOrientation.Vertical
                 };
 
                 Content = verticalScroller;
@@ -340,7 +341,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                              </DataTemplate>
                            </controls:RecyclingElementFactory>
                          </Grid.Resources>
-                         <primitives:Scroller x:Name='Scroller' Width='400' Height='600' IsChildAvailableWidthConstrained='True' Background='Gray'>
+                         <primitives:Scroller x:Name='Scroller' Width='400' Height='600' ContentOrientation='Vertical' Background='Gray'>
                            <controls:ItemsRepeater
                              x:Name='ItemsRepeater'
                              ItemTemplate='{StaticResource ElementFactory}'
