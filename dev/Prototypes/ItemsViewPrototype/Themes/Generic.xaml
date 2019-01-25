@@ -57,15 +57,12 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="l:TableHeaderCell">
-                    <Grid x:Name="Root" Background="Transparent">
+                    <Grid x:Name="Root" Background="Transparent" BorderThickness="0,0,1,0" BorderBrush="SlateGray">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalSeparator" Storyboard.TargetProperty="Width">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="2" />
-                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="FilterText" Storyboard.TargetProperty="Opacity">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="0.8" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -73,13 +70,6 @@
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalSeparator" Storyboard.TargetProperty="Width">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="4" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalSeparator" Storyboard.TargetProperty="Fill">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Green" />
-                                        </ObjectAnimationUsingKeyFrames>
-
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="FilterText" Storyboard.TargetProperty="Opacity">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="0.8" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -136,7 +126,6 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
                         <Path Name="SortIcon"
@@ -156,19 +145,12 @@
                         <ContentPresenter Grid.Column="1" Margin="2,2,5,2"/>
 
                         <TextBox Grid.Row="1"
-                                 Grid.ColumnSpan="4"
+                                 Grid.ColumnSpan="3"
                                  x:Name="FilterText"
                                  PlaceholderText="Filter"
                                  Opacity="0"
                                  Visibility="Collapsed"
                                  Margin="2"/>
-                        <Rectangle Grid.Column="3"
-                                   Grid.RowSpan="2"
-                                   x:Name="VerticalSeparator"
-                                   Fill="SlateGray"
-                                   Width="1"
-                                   HorizontalAlignment="Right"
-                                   VerticalAlignment="Stretch" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
