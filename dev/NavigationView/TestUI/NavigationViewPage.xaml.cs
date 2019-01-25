@@ -440,7 +440,7 @@ namespace MUXControlsTestApp
 
         private void ChangePaneTitle_Click(object sender, RoutedEventArgs e)
         {
-            NavView.PaneTitle = "";
+            NavView.PaneTitle = (String.IsNullOrEmpty(NavView.PaneTitle) ? "NavView Test" : "");
         }
 
         private void CopyVolumeToolTipButton_Click(object sender, RoutedEventArgs e)

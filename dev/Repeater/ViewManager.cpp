@@ -279,23 +279,23 @@ void ViewManager::UpdatePin(const winrt::UIElement& element, bool addPin)
 
     while (parent)
     {
-        auto repeater = parent.try_as<winrt::ItemsRepeater>();
-
-        if (repeater)
+        if (auto repeater = parent.try_as<winrt::ItemsRepeater>())
         {
             auto virtInfo = ItemsRepeater::GetVirtualizationInfo(child.as<winrt::UIElement>());
-
-            if (addPin)
+            if (virtInfo->IsRealized())
             {
-                virtInfo->AddPin();
-            }
-            else
-            {
-                if (virtInfo->RemovePin() == 0)
+                if (addPin)
                 {
-                    // ElementFactory is invoked during the measure pass.
-                    // We will clear the element then.
-                    repeater.InvalidateMeasure();
+                    virtInfo->AddPin();
+                }
+                else if(virtInfo->IsPinned())
+                {
+                    if (virtInfo->RemovePin() == 0)
+                    {
+                        // ElementFactory is invoked during the measure pass.
+                        // We will clear the element then.
+                        repeater.InvalidateMeasure();
+                    }
                 }
             }
         }
