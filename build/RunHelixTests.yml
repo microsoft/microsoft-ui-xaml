@@ -87,11 +87,11 @@ jobs:
         buildPlatform: 'x86'
         buildConfiguration: 'release'
         # %3b is the escape code for ';' which is used as the delimiter
-        helixTargetQueues: 'Windows.10.Amd64.Open%3bWindows.10.Amd64.ClientRS3.VS2017.Open%3bWindows.10.Amd64.ServerRS5.Open%3bWindows.10.Amd64.ClientRS3.DevEx.Open%3bWindows.10.Amd64.ClientRS3.ES.Open'
+        helixTargetQueues: 'Windows.10.Amd64.Open%3bWindows.10.Amd64.ServerRS5.Open%3bWindows.10.Amd64.ClientRS3.DevEx.Open'
       Release_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'release'
-        helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open%3bWindows.10.Amd64.ClientRS3.VS2017.Open%3bWindows.10.Amd64.ClientRS3.DevEx.Open%3bWindows.10.Amd64.ClientRS3.ES.Open'
+        helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open%3bWindows.10.Amd64.ClientRS3.DevEx.Open'
   steps:
 
   - task: NuGetToolInstaller@0
