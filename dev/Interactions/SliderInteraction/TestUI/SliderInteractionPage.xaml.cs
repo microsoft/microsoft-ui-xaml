@@ -18,7 +18,7 @@ namespace MUXControlsTestApp
         public SliderInteractionPage()
         {
             this.InitializeComponent();
-#if USE_INTERNAL_SDK
+
             HorizontalSliderInteraction = new SliderInteraction()
             {
                 Minimum = 0,
@@ -35,7 +35,6 @@ namespace MUXControlsTestApp
             };
 
             verticalElement.Interactions.Add(VerticalSliderInteraction);
-#endif
         }
 
         public SliderInteraction HorizontalSliderInteraction

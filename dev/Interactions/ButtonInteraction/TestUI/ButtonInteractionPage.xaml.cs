@@ -23,9 +23,8 @@ namespace MUXControlsTestApp
             Interaction = new ButtonInteraction();
             Interaction.Invoked += OnTargetElementInvoked;
             Interaction.PropertyChanged += OnInteractionPropertyChanged;
-#if USE_INTERNAL_SDK
+
             targetElement.Interactions.Add(Interaction);
-#endif
         }
 
         public ButtonInteraction Interaction

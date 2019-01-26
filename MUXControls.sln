@@ -727,6 +727,7 @@ Global
 		dev\ScrollBar2\TestUI\ScrollBar2_TestUI.projitems*{b01524d9-32fa-58bc-84a9-49ac965a31ad}*SharedItemsImports = 13
 		dev\PersonPicture\InteractionTests\PersonPicture_InteractionTests.projitems*{b0c15318-1f57-4914-b860-ebf248841511}*SharedItemsImports = 13
 		dev\TreeView\TestUI\TreeView_TestUI.projitems*{b2c714dd-9c6b-400c-9cef-13a2d48378bd}*SharedItemsImports = 13
+		dev\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems*{b39300d2-4510-44ea-aa7b-eda9118f830e}*SharedItemsImports = 9
 		dev\SwipeControl\SwipeControl_APITests\SwipeControl_APITests.projitems*{b75d5d7e-6986-4500-972e-2c10a9b7cc10}*SharedItemsImports = 13
 		dev\Interactions\SliderInteraction\InteractionTests\SliderInteraction_InteractionTests.projitems*{bbbb0add-4e05-430c-9ffd-08a299fd1b06}*SharedItemsImports = 13
 		dev\SwipeControl\SwipeControl_TestUI\SwipeControl_TestUI.projitems*{bc75c32b-f63a-4f2d-902c-8142db31a2e7}*SharedItemsImports = 13
@@ -755,10 +756,6 @@ Global
 		dev\CommonStyles\TestUI\CommonStyles_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\DropDownButton\TestUI\DropDownButton_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\IconSource\APITests\IconSource_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
-		dev\Interactions\ButtonInteraction\APITests\ButtonInteraction_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
-		dev\Interactions\ButtonInteraction\TestUI\ButtonInteraction_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
-		dev\Interactions\SliderInteraction\APITests\SliderInteraction_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
-		dev\Interactions\SliderInteraction\TestUI\SliderInteraction_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\lights\ApiTests\Lights_ApiTests\Lights_ApiTests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\Materials\Acrylic\APITests\AcrylicBrush_ApiTests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
@@ -823,10 +820,6 @@ Global
 		dev\CommonStyles\TestUI\CommonStyles_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\DropDownButton\TestUI\DropDownButton_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\IconSource\APITests\IconSource_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
-		dev\Interactions\ButtonInteraction\APITests\ButtonInteraction_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
-		dev\Interactions\ButtonInteraction\TestUI\ButtonInteraction_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
-		dev\Interactions\SliderInteraction\APITests\SliderInteraction_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
-		dev\Interactions\SliderInteraction\TestUI\SliderInteraction_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\lights\ApiTests\Lights_ApiTests\Lights_ApiTests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\Materials\Acrylic\APITests\AcrylicBrush_ApiTests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
