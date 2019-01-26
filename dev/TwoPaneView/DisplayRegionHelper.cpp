@@ -48,7 +48,7 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
             info.Regions[0] = m_simulateWide0;
         }
     }
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
     else if (SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable())
     {
         // ApplicationView::GetForCurrentView throws on failure; in that case we just won't do anything.

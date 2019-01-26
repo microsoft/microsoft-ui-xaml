@@ -30,7 +30,7 @@
 #include <winrt\Windows.UI.Input.h>
 #include <winrt\Windows.UI.Text.h>
 #include <winrt\Windows.UI.ViewManagement.h>
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
 #include <winrt\Windows.UI.WindowManagement.h>
 #endif
 #include <winrt\Windows.UI.Xaml.h>
@@ -89,7 +89,7 @@ namespace winrt
     using namespace ::winrt::Windows::UI::Input;
     using namespace ::winrt::Windows::UI::Text;
     using namespace ::winrt::Windows::UI::ViewManagement;
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
     using namespace ::winrt::Windows::UI::WindowManagement;
 #endif
     using namespace ::winrt::Windows::UI::Xaml;
