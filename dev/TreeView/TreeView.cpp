@@ -93,6 +93,24 @@ winrt::IVector<winrt::TreeViewNode> TreeView::SelectedNodes()
     return m_pendingSelectedNodes.get();
 }
 
+void TreeView::SelectedItem(winrt::IInspectable const& item)
+{
+    if (auto listControl = ListControl())
+    {
+        listControl->SelectedItem(item);
+    }
+}
+
+winrt::IInspectable TreeView::SelectedItem()
+{
+    if (auto listControl = ListControl())
+    {
+        return listControl->SelectedItem();
+    }
+
+    return nullptr;
+}
+
 void TreeView::Expand(winrt::TreeViewNode const& value)
 {
     auto vm = ListControl()->ListViewModel();

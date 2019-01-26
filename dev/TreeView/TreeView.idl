@@ -1,4 +1,4 @@
-[WUXC_VERSION_RS4]
+﻿[WUXC_VERSION_RS4]
 [webhosthidden]
 enum TreeViewSelectionMode
 {
@@ -151,6 +151,7 @@ unsealed runtimeclass TreeView : Windows.UI.Xaml.Controls.Control
     [WUXC_VERSION_MUXONLY]
     {
         TreeViewNode SelectedNode{ get; set; };
+        Object SelectedItem{ get; set; };
     }
 }
 

@@ -31,6 +31,9 @@ public:
     winrt::TreeViewNode SelectedNode();
     winrt::IVector<winrt::TreeViewNode> SelectedNodes();
 
+    void SelectedItem(winrt::IInspectable const& item);
+    winrt::IInspectable SelectedItem();
+
     void Expand(winrt::TreeViewNode const& value);
     void Collapse(winrt::TreeViewNode const& value);
     void SelectAll();
