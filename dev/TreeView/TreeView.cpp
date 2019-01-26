@@ -68,9 +68,11 @@ winrt::TreeViewNode TreeView::SelectedNode()
 {
     if (auto listControl = ListControl())
     {
-        auto selectedItem = listControl->SelectedItem();
-        auto container = ContainerFromItem(selectedItem);
-        return NodeFromContainer(container);
+        if (auto selectedItem = listControl->SelectedItem())
+        {
+            auto container = ContainerFromItem(selectedItem);
+            return NodeFromContainer(container);
+        }
     }
 
     return nullptr;

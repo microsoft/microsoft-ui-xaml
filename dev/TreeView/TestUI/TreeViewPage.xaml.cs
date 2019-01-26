@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Media;
 using System.Collections.ObjectModel;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 #if !BUILD_WINDOWS
 using TreeViewSelectionMode = Microsoft.UI.Xaml.Controls.TreeViewSelectionMode;
@@ -85,7 +86,7 @@ namespace MUXControlsTestApp
         private String GetSelection(TreeView tree)
         {
             String result="";
-            if (TestTreeView.SelectionMode == TreeViewSelectionMode.Single)
+            if (TestTreeView.SelectionMode == TreeViewSelectionMode.Single && TestTreeView.SelectedNode!=null)
             {
                 var listControl = FindVisualChildByName(tree, "ListControl") as TreeViewList;
                 if (IsInContentMode())
@@ -94,6 +95,7 @@ namespace MUXControlsTestApp
                 }
                 else
                 {
+                    Assert.AreEqual(listControl.SelectedItem, TestTreeView.SelectedNode);
                     result = "ItemSelected:" + ((TreeViewNode)listControl.SelectedItem).Content.ToString();
                 }
             }
@@ -800,6 +802,18 @@ namespace MUXControlsTestApp
         private void TreeViewLateDataInitTestPage_Click(object sender, RoutedEventArgs e)
         {
             Frame.NavigateWithoutAnimation(typeof(TreeViewLateDataInitTest));
+        }
+
+        private void ToggleRoot0Selection_Click(object sender, RoutedEventArgs e)
+        {
+            if(TestTreeView.SelectedNode == null)
+            {
+                TestTreeView.SelectedNode = TestTreeView.RootNodes[0].Children[0];
+            }
+            else
+            {
+                TestTreeView.SelectedNode = null;
+            }
         }
 
     }

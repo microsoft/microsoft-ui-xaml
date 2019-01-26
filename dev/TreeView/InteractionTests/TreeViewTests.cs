@@ -2364,7 +2364,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "B")]
-        public void TreeViewSelectedNodeVectorTest()
+        public void TreeViewSelectedNodesVectorTest()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
             {
@@ -2382,6 +2382,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ClickButton("ToggleSelectedNodes");
                 ClickButton("GetMultiSelectCheckBoxStates");
                 Verify.AreEqual("u|u|u|u|", ReadResult());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TreeViewTestSuite", "B")]
+        public void TreeViewSelectedNodeTest()
+        {
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                var root = new TreeItem(LabelFirstItem());
+                root.Expand();
+                Wait.ForIdle();
+
+                ClickButton("LabelItems");
+                UIObject root0 = FindElement.ById("Root.0");
+                Verify.IsNotNull(root0, "Verifying Root.0 is found");
+
+                InputHelper.Tap(root0);
+
+                ClickButton("GetSelected");
+                Verify.AreEqual("ItemSelected:Root.0", ReadResult());
+
+                ClickButton("ToggleRoot0Selection");
+
+                ClickButton("GetSelected");
+                Verify.AreEqual("", ReadResult());
             }
         }
 
