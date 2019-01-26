@@ -21,7 +21,6 @@ namespace MUXControlsTestApp
 {
     public sealed partial class HierarchicalNavigationViewMarkup : Page
     {
-        int test = 0;
 
         public HierarchicalNavigationViewMarkup()
         {
@@ -30,10 +29,6 @@ namespace MUXControlsTestApp
 
         private void ClickedItem(object sender, mux.NavigationViewItemInvokedEventArgs e)
         {
-            var clickedItem = e.InvokedItem;
-            var clickedItemContainer = e.InvokedItemContainer;
-            //clickedItemContainer.Content = "I was clicked: " + test;
-            test++;
         }
 
         private void PrintSelectedItem(object sender, RoutedEventArgs e)
@@ -58,17 +53,31 @@ namespace MUXControlsTestApp
 
         private void RemoveSecondMenuItem(object sender, RoutedEventArgs e)
         {
-            //var item = (mux.NavigationViewItem)navview.MenuItems[0];
-            //var menuitemscount = item.MenuItems.Count;
-            //var item2 = (mux.NavigationViewItem)item.MenuItems[0];
-            //var menuitemscount1 = item2.MenuItems.Count;
-            //item2.MenuItems.RemoveAt(0);
-            //var menuitemscount2 = item2.MenuItems.Count;
-            //var menuitemscount3 = item2.MenuItems.Count;
-            var count = navview.MenuItems.Count;
             navview.MenuItems.RemoveAt(2);
-            var count1 = navview.MenuItems.Count;
-            var count2 = navview.MenuItems.Count;
+        }
+
+        private void PrintAllIsChildSelectedItems(object sender, RoutedEventArgs e)
+        {
+            string itemstring = "";
+            itemstring = BuildIsChildSelectedString(navview.MenuItems, itemstring);
+            if(itemstring == "")
+            {
+                itemstring = "None";
+            }
+            IsChildSelectedLabel.Text = itemstring;
+        }
+
+        private string BuildIsChildSelectedString(IList<object> items, string itemstring)
+        {
+            foreach (mux.NavigationViewItem item in items)
+            {
+                if (item.IsChildSelected == true)
+                {
+                    itemstring += item.Name + " ";
+                }
+                itemstring = BuildIsChildSelectedString(item.MenuItems, itemstring);
+            }
+            return itemstring;
         }
     }
 }

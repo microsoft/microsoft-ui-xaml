@@ -5,9 +5,10 @@
 #include "NavigationViewHelper.h"
 #include "NavigationViewList.g.h"
 #include "ViewModel.h"
+#include "MultiLevelListViewBase.h"
 
 class NavigationViewList :
-    public ReferenceTracker<NavigationViewList, winrt::implementation::NavigationViewListT>
+    public ReferenceTracker<NavigationViewList, winrt::implementation::NavigationViewListT>, public MultiLevelListViewBase
 {
 public:
     NavigationViewList();
@@ -31,12 +32,12 @@ public:
     // IControlOverrides / IControlOverridesHelper
     void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
 
-    winrt::com_ptr<ViewModel> ListViewModel() const;
-    void ListViewModel(winrt::com_ptr<ViewModel> viewModel);
+    //winrt::com_ptr<ViewModel> ListViewModel() const;
+    //void ListViewModel(winrt::com_ptr<ViewModel> viewModel);
 
-    winrt::TreeViewNode NodeAtFlatIndex(int index) const;
-    winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
-    winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
+    //winrt::TreeViewNode NodeAtFlatIndex(int index) const;
+    //winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
+    //winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
 
 private:
     NavigationViewListPosition m_navigationViewListPosition{ NavigationViewListPosition::LeftNav };
@@ -52,6 +53,6 @@ private:
     // We assume this is the container of the clicked item.
     tracker_ref<winrt::NavigationViewItemBase> m_lastItemCalledInIsItemItsOwnContainerOverride{ this };
 
-    tracker_com_ref<ViewModel> m_viewModel{ this };
+    //tracker_com_ref<ViewModel> m_viewModel{ this };
 };
 

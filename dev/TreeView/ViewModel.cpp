@@ -356,12 +356,12 @@ void ViewModel::PrepareView(const winrt::TreeViewNode& originNode)
 
 void ViewModel::SetOwningList(winrt::ListView const& owningList)
 {
-    m_TreeViewList = winrt::make_weak(owningList);
+    m_listView = winrt::make_weak(owningList);
 }
 
 bool ViewModel::IsInSingleSelectionMode()
 {
-    return m_TreeViewList.get().SelectionMode() == winrt::ListViewSelectionMode::Single;
+    return m_listView.get().SelectionMode() == winrt::ListViewSelectionMode::Single;
 }
 
 // Private helpers
@@ -630,9 +630,9 @@ TreeNodeSelectionState ViewModel::SelectionStateBasedOnChildren(winrt::TreeViewN
 
 void ViewModel::NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targetNode, TreeNodeSelectionState const& selectionState)
 {
-    if (m_TreeViewList)
+    if (m_listView)
     {
-        if (auto tvList = m_TreeViewList.get().try_as<winrt::TreeViewList>())
+        if (auto tvList = m_listView.get().try_as<winrt::TreeViewList>())
         {
             auto container = winrt::get_self<TreeViewList>(tvList)->ContainerFromNode(targetNode);
             if (container)
@@ -641,7 +641,7 @@ void ViewModel::NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targ
                 winrt::get_self<TreeViewItem>(targetItem)->UpdateSelection(selectionState);
             }
         }
-        else if (auto nvList = m_TreeViewList.get().try_as<winrt::NavigationViewList>())
+        else if (auto nvList = m_listView.get().try_as<winrt::NavigationViewList>())
         {
             // For NavigationView, TreeNodeSelectionState is only used for determining the parents of a selected item
             bool isChildSelected = selectionState == TreeNodeSelectionState::PartialSelected ? true : false;
@@ -654,9 +654,9 @@ void ViewModel::NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targ
                 }
             }
             // This is special case for when a MenuItem is declared in markup and is hidden
-            else if (auto nviContainerParent = targetNode.Content().try_as<winrt::NavigationViewItem>())
+            else if (auto nviContainer = targetNode.Content().try_as<winrt::NavigationViewItem>())
             {
-                nviContainerParent.IsChildSelected(isChildSelected);
+                nviContainer.IsChildSelected(isChildSelected);
             }
         }
     }
@@ -904,10 +904,10 @@ void ViewModel::TreeViewNodeIsExpandedPropertyChanged(winrt::TreeViewNode const&
 
 void ViewModel::TreeViewNodeHasChildrenPropertyChanged(winrt::TreeViewNode const& sender, winrt::IDependencyPropertyChangedEventArgs const& args)
 {
-    if (m_TreeViewList)
+    if (m_listView)
     {
         auto targetNode = sender.as<winrt::TreeViewNode>();
-        if (auto tvList = m_TreeViewList.get().try_as<winrt::TreeViewList>())
+        if (auto tvList = m_listView.get().try_as<winrt::TreeViewList>())
         {
             auto container = winrt::get_self<TreeViewList>(tvList)->ContainerFromNode(targetNode);
             if (container)

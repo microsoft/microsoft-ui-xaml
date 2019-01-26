@@ -23,7 +23,7 @@
                         </muxcontrols:NavigationViewItem>
                     </muxcontrols:NavigationViewItem.MenuItems>
                 </muxcontrols:NavigationViewItem>
-                <muxcontrols:NavigationViewItem Content="Menu Item 5" Icon="Home" x:Name="MI5" SelectsOnInvoked="False">
+                <muxcontrols:NavigationViewItem Content="Menu Item 5" Icon="Home" x:Name="MI5" SelectsOnInvoked="True">
                     <muxcontrols:NavigationViewItem.MenuItems>
                         <muxcontrols:NavigationViewItem Content="Menu Item 6" Icon="Save" x:Name="MI6" SelectsOnInvoked="False">
                             <muxcontrols:NavigationViewItem.MenuItems>
@@ -35,11 +35,13 @@
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem Content="Menu Item 9" Icon="Home" x:Name="MI9"/>
             </muxcontrols:NavigationView.MenuItems>
-            <StackPanel>
+            <StackPanel Margin="10,10,0,0">
                 <TextBlock x:Name="SelectedItemLabel" Text="uninitialized"/>
                 <Button Content="Get Selected Item Label" Click="PrintSelectedItem"/>
-                <Button Content="Collapse Selected Item" Click="CollapseSelectedItem" Margin="10,10,0,0"/>
-                <Button Content="Remove Second MenuItem" Click="RemoveSecondMenuItem" Margin="10,10,0,0"/>
+                <Button Content="Collapse Selected Item" Click="CollapseSelectedItem"/>
+                <Button Content="Remove Second MenuItem" Click="RemoveSecondMenuItem"/>
+                <TextBlock x:Name="IsChildSelectedLabel" Text="uninitialized"/>
+                <Button Content="Print all 'isChildSelected=true' items" Click="PrintAllIsChildSelectedItems"/>
             </StackPanel>
         </muxcontrols:NavigationView>
 

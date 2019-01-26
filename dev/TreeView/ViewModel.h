@@ -78,7 +78,7 @@ private:
     std::vector<winrt::event_token> m_selectedNodeChildrenChangedEventTokenVector;
     std::vector<winrt::event_token> m_IsExpandedChangedEventTokenVector;
     winrt::event_token m_rootNodeChildrenChangedEventToken;
-    winrt::weak_ref<winrt::ListView> m_TreeViewList{ nullptr };
+    winrt::weak_ref<winrt::ListView> m_listView{ nullptr };
     tracker_ref<winrt::TreeViewNode> m_originNode{ this };
     bool m_isContentMode{ false };
 

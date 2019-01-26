@@ -1354,13 +1354,6 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
             auto container = NavigationViewItemOrSettingsContentFromData(nextActualItem);
             if (container)
             {
-                // Simply Expanding and Collapsing should never change the selection state of the NavigationView itself (aka the 'SelectedItem' property).
-                // In the case where the parent items are selectable, that has already been taken care of before this gets executed.
-                auto scopeGuard = gsl::finally([this]()
-                {
-                    m_shouldIgnoreNextSelectionChange = false;
-                });
-                m_shouldIgnoreNextSelectionChange = true;
                 ToggleIsExpanded(container);
             }
 

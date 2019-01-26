@@ -14,6 +14,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MultiLevelListViewBase.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewCollapsedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewDragItemsCompletedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewDragItemsStartingEventArgs.h" />
@@ -33,6 +34,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TreeViewItem.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TreeViewItemTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TreeViewNode.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MultiLevelListViewBase.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewCollapsedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewDragItemsCompletedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewDragItemsStartingEventArgs.cpp" />
