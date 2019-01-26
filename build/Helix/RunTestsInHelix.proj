@@ -5,7 +5,7 @@
     <EnableXUnitReporter>true</EnableXUnitReporter>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
-    <HelixPreCommands>$(HelixPreCommands);set testnameprefix=$(Configuration).$(Platform)</HelixPreCommands>
+    <HelixPreCommands>$(HelixPreCommands);set testnameprefix=$(Configuration).$(Platform);set testbuildplatform=$(Platform)</HelixPreCommands>
   </PropertyGroup>
 
   <ItemGroup>
