@@ -56,6 +56,7 @@ private:
     void SyncRootNodesWithItemsSource();
     void OnItemsAdded(int index, int count);
     void OnItemsRemoved(int index, int count);
+    winrt::TreeViewNode NodeFromItem(winrt::IInspectable const& item);
 
 public:
     // IFrameworkElementOverrides

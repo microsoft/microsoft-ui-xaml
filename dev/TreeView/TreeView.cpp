@@ -38,22 +38,28 @@ TreeViewList* TreeView::ListControl()
 
 winrt::IInspectable TreeView::ItemFromContainer(winrt::DependencyObject const& container)
 {
-    return ListControl()->ItemFromContainer(container);
+    return ListControl() ? ListControl()->ItemFromContainer(container) : nullptr;
 }
 
 winrt::DependencyObject TreeView::ContainerFromItem(winrt::IInspectable const& item)
 {
-    return ListControl()->ContainerFromItem(item);
+    return ListControl() ? ListControl()->ContainerFromItem(item) : nullptr;
 }
 
 winrt::TreeViewNode TreeView::NodeFromContainer(winrt::DependencyObject const& container)
 {
-    return ListControl()->NodeFromContainer(container);
+    return ListControl() ? ListControl()->NodeFromContainer(container) : nullptr;
 }
 
 winrt::DependencyObject TreeView::ContainerFromNode(winrt::TreeViewNode const& node)
 {
-    return ListControl()->ContainerFromNode(node);
+    return ListControl() ? ListControl()->ContainerFromNode(node) : nullptr;
+}
+
+winrt::TreeViewNode TreeView::NodeFromItem(winrt::IInspectable const& item)
+{
+    auto container = ContainerFromItem(item);
+    return container ? NodeFromContainer(container) : nullptr;
 }
 
 void TreeView::SelectedNode(winrt::TreeViewNode const& node)
@@ -70,11 +76,9 @@ winrt::TreeViewNode TreeView::SelectedNode()
     {
         if (auto selectedItem = listControl->SelectedItem())
         {
-            auto container = ContainerFromItem(selectedItem);
-            return NodeFromContainer(container);
+            return listControl->IsContentMode() ? NodeFromItem(selectedItem) : safe_try_cast<winrt::TreeViewNode>(selectedItem);
         }
     }
-
     return nullptr;
 }
 
@@ -97,7 +101,8 @@ void TreeView::SelectedItem(winrt::IInspectable const& item)
 {
     if (auto listControl = ListControl())
     {
-        listControl->SelectedItem(item);
+        auto node = listControl->IsContentMode() ? NodeFromItem(item) : safe_try_cast<winrt::TreeViewNode>(item);
+        listControl->SelectedItem(node);
     }
 }
 
