@@ -13,7 +13,6 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Media;
 using System.Collections.ObjectModel;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 #if !BUILD_WINDOWS
 using TreeViewSelectionMode = Microsoft.UI.Xaml.Controls.TreeViewSelectionMode;
@@ -86,20 +85,22 @@ namespace MUXControlsTestApp
         private String GetSelection(TreeView tree)
         {
             String result="";
-            if (TestTreeView.SelectionMode == TreeViewSelectionMode.Single && TestTreeView.SelectedNode!=null)
+            if (tree.SelectionMode == TreeViewSelectionMode.Single 
+                && (tree.SelectedNode!=null || tree.SelectedItem!=null))
             {
                 var listControl = FindVisualChildByName(tree, "ListControl") as TreeViewList;
                 if (IsInContentMode())
                 {
+                    //Assert.AreEqual(listControl.SelectedItem, tree.SelectedItem);
                     result = "ItemSelected:" + ((TreeViewItemSource)listControl.SelectedItem).Content;
                 }
                 else
                 {
-                    Assert.AreEqual(listControl.SelectedItem, TestTreeView.SelectedNode);
+                    //Assert.AreEqual(listControl.SelectedItem, tree.SelectedNode);
                     result = "ItemSelected:" + ((TreeViewNode)listControl.SelectedItem).Content.ToString();
                 }
             }
-            else if (TestTreeView.SelectionMode == TreeViewSelectionMode.Multiple)
+            else if (tree.SelectionMode == TreeViewSelectionMode.Multiple)
             {
                 var items = tree.SelectedNodes;
                 int count = items.Count;
@@ -809,10 +810,12 @@ namespace MUXControlsTestApp
             if(TestTreeView.SelectedNode == null)
             {
                 TestTreeView.SelectedNode = TestTreeView.RootNodes[0].Children[0];
+                ContentModeTestTreeView.SelectedItem = TestTreeViewItemsSource[0].Children[0];
             }
             else
             {
                 TestTreeView.SelectedNode = null;
+                ContentModeTestTreeView.SelectedItem = null;
             }
         }
 

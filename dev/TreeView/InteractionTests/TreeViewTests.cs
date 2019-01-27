@@ -2411,6 +2411,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TreeViewTestSuite", "B")]
+        public void TreeViewSelectedItemTest()
+        {
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(true);
+
+                var root = new TreeItem(LabelFirstItem());
+                root.Expand();
+                Wait.ForIdle();
+
+                ClickButton("LabelItems");
+                UIObject root0 = FindElement.ById("Root.0");
+                Verify.IsNotNull(root0, "Verifying Root.0 is found");
+
+                InputHelper.Tap(root0);
+
+                ClickButton("GetSelected");
+                Verify.AreEqual("ItemSelected:Root.0", ReadResult());
+
+                ClickButton("ToggleRoot0Selection");
+
+                ClickButton("GetSelected");
+                Verify.AreEqual("", ReadResult());
+            }
+        }
+
         // Regression test for bug 16833853
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "B")]
