@@ -5,10 +5,10 @@
 
 #ifdef BUILD_WINDOWS
 
-// USE_INSIDER_SDK is defined here because the definition 
+// USE_INTERNAL_SDK is defined here because the definition 
 // in environment.props is not used in razzle. The BUILD_WINDOWS label 
 // is defined by build.cmd automatically.
-#define USE_INSIDER_SDK
+#define USE_INTERNAL_SDK
 
 #define MU_XC_NAMESPACE Windows.UI.Xaml.Controls
 #define MU_XCP_NAMESPACE Windows.UI.Xaml.Controls.Primitives
