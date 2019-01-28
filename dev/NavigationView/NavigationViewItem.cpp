@@ -48,6 +48,11 @@ void NavigationViewItem::OnApplyTemplate()
     m_helper.Init(controlProtected);
     m_navigationViewItemPresenter.set(GetTemplateChildT<winrt::NavigationViewItemPresenter>(c_navigationViewItemPresenterName, controlProtected));
 
+    if (m_navigationViewItemPresenter.get())
+    {
+        winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get())->SetDepth(GetDepth());
+    }
+
     m_toolTip.set(GetTemplateChildT<winrt::ToolTip>(L"ToolTip"sv, controlProtected));
 
     if (auto splitView = GetSplitView())
@@ -62,8 +67,6 @@ void NavigationViewItem::OnApplyTemplate()
         UpdateCompactPaneLength();
         UpdateIsClosedCompact();
     }
-
-    winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get())->SetDepth(GetDepth());
 
     RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &NavigationViewItem::OnIsSelectedChanged });
 
@@ -210,7 +213,6 @@ winrt::TreeViewNode NavigationViewItem::TreeNode()
     {
         return  winrt::get_self<NavigationViewList>(navViewList)->NodeFromContainer(*this);
     }
-
     return nullptr;
 }
 
@@ -439,13 +441,16 @@ void NavigationViewItem::UpdateSelectionIndicatorVisiblity()
 void NavigationViewItem::OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
 {
     auto selectionIndicator = GetSelectionIndicator();
-    bool isSelected = unbox_value<bool>(GetValue(args));
-    if (isSelected)
+    if (selectionIndicator)
     {
-        selectionIndicator.Opacity(1);
-    }
-    else
-    {
-        selectionIndicator.Opacity(0);
+        bool isSelected = unbox_value<bool>(GetValue(args));
+        if (isSelected)
+        {
+            selectionIndicator.Opacity(1);
+        }
+        else
+        {
+            selectionIndicator.Opacity(0);
+        }
     }
 }

@@ -1369,6 +1369,12 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
 
 void NavigationView::UpdateIsChildSelected(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem)
 {
+    // REMOVE CHECK ONCE TOP NAV FUNCTIONALITY IS IMPLEMENTED
+    if (IsTopNavigationView() || RootNodes().Size() == 0)
+    {
+        return;
+    }
+
     auto lv = GetActiveListView().try_as<winrt::NavigationViewList>();
     auto viewModel = winrt::get_self<NavigationViewList>(lv)->ListViewModel();
 

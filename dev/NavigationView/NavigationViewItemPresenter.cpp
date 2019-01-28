@@ -34,7 +34,6 @@ void NavigationViewItemPresenter::OnApplyTemplate()
     auto presenterContentGrid = GetTemplateChildT<winrt::Grid>(c_navigationViewItemPresenterContentGridName, controlProtected);
     if (presenterContentGrid)
     {
-        //TODO: Remove Magic Number
         auto leftIndentation = s_indentation * m_depth;
         auto thickness = winrt::ThicknessHelper::FromLengths(leftIndentation, 0, 0, 0);
         presenterContentGrid.Margin(thickness);
