@@ -810,11 +810,19 @@ namespace MUXControlsTestApp
             if(TestTreeView.SelectedNode == null)
             {
                 TestTreeView.SelectedNode = TestTreeView.RootNodes[0].Children[0];
-                ContentModeTestTreeView.SelectedItem = TestTreeViewItemsSource[0].Children[0];
+                
             }
             else
             {
                 TestTreeView.SelectedNode = null;
+            }
+
+            if(ContentModeTestTreeView.SelectedItem == null)
+            {
+                ContentModeTestTreeView.SelectedItem = TestTreeViewItemsSource[0].Children[0];
+            }
+            else
+            {
                 ContentModeTestTreeView.SelectedItem = null;
             }
         }
