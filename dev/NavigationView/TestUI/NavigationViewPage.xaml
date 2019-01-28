@@ -80,6 +80,13 @@
                             IsChecked="{Binding IsPaneOpen, ElementName=NavView, Mode=TwoWay}"
                             Margin="5"/>
 
+                        <CheckBox
+                            x:Name="IsPaneVisibleCheckBox"
+                            AutomationProperties.Name="IsPaneVisibleCheckBox"
+                            Content="IsPaneVisible"
+                            IsChecked="{Binding IsPaneVisible, ElementName=NavView, Mode=TwoWay}"
+                            Margin="5"/>
+
                         <Button x:Name="AddItemButton" AutomationProperties.Name="AddItemButton" Content="Add Item" Click="AddItemButton_Click"  Margin="5"/>
                         <Button x:Name="RemoveItemButton" AutomationProperties.Name="RemoveItemButton" Content="Remove Item" Click="RemoveItemButton_Click"  Margin="5"/>
                         <Button x:Name="ClearMenuButton" AutomationProperties.Name="ClearMenuButton" Content="Clear menu" Click="ClearMenuButton_Click"  Margin="5"/>
