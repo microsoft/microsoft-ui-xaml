@@ -10,9 +10,9 @@ jobs:
       Debug_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Debug'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
+      # Release_x64:
+      #   buildPlatform: 'x64'
+      #   buildConfiguration: 'Release'
 
   variables:
   - name: appxPackageDir
@@ -23,13 +23,13 @@ jobs:
     value: $(Build.ArtifactStagingDirectory)
 
   steps:
-  - template: AzurePipelinesTemplates\MUX-BuildProject-Steps.yml
-    parameters:
-      solutionPath: MUXControls.sln
-      nugetConfigPath: nuget.config
-      appxPackageDir: $(appxPackageDir)
-      buildOutputDir: $(buildOutputDir)
-      publishDir: $(publishDir)
+  # - template: AzurePipelinesTemplates\MUX-BuildProject-Steps.yml
+  #   parameters:
+  #     solutionPath: MUXControls.sln
+  #     nugetConfigPath: nuget.config
+  #     appxPackageDir: $(appxPackageDir)
+  #     buildOutputDir: $(buildOutputDir)
+  #     publishDir: $(publishDir)
 
   - task: powershell@2
     displayName: 'Copy files to staging dir'
@@ -38,28 +38,28 @@ jobs:
       filePath: build\CopyFilesToStagingDir.ps1
       arguments: -BuildOutputDir '$(buildOutputDir)' -PublishDir '$(publishDir)' -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
 
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish artifact: drop'
-    inputs:
-      PathtoPublish: '$(publishDir)'
-      artifactName: 'drop'
+#   - task: PublishBuildArtifacts@1
+#     displayName: 'Publish artifact: drop'
+#     inputs:
+#       PathtoPublish: '$(publishDir)'
+#       artifactName: 'drop'
 
-# Create Nuget Package
-- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
-  parameters:
-    jobName: CreateNugetPackage
-    dependsOn: Build
-    primaryBuildArch: x64
+# # Create Nuget Package
+# - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+#   parameters:
+#     jobName: CreateNugetPackage
+#     dependsOn: Build
+#     primaryBuildArch: x64
   
-# Build solution that depends on nuget package
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    dependsOn: CreateNugetPackage
-    useNupkgFromArtifacts: true
-    matrix: 
-      Debug_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Debug'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
+# # Build solution that depends on nuget package
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     dependsOn: CreateNugetPackage
+#     useNupkgFromArtifacts: true
+#     matrix: 
+#       Debug_x64:
+#         buildPlatform: 'x64'
+#         buildConfiguration: 'Debug'
+#       Release_x64:
+#         buildPlatform: 'x64'
+#         buildConfiguration: 'Release'
