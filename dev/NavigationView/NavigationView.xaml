@@ -130,6 +130,19 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="PaneVisibilityGroup">
+                                <VisualState x:Name="PaneVisible" />
+                                <VisualState x:Name="PaneCollapsed">
+                                    <VisualState.Setters>
+                                        <!-- Note that RootSplitView.DisplayMode is set in code so we don't want to -->
+                                        <!-- write it here and interfere. But these values work together to hide -->
+                                        <!-- the left pane. -->
+                                        <Setter Target="RootSplitView.CompactPaneLength" Value="0" />
+                                        <Setter Target="PaneToggleButtonGrid.Visibility" Value="Collapsed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Grid

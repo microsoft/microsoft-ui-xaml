@@ -348,9 +348,13 @@ namespace MUXControlsTestApp
 
                 if (_iteration_RunHideAndShowWindow == 1)
                 {
-                    // Validate that Brush has been recreated following Suspend/Resume
+                    // Validate that on MUX Brush is recreated following Suspend/Resume, while in WUXC it is not.
                     CompositionBrush currentComposotionBrush = UpdateCompositionBrush();
+#if BUILD_WINDOWS
+                    result = Object.ReferenceEquals(_previousCompositionBrush, currentComposotionBrush);
+#else
                     result = !Object.ReferenceEquals(_previousCompositionBrush, currentComposotionBrush);
+#endif
                 }
 
                 // Unset all override flags to avoid impacting subsequent tests

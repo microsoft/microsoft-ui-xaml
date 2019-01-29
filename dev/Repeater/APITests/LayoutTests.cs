@@ -61,7 +61,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         var element0 = context.GetOrCreateElementAt(index: 0);
                         // lookup - repeater will give back the same element and note that this element will not
                         // be pinned - i.e it will be auto recycled after a measure pass where GetElementAt(0) is not called.
-                        var element0lookup = context.GetOrCreateElementAt(index: 0, options:ElementRealizationOptions.None);
+                        var element0lookup = context.GetOrCreateElementAt(index: 0, options: ElementRealizationOptions.None);
 
                         var element1 = context.GetOrCreateElementAt(index: 1, options: ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
                         // forcing a new element for index 1 that will be pinned (not auto recycled). This will be 
@@ -100,6 +100,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void ValidateNonVirtualLayoutWithItemsRepeater()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater();
+                repeater.Layout = new NonVirtualStackLayout();
+                repeater.ItemsSource = Enumerable.Range(0, 10);
+                repeater.ItemTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                         <Button Content='{Binding}' Height='100' />
+                    </DataTemplate>");
+
+                Content = repeater;
+                Content.UpdateLayout();
+
+                double expectedYOffset = 0;
+                for (int i = 0; i < repeater.ItemsSourceView.Count; i++)
+                {
+                    var child = repeater.TryGetElement(i) as Button;
+                    Verify.IsNotNull(child);
+                    var layoutBounds = LayoutInformation.GetLayoutSlot(child);
+                    Verify.AreEqual(expectedYOffset, layoutBounds.Y);
+                    Verify.AreEqual(i, child.Content);
+                    expectedYOffset += 100;
+                }
+            });
+        }
+
         private ScrollAnchorProvider CreateAndInitializeRepeater(
            object itemsSource,
            VirtualizingLayout layout,
@@ -120,7 +149,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 VerticalCacheLength = 0,
             };
 
-            scrollViewer = new ScrollViewer()
+            scrollViewer = new ScrollViewer() 
             {
                 Content = repeater
             };
