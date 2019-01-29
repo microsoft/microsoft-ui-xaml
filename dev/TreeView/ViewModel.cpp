@@ -54,19 +54,8 @@ public:
     {
         if (!Contains(node))
         {
-            // UpdateSelection will call AppendAtCore
+            // UpdateSelection will call InsertAtCore
             UpdateSelection(node, TreeNodeSelectionState::Selected);
-
-            auto selectedItems = m_viewModel->GetSelectedItems();
-            if (selectedItems.Size() != Size())
-            {
-                auto treeViewList = winrt::get_self<TreeViewList>(m_viewModel->ListControl().get());
-                if (auto container = treeViewList->ContainerFromNode(node))
-                {
-                    auto item = treeViewList->ItemFromContainer(container);
-                    selectedItems.InsertAt(index, item);
-                }
-            }
         }
     }
 
@@ -82,12 +71,6 @@ public:
         auto oldNode = winrt::get_self<TreeViewNode>(inner->GetAt(index));
         // UpdateNodeSelection will call RemoveAtCore
         UpdateSelection(*oldNode, TreeNodeSelectionState::UnSelected);
-
-        auto selectedItems = m_viewModel->GetSelectedItems();
-        if (Size() != selectedItems.Size())
-        {
-            selectedItems.RemoveAt(index);
-        }
     }
 
     void RemoveAtEnd()
@@ -121,14 +104,31 @@ public:
 
     // Default write methods will trigger TreeView visual updates.
     // If you want to update vector content without notifying TreeViewNodes, use "core" version of the methods.
-    void AppendCore(winrt::TreeViewNode const& node)
+    void InsertAtCore(unsigned int index, winrt::TreeViewNode const& node)
     {
-        GetVectorInnerImpl()->Append(node);
+        GetVectorInnerImpl()->InsertAt(index, node);
+
+        auto selectedItems = m_viewModel->GetSelectedItems();
+        if (selectedItems.Size() != Size())
+        {
+            auto treeViewList = winrt::get_self<TreeViewList>(m_viewModel->ListControl().get());
+            if (auto container = treeViewList->ContainerFromNode(node))
+            {
+                auto item = treeViewList->ItemFromContainer(container);
+                selectedItems.InsertAt(index, item);
+            }
+        }
     }
 
     void RemoveAtCore(unsigned int index)
     {
         GetVectorInnerImpl()->RemoveAt(index);
+
+        auto selectedItems = m_viewModel->GetSelectedItems();
+        if (Size() != selectedItems.Size())
+        {
+            selectedItems.RemoveAt(index);
+        }
     }
 };
 
@@ -678,7 +678,7 @@ void ViewModel::UpdateNodeSelection(winrt::TreeViewNode const& selectNode, TreeN
         switch (selectionState)
         {
         case TreeNodeSelectionState::Selected:
-            selectedNodes->AppendCore(selectNode);
+            selectedNodes->InsertAtCore(selectedNodes->Size(), selectNode);
             m_selectedNodeChildrenChangedEventTokenVector.push_back(winrt::get_self<TreeViewNode>(selectNode)->ChildrenChanged({ this, &ViewModel::SelectedNodeChildrenChanged }));
             break;
 
