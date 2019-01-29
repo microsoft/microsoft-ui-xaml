@@ -564,7 +564,7 @@
       <FileWrites Include="$(OutDir)rs2_generic.xaml" />
     </ItemGroup>
   </Target>
-  <Target Name="GenerateRS3GenericXamlFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage)" Outputs="$(OutDir)rs3_generic.xaml;">
+  <Target Name="GenerateRS3GenericXamlFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage)" Outputs="$(OutDir)rs3_generic.xaml;$(OutDir)rs3_generic.prefixed.xaml">
     <Message Text="Generating default style XAML file for RS3..." />
     <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs3_generic.prefixed.xaml&quot; -XamlFileList &quot;@(RS1StylePage);@(RS2StylePage);@(RS3StylePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs3_generic.prefixed.xaml" />
     <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs3_generic.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs3_generic.prefixed.xaml&quot; -ForVersion RS3" FilesWritten="$(OutDir)rs3_generic.xaml" />
@@ -582,7 +582,7 @@
       <FileWrites Include="$(OutDir)rs3_generic.xaml" />
     </ItemGroup>
   </Target>
-  <Target Name="GenerateRS4GenericXamlFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage)" Outputs="$(OutDir)rs4_generic.xaml;">
+  <Target Name="GenerateRS4GenericXamlFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage)" Outputs="$(OutDir)rs4_generic.xaml;$(OutDir)rs4_generic.prefixed.xaml">
     <Message Text="Generating default style XAML file for RS4..." />
     <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs4_generic.prefixed.xaml&quot; -XamlFileList &quot;@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs4_generic.prefixed.xaml" />
     <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs4_generic.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs4_generic.prefixed.xaml&quot; -ForVersion RS4" FilesWritten="$(OutDir)rs4_generic.xaml" />
@@ -601,7 +601,7 @@
       <FileWrites Include="$(OutDir)rs4_generic.xaml" />
     </ItemGroup>
   </Target>
-  <Target Name="GenerateRS5GenericXamlFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage)" Outputs="$(OutDir)rs5_generic.xaml;">
+  <Target Name="GenerateRS5GenericXamlFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage)" Outputs="$(OutDir)rs5_generic.xaml;$(OutDir)rs5_generic.prefixed.xaml">
     <Message Text="Generating default style XAML file for RS5..." />
     <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs5_generic.prefixed.xaml&quot; -XamlFileList &quot;@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs5_generic.prefixed.xaml" />
     <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs5_generic.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs5_generic.prefixed.xaml&quot; -ForVersion RS5" FilesWritten="$(OutDir)rs5_generic.xaml" />
