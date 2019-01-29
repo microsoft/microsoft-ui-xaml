@@ -28,6 +28,7 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SplitButton\TestUI\SplitButton_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SwipeControl\SwipeControl_TestUI\SwipeControl_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TeachingTip\TestUI\TeachingTip_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TeachingTip\APITests\TeachingTip_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TreeView\TestUI\TreeView_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TwoPaneView\TestUI\TwoPaneView_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ColorPicker\APITests\ColorPicker_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />

@@ -15,8 +15,7 @@
                           MinWidth="{StaticResource TeachingTipTotalMinWidth}"
                           MaxHeight="{StaticResource TeachingTipTotalMaxHeight}"
                           MaxWidth="{StaticResource TeachingTipTotalMaxWidth}"
-                          Background="Transparent"
-                          IsHitTestVisible="False">
+                          Background="Transparent">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
                             <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>
@@ -444,8 +443,7 @@
                               MaxHeight="{ThemeResource TeachingTipMaxHeight}"
                               MaxWidth="{ThemeResource TeachingTipMaxWidth}"
                               Grid.ColumnSpan="5"
-                              Grid.RowSpan="5"
-                              IsHitTestVisible="False">
+                              Grid.RowSpan="5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
                                 <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>
