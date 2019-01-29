@@ -36,33 +36,33 @@ namespace DEPControlsTestApp
 
             flatStackButton.Click += (sender, args) =>
             {
+                itemsView.ItemsSource = null;
                 itemsView.ViewDefinition = flatStackDefinition;
-                if (isGrouped)
-                    itemsView.ItemsSource = Items;
+                itemsView.ItemsSource = Items;
                 isGrouped = false;
             };
 
             flatFlowButton.Click += (sender, args) =>
             {
+                itemsView.ItemsSource = null;
                 itemsView.ViewDefinition = flatFlowDefinition;
-                if (isGrouped)
-                    itemsView.ItemsSource = Items;
+                itemsView.ItemsSource = Items;
                 isGrouped = false;
             };
 
             flatTableButton.Click += (sender, args) =>
             {
+                itemsView.ItemsSource = null;
                 itemsView.ViewDefinition = flatTableDefinition;
-                if (isGrouped)
-                    itemsView.ItemsSource = Items;
+                itemsView.ItemsSource = Items;
                 isGrouped = false;
             };
 
             groupedTableButton.Click += (sender, args) =>
             {
+                itemsView.ItemsSource = null;
                 itemsView.ViewDefinition = groupedTableDefinition;
-                if (!isGrouped)
-                    itemsView.ItemsSource = ItemsGroupedByParentMountain;
+                itemsView.ItemsSource = ItemsGroupedByParentMountain;
                 // itemsView.ChildrenRequested += ItemsView_ChildrenRequested;
                 isGrouped = true;
             };
@@ -70,7 +70,7 @@ namespace DEPControlsTestApp
             itemsView.SortFunc = SortItems;
             itemsView.FilterFunc = FilterItems;
         }
-
+        
         private void FileExplorerScenario_Loaded(object sender, RoutedEventArgs e)
         {
             LoadItems();
