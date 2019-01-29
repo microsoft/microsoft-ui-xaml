@@ -2361,6 +2361,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 root.Expand();
                 Wait.ForIdle();
 
+                //SelectedNodes vector changes should be reflected on UI
                 ClickButton("GetMultiSelectCheckBoxStates");
                 Verify.AreEqual("u|u|u|u|", ReadResult());
 
@@ -2426,7 +2427,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 root.Expand();
                 Wait.ForIdle();
 
-                //SelectedItems changes vector should be reflected on UI
+                //SelectedItems vector changes should be reflected on UI
                 ClickButton("GetMultiSelectCheckBoxStates");
                 Verify.AreEqual("u|u|u|u|", ReadResult());
 

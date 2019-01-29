@@ -108,6 +108,7 @@ public:
     {
         GetVectorInnerImpl()->InsertAt(index, node);
 
+        // Keep SelectedItems and SelectedNodes in sync
         auto selectedItems = m_viewModel->GetSelectedItems();
         if (selectedItems.Size() != Size())
         {
@@ -123,6 +124,7 @@ public:
     {
         GetVectorInnerImpl()->RemoveAt(index);
 
+        // Keep SelectedItems and SelectedNodes in sync
         auto selectedItems = m_viewModel->GetSelectedItems();
         if (Size() != selectedItems.Size())
         {
@@ -133,6 +135,8 @@ public:
 
 #pragma endregion
 
+// Similiar to SelectedNodesVector above, we need to make decisitions before the item is inserted or removed.
+// we can't use vector change events because the event already happened when event hander gets called.
 #pragma region SelectedItemsVector
 
 typedef typename VectorOptionsFromFlag<winrt::IInspectable, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()> SelectedItemsVectorOptions;
@@ -167,6 +171,7 @@ public:
         {
             GetVectorInnerImpl()->InsertAt(index, item);
 
+            // Keep SelectedNodes and SelectedItems in sync
             auto selectedNodes = m_viewModel->GetSelectedNodes();
             if (selectedNodes.Size() != Size())
             {
@@ -192,6 +197,7 @@ public:
     {
         GetVectorInnerImpl()->RemoveAt(index);
 
+        // Keep SelectedNodes and SelectedItems in sync
         auto selectedNodes = m_viewModel->GetSelectedNodes();
         if (Size() != selectedNodes.Size())
         {
