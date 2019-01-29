@@ -108,15 +108,5 @@
     <Page Include="$(OutDir)Generic.xaml" />
     <Page Include="$(OutDir)rs1_themeresources.xaml" />
     <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
   </ItemGroup>
 </Project>

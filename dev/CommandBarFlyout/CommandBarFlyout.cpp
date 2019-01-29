@@ -12,7 +12,7 @@ CommandBarFlyout::CommandBarFlyout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_CommandBarFlyout);
 
-#ifdef USE_INTERNAL_SDK
+#ifdef USE_INSIDER_SDK
     if (winrt::IFlyoutBase6 thisAsFlyoutBase6 = *this)
     {
         thisAsFlyoutBase6.ShouldConstrainToRootBounds(false);

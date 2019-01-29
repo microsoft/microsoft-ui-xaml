@@ -292,7 +292,7 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(bool useTransitions)
             bool isConstrainedToRootBounds = true;
             auto controlBounds = TransformToVisual(nullptr).TransformBounds({ 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()) });
             
-#ifdef USE_INTERNAL_SDK
+#ifdef USE_INSIDER_SDK
             if (winrt::IFlyoutBase6 owningFlyoutAsFlyoutBase6 = m_owningFlyout.get())
             {
                 isConstrainedToRootBounds = owningFlyoutAsFlyoutBase6.IsConstrainedToRootBounds();
