@@ -122,8 +122,8 @@ private:
     winrt::Application::Suspending_revoker m_suspendingRevoker{};
     winrt::Application::Resuming_revoker m_resumingRevoker{};
     winrt::CoreWindow::VisibilityChanged_revoker m_visibilityChangedRevoker{};
-    winrt::event_token m_loadedRevoker{};
-    winrt::event_token m_unloadedRevoker{};
+    winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
+    winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
 
     //
     // Player mutable state state.
@@ -136,7 +136,7 @@ private:
     double m_currentPlayFromProgress{ 0 };
     // The play that will be stopped when Stop() is called.
     std::shared_ptr<AnimationPlay> m_nowPlaying{ nullptr };
-    winrt::event_token m_dynamicAnimatedVisualInvalidatedToken;
+    winrt::IDynamicAnimatedVisualSource::AnimatedVisualInvalidated_revoker  m_dynamicAnimatedVisualInvalidatedRevoker{};
 
     // Set true if an animated visual has failed to load and set false the next time an animated
     // visual loads with non-null content. When this is true the fallback content (if any) will

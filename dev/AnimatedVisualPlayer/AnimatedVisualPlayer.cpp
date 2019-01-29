@@ -115,6 +115,17 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
             m_batchCompletedToken = m_batch.Completed([this](winrt::IInspectable const&, winrt::CompositionBatchCompletedEventArgs const&)
             {
                 // Complete the play when the batch completes.
+                //
+                // The "this" pointer is guaranteed to be valid because:
+                // 1) The AnimationPlay (*this) is kept alive by a reference from m_owner.m_nowPlaying that
+                //    is only reset by a call to the AnimationPlay::Complete() method.
+                // 2) Before m_owner.m_nowPlaying is reset in AnimationPlay::Complete(),
+                //    the m_batch.Completed event is unsubscribed, guaranteeing that this lambda
+                //    will not run after AnimationPlay::Complete() has been called.
+                // 3) To handle AnimatedVisualPlayer shutdown, AnimationPlay::Complete() is called when
+                //    the AnimatedVisualPlayer is unloaded, so that the AnimationPlay cannot outlive
+                //    the AnimatedVisualPlayer.
+                //
                 // Do not do anything after calling Complete()... the object is destructed already.
                 this->Complete();
             });
@@ -128,7 +139,7 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
 
 bool AnimatedVisualPlayer::AnimationPlay::IsCurrentPlay()
 {
-    return &*(m_owner.m_nowPlaying) == this;
+    return m_owner.m_nowPlaying.get() == this;
 }
 
 void AnimatedVisualPlayer::AnimationPlay::SetPlaybackRate(float value)
@@ -218,7 +229,7 @@ void AnimatedVisualPlayer::AnimationPlay::Complete()
     //     is unloaded.
     //  3. Completion as a result of a call to SetProgress is always synchronous and is
     //     called from the AnimatedVisualPlayer.
-    //  4. If the batch completion event fires, the AnimatedVisualPlayer must still
+    //  4. If the batch completion event fires, the AnimatedVisualPlayer must still be
     //     alive because if it had been unloaded Complete() would have been called
     //     during the unload which would have unsubscribed from the batch completion
     //     event.
@@ -313,8 +324,8 @@ AnimatedVisualPlayer::AnimatedVisualPlayer()
 
     // Subscribe to the Loaded/Unloaded events to ensure we unload the animated visual then reload
     // when it is next loaded.
-    m_loadedRevoker = Loaded({ this, &AnimatedVisualPlayer::OnLoaded });
-    m_unloadedRevoker = Unloaded({ this, &AnimatedVisualPlayer::OnUnloaded });
+    m_loadedRevoker = Loaded(winrt::auto_revoke, { this, &AnimatedVisualPlayer::OnLoaded });
+    m_unloadedRevoker = Unloaded(winrt::auto_revoke, { this, &AnimatedVisualPlayer::OnUnloaded });
 }
 
 AnimatedVisualPlayer::~AnimatedVisualPlayer()
@@ -774,19 +785,21 @@ void AnimatedVisualPlayer::OnSourcePropertyChanged(winrt::IAnimatedVisualSource 
 {
     CompleteCurrentPlay();
 
-    if (auto oldDynamicSource = oldSource.try_as<winrt::IDynamicAnimatedVisualSource>())
-    {
-        // Disconnect from the update notifications of the old source.
-        oldDynamicSource.AnimatedVisualInvalidated(m_dynamicAnimatedVisualInvalidatedToken);
-        m_dynamicAnimatedVisualInvalidatedToken = { 0 };
-    }
+    // Disconnect from the update notifications of the old source.
+    m_dynamicAnimatedVisualInvalidatedRevoker.revoke();
 
     if (auto newDynamicSource = newSource.try_as<winrt::IDynamicAnimatedVisualSource>())
     {
         // Connect to the update notifications of the new source.
-        m_dynamicAnimatedVisualInvalidatedToken = newDynamicSource.AnimatedVisualInvalidated([this](auto const& /*sender*/, auto const&)
+        m_dynamicAnimatedVisualInvalidatedRevoker
+            = newDynamicSource.AnimatedVisualInvalidated(winrt::auto_revoke, [weakThis{ get_weak() }](
+                auto const& /*sender*/,
+                auto const& /*e*/)
         {
-            UpdateContent();
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->UpdateContent();
+            }
         });
     }
 
