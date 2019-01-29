@@ -152,6 +152,7 @@ unsealed runtimeclass TreeView : Windows.UI.Xaml.Controls.Control
     {
         TreeViewNode SelectedNode{ get; set; };
         Object SelectedItem{ get; set; };
+        Windows.Foundation.Collections.IVector<Object> SelectedItems{ get; };
     }
 }
 

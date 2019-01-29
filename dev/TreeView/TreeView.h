@@ -33,6 +33,7 @@ public:
 
     void SelectedItem(winrt::IInspectable const& item);
     winrt::IInspectable SelectedItem();
+    winrt::IVector<winrt::IInspectable> SelectedItems();
 
     void Expand(winrt::TreeViewNode const& value);
     void Collapse(winrt::TreeViewNode const& value);
@@ -56,7 +57,6 @@ private:
     void SyncRootNodesWithItemsSource();
     void OnItemsAdded(int index, int count);
     void OnItemsRemoved(int index, int count);
-    winrt::TreeViewNode NodeFromItem(winrt::IInspectable const& item);
 
 public:
     // IFrameworkElementOverrides

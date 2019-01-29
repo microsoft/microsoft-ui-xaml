@@ -683,6 +683,12 @@ winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode cons
     return ContainerFromItem(node);
 }
 
+winrt::TreeViewNode TreeViewList::NodeFromItem(winrt::IInspectable const& item)
+{
+    auto container = ContainerFromItem(item);
+    return container ? NodeFromContainer(container) : nullptr;
+}
+
 bool TreeViewList::IsContentMode()
 {
     if (auto viewModel = ListViewModel())
