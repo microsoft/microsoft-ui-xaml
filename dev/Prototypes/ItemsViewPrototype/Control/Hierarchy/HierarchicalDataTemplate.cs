@@ -7,6 +7,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Markup;
+using Windows.UI.Xaml.Media;
 
 namespace DEPControlsTestApp.ItemsViewPrototype
 {
@@ -118,6 +119,13 @@ namespace DEPControlsTestApp.ItemsViewPrototype
                 args.Data = context.Data;
                 args.Parent = context.Parent;
                 root = this.Template.GetElement(args);
+                var parent = VisualTreeHelper.GetParent(root);
+                if (parent != null)
+                {
+                    // Bug 19643272: ItemsRepeater - Unable to explicitly detach recycled element from being parented to ItemsRepeater.
+                    // https://microsoft.visualstudio.com/OS/_queries/edit/19643272
+                    root = this.Template.LoadContent() as UIElement;
+                }
             }
             else
             {

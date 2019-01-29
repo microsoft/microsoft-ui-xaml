@@ -146,6 +146,7 @@ namespace DEPControlsTestApp
 
         private void OnSwitchViewClicked(object sender, RoutedEventArgs e)
         {
+            itemsView.ItemsSource = null;
             var view = (sender as Button).Tag as string;
             itemsView.ViewDefinition = Resources[view] as ViewDefinitionBase;
 
