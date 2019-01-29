@@ -63,3 +63,4 @@ jobs:
 #       Release_x64:
 #         buildPlatform: 'x64'
 #         buildConfiguration: 'Release'
+
