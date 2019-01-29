@@ -50,6 +50,14 @@ namespace DEPControlsTestApp
                 isGrouped = false;
             };
 
+            iconFlowButton.Click += (sender, args) =>
+            {
+                itemsView.ViewDefinition = iconFlowDefinition;
+                if (isGrouped)
+                    itemsView.ItemsSource = Items;
+                isGrouped = false;
+            };
+
             flatTableButton.Click += (sender, args) =>
             {
                 itemsView.ViewDefinition = flatTableDefinition;
@@ -395,6 +403,14 @@ namespace DEPControlsTestApp
         public string Parent_mountain { get; set; }
         public uint First_ascent { get; set; }
         public string Ascents { get; set; }
+        public Uri ImageUri
+        {
+            get
+            {
+                return new Uri(string.Format("ms-appx:///Assets/mountain{0}.jpg", (Rank % 3) + 1));
+            }
+        }
+
 
         public Geopoint mapCenter { get; set; }
     }
