@@ -52,9 +52,9 @@ namespace DEPControlsTestApp
 
             iconFlowButton.Click += (sender, args) =>
             {
+                itemsView.ItemsSource = null;
                 itemsView.ViewDefinition = iconFlowDefinition;
-                if (isGrouped)
-                    itemsView.ItemsSource = Items;
+                itemsView.ItemsSource = Items;
                 isGrouped = false;
             };
 

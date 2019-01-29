@@ -70,7 +70,7 @@
         <l:ViewDefinition Layout="{StaticResource iconFlowLayout}" x:Name="iconFlowDefinition">
             <l:ViewDefinition.ItemTemplate>
                 <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
-                    <DataTemplate x:Key="GridItemTemplate" x:DataType="dep:Item">
+                    <DataTemplate x:Key="IconItemTemplate" x:DataType="dep:Item">
                         <l:ItemContainer Layout="{StaticResource iconItemLayout}" Background="LightGray" BorderBrush="Gray" BorderThickness="1">
                             <Image Grid.Column="0" Width="60" Height="60">
                                 <Image.Source>
