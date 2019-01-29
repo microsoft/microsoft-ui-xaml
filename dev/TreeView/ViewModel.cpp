@@ -653,11 +653,6 @@ void ViewModel::NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targ
                     winrt::get_self<NavigationViewItem>(targetItem)->IsChildSelected(isChildSelected);
                 }
             }
-            // This is special case for when a MenuItem is declared in markup and is hidden
-            else if (auto nviContainer = targetNode.Content().try_as<winrt::NavigationViewItem>())
-            {
-                nviContainer.IsChildSelected(isChildSelected);
-            }
         }
     }
 }

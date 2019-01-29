@@ -100,5 +100,7 @@ private:
 
     void UpdateIsExpanded(winrt::TreeViewNode node);
     void UpdateSelectionIndicatorVisiblity();
-    void OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args);
+    void PropagateDepth();
+
+    void OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
 };

@@ -30,4 +30,6 @@ private:
     NavigationViewItemHelper<NavigationViewItemPresenter> m_helper{ this };
 
     int m_depth{ 0 };
+
+    void UpdateIndentations();
 };
