@@ -10,6 +10,12 @@ namespace DEPControlsTestApp.ItemsViewPrototype
 
         public string DisplayMemberPath { get; set; }
 
+        public override string ColumnName
+        {
+            get { return string.IsNullOrWhiteSpace(_columnName) ? DisplayMemberPath : _columnName; }
+            set { _columnName = value; }
+        }
+
         protected override UIElement GetHeaderCore()
         {
             return new TextBlock()
@@ -31,5 +37,6 @@ namespace DEPControlsTestApp.ItemsViewPrototype
         }
 
         private DataTemplate _template;
+        private string _columnName;
     }
 }
