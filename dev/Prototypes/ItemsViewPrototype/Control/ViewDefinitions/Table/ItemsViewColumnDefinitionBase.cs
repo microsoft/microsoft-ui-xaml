@@ -7,6 +7,8 @@ namespace DEPControlsTestApp.ItemsViewPrototype
     // Would implementations of this base type want to add dependency properties?
     public class ItemsViewColumnDefinitionBase: DependencyObject
     {
+        public virtual string ColumnName { get; set; }
+
         protected ItemsViewColumnDefinitionBase()
         {
         }

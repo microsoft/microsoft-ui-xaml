@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:l="using:DEPControlsTestApp.ItemsViewPrototype"
+    xmlns:dep="using:DEPControlsTestApp"
     xmlns:muxcp="using:Microsoft.UI.Xaml.Controls.Primitives"
     mc:Ignorable="d">
 
@@ -13,17 +14,38 @@
         <l:RecyclePool x:Name="recyclePool" />
         <c:StackLayout x:Name="stackLayout" Spacing="5" />
         <c:UniformGridLayout x:Name="gridLayout" MinItemWidth="200" MinItemHeight="30" Orientation="Horizontal"/>
+        <c:FlowLayout x:Name="iconItemLayout"  MinRowSpacing="5" MinColumnSpacing="5" Orientation="Vertical" LineAlignment="SpaceBetween"/>
+        <c:FlowLayout x:Name="iconFlowLayout"  MinRowSpacing="5" MinColumnSpacing="5" LineAlignment="Start"/>
         <c:FlowLayout x:Name="flowLayout"  MinRowSpacing="5" MinColumnSpacing="5" LineAlignment="SpaceBetween"/>
 
+        <DataTemplate x:Name="rankTemplate" x:DataType="dep:Item">
+            <TextBlock Text="{x:Bind Rank}" />
+        </DataTemplate>
+
+        <DataTemplate x:Name="mountainTemplate" x:DataType="dep:Item">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0" Width="20" Height="20">
+                    <Image.Source>
+                        <BitmapImage UriSource="{x:Bind ImageUri}" />
+                    </Image.Source>
+                </Image>
+                <TextBlock Grid.Column="1" Text="{x:Bind Mountain}" />
+            </Grid>
+        </DataTemplate>
+        
         <l:ViewDefinition Layout="{StaticResource stackLayout}" x:Name="flatStackDefinition">
             <l:ViewDefinition.ItemTemplate>
                 <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}" >
-                    <DataTemplate x:Key="StackItemTemplate">
+                    <DataTemplate x:Key="StackItemTemplate" x:DataType="dep:Item">
                         <l:ItemContainer Layout="{StaticResource stackLayout}" Background="LightGray">
-                            <TextBlock Text="{Binding Rank}" />
-                            <TextBlock Text="{Binding Mountain}" />
-                            <TextBlock Text="{Binding Height_m}" />
-                            <TextBlock Text="{Binding Range}" />
+                            <TextBlock Text="{x:Bind Rank}" />
+                            <TextBlock Text="{x:Bind Mountain}" />
+                            <TextBlock Text="{x:Bind Height_m}" />
+                            <TextBlock Text="{x:Bind Range}" />
                         </l:ItemContainer>
                     </DataTemplate>
                 </c:RecyclingElementFactory>
@@ -33,19 +55,35 @@
         <l:ViewDefinition Layout="{StaticResource flowLayout}" x:Name="flatFlowDefinition">
             <l:ViewDefinition.ItemTemplate>
                 <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
-                    <DataTemplate x:Key="GridItemTemplate">
+                    <DataTemplate x:Key="GridItemTemplate" x:DataType="dep:Item">
                         <l:ItemContainer Layout="{StaticResource gridLayout}" Background="LightGray" BorderBrush="Gray" BorderThickness="1">
-                            <TextBlock Text="{Binding Rank}" />
-                            <TextBlock Text="{Binding Mountain}" />
-                            <TextBlock Text="{Binding Height_m}" />
-                            <TextBlock Text="{Binding Range}" />
+                            <TextBlock Text="{x:Bind Rank}" />
+                            <TextBlock Text="{x:Bind Mountain}" />
+                            <TextBlock Text="{x:Bind Height_m}" />
+                            <TextBlock Text="{x:Bind Range}" />
                         </l:ItemContainer>
                     </DataTemplate>
                 </c:RecyclingElementFactory>
             </l:ViewDefinition.ItemTemplate>
         </l:ViewDefinition>
 
-        
+        <l:ViewDefinition Layout="{StaticResource iconFlowLayout}" x:Name="iconFlowDefinition">
+            <l:ViewDefinition.ItemTemplate>
+                <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
+                    <DataTemplate x:Key="IconItemTemplate" x:DataType="dep:Item">
+                        <l:ItemContainer Layout="{StaticResource iconItemLayout}" Background="LightGray" BorderBrush="Gray" BorderThickness="1">
+                            <Image Grid.Column="0" Width="60" Height="60">
+                                <Image.Source>
+                                    <BitmapImage UriSource="{x:Bind ImageUri}" />
+                                </Image.Source>
+                            </Image>
+                            <TextBlock Text="{x:Bind Mountain}" Width="60" TextWrapping="Wrap"/>
+                        </l:ItemContainer>
+                    </DataTemplate>
+                </c:RecyclingElementFactory>
+            </l:ViewDefinition.ItemTemplate>
+        </l:ViewDefinition>
+
         <l:ItemsViewTextColumnDefinition DisplayMemberPath="Rank" x:Key="Rank"/>
         <l:ItemsViewTextColumnDefinition DisplayMemberPath="Mountain" x:Key="Mountain"/>
         <l:ItemsViewTextColumnDefinition DisplayMemberPath="Height_m" Heading="Height (m)" x:Key="Height_m"/>
@@ -58,8 +96,8 @@
         
 
         <l:TableDefinition x:Name="flatTableDefinition">
-            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Rank"/>
-            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Mountain"/>
+            <l:ItemsViewColumnDefinition ColumnName="Rank" Heading="Rank" CellTemplate="{StaticResource rankTemplate}"/>
+            <l:ItemsViewColumnDefinition ColumnName="Mountain" Heading="Mountain" CellTemplate="{StaticResource mountainTemplate}"/>
             <l:ItemsViewTextColumnDefinition DisplayMemberPath="Height_m" Heading="Height (m)"/>
             <l:ItemsViewTextColumnDefinition DisplayMemberPath="Range"/>
             <l:ItemsViewTextColumnDefinition DisplayMemberPath="Coordinates"/>
@@ -102,6 +140,7 @@
             <StackPanel Orientation="Horizontal">
                 <Button Content="Stack" x:Name="flatStackButton"/>
                 <Button Content="Flow" x:Name="flatFlowButton" />
+                <Button Content="IconFlow" x:Name="iconFlowButton" />
                 <Button Content="Table" x:Name="flatTableButton" />
                 <Button Content="GroupedTable" x:Name="groupedTableButton" />
             </StackPanel>
