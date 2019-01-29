@@ -112,9 +112,8 @@ public:
         if (selectedItems.Size() != Size())
         {
             auto treeViewList = winrt::get_self<TreeViewList>(m_viewModel->ListControl().get());
-            if (auto container = treeViewList->ContainerFromNode(node))
+            if (auto item = treeViewList->ItemFromNode(node))
             {
-                auto item = treeViewList->ItemFromContainer(container);
                 selectedItems.InsertAt(index, item);
             }
         }

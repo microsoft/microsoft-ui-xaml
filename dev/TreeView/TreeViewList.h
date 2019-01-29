@@ -47,6 +47,7 @@ public:
     winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
     winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
     winrt::TreeViewNode NodeFromItem(winrt::IInspectable const& item);
+    winrt::IInspectable ItemFromNode(winrt::TreeViewNode const& node);
     com_ptr<ViewModel> ListViewModel() const;
     void ListViewModel(com_ptr<ViewModel> viewModel);
     winrt::TreeViewNode DraggedTreeViewNode();
