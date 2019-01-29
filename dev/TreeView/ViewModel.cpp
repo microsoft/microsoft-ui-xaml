@@ -228,18 +228,6 @@ public:
         uint32_t index;
         return GetVectorInnerImpl()->IndexOf(item, index);
     }
-
-    // Default write methods will trigger TreeView visual updates.
-    // If you want to update vector content without notifying TreeViewNodes, use "core" version of the methods.
-    void AppendCore(winrt::IInspectable const& item)
-    {
-        GetVectorInnerImpl()->Append(item);
-    }
-
-    void RemoveAtCore(unsigned int index)
-    {
-        GetVectorInnerImpl()->RemoveAt(index);
-    }
 };
 
 #pragma endregion
