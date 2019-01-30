@@ -40,3 +40,4 @@ Copy-Item "build\helix\runtests.cmd" $payloadDir
 New-Item -ItemType Directory -Force -Path "$payloadDir\scripts"
 Copy-Item "build\helix\ConvertWttLogToXUnit.ps1" "$payloadDir\scripts"
 Copy-Item "build\helix\ConvertWttLogToXUnit.cs" "$payloadDir\scripts"
+Copy-Item "build\helix\InstallTestAppDependencies.ps1" "$payloadDir\scripts"

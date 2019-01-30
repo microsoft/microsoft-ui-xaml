@@ -113,21 +113,13 @@
 
                 <TextBlock Text="Scroller Properties" Grid.Row="0" Grid.ColumnSpan="5" Foreground="Red"/>
 
-                <TextBlock Text="IsChildAvailableWidthConstrained:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbIsChildAvailableWidthConstrained" Width="105" Margin="1" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">
-                    <ComboBoxItem>Yes</ComboBoxItem>
-                    <ComboBoxItem>No</ComboBoxItem>
+                <TextBlock Text="ContentOrientation:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbContentOrientation" Margin="1" Grid.Row="1" Grid.Column="1"
+                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbContentOrientation_SelectionChanged">
+                    <ComboBoxItem>Vertical</ComboBoxItem>
+                    <ComboBoxItem>Horizontal</ComboBoxItem>
+                    <ComboBoxItem>None</ComboBoxItem>
                 </ComboBox>
-                <Button x:Name="btnGetIsChildAvailableWidthConstrained" Content="G" Margin="1" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetIsChildAvailableWidthConstrained_Click"/>
-                <Button x:Name="btnSetIsChildAvailableWidthConstrained" Content="S" Margin="1" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetIsChildAvailableWidthConstrained_Click"/>
-
-                <TextBlock Text="IsChildAvailableHeightConstrained:" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbIsChildAvailableHeightConstrained" Width="105" Margin="1" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center">
-                    <ComboBoxItem>Yes</ComboBoxItem>
-                    <ComboBoxItem>No</ComboBoxItem>
-                </ComboBox>
-                <Button x:Name="btnGetIsChildAvailableHeightConstrained" Content="G" Margin="1" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetIsChildAvailableHeightConstrained_Click"/>
-                <Button x:Name="btnSetIsChildAvailableHeightConstrained" Content="S" Margin="1" Grid.Row="2" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetIsChildAvailableHeightConstrained_Click"/>
 
                 <TextBlock Text="HorizontalScrollMode:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center"/>
                 <ComboBox x:Name="cmbHorizontalScrollMode" Margin="1" Grid.Row="3" Grid.Column="1" 

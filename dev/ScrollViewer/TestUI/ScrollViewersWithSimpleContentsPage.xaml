@@ -75,7 +75,7 @@
         </StackPanel>
 
         <Border Margin="1" Background="Cyan" Grid.Row="2" Grid.Column="0">
-            <controls:ScrollViewer x:Name="scrollViewer11" AutomationProperties.Name="scrollViewer11" IsChildAvailableWidthConstrained="False" Height="400">
+            <controls:ScrollViewer x:Name="scrollViewer11" AutomationProperties.Name="scrollViewer11" ContentOrientation="None" Height="400">
                 <StackPanel Width="2000" Height="2000" >
                     <StackPanel.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -107,7 +107,7 @@
         </Border>
         <Border Margin="1" Background="AliceBlue" Grid.Row="2" Grid.Column="2">
             <controls:ScrollViewer x:Name="scrollViewer31" AutomationProperties.Name="scrollViewer31" IsTabStop="True"
-                VerticalScrollMode="Disabled" IsChildAvailableWidthConstrained="False">
+                VerticalScrollMode="Disabled" ContentOrientation="None">
                 <Image x:Name="img31" AutomationProperties.Name="img31" Source="Assets/ingredient8.png" MinWidth="900" MinHeight="900"/>
             </controls:ScrollViewer>
         </Border>
@@ -119,14 +119,14 @@
         </Border>
         <Border Margin="1" Background="CadetBlue" Grid.Row="2" Grid.Column="4">
             <controls:ScrollViewer x:Name="scrollViewer51" AutomationProperties.Name="scrollViewer51" IsTabStop="True"
-                IsChildAvailableWidthConstrained="False" HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled">
+                ContentOrientation="None" HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled">
                 <Image x:Name="img51" AutomationProperties.Name="img51" Source="Assets/ingredient5.png" Width="800" Height="800"/>
             </controls:ScrollViewer>
         </Border>
 
         <Border Margin="1" Background="Cyan" Grid.Row="3" Grid.Column="0">
             <controls:ScrollViewer x:Name="scrollViewer12" AutomationProperties.Name="scrollViewer12"
-                IsChildAvailableWidthConstrained="False" ZoomMode="Enabled" MinZoomFactor="0.5" MaxZoomFactor="2.0">
+                ContentOrientation="None" ZoomMode="Enabled" MinZoomFactor="0.5" MaxZoomFactor="2.0">
                 <Rectangle x:Name="rect2" Width="500" Height="700">
                     <Rectangle.Fill>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -146,7 +146,7 @@
         </Border>
         <Border Margin="1" Background="AliceBlue" Grid.Row="3" Grid.Column="2">
             <controls:ScrollViewer x:Name="scrollViewer32" AutomationProperties.Name="scrollViewer32" IsTabStop="True" FlowDirection="RightToLeft"
-                IsChildAvailableWidthConstrained="False" VerticalScrollMode="Disabled" ZoomMode="Enabled">
+                ContentOrientation="None" VerticalScrollMode="Disabled" ZoomMode="Enabled">
                 <Image x:Name="img32" AutomationProperties.Name="img32" Source="Assets/ingredient8.png" MinWidth="900" MinHeight="900"/>
             </controls:ScrollViewer>
         </Border>
@@ -158,7 +158,7 @@
         </Border>
         <Border Margin="1" Background="CadetBlue" Grid.Row="3" Grid.Column="4">
             <controls:ScrollViewer x:Name="scrollViewer52" AutomationProperties.Name="scrollViewer52"
-                IsChildAvailableWidthConstrained="False" HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled" ZoomMode="Enabled">
+                ContentOrientation="None" HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled" ZoomMode="Enabled">
                 <Image x:Name="img52" AutomationProperties.Name="img52" Source="Assets/ingredient5.png" Width="800" Height="800"/>
             </controls:ScrollViewer>
         </Border>

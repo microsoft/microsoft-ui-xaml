@@ -12,6 +12,7 @@ GlobalDependencyProperty ScrollerProperties::s_BackgroundProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_ComputedHorizontalScrollModeProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_ComputedVerticalScrollModeProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_ContentProperty{ nullptr };
+GlobalDependencyProperty ScrollerProperties::s_ContentOrientationProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_HorizontalAnchorRatioProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_HorizontalScrollChainingModeProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_HorizontalScrollModeProperty{ nullptr };
@@ -19,8 +20,6 @@ GlobalDependencyProperty ScrollerProperties::s_HorizontalScrollRailingModeProper
 GlobalDependencyProperty ScrollerProperties::s_InputKindProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_IsAnchoredAtHorizontalExtentProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_IsAnchoredAtVerticalExtentProperty{ nullptr };
-GlobalDependencyProperty ScrollerProperties::s_IsChildAvailableHeightConstrainedProperty{ nullptr };
-GlobalDependencyProperty ScrollerProperties::s_IsChildAvailableWidthConstrainedProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_MaxZoomFactorProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_MinZoomFactorProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_VerticalAnchorRatioProperty{ nullptr };
@@ -87,6 +86,17 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
+    }
+    if (!s_ContentOrientationProperty)
+    {
+        s_ContentOrientationProperty =
+            InitializeDependencyProperty(
+                L"ContentOrientation",
+                winrt::name_of<winrt::ContentOrientation>(),
+                winrt::name_of<winrt::Scroller>(),
+                false /* isAttached */,
+                ValueHelper<winrt::ContentOrientation>::BoxValueIfNecessary(Scroller::s_defaultContentOrientation),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_HorizontalAnchorRatioProperty)
@@ -164,28 +174,6 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(Scroller::s_defaultAnchorAtExtent),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
-    }
-    if (!s_IsChildAvailableHeightConstrainedProperty)
-    {
-        s_IsChildAvailableHeightConstrainedProperty =
-            InitializeDependencyProperty(
-                L"IsChildAvailableHeightConstrained",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::Scroller>(),
-                false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(Scroller::s_defaultIsChildAvailableHeightConstrained),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
-    }
-    if (!s_IsChildAvailableWidthConstrainedProperty)
-    {
-        s_IsChildAvailableWidthConstrainedProperty =
-            InitializeDependencyProperty(
-                L"IsChildAvailableWidthConstrained",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::Scroller>(),
-                false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(Scroller::s_defaultIsChildAvailableWidthConstrained),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_MaxZoomFactorProperty)
@@ -284,6 +272,7 @@ void ScrollerProperties::ClearProperties()
     s_ComputedHorizontalScrollModeProperty = nullptr;
     s_ComputedVerticalScrollModeProperty = nullptr;
     s_ContentProperty = nullptr;
+    s_ContentOrientationProperty = nullptr;
     s_HorizontalAnchorRatioProperty = nullptr;
     s_HorizontalScrollChainingModeProperty = nullptr;
     s_HorizontalScrollModeProperty = nullptr;
@@ -291,8 +280,6 @@ void ScrollerProperties::ClearProperties()
     s_InputKindProperty = nullptr;
     s_IsAnchoredAtHorizontalExtentProperty = nullptr;
     s_IsAnchoredAtVerticalExtentProperty = nullptr;
-    s_IsChildAvailableHeightConstrainedProperty = nullptr;
-    s_IsChildAvailableWidthConstrainedProperty = nullptr;
     s_MaxZoomFactorProperty = nullptr;
     s_MinZoomFactorProperty = nullptr;
     s_VerticalAnchorRatioProperty = nullptr;
@@ -385,6 +372,16 @@ winrt::UIElement ScrollerProperties::Content()
     return ValueHelper<winrt::UIElement>::CastOrUnbox(static_cast<Scroller*>(this)->GetValue(s_ContentProperty));
 }
 
+void ScrollerProperties::ContentOrientation(winrt::ContentOrientation const& value)
+{
+    static_cast<Scroller*>(this)->SetValue(s_ContentOrientationProperty, ValueHelper<winrt::ContentOrientation>::BoxValueIfNecessary(value));
+}
+
+winrt::ContentOrientation ScrollerProperties::ContentOrientation()
+{
+    return ValueHelper<winrt::ContentOrientation>::CastOrUnbox(static_cast<Scroller*>(this)->GetValue(s_ContentOrientationProperty));
+}
+
 void ScrollerProperties::HorizontalAnchorRatio(double value)
 {
     static_cast<Scroller*>(this)->ValidateAnchorRatio(value);
@@ -454,26 +451,6 @@ void ScrollerProperties::IsAnchoredAtVerticalExtent(bool value)
 bool ScrollerProperties::IsAnchoredAtVerticalExtent()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<Scroller*>(this)->GetValue(s_IsAnchoredAtVerticalExtentProperty));
-}
-
-void ScrollerProperties::IsChildAvailableHeightConstrained(bool value)
-{
-    static_cast<Scroller*>(this)->SetValue(s_IsChildAvailableHeightConstrainedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
-}
-
-bool ScrollerProperties::IsChildAvailableHeightConstrained()
-{
-    return ValueHelper<bool>::CastOrUnbox(static_cast<Scroller*>(this)->GetValue(s_IsChildAvailableHeightConstrainedProperty));
-}
-
-void ScrollerProperties::IsChildAvailableWidthConstrained(bool value)
-{
-    static_cast<Scroller*>(this)->SetValue(s_IsChildAvailableWidthConstrainedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
-}
-
-bool ScrollerProperties::IsChildAvailableWidthConstrained()
-{
-    return ValueHelper<bool>::CastOrUnbox(static_cast<Scroller*>(this)->GetValue(s_IsChildAvailableWidthConstrainedProperty));
 }
 
 void ScrollerProperties::MaxZoomFactor(double value)

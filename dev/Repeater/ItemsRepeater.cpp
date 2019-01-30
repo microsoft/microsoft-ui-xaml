@@ -243,12 +243,12 @@ void ItemsRepeater::ItemTemplate(winrt::IElementFactory const& value)
     SetValue(s_itemTemplateProperty, value);
 }
 
-winrt::VirtualizingLayout ItemsRepeater::Layout()
+winrt::Layout ItemsRepeater::Layout()
 {
     return m_layout;
 }
 
-void ItemsRepeater::Layout(winrt::VirtualizingLayout const& value)
+void ItemsRepeater::Layout(winrt::Layout const& value)
 {
     SetValue(s_layoutProperty, value);
 }
@@ -477,7 +477,7 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     }
     else if (property == s_layoutProperty)
     {
-        OnLayoutChanged(safe_cast<winrt::VirtualizingLayout>(args.OldValue()), safe_cast<winrt::VirtualizingLayout>(args.NewValue()));
+        OnLayoutChanged(safe_cast<winrt::Layout>(args.OldValue()), safe_cast<winrt::Layout>(args.NewValue()));
     }
     else if (property == s_animatorProperty)
     {
@@ -596,7 +596,10 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
             -1 /* oldIndex */);
         args.Action();
 
-        m_layout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
+        if (auto virtualLayout = m_layout.try_as<winrt::VirtualizingLayout>())
+        {
+            virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
+        }
 
         InvalidateMeasure();
     }
@@ -633,7 +636,7 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory&  oldValu
 #endif
 }
 
-void ItemsRepeater::OnLayoutChanged(const winrt::VirtualizingLayout& oldValue, const winrt::VirtualizingLayout& newValue)
+void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::Layout& newValue)
 {
     if (m_isLayoutInProgress)
     {
@@ -706,7 +709,10 @@ void ItemsRepeater::OnDataSourceChanged(const winrt::IInspectable& sender, const
 
     if (m_layout)
     {
-        m_layout.OnItemsChangedCore(GetLayoutContext(), sender, args);
+        if (auto virtualLayout = m_layout.as<winrt::VirtualizingLayout>())
+        {
+            virtualLayout.OnItemsChangedCore(GetLayoutContext(), sender, args);
+        }
     }
 }
 

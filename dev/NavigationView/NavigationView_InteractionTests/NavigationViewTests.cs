@@ -3675,6 +3675,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "D")]
+        public void EnsurePaneCanBeHidden()
+        {
+            using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
+                             page2 = new TestSetupHelper("NavigationView Test"))
+            {
+                var paneRoot = FindElement.ById("PaneRoot");
+                Verify.IsFalse(paneRoot.IsOffscreen);
+
+                var paneVisibleCheckBox = new CheckBox(FindElement.ByName("IsPaneVisibleCheckBox"));
+                paneVisibleCheckBox.Uncheck();
+                Wait.ForIdle();
+
+                Verify.IsTrue(paneRoot.IsOffscreen);
+            }
+        }
+
         private void EnsurePaneHeaderCanBeModifiedHelper(RegressionTestType navviewMode)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))

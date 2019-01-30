@@ -5,7 +5,7 @@
     <EnableXUnitReporter>true</EnableXUnitReporter>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
-    <HelixPreCommands>$(HelixPreCommands);set testnameprefix=$(Configuration).$(Platform)</HelixPreCommands>
+    <HelixPreCommands>$(HelixPreCommands);set testnameprefix=$(Configuration).$(Platform);set testbuildplatform=$(Platform)</HelixPreCommands>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,9 +35,9 @@
       <Timeout>00:20:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollBar2TestsWithInputHelper.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="InteractionTests.ScrollerViewTestsWithInputHelper">
+    <HelixWorkItem Include="InteractionTests.ScrollViewerTestsWithInputHelper">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollerViewTestsWithInputHelper.*</Command>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollViewerTestsWithInputHelper.*</Command>
     </HelixWorkItem>
     <HelixWorkItem Include="InteractionTests.PersonPictureTests">
       <Timeout>00:20:00</Timeout>
@@ -167,9 +167,9 @@
       <Timeout>00:20:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.ScrollerTests.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="ApiTests.ScrollerViewTests">
+    <HelixWorkItem Include="ApiTests.ScrollViewerTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.ScrollerViewTests.*</Command>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.ScrollViewerTests.*</Command>
     </HelixWorkItem>
     <HelixWorkItem Include="ApiTests.SplitButtonTests">
       <Timeout>00:20:00</Timeout>

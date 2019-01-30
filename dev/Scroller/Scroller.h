@@ -53,8 +53,7 @@ public:
     static constexpr winrt::ChainingMode s_defaultZoomChainingMode{ winrt::ChainingMode::Auto };
     static constexpr winrt::ZoomMode s_defaultZoomMode{ winrt::ZoomMode::Disabled };
     static constexpr winrt::InputKind s_defaultInputKind{ winrt::InputKind::All };
-    static constexpr bool s_defaultIsChildAvailableWidthConstrained{ false };
-    static constexpr bool s_defaultIsChildAvailableHeightConstrained{ false };
+    static constexpr winrt::ContentOrientation s_defaultContentOrientation{ winrt::ContentOrientation::None };
     static constexpr bool s_defaultAnchorAtExtent{ true };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
     static constexpr double s_defaultMaxZoomFactor{ 10.0 };
@@ -669,9 +668,8 @@ private:
     bool m_isAnchorElementDirty{ true }; // False when m_anchorElement is up-to-date, True otherwise.
     bool m_isListeningToKeystrokes{ false }; // True when key-down/key-up handlers are used.
 
-    // For perf reasons, the values of Is[Horizontal|Vertical]ChildAvailableSizeConstrained are cached.
-    bool m_isChildAvailableWidthConstrained{ s_defaultIsChildAvailableWidthConstrained };
-    bool m_isChildAvailableHeightConstrained{ s_defaultIsChildAvailableHeightConstrained };
+    // For perf reasons, the value of ContentOrientation is cached.
+    winrt::ContentOrientation m_contentOrientation{ s_defaultContentOrientation };
     winrt::Size m_availableSize{};
 
     tracker_ref<winrt::IScrollController> m_horizontalScrollController{ this };

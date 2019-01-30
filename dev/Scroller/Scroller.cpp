@@ -515,11 +515,11 @@ winrt::Size Scroller::MeasureOverride(winrt::Size const& availableSize)
         // to be scrollable in those directions.
         winrt::Size contentAvailableSize
         {
-            m_isChildAvailableWidthConstrained ? availableSize.Width : std::numeric_limits<float>::infinity(),
-            m_isChildAvailableHeightConstrained ? availableSize.Height : std::numeric_limits<float>::infinity()
+            m_contentOrientation == winrt::ContentOrientation::Vertical ? availableSize.Width : std::numeric_limits<float>::infinity(),
+            m_contentOrientation == winrt::ContentOrientation::Horizontal ? availableSize.Height : std::numeric_limits<float>::infinity()
         };
 
-        if (m_isChildAvailableWidthConstrained || m_isChildAvailableHeightConstrained)
+        if (m_contentOrientation != winrt::ContentOrientation::None)
         {
             const winrt::FrameworkElement contentAsFE = content.try_as<winrt::FrameworkElement>();
 
@@ -527,14 +527,13 @@ winrt::Size Scroller::MeasureOverride(winrt::Size const& availableSize)
             {
                 winrt::Thickness contentMargin = contentAsFE.Margin();
 
-                if (m_isChildAvailableWidthConstrained)
+                if (m_contentOrientation == winrt::ContentOrientation::Vertical)
                 {
                     // Even though the content's Width is constrained, take into account the MinWidth, Width and MaxWidth values
                     // potentially set on the content so it is allowed to grow accordingly.
                     contentAvailableSize.Width = static_cast<float>(GetComputedMaxWidth(availableSize.Width, contentAsFE));
                 }
-
-                if (m_isChildAvailableHeightConstrained)
+                else if (m_contentOrientation == winrt::ContentOrientation::Horizontal)
                 {
                     // Even though the content's Height is constrained, take into account the MinHeight, Height and MaxHeight values
                     // potentially set on the content so it is allowed to grow accordingly.
@@ -3255,18 +3254,9 @@ void Scroller::OnPropertyChanged(
                 MaxZoomFactor());
         }
     }
-    else if (dependencyProperty == s_IsChildAvailableWidthConstrainedProperty ||
-        dependencyProperty == s_IsChildAvailableHeightConstrainedProperty)
+    else if (dependencyProperty == s_ContentOrientationProperty)
     {
-        bool isChildAvailableSizeConstrained = unbox_value<bool>(args.NewValue());
-        if (dependencyProperty == s_IsChildAvailableWidthConstrainedProperty)
-        {
-            m_isChildAvailableWidthConstrained = isChildAvailableSizeConstrained;
-        }
-        else
-        {
-            m_isChildAvailableHeightConstrained = isChildAvailableSizeConstrained;
-        }
+        m_contentOrientation = ContentOrientation();
 
         // Raise configuration changed only when effective viewport
         // support is not available.
@@ -6488,13 +6478,9 @@ winrt::hstring Scroller::DependencyPropertyToString(const winrt::IDependencyProp
     {
         return L"Background";
     }
-    else if (dependencyProperty == s_IsChildAvailableWidthConstrainedProperty)
+    else if (dependencyProperty == s_ContentOrientationProperty)
     {
-        return L"IsChildAvailableWidthConstrained";
-    }
-    else if (dependencyProperty == s_IsChildAvailableHeightConstrainedProperty)
-    {
-        return L"IsChildAvailableHeightConstrained";
+        return L"ContentOrientation";
     }
     else if (dependencyProperty == s_VerticalScrollChainingModeProperty)
     {
