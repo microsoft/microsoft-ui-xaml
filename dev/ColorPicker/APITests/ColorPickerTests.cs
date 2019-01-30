@@ -7,11 +7,14 @@ using System;
 using System.Numerics;
 using System.Collections;
 using System.Linq;
+using System.Threading;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Shapes;
+using Windows.UI.Xaml.Media;
 using Common;
 
 #if USING_TAEF
@@ -29,7 +32,7 @@ using ColorSpectrumComponents = Microsoft.UI.Xaml.Controls.ColorSpectrumComponen
 using ColorPicker = Microsoft.UI.Xaml.Controls.ColorPicker;
 using ColorChangedEventArgs = Microsoft.UI.Xaml.Controls.ColorChangedEventArgs;
 using ColorSpectrum = Microsoft.UI.Xaml.Controls.Primitives.ColorSpectrum;
-using XamlControlsXamlMetaDataProvider = Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider; 
+using XamlControlsXamlMetaDataProvider = Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
@@ -37,6 +40,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class ColorPickerTests
     {
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("TestCleanup: Restore TestContentRoot to null");
+                // Put things back the way we found them.
+                MUXControlsTestApp.App.TestContentRoot = null;
+            });
+        }
+
         [TestMethod]
         public void ColorPickerTest()
         {
@@ -230,6 +244,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        public void ValidateFractionalWidthDoesNotCrash()
+        {
+            ManualResetEvent spectrumLoadedEvent = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                ColorSpectrum colorSpectrum = new ColorSpectrum();
+                colorSpectrum.Width = 300.75;
+                colorSpectrum.Height = 300.75;
+                colorSpectrum.Loaded += (sender, args) =>
+                {
+                    var spectrumRectangle = VisualTreeUtils.FindVisualChildByName(colorSpectrum, "SpectrumRectangle") as Rectangle;
+
+                    if (spectrumRectangle != null)
+                    {
+                        spectrumRectangle.RegisterPropertyChangedCallback(Shape.FillProperty, (o, dp) =>
+                        {
+                            spectrumLoadedEvent.Set();
+                        });
+                    }
+                };
+
+                StackPanel root = new StackPanel();
+                root.Children.Add(colorSpectrum);
+                MUXControlsTestApp.App.TestContentRoot = root;
+            });
+
+            spectrumLoadedEvent.WaitOne();
         }
 
         // XamlControlsXamlMetaDataProvider does not exist in the OS repo,
