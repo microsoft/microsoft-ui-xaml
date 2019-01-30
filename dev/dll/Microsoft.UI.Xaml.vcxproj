@@ -667,8 +667,9 @@
       <FileWrites Include="$(OutDir)rs2_themeresources.xaml" />
     </ItemGroup>
   </Target>
-  <Target Name="GenerateRS3ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage)" Outputs="$(OutDir)rs3_themeresources.xaml">
+  <Target Name="GenerateRS3ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage)" Outputs="$(OutDir)rs3_themeresources.xaml;$(OutDir)rs3_themeresources.prefixed.xaml">
     <Message Text="Generating theme resources XAML files for RS3..." />
+    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs3_themeresources.prefixed.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs3_themeresources.prefixed.xaml" />
     <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs3_themeresources.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs3_themeresources.xaml" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
          PropertyGroup values are always evaluated even when their enclosing target is skipped,
@@ -684,8 +685,9 @@
       <FileWrites Include="$(OutDir)rs3_themeresources.xaml" />
     </ItemGroup>
   </Target>
-  <Target Name="GenerateRS4ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage)" Outputs="$(OutDir)rs4_themeresources.xaml">
+  <Target Name="GenerateRS4ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage)" Outputs="$(OutDir)rs4_themeresources.xaml;$(OutDir)rs4_themeresources.prefixed.xaml">
     <Message Text="Generating theme resources XAML files for RS4..." />
+    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs4_themeresources.prefixed.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs4_themeresources.prefixed.xaml" />
     <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs4_themeresources.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs4_themeresources.xaml" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
          PropertyGroup values are always evaluated even when their enclosing target is skipped,
@@ -702,8 +704,9 @@
       <FileWrites Include="$(OutDir)rs4_themeresources.xaml" />
     </ItemGroup>
   </Target>
-  <Target Name="GenerateRS5ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage)" Outputs="$(OutDir)rs5_themeresources.xaml">
+  <Target Name="GenerateRS5ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage)" Outputs="$(OutDir)rs5_themeresources.xaml;$(OutDir)rs5_themeresources.prefixed.xaml">
     <Message Text="Generating theme resources XAML file for RS5..." />
+    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs5_themeresources.prefixed.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs5_themeresources.prefixed.xaml" />
     <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs5_themeresources.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs5_themeresources.xaml" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
          PropertyGroup values are always evaluated even when their enclosing target is skipped,
