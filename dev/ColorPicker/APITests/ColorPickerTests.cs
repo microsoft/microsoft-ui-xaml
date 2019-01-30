@@ -249,32 +249,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void ValidateFractionalWidthDoesNotCrash()
         {
-            ManualResetEvent spectrumLoadedEvent = new ManualResetEvent(false);
+            ColorSpectrum colorSpectrum = null;
 
             RunOnUIThread.Execute(() =>
             {
-                ColorSpectrum colorSpectrum = new ColorSpectrum();
+                colorSpectrum = new ColorSpectrum();
                 colorSpectrum.Width = 300.75;
                 colorSpectrum.Height = 300.75;
-                colorSpectrum.Loaded += (sender, args) =>
-                {
-                    var spectrumRectangle = VisualTreeUtils.FindVisualChildByName(colorSpectrum, "SpectrumRectangle") as Rectangle;
-
-                    if (spectrumRectangle != null)
-                    {
-                        spectrumRectangle.RegisterPropertyChangedCallback(Shape.FillProperty, (o, dp) =>
-                        {
-                            spectrumLoadedEvent.Set();
-                        });
-                    }
-                };
-
-                StackPanel root = new StackPanel();
-                root.Children.Add(colorSpectrum);
-                MUXControlsTestApp.App.TestContentRoot = root;
             });
 
-            spectrumLoadedEvent.WaitOne();
+            SetAsRootAndWaitForColorSpectrumFill(colorSpectrum);
         }
 
         // XamlControlsXamlMetaDataProvider does not exist in the OS repo,
@@ -293,5 +277,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 #endif
+
+        // This takes a FrameworkElement parameter so you can pass in either a ColorPicker or a ColorSpectrum.
+        private void SetAsRootAndWaitForColorSpectrumFill(FrameworkElement element)
+        {
+            ManualResetEvent spectrumLoadedEvent = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                element.Loaded += (sender, args) =>
+                {
+                    var spectrumRectangle = VisualTreeUtils.FindVisualChildByName(element, "SpectrumRectangle") as Rectangle;
+                    Verify.IsNotNull(spectrumRectangle);
+
+                    spectrumRectangle.RegisterPropertyChangedCallback(Shape.FillProperty, (o, dp) =>
+                    {
+                        spectrumLoadedEvent.Set();
+                    });
+                };
+
+                StackPanel root = new StackPanel();
+                root.Children.Add(element);
+                MUXControlsTestApp.App.TestContentRoot = root;
+            });
+
+            spectrumLoadedEvent.WaitOne();
+        }
     }
 }
