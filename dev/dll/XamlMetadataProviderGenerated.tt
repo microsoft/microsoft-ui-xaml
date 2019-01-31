@@ -53,6 +53,7 @@
 #include "RadioMenuFlyoutItem.h"
 #include "Forms.h"
 #include "FormSection.h"
+#include "FormRow.h"
 #endif
 
 #include "AcrylicBrush.h"
@@ -466,6 +467,7 @@ XamlRuntimeType::EnsureDependencyProperties(_In_ UINT16 typeLabel) const try
 
 } // namespace Private
 #endif
+
 
 
 

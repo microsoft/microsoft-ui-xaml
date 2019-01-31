@@ -173,6 +173,13 @@ namespace CustomTasks
             DefaultValueMetadata["FontIconSource.FontWeight"] = @"{ 400 }";
             DefaultValueMetadata["FontIconSource.IsTextScaleFactorEnabled"] = @"true";
 
+            IncludedTypesMetadata["FormRow"] = true;
+            // FormRow -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["FormRow.Length"] = true;
+            PropChangedCallbackMethodNameMetadata["FormRow.Length"] = "OnLengthPropertyChanged";
+            // FormRow -- DefaultValueMetadata
+            DefaultValueMetadata["FormRow.Length"] = @"FormRow::s_defaultLength";
+
             IncludedTypesMetadata["Forms"] = true;
             // Forms -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["Forms.Sections"] = true;
@@ -180,16 +187,10 @@ namespace CustomTasks
 
             IncludedTypesMetadata["FormSection"] = true;
             // FormSection -- NeedsPropChangedCallbackMetadata
-            NeedsPropChangedCallbackMetadata["FormSection.Buddies"] = true;
-            PropChangedCallbackMethodNameMetadata["FormSection.Buddies"] = "OnBuddiesPropertyChanged";
             NeedsPropChangedCallbackMetadata["FormSection.Columns"] = true;
             NeedsPropChangedCallbackMetadata["FormSection.Header"] = true;
-            NeedsPropChangedCallbackMetadata["FormSection.Length"] = true;
-            PropChangedCallbackMethodNameMetadata["FormSection.Length"] = "OnLengthPropertyChanged";
             // FormSection -- DefaultValueMetadata
-            DefaultValueMetadata["FormSection.Buddies"] = @"0";
             DefaultValueMetadata["FormSection.Columns"] = @"1";
-            DefaultValueMetadata["FormSection.Length"] = @"FormSection::s_defaultLength";
 
             IncludedTypesMetadata["IconSource"] = true;
             // IconSource -- NeedsPropChangedCallbackMetadata

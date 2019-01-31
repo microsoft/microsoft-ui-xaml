@@ -24,16 +24,18 @@ unsealed runtimeclass FormSection : Windows.UI.Xaml.Controls.Panel
 
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ColumnsProperty{ get; };
+}
 
-    [MUX_DEFAULT_VALUE("FormSection::s_defaultLength")]
+[WUXC_VERSION_RS5]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+unsealed runtimeclass FormRow : Windows.UI.Xaml.Controls.Panel
+{
+    FormRow();
+
+    [MUX_DEFAULT_VALUE("FormRow::s_defaultLength")]
     [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnLengthPropertyChanged")]
     static Windows.UI.Xaml.DependencyProperty LengthProperty{ get; };
     static void SetLength(Windows.UI.Xaml.UIElement element, Windows.UI.Xaml.GridLength value);
     static Windows.UI.Xaml.GridLength GetLength(Windows.UI.Xaml.UIElement element);
-
-    [MUX_DEFAULT_VALUE("0")]
-    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnBuddiesPropertyChanged")]
-    static Windows.UI.Xaml.DependencyProperty BuddiesProperty{ get; };
-    static void SetBuddies(Windows.UI.Xaml.UIElement element, Int32 value);
-    static Int32 GetBuddies(Windows.UI.Xaml.UIElement element);
 }

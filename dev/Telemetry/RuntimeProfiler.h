@@ -34,6 +34,7 @@ namespace RuntimeProfiler
         ProfId_RadioButtons,
         ProfId_RadioMenuFlyoutItem,
         ProfId_Forms,
+        ProfId_FormRow,
         ProfId_Size
     } ProfilerClassId;
 
@@ -51,5 +52,6 @@ namespace RuntimeProfiler
         } \
     }
     
+
 
 

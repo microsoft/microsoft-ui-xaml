@@ -12,7 +12,6 @@
 FormSection::FormSection()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_Forms);
-
 }
 
 winrt::Size FormSection::MeasureOverride(winrt::Size const& availableSize)
@@ -53,95 +52,12 @@ winrt::Size FormSection::ArrangeOverride(winrt::Size const& finalSize)
     for (unsigned i = 0u; i < children.Size(); ++i)
     {
         auto child = children.GetAt(i);
-        int numBuddies = GetBuddies(child);
+        float width = child.DesiredSize().Width;
+        float height = child.DesiredSize().Height;
 
-        if (numBuddies <= 0)
-        {
-            float width = child.DesiredSize().Width;
-            float height = child.DesiredSize().Height;
+        child.Arrange(winrt::Rect(0.0f + (float)itemPadding.Left, y + (float)itemPadding.Top, 500.0f, height)); // ### maaaaagic
 
-            winrt::GridLength gl = GetLength(child);
-            if (gl.GridUnitType == winrt::GridUnitType::Star)
-            {
-                // ### that's not how this works
-                width = 500.0f;
-            }
-            // ### obviously need to handle all cases
-
-            child.Arrange(winrt::Rect(0.0f + (float)itemPadding.Left, y + (float)itemPadding.Top, width, height));
-
-            y += height + (float)itemPadding.Top + (float)itemPadding.Bottom;
-        }
-        else
-        {
-            std::array<float, 100> widths; //### magic max number
-            float numStars = 0;
-
-            // calculate required spacing between items
-            float requiredWidth = (float)numBuddies * 8.0f; //### magic number
-
-            // first pass: all Auto or fixed width elements
-            for (int n = 0; n <= numBuddies; n++)
-            {
-                auto child = children.GetAt(i + n);
-                winrt::GridLength gl = GetLength(child);
-
-                if (gl.GridUnitType == winrt::GridUnitType::Auto)
-                {
-                    widths[n] = child.DesiredSize().Width;
-                    requiredWidth += widths[n];
-                }
-                else if (gl.GridUnitType == winrt::GridUnitType::Pixel)
-                {
-                    widths[n] = (float)gl.Value;
-                    requiredWidth += widths[n];
-                }
-                else if (gl.GridUnitType == winrt::GridUnitType::Star)
-                {
-                    numStars += (float)gl.Value;
-                }
-            }
-
-            // ### magic 500px
-            float remainingWidth = 500.0f - requiredWidth;
-            float starWidth = remainingWidth / numStars;
-
-            // second pass: * elements
-            for (int n = 0; n <= numBuddies; n++)
-            {
-                auto child = children.GetAt(i + n);
-                winrt::GridLength gl = GetLength(child);
-
-                if (gl.GridUnitType == winrt::GridUnitType::Star)
-                {
-                    widths[n] = starWidth * (float)gl.Value;
-                }
-            }
-
-            // third pass: call arrange
-            float yMax = 0.0f;
-            float x = (float)itemPadding.Left;
-
-            for (int n = 0; n <= numBuddies; n++)
-            {
-                auto child = children.GetAt(i + n);
-
-                float height = child.DesiredSize().Height;
-                float width = widths[n];
-
-                child.Arrange(winrt::Rect(x, y + (float)itemPadding.Top, width, height));
-
-                x += width + 8.0f; //### same magic number
-
-                if (height > yMax)
-                {
-                    yMax = height;
-                }
-            }
-
-            y += yMax + (float)itemPadding.Top + (float)itemPadding.Bottom;
-            i += numBuddies;
-        }
+        y += height + (float)itemPadding.Top + (float)itemPadding.Bottom;
     }
 
     // ### for now
@@ -152,19 +68,5 @@ void FormSection::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
 {
     winrt::IDependencyProperty property = args.Property();
     
-    // TODO: Implement
-}
-
-void FormSection::OnLengthPropertyChanged(
-    const winrt::DependencyObject& sender,
-    const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    // TODO: Implement
-}
-
-void FormSection::OnBuddiesPropertyChanged(
-    const winrt::DependencyObject& sender,
-    const winrt::DependencyPropertyChangedEventArgs& args)
-{
     // TODO: Implement
 }

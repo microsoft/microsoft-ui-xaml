@@ -16,12 +16,15 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Forms.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FormSection.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FormRow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Forms.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\FormSection.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Forms.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FormSection.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FormRow.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\FormRow.properties.cpp" />
   </ItemGroup>
   <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
     <Page Include="$(MSBuildThisFileDirectory)Forms.xaml">
