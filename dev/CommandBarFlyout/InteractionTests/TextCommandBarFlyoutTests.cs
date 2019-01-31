@@ -156,11 +156,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void CanPasteTextToPasswordBox()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
-                return;
-            }
+            //if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
+            //{
+            //    //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
+            //    return;
+            //}
             CanPasteTextTo("PasswordBox");
         }
 
@@ -225,11 +225,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void CanBoldTextInARichEditBox()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
-                return;
-            }
+            //if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
+            //{
+            //    //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
+            //    return;
+            //}
             CanStyleTextInARichEditBox("Bold", "b");
         }
 
@@ -284,22 +284,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void CanUndoAndRedoInTextBox()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
-                return;
-            }
+            //if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
+            //{
+            //    //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
+            //    return;
+            //}
             CanUndoAndRedoIn("TextBox");
         }
 
         [TestMethod]
         public void CanUndoAndRedoInRichEditBox()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
-                return;
-            }
+            //if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
+            //{
+            //    //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
+            //    return;
+            //}
             CanUndoAndRedoIn("RichEditBox");
         }
 
@@ -491,7 +491,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
-        //[TestMethod]
+        [TestMethod]
         public void ValidateProofingMenu()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
@@ -525,7 +525,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
-        //[TestMethod]
+        [TestMethod]
         public void ValidateRightClickOnEmptyTextBoxDoesNotShowFlyout()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
@@ -553,7 +553,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
-        //[TestMethod]
+        [TestMethod]
         public void ValidateRichTextBlockOverflowUsesSourceFlyouts()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
