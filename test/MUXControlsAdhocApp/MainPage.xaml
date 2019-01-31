@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsAdhocApp"
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -11,6 +12,16 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel x:Name="MainStackPanel">
             <Button x:Name="repeater" Margin="10" Content="ItemsRepeater" />
+            <!-- SelectionFlyout="{x:Null}" -->
+            <RichEditBox x:Name="richEditBox" Height="400" Width="600" SelectionChanged="RichEditBox_SelectionChanged" >
+                <RichEditBox.SelectionFlyout>
+                    <mux:TextCommandBarFlyout Placement="TopEdgeAlignedLeft"  />
+                </RichEditBox.SelectionFlyout>
+                <RichEditBox.ContextFlyout>
+                    <mux:TextCommandBarFlyout Placement="BottomEdgeAlignedLeft" />
+                </RichEditBox.ContextFlyout>
+            </RichEditBox>
+            <TextBlock x:Name="tb1" />
         </StackPanel>
     </Grid>
 </Page>
