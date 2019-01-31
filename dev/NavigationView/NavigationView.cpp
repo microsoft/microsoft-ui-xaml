@@ -1378,7 +1378,7 @@ void NavigationView::UpdateIsChildSelected(winrt::IInspectable const& prevItem, 
     auto lv = GetActiveListView().try_as<winrt::NavigationViewList>();
     auto viewModel = winrt::get_self<NavigationViewList>(lv)->ListViewModel();
 
-    if (prevItem)
+    if (prevItem && !IsSettingsItem(prevItem))
     {
         winrt::TreeViewNode prevItemNode{ nullptr };
 
@@ -1391,21 +1391,28 @@ void NavigationView::UpdateIsChildSelected(winrt::IInspectable const& prevItem, 
             prevItemNode = NodeFromPreviouslySelectedItem(prevItem);
         }
 
-        if (auto nodeParent = prevItemNode.Parent())
+        MUX_ASSERT(prevItemNode);
+
+        if (prevItemNode && prevItemNode.Parent())
         {
+            auto nodeParent = prevItemNode.Parent();
             viewModel->UpdateSelection(nodeParent, TreeNodeSelectionState::UnSelected);
             viewModel->NotifyContainerOfSelectionChange(nodeParent, TreeNodeSelectionState::UnSelected);
         }
     }
 
-    if (nextItem)
+    if (nextItem && !IsSettingsItem(nextItem))
     {
         // The next item being selected must be in the listview
         if (auto container = lv.ContainerFromItem(nextItem))
         {
             auto nextItemNode = NodeFromContainer(container);
-            if (auto nodeParent = nextItemNode.Parent())
+
+            MUX_ASSERT(nextItemNode);
+
+            if (nextItemNode && nextItemNode.Parent())
             {
+                auto nodeParent = nextItemNode.Parent();
                 viewModel->UpdateSelection(nodeParent, TreeNodeSelectionState::PartialSelected);
                 viewModel->NotifyContainerOfSelectionChange(nodeParent, TreeNodeSelectionState::PartialSelected);
             }

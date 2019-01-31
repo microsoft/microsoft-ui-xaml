@@ -10,7 +10,6 @@
 #include "Utils.h"
 #include "NavigationViewList.h"
 
-
 static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationViewItemPresenter"sv;
 
 void NavigationViewItem::UpdateVisualStateNoTransition()

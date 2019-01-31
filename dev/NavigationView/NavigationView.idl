@@ -153,9 +153,9 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
-unsealed runtimeclass NavigationViewItemTemplateSettings : Windows.UI.Xaml.DependencyObject
+unsealed runtimeclass NavigationViewItemBaseTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
-    NavigationViewItemTemplateSettings();
+    NavigationViewItemBaseTemplateSettings();
 
     Double CompactWidth { get; };
     static Windows.UI.Xaml.DependencyProperty CompactWidthProperty { get; };
@@ -319,8 +319,8 @@ unsealed runtimeclass NavigationViewItemBase : Windows.UI.Xaml.Controls.ListView
 {
     [WUXC_VERSION_MUXONLY]
     {
-        NavigationViewItemTemplateSettings NavigationViewItemTemplateSettings { get; };
-        static Windows.UI.Xaml.DependencyProperty NavigationViewItemTemplateSettingsProperty { get; };
+        NavigationViewItemBaseTemplateSettings NavigationViewItemBaseTemplateSettings { get; };
+        static Windows.UI.Xaml.DependencyProperty NavigationViewItemBaseTemplateSettingsProperty { get; };
     }
 }
 

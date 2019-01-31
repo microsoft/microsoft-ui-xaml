@@ -9,12 +9,12 @@ class NavigationViewItemBaseProperties
 public:
     NavigationViewItemBaseProperties();
 
-    void NavigationViewItemTemplateSettings(winrt::NavigationViewItemTemplateSettings const& value);
-    winrt::NavigationViewItemTemplateSettings NavigationViewItemTemplateSettings();
+    void NavigationViewItemBaseTemplateSettings(winrt::NavigationViewItemBaseTemplateSettings const& value);
+    winrt::NavigationViewItemBaseTemplateSettings NavigationViewItemBaseTemplateSettings();
 
-    static winrt::DependencyProperty NavigationViewItemTemplateSettingsProperty() { return s_NavigationViewItemTemplateSettingsProperty; }
+    static winrt::DependencyProperty NavigationViewItemBaseTemplateSettingsProperty() { return s_NavigationViewItemBaseTemplateSettingsProperty; }
 
-    static GlobalDependencyProperty s_NavigationViewItemTemplateSettingsProperty;
+    static GlobalDependencyProperty s_NavigationViewItemBaseTemplateSettingsProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
