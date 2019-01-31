@@ -666,7 +666,7 @@ winrt::TreeViewNode TreeViewList::GetRootOfSelection(const winrt::TreeViewNode& 
 
 winrt::TreeViewNode TreeViewList::NodeFromContainer(winrt::DependencyObject const& container)
 {
-    int index = IndexFromContainer(container);
+    int index = container ? IndexFromContainer(container) : -1;
     if (index >= 0 && index < static_cast<int32_t>(ListViewModel()->Size()))
     {
         return NodeAtFlatIndex(index);
@@ -676,6 +676,8 @@ winrt::TreeViewNode TreeViewList::NodeFromContainer(winrt::DependencyObject cons
 
 winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode const& node)
 {
+    if (!node) return nullptr;
+
     if (IsContentMode())
     {
         return ContainerFromItem(node.Content());
@@ -685,6 +687,8 @@ winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode cons
 
 winrt::TreeViewNode TreeViewList::NodeFromItem(winrt::IInspectable const& item)
 {
+    if (!item) return nullptr;
+
     auto container = ContainerFromItem(item);
     return NodeFromContainer(container);
 }
@@ -697,7 +701,7 @@ winrt::IInspectable TreeViewList::ItemFromNode(winrt::TreeViewNode const& node)
     }
 
     auto container = ContainerFromNode(node);
-    return ItemFromContainer(container);
+    return container ? ItemFromContainer(container) : nullptr;
 }
 
 bool TreeViewList::IsContentMode()
