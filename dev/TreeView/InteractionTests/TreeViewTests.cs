@@ -2377,7 +2377,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ClickButton("GetSelected");
                 Verify.AreEqual("Num. Selected: 0", ReadResult());
 
-                UIObject root0 = FindElement.ByName("Root.0");
+                ClickButton("LabelItems");
+                UIObject root0 = FindElement.ById("Root.0");
                 Verify.IsNotNull(root0, "Verifying Root.0 is found");
                 InputHelper.Tap(root0);
                 KeyboardHelper.PressKey(Key.Space);
@@ -2455,7 +2456,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ClickButton("GetSelected");
                 Verify.AreEqual("Num. Selected: 0", ReadResult());
 
-                UIObject root0 = FindElement.ByName("Root.0");
+                ClickButton("LabelItems");
+                UIObject root0 = FindElement.ById("Root.0");
                 Verify.IsNotNull(root0, "Verifying Root.0 is found");
                 InputHelper.Tap(root0);
                 KeyboardHelper.PressKey(Key.Space);
