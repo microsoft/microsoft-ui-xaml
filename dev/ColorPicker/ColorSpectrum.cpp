@@ -886,20 +886,20 @@ void ColorSpectrum::CreateBitmapsAndColorMap()
     shared_ptr<vector<::byte>> bgraMaxPixelData = make_shared<vector<::byte>>();
     shared_ptr<vector<Hsv>> newHsvValues = make_shared<vector<Hsv>>();
 
-    bgraMinPixelData->reserve(static_cast<size_t>(minDimension * minDimension * 4));
+    bgraMinPixelData->reserve(static_cast<size_t>(round(minDimension * minDimension * 4)));
 
     // We'll only save pixel data for the middle bitmaps if our third dimension is hue.
     if (components == winrt::ColorSpectrumComponents::ValueSaturation ||
         components == winrt::ColorSpectrumComponents::SaturationValue)
     {
-        bgraMiddle1PixelData->reserve(static_cast<size_t>(minDimension * minDimension * 4));
-        bgraMiddle2PixelData->reserve(static_cast<size_t>(minDimension * minDimension * 4));
-        bgraMiddle3PixelData->reserve(static_cast<size_t>(minDimension * minDimension * 4));
-        bgraMiddle4PixelData->reserve(static_cast<size_t>(minDimension * minDimension * 4));
+        bgraMiddle1PixelData->reserve(static_cast<size_t>(round(minDimension * minDimension * 4)));
+        bgraMiddle2PixelData->reserve(static_cast<size_t>(round(minDimension * minDimension * 4)));
+        bgraMiddle3PixelData->reserve(static_cast<size_t>(round(minDimension * minDimension * 4)));
+        bgraMiddle4PixelData->reserve(static_cast<size_t>(round(minDimension * minDimension * 4)));
     }
 
-    bgraMaxPixelData->reserve(static_cast<size_t>(minDimension * minDimension * 4));
-    newHsvValues->reserve(static_cast<size_t>(minDimension * minDimension));
+    bgraMaxPixelData->reserve(static_cast<size_t>(round(minDimension * minDimension * 4)));
+    newHsvValues->reserve(static_cast<size_t>(round(minDimension * minDimension)));
 
     winrt::WorkItemHandler workItemHandler(
         [minDimension, hsv, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue, shape, components,
