@@ -98,7 +98,7 @@ void LayoutPanel::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs co
     {
         OnLayoutChanged(safe_cast<winrt::Layout>(args.OldValue()), safe_cast<winrt::Layout>(args.NewValue()));
     }
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
     else if (dependencyProperty == s_borderBrushProperty)
     {
         if (auto panelProtected = try_as<winrt::Windows::UI::Xaml::Controls::IPanelProtectedFeature_WUXCPreviewTypes>())

@@ -116,10 +116,11 @@
     <!-- These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
          We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
          to non-public types.  So for now we'll just exclude these from the OS repo. -->
-    <Import Project="..\Interactions\ButtonInteraction\ButtonInteraction.vcxitems" Label="Shared" Condition="$(BuildingWithBuildExe) != 'true' And $(UseInsiderSDK) == 'true'" />
-    <Import Project="..\Interactions\SliderInteraction\SliderInteraction.vcxitems" Label="Shared" Condition="$(BuildingWithBuildExe) != 'true' And $(UseInsiderSDK) == 'true'" />
+    <Import Project="..\Interactions\ButtonInteraction\ButtonInteraction.vcxitems" Label="Shared" Condition="$(BuildingWithBuildExe) != 'true' And $(UseInternalSDK) == 'true'" />
+    <Import Project="..\Interactions\SliderInteraction\SliderInteraction.vcxitems" Label="Shared" Condition="$(BuildingWithBuildExe) != 'true' And $(UseInternalSDK) == 'true'" />
     <Import Project="..\MenuFlyout\MenuFlyout.vcxitems" Label="Shared" />
     <Import Project="..\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' and $(BuildingWithBuildExe) != 'true' And $(UseInsiderSDK) == 'true'" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -271,6 +272,7 @@
       <MultiProcessorCompilation Condition="$(BuildingWithBuildExe) == 'true'">true</MultiProcessorCompilation>
       <AdditionalOptions>/std:c++17 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="$(BuildingWithBuildExe) != 'true'">/Wv:18 /Zm1000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <EnablePREfast Condition="'$(Configuration)'=='Release' And $(BuildingWithBuildExe) != 'true'">true</EnablePREfast>

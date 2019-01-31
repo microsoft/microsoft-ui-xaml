@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{B39300D2-4510-44EA-AA7B-EDA9118F830E}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayerAutomationPeer.h" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\AnimatedVisualPlayer.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayerAutomationPeer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayer.idl" />
+    <None Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayerAutomationPeer.idl" />
+  </ItemGroup>
+</Project>

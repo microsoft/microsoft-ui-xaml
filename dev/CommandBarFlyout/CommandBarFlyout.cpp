@@ -256,7 +256,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     presenter.Padding(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Content(*commandBar);
 
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
     // We will provide our own shadow, not the one that FlyoutPresenter has by default.
     // We need to specifically target the CommandBar for the shadow, not the default node far
     // above that.

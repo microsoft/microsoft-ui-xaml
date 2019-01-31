@@ -169,7 +169,7 @@ namespace MUXControlsTestApp
 
         private void SetRootGridSizeFromWindowSize()
         {
-#if USE_INSIDER_SDK
+#if USE_INTERNAL_SDK
             if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.Xaml.XamlRoot"))
             {
                 var xamlRoot = _rootGrid.XamlRoot;

@@ -1,0 +1,6 @@
+[WUXC_VERSION_INTERNAL]
+[webhosthidden]
+unsealed runtimeclass AnimatedVisualPlayerAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    AnimatedVisualPlayerAutomationPeer(MU_XC_NAMESPACE.AnimatedVisualPlayer owner);
+}

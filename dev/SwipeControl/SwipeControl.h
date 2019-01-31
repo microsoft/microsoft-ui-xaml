@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -84,7 +84,7 @@ private:
     void DetachDismissingHandlers();
     void DismissSwipeOnAcceleratorKeyActivator(const winrt::Windows::UI::Core::CoreDispatcher & sender, const winrt::AcceleratorKeyEventArgs & args);
 
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
     // Used on platforms where we have XamlRoot.
     void DismissSwipeOnXamlRootKeyDown(const winrt::IInspectable & sender, const winrt::KeyRoutedEventArgs & args);
     void CurrentXamlRootChanged(const winrt::XamlRoot & sender, const winrt::XamlRootChangedEventArgs & args);
@@ -180,7 +180,7 @@ private:
     winrt::event_token m_inputEaterTappedToken{};
     tracker_ref<winrt::IInspectable> m_onPointerPressedEventHandler{ this };
 
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
     // Used on platforms where we have XamlRoot.
     tracker_ref<winrt::IInspectable> m_onXamlRootPointerPressedEventHandler{ this };
     tracker_ref<winrt::IInspectable> m_onXamlRootKeyDownEventHandler{ this };
