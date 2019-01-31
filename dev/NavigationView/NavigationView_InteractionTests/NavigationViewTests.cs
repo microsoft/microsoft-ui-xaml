@@ -653,6 +653,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("NavViewTestSuite", "A")]
+        public void VerifyNavigationViewItemResponseToClickAfterBeingMovedBetweenFrames()
+        {
+            using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
+                            page2 = new TestSetupHelper("NavigationView Init Test"))
+            {
+                var myLocationButton = FindElement.ByName<Button>("MyLocation");
+                var switchFrameButton = FindElement.ByName<Button>("SwitchFrame");
+                var result = new TextBlock(FindElement.ByName("MyLocationResult"));
+ 
+                Log.Comment("Click on MyLocation Item and verify it's on Frame1");
+                myLocationButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual(result.GetText(), "Frame1");
+
+                Log.Comment("Click on SwitchFrame");
+                switchFrameButton.Invoke();
+                Wait.ForIdle();
+
+                // tree structure changed and rebuild the cache.
+                ElementCache.Clear();
+
+                Log.Comment("Click on MyLocation Item and verify it's on Frame2");
+                myLocationButton = FindElement.ByName<Button>("MyLocation");
+                myLocationButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual(result.GetText(), "Frame2");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "A")]
         public void ForceIsPaneOpenToFalseOnLeftNavTest()
         {
             using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),

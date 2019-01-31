@@ -54,8 +54,9 @@ public:
     winrt::DependencyObject ContainerFromMenuItem(winrt::IInspectable const& item);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&  args);
-    void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnListViewLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
 
     void OnSettingsInvoked();
 
