@@ -162,8 +162,6 @@ void TextCommandBarFlyout::UpdateButtons()
                 auto richEditBoxTarget = safe_try_cast<winrt::RichEditBox>(Target());
                 auto toggleButton{ GetButton(buttonType).as<winrt::AppBarToggleButton>() };
                 auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
-                /*auto length = selection.Length();
-                auto bold = selection.CharacterFormat().Bold();*/
 
                 if (selection)
                 {
@@ -174,38 +172,6 @@ void TextCommandBarFlyout::UpdateButtons()
                     m_isSettingToggleButtonState = true;
                     toggleButton.IsChecked(getIsChecked(selection));
                 }
-
-                //if (buttonType == TextControlButtons::Bold)
-                //{
-                //    auto initializingButtons = gsl::finally([this]()
-                //    {
-                //        m_isSettingToggleButtonState = false;
-                //    });
-                //    m_isSettingToggleButtonState = true;
-                //    if (selection)
-                //    {
-                //        if (bold == winrt::Windows::UI::Text::FormatEffect::On)
-                //        {
-                //            toggleButton.IsChecked(true);
-                //        }
-                //        else if (bold == winrt::Windows::UI::Text::FormatEffect::Off)
-                //        {
-                //            toggleButton.IsChecked(false);
-                //        }
-                //        else if (bold == winrt::Windows::UI::Text::FormatEffect::Undefined)
-                //        {
-                //            toggleButton.IsChecked(false);
-                //        }
-                //        //toggleButton.IsChecked(getIsChecked(selection));
-                //    }
-                //}
-                //else
-                //{
-                //    if (selection)
-                //    {
-                //        toggleButton.IsChecked(getIsChecked(selection));
-                //    }
-                //}
 
                 commandsList.Append(toggleButton);
             }
@@ -333,13 +299,7 @@ void TextCommandBarFlyout::UpdateButtons()
     addButtonToCommandsIfPresent(TextControlButtons::Paste, commandListForCutCopyPaste);
 
     addRichEditButtonToCommandsIfPresent(TextControlButtons::Bold, PrimaryCommands(),
-        [](winrt::ITextSelection textSelection)
-        {
-            auto bold = textSelection.CharacterFormat().Bold();
-            bool isbold = (bold == winrt::FormatEffect::On);
-            return isbold;
-        });
-
+        [](winrt::ITextSelection textSelection) { return textSelection.CharacterFormat().Bold() == winrt::FormatEffect::On; });
     addRichEditButtonToCommandsIfPresent(TextControlButtons::Italic, PrimaryCommands(),
         [](winrt::ITextSelection textSelection) { return textSelection.CharacterFormat().Italic() == winrt::FormatEffect::On; });
     addRichEditButtonToCommandsIfPresent(TextControlButtons::Underline, PrimaryCommands(),
@@ -825,7 +785,6 @@ void TextCommandBarFlyout::ExecuteItalicCommand()
                 {
                     characterFormat.Italic(winrt::FormatEffect::On);
                 }
-                //selection.CharacterFormat().Italic(winrt::FormatEffect::Toggle);
             }
         }
     }
