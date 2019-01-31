@@ -58,7 +58,8 @@ jobs:
   parameters:
     jobName: CreateNugetPackage
     dependsOn: Build
-  
+    publishVstsFeed: 'd62f8eac-f05c-4c25-bccb-21f98b95c95f'
+ 
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
