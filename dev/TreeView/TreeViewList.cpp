@@ -676,7 +676,10 @@ winrt::TreeViewNode TreeViewList::NodeFromContainer(winrt::DependencyObject cons
 
 winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode const& node)
 {
-    if (!node) return nullptr;
+    if (!node)
+    {
+        return nullptr;
+    }
 
     if (IsContentMode())
     {
@@ -687,7 +690,10 @@ winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode cons
 
 winrt::TreeViewNode TreeViewList::NodeFromItem(winrt::IInspectable const& item)
 {
-    if (!item) return nullptr;
+    if (!item)
+    {
+        return nullptr;
+    }
 
     auto container = ContainerFromItem(item);
     return NodeFromContainer(container);

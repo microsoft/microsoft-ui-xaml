@@ -135,7 +135,7 @@ public:
 
 #pragma endregion
 
-// Similiar to SelectedNodesVector above, we need to make decisitions before the item is inserted or removed.
+// Similiar to SelectedNodesVector above, we need to make decisions before the item is inserted or removed.
 // we can't use vector change events because the event already happened when event hander gets called.
 #pragma region SelectedItemsVector
 
@@ -176,12 +176,9 @@ public:
             if (selectedNodes.Size() != Size())
             {
                 auto listControl = winrt::get_self<TreeViewList>(m_viewModel->ListControl().get());
-                if (auto container = listControl->ContainerFromItem(item))
+                if (auto node = listControl->NodeFromItem(item))
                 {
-                    if (auto node = listControl->NodeFromContainer(container))
-                    {
-                        selectedNodes.InsertAt(index, node);
-                    }
+                    selectedNodes.InsertAt(index, node);
                 }
             }
         }
