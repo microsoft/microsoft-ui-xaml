@@ -27,22 +27,19 @@ void MultiLevelListViewBase::ListViewModel(com_ptr<ViewModel> const& viewModel)
 
 winrt::TreeViewNode MultiLevelListViewBase::NodeAtFlatIndex(int index) const
 {
-    if (ListViewModel()) {
-        return ListViewModel()->GetNodeAt(index);
+    if (auto viewModel = ListViewModel()) {
+        if (index >= 0 && index < static_cast<int32_t>(viewModel->Size()))
+        {
+            return viewModel->GetNodeAt(index);
+        }
     }
     return nullptr;
 }
 
 winrt::TreeViewNode MultiLevelListViewBase::NodeFromContainer(winrt::DependencyObject const& container)
 {
-    if (ListViewModel()) {
-        int index = m_listView.get().IndexFromContainer(container);
-        if (index >= 0 && index < static_cast<int32_t>(ListViewModel()->Size()))
-        {
-            return NodeAtFlatIndex(index);
-        }
-    }
-    return nullptr;
+    int index = m_listView.get().IndexFromContainer(container);
+    return NodeAtFlatIndex(index);
 }
 
 winrt::DependencyObject MultiLevelListViewBase::ContainerFromNode(winrt::TreeViewNode const& node)
