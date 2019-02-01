@@ -9,6 +9,7 @@ using namespace Microsoft::WRL::Wrappers;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Numerics;
 
+using namespace std::chrono_literals;
 using namespace std::string_view_literals;
 using namespace std::chrono_literals;
 

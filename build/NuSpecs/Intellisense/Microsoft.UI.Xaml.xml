@@ -5126,5 +5126,310 @@
     <member name="F:Microsoft.UI.Xaml.Media.AcrylicBackgroundSource.HostBackdrop">
       <summary>The brush samples from the content behind the app window.</summary>
     </member>
+      <member name="T:Microsoft.UI.Xaml.Controls.IAnimatedVisual">
+          <summary>
+              An animated visual that can be played by the <see cref="T:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer"/>.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.IAnimatedVisual.RootVisual">
+          <summary>
+              The root <see cref="T:Windows.UI.Composition.Visual"/> of the animated visual.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.IAnimatedVisual.Size">
+          <summary>
+              The size of the animated visual.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.IAnimatedVisual.Duration">
+          <summary>
+              The duration of the animated visual.
+          </summary>
+      </member>
+
+      <member name="T:Microsoft.UI.Xaml.Controls.IAnimatedVisualSource">
+          <summary>
+              Provides animated visuals for the <see cref="T:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer"/> to play.
+          </summary>
+      </member>
+      <member name="M:Microsoft.UI.Xaml.Controls.IAnimatedVisualSource.TryCreateAnimatedVisual(Windows.UI.Composition.Compositor,IInspectable@)">
+          <summary>
+              Attempts to create an instance of an animated visual. The returned <paramref name="diagnostics"/> argument contains
+              optional diagnostics information about the animated visual. The runtime type of the object and
+              the meaning of its information is determined by the <see cref="IAnimatedVisualSource"/>.
+          </summary>
+          <param name="compositor">
+              The <see cref="T:Windows.UI.Composition.Compositor"/>
+              that will be used to create objects for the animated visual.
+          </param>
+          <param name="diagnostics">
+              <summary>
+                  An optional object containing diagnostics information about the result. The type and contents of the object depend on the
+                  implementation of <see cref="T:Microsoft.UI.Xaml.Controls.IAnimatedVisualSource"/>.
+              </summary>
+          </param>
+          <returns>
+              An <see cref="T:Microsoft.UI.Xaml.Controls.IAnimatedVisual"/> or null.
+          </returns>
+      </member>
+
+      <member name="T:Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource">
+          <summary>
+              Implemented by <see cref="T:Microsoft.UI.Xaml.Controls.IAnimatedVisualSource"/>s that want to indicate to the player
+              that the current animated visual should be discarded.
+          </summary>
+      </member>
+      <member name="E:Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource.AnimatedVisualInvalidated">
+          <summary>
+              An event that is raised when the animated visual previously provided by the
+              <see cref="T:Microsoft.UI.Xaml.Controls.IDynamicAnimatedVisualSource"/> should be discarded.
+          </summary>
+      </member>
+
+      <member name="T:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual">
+          <summary>
+              An <see cref="T:Microsoft.UI.Xaml.Controls.IAnimatedVisual"/> that is responsible for playing
+              itself, rather than being animated via an <see cref="T:Windows.UI.Composition.Animation"/>.
+          </summary>
+      </member>
+      <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.Pause">
+          <summary>
+              Pauses the animated visual, or does nothing if no play is underway.
+          </summary>
+      </member>
+      <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.PlayAsync(System.Double,System.Double,System.Boolean)">
+          <summary>
+              Starts playing the animated visual. If another play is active, that play will be stopped
+              and this new play will replace it.
+          </summary>
+          <param name="fromProgress">The point at which to start the animation, as a value from 0 to 1.</param>
+          <param name="toProgress">The point at which to finish the animation, as a value from 0 to 1.</param>
+          <param name="looped">
+              If true, the animation will loop continuously between <paramref name="fromProgress"/>
+              and <paramref name="toProgress"/>. If false, the animation will play once then stop.
+          </param>
+          <returns>
+              An async action that is completed when the play is stopped or, if <paramref name="looped"/> is not
+              set, when the play reaches fromProgress.
+          </returns>
+          <remarks>
+              <para>
+                  If <paramref name="toProgress"/> is less than <paramref name="fromProgress"/>, the animated visual will
+                  play from <paramref name="fromProgress"/> to the end then play from the beginning until it reaches
+                  <paramref name="toProgress"/>. To play an animated visual in reverse, set the
+                  <see cref="P:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.PlaybackRate"/>
+                  to a negative value.
+              </para>
+          </remarks>
+      </member>
+      <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.Resume">
+          <summary>
+              Resumes the paused animated visual, or does nothing if the animated visual is not paused.
+          </summary>
+      </member>
+      <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.SetProgress(System.Double)">
+          <summary>
+              Moves the progress of the animated visual to the given value. If the animated visual was playing it will behave
+              as if <see cref="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.Stop"/> was called first.
+          </summary>
+          <param name="progress">A value from 0 to 1.</param>
+      </member>
+      <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.Stop">
+          <summary>
+              Stops the current play, or does nothing if no play is underway.
+          </summary>
+          <remarks>
+              The difference between <see cref="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.Pause"/> and <see cref="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.Stop"/> is that
+              <see cref="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.Stop"/> will complete the current play, whereas <see cref="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.Pause"/> does not.
+          </remarks>
+      </member>
+      <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.SetProgressObject(Windows.UI.Composition.CompositionPropertySet)">
+          <summary>
+              Sets the progress object for the animated visual. The animated visual is responsible for updating the "Progress" property
+              on this object to match the current progress of the animated visual.
+          </summary>
+      </member>
+      <member name="M:Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual.SetSize(Windows.Foundation.Size)">
+          <summary>
+              Sets the rendering size of the animated visual. The animated visual is responsible for re-rendering itself to this size.
+          </summary>
+      </member>
+
+      <member name="T:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer">
+          <summary>
+              A XAML element that displays and controls an animated visual.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Diagnostics">
+          <summary>
+              Contains optional diagnostics information about the last attempt to load an animated visual. The runtime
+              type of the object and the meaning of its information is determined by the <see cref="IAnimatedVisualSource"/>.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Duration">
+          <summary>
+              The duration of the the currently loaded animated visual, or <see cref="F:System.TimeSpan.Zero"/> if no
+              animated visual is loaded.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Source">
+          <summary>
+              The provider of the animated visual for the player.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.FallbackContent">
+          <summary>
+              Content that should be displayed if an animated visual fails to load. The content will remain visible until
+              an animated visual is successfully loaded.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.AutoPlay">
+          <summary>
+              If true, when an animated visual is loaded it will play immediately, looping from start to end. Defaults to true.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.IsAnimatedVisualLoaded">
+          <summary>
+              True if an animated visual is loaded.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.IsPlaying">
+          <summary>
+              True if an animated visual is loaded and a play is underway.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.PlaybackRate">
+          <summary>
+              Gets or sets the playback rate. Normal speed is 1.0. If set to a negative
+              value the animated visual will play backwards. When a new animated visual is loaded,
+              the playback rate will be reset to 1.0.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.ProgressObject">
+          <summary>
+              A <see cref="T:Windows.UI.Composition.CompositionObject"/> that will be animated along with
+              the progress of the <see cref="T:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer"/>.
+          </summary>
+          <remarks>
+              This is exposed to support advanced scenarios where other <see cref="T:Windows.UI.Composition.CompositionObject"/>s
+              are animated at the same rate as the <see cref="T:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer"/>.
+              To bind a property to the progress of this player, use an <see cref="T:Windows.UI.Composition.ExpressionAnimation"/>
+              with an expression that references a scalar property named "Progress" on this object.
+          </remarks>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Stretch">
+          <summary>
+              Gets or sets a value that describes how an animated visual should be stretched to fill
+              the destination rectangle. The default value is <see cref="F:Windows.UI.Xaml.Media.Uniform"/>.
+          </summary>
+      </member>
+      <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Pause">
+          <summary>
+              Pauses the currently playing animated visual, or does nothing if no play is underway.
+          </summary>
+          <remarks>
+              The difference between <see cref="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Pause"/> and <see cref="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Stop"/> is that
+              <see cref="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Stop"/> will complete the current play, whereas <see cref="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Pause"/> does not.
+          </remarks>
+      </member>
+      <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.PlayAsync(System.Double,System.Double,System.Boolean)">
+          <summary>
+              Starts playing the loaded animated visual, or does nothing if no animated visual is loaded.
+          </summary>
+          <param name="fromProgress">The point at which to start the animation, as a value from 0 to 1.</param>
+          <param name="toProgress">The point at which to finish the animation, as a value from 0 to 1.</param>
+          <param name="looped">
+              If true, the animation will loop continuously between <paramref name="fromProgress"/>
+              and <paramref name="toProgress"/>. If false, the animation will play once then stop.
+          </param>
+          <returns>
+              An action that is completed when the play is stopped, or, if <paramref name="looped"/> is not
+              set, when the play reaches fromProgress.
+          </returns>
+          <remarks>
+              <para>
+                  If <paramref name="toProgress"/> is less than <paramref name="fromProgress"/>, the animated visual will
+                  play from <paramref name="fromProgress"/> to the end then play from the beginning until it reaches
+                  <paramref name="toProgress"/>. To play an animated visual in reverse, set the <see cref="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.PlaybackRate"/>
+                  to a negative value.
+              </para>
+          </remarks>
+      </member>
+      <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Resume">
+          <summary>
+              Resumes the currently paused animated visual, or does nothing if there is no animated visual loaded or
+              the animated visual is not paused.
+          </summary>
+      </member>
+      <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.SetProgress(System.Double)">
+          <summary>
+              Moves the progress of the animated visual to the given value. If the animated visual was playing it will behave
+              as if <see cref="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Stop"/> was called first. Does nothing if no animated visual is loaded.
+          </summary>
+          <param name="progress">A value from 0 to 1.</param>
+      </member>
+      <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Stop">
+          <summary>
+              Stops the current play, or does nothing if no play is underway.
+          </summary>
+          <remarks>
+              The difference between <see cref="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Pause"/> and <see cref="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Stop"/> is that
+              <see cref="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Stop"/> will complete the current play, whereas <see cref="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Pause"/> does not.
+          </remarks>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.AutoPlayProperty">
+          <summary>
+              Identifies the <see cref="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.AutoPlay"/> dependency property.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.DiagnosticsProperty">
+          <summary>
+              Identifies the <see cref="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Diagnostics"/> dependency property.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.DurationProperty">
+          <summary>
+              Identifies the <see cref="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Duration"/> dependency property.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.FallbackContentProperty">
+          <summary>
+              Identifies the <see cref="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.FallbackContent"/> dependency property.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.IsAnimatedVisualLoadedProperty">
+          <summary>
+              Identifies the <see cref="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.IsAnimatedVisualLoaded"/> dependency property.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.IsPlayingProperty">
+          <summary>
+              Identifies the <see cref="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.IsPlaying"/> dependency property.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.PlaybackRateProperty">
+          <summary>
+              Identifies the <see cref="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.PlaybackRate"/> dependency property.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.SourceProperty">
+          <summary>
+              Identifies the <see cref="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Source"/> dependency property.
+          </summary>
+      </member>
+      <member name="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.StretchProperty">
+          <summary>
+              Identifies the <see cref="P:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.Stretch"/> dependency property.
+          </summary>
+      </member>
+      <member name="T:Microsoft.UI.Xaml.Automation.Peers.AnimatedVisualPlayerPeer">
+          <summary>
+              Exposes <see cref="Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer?text=AnimatedVisualPlayer"></see> to Microsoft UI Automation.
+          </summary>
+      </member>
+      <member name="M:Microsoft.UI.Xaml.Automation.Peers.AnimatedVisualPlayerPeer.#ctor(Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)">
+          <summary></summary>
+          <param name="owner"></param>
+      </member>      
   </members>
 </doc>

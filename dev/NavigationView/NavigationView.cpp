@@ -132,6 +132,7 @@ NavigationView::NavigationView()
         });
 
     Unloaded({ this, &NavigationView::OnUnloaded });
+    Loaded({ this, &NavigationView::OnLoaded });
 }
 
 void NavigationView::OnApplyTemplate()
@@ -240,7 +241,7 @@ void NavigationView::OnApplyTemplate()
     {
         m_leftNavListView.set(leftNavListView);
 
-        m_leftNavListViewLoadedRevoker = leftNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnLoaded });
+        m_leftNavListViewLoadedRevoker = leftNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
 
         m_leftNavListViewSelectionChangedRevoker = leftNavListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
         m_leftNavListViewItemClickRevoker = leftNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
@@ -253,7 +254,7 @@ void NavigationView::OnApplyTemplate()
     {
         m_topNavListView.set(topNavListView);
 
-        m_topNavListViewLoadedRevoker = topNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnLoaded });
+        m_topNavListViewLoadedRevoker = topNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
 
         m_topNavListViewSelectionChangedRevoker = topNavListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
         m_topNavListViewItemClickRevoker = topNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
@@ -363,7 +364,7 @@ void NavigationView::OnApplyTemplate()
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
         if (auto splitView = m_rootSplitView.get())
         {
             if (auto contentRoot = splitView.Content())
@@ -2681,7 +2682,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
 }
 
 
-void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+void NavigationView::OnListViewLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     if (auto item = SelectedItem())
     {
@@ -2704,9 +2705,22 @@ void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEv
     }
 }
 
+// If app is .net app, the lifetime of NavigationView maybe depends on garbage collection.
+// Unlike other revoker, TitleBar is in global space and we need to stop receiving changed event when it's unloaded.
+// So we do hook it in Loaded and Unhook it in Unloaded
 void NavigationView::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
-    UnhookEventsAndClearFields();
+    m_titleBarMetricsChangedRevoker.revoke();
+    m_titleBarIsVisibleChangedRevoker.revoke();
+}
+
+void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+{
+    if (auto coreTitleBar = m_coreTitleBar.get())
+    {
+        m_titleBarMetricsChangedRevoker = coreTitleBar.LayoutMetricsChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarMetricsChanged });
+        m_titleBarIsVisibleChangedRevoker = coreTitleBar.IsVisibleChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarIsVisibleChanged });
+    }
 }
 
 void NavigationView::OnIsPaneOpenChanged()
@@ -2734,7 +2748,7 @@ void NavigationView::OnIsPaneOpenChanged()
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
         if (auto splitView = m_rootSplitView.get())
         {
             if (auto paneRoot = splitView.Pane())

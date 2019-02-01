@@ -49,6 +49,23 @@ namespace CustomTasks
             DefaultValueMetadata["AcrylicBrush.TintOpacity"] = @"AcrylicBrush::sc_defaultTintOpacity";
             DefaultValueMetadata["AcrylicBrush.TintTransitionDuration"] = @"AcrylicBrush::sc_defaultTintTransitionDuration";
 
+            IncludedTypesMetadata["AnimatedVisualPlayer"] = true;
+            // AnimatedVisualPlayer -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.AutoPlay"] = true;
+            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.AutoPlay"] = "OnAutoPlayPropertyChanged";
+            NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.FallbackContent"] = true;
+            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.FallbackContent"] = "OnFallbackContentPropertyChanged";
+            NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.PlaybackRate"] = true;
+            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.PlaybackRate"] = "OnPlaybackRatePropertyChanged";
+            NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.Source"] = true;
+            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.Source"] = "OnSourcePropertyChanged";
+            NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.Stretch"] = true;
+            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.Stretch"] = "OnStretchPropertyChanged";
+            // AnimatedVisualPlayer -- DefaultValueMetadata
+            DefaultValueMetadata["AnimatedVisualPlayer.AutoPlay"] = @"true";
+            DefaultValueMetadata["AnimatedVisualPlayer.PlaybackRate"] = @"1";
+            DefaultValueMetadata["AnimatedVisualPlayer.Stretch"] = @"winrt::Stretch::Uniform";
+
             IncludedTypesMetadata["BitmapIconSource"] = true;
             // BitmapIconSource -- NeedsPropChangedCallbackMetadata
             // BitmapIconSource -- DefaultValueMetadata
@@ -176,6 +193,10 @@ namespace CustomTasks
             IncludedTypesMetadata["IconSource"] = true;
             // IconSource -- NeedsPropChangedCallbackMetadata
             // IconSource -- DefaultValueMetadata
+
+            IncludedTypesMetadata["IDynamicAnimatedVisualSource"] = true;
+            // IDynamicAnimatedVisualSource -- NeedsPropChangedCallbackMetadata
+            // IDynamicAnimatedVisualSource -- DefaultValueMetadata
 
             IncludedTypesMetadata["IRefreshInfoProvider"] = true;
             // IRefreshInfoProvider -- NeedsPropChangedCallbackMetadata
