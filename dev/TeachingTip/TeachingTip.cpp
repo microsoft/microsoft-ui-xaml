@@ -68,16 +68,16 @@ void TeachingTip::OnApplyTemplate()
     }
     if (m_closeButton)
     {
-        m_closeButton.get().Click({ this, &TeachingTip::OnCloseButtonClicked });
+        m_closeButton.get().Click(winrt::auto_revoke, {this, &TeachingTip::OnCloseButtonClicked });
     }
     if (m_alternateCloseButton)
     {
-        m_alternateCloseButton.get().Click({ this, &TeachingTip::OnCloseButtonClicked });
+        m_alternateCloseButton.get().Click(winrt::auto_revoke, {this, &TeachingTip::OnCloseButtonClicked });
     }
 
     if (m_actionButton)
     {
-        m_actionButton.get().Click({ this, &TeachingTip::OnActionButtonClicked });
+        m_actionButton.get().Click(winrt::auto_revoke, {this, &TeachingTip::OnActionButtonClicked });
     }
     UpdateButtonsState();
     OnIconSourceChanged();
@@ -131,7 +131,7 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
 
 void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const winrt::IInspectable& newContent)
 {
-    if (Content())
+    if (newContent)
     {
         winrt::VisualStateManager::GoToState(*this, L"Content"sv, false);
     }
@@ -606,7 +606,7 @@ void TeachingTip::UpdateButtonsState()
             }
             else
             {
-                // Without light dismiss we require that atleast one close button be shown at all times.
+                // Without light dismiss we require that at least one close button be shown at all times.
                 winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
             }
         }
@@ -622,7 +622,7 @@ void TeachingTip::UpdateButtonsState()
             }
             else
             {
-                // We require that atleast one close button be shown at all times.
+                // We require that at least one close button be shown at all times.
                 winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
             }
         }
@@ -673,7 +673,6 @@ void TeachingTip::OnIsOpenChanged()
         if (!m_popup)
         {
             m_popup.set(winrt::Popup());
-            m_popup.get().Child(*this);
             m_popupClosedRevoker = m_popup.get().Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
             if (IsLightDismissEnabled())
             {
@@ -687,6 +686,10 @@ void TeachingTip::OnIsOpenChanged()
         if (!m_expandAnimation)
         {
             CreateExpandAnimation();
+        }
+        if (!m_popup.get().Child())
+        {
+            m_popup.get().Child(*this);
         }
 
         if (!m_popup.get().IsOpen())
@@ -842,6 +845,7 @@ void TeachingTip::OnActionButtonClicked(const winrt::IInspectable& sender, const
 
 void TeachingTip::OnPopupClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args)
 {
+    m_popup.get().Child(nullptr);
     auto myArgs = winrt::make_self<TeachingTipClosedEventArgs>();
     if (IsOpen())
     {
@@ -1332,7 +1336,7 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
 
 void TeachingTip::EstablishShadows()
 {
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
     if (SharedHelpers::IsThemeShadowAvailable())
     {
 #ifdef _DEBUG
@@ -1342,7 +1346,6 @@ void TeachingTip::EstablishShadows()
         m_beakPolygon.get().Shadow(beakShadow);
         m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
 #endif
-
         auto contentShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
         contentShadow.Receivers().Append(m_shadowTarget.get());
         m_beakOcclusionGrid.get().Shadow(contentShadow);
@@ -1448,7 +1451,7 @@ void TeachingTip::SetBeakElevation(float elevation)
 }
 void TeachingTip::SetBeakShadowTargetsShadowTarget(const bool targetsShadowTarget)
 {
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
     m_beakShadowTargetsShadowTarget = targetsShadowTarget;
     if (SharedHelpers::IsThemeShadowAvailable() && m_beakPolygon)
     {

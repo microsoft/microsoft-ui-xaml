@@ -726,9 +726,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         private int WaitForOffsetUpdated(
-        double expectedValue,
-        double millisecondsTimeout = defaultAnimatedViewChangeTimeout,
-        bool failOnError = true)
+            double expectedValue,
+            double millisecondsTimeout = defaultAnimatedViewChangeTimeout,
+            bool failOnError = true)
         {
             Log.Comment("WaitForOffsetUpdated with expectedValue: " + expectedValue);
             if (elements.scrollViewerOffsetTextBox == null)

@@ -33,16 +33,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void TeachingTipBackgroundTest()
         {
-            var resetEvent = new AutoResetEvent(false);
+            var loadedEvent = new AutoResetEvent(false);
             RunOnUIThread.Execute(() =>
             {
                 TeachingTip teachingTip = new TeachingTip();
-                teachingTip.Loaded += (object sender, RoutedEventArgs args) => { resetEvent.Set(); };
+                teachingTip.Loaded += (object sender, RoutedEventArgs args) => { loadedEvent.Set(); };
                 MUXControlsTestApp.App.TestContentRoot = teachingTip;
             });
 
             IdleSynchronizer.Wait();
-            resetEvent.WaitOne();
+            loadedEvent.WaitOne();
 
             RunOnUIThread.Execute(() =>
             {
@@ -69,10 +69,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 TeachingTip teachingTip = (TeachingTip)MUXControlsTestApp.App.TestContentRoot;
                 var blueBrush = new SolidColorBrush(Colors.Blue);
-                Verify.AreNotEqual(blueBrush, teachingTip.Background);
+                Verify.AreEqual(blueBrush.Color, ((SolidColorBrush)teachingTip.Background).Color);
                 var child = VisualTreeHelper.GetChild(teachingTip, 0);
                 var grandChild = VisualTreeHelper.GetChild(child, 1);
-                Verify.AreNotEqual(blueBrush, ((Grid)grandChild).Background);
+                var grandChildBackgroundBrush = ((Grid)grandChild).Background;
+                //If we can no longer cast the background brush to a solid color brush then changing the
+                //IsLightDismissEnabled has changed the background as we expected it to.
+                if(grandChildBackgroundBrush is SolidColorBrush)
+                {
+                    Verify.AreNotEqual(blueBrush.Color, ((SolidColorBrush)grandChildBackgroundBrush).Color);
+                }
             });
         }
     }

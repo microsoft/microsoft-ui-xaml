@@ -315,9 +315,9 @@ namespace MUXControlsTestApp
         public void OnGetTargetBoundsButtonClicked(object sender, RoutedEventArgs args)
         {
             var bounds = this.targetButton.TransformToVisual(null).TransformBounds(new Rect(0.0,
-            0.0,
-            this.targetButton.ActualWidth,
-            this.targetButton.ActualHeight));
+                0.0,
+                this.targetButton.ActualWidth,
+                this.targetButton.ActualHeight));
             
             this.TargetXOffsetTextBlock.Text = bounds.X.ToString();
             this.TargetYOffsetTextBlock.Text = bounds.Y.ToString();
