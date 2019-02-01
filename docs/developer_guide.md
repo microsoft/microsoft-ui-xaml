@@ -113,6 +113,12 @@ a fairly recent SDK in order to build WinUI. It's required that you install the
 all the boxes when prompted), or you can manually download them from here: 
 https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk
 
+You will also need to install The Windows 10 Insider SDK 18312. The easiest way 
+to install this is to run the Install-WindowsSdkISO.ps1 script from this repo in
+an Administrator Powershell window:
+
+`.\build\Install-WindowsSdkISO.ps1 18312`
+
 ### Creating a NuGet package
 
 > More information will be coming on this soon
