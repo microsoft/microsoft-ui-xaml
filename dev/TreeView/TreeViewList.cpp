@@ -706,8 +706,7 @@ winrt::IInspectable TreeViewList::ItemFromNode(winrt::TreeViewNode const& node)
         return node;
     }
 
-    auto container = ContainerFromNode(node);
-    return container ? ItemFromContainer(container) : nullptr;
+    return node ? node.Content() : nullptr;
 }
 
 bool TreeViewList::IsContentMode()

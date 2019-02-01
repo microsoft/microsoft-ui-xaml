@@ -2392,7 +2392,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TreeViewTestSuite", "B")]
         public void TreeViewSelectedItemTest()
         {
-            // databinding only is only available on RS5+
+            // databinding is only available on RS5+
             if(IsLowerThanRS5())
             {
                 return;
@@ -2426,7 +2426,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TreeViewTestSuite", "B")]
         public void TreeViewSelectedItemsTest()
         {
-            // databinding only is only available on RS5+
+            // databinding is only available on RS5+
             if (IsLowerThanRS5())
             {
                 return;
