@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Windows.Input;
 using Windows.Devices.Geolocation;
 using Windows.Storage;
 using Windows.UI.Xaml;
@@ -27,11 +28,15 @@ namespace DEPControlsTestApp
         public ObservableDataSource<IGrouping<string, Item>> ItemsGroupedByParentMountain = new ObservableDataSource<IGrouping<string, Item>>();
         bool isGrouped = false;
 
+        public ICommand DropCommand { get; }
+
         public FileExplorerScenario()
         {
             this.InitializeComponent();
 
-            this.Loaded += FileExplorerScenario_Loaded;
+            this.DropCommand = new Command { ExecuteHandler = args => DropHandler(args) };
+
+            Loaded += FileExplorerScenario_Loaded;
             isGrouped = true;
 
             flatStackButton.Click += (sender, args) =>
@@ -43,20 +48,20 @@ namespace DEPControlsTestApp
             };
 
             flatFlowButton.Click += (sender, args) =>
-            {
-                itemsView.ItemsSource = null;
-                itemsView.ViewDefinition = flatFlowDefinition;
-                itemsView.ItemsSource = Items;
-                isGrouped = false;
-            };
+                    {
+                        itemsView.ItemsSource = null;
+                        itemsView.ViewDefinition = flatFlowDefinition;
+                        itemsView.ItemsSource = Items;
+                        isGrouped = false;
+                    };
 
             iconFlowButton.Click += (sender, args) =>
-            {
-                itemsView.ItemsSource = null;
-                itemsView.ViewDefinition = iconFlowDefinition;
-                itemsView.ItemsSource = Items;
-                isGrouped = false;
-            };
+                        {
+                            itemsView.ItemsSource = null;
+                            itemsView.ViewDefinition = iconFlowDefinition;
+                            itemsView.ItemsSource = Items;
+                            isGrouped = false;
+                        };
 
             flatTableButton.Click += (sender, args) =>
             {
@@ -79,6 +84,21 @@ namespace DEPControlsTestApp
             itemsView.FilterFunc = FilterItems;
         }
         
+        private void DropHandler(object args)
+        {
+            var itemsView = args as ItemsView;
+            if(itemsView != null)
+            {
+                dropStack.Children.Clear();
+                var selector = itemsView.Selector;
+                foreach(var selected in selector.Model.SelectedItems)
+                {
+                    dropStack.Children.Add(new TextBlock() { Text = selected.ToString() });
+                }
+            }
+         
+        }
+
         private void FileExplorerScenario_Loaded(object sender, RoutedEventArgs e)
         {
             LoadItems();
@@ -150,8 +170,7 @@ namespace DEPControlsTestApp
                         double longitude = GetDecimalDegrees(coordinates[1]);
 
                         allItems.Add(
-                            new Item()
-                            {
+                            new Item() {
                                 Rank = uint.Parse(values[0]),
                                 Mountain = values[1],
                                 Height_m = uint.Parse(values[2]),
@@ -413,5 +432,10 @@ namespace DEPControlsTestApp
 
 
         public Geopoint mapCenter { get; set; }
+
+        public override string ToString()
+        {
+            return Mountain;
+        }
     }
 }

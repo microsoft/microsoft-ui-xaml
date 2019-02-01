@@ -9,6 +9,11 @@ namespace DEPControlsTestApp.ItemsViewPrototype
         public TableRow()
         {
             DefaultStyleKey = typeof(TableRow);
+            DragAndDropBehavior.SetSource(this,
+                new DragAndDropPayload() {
+                    Data = this,
+                    Operation = DragAndDropOperation.Copy
+                });
         }
 
         public ObservableCollection<ItemsViewColumnDefinitionBase> ColumnDefinitions

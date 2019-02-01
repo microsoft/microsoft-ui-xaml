@@ -36,12 +36,15 @@
                 <TextBlock Grid.Column="1" Text="{x:Bind Mountain}" />
             </Grid>
         </DataTemplate>
-        
+
         <l:ViewDefinition Layout="{StaticResource stackLayout}" x:Name="flatStackDefinition">
             <l:ViewDefinition.ItemTemplate>
                 <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}" >
                     <DataTemplate x:Key="StackItemTemplate" x:DataType="dep:Item">
                         <l:ItemContainer Layout="{StaticResource stackLayout}" Background="LightGray">
+                            <l:DragAndDropBehavior.Source>
+                                <l:DragAndDropPayload Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" Operation="Copy" />
+                            </l:DragAndDropBehavior.Source>
                             <TextBlock Text="{x:Bind Rank}" />
                             <TextBlock Text="{x:Bind Mountain}" />
                             <TextBlock Text="{x:Bind Height_m}" />
@@ -57,6 +60,9 @@
                 <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
                     <DataTemplate x:Key="GridItemTemplate" x:DataType="dep:Item">
                         <l:ItemContainer Layout="{StaticResource gridLayout}" Background="LightGray" BorderBrush="Gray" BorderThickness="1">
+                            <l:DragAndDropBehavior.Source>
+                                <l:DragAndDropPayload Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" Operation="Copy" />
+                            </l:DragAndDropBehavior.Source>
                             <TextBlock Text="{x:Bind Rank}" />
                             <TextBlock Text="{x:Bind Mountain}" />
                             <TextBlock Text="{x:Bind Height_m}" />
@@ -72,7 +78,10 @@
                 <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
                     <DataTemplate x:Key="IconItemTemplate" x:DataType="dep:Item">
                         <l:ItemContainer Layout="{StaticResource iconItemLayout}" Background="LightGray" BorderBrush="Gray" BorderThickness="1">
-                            <Image Grid.Column="0" Width="60" Height="60">
+                            <l:DragAndDropBehavior.Source>
+                                <l:DragAndDropPayload Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" Operation="Copy" />
+                            </l:DragAndDropBehavior.Source>
+                            <Image Grid.Column="0" Width="60" Height="60"  >
                                 <Image.Source>
                                     <BitmapImage UriSource="{x:Bind ImageUri}" />
                                 </Image.Source>
@@ -93,7 +102,6 @@
         <l:ItemsViewTextColumnDefinition DisplayMemberPath="Parent_mountain" Heading="Parent Mountain" x:Key="Parent_mountain"/>
         <l:ItemsViewTextColumnDefinition DisplayMemberPath="First_ascent" Heading="First Ascent" x:Key="First_ascent"/>
         <l:ItemsViewTextColumnDefinition DisplayMemberPath="Ascents" x:Key="Ascents"/>
-        
 
         <l:TableDefinition x:Name="flatTableDefinition">
             <l:ItemsViewColumnDefinition ColumnName="Rank" Heading="Rank" CellTemplate="{StaticResource rankTemplate}"/>
@@ -127,7 +135,6 @@
             </l:TableDefinition.GroupHeaderTemplate>
         </l:TableDefinition>
 
-
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -135,7 +142,10 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
         <StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Button Content="Stack" x:Name="flatStackButton"/>
@@ -166,9 +176,21 @@
         </StackPanel>
 
         <l:ItemsView x:Name="itemsView" 
-                     Grid.Row="1" 
+                     Grid.Row="1"
                      SelectionMode="{x:Bind ConvertToSelectionMode((x:String)((ComboBoxItem)cbSelectionMode.SelectedItem).Content), Mode=OneWay}"
                      ItemsSource="{x:Bind Items}" 
                      ViewDefinition="{StaticResource flatTableDefinition}"/>
+
+
+        <ScrollViewer Grid.Row="1" Grid.Column="1" Margin="10">
+            <StackPanel >
+                <TextBlock Text="Drop selected items into the box below" />
+                <StackPanel x:Name="dropStack"  Background="LightGray" AllowDrop="True"  l:DragAndDropBehavior.DropCommand="{x:Bind DropCommand}" MinWidth="150" MinHeight="150" BorderBrush="Black" BorderThickness="1">
+                    <l:DragAndDropBehavior.Target>
+                        <l:DragAndDropPayload Data="{Binding ElementName=itemsView}" Operation="Copy" />
+                    </l:DragAndDropBehavior.Target>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>
