@@ -20,7 +20,7 @@ com_ptr<ViewModel> MultiLevelListViewBase::ListViewModel() const
     return m_viewModel.get();
 }
 
-void MultiLevelListViewBase::ListViewModel(com_ptr<ViewModel> viewModel)
+void MultiLevelListViewBase::ListViewModel(com_ptr<ViewModel> const& viewModel)
 {
     m_viewModel.set(viewModel);
 }

@@ -271,6 +271,17 @@ private:
     bool ShouldPreserveNavigationViewRS4Behavior();
     bool ShouldPreserveNavigationViewRS3Behavior();
 
+    void SyncRootNodesWithItemsSource(winrt::IInspectable const& items);
+    void ToggleIsExpandedFromItem(const winrt::IInspectable& item);
+    void ToggleIsExpanded(winrt::NavigationViewItem const& item);
+    void UpdateIsChildSelected(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
+
+    winrt::NavigationViewList GetActiveListView();
+    winrt::IVector<winrt::TreeViewNode> RootNodes();
+    winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
+    winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
+    winrt::TreeViewNode NodeFromPreviouslySelectedItem(winrt::IInspectable const& item);
+
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };
     tracker_ref<winrt::SplitView> m_rootSplitView{ this };
@@ -344,21 +355,7 @@ private:
 
     TopNavigationViewDataProvider m_topDataProvider{ this };
 
-    // Hierarchical Nav Additions
-
     tracker_ref<winrt::TreeViewNode> m_rootNode{ this };
-
-    winrt::IVector<winrt::TreeViewNode> RootNodes();
-
-    void SyncRootNodesWithItemsSource(winrt::IInspectable const& items);
-
-    winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
-    winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
-    winrt::TreeViewNode NodeFromPreviouslySelectedItem(winrt::IInspectable const& item);
-
-    void ToggleIsExpanded(winrt::NavigationViewItem const& item);
-    void UpdateIsChildSelected(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
-    winrt::ListView GetActiveListView();
 
     bool m_appliedTemplate{ false };
 

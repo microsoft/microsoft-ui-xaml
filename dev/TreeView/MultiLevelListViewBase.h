@@ -12,7 +12,7 @@ public:
     ~MultiLevelListViewBase();
 
     winrt::com_ptr<ViewModel> ListViewModel() const;
-    void ListViewModel(winrt::com_ptr<ViewModel> viewModel);
+    void ListViewModel(winrt::com_ptr<ViewModel> const& viewModel);
 
     winrt::TreeViewNode NodeAtFlatIndex(int index) const;
     winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);

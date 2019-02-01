@@ -135,7 +135,7 @@ NavigationView::NavigationView()
 
     Unloaded({ this, &NavigationView::OnUnloaded });
 
-    m_rootNode.set(winrt::TreeViewNode());
+    m_rootNode.set(winrt::make<TreeViewNode>());
 }
 
 void NavigationView::OnApplyTemplate()
@@ -1265,6 +1265,15 @@ void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextI
     eventArgs->RecommendedNavigationTransitionInfo(CreateNavigationTransitionInfo(recommendedDirection));
     m_selectionChangedEventSource(*this, *eventArgs);
 }
+
+void NavigationView::ToggleIsExpandedFromItem(const winrt::IInspectable& item)
+{
+    auto container = NavigationViewItemOrSettingsContentFromData(item);
+    if (container)
+    {
+        ToggleIsExpanded(container);
+    }
+}
  
 // SelectedItem change can be invoked by API or user's action like clicking. if it's not from API, m_shouldRaiseInvokeItemInSelectionChange would be true
 // If nextItem is selectionsuppressed, we should undo the selection. We didn't undo it OnSelectionChange because we want change by API has the same undo logic.
@@ -1290,11 +1299,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
             // To simplify the logic, OnItemClick didn't raise the event and it's been delayed to here.
             RaiseItemInvoked(nextActualItem, isSettingsItem);
 
-            auto container = NavigationViewItemOrSettingsContentFromData(nextActualItem);
-            if (container)
-            {
-                ToggleIsExpanded(container);
-            }
+            ToggleIsExpandedFromItem(nextActualItem);
         }
         else
         {
@@ -1351,11 +1356,8 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
             }
 
             UpdateIsChildSelected(prevItem, nextActualItem);
-            auto container = NavigationViewItemOrSettingsContentFromData(nextActualItem);
-            if (container)
-            {
-                ToggleIsExpanded(container);
-            }
+
+            ToggleIsExpandedFromItem(nextActualItem);
 
             AnimateSelectionChanged(prevItem, nextActualItem);
 
@@ -1375,10 +1377,10 @@ void NavigationView::UpdateIsChildSelected(winrt::IInspectable const& prevItem, 
         return;
     }
 
-    auto lv = GetActiveListView().try_as<winrt::NavigationViewList>();
+    auto lv = GetActiveListView();
     auto viewModel = winrt::get_self<NavigationViewList>(lv)->ListViewModel();
 
-    if (prevItem && !IsSettingsItem(prevItem))
+    if (lv && prevItem && !IsSettingsItem(prevItem))
     {
         winrt::TreeViewNode prevItemNode{ nullptr };
 
@@ -1401,7 +1403,7 @@ void NavigationView::UpdateIsChildSelected(winrt::IInspectable const& prevItem, 
         }
     }
 
-    if (nextItem && !IsSettingsItem(nextItem))
+    if (lv && nextItem && !IsSettingsItem(nextItem))
     {
         // The next item being selected must be in the listview
         if (auto container = lv.ContainerFromItem(nextItem))
@@ -1477,10 +1479,7 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
     if (!m_shouldIgnoreNextSelectionChange && DoesSelectedItemContainContent(clickedItem, itemContainer) && !IsSelectionSuppressed(selectedItem))
     {
         RaiseItemInvoked(selectedItem, false /*isSettings*/, itemContainer);
-        if (auto nviExpanding = itemContainer.try_as<winrt::NavigationViewItem>())
-        {
-            ToggleIsExpanded(nviExpanding);
-        }
+        ToggleIsExpandedFromItem(itemContainer);
     }
 }
 
@@ -3531,30 +3530,32 @@ void NavigationView::Collapse(winrt::NavigationViewItem const& value)
 
 winrt::TreeViewNode NavigationView::NodeFromContainer(winrt::DependencyObject const& container)
 {
-    if (auto lv = GetActiveListView())
+    if (auto navListView = GetActiveListView())
     {
-        if (auto navListView = lv.try_as<winrt::NavigationViewList>())
-        {
-            return winrt::get_self<NavigationViewList>(navListView)->NodeFromContainer(container);
-        }
+        return winrt::get_self<NavigationViewList>(navListView)->NodeFromContainer(container);
     }
     return nullptr;
 }
 
 winrt::DependencyObject NavigationView::ContainerFromNode(winrt::TreeViewNode const& node)
 {
-    if (auto lv = GetActiveListView())
+    if (auto navListView = GetActiveListView())
     {
-        if (auto navListView = lv.try_as<winrt::NavigationViewList>())
-        {
-            return winrt::get_self<NavigationViewList>(navListView)->ContainerFromNode(node);
-        }
+        return winrt::get_self<NavigationViewList>(navListView)->ContainerFromNode(node);
     }
     return nullptr;
 }
 
 //TODO: Update to work with Overflow Popup
-winrt::ListView NavigationView::GetActiveListView()
+winrt::NavigationViewList NavigationView::GetActiveListView()
 {
-    return IsTopNavigationView() ? m_topNavListView.get() : m_leftNavListView.get();
+    auto lv = IsTopNavigationView() ? m_topNavListView.get() : m_leftNavListView.get();
+    if (lv)
+    {
+        if (auto navListView = lv.try_as<winrt::NavigationViewList>())
+        {
+            return navListView;
+        }
+    }
+    return nullptr;
 }
