@@ -124,7 +124,7 @@ namespace MUXControlsTestApp
 
         public void OnSetIconButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.IconComboBox.SelectedIndex == 0)
+            if (this.IconComboBox.SelectedItem == IconPeople)
             {
                 SymbolIconSource symbolIconSource = new SymbolIconSource();
                 symbolIconSource.Symbol = Symbol.People;
@@ -139,19 +139,19 @@ namespace MUXControlsTestApp
 
         public void OnSetBleedingContentButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.BleedingContentComboBox.SelectedIndex == 0)
+            if (this.BleedingContentComboBox.SelectedItem == BleedingRedSquare)
             {
                 Grid grid = new Grid();
                 grid.Background = new SolidColorBrush(Colors.Red);
                 this.TeachingTip.BleedingImageContent = grid;
             }
-            else if (this.BleedingContentComboBox.SelectedIndex == 1)
+            else if (this.BleedingContentComboBox.SelectedItem == BleedingBlueSquare)
             {
                 Grid grid = new Grid();
                 grid.Background = new SolidColorBrush(Colors.Blue);
                 this.TeachingTip.BleedingImageContent = grid;
             }
-            else if (this.BleedingContentComboBox.SelectedIndex == 2)
+            else if (this.BleedingContentComboBox.SelectedItem == BleedingImage)
             {
                 Image image = new Image();
                 BitmapImage bitmapImage = new BitmapImage();
@@ -160,7 +160,7 @@ namespace MUXControlsTestApp
                 image.Source = bitmapImage;
                 this.TeachingTip.BleedingImageContent = image;
             }
-            else if (this.BleedingContentComboBox.SelectedIndex == 3)
+            else if (this.BleedingContentComboBox.SelectedItem == BleedingAutoSave)
             {
                 Image image = new Image();
                 BitmapImage bitmapImage = new BitmapImage();
@@ -176,19 +176,19 @@ namespace MUXControlsTestApp
 
         public void OnSetContentButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.ContentComboBox.SelectedIndex == 0)
+            if (this.ContentComboBox.SelectedItem == ContentRedSquare)
             {
                 Grid grid = new Grid();
                 grid.Background = new SolidColorBrush(Colors.Red);
                 this.TeachingTip.Content = grid;
             }
-            else if (this.ContentComboBox.SelectedIndex == 1)
+            else if (this.ContentComboBox.SelectedItem == ContentBlueSquare)
             {
                 Grid grid = new Grid();
                 grid.Background = new SolidColorBrush(Colors.Blue);
                 this.TeachingTip.Content = grid;
             }
-            else if (this.ContentComboBox.SelectedIndex == 2)
+            else if (this.ContentComboBox.SelectedItem == ContentImage)
             {
                 Image image = new Image();
                 BitmapImage bitmapImage = new BitmapImage();
@@ -197,13 +197,13 @@ namespace MUXControlsTestApp
                 image.Source = bitmapImage;
                 this.TeachingTip.Content = image;
             }
-            else if (this.ContentComboBox.SelectedIndex == 3)
+            else if (this.ContentComboBox.SelectedItem == ContentShort)
             {
                 TextBlock textBlock = new TextBlock();
                 textBlock.Text = "This is shorter content.";
                 this.TeachingTip.Content = textBlock;
             }
-            else if (this.ContentComboBox.SelectedIndex == 4)
+            else if (this.ContentComboBox.SelectedItem == ContentLong)
             {
                 TextBlock textBlock = new TextBlock();
                 textBlock.Text = "This is longer content. This is longer content. This is longer content. This is longer content. " +
@@ -218,7 +218,7 @@ namespace MUXControlsTestApp
                 textBlock.TextWrapping = TextWrapping.WrapWholeWords;
                 this.TeachingTip.Content = textBlock;
             }
-            else if (this.ContentComboBox.SelectedIndex == 5)
+            else if (this.ContentComboBox.SelectedItem == ContentAutoSave)
             {
                 Image image = new Image();
                 BitmapImage bitmapImage = new BitmapImage();
@@ -234,11 +234,11 @@ namespace MUXControlsTestApp
 
         public void OnSetTitleButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.TitleComboBox.SelectedIndex == 0)
+            if (this.TitleComboBox.SelectedItem == TitleNo)
             {
                 this.TeachingTip.Title = "";
             }
-            else if (this.TitleComboBox.SelectedIndex == 1)
+            else if (this.TitleComboBox.SelectedItem == TitleSmall)
             {
                 this.TeachingTip.Title = "Short title.";
             }
@@ -250,11 +250,11 @@ namespace MUXControlsTestApp
 
         public void OnSetSubtextButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.SubtextComboBox.SelectedIndex == 0)
+            if (this.SubtextComboBox.SelectedItem == SubtextNo)
             {
                 this.TeachingTip.Subtext = "";
             }
-            else if (this.SubtextComboBox.SelectedIndex == 1)
+            else if (this.SubtextComboBox.SelectedItem == SubtextSmall)
             {
                 this.TeachingTip.Subtext = "Short Subtext.";
             }
@@ -267,11 +267,11 @@ namespace MUXControlsTestApp
 
         public void OnSetActionButtonTextButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.ActionButtonTextComboBox.SelectedIndex == 0)
+            if (this.ActionButtonTextComboBox.SelectedItem == ActionButtonTextNo)
             {
                 this.TeachingTip.ActionButtonText = "";
             }
-            else if (this.ActionButtonTextComboBox.SelectedIndex == 1)
+            else if (this.ActionButtonTextComboBox.SelectedItem == ActionButtonTextSmall)
             {
                 this.TeachingTip.ActionButtonText = "A:Short Text.";
             }
@@ -283,11 +283,11 @@ namespace MUXControlsTestApp
 
         public void OnSetCloseButtonTextButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.CloseButtonTextComboBox.SelectedIndex == 0)
+            if (this.CloseButtonTextComboBox.SelectedItem == CloseButtonTextNo)
             {
                 this.TeachingTip.CloseButtonText = "";
             }
-            else if (this.CloseButtonTextComboBox.SelectedIndex == 1)
+            else if (this.CloseButtonTextComboBox.SelectedItem == CloseButtonTextSmall)
             {
                 this.TeachingTip.CloseButtonText = "C:Short Text.";
             }
@@ -299,11 +299,11 @@ namespace MUXControlsTestApp
 
         public void OnSetBleeingImagePlacementButtonClicked(object sender, RoutedEventArgs args)
         {
-            if(this.BleedingImagePlacementComboBox.SelectedIndex==0)
+            if(this.BleedingImagePlacementComboBox.SelectedItem == BleedingPlacementAuto)
             {
                 this.TeachingTip.BleedingImagePlacement = TeachingTipBleedingImagePlacementMode.Auto;
             }
-            else if(this.BleedingImagePlacementComboBox.SelectedIndex==1)
+            else if(this.BleedingImagePlacementComboBox.SelectedItem == BleedingPlacementTop)
             {
                 this.TeachingTip.BleedingImagePlacement = TeachingTipBleedingImagePlacementMode.Top;
             }
@@ -368,51 +368,51 @@ namespace MUXControlsTestApp
 
         public void OnSetPlacementButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.PlacementComboBox.SelectedIndex == 0)
+            if (this.PlacementComboBox.SelectedItem == PlacementTop)
             {
                 this.TeachingTip.Placement = TeachingTipPlacementMode.Top;
             }
-            else if (this.PlacementComboBox.SelectedIndex == 1)
+            else if (this.PlacementComboBox.SelectedItem == PlacementBottom)
             {
                 this.TeachingTip.Placement = TeachingTipPlacementMode.Bottom;
             }
-            else if (this.PlacementComboBox.SelectedIndex == 2)
+            else if (this.PlacementComboBox.SelectedItem == PlacementLeft)
             {
                 this.TeachingTip.Placement = TeachingTipPlacementMode.Left;
             }
-            else if (this.PlacementComboBox.SelectedIndex == 3)
+            else if (this.PlacementComboBox.SelectedItem == PlacementRight)
             {
                 this.TeachingTip.Placement = TeachingTipPlacementMode.Right;
             }
-            else if (this.PlacementComboBox.SelectedIndex == 4)
+            else if (this.PlacementComboBox.SelectedItem == PlacementTopEdgeRight)
             {
                 this.TeachingTip.Placement = TeachingTipPlacementMode.TopEdgeAlignedRight;
             }
-            else if (this.PlacementComboBox.SelectedIndex == 5)
+            else if (this.PlacementComboBox.SelectedItem == PlacementTopEdgeLeft)
             {
                 this.TeachingTip.Placement = TeachingTipPlacementMode.TopEdgeAlignedLeft;
             }
-            else if (this.PlacementComboBox.SelectedIndex == 6)
+            else if (this.PlacementComboBox.SelectedItem == PlacementBottomEdgeRight)
             {
                 this.TeachingTip.Placement = TeachingTipPlacementMode.BottomEdgeAlignedRight;
             }
-            else if (this.PlacementComboBox.SelectedIndex == 7)
+            else if (this.PlacementComboBox.SelectedItem == PlacementBottomEdgeLeft)
             {
                 this.TeachingTip.Placement = TeachingTipPlacementMode.BottomEdgeAlignedLeft;
             }
-            else if (this.PlacementComboBox.SelectedIndex == 8)
+            else if (this.PlacementComboBox.SelectedItem == PlacementLeftEdgeTop)
             {
                 this.TeachingTip.Placement = TeachingTipPlacementMode.LeftEdgeAlignedTop;
             }
-            else if (this.PlacementComboBox.SelectedIndex == 9)
+            else if (this.PlacementComboBox.SelectedItem == PlacementLeftEdgeBottom)
             {
                 this.TeachingTip.Placement = TeachingTipPlacementMode.LeftEdgeAlignedBottom;
             }
-            else if (this.PlacementComboBox.SelectedIndex == 10)
+            else if (this.PlacementComboBox.SelectedItem == PlacementRightEdgeTop)
             {
                 this.TeachingTip.Placement = TeachingTipPlacementMode.RightEdgeAlignedTop;
             }
-            else if (this.PlacementComboBox.SelectedIndex == 11)
+            else if (this.PlacementComboBox.SelectedItem == PlacementRightEdgeBottom)
             {
                 this.TeachingTip.Placement = TeachingTipPlacementMode.RightEdgeAlignedBottom;
             }
@@ -424,11 +424,11 @@ namespace MUXControlsTestApp
 
         public void OnSetCloseButtonKindButtonClicked(object sender, RoutedEventArgs args)
         {
-            if(this.CloseButtonKindComboBox.SelectedIndex == 0)
+            if(this.CloseButtonKindComboBox.SelectedItem == CloseButtonKindAuto)
             {
                 this.TeachingTip.CloseButtonKind = TeachingTipCloseButtonKind.Auto;
             }
-            else if (this.CloseButtonKindComboBox.SelectedIndex == 1)
+            else if (this.CloseButtonKindComboBox.SelectedItem == CloseButtonKindHeader)
             {
                 this.TeachingTip.CloseButtonKind = TeachingTipCloseButtonKind.Header;
             }
@@ -440,7 +440,7 @@ namespace MUXControlsTestApp
 
         public void OnSetIsLightDismissEnabledButtonClicked(object sender, RoutedEventArgs args)
         {
-            if(this.IsLightDismissEnabledComboBox.SelectedIndex == 0)
+            if(this.IsLightDismissEnabledComboBox.SelectedItem == IsLightDismissFalse)
             {
                 this.TeachingTip.IsLightDismissEnabled = false;
             }
@@ -477,11 +477,11 @@ namespace MUXControlsTestApp
 
         public void OnSetTargetVerticalAlignmentButtonClicked(object sender, RoutedEventArgs args)
         {
-            if(TargetVerticalAlignmentComboBox.SelectedIndex == 0)
+            if(TargetVerticalAlignmentComboBox.SelectedItem == TargetVerticalAlignmentTop)
             {
                 this.targetButton.VerticalAlignment = VerticalAlignment.Top;
             }
-            else if (TargetVerticalAlignmentComboBox.SelectedIndex == 1)
+            else if (TargetVerticalAlignmentComboBox.SelectedItem == TargetVerticalAlignmentCenter)
             {
                 this.targetButton.VerticalAlignment = VerticalAlignment.Center;
             }
@@ -493,11 +493,11 @@ namespace MUXControlsTestApp
         }
         public void OnSetTargetHorizontalAlignmentButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (TargetHorizontalAlignmentComboBox.SelectedIndex == 0)
+            if (TargetHorizontalAlignmentComboBox.SelectedItem == TargetHorizontalAlignmentLeft)
             {
                 this.targetButton.HorizontalAlignment = HorizontalAlignment.Left;
             }
-            else if (TargetHorizontalAlignmentComboBox.SelectedIndex == 1)
+            else if (TargetHorizontalAlignmentComboBox.SelectedItem == TargetHorizontalAlignmentCenter)
             {
                 this.targetButton.HorizontalAlignment = HorizontalAlignment.Center;
             }

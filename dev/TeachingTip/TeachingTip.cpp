@@ -68,16 +68,16 @@ void TeachingTip::OnApplyTemplate()
     }
     if (m_closeButton)
     {
-        m_closeButton.get().Click(winrt::auto_revoke, {this, &TeachingTip::OnCloseButtonClicked });
+        m_closeButtonClickedRevoker = m_closeButton.get().Click(winrt::auto_revoke, {this, &TeachingTip::OnCloseButtonClicked });
     }
     if (m_alternateCloseButton)
     {
-        m_alternateCloseButton.get().Click(winrt::auto_revoke, {this, &TeachingTip::OnCloseButtonClicked });
+        m_alternateCloseButtonClickedRevoker = m_alternateCloseButton.get().Click(winrt::auto_revoke, {this, &TeachingTip::OnCloseButtonClicked });
     }
 
     if (m_actionButton)
     {
-        m_actionButton.get().Click(winrt::auto_revoke, {this, &TeachingTip::OnActionButtonClicked });
+        m_actionButtonClickedRevoker = m_actionButton.get().Click(winrt::auto_revoke, {this, &TeachingTip::OnActionButtonClicked });
     }
     UpdateButtonsState();
     OnIconSourceChanged();

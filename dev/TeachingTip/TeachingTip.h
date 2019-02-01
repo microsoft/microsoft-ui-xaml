@@ -46,6 +46,9 @@ public:
     void SetTestWindowBounds(const winrt::Rect& testWindowBounds);
 
 private:
+    winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
+    winrt::Button::Click_revoker m_alternateCloseButtonClickedRevoker{};
+    winrt::Button::Click_revoker m_actionButtonClickedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_contentSizeChangedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_targetLayoutUpdatedRevoker{};
     winrt::Popup::Closed_revoker m_popupClosedRevoker{};

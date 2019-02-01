@@ -100,70 +100,70 @@
 
                 <TextBlock Grid.Row="0" Text="Bleeding Content:" Foreground="Red"/>
                 <ComboBox x:Name="BleedingContentComboBox" AutomationProperties.Name="BleedingContentComboBox" SelectedIndex="0" Grid.Row ="1">
-                    <ComboBoxItem>Red Square</ComboBoxItem>
-                    <ComboBoxItem>Blue Square</ComboBoxItem>
-                    <ComboBoxItem>Image</ComboBoxItem>
-                    <ComboBoxItem>AutoSaveImage</ComboBoxItem>
-                    <ComboBoxItem>No Content</ComboBoxItem>
+                    <ComboBoxItem x:Name="BleedingRedSquare">Red Square</ComboBoxItem>
+                    <ComboBoxItem x:Name="BleedingBlueSquare">Blue Square</ComboBoxItem>
+                    <ComboBoxItem x:Name="BleedingImage">Image</ComboBoxItem>
+                    <ComboBoxItem x:Name="BleedingAutoSave">AutoSaveImage</ComboBoxItem>
+                    <ComboBoxItem x:Name="BleedingNoContent">No Content</ComboBoxItem>
                 </ComboBox>
                 <Button AutomationProperties.Name="SetBleedingContentButton" Click="OnSetBleedingContentButtonClicked" Grid.Row ="1" Grid.Column="1">Set</Button>
 
                 <TextBlock Grid.Row="2" Text="Icon:" Foreground="Red"/>
                 <ComboBox x:Name="IconComboBox" SelectedIndex="0" Grid.Row ="3">
-                    <ComboBoxItem>People Icon</ComboBoxItem>
-                    <ComboBoxItem>No Icon</ComboBoxItem>
+                    <ComboBoxItem x:Name="IconPeople">People Icon</ComboBoxItem>
+                    <ComboBoxItem x:Name="IconNo">No Icon</ComboBoxItem>
                 </ComboBox>
                 <Button Click="OnSetIconButtonClicked" Grid.Column="1" Grid.Row ="3">Set</Button>
 
                 <TextBlock Grid.Row="4" Text="Title:" Foreground="Red"/>
                 <ComboBox x:Name="TitleComboBox" Grid.Row ="5">
-                    <ComboBoxItem>No title</ComboBoxItem>
-                    <ComboBoxItem>Small text</ComboBoxItem>
-                    <ComboBoxItem>Long text</ComboBoxItem>
+                    <ComboBoxItem x:Name="TitleNo">No title</ComboBoxItem>
+                    <ComboBoxItem x:Name="TitleSmall">Small text</ComboBoxItem>
+                    <ComboBoxItem x:Name="TitleLong">Long text</ComboBoxItem>
                 </ComboBox>
                 <Button Click="OnSetTitleButtonClicked" Grid.Column="1" Grid.Row ="5">Set</Button>
 
                 <TextBlock Grid.Row="6" Text="Subtext:" Foreground="Red"/>
                 <ComboBox x:Name="SubtextComboBox" Grid.Row ="7">
-                    <ComboBoxItem>No subtext</ComboBoxItem>
-                    <ComboBoxItem>Small text</ComboBoxItem>
-                    <ComboBoxItem>Long text</ComboBoxItem>
+                    <ComboBoxItem x:Name="SubtextNo">No subtext</ComboBoxItem>
+                    <ComboBoxItem x:Name="SubtextSmall">Small text</ComboBoxItem>
+                    <ComboBoxItem x:Name="SubtextLong">Long text</ComboBoxItem>
                 </ComboBox>
                 <Button Click="OnSetSubtextButtonClicked" Grid.Row ="7" Grid.Column="1">Set</Button>
 
                 <TextBlock Grid.Row="8" Text="Content:" Foreground="Red"/>
                 <ComboBox x:Name="ContentComboBox" Grid.Row ="9">
-                    <ComboBoxItem>Red Square</ComboBoxItem>
-                    <ComboBoxItem>Blue Square</ComboBoxItem>
-                    <ComboBoxItem>Image</ComboBoxItem>
-                    <ComboBoxItem>Short Text</ComboBoxItem>
-                    <ComboBoxItem>Long Text</ComboBoxItem>
-                    <ComboBoxItem>AutoSaveImage</ComboBoxItem>
-                    <ComboBoxItem>No Content</ComboBoxItem>
+                    <ComboBoxItem x:Name="ContentRedSquare">Red Square</ComboBoxItem>
+                    <ComboBoxItem x:Name="ContentBlueSquare">Blue Square</ComboBoxItem>
+                    <ComboBoxItem x:Name="ContentImage">Image</ComboBoxItem>
+                    <ComboBoxItem x:Name="ContentShort">Short Text</ComboBoxItem>
+                    <ComboBoxItem x:Name="ContentLong">Long Text</ComboBoxItem>
+                    <ComboBoxItem x:Name="ContentAutoSave">AutoSaveImage</ComboBoxItem>
+                    <ComboBoxItem x:Name="ContentNo">No Content</ComboBoxItem>
                 </ComboBox>
                 <Button Click="OnSetContentButtonClicked" Grid.Row ="9" Grid.Column="1">Set</Button>
 
                 <TextBlock Grid.Row="10" Text="ActionButtonText:" Foreground="Red"/>
                 <ComboBox x:Name="ActionButtonTextComboBox" SelectedIndex="0" Grid.Row ="11">
-                    <ComboBoxItem>No text</ComboBoxItem>
-                    <ComboBoxItem>Small text</ComboBoxItem>
-                    <ComboBoxItem>Long text</ComboBoxItem>
+                    <ComboBoxItem x:Name="ActionButtonTextNo">No text</ComboBoxItem>
+                    <ComboBoxItem x:Name="ActionButtonTextSmall">Small text</ComboBoxItem>
+                    <ComboBoxItem x:Name="ActionButtonTextLong">Long text</ComboBoxItem>
                 </ComboBox>
                 <Button Click="OnSetActionButtonTextButtonClicked" Grid.Row ="11" Grid.Column="1">Set</Button>
 
                 <TextBlock Grid.Row="12" Text="CloseButtonText:" Foreground="Red"/>
                 <ComboBox x:Name="CloseButtonTextComboBox" SelectedIndex="0" Grid.Row ="13">
-                    <ComboBoxItem>No text</ComboBoxItem>
-                    <ComboBoxItem>Small text</ComboBoxItem>
-                    <ComboBoxItem>Long text</ComboBoxItem>
+                    <ComboBoxItem x:Name="CloseButtonTextNo">No text</ComboBoxItem>
+                    <ComboBoxItem x:Name="CloseButtonTextSmall">Small text</ComboBoxItem>
+                    <ComboBoxItem x:Name="CloseButtonTextLong">Long text</ComboBoxItem>
                 </ComboBox>
                 <Button Click="OnSetCloseButtonTextButtonClicked" Grid.Row ="13" Grid.Column="1">Set</Button>
 
                 <TextBlock Grid.Row="14" Text="BleedingImagePlacement:" Foreground="Red"/>
                 <ComboBox x:Name="BleedingImagePlacementComboBox" SelectedIndex="0" Grid.Row ="15">
-                    <ComboBoxItem>Auto</ComboBoxItem>
-                    <ComboBoxItem>Top</ComboBoxItem>
-                    <ComboBoxItem>Bottom</ComboBoxItem>
+                    <ComboBoxItem x:Name="BleedingPlacementAuto">Auto</ComboBoxItem>
+                    <ComboBoxItem x:Name="BleedingPlacementTop">Top</ComboBoxItem>
+                    <ComboBoxItem x:Name="BleedingPlacementBottom">Bottom</ComboBoxItem>
                 </ComboBox>
                 <Button Click="OnSetBleeingImagePlacementButtonClicked" Grid.Row ="15" Grid.Column="1">Set</Button>
                 <TextBlock Grid.Row="16" Text="--------------------------------------" Foreground="Red" Grid.ColumnSpan="2"/>
@@ -281,34 +281,34 @@
 
             <TextBlock Grid.Row="0" Text="Placement:" Foreground="Red"/>
             <ComboBox x:Name="PlacementComboBox" AutomationProperties.Name="PlacementComboBox" Grid.Row="1">
-                <ComboBoxItem>Top</ComboBoxItem>
-                <ComboBoxItem>Bottom</ComboBoxItem>
-                <ComboBoxItem>Left</ComboBoxItem>
-                <ComboBoxItem>Right</ComboBoxItem>
-                <ComboBoxItem>TopEdgeAlignedRight</ComboBoxItem>
-                <ComboBoxItem>TopEdgeAlignedLeft</ComboBoxItem>
-                <ComboBoxItem>BottomEdgeAlignedRight</ComboBoxItem>
-                <ComboBoxItem>BottomEdgeAlignedLeft</ComboBoxItem>
-                <ComboBoxItem>LeftEdgeAlignedTop</ComboBoxItem>
-                <ComboBoxItem>LeftEdgeAlignedBottom</ComboBoxItem>
-                <ComboBoxItem>RightEdgeAlignedTop</ComboBoxItem>
-                <ComboBoxItem>RightEdgeAlignedBottom</ComboBoxItem>
-                <ComboBoxItem>Auto</ComboBoxItem>
+                <ComboBoxItem x:Name="PlacementTop">Top</ComboBoxItem>
+                <ComboBoxItem x:Name="PlacementBottom">Bottom</ComboBoxItem>
+                <ComboBoxItem x:Name="PlacementLeft">Left</ComboBoxItem>
+                <ComboBoxItem x:Name="PlacementRight">Right</ComboBoxItem>
+                <ComboBoxItem x:Name="PlacementTopEdgeRight">TopEdgeAlignedRight</ComboBoxItem>
+                <ComboBoxItem x:Name="PlacementTopEdgeLeft">TopEdgeAlignedLeft</ComboBoxItem>
+                <ComboBoxItem x:Name="PlacementBottomEdgeRight">BottomEdgeAlignedRight</ComboBoxItem>
+                <ComboBoxItem x:Name="PlacementBottomEdgeLeft">BottomEdgeAlignedLeft</ComboBoxItem>
+                <ComboBoxItem x:Name="PlacementLeftEdgeTop">LeftEdgeAlignedTop</ComboBoxItem>
+                <ComboBoxItem x:Name="PlacementLeftEdgeBottom">LeftEdgeAlignedBottom</ComboBoxItem>
+                <ComboBoxItem x:Name="PlacementRightEdgeTop">RightEdgeAlignedTop</ComboBoxItem>
+                <ComboBoxItem x:Name="PlacementRightEdgeBottom">RightEdgeAlignedBottom</ComboBoxItem>
+                <ComboBoxItem x:Name="PlacementAuto">Auto</ComboBoxItem>
             </ComboBox>
             <Button AutomationProperties.Name="SetPlacementButton" Click="OnSetPlacementButtonClicked" Grid.Row="1" Grid.Column="1">Set</Button>
 
             <TextBlock Grid.Row="2" Text="CloseButtonKind:" Foreground="Red"/>
             <ComboBox x:Name="CloseButtonKindComboBox" Grid.Row="3">
-                <ComboBoxItem>Auto</ComboBoxItem>
-                <ComboBoxItem>Header</ComboBoxItem>
-                <ComboBoxItem>Footer</ComboBoxItem>
+                <ComboBoxItem x:Name="CloseButtonKindAuto">Auto</ComboBoxItem>
+                <ComboBoxItem x:Name="CloseButtonKindHeader">Header</ComboBoxItem>
+                <ComboBoxItem x:Name="CloseButtonKindFooter">Footer</ComboBoxItem>
             </ComboBox>
             <Button Click="OnSetCloseButtonKindButtonClicked" Grid.Row="3" Grid.Column="1">Set</Button>
 
             <TextBlock Grid.Row="4" Text="IsLightDismissEnabled:" Foreground="Red"/>
             <ComboBox x:Name="IsLightDismissEnabledComboBox" AutomationProperties.Name="IsLightDismissEnabledComboBox" Grid.Row="5">
-                <ComboBoxItem>False</ComboBoxItem>
-                <ComboBoxItem>True</ComboBoxItem>
+                <ComboBoxItem x:Name="IsLightDismissFalse">False</ComboBoxItem>
+                <ComboBoxItem x:Name="IsLightDismissTrue">True</ComboBoxItem>
             </ComboBox>
             <Button AutomationProperties.Name="IsLightDismissEnabledButton" Click="OnSetIsLightDismissEnabledButtonClicked" Grid.Row="5" Grid.Column="1">Set</Button>
 
@@ -328,17 +328,17 @@
 
             <TextBlock Grid.Row="13" Text="Target Vertical Alignment:" Foreground="Red"/>
             <ComboBox x:Name="TargetVerticalAlignmentComboBox" Grid.Row="14">
-                <ComboBoxItem>Top</ComboBoxItem>
-                <ComboBoxItem>Center</ComboBoxItem>
-                <ComboBoxItem>Bottom</ComboBoxItem>
+                <ComboBoxItem x:Name="TargetVerticalAlignmentTop">Top</ComboBoxItem>
+                <ComboBoxItem x:Name="TargetVerticalAlignmentCenter">Center</ComboBoxItem>
+                <ComboBoxItem x:Name="TargetVerticalAlignmentBottom">Bottom</ComboBoxItem>
             </ComboBox>
             <Button Click="OnSetTargetVerticalAlignmentButtonClicked" Grid.Row="14" Grid.Column="1">Set</Button>
 
             <TextBlock Grid.Row="15" Text="Target Horizontal Alignment:" Foreground="Red"/>
             <ComboBox x:Name="TargetHorizontalAlignmentComboBox" Grid.Row="16">
-                <ComboBoxItem>Left</ComboBoxItem>
-                <ComboBoxItem>Center</ComboBoxItem>
-                <ComboBoxItem>Right</ComboBoxItem>
+                <ComboBoxItem x:Name="TargetHorizontalAlignmentLeft">Left</ComboBoxItem>
+                <ComboBoxItem x:Name="TargetHorizontalAlignmentCenter">Center</ComboBoxItem>
+                <ComboBoxItem x:Name="TargetHorizontalAlignmentRight">Right</ComboBoxItem>
             </ComboBox>
             <Button Click="OnSetTargetHorizontalAlignmentButtonClicked" Grid.Row="16" Grid.Column="1">Set</Button>
 
