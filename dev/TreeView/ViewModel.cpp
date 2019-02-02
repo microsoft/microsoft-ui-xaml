@@ -712,14 +712,18 @@ void ViewModel::UpdateSelectionStateOfAncestors(winrt::TreeViewNode const& targe
 {
     if (auto parentNode = targetNode.Parent())
     {
-        auto previousState = NodeSelectionState(parentNode);
-        auto selectionState = SelectionStateBasedOnChildren(parentNode);
-
-        if (previousState != selectionState)
+        // no need to update m_originalNode since it's the logical root for TreeView and not accessible to users
+        if (parentNode != m_originNode.safe_get())
         {
-            UpdateNodeSelection(parentNode, selectionState);
-            NotifyContainerOfSelectionChange(parentNode, selectionState);
-            UpdateSelectionStateOfAncestors(parentNode);
+            auto previousState = NodeSelectionState(parentNode);
+            auto selectionState = SelectionStateBasedOnChildren(parentNode);
+
+            if (previousState != selectionState)
+            {
+                UpdateNodeSelection(parentNode, selectionState);
+                NotifyContainerOfSelectionChange(parentNode, selectionState);
+                UpdateSelectionStateOfAncestors(parentNode);
+            }
         }
     }
 }
@@ -766,15 +770,7 @@ void ViewModel::NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targ
 
 winrt::IVector<winrt::TreeViewNode> ViewModel::GetSelectedNodes()
 {
-    auto modifiedItems = winrt::get_self<SelectedTreeNodeVector>(m_selectedNodes.get());
-    unsigned int index;
-    bool containsRoot = modifiedItems->IndexOf(m_originNode.get(), index);
-    if (containsRoot)
-    {
-        modifiedItems->RemoveAtCore(index);
-    }
-
-    return *modifiedItems;
+    return m_selectedNodes.get();
 }
 
 winrt::IVector<winrt::IInspectable> ViewModel::GetSelectedItems()
