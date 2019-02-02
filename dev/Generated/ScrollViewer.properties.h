@@ -9,12 +9,6 @@ class ScrollViewerProperties
 public:
     ScrollViewerProperties();
 
-    void ComputedHorizontalScrollMode(winrt::ScrollMode const& value);
-    winrt::ScrollMode ComputedHorizontalScrollMode();
-
-    void ComputedVerticalScrollMode(winrt::ScrollMode const& value);
-    winrt::ScrollMode ComputedVerticalScrollMode();
-
     void Content(winrt::UIElement const& value);
     winrt::UIElement Content();
 
@@ -78,8 +72,6 @@ public:
     void ZoomMode(winrt::ZoomMode const& value);
     winrt::ZoomMode ZoomMode();
 
-    static winrt::DependencyProperty ComputedHorizontalScrollModeProperty() { return s_ComputedHorizontalScrollModeProperty; }
-    static winrt::DependencyProperty ComputedVerticalScrollModeProperty() { return s_ComputedVerticalScrollModeProperty; }
     static winrt::DependencyProperty ContentProperty() { return s_ContentProperty; }
     static winrt::DependencyProperty ContentOrientationProperty() { return s_ContentOrientationProperty; }
     static winrt::DependencyProperty HorizontalAnchorRatioProperty() { return s_HorizontalAnchorRatioProperty; }
@@ -103,8 +95,6 @@ public:
     static winrt::DependencyProperty ZoomChainingModeProperty() { return s_ZoomChainingModeProperty; }
     static winrt::DependencyProperty ZoomModeProperty() { return s_ZoomModeProperty; }
 
-    static GlobalDependencyProperty s_ComputedHorizontalScrollModeProperty;
-    static GlobalDependencyProperty s_ComputedVerticalScrollModeProperty;
     static GlobalDependencyProperty s_ContentProperty;
     static GlobalDependencyProperty s_ContentOrientationProperty;
     static GlobalDependencyProperty s_HorizontalAnchorRatioProperty;

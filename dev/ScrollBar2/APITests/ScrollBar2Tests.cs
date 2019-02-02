@@ -15,10 +15,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using ScrollBar2 = Microsoft.UI.Xaml.Controls.ScrollBar2;
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
-using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -27,7 +26,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     {
         private const ScrollingIndicatorMode c_defaultIndicatorMode = ScrollingIndicatorMode.None;
         private const Orientation c_defaultOrientation = Orientation.Vertical;
-        private const ScrollMode c_defaultScrollMode = ScrollMode.Disabled;
         private const double c_defaultOffset = 0.0;
         private const double c_defaultMinOffset = 0.0;
         private const double c_defaultMaxOffset = 100.0;
@@ -46,7 +44,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Verifying ScrollBar2 default property values");
                 Verify.AreEqual(scrollBar2.IndicatorMode, c_defaultIndicatorMode);
                 Verify.AreEqual(scrollBar2.Orientation, c_defaultOrientation);
-                Verify.AreEqual(scrollBar2.ScrollMode, c_defaultScrollMode);
                 Verify.AreEqual(scrollBar2.IsEnabled, c_defaultIsEnabled);
                 Verify.AreEqual(scrollBar2.MinOffset, c_defaultMinOffset);
                 Verify.AreEqual(scrollBar2.MaxOffset, c_defaultMaxOffset);
@@ -70,7 +67,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Setting ScrollBar2 properties to non-default values");
                 scrollBar2.IndicatorMode = ScrollingIndicatorMode.TouchIndicator;
                 scrollBar2.Orientation = Orientation.Horizontal;
-                scrollBar2.ScrollMode = ScrollMode.Disabled;
                 scrollBar2.IsEnabled = !c_defaultIsEnabled;
             });
 
@@ -81,7 +77,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Verifying ScrollBar2 non-default property values");
                 Verify.AreEqual(scrollBar2.IndicatorMode, ScrollingIndicatorMode.TouchIndicator);
                 Verify.AreEqual(scrollBar2.Orientation, Orientation.Horizontal);
-                Verify.AreEqual(scrollBar2.ScrollMode, ScrollMode.Disabled);
                 Verify.AreEqual(scrollBar2.IsEnabled, !c_defaultIsEnabled);
             });
         }
@@ -99,14 +94,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(scrollBar2AsIScrollController);
 
                 Log.Comment("Verifying ScrollBar2's IScrollController default property values");
+                Verify.IsFalse(scrollBar2AsIScrollController.AreInteractionsEnabled);
                 Verify.IsTrue(scrollBar2AsIScrollController.AreScrollerInteractionsAllowed);
                 Verify.IsNull(scrollBar2AsIScrollController.InteractionVisual);
                 Verify.AreEqual(scrollBar2AsIScrollController.InteractionVisualScrollOrientation, c_defaultOrientation);
-                Verify.AreEqual(scrollBar2AsIScrollController.InteractionVisualScrollRailingMode, RailingMode.Enabled);
+                Verify.IsTrue(scrollBar2AsIScrollController.IsInteractionVisualRailEnabled);
                 Verify.IsFalse(scrollBar2AsIScrollController.IsInteracting);
+
+                Log.Comment("Invoking ScrollBar2's IScrollController.AllowInteractions method");
+                scrollBar2AsIScrollController.AllowInteractions(true);
+                scrollBar2AsIScrollController.SetScrollMode(ScrollMode.Enabled);
+
+                Verify.IsFalse(scrollBar2AsIScrollController.AreInteractionsEnabled);
 
                 Log.Comment("Invoking ScrollBar2's IScrollController.SetValues method");
                 scrollBar2AsIScrollController.SetValues(10.0, 250.0, 75.0, 30.0);
+
+                Verify.IsTrue(scrollBar2AsIScrollController.AreInteractionsEnabled);
             });
         }
     }

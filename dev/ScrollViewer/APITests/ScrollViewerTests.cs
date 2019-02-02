@@ -39,14 +39,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const int c_MaxWaitDuration = 5000;
         private const double c_epsilon = 0.0000001;
 
-        private const ScrollMode c_defaultComputedHorizontalScrollMode = ScrollMode.Disabled;
-        private const ScrollMode c_defaultComputedVerticalScrollMode = ScrollMode.Disabled;
         private const InputKind c_defaultInputKind = InputKind.All;
         private const ChainingMode c_defaultHorizontalScrollChainingMode = ChainingMode.Auto;
         private const ChainingMode c_defaultVerticalScrollChainingMode = ChainingMode.Auto;
         private const RailingMode c_defaultHorizontalScrollRailingMode = RailingMode.Enabled;
         private const RailingMode c_defaultVerticalScrollRailingMode = RailingMode.Enabled;
 #if USE_SCROLLMODE_AUTO
+        private const ScrollMode c_defaultComputedHorizontalScrollMode = ScrollMode.Disabled;
+        private const ScrollMode c_defaultComputedVerticalScrollMode = ScrollMode.Disabled;
         private const ScrollMode c_defaultHorizontalScrollMode = ScrollMode.Auto;
         private const ScrollMode c_defaultVerticalScrollMode = ScrollMode.Auto;
 #else
@@ -92,8 +92,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(ScrollViewerTestHooks.GetScrollerPart(scrollViewer));
                 Verify.IsNull(scrollViewer.HorizontalScrollController);
                 Verify.IsNull(scrollViewer.VerticalScrollController);
+#if USE_SCROLLMODE_AUTO
                 Verify.AreEqual(scrollViewer.ComputedHorizontalScrollMode, c_defaultComputedHorizontalScrollMode);
                 Verify.AreEqual(scrollViewer.ComputedVerticalScrollMode, c_defaultComputedVerticalScrollMode);
+#endif
                 Verify.AreEqual(scrollViewer.InputKind, c_defaultInputKind);
                 Verify.AreEqual(scrollViewer.ContentOrientation, c_defaultContentOrientation);
                 Verify.AreEqual(scrollViewer.HorizontalScrollChainingMode, c_defaultHorizontalScrollChainingMode);
@@ -167,8 +169,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(scrollViewer.VerticalScrollRailingMode, RailingMode.Disabled);
                     Verify.AreEqual(scrollViewer.HorizontalScrollMode, ScrollMode.Enabled);
                     Verify.AreEqual(scrollViewer.VerticalScrollMode, ScrollMode.Disabled);
+#if USE_SCROLLMODE_AUTO
                     Verify.AreEqual(scrollViewer.ComputedHorizontalScrollMode, ScrollMode.Enabled);
                     Verify.AreEqual(scrollViewer.ComputedVerticalScrollMode, ScrollMode.Disabled);
+#endif
                     Verify.AreEqual(scrollViewer.ZoomMode, ZoomMode.Enabled);
                     Verify.AreEqual(scrollViewer.ZoomChainingMode, ChainingMode.Never);
                     Verify.IsGreaterThan(scrollViewer.MinZoomFactor, 2.0 - c_epsilon);

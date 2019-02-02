@@ -423,6 +423,7 @@ namespace MUXControlsTestApp
             }
         }
 
+#if USE_SCROLLMODE_AUTO
         private void BtnGetComputedHorizontalScrollMode_Click(object sender, RoutedEventArgs e)
         {
             UpdateTblComputedHorizontalScrollMode();
@@ -458,6 +459,7 @@ namespace MUXControlsTestApp
                 lstLogs.Items.Add(ex.ToString());
             }
         }
+#endif
 
         private void UpdateCmbHorizontalScrollBarVisibility()
         {
@@ -1347,9 +1349,10 @@ namespace MUXControlsTestApp
                 UpdateCmbIsAnchoredAtVerticalExtent();
                 UpdateHorizontalAnchorRatio();
                 UpdateVerticalAnchorRatio();
+#if USE_SCROLLMODE_AUTO
                 UpdateTblComputedHorizontalScrollMode();
                 UpdateTblComputedVerticalScrollMode();
-
+#endif
                 UpdateCmbContentHorizontalAlignment();
                 UpdateCmbContentVerticalAlignment();
                 UpdateCmbContentManipulationMode();

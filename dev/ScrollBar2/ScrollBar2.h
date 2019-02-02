@@ -26,7 +26,6 @@ public:
     static constexpr std::wstring_view s_IsEnabledPropertyName{ L"IsEnabled"sv };
     static constexpr std::wstring_view s_OrientationPropertyName{ L"Orientation"sv };
     static constexpr std::wstring_view s_ScrollBarStylePropertyName{ L"ScrollBarStyle"sv };
-    static constexpr std::wstring_view s_ScrollModePropertyName{ L"ScrollMode"sv };
 
     // Properties' default values
     static constexpr double s_defaultMinOffset{ 0.0 };
@@ -37,7 +36,6 @@ public:
     static constexpr double s_defaultLargeChange{ std::numeric_limits<double>::quiet_NaN() };
     static constexpr bool s_defaultIsEnabled{ true };
     static constexpr winrt::Orientation s_defaultOrientation{ winrt::Orientation::Vertical };
-    static constexpr winrt::ScrollMode s_defaultScrollMode{ winrt::ScrollMode::Disabled };
     static constexpr winrt::ScrollingIndicatorMode s_defaultIndicatorMode{ winrt::ScrollingIndicatorMode::None };
 
 #pragma region IFrameworkElementOverridesHelper
@@ -47,36 +45,43 @@ public:
 #pragma endregion
 
 #pragma region IScrollController
+    bool AreInteractionsEnabled();
+
     bool AreScrollerInteractionsAllowed();
 
     bool IsInteracting();
+
+    bool IsInteractionVisualRailEnabled();
 
     winrt::Visual InteractionVisual();
 
     winrt::Orientation InteractionVisualScrollOrientation();
 
-    winrt::RailingMode InteractionVisualScrollRailingMode();
+    void AllowInteractions(bool allowInteractions);
 
     void SetExpressionAnimationSources(
         winrt::CompositionPropertySet const& propertySet,
-        _In_ winrt::hstring const& minOffsetPropertyName,
-        _In_ winrt::hstring const& maxOffsetPropertyName,
-        _In_ winrt::hstring const& offsetPropertyName,
-        _In_ winrt::hstring const& multiplierPropertyName);
+        winrt::hstring const& minOffsetPropertyName,
+        winrt::hstring const& maxOffsetPropertyName,
+        winrt::hstring const& offsetPropertyName,
+        winrt::hstring const& multiplierPropertyName);
+
+    void SetScrollMode(
+        winrt::ScrollMode const& scrollMode);
 
     void SetValues(
-        _In_ double minOffset,
-        _In_ double maxOffset,
-        _In_ double offset,
-        _In_ double viewport);
+        double minOffset,
+        double maxOffset,
+        double offset,
+        double viewport);
 
-    winrt::CompositionAnimation GetOffsetChangeAnimation(
-        _In_ INT32 offsetChangeId,
+    winrt::CompositionAnimation GetScrollAnimation(
+        INT32 offsetChangeId,
         winrt::float2 const& currentPosition,
         winrt::CompositionAnimation const& defaultAnimation);
 
-    void OnOffsetChangeCompleted(
-        _In_ INT32 offsetChangeId,
+    void OnScrollCompleted(
+        INT32 offsetChangeId,
         winrt::ScrollerViewChangeResult const& result);
 
     winrt::event_token OffsetChangeRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerOffsetChangeRequestedEventArgs> const& value);
@@ -95,8 +100,6 @@ public:
     // Invoked when a dependency property of this ScrollBar2 has changed.
     void OnPropertyChanged(
         const winrt::DependencyPropertyChangedEventArgs& args);
-
-    static void ValidateScrollMode(winrt::ScrollMode mode);
 
 private:
 #ifdef _DEBUG
@@ -132,6 +135,7 @@ private:
 
 private:
     tracker_ref<winrt::ScrollBar>  m_scrollBar{ this };
+    winrt::ScrollMode m_scrollMode{ winrt::ScrollMode::Disabled };
     int32_t m_lastViewChangeIdForOffsetChange{ -1 };
     int32_t m_lastViewChangeIdForOffsetChangeWithAdditionalVelocity{ -1 };
     int m_operationsCount{ 0 };
@@ -139,6 +143,7 @@ private:
     double m_lastOffset{ 0.0 };
     bool m_areScrollerInteractionsAllowed{ true };
     bool m_isInteracting{ false };
+    bool m_areInteractionsAllowed{ false };
 
     // Event Sources
     event_source<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerOffsetChangeRequestedEventArgs>> m_offsetChangeRequested{ this };

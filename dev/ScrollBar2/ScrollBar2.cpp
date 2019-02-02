@@ -44,6 +44,12 @@ ScrollBar2::ScrollBar2()
 
 #pragma region IScrollController
 
+bool ScrollBar2::AreInteractionsEnabled()
+{
+    // Simplified implementation since the ScrollBar2 control will be removed imminently.
+    return m_areInteractionsAllowed && m_scrollMode == winrt::ScrollMode::Enabled;
+}
+
 bool ScrollBar2::AreScrollerInteractionsAllowed()
 {
     return m_areScrollerInteractionsAllowed;
@@ -52,6 +58,12 @@ bool ScrollBar2::AreScrollerInteractionsAllowed()
 bool ScrollBar2::IsInteracting()
 {
     return m_isInteracting;
+}
+
+bool ScrollBar2::IsInteractionVisualRailEnabled()
+{
+    // Unused because InteractionVisual returns null.
+    return false;
 }
 
 winrt::Visual ScrollBar2::InteractionVisual()
@@ -66,29 +78,51 @@ winrt::Orientation ScrollBar2::InteractionVisualScrollOrientation()
     return Orientation();
 }
 
-winrt::RailingMode ScrollBar2::InteractionVisualScrollRailingMode()
+void ScrollBar2::AllowInteractions(bool allowInteractions)
 {
-    // Unused because InteractionVisual returns null.
-    return winrt::RailingMode::Enabled;
+    SCROLLBAR2_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, allowInteractions);
+
+    if (m_areInteractionsAllowed != allowInteractions)
+    {
+        m_areInteractionsAllowed = allowInteractions;
+        RaiseInteractionInfoChanged();
+    }
 }
 
 void ScrollBar2::SetExpressionAnimationSources(
     winrt::CompositionPropertySet const& propertySet,
-    _In_ winrt::hstring const& minOffsetPropertyName,
-    _In_ winrt::hstring const& maxOffsetPropertyName,
-    _In_ winrt::hstring const& offsetPropertyName,
-    _In_ winrt::hstring const& multiplierPropertyName)
+    winrt::hstring const& minOffsetPropertyName,
+    winrt::hstring const& maxOffsetPropertyName,
+    winrt::hstring const& offsetPropertyName,
+    winrt::hstring const& multiplierPropertyName)
 {
     SCROLLBAR2_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     // Unused because InteractionVisual returns null.
 }
 
+void ScrollBar2::SetScrollMode(
+    winrt::ScrollMode const& scrollMode)
+{
+    SCROLLBAR2_TRACE_INFO(
+        *this,
+        TRACE_MSG_METH_STR,
+        METH_NAME,
+        this,
+        TypeLogging::ScrollModeToString(scrollMode).c_str());
+
+    if (m_scrollMode != scrollMode)
+    {
+        m_scrollMode = scrollMode;
+        RaiseInteractionInfoChanged();
+    }
+}
+
 void ScrollBar2::SetValues(
-    _In_ double minOffset,
-    _In_ double maxOffset,
-    _In_ double offset,
-    _In_ double viewport)
+    double minOffset,
+    double maxOffset,
+    double offset,
+    double viewport)
 {
     SCROLLBAR2_TRACE_INFO(*this, L"%s[0x%p](minOffset:%lf, maxOffset:%lf, offset:%lf, viewport:%lf, operationsCount:%d)\n", METH_NAME, this,
         minOffset,
@@ -179,8 +213,8 @@ void ScrollBar2::SetValues(
     }
 }
 
-winrt::CompositionAnimation ScrollBar2::GetOffsetChangeAnimation(
-    _In_ INT32 offsetChangeId,
+winrt::CompositionAnimation ScrollBar2::GetScrollAnimation(
+    INT32 offsetChangeId,
     winrt::float2 const& currentPosition,
     winrt::CompositionAnimation const& defaultAnimation)
 {
@@ -190,8 +224,8 @@ winrt::CompositionAnimation ScrollBar2::GetOffsetChangeAnimation(
     return nullptr;
 }
 
-void ScrollBar2::OnOffsetChangeCompleted(
-    _In_ INT32 offsetChangeId,
+void ScrollBar2::OnScrollCompleted(
+    INT32 offsetChangeId,
     winrt::ScrollerViewChangeResult const& result)
 {
     SCROLLBAR2_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, 
@@ -359,28 +393,10 @@ void ScrollBar2::OnPropertyChanged(
             m_scrollBar.get().Style(safe_cast<winrt::Style>(args.NewValue()));
         }
     }
-    else if (dependencyProperty == s_ScrollModeProperty)
-    {
-        SCROLLBAR2_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, s_ScrollModePropertyName);
-        
-#ifdef USE_SCROLLMODE_AUTO
-        MUX_ASSERT(unbox_value<winrt::ScrollMode>(args.OldValue()) != winrt::ScrollMode::Auto);
-#endif
-    }
 #ifdef _DEBUG
     else
     {
         SCROLLBAR2_TRACE_VERBOSE(nullptr, L"%s(property: %s)\n", METH_NAME, DependencyPropertyToString(dependencyProperty).c_str());
-    }
-#endif
-}
-
-void ScrollBar2::ValidateScrollMode(winrt::ScrollMode mode)
-{
-#ifdef USE_SCROLLMODE_AUTO
-    if (mode == winrt::ScrollMode::Auto)
-    {
-        throw winrt::hresult_error(E_INVALIDARG);
     }
 #endif
 }
@@ -516,7 +532,8 @@ void ScrollBar2::OnScroll(
         return;
     }
 
-    if (ScrollMode() == winrt::ScrollMode::Disabled &&
+    if (!m_areInteractionsAllowed &&
+        m_scrollMode == winrt::ScrollMode::Disabled &&
         scrollEventType != winrt::ScrollEventType::ThumbPosition)
     {
         // This ScrollBar2 is not interactive. Restore its previous Value.
@@ -741,10 +758,6 @@ winrt::hstring ScrollBar2::DependencyPropertyToString(const winrt::IDependencyPr
     else if (dependencyProperty == s_ScrollBarStyleProperty)
     {
         return hstring{ ScrollBar2::s_ScrollBarStylePropertyName };
-    }
-    else if (dependencyProperty == s_ScrollModeProperty)
-    {
-        return hstring{ ScrollBar2::s_ScrollModePropertyName };
     }
     else
     {

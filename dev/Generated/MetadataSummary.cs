@@ -425,8 +425,6 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["ScrollBar2.Offset"] = true;
             NeedsPropChangedCallbackMetadata["ScrollBar2.Orientation"] = true;
             NeedsPropChangedCallbackMetadata["ScrollBar2.ScrollBarStyle"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.ScrollMode"] = true;
-            PropValidationCallbackMetadata["ScrollBar2.ScrollMode"] = "ValidateScrollMode";
             NeedsPropChangedCallbackMetadata["ScrollBar2.SmallChange"] = true;
             NeedsPropChangedCallbackMetadata["ScrollBar2.Viewport"] = true;
             // ScrollBar2 -- DefaultValueMetadata
@@ -437,15 +435,12 @@ namespace CustomTasks
             DefaultValueMetadata["ScrollBar2.MinOffset"] = @"ScrollBar2::s_defaultMinOffset";
             DefaultValueMetadata["ScrollBar2.Offset"] = @"ScrollBar2::s_defaultOffset";
             DefaultValueMetadata["ScrollBar2.Orientation"] = @"ScrollBar2::s_defaultOrientation";
-            DefaultValueMetadata["ScrollBar2.ScrollMode"] = @"ScrollBar2::s_defaultScrollMode";
             DefaultValueMetadata["ScrollBar2.SmallChange"] = @"ScrollBar2::s_defaultSmallChange";
             DefaultValueMetadata["ScrollBar2.Viewport"] = @"ScrollBar2::s_defaultViewport";
 
             IncludedTypesMetadata["Scroller"] = true;
             // Scroller -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["Scroller.Background"] = true;
-            NeedsPropChangedCallbackMetadata["Scroller.ComputedHorizontalScrollMode"] = true;
-            NeedsPropChangedCallbackMetadata["Scroller.ComputedVerticalScrollMode"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.Content"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.ContentOrientation"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.HorizontalAnchorRatio"] = true;
@@ -468,8 +463,6 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["Scroller.ZoomChainingMode"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.ZoomMode"] = true;
             // Scroller -- DefaultValueMetadata
-            DefaultValueMetadata["Scroller.ComputedHorizontalScrollMode"] = @"Scroller::s_defaultComputedVerticalScrollMode";
-            DefaultValueMetadata["Scroller.ComputedVerticalScrollMode"] = @"Scroller::s_defaultComputedVerticalScrollMode";
             DefaultValueMetadata["Scroller.ContentOrientation"] = @"Scroller::s_defaultContentOrientation";
             DefaultValueMetadata["Scroller.HorizontalAnchorRatio"] = @"Scroller::s_defaultAnchorRatio";
             DefaultValueMetadata["Scroller.HorizontalScrollChainingMode"] = @"Scroller::s_defaultHorizontalScrollChainingMode";
@@ -493,8 +486,6 @@ namespace CustomTasks
 
             IncludedTypesMetadata["ScrollViewer"] = true;
             // ScrollViewer -- NeedsPropChangedCallbackMetadata
-            NeedsPropChangedCallbackMetadata["ScrollViewer.ComputedHorizontalScrollMode"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollViewer.ComputedVerticalScrollMode"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.Content"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.ContentOrientation"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalAnchorRatio"] = true;
@@ -523,8 +514,6 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["ScrollViewer.ZoomChainingMode"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.ZoomMode"] = true;
             // ScrollViewer -- DefaultValueMetadata
-            DefaultValueMetadata["ScrollViewer.ComputedHorizontalScrollMode"] = @"ScrollViewer::s_defaultComputedHorizontalScrollMode";
-            DefaultValueMetadata["ScrollViewer.ComputedVerticalScrollMode"] = @"ScrollViewer::s_defaultComputedVerticalScrollMode";
             DefaultValueMetadata["ScrollViewer.ContentOrientation"] = @"ScrollViewer::s_defaultContentOrientation";
             DefaultValueMetadata["ScrollViewer.HorizontalAnchorRatio"] = @"ScrollViewer::s_defaultAnchorRatio";
             DefaultValueMetadata["ScrollViewer.HorizontalScrollBarVisibility"] = @"ScrollViewer::s_defaultHorizontalScrollBarVisibility";
