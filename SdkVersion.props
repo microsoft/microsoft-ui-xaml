@@ -6,7 +6,7 @@
 	<SDKVersionRS3>10.0.16299.0</SDKVersionRS3>
 	<SDKVersionRS4>10.0.17134.0</SDKVersionRS4>
 	<SDKVersionRS5>10.0.17763.0</SDKVersionRS5>
-	<SDKVersion19H1Insider>10.0.18312.0</SDKVersion19H1Insider>
+	<SDKVersion19H1Insider>10.0.18323.0</SDKVersion19H1Insider>
   </PropertyGroup>
   <PropertyGroup>
     <UseInsiderSDK>true</UseInsiderSDK>

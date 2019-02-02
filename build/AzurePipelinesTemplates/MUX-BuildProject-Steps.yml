@@ -21,8 +21,8 @@ steps:
     inputs:
       targetType: filePath
       filePath: build\Install-WindowsSdkISO.ps1
-      arguments: 18312
-    displayName: 'Install Insider SDK (18312)'
+      arguments: 18323
+    displayName: 'Install Insider SDK (18323)'
 
   - template: MUX-InstallNuget-Steps.yml
 
