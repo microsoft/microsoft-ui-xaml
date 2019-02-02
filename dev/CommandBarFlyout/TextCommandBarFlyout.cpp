@@ -303,7 +303,11 @@ void TextCommandBarFlyout::UpdateButtons()
     addRichEditButtonToCommandsIfPresent(TextControlButtons::Italic, PrimaryCommands(),
         [](winrt::ITextSelection textSelection) { return textSelection.CharacterFormat().Italic() == winrt::FormatEffect::On; });
     addRichEditButtonToCommandsIfPresent(TextControlButtons::Underline, PrimaryCommands(),
-        [](winrt::ITextSelection textSelection) { return textSelection.CharacterFormat().Underline() != winrt::UnderlineType::None; });
+        [](winrt::ITextSelection textSelection)
+    {
+        auto underline = textSelection.CharacterFormat().Underline();
+        return (underline != winrt::UnderlineType::None) && (underline != winrt::UnderlineType::Undefined);
+    });
 
     addButtonToCommandsIfPresent(TextControlButtons::Undo, SecondaryCommands());
     addButtonToCommandsIfPresent(TextControlButtons::Redo, SecondaryCommands());
@@ -803,7 +807,7 @@ void TextCommandBarFlyout::ExecuteUnderlineCommand()
             if (selection)
             {
                 auto characterFormat = selection.CharacterFormat();
-                if (characterFormat.Underline() == winrt::UnderlineType::None)
+                if (characterFormat.Underline() == winrt::UnderlineType::None || characterFormat.Underline() == winrt::UnderlineType::Undefined)
                 {
                     characterFormat.Underline(winrt::UnderlineType::Single);
                 }
