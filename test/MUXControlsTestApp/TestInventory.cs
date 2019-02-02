@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -39,9 +39,12 @@ namespace MUXControlsTestApp
 #if (!BUILD_WINDOWS && !BUILD_LEAN_MUX_FOR_THE_STORE_APP)
             Tests.Add(new TestDeclaration("ScrollBar2 Tests", typeof(ScrollBar2Page)));
             Tests.Add(new TestDeclaration("ScrollViewer Tests", typeof(ScrollViewerPage)));
-#if (USE_INSIDER_SDK)
+#if (USE_INTERNAL_SDK)
             Tests.Add(new TestDeclaration("ButtonInteraction Tests", typeof(ButtonInteractionPage)));
             Tests.Add(new TestDeclaration("SliderInteraction Tests", typeof(SliderInteractionPage)));
+#endif
+#if (USE_INSIDER_SDK)
+            Tests.Add(new TestDeclaration("AnimatedVisualPlayer Tests", typeof(AnimatedVisualPlayerPage)));
 #endif
 #endif
             Tests.Add(new TestDeclaration("NavigationView Tests", typeof(NavigationViewCaseBundle)));
