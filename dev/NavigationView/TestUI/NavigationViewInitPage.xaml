@@ -25,6 +25,22 @@
                 <Button x:Name="RemoveItemButton" AutomationProperties.Name="RemoveItemButton" Content="Remove Item" Click="RemoveButton_Click"/>
                 <Button x:Name="ChangeToIEnumerableButton" AutomationProperties.Name="ChangeToIEnumerableButton" Content="Make it IEnumerable" Click="ChangeToIEnumerableButton_Clicks"/>
                 <Button x:Name="FlipOrientation" AutomationProperties.Name="FlipOrientationButton" Content="Flip Orientation" Click="FlipOrientation_Click"/>
+                
+                <StackPanel>
+                    <Button x:Name="SwitchFrame" AutomationProperties.Name="SwitchFrame" Content="SwitchFrame" Click="SwitchFrame_Click" />
+                    <TextBlock x:Name="MyLocationResult" AutomationProperties.Name="MyLocationResult" Text="Unknown"/>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Frame x:Name="Frame1" Width="200" Height="200">
+                            <controls:NavigationView x:Name="NavView2" IsBackButtonVisible="Collapsed" IsSettingsVisible="False" PaneDisplayMode="Top" ItemInvoked="NavView2_ItemInvoked">
+                                <controls:NavigationView.MenuItems>
+                                    <controls:NavigationViewItem Icon="Accept" Content="MyLocation" AutomationProperties.Name="MyLocation" />
+                                </controls:NavigationView.MenuItems>
+                            </controls:NavigationView>
+                        </Frame>
+                        <Frame x:Name="Frame2" Width="200" Height="200"/>
+                    </StackPanel>
+                </StackPanel>
             </StackPanel>
         </controls:NavigationView>
     </Grid>
