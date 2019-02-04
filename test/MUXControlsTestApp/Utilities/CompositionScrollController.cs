@@ -93,7 +93,6 @@ namespace MUXControlsTestApp.Utilities
         private Visual interactionVisual = null;
         private Orientation orientation = Orientation.Vertical;
         private ScrollMode scrollMode = ScrollMode.Disabled;
-        private bool areInteractionsAllowed = false;
         private bool isThumbDragged = false;
         private bool isThumbPannable = true;
         private bool isThumbPositionMirrored = false;
@@ -239,15 +238,6 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        public void AllowInteractions(bool allowInteractions)
-        {
-            RaiseLogMessage(
-                "CompositionScrollController: AllowInteractions for Orientation=" + Orientation +
-                " with allowInteractions=" + allowInteractions);
-            areInteractionsAllowed = allowInteractions;
-            UpdateAreInteractionsEnabled();
-        }
-
         public void SetExpressionAnimationSources(
             CompositionPropertySet propertySet,
             string minOffsetPropertyName,
@@ -299,7 +289,7 @@ namespace MUXControlsTestApp.Utilities
                 "CompositionScrollController: SetScrollMode for Orientation=" + Orientation +
                 " with scrollMode=" + scrollMode);
             this.scrollMode = scrollMode;
-            UpdateAreInteractionsEnabled();
+            UpdateAreInteractionsAllowed();
         }
 
         public void SetValues(double minOffset, double maxOffset, double offset, double viewport)
@@ -514,7 +504,7 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        public bool AreInteractionsEnabled
+        public bool AreInteractionsAllowed
         {
             get;
             private set;
@@ -801,14 +791,13 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        private bool UpdateAreInteractionsEnabled()
+        private bool UpdateAreInteractionsAllowed()
         {
-            bool oldAreInteractionsEnabled = AreInteractionsEnabled;
+            bool oldAreInteractionsAllowed = AreInteractionsAllowed;
 
-            //AreInteractionsEnabled = areInteractionsAllowed && IsEnabled;
-            AreInteractionsEnabled = scrollMode == ScrollMode.Enabled && IsEnabled;
+            AreInteractionsAllowed = scrollMode != ScrollMode.Disabled && IsEnabled;
 
-            if (oldAreInteractionsEnabled != AreInteractionsEnabled)
+            if (oldAreInteractionsAllowed != AreInteractionsAllowed)
             {
                 RaiseInteractionInfoChanged();
                 return true;
@@ -1164,7 +1153,7 @@ namespace MUXControlsTestApp.Utilities
         private void CompositionScrollController_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             RaiseLogMessage("CompositionScrollController: IsEnabledChanged for Orientation=" + Orientation + ", IsEnabled=" + IsEnabled);
-            if (!UpdateAreInteractionsEnabled())
+            if (!UpdateAreInteractionsAllowed())
             {
                 RaiseInteractionInfoChanged();
             }

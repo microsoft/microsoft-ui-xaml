@@ -229,12 +229,12 @@
                             Grid.Row="1"
                             Orientation="Horizontal"
                             HorizontalAlignment="Stretch"
-                            Visibility="Collapsed"/>
+                            Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
                         <ScrollBar x:Name="PART_VerticalScrollBar"
                             Grid.Column="1"
                             Orientation="Vertical"
                             VerticalAlignment="Stretch"
-                            Visibility="Collapsed"/>
+                            Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
                         <Border x:Name="PART_ScrollBarsSeparator"
                             Grid.Row="1"
                             Grid.Column="1"

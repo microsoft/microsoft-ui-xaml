@@ -8,6 +8,8 @@
 
 CppWinRTActivatableClassWithDPFactory(ScrollViewer)
 
+GlobalDependencyProperty ScrollViewerProperties::s_ComputedHorizontalScrollBarVisibilityProperty{ nullptr };
+GlobalDependencyProperty ScrollViewerProperties::s_ComputedVerticalScrollBarVisibilityProperty{ nullptr };
 GlobalDependencyProperty ScrollViewerProperties::s_ContentProperty{ nullptr };
 GlobalDependencyProperty ScrollViewerProperties::s_ContentOrientationProperty{ nullptr };
 GlobalDependencyProperty ScrollViewerProperties::s_HorizontalAnchorRatioProperty{ nullptr };
@@ -46,6 +48,28 @@ ScrollViewerProperties::ScrollViewerProperties()
 
 void ScrollViewerProperties::EnsureProperties()
 {
+    if (!s_ComputedHorizontalScrollBarVisibilityProperty)
+    {
+        s_ComputedHorizontalScrollBarVisibilityProperty =
+            InitializeDependencyProperty(
+                L"ComputedHorizontalScrollBarVisibility",
+                winrt::name_of<winrt::Visibility>(),
+                winrt::name_of<winrt::ScrollViewer>(),
+                false /* isAttached */,
+                ValueHelper<winrt::Visibility>::BoxValueIfNecessary(ScrollViewer::s_defaultComputedHorizontalScrollBarVisibility),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
+    }
+    if (!s_ComputedVerticalScrollBarVisibilityProperty)
+    {
+        s_ComputedVerticalScrollBarVisibilityProperty =
+            InitializeDependencyProperty(
+                L"ComputedVerticalScrollBarVisibility",
+                winrt::name_of<winrt::Visibility>(),
+                winrt::name_of<winrt::ScrollViewer>(),
+                false /* isAttached */,
+                ValueHelper<winrt::Visibility>::BoxValueIfNecessary(ScrollViewer::s_defaultComputedVerticalScrollBarVisibility),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
+    }
     if (!s_ContentProperty)
     {
         s_ContentProperty =
@@ -292,6 +316,8 @@ void ScrollViewerProperties::EnsureProperties()
 
 void ScrollViewerProperties::ClearProperties()
 {
+    s_ComputedHorizontalScrollBarVisibilityProperty = nullptr;
+    s_ComputedVerticalScrollBarVisibilityProperty = nullptr;
     s_ContentProperty = nullptr;
     s_ContentOrientationProperty = nullptr;
     s_HorizontalAnchorRatioProperty = nullptr;
@@ -356,6 +382,26 @@ void ScrollViewerProperties::OnPropertyChanged_ValidateZoomFactoryBoundary(
     }
 
     winrt::get_self<ScrollViewer>(owner)->OnPropertyChanged(args);
+}
+
+void ScrollViewerProperties::ComputedHorizontalScrollBarVisibility(winrt::Visibility const& value)
+{
+    static_cast<ScrollViewer*>(this)->SetValue(s_ComputedHorizontalScrollBarVisibilityProperty, ValueHelper<winrt::Visibility>::BoxValueIfNecessary(value));
+}
+
+winrt::Visibility ScrollViewerProperties::ComputedHorizontalScrollBarVisibility()
+{
+    return ValueHelper<winrt::Visibility>::CastOrUnbox(static_cast<ScrollViewer*>(this)->GetValue(s_ComputedHorizontalScrollBarVisibilityProperty));
+}
+
+void ScrollViewerProperties::ComputedVerticalScrollBarVisibility(winrt::Visibility const& value)
+{
+    static_cast<ScrollViewer*>(this)->SetValue(s_ComputedVerticalScrollBarVisibilityProperty, ValueHelper<winrt::Visibility>::BoxValueIfNecessary(value));
+}
+
+winrt::Visibility ScrollViewerProperties::ComputedVerticalScrollBarVisibility()
+{
+    return ValueHelper<winrt::Visibility>::CastOrUnbox(static_cast<ScrollViewer*>(this)->GetValue(s_ComputedVerticalScrollBarVisibilityProperty));
 }
 
 void ScrollViewerProperties::Content(winrt::UIElement const& value)

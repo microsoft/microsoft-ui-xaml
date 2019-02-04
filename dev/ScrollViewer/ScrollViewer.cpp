@@ -599,7 +599,7 @@ void ScrollViewer::OnScrollControllerInteractionInfoChanged(
             }
         }
 
-        // IScrollController::AreInteractionsEnabled might have changed and affect the scroll controller's visibility
+        // IScrollController::AreInteractionsAllowed might have changed and affect the scroll controller's visibility
         // when its visibility mode is Auto.
         UpdateScrollControllersVisibility(true /*horizontalChange*/, false /*verticalChange*/);
     }
@@ -629,7 +629,7 @@ void ScrollViewer::OnScrollControllerInteractionInfoChanged(
             }
         }
 
-        // IScrollController::AreInteractionsEnabled might have changed and affect the scroll controller's visibility
+        // IScrollController::AreInteractionsAllowed might have changed and affect the scroll controller's visibility
         // when its visibility mode is Auto.
         UpdateScrollControllersVisibility(false /*horizontalChange*/, true /*verticalChange*/);
     }
@@ -1194,58 +1194,50 @@ void ScrollViewer::UpdateScrollControllersVisibility(
 
     bool isHorizontalScrollControllerVisible = false;
 
-    if (m_horizontalScrollControllerElement)
+    if (horizontalChange)
     {
-        if (horizontalChange)
+        winrt::ScrollBarVisibility scrollBarVisibility = HorizontalScrollBarVisibility();
+
+        if (scrollBarVisibility == winrt::ScrollBarVisibility::Auto &&
+            m_horizontalScrollController &&
+            m_horizontalScrollController.get().AreInteractionsAllowed())
         {
-            winrt::ScrollBarVisibility scrollBarVisibility = HorizontalScrollBarVisibility();
-
-            if (scrollBarVisibility == winrt::ScrollBarVisibility::Auto &&
-                m_horizontalScrollController &&
-                m_horizontalScrollController.get().AreInteractionsEnabled())
-            {
-                isHorizontalScrollControllerVisible = true;
-            }
-            else
-            {
-                isHorizontalScrollControllerVisible = (scrollBarVisibility == winrt::ScrollBarVisibility::Visible);
-            }
-
-            m_horizontalScrollControllerElement.get().Visibility(
-                isHorizontalScrollControllerVisible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+            isHorizontalScrollControllerVisible = true;
         }
         else
         {
-            isHorizontalScrollControllerVisible = (m_horizontalScrollControllerElement.get().Visibility() == winrt::Visibility::Visible);
+            isHorizontalScrollControllerVisible = (scrollBarVisibility == winrt::ScrollBarVisibility::Visible);
         }
+
+        SetValue(s_ComputedHorizontalScrollBarVisibilityProperty, box_value(isHorizontalScrollControllerVisible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed));
+    }
+    else
+    {
+        isHorizontalScrollControllerVisible = ComputedHorizontalScrollBarVisibility() == winrt::Visibility::Visible;
     }
 
     bool isVerticalScrollControllerVisible = false;
 
-    if (m_verticalScrollControllerElement)
+    if (verticalChange)
     {
-        if (verticalChange)
+        winrt::ScrollBarVisibility scrollBarVisibility = VerticalScrollBarVisibility();
+
+        if (scrollBarVisibility == winrt::ScrollBarVisibility::Auto &&
+            m_verticalScrollController &&
+            m_verticalScrollController.get().AreInteractionsAllowed())
         {
-            winrt::ScrollBarVisibility scrollBarVisibility = VerticalScrollBarVisibility();
-
-            if (scrollBarVisibility == winrt::ScrollBarVisibility::Auto &&
-                m_verticalScrollController &&
-                m_verticalScrollController.get().AreInteractionsEnabled())
-            {
-                isVerticalScrollControllerVisible = true;
-            }
-            else
-            {
-                isVerticalScrollControllerVisible = (scrollBarVisibility == winrt::ScrollBarVisibility::Visible);
-            }
-
-            m_verticalScrollControllerElement.get().Visibility(
-                isVerticalScrollControllerVisible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+            isVerticalScrollControllerVisible = true;
         }
         else
         {
-            isVerticalScrollControllerVisible = (m_verticalScrollControllerElement.get().Visibility() == winrt::Visibility::Visible);
+            isVerticalScrollControllerVisible = (scrollBarVisibility == winrt::ScrollBarVisibility::Visible);
         }
+
+        SetValue(s_ComputedVerticalScrollBarVisibilityProperty, box_value(isVerticalScrollControllerVisible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed));
+    }
+    else
+    {
+        isVerticalScrollControllerVisible = ComputedVerticalScrollBarVisibility() == winrt::Visibility::Visible;
     }
 
     if (m_scrollControllersSeparatorElement)
@@ -1921,6 +1913,14 @@ winrt::hstring ScrollViewer::DependencyPropertyToString(const winrt::IDependency
     else if (dependencyProperty == s_VerticalScrollModeProperty)
     {
         return L"VerticalScrollMode";
+    }    
+    else if (dependencyProperty == s_ComputedHorizontalScrollBarVisibilityProperty)
+    {
+        return L"ComputedHorizontalScrollBarVisibility";
+    }
+    else if (dependencyProperty == s_ComputedVerticalScrollBarVisibilityProperty)
+    {
+        return L"ComputedVerticalScrollBarVisibility";
     }
 #ifdef USE_SCROLLMODE_AUTO
     else if (dependencyProperty == s_ComputedHorizontalScrollModeProperty)

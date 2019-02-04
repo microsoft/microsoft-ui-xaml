@@ -626,7 +626,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        public bool AreInteractionsEnabled
+        public bool AreInteractionsAllowed
         {
             get;
             private set;
@@ -669,12 +669,6 @@ namespace MUXControlsTestApp
             }
         }
 
-        public void AllowInteractions(bool allowInteractions)
-        {
-            LogMessage("ScrollBarController: AllowInteractions for Orientation=" + Orientation + " with allowInteractions=" + allowInteractions);
-            AreInteractionsEnabled = allowInteractions && IsEnabled;
-        }
-
         public void SetExpressionAnimationSources(
             CompositionPropertySet propertySet,
             string minOffsetPropertyName,
@@ -703,7 +697,7 @@ namespace MUXControlsTestApp
         public void SetScrollMode(ScrollMode scrollMode)
         {
             LogMessage("ScrollBarController: SetScrollMode for Orientation=" + Orientation + " with scrollMode=" + scrollMode);
-            AreInteractionsEnabled = scrollMode == ScrollMode.Enabled && IsEnabled;
+            AreInteractionsAllowed = scrollMode != ScrollMode.Disabled && IsEnabled;
         }
 
         public void SetValues(

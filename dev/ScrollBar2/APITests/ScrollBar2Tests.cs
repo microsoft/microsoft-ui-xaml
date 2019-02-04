@@ -94,7 +94,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(scrollBar2AsIScrollController);
 
                 Log.Comment("Verifying ScrollBar2's IScrollController default property values");
-                Verify.IsFalse(scrollBar2AsIScrollController.AreInteractionsEnabled);
+                Verify.IsFalse(scrollBar2AsIScrollController.AreInteractionsAllowed);
                 Verify.IsTrue(scrollBar2AsIScrollController.AreScrollerInteractionsAllowed);
                 Verify.IsNull(scrollBar2AsIScrollController.InteractionVisual);
                 Verify.AreEqual(scrollBar2AsIScrollController.InteractionVisualScrollOrientation, c_defaultOrientation);
@@ -102,15 +102,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(scrollBar2AsIScrollController.IsInteracting);
 
                 Log.Comment("Invoking ScrollBar2's IScrollController.AllowInteractions method");
-                scrollBar2AsIScrollController.AllowInteractions(true);
                 scrollBar2AsIScrollController.SetScrollMode(ScrollMode.Enabled);
 
-                Verify.IsFalse(scrollBar2AsIScrollController.AreInteractionsEnabled);
+                Verify.IsFalse(scrollBar2AsIScrollController.AreInteractionsAllowed);
 
                 Log.Comment("Invoking ScrollBar2's IScrollController.SetValues method");
                 scrollBar2AsIScrollController.SetValues(10.0, 250.0, 75.0, 30.0);
 
-                Verify.IsTrue(scrollBar2AsIScrollController.AreInteractionsEnabled);
+                Verify.IsTrue(scrollBar2AsIScrollController.AreInteractionsAllowed);
             });
         }
     }

@@ -45,7 +45,7 @@ public:
 #pragma endregion
 
 #pragma region IScrollController
-    bool AreInteractionsEnabled();
+    bool AreInteractionsAllowed();
 
     bool AreScrollerInteractionsAllowed();
 
@@ -56,8 +56,6 @@ public:
     winrt::Visual InteractionVisual();
 
     winrt::Orientation InteractionVisualScrollOrientation();
-
-    void AllowInteractions(bool allowInteractions);
 
     void SetExpressionAnimationSources(
         winrt::CompositionPropertySet const& propertySet,
@@ -143,7 +141,6 @@ private:
     double m_lastOffset{ 0.0 };
     bool m_areScrollerInteractionsAllowed{ true };
     bool m_isInteracting{ false };
-    bool m_areInteractionsAllowed{ false };
 
     // Event Sources
     event_source<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerOffsetChangeRequestedEventArgs>> m_offsetChangeRequested{ this };

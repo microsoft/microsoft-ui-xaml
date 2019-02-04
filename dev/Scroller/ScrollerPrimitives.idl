@@ -91,13 +91,12 @@ runtimeclass ScrollControllerInteractionRequestedEventArgs
 [webhosthidden]
 interface IScrollController
 {
-    Boolean AreInteractionsEnabled { get; };
+    Boolean AreInteractionsAllowed{ get; };
     Boolean AreScrollerInteractionsAllowed { get; };
     Boolean IsInteracting { get; };
     Boolean IsInteractionVisualRailEnabled { get; };
     Windows.UI.Composition.Visual InteractionVisual { get; };
     Windows.UI.Xaml.Controls.Orientation InteractionVisualScrollOrientation { get; };
-    void AllowInteractions(Boolean allowInteractions);
     void SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet propertySet, String minOffsetPropertyName, String maxOffsetPropertyName, String offsetPropertyName, String multiplierPropertyName);
     void SetScrollMode(MU_XC_NAMESPACE.ScrollMode scrollMode);
     void SetValues(Double minOffset, Double maxOffset, Double offset, Double viewport);

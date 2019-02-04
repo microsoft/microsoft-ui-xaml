@@ -90,7 +90,7 @@ namespace MUXControlsTestApp.Utilities
                 Viewport = 0.0;
             }
 
-            public bool AreInteractionsEnabled
+            public bool AreInteractionsAllowed
             {
                 get;
                 private set;
@@ -165,12 +165,6 @@ namespace MUXControlsTestApp.Utilities
                 private set;
             }
 
-            private bool AreInteractionsAllowed
-            {
-                get;
-                set;
-            }
-
             private ScrollMode ScrollMode
             {
                 get;
@@ -225,15 +219,6 @@ namespace MUXControlsTestApp.Utilities
                 set;
             }
 
-            public void AllowInteractions(bool allowInteractions)
-            {
-                RaiseLogMessage(
-                    "UniScrollController: AllowInteractions for Orientation=" + Orientation +
-                    " with allowInteractions=" + allowInteractions);
-                AreInteractionsAllowed = allowInteractions;
-                UpdateAreInteractionsEnabled();
-            }
-
             public void SetExpressionAnimationSources(
                 CompositionPropertySet propertySet, string minOffsetPropertyName, string maxOffsetPropertyName, string offsetPropertyName, string multiplierPropertyName)
             {
@@ -277,7 +262,7 @@ namespace MUXControlsTestApp.Utilities
                     "UniScrollController: SetScrollMode for Orientation=" + Orientation +
                     " with scrollMode=" + scrollMode);
                 ScrollMode = scrollMode;
-                UpdateAreInteractionsEnabled();
+                UpdateAreInteractionsAllowed();
             }
 
             public void SetValues(double minOffset, double maxOffset, double offset, double viewport)
@@ -360,14 +345,13 @@ namespace MUXControlsTestApp.Utilities
                 }
             }
 
-            internal bool UpdateAreInteractionsEnabled()
+            internal bool UpdateAreInteractionsAllowed()
             {
-                bool oldAreInteractionsEnabled = AreInteractionsEnabled;
+                bool oldAreInteractionsAllowed = AreInteractionsAllowed;
 
-                //AreInteractionsEnabled = AreInteractionsAllowed && Owner.IsEnabled;
-                AreInteractionsEnabled = ScrollMode == ScrollMode.Enabled && Owner.IsEnabled;
+                AreInteractionsAllowed = ScrollMode != ScrollMode.Disabled && Owner.IsEnabled;
 
-                if (oldAreInteractionsEnabled != AreInteractionsEnabled)
+                if (oldAreInteractionsAllowed != AreInteractionsAllowed)
                 {
                     RaiseInteractionInfoChanged();
                     return true;
@@ -998,8 +982,8 @@ namespace MUXControlsTestApp.Utilities
         private void BiDirectionalScrollController_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             RaiseLogMessage("BiDirectionalScrollController: IsEnabledChanged with IsEnabled=" + IsEnabled);
-            if (!horizontalScrollController.UpdateAreInteractionsEnabled() ||
-                !verticalScrollController.UpdateAreInteractionsEnabled())
+            if (!horizontalScrollController.UpdateAreInteractionsAllowed() ||
+                !verticalScrollController.UpdateAreInteractionsAllowed())
             {
                 RaiseInteractionInfoChanged();
             }

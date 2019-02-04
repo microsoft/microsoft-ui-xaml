@@ -22,7 +22,9 @@ public:
     static const winrt::ChainingMode s_defaultHorizontalScrollChainingMode{ winrt::ChainingMode::Auto };
     static const winrt::ChainingMode s_defaultVerticalScrollChainingMode{ winrt::ChainingMode::Auto };
     static const winrt::RailingMode s_defaultHorizontalScrollRailingMode{ winrt::RailingMode::Enabled };
-    static const winrt::RailingMode s_defaultVerticalScrollRailingMode{ winrt::RailingMode::Enabled };
+    static const winrt::RailingMode s_defaultVerticalScrollRailingMode{ winrt::RailingMode::Enabled };    
+    static const winrt::Visibility s_defaultComputedHorizontalScrollBarVisibility{ winrt::Visibility::Collapsed };
+    static const winrt::Visibility s_defaultComputedVerticalScrollBarVisibility{ winrt::Visibility::Collapsed };
 #ifdef USE_SCROLLMODE_AUTO
     static const winrt::ScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollMode::Auto };
     static const winrt::ScrollMode s_defaultVerticalScrollMode{ winrt::ScrollMode::Auto };

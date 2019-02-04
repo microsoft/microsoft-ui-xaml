@@ -4669,8 +4669,6 @@ void Scroller::UpdateScrollControllerInteractionsAllowed(ScrollerDimension dimen
     {
         if (m_horizontalScrollController)
         {
-            m_horizontalScrollController.get().AllowInteractions(
-                HorizontalScrollMode() != winrt::ScrollMode::Disabled);
             m_horizontalScrollController.get().SetScrollMode(HorizontalScrollMode());
         }
     }
@@ -4680,8 +4678,6 @@ void Scroller::UpdateScrollControllerInteractionsAllowed(ScrollerDimension dimen
 
         if (m_verticalScrollController)
         {
-            m_verticalScrollController.get().AllowInteractions(
-                VerticalScrollMode() != winrt::ScrollMode::Disabled);
             m_verticalScrollController.get().SetScrollMode(VerticalScrollMode());
         }
     }

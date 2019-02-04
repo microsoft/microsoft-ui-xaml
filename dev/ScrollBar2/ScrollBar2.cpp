@@ -44,10 +44,10 @@ ScrollBar2::ScrollBar2()
 
 #pragma region IScrollController
 
-bool ScrollBar2::AreInteractionsEnabled()
+bool ScrollBar2::AreInteractionsAllowed()
 {
     // Simplified implementation since the ScrollBar2 control will be removed imminently.
-    return m_areInteractionsAllowed && m_scrollMode == winrt::ScrollMode::Enabled;
+    return m_scrollMode != winrt::ScrollMode::Disabled;
 }
 
 bool ScrollBar2::AreScrollerInteractionsAllowed()
@@ -76,17 +76,6 @@ winrt::Orientation ScrollBar2::InteractionVisualScrollOrientation()
 {
     // Unused because InteractionVisual returns null.
     return Orientation();
-}
-
-void ScrollBar2::AllowInteractions(bool allowInteractions)
-{
-    SCROLLBAR2_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, allowInteractions);
-
-    if (m_areInteractionsAllowed != allowInteractions)
-    {
-        m_areInteractionsAllowed = allowInteractions;
-        RaiseInteractionInfoChanged();
-    }
 }
 
 void ScrollBar2::SetExpressionAnimationSources(
@@ -532,8 +521,7 @@ void ScrollBar2::OnScroll(
         return;
     }
 
-    if (!m_areInteractionsAllowed &&
-        m_scrollMode == winrt::ScrollMode::Disabled &&
+    if (m_scrollMode == winrt::ScrollMode::Disabled &&
         scrollEventType != winrt::ScrollEventType::ThumbPosition)
     {
         // This ScrollBar2 is not interactive. Restore its previous Value.
