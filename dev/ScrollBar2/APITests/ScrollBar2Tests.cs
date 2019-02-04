@@ -15,9 +15,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using ScrollBar2 = Microsoft.UI.Xaml.Controls.ScrollBar2;
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

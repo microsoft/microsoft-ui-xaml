@@ -192,7 +192,7 @@ void ScrollViewer::OnApplyTemplate()
 
     UpdateScroller(scroller);
 
-    winrt::IUIElement horizontalScrollControllerElement = GetTemplateChildT<winrt::IUIElement>(s_horizontalScrollControllerPartName, thisAsControlProtected);
+    winrt::IUIElement horizontalScrollControllerElement = GetTemplateChildT<winrt::IUIElement>(s_horizontalScrollBarPartName, thisAsControlProtected);
     winrt::IScrollController horizontalScrollController = horizontalScrollControllerElement.try_as<winrt::IScrollController>();
     winrt::ScrollBar horizontalScrollBar = nullptr;
 
@@ -209,7 +209,7 @@ void ScrollViewer::OnApplyTemplate()
     m_horizontalScrollBarController.SetScrollBar(horizontalScrollBar);
     UpdateHorizontalScrollController(horizontalScrollController, horizontalScrollControllerElement);
 
-    winrt::IUIElement verticalScrollControllerElement = GetTemplateChildT<winrt::IUIElement>(s_verticalScrollControllerPartName, thisAsControlProtected);
+    winrt::IUIElement verticalScrollControllerElement = GetTemplateChildT<winrt::IUIElement>(s_verticalScrollBarPartName, thisAsControlProtected);
     winrt::IScrollController verticalScrollController = verticalScrollControllerElement.try_as<winrt::IScrollController>();
     winrt::ScrollBar verticalScrollBar = nullptr;
 
@@ -226,7 +226,7 @@ void ScrollViewer::OnApplyTemplate()
     m_verticalScrollBarController.SetScrollBar(verticalScrollBar);
     UpdateVerticalScrollController(verticalScrollController, verticalScrollControllerElement);
 
-    winrt::IUIElement scrollControllersSeparator = GetTemplateChildT<winrt::IUIElement>(s_scrollControllersSeparatorPartName, thisAsControlProtected);
+    winrt::IUIElement scrollControllersSeparator = GetTemplateChildT<winrt::IUIElement>(s_scrollBarsSeparatorPartName, thisAsControlProtected);
 
     UpdateScrollControllersSeparator(scrollControllersSeparator);
 

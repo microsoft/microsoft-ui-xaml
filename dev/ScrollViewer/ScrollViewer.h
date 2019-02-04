@@ -225,9 +225,9 @@ private:
 
     static constexpr std::wstring_view s_rootPartName{ L"PART_Root"sv };
     static constexpr std::wstring_view s_scrollerPartName{ L"PART_Scroller"sv };
-    static constexpr std::wstring_view s_horizontalScrollControllerPartName{ L"PART_HorizontalScrollBar"sv };
-    static constexpr std::wstring_view s_verticalScrollControllerPartName{ L"PART_VerticalScrollBar"sv };
-    static constexpr std::wstring_view s_scrollControllersSeparatorPartName{ L"PART_ScrollBarsSeparator"sv };
+    static constexpr std::wstring_view s_horizontalScrollBarPartName{ L"PART_HorizontalScrollBar"sv };
+    static constexpr std::wstring_view s_verticalScrollBarPartName{ L"PART_VerticalScrollBar"sv };
+    static constexpr std::wstring_view s_scrollBarsSeparatorPartName{ L"PART_ScrollBarsSeparator"sv };
 
     ScrollBarController m_horizontalScrollBarController{ this };
     ScrollBarController m_verticalScrollBarController{ this };
