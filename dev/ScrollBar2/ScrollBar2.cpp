@@ -47,7 +47,13 @@ ScrollBar2::ScrollBar2()
 bool ScrollBar2::AreInteractionsAllowed()
 {
     // Simplified implementation since the ScrollBar2 control will be removed imminently.
-    return m_scrollMode != winrt::ScrollMode::Disabled;
+    if (m_scrollMode != winrt::ScrollMode::Disabled && m_scrollBar)
+    {
+        winrt::ScrollBar scrollBar = m_scrollBar.get();
+
+        return scrollBar.IsEnabled() && scrollBar.Maximum() > scrollBar.Minimum();
+    }
+    return false;
 }
 
 bool ScrollBar2::AreScrollerInteractionsAllowed()
@@ -63,7 +69,7 @@ bool ScrollBar2::IsInteracting()
 bool ScrollBar2::IsInteractionVisualRailEnabled()
 {
     // Unused because InteractionVisual returns null.
-    return false;
+    return true;
 }
 
 winrt::Visual ScrollBar2::InteractionVisual()

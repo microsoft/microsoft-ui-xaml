@@ -101,14 +101,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(scrollBar2AsIScrollController.IsInteractionVisualRailEnabled);
                 Verify.IsFalse(scrollBar2AsIScrollController.IsInteracting);
 
-                Log.Comment("Invoking ScrollBar2's IScrollController.AllowInteractions method");
+                Log.Comment("Invoking ScrollBar2's IScrollController.SetScrollMode method to enable interactions");
                 scrollBar2AsIScrollController.SetScrollMode(ScrollMode.Enabled);
+                Verify.IsTrue(scrollBar2AsIScrollController.AreInteractionsAllowed);
 
+                Log.Comment("Invoking ScrollBar2's IScrollController.SetValues method to disable interactions");
+                scrollBar2AsIScrollController.SetValues(minOffset: 0.0, maxOffset: 0.0, offset: 0.0, viewport: 0.0);
                 Verify.IsFalse(scrollBar2AsIScrollController.AreInteractionsAllowed);
 
-                Log.Comment("Invoking ScrollBar2's IScrollController.SetValues method");
-                scrollBar2AsIScrollController.SetValues(10.0, 250.0, 75.0, 30.0);
-
+                Log.Comment("Invoking ScrollBar2's IScrollController.SetValues method to enable interactions");
+                scrollBar2AsIScrollController.SetValues(minOffset: 10.0, maxOffset: 250.0, offset: 75.0, viewport: 30.0);
                 Verify.IsTrue(scrollBar2AsIScrollController.AreInteractionsAllowed);
             });
         }
