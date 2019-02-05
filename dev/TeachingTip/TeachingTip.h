@@ -44,6 +44,7 @@ public:
     double GetVerticalOffset();
     void SetUseTestWindowBounds(bool useTestWindowBounds);
     void SetTestWindowBounds(const winrt::Rect& testWindowBounds);
+    void SetTipFollowsTarget(bool tipFollowsTarget);
 
 private:
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
@@ -130,6 +131,8 @@ private:
 
     bool m_useTestWindowBounds{ false };
     winrt::Rect m_testWindowBounds{ 0,0,0,0 };
+
+    bool m_tipFollowsTarget{ false };
 
     float m_contentElevation{ 32.0f };
     float m_beakElevation{ 0.0f };

@@ -24,6 +24,7 @@ public:
     static void SetBeakShadowTargetsShadowTarget(const winrt::TeachingTip& teachingTip, bool targetsShadowTarget);
     static void SetUseTestWindowBounds(const winrt::TeachingTip& teachingTip, bool useTestWindowBounds);
     static void SetTestWindowBounds(const winrt::TeachingTip& teachingTip, const winrt::Rect& testWindowBounds);
+    static void SetTipFollowsTarget(const winrt::TeachingTip& teachingTIp, bool tipFollowsTarget);
 
     static bool GetIsIdle(const winrt::TeachingTip& teachingTip);
     static winrt::TeachingTipPlacementMode GetEffectivePlacement(const winrt::TeachingTip& teachingTip);

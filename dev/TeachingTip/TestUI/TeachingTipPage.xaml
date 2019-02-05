@@ -92,6 +92,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -236,6 +237,8 @@
                     <TextBlock Text="Height:"/>
                     <TextBox x:Name="TestWindowBoundsHeightTextBox" AutomationProperties.Name="TestWindowBoundsHeightTextBox" Text="0"/>
                 </StackPanel>
+                <TextBlock Text="TipFollowsTarget:" Grid.Row="37" Foreground="Red"/>
+                <CheckBox x:Name="TipFollowsTargetCheckBox" AutomationProperties.Name="TipFollowsTargetCheckBox" Grid.Row="37" Grid.Column="1" Checked="OnTipFollowsTargetCheckBoxChecked" Unchecked="OnTipFollowsTargetCheckBoxUnchecked"/>
             </Grid>
         </ScrollViewer>
 

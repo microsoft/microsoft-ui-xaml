@@ -941,16 +941,16 @@ void TeachingTip::SetTarget(const winrt::UIElement& element)
 
 void TeachingTip::SetViewportChangedEvent()
 {
-    if (auto targetAsFE = m_target.get().try_as<winrt::FrameworkElement>())
+    if (m_tipFollowsTarget)
     {
-        // EffectiveViewPortChanged is only available on RS5 and higher.
-        if (SharedHelpers::IsRS5OrHigher())
+        if (auto targetAsFE = m_target.get().try_as<winrt::FrameworkElement>())
         {
-            m_targetEffectiveViewportChangedRevoker =targetAsFE.EffectiveViewportChanged(winrt::auto_revoke, { this, &TeachingTip::TargetLayoutUpdated });
-        }
-        else
-        {
-            if (IsOpen())
+            // EffectiveViewPortChanged is only available on RS5 and higher.
+            if (SharedHelpers::IsRS5OrHigher())
+            {
+                m_targetEffectiveViewportChangedRevoker = targetAsFE.EffectiveViewportChanged(winrt::auto_revoke, { this, &TeachingTip::TargetLayoutUpdated });
+            }
+            else
             {
                 m_targetLayoutUpdatedRevoker = targetAsFE.LayoutUpdated(winrt::auto_revoke, { this, &TeachingTip::TargetLayoutUpdated });
             }
@@ -1442,11 +1442,13 @@ void TeachingTip::SetExpandEasingFunction(const winrt::CompositionEasingFunction
     m_expandEasingFunction.set(easingFunction);
     CreateExpandAnimation();
 }
+
 void TeachingTip::SetContractEasingFunction(const winrt::CompositionEasingFunction& easingFunction)
 {
     m_contractEasingFunction.set(easingFunction);
     CreateContractAnimation();
 }
+
 void TeachingTip::SetContentElevation(float elevation)
 {
     m_contentElevation = elevation;
@@ -1462,6 +1464,7 @@ void TeachingTip::SetContentElevation(float elevation)
         }
     }
 }
+
 void TeachingTip::SetBeakElevation(float elevation)
 {
     m_beakElevation = elevation;
@@ -1470,6 +1473,7 @@ void TeachingTip::SetBeakElevation(float elevation)
         m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
     }
 }
+
 void TeachingTip::SetBeakShadowTargetsShadowTarget(const bool targetsShadowTarget)
 {
 #ifdef USE_INTERNAL_SDK
@@ -1493,26 +1497,48 @@ void TeachingTip::SetBeakShadowTargetsShadowTarget(const bool targetsShadowTarge
     }
 #endif
 }
-void TeachingTip::SetUseTestWindowBounds(const bool useTestWindowBounds)
+
+void TeachingTip::SetUseTestWindowBounds(bool useTestWindowBounds)
 {
     m_useTestWindowBounds = useTestWindowBounds;
 }
+
 void TeachingTip::SetTestWindowBounds(const winrt::Rect& testWindowBounds)
 {
     m_testWindowBounds = testWindowBounds;
 }
+
+void TeachingTip::SetTipFollowsTarget(bool tipFollowsTarget)
+{
+    if (m_tipFollowsTarget != tipFollowsTarget)
+    {
+        m_tipFollowsTarget = tipFollowsTarget;
+        if (tipFollowsTarget)
+        {
+            SetViewportChangedEvent();
+        }
+        else
+        {
+            RevokeViewportChangedEvent();
+        }
+    }
+}
+
 bool TeachingTip::GetIsIdle()
 {
     return m_isIdle;
 }
+
 winrt::TeachingTipPlacementMode TeachingTip::GetEffectivePlacement()
 {
     return m_currentEffectivePlacementMode;
 }
+
 winrt::TeachingTipBleedingImagePlacementMode TeachingTip::GetEffectiveBleedingPlacement()
 {
     return m_currentBleedingEffectivePlacementMode;
 }
+
 double TeachingTip::GetHorizontalOffset()
 {
     if (m_popup)
@@ -1521,6 +1547,7 @@ double TeachingTip::GetHorizontalOffset()
     }
     return 0.0;
 }
+
 double TeachingTip::GetVerticalOffset()
 {
     if (m_popup)

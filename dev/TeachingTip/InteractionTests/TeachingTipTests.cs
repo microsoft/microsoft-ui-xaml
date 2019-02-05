@@ -74,6 +74,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             public CheckBox isIdleCheckBox;
 
             public Button bringIntoViewButton;
+
+            public CheckBox tipFollowsTargetCheckBox;
         }
 
         enum PlacementOptions
@@ -153,22 +155,55 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void TipFollowsTarget()
+        public void TipCanFollowTarget()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
             {
                 elements = new TeachingTipTestPageElements();
 
                 ScrollTargetIntoView();
-                OpenTeachingTip();
-                double initialVerticalOffset = GetVerticalOffset();
-                ScrollBy(10);
-                WaitForOffsetUpdated(initialVerticalOffset - 10);
-                Verify.IsLessThan(GetVerticalOffset(), initialVerticalOffset);
-                ScrollBy(-20);
-                WaitForOffsetUpdated(initialVerticalOffset + 10);
                 Wait.ForIdle();
-                Verify.IsGreaterThan(GetVerticalOffset(), initialVerticalOffset);
+                OpenTeachingTip();
+                double initialTipVerticalOffset = GetTipVerticalOffset();
+                double initialScrollViewerVerticalOffset = GetScrollViewerVerticalOffset();
+
+                ScrollBy(10);
+                WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
+                Verify.Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                ScrollBy(-20);
+                WaitForOffsetUpdated(initialScrollViewerVerticalOffset - 10);
+                Wait.ForIdle();
+                Verify.Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                ScrollBy(10);
+                WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
+                Verify.Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+
+                SetTipFollowsTarget(true);
+
+                ScrollBy(10);
+                WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
+                Verify.IsLessThan(GetTipVerticalOffset(), initialTipVerticalOffset);
+                ScrollBy(-20);
+                WaitForOffsetUpdated(initialScrollViewerVerticalOffset - 10);
+                Wait.ForIdle();
+                Verify.IsGreaterThan(GetTipVerticalOffset(), initialTipVerticalOffset);
+                ScrollBy(10);
+                WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
+                Verify.Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+
+                SetTipFollowsTarget(false);
+
+                ScrollBy(10);
+                WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
+                Verify.Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                ScrollBy(-20);
+                WaitForOffsetUpdated(initialScrollViewerVerticalOffset - 10);
+                Wait.ForIdle();
+                Verify.Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                ScrollBy(10);
+                WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
+                Verify.Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+
             }
         }
 
@@ -538,7 +573,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.setBleedingContentButton.Invoke();
         }
 
-        private double GetVerticalOffset()
+        private double GetTipVerticalOffset()
         {
             if (elements.popupVerticalOffsetTextBlock == null)
             {
@@ -547,6 +582,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(elements.popupVerticalOffsetTextBlock);
             }
             return double.Parse(elements.popupVerticalOffsetTextBlock.GetText());
+        }
+
+        private double GetScrollViewerVerticalOffset()
+        {
+            if (elements.scrollViewerOffsetTextBox == null)
+            {
+                Log.Comment("Find the ScrollViewerOffsetTextBox");
+                elements.scrollViewerOffsetTextBox = new Edit(FindElement.ByName("ScrollViewerOffsetTextBox"));
+                Verify.IsNotNull(elements.scrollViewerOffsetTextBox);
+            }
+            return double.Parse(elements.scrollViewerOffsetTextBox.GetText());
         }
 
         private void ScrollBy(double ammount)
@@ -614,6 +660,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             elements.useTestWindowBoundsCheckbox.Uncheck();
             elements.useTestWindowBoundsCheckbox.Check();
+        }
+
+        private void SetTipFollowsTarget(bool tipFollowsTarget)
+        {
+            if (elements.tipFollowsTargetCheckBox == null)
+            {
+                Log.Comment("Find the TipFollowsTargetCheckBox");
+                elements.tipFollowsTargetCheckBox = new CheckBox(FindElement.ByName("TipFollowsTargetCheckBox"));
+                Verify.IsNotNull(elements.tipFollowsTargetCheckBox);
+            }
+
+            if(tipFollowsTarget)
+            {
+                elements.tipFollowsTargetCheckBox.Check();
+            }
+            else
+            {
+                elements.tipFollowsTargetCheckBox.Uncheck();
+            }
         }
 
         Vector4 GetTargetBounds()
@@ -740,7 +805,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             int warningCount = 0;
             bool success = WaitForOffsetToSettle(elements.scrollViewerOffsetTextBox, millisecondsTimeout, failOnError);
-            double value = Convert.ToDouble(elements.popupVerticalOffsetTextBlock.GetText());
+            double value = Convert.ToDouble(elements.scrollViewerOffsetTextBox.GetText());
             bool goodValue = value == expectedValue;
             Verify.IsTrue(goodValue);
             return warningCount;

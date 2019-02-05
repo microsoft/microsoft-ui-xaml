@@ -74,6 +74,14 @@ void TeachingTipTestHooks::SetTestWindowBounds(const winrt::TeachingTip& teachin
     }
 }
 
+void TeachingTipTestHooks::SetTipFollowsTarget(const winrt::TeachingTip& teachingTip, bool tipFollowsTarget)
+{
+    if (teachingTip)
+    {
+        winrt::get_self<TeachingTip>(teachingTip)->SetTipFollowsTarget(tipFollowsTarget);
+    }
+}
+
 void TeachingTipTestHooks::NotifyOpenedStatusChanged(const winrt::TeachingTip& sender)
 {
     auto hooks = EnsureGlobalTestHooks();

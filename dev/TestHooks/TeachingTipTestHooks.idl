@@ -1,4 +1,4 @@
-[WUXC_VERSION_INTERNAL]
+﻿[WUXC_VERSION_INTERNAL]
 [default_interface]
 [webhosthidden]
 runtimeclass TeachingTipTestHooks
@@ -10,6 +10,7 @@ runtimeclass TeachingTipTestHooks
     static void SetBeakShadowTargetsShadowTarget(MU_XC_NAMESPACE.TeachingTip teachingTip, Boolean targetShadowTarget);
     static void SetUseTestWindowBounds(MU_XC_NAMESPACE.TeachingTip teachingTip, Boolean useTestWindowBounds);
     static void SetTestWindowBounds(MU_XC_NAMESPACE.TeachingTip teachingTip, Windows.Foundation.Rect testWindowBounds);
+    static void SetTipFollowsTarget(MU_XC_NAMESPACE.TeachingTip teachingTip, Boolean tipFollowsTarget);
 
     static Boolean GetIsIdle(MU_XC_NAMESPACE.TeachingTip teachingTip);
     static MU_XC_NAMESPACE.TeachingTipPlacementMode GetEffectivePlacement(MU_XC_NAMESPACE.TeachingTip teachingTip);

@@ -366,6 +366,16 @@ namespace MUXControlsTestApp
             testWindowBounds.IsOpen = false;
         }
 
+        public void OnTipFollowsTargetCheckBoxChecked(object sender, RoutedEventArgs args)
+        {
+            TeachingTipTestHooks.SetTipFollowsTarget(this.TeachingTip, true);
+        }
+
+        public void OnTipFollowsTargetCheckBoxUnchecked(object sender, RoutedEventArgs args)
+        {
+            TeachingTipTestHooks.SetTipFollowsTarget(this.TeachingTip, false);
+        }
+
         public void OnSetPlacementButtonClicked(object sender, RoutedEventArgs args)
         {
             if (this.PlacementComboBox.SelectedItem == PlacementTop)
