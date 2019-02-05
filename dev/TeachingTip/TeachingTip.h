@@ -50,6 +50,7 @@ private:
     winrt::Button::Click_revoker m_alternateCloseButtonClickedRevoker{};
     winrt::Button::Click_revoker m_actionButtonClickedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_contentSizeChangedRevoker{};
+    winrt::FrameworkElement::EffectiveViewportChanged_revoker m_targetEffectiveViewportChangedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_targetLayoutUpdatedRevoker{};
     winrt::Popup::Closed_revoker m_popupClosedRevoker{};
     winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
@@ -84,6 +85,9 @@ private:
     void ClosePopupWithAnimationIfAvailable();
     void ClosePopup();
 
+    void SetTarget(const winrt::UIElement& element);
+    void SetViewportChangedEvent();
+    void RevokeViewportChangedEvent();
     void TargetLayoutUpdated();
 
     void CreateExpandAnimation();

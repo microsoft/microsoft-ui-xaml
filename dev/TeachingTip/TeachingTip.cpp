@@ -663,6 +663,7 @@ void TeachingTip::OnIsOpenChanged()
         m_lastCloseReason = winrt::TeachingTipCloseReason::Programmatic;
         if (m_target)
         {
+            SetViewportChangedEvent();
             m_currentTargetBounds = m_target.get().TransformToVisual(nullptr).TransformBounds({
                 0.0,
                 0.0,
@@ -922,6 +923,55 @@ void TeachingTip::ClosePopup()
         // small scale.
         m_beakOcclusionGrid.get().Scale({ 1.0f,1.0f,1.0f });
     }
+}
+
+void TeachingTip::SetTarget(const winrt::UIElement& element)
+{
+    m_targetLayoutUpdatedRevoker.revoke();
+    m_targetEffectiveViewportChangedRevoker.revoke();
+
+    m_target.set(element);
+
+    if (IsOpen())
+    {
+        SetViewportChangedEvent();
+        PositionPopup();
+    }
+}
+
+void TeachingTip::SetViewportChangedEvent()
+{
+    if (auto targetAsFE = m_target.get().try_as<winrt::FrameworkElement>())
+    {
+        // EffectiveViewPortChanged is only available on RS5 and higher.
+        if (SharedHelpers::IsRS5OrHigher())
+        {
+            m_targetEffectiveViewportChangedRevoker =targetAsFE.EffectiveViewportChanged(winrt::auto_revoke, {
+                [](auto const&, auto const&)
+                    {
+                        TargetLayoutUpdated();
+                    }
+                });
+        }
+        else
+        {
+            if (IsOpen())
+            {
+                m_targetLayoutUpdatedRevoker = targetAsFE.LayoutUpdated(winrt::auto_revoke, {
+                    [](auto const&, auto const&)
+                        {
+                            TargetLayoutUpdated();
+                        }
+                    });
+            }
+        }
+    }
+}
+
+void TeachingTip::RevokeViewportChangedEvent()
+{
+    m_targetEffectiveViewportChangedRevoker.revoke();
+    m_targetLayoutUpdatedRevoker.revoke();
 }
 
 void TeachingTip::TargetLayoutUpdated()
@@ -1388,24 +1438,7 @@ void TeachingTip::SetAttach(const winrt::UIElement& element, const winrt::Teachi
 {
     MUX_ASSERT(teachingTip);
     auto tip = winrt::get_self<TeachingTip>(teachingTip);
-    tip->m_targetLayoutUpdatedRevoker.revoke();
-
-    tip->m_target.set(element);
-
-    if (auto targetAsFE = element.try_as<winrt::FrameworkElement>())
-    {
-        auto strongTip = tip->get_strong();
-        tip->m_targetLayoutUpdatedRevoker = targetAsFE.LayoutUpdated(winrt::auto_revoke, {
-        [strongTip](auto const&, auto const&)
-            {
-                strongTip->TargetLayoutUpdated();
-            }
-        });
-    }
-    if (tip->IsOpen())
-    {
-        tip->PositionPopup();
-    }
+    tip->SetTarget(element);
 }
 
 winrt::TeachingTip TeachingTip::GetAttach(const winrt::UIElement& element)
