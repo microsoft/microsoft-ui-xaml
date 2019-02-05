@@ -77,9 +77,9 @@ private:
     void OnIsLightDismissEnabledChanged();
     void OnBleedingImagePlacementChanged();
 
-    void OnCloseButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnActionButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnPopupClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args);
+    void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
+    void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
+    void OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&);
 
     void RaiseClosingEvent();
     void ClosePopupWithAnimationIfAvailable();
@@ -88,7 +88,7 @@ private:
     void SetTarget(const winrt::UIElement& element);
     void SetViewportChangedEvent();
     void RevokeViewportChangedEvent();
-    void TargetLayoutUpdated();
+    void TargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&);
 
     void CreateExpandAnimation();
     void CreateContractAnimation();

@@ -832,19 +832,19 @@ void TeachingTip::OnBleedingImagePlacementChanged()
     }
 }
 
-void TeachingTip::OnCloseButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void TeachingTip::OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     m_closeButtonClickEventSource(*this, nullptr);
     m_lastCloseReason = winrt::TeachingTipCloseReason::CloseButton;
     IsOpen(false);
 }
 
-void TeachingTip::OnActionButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     m_actionButtonClickEventSource(*this, nullptr);
 }
 
-void TeachingTip::OnPopupClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args)
+void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     m_popup.get().Child(nullptr);
     auto myArgs = winrt::make_self<TeachingTipClosedEventArgs>();
@@ -946,23 +946,13 @@ void TeachingTip::SetViewportChangedEvent()
         // EffectiveViewPortChanged is only available on RS5 and higher.
         if (SharedHelpers::IsRS5OrHigher())
         {
-            m_targetEffectiveViewportChangedRevoker =targetAsFE.EffectiveViewportChanged(winrt::auto_revoke, {
-                [](auto const&, auto const&)
-                    {
-                        TargetLayoutUpdated();
-                    }
-                });
+            m_targetEffectiveViewportChangedRevoker =targetAsFE.EffectiveViewportChanged(winrt::auto_revoke, { this, &TeachingTip::TargetLayoutUpdated });
         }
         else
         {
             if (IsOpen())
             {
-                m_targetLayoutUpdatedRevoker = targetAsFE.LayoutUpdated(winrt::auto_revoke, {
-                    [](auto const&, auto const&)
-                        {
-                            TargetLayoutUpdated();
-                        }
-                    });
+                m_targetLayoutUpdatedRevoker = targetAsFE.LayoutUpdated(winrt::auto_revoke, { this, &TeachingTip::TargetLayoutUpdated });
             }
         }
     }
@@ -974,7 +964,7 @@ void TeachingTip::RevokeViewportChangedEvent()
     m_targetLayoutUpdatedRevoker.revoke();
 }
 
-void TeachingTip::TargetLayoutUpdated()
+void TeachingTip::TargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     if (IsOpen() && m_target)
     {
@@ -1080,8 +1070,7 @@ void TeachingTip::StartExpandToOpen()
         scopedBatch.End();
 
         auto strongThis = get_strong();
-        scopedBatch.Completed(
-            [strongThis](auto sender, auto args)
+        scopedBatch.Completed([strongThis](auto, auto)
         {
             strongThis->m_isExpandAnimationPlaying = false;
             if (!strongThis->m_isContractAnimationPlaying && !strongThis->m_isIdle)
@@ -1125,8 +1114,7 @@ void TeachingTip::StartContractToClose()
         scopedBatch.End();
 
         auto strongThis = get_strong();
-        scopedBatch.Completed(
-            [strongThis](auto sender, auto args)
+        scopedBatch.Completed([strongThis](auto, auto)
         {
             strongThis->m_isContractAnimationPlaying = false;
             strongThis->ClosePopup();
