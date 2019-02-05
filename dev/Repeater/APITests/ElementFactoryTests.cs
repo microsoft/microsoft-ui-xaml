@@ -43,13 +43,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateRecycling()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277320: MUX Repeater tests fail on RS5_Release
-                return;
-            }
-
-
             RunOnUIThread.Execute(() =>
             {
                 var elementFactory = new RecyclingElementFactory()
