@@ -23,6 +23,11 @@ winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
 
 void TeachingTip::OnApplyTemplate()
 {
+    m_contentSizeChangedRevoker.revoke();
+    m_closeButtonClickedRevoker.revoke();
+    m_alternateCloseButtonClickedRevoker.revoke();
+    m_actionButtonClickedRevoker.revoke();
+
     winrt::IControlProtected controlProtected{ *this };
 
     m_beakOcclusionGrid.set(GetTemplateChildT<winrt::Grid>(s_beakOcclusionGridName, controlProtected));
