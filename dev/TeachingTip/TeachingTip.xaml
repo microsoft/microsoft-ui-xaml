@@ -6,15 +6,15 @@
 
     <Style TargetType="local:TeachingTip">
         <Setter Property="Background" Value="{ThemeResource TeachingTipStaticBackgroundBrush}"/>
+        <Setter Property="MinHeight" Value="{StaticResource TeachingTipMinHeight}"/>
+        <Setter Property="MinWidth" Value="{StaticResource TeachingTipMinWidth}"/>
+        <Setter Property="MaxHeight" Value="{StaticResource TeachingTipMaxHeight}"/>
+        <Setter Property="MaxWidth" Value="{StaticResource TeachingTipMaxWidth}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TeachingTip">
                     <Grid HorizontalAlignment="Left"
                           VerticalAlignment="Top"
-                          MinHeight="{StaticResource TeachingTipTotalMinHeight}" 
-                          MinWidth="{StaticResource TeachingTipTotalMinWidth}"
-                          MaxHeight="{StaticResource TeachingTipTotalMaxHeight}"
-                          MaxWidth="{StaticResource TeachingTipTotalMaxWidth}"
                           Background="Transparent">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
