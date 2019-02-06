@@ -10,7 +10,10 @@ using Windows.UI.Xaml.Controls.Primitives;
 namespace MUXControlsTestApp.Utilities
 {
     public sealed partial class TabControl : UserControl
-    {        
+    { 
+        public event EventHandler SelectedTabChanged;
+        private Tab selectedTab = null;
+
         public TabControl()
         {
             this.InitializeComponent();
@@ -19,8 +22,22 @@ namespace MUXControlsTestApp.Utilities
 
         public Tab SelectedTab
         {
-            get;
-            private set;
+            get
+            {
+                return selectedTab;
+            }
+
+            private set
+            {
+                if (value != selectedTab)
+                {
+                    selectedTab = value;
+                    if (SelectedTabChanged != null)
+                    {
+                        SelectedTabChanged(this, EventArgs.Empty);
+                    }
+                }
+            }
         }
 
         public ObservableCollection<Tab> Tabs

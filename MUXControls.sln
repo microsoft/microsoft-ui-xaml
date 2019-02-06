@@ -575,6 +575,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnimatedVisualPlayer_Intera
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnimatedVisualPlayer_TestUI", "dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.shproj", "{DBEC0BE4-BA3F-41C9-A303-AF98201BE6DC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataGridTestDriver", "test\DataGridTestDriver\DataGridTestDriver.csproj", "{1F7F4210-3CF1-47ED-905A-6986EE823E80}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ParallaxView\TestUI\ParallaxView_TestUI.projitems*{00c52fd5-42fd-33b4-84a0-795c9b5a014d}*SharedItemsImports = 13
@@ -1233,6 +1235,18 @@ Global
 		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Release|x86.ActiveCfg = Release|x86
 		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Release|x86.Build.0 = Release|x86
 		{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}.Release|x86.Deploy.0 = Release|x86
+		{1F7F4210-3CF1-47ED-905A-6986EE823E80}.Debug|x64.ActiveCfg = Debug|x64
+		{1F7F4210-3CF1-47ED-905A-6986EE823E80}.Debug|x64.Build.0 = Debug|x64
+		{1F7F4210-3CF1-47ED-905A-6986EE823E80}.Debug|x64.Deploy.0 = Debug|x64
+		{1F7F4210-3CF1-47ED-905A-6986EE823E80}.Debug|x86.ActiveCfg = Debug|x86
+		{1F7F4210-3CF1-47ED-905A-6986EE823E80}.Debug|x86.Build.0 = Debug|x86
+		{1F7F4210-3CF1-47ED-905A-6986EE823E80}.Debug|x86.Deploy.0 = Debug|x86
+		{1F7F4210-3CF1-47ED-905A-6986EE823E80}.Release|x64.ActiveCfg = Release|x64
+		{1F7F4210-3CF1-47ED-905A-6986EE823E80}.Release|x64.Build.0 = Release|x64
+		{1F7F4210-3CF1-47ED-905A-6986EE823E80}.Release|x64.Deploy.0 = Release|x64
+		{1F7F4210-3CF1-47ED-905A-6986EE823E80}.Release|x86.ActiveCfg = Release|x86
+		{1F7F4210-3CF1-47ED-905A-6986EE823E80}.Release|x86.Build.0 = Release|x86
+		{1F7F4210-3CF1-47ED-905A-6986EE823E80}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

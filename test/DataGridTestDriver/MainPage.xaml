@@ -1,0 +1,87 @@
+﻿<Page
+    x:Class="DataGridTestDriver.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:uwpctl="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:util="using:MUXControlsTestApp.Utilities"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="grdDataGrids" Margin="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="btnBefore" Height="28" Content="Btn" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="1">
+                <Button.RenderTransform>
+                    <CompositeTransform Rotation="-90"/>
+                </Button.RenderTransform>
+            </Button>
+            <uwpctl:DataGrid x:Name="dg1" Grid.Column="1"/>
+            <uwpctl:DataGrid x:Name="dg2" Grid.Column="1"/>
+            <Button x:Name="btnAfter" Height="28" Content="Btn" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="1" Grid.Column="2">
+                <Button.RenderTransform>
+                    <CompositeTransform Rotation="-90"/>
+                </Button.RenderTransform>
+            </Button>
+        </Grid>
+
+        <Grid x:Name="grdEvents" Grid.Row="1" Margin="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <CheckBox x:Name="chkRecordEvents" Content="Record Events?" IsChecked="False"/>
+            <Button x:Name="btnClearEvents" Content="Clear Events" Grid.Column="1" Click="btnClearEvents_Click"/>
+            <ListBox x:Name="lstEvents" Grid.ColumnSpan="2" Grid.Row="1"/>
+        </Grid>
+
+        <Grid Grid.Column="1" Grid.RowSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="DataGrid:" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbDataGrid" VerticalAlignment="Center" SelectedIndex="0" Margin="1" MinWidth="110" SelectionChanged="cmbDataGrid_SelectionChanged">
+                    <ComboBoxItem>dataGrid1</ComboBoxItem>
+                    <ComboBoxItem>dataGrid2</ComboBoxItem>
+                </ComboBox>
+                <TextBlock Text="DataGridColumn:" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                <ComboBox x:Name="cmbDataGridColumn" VerticalAlignment="Center" SelectedIndex="0" Margin="1" Width="200" SelectionChanged="cmbDataGridColumn_SelectionChanged">
+                    <ComboBoxItem>None</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+
+            <Grid Grid.Row="1">
+                <util:TabControl x:Name="tcDataGrid"/>
+                <util:TabControl x:Name="tcDataGridColumn" Visibility="Collapsed"/>
+            </Grid>
+        </Grid>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.ColumnSpan="2">
+            <Button x:Name="btnClearException" Content="Clear Exception" Margin="1" Click="btnClearException_Click"/>
+            <TextBox x:Name="txtException" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Margin="1" HorizontalAlignment="Stretch"/>
+        </StackPanel>
+    </Grid>
+</Page>

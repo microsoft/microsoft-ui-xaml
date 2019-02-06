@@ -1,0 +1,88 @@
+﻿<UserControl
+    x:Class="DataGridTestDriver.DataGridPropertiesControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:DataGridTestDriver"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <UserControl.Resources>
+        <DataTemplate x:Key="PersonRowDetailsTemplate">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Person FirstName:"/>
+                <TextBlock Text="{Binding FirstName}"/>
+                <TextBlock Text=", LastName:"/>
+                <TextBlock Text="{Binding LastName}"/>
+                <TextBlock Text=", IsResidentAlien:"/>
+                <TextBlock Text="{Binding IsResidentAlien}"/>
+                <TextBlock Text=", Age:"/>
+                <TextBlock Text="{Binding Age}"/>
+                <TextBlock Text=", DateOfBirth:"/>
+                <TextBlock Text="{Binding DateOfBirth}"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="EmployeeRowDetailsTemplate">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Employee FirstName:"/>
+                <TextBlock Text="{Binding FirstName}"/>
+                <TextBlock Text=", LastName:"/>
+                <TextBlock Text="{Binding LastName}"/>
+                <TextBlock Text=", IsResidentAlien:"/>
+                <TextBlock Text="{Binding IsResidentAlien}"/>
+                <TextBlock Text=", Age:"/>
+                <TextBlock Text="{Binding Age}"/>
+                <TextBlock Text=", DateOfBirth:"/>
+                <TextBlock Text="{Binding DateOfBirth}"/>
+                <TextBlock Text=", IsEmployed:"/>
+                <TextBlock Text="{Binding IsEmployed}"/>
+                <TextBlock Text=", EmployeeId:"/>
+                <TextBlock Text="{Binding EmployeeId}"/>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+    
+    <local:DataGridEntityPropertiesControl x:Name="epc" Margin="1"/>
+
+    <!--AlternatingRowBackground"--><!--Brush-->        
+    <!--AreRowDetailsFrozen-->
+    <!--AutoGenerateColumns-->
+    <!--CanUserReorderColumns-->
+    <!--CanUserResizeColumns-->
+    <!--CanUserSortColumns-->
+    <!--CellStyle-->
+    <!--ClipboardCopyMode-->
+    <!--ColumnHeaderHeight-->
+    <!--ColumnHeaderStyle-->
+    <!--Columns-->
+    <!--ColumnWidth-->
+    <!--CurrentColumn-->
+    <!--DragIndicatorStyle-->
+    <!--DropLocationIndicatorStyle-->
+    <!--FrozenColumnCount-->
+    <!--GridLinesVisibility-->
+    <!--HeadersVisibility-->
+    <!--HorizontalGridLinesBrush-->
+    <!--HorizontalScrollBarVisibility-->
+    <!--IsReadOnly-->
+    <!--IsValid-->
+    <!--ItemsSource-->
+    <!--MaxColumnWidth-->
+    <!--MinColumnWidth-->
+    <!--RowBackground-->
+    <!--RowDetailsTemplate-->
+    <!--RowDetailsVisibilityMode-->
+    <!--RowHeight-->
+    <!--RowHeaderWidth-->
+    <!--RowHeaderStyle-->
+    <!--RowStyle-->
+    <!--SelectionMode-->
+    <!--SelectedIndex-->
+    <!--SelectedItem-->
+    <!--SelectedItems-->
+    <!--VerticalGridLinesBrush-->
+    <!--VerticalScrollBarVisibility-->
+</UserControl>
