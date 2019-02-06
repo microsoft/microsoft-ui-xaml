@@ -203,15 +203,6 @@ bool SharedHelpers::IsDispatcherQueueAvailable()
     return s_isAvailable;
 }
 
-bool SharedHelpers::IsXamlRootAvailable()
-{
-    static bool s_IsXamlRootAvailable =
-        IsSystemDll() ||
-        IsVanadiumOrHigher() ||
-        winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.XamlRoot");
-    return s_IsXamlRootAvailable;
-}
-
 bool SharedHelpers::IsThemeShadowAvailable()
 {
     static bool s_isThemeShadowAvailable =

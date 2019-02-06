@@ -53,8 +53,6 @@ public:
 
     static bool IsDispatcherQueueAvailable();
 
-    static bool IsXamlRootAvailable();
-
     static bool IsThemeShadowAvailable();
 
     // Actual OS version checks

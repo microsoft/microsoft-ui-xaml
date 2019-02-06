@@ -6153,11 +6153,10 @@ void Scroller::SetKeyEvents()
 
     if (!m_isListeningToKeystrokes)
     {
-#ifdef USE_INTERNAL_SDK
-        if (SharedHelpers::IsXamlRootAvailable())
-
+#ifdef USE_INSIDER_SDK
+        if (winrt::IUIElement10 uiElement10 = *this)
         {
-            if (auto xamlRoot = XamlRoot())
+            if (auto xamlRoot = uiElement10.XamlRoot())
             {
                 auto xamlRootContent = xamlRoot.Content();
 
@@ -6193,10 +6192,10 @@ void Scroller::ResetKeyEvents()
 
     if (m_isListeningToKeystrokes)
     {
-#ifdef USE_INTERNAL_SDK
-        if (SharedHelpers::IsXamlRootAvailable())
+#ifdef USE_INSIDER_SDK
+        if (winrt::IUIElement10 uiElement10 = *this)
         {
-            if (auto xamlRoot = XamlRoot())
+            if (auto xamlRoot = uiElement10.XamlRoot())
             {
                 auto xamlRootContent = xamlRoot.Content();
 
