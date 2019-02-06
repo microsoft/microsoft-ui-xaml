@@ -9,14 +9,8 @@
 #include "StackLayoutState.h"
 #include "StackLayout.h"
 #include "StackLayoutFactory.h"
-#include "RuntimeProfiler.h"
 
 #pragma region IFlowLayout
-
-StackLayout::StackLayout()
-{
-    __RP_Marker_ClassById(RuntimeProfiler::ProfId_StackLayout);
-}
 
 winrt::Orientation StackLayout::Orientation()
 {

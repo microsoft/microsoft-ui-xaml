@@ -314,6 +314,12 @@ void AcrylicBrush::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
                 m_brush.StartAnimation(LuminosityColorColor, MakeColorAnimation(newLuminosityColor, TintTransitionDuration(), m_brush.Compositor()));
             }
         }
+
+        if (property == s_TintLuminosityOpacityProperty)
+        {
+            //  Logging usage telemetry
+            __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_Acrylic, RuntimeProfiler::ProfMemberId_Acrylic_TintLuminosityOpacity_Changed);
+        }
     }
     else if (property == s_AlwaysUseFallbackProperty)
     {

@@ -6,14 +6,8 @@
 #include "ItemsRepeater.common.h"
 #include "Layout.h"
 #include "NonVirtualizingLayout.h"
-#include "RuntimeProfiler.h"
 
 CppWinRTActivatableClassWithBasicFactory(NonVirtualizingLayout)
-
-NonVirtualizingLayout::NonVirtualizingLayout()
-{
-    __RP_Marker_ClassById(RuntimeProfiler::ProfId_NonVirtualizingLayout);
-}
 
 #pragma region INonVirtualizingLayoutOverrides
 

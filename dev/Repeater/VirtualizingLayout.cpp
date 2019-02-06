@@ -5,14 +5,8 @@
 #include <common.h>
 #include "ItemsRepeater.common.h"
 #include "VirtualizingLayout.h"
-#include "RuntimeProfiler.h"
 
 CppWinRTActivatableClassWithBasicFactory(VirtualizingLayout)
-
-VirtualizingLayout::VirtualizingLayout()
-{
-    __RP_Marker_ClassById(RuntimeProfiler::ProfId_VirtualizingLayout);
-}
 
 #pragma region IVirtualizingLayoutOverrides
 
