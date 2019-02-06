@@ -364,7 +364,7 @@ void NavigationView::OnApplyTemplate()
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-#ifdef USE_INTERNAL_SDK
+#ifdef USE_INSIDER_SDK
         if (auto splitView = m_rootSplitView.get())
         {
             if (auto contentRoot = splitView.Content())
@@ -373,7 +373,10 @@ void NavigationView::OnApplyTemplate()
                 {
                     winrt::ThemeShadow shadow;
                     shadow.Receivers().Append(contentRoot);
-                    paneRoot.Shadow(shadow);
+                    if (winrt::IUIElement10 paneRoot_uiElement10 = paneRoot)
+                    {
+                        paneRoot_uiElement10.Shadow(shadow);
+                    }
                 }
             }
         }
@@ -2748,7 +2751,7 @@ void NavigationView::OnIsPaneOpenChanged()
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-#ifdef USE_INTERNAL_SDK
+#ifdef USE_INSIDER_SDK
         if (auto splitView = m_rootSplitView.get())
         {
             if (auto paneRoot = splitView.Pane())
