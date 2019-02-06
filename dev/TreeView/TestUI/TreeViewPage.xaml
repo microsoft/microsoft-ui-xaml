@@ -61,6 +61,7 @@
                 <Button x:Name="AddInheritedTreeViewNode" AutomationProperties.Name="AddInheritedTreeViewNode" Content="AddInheritedTreeViewNode" Click="AddInheritedTreeViewNode_Click"/>
                 <Button x:Name="AddExtraNodes" AutomationProperties.Name="AddExtraNodes" Content="AddExtraNodes" Click="AddExtraNodes_Click"/>
                 <Button x:Name="TreeViewLateDataInitTestPage" AutomationProperties.Name="TreeViewLateDataInitTestPage" Content="TreeViewLateDataInitTestPage" Click="TreeViewLateDataInitTestPage_Click"/>
+                <Button x:Name="TreeViewNodeInXamlTestPage" AutomationProperties.Name="TreeViewNodeInXamlTestPage" Content="TreeViewNodeInXamlTestPage" Click="TreeViewNodeInXamlTestPage_Click"/>
             </StackPanel>
         </ScrollViewer>
         <ScrollViewer Grid.Column="1">
