@@ -34,10 +34,10 @@
                             <VisualStateGroup x:Name="LightDismissStates">
                                 <VisualState x:Name="LightDismiss">
                                     <VisualState.Setters>
-                                        <Setter Target="BeakEdgeBorder.Background" Value="{ThemeResource TeachingTipTransientBackgroundBrush}"/>
-                                        <Setter Target="BeakPolygon.Fill" Value="{ThemeResource TeachingTipTransientBackgroundBrush}"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Fill" Value="{ThemeResource TeachingTipTransientBackgroundBrush}"/>
-                                        <Setter Target="ContentRootGrid.Background" Value="{ThemeResource TeachingTipTransientBackgroundBrush}"/>
+                                        <Setter Target="BeakEdgeBorder.Background" Value="{ThemeResource TeachingTipTransientBackground}"/>
+                                        <Setter Target="BeakPolygon.Fill" Value="{ThemeResource TeachingTipTransientBackground}"/>
+                                        <Setter Target="TopBeakPolygonHighlight.Fill" Value="{ThemeResource TeachingTipTransientBackground}"/>
+                                        <Setter Target="ContentRootGrid.Background" Value="{ThemeResource TeachingTipTransientBackground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="NormalDismiss"/>

@@ -4,13 +4,13 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
+            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemControlAcrylicElementBrush"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
+            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemControlAcrylicElementBrush"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
+            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemControlAcrylicElementBrush"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>
