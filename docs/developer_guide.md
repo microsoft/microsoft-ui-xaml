@@ -31,7 +31,7 @@ You will also need to install The Windows 10 Insider SDK 18312. The easiest way
 to install this is to run the Install-WindowsSdkISO.ps1 script from this repo in
 an Administrator Powershell window:
 
-`.\build\Install-WindowsSdkISO.ps1 18312`
+ `.\build\Install-WindowsSdkISO.ps1 18323`
 
 ## Building the repository
 
