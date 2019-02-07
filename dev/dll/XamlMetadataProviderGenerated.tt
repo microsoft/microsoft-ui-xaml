@@ -43,6 +43,7 @@
 #include "SplitButtonTestApi.h"
 #include "ToggleSplitButton.h"
 #include "DropDownButton.h"
+#include "TeachingTip.h"
 #include "RadioButtons.h"
 #include "RadioButtonsListView.h"
 #include "RadioButtonsListViewItem.h"

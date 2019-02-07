@@ -1,0 +1,6 @@
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass TeachingTipAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    TeachingTipAutomationPeer(MU_XC_NAMESPACE.TeachingTip owner);
+}

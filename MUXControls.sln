@@ -567,6 +567,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IXMPTestApp", "test\IXMPTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IXMPTestApp.TAEF", "test\IXMPTestApp\TAEF\IXMPTestApp.TAEF.csproj", "{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TeachingTip", "TeachingTip", "{4873DE1A-27B5-47ED-9EDC-69727FD2095C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TeachingTip", "dev\TeachingTip\TeachingTip.vcxitems", "{499B8BF7-BCA1-4C23-BAA7-59E2C551BE4B}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TeachingTip_APITests", "dev\TeachingTip\APITests\TeachingTip_APITests.shproj", "{18F1DB69-7457-461C-9D19-7F42BFFC0803}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TeachingTip_InteractionTests", "dev\TeachingTip\InteractionTests\TeachingTip_InteractionTests.shproj", "{C4421632-51BC-469D-BC49-F1CBD9269D49}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TeachingTip_TestUI", "dev\TeachingTip\TestUI\TeachingTip_TestUI.shproj", "{42A51D3E-F06A-41A0-BE4C-F94CDDB80678}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AnimatedVisualPlayer", "AnimatedVisualPlayer", "{80CCA53D-4A82-4F9F-A825-4FA3718C2AE0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AnimatedVisualPlayer", "dev\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems", "{B39300D2-4510-44EA-AA7B-EDA9118F830E}"
@@ -588,6 +598,7 @@ Global
 		dev\MenuBar\MenuBar_InteractionTests\MenuBar_InteractionTests.projitems*{1440a7b7-d3ca-4390-8c85-e1e9a7df8542}*SharedItemsImports = 13
 		dev\Effects\Microsoft.UI.Composition.Effects.vcxitems*{1522a856-17ce-4178-a6b3-0692f90d7c55}*SharedItemsImports = 9
 		dev\CommandBarFlyout\InteractionTests\CommandBarFlyout_InteractionTests.projitems*{16f32f80-a8b6-44e0-9d99-0e1c2c8e0579}*SharedItemsImports = 13
+		dev\TeachingTip\APITests\TeachingTip_APITests.projitems*{18f1db69-7457-461c-9d19-7f42bffc0803}*SharedItemsImports = 13
 		dev\IconSource\IconSource.vcxitems*{19ffff77-4814-4ad6-acd7-42c6a50ab0d8}*SharedItemsImports = 9
 		dev\NavigationView\NavigationView.vcxitems*{1b8ef049-a38e-43e4-b88e-f1ebfcef07d2}*SharedItemsImports = 9
 		dev\Materials\Reveal\InteractionTests\Reveal_InteractionTests\Reveal_InteractionTests.projitems*{1f2872e7-28c9-4c01-88ed-73c43ee1c9a4}*SharedItemsImports = 13
@@ -609,6 +620,7 @@ Global
 		dev\CommonStyles\CommonStyles.vcxitems*{3a07fa59-c5c1-4b46-8b31-043f9ca91226}*SharedItemsImports = 9
 		dev\Materials\Acrylic\AcrylicBrush.vcxitems*{3affd0ce-c682-4e59-a9d4-be8ec3f485da}*SharedItemsImports = 9
 		dev\ScrollBar2\APITests\ScrollBar2_APITests.projitems*{3c4bc338-2d29-55d7-ca68-2647529c1779}*SharedItemsImports = 13
+		dev\TeachingTip\TestUI\TeachingTip_TestUI.projitems*{42a51d3e-f06a-41a0-be4c-f94cddb80678}*SharedItemsImports = 13
 		dev\RadioButtons\InteractionTests\RadioButtons_InteractionTests.projitems*{42d6e8f9-59fe-4ca5-83eb-69a7622f5742}*SharedItemsImports = 13
 		test\TestAppUtils\TestAppUtils.projitems*{43b830b3-6caa-4c1b-9b09-c324d9e578a0}*SharedItemsImports = 4
 		dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems*{44deafbc-bb7a-4b02-aeab-29df2c2f8587}*SharedItemsImports = 13
@@ -617,6 +629,7 @@ Global
 		dev\NavigationView\NavigationView_InteractionTests\NavigationView_InteractionTests.projitems*{475c3a33-637a-44dc-b789-6c2d78a75283}*SharedItemsImports = 13
 		dev\Interactions\SliderInteraction\APITests\SliderInteraction_APITests.projitems*{48f7b68b-8050-4523-8374-963aa3b2834f}*SharedItemsImports = 13
 		dev\Materials\Reveal\RevealBrush.vcxitems*{4993a99d-57ae-4ee7-a3c1-0840ed127608}*SharedItemsImports = 9
+		dev\TeachingTip\TeachingTip.vcxitems*{499b8bf7-bca1-4c23-baa7-59e2c551be4b}*SharedItemsImports = 9
 		dev\ColorPicker\TestUI\ColorPicker_TestUI.projitems*{4a87b4f1-4b6f-435a-950e-b2bb32a16001}*SharedItemsImports = 13
 		dev\ColorPicker\InteractionTests\ColorPicker_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
 		dev\CommandBarFlyout\InteractionTests\CommandBarFlyout_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
@@ -716,6 +729,7 @@ Global
 		dev\ScrollViewer\ScrollViewer.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\SplitButton\SplitButton.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\SwipeControl\SwipeControl.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
+		dev\TeachingTip\TeachingTip.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Telemetry\Telemetry.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\TestHooks\TestHooks.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\TreeView\TreeView.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
@@ -734,6 +748,7 @@ Global
 		dev\ScrollViewer\InteractionTests\ScrollViewer_InteractionTests.projitems*{bfaad015-232d-5d2b-b28f-5ef717d3e648}*SharedItemsImports = 13
 		dev\PullToRefresh\RefreshVisualizer\APITests\RefreshVisualizer_APITests.projitems*{c0d77e37-d2d0-4e37-b6a1-8e6eae28945d}*SharedItemsImports = 13
 		dev\Interactions\ButtonInteraction\InteractionTests\ButtonInteraction_InteractionTests.projitems*{c332ceaf-68b6-4980-b6f3-b15e350cdce0}*SharedItemsImports = 13
+		dev\TeachingTip\InteractionTests\TeachingTip_InteractionTests.projitems*{c4421632-51bc-469d-bc49-f1cbd9269d49}*SharedItemsImports = 13
 		dev\AnimatedVisualPlayer\InteractionTests\AnimatedVisualPlayer_InteractionTests.projitems*{cbaaccf6-a27d-40b3-980b-adf51a2ebb89}*SharedItemsImports = 13
 		dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems*{cddf46ef-aa2d-4bb3-b33e-98b3dbb3c41b}*SharedItemsImports = 13
 		dev\Interactions\SliderInteraction\SliderInteraction.vcxitems*{d097a4d5-6b61-424d-99f0-f335eff41665}*SharedItemsImports = 9
@@ -790,6 +805,8 @@ Global
 		dev\SplitButton\TestUI\SplitButton_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\SwipeControl\SwipeControl_APITests\SwipeControl_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\SwipeControl\SwipeControl_TestUI\SwipeControl_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\TeachingTip\APITests\TeachingTip_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\TeachingTip\TestUI\TeachingTip_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\TreeView\APITests\TreeView_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\TreeView\TestUI\TreeView_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
@@ -854,6 +871,8 @@ Global
 		dev\SplitButton\TestUI\SplitButton_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\SwipeControl\SwipeControl_APITests\SwipeControl_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\SwipeControl\SwipeControl_TestUI\SwipeControl_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\TeachingTip\APITests\TeachingTip_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\TeachingTip\TestUI\TeachingTip_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\TreeView\APITests\TreeView_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\TreeView\TestUI\TreeView_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
@@ -1440,6 +1459,11 @@ Global
 		{B39300D2-4510-44EA-AA7B-EDA9118F830E} = {80CCA53D-4A82-4F9F-A825-4FA3718C2AE0}
 		{CBAACCF6-A27D-40B3-980B-ADF51A2EBB89} = {80CCA53D-4A82-4F9F-A825-4FA3718C2AE0}
 		{DBEC0BE4-BA3F-41C9-A303-AF98201BE6DC} = {80CCA53D-4A82-4F9F-A825-4FA3718C2AE0}
+		{4873DE1A-27B5-47ED-9EDC-69727FD2095C} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
+		{499B8BF7-BCA1-4C23-BAA7-59E2C551BE4B} = {4873DE1A-27B5-47ED-9EDC-69727FD2095C}
+		{18F1DB69-7457-461C-9D19-7F42BFFC0803} = {4873DE1A-27B5-47ED-9EDC-69727FD2095C}
+		{C4421632-51BC-469D-BC49-F1CBD9269D49} = {4873DE1A-27B5-47ED-9EDC-69727FD2095C}
+		{42A51D3E-F06A-41A0-BE4C-F94CDDB80678} = {4873DE1A-27B5-47ED-9EDC-69727FD2095C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}

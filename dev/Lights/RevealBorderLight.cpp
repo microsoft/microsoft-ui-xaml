@@ -15,8 +15,6 @@
 
 CppWinRTActivatableClassWithBasicFactory(RevealBorderLight)
 
-using namespace std::chrono_literals;
-
 static constexpr RevealBorderSpotlightStateDesc s_revealBorderSpotlightState
 {
     // SpotlightProperty, PropertyName, Value

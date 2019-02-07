@@ -4,8 +4,6 @@
 #pragma once
 #include "SpotLightStateHelper.h"
 
-using namespace std::chrono_literals;
-
 template <typename ValueType>
 inline auto MakeAnimation(const winrt::Compositor &compositor);
 

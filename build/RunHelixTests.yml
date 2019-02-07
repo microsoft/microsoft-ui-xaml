@@ -27,11 +27,11 @@ jobs:
       filename: 'set'
 
   - task: powershell@2
-    displayName: 'Install Insider SDK (18312)'
+    displayName: 'Install Insider SDK (18323)'
     inputs:
       targetType: filePath
       filePath: build\Install-WindowsSdkISO.ps1
-      arguments: 18312
+      arguments: 18323
 
   - task: NuGetToolInstaller@0
     displayName: 'Use NuGet 4.9.3'
