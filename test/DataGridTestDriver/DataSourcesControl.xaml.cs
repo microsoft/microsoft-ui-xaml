@@ -257,6 +257,25 @@ namespace DataGridTestDriver
             btnClear.IsEnabled = btnRemove.IsEnabled = false;
         }
 
+        private void btnReset_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_isItemEmployee)
+                {
+                    this.epcItem.Entity = GetNewEmployee();
+                }
+                else
+                {
+                    this.epcItem.Entity = GetNewPerson();
+                }
+            }
+            catch (Exception ex)
+            {
+                txtException.Text = ex.ToString();
+            }
+        }
+
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -325,6 +344,29 @@ namespace DataGridTestDriver
                     _personList.RemoveAt(removalItemIndex);
                     btnClear.IsEnabled = btnRemove.IsEnabled = _personList.Count > 0;
                 }
+            }
+            catch (Exception ex)
+            {
+                txtException.Text = ex.ToString();
+            }
+        }
+
+        private void btnGet_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                int getItemIndex = Convert.ToInt32(txtGetItemIndex.Text);
+                Person item = null;
+
+                if (_isItemEmployee)
+                {
+                    item = _employeeList[getItemIndex];
+                }
+                else
+                {
+                    item = _personList[getItemIndex];
+                }
+                this.epcItem.Entity = item;
             }
             catch (Exception ex)
             {

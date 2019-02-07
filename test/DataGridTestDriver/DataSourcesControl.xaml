@@ -49,6 +49,7 @@
 
                 <StackPanel Margin="1">
                     <u:EntityPropertiesControl x:Name="epcItem" Margin="1"/>
+                    <Button x:Name="btnReset" Width="80" Content="Reset" Margin="1" Click="btnReset_Click"/>
                     <Button x:Name="btnAdd" Width="80" Content="Add" Margin="1" Click="btnAdd_Click"/>
                     <StackPanel Orientation="Horizontal">
                         <Button x:Name="btnInsert" Width="80" Content="Insert" Margin="1" Click="btnInsert_Click"/>
@@ -59,6 +60,11 @@
                         <Button x:Name="btnRemove" Width="80" Content="Remove" Margin="1" Click="btnRemove_Click"/>
                         <TextBlock Text="Index:" VerticalAlignment="Center" Margin="1"/>
                         <TextBox x:Name="txtRemovalItemIndex" Text="0" Margin="1"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="btnGet" Width="80" Content="Get" Margin="1" Click="btnGet_Click"/>
+                        <TextBlock Text="Index:" VerticalAlignment="Center" Margin="1"/>
+                        <TextBox x:Name="txtGetItemIndex" Text="0" Margin="1"/>
                     </StackPanel>
                 </StackPanel>
             </StackPanel>

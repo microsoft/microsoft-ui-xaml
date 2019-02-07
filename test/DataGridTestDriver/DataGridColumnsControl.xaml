@@ -54,10 +54,10 @@
         </ComboBox>
 
         <TextBlock Text="Property Name:" VerticalAlignment="Center" Grid.Row="4"/>
-        <TextBox x:Name="txtPropertyName" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="1" Grid.Row="4" Grid.Column="1"/>
+        <TextBox x:Name="txtPropertyName" Text="ZipCode" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="1" Grid.Row="4" Grid.Column="1"/>
 
         <TextBlock Text="Property Choices:" VerticalAlignment="Center" Grid.Row="5"/>
-        <TextBox x:Name="txtPropertyChoices" IsEnabled="False" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="1" Grid.Row="5" Grid.Column="1"/>
+        <TextBox x:Name="txtPropertyChoices" Text="City" IsEnabled="False" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="1" Grid.Row="5" Grid.Column="1"/>
 
         <Button x:Name="btnAdd" Content="Add" Margin="1" Grid.ColumnSpan="2" Grid.Row="6" HorizontalAlignment="Stretch" Click="btnAdd_Click"/>
 

@@ -135,7 +135,11 @@ namespace MUXControlsTestApp.Utilities
             {
                 string str = string.Empty;
 
-                if (value.GetType() == typeof(Point))
+                if (value.GetType() == typeof(string))
+                {
+                    str = (string)value;
+                }
+                else if (value.GetType() == typeof(Point))
                 {
                     str = ((Point)value).ToString();
                 }

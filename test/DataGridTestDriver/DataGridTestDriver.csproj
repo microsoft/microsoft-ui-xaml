@@ -11,7 +11,7 @@
     <AssemblyName>DataGridTestDriver</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.17607.0</TargetPlatformVersion>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.18312.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
@@ -234,9 +234,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Toolkit.Uwp.UI.Controls.DataGrid, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Toolkit.Uwp.UI.Controls.DataGrid, Version=5.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\WindowsCommunityToolkit\Microsoft.Toolkit.Uwp.UI.Controls.DataGrid\bin\Release\uap10.0.16299\Microsoft.Toolkit.Uwp.UI.Controls.DataGrid.dll</HintPath>
+      <HintPath>..\..\..\WindowsCommunityToolkit\Microsoft.Toolkit.Uwp.UI.Controls.DataGrid\bin\Debug\uap10.0.16299\Microsoft.Toolkit.Uwp.UI.Controls.DataGrid.dll</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

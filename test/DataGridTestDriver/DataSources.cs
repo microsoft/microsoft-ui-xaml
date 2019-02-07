@@ -606,7 +606,7 @@ namespace DataGridTestDriver
             {
                 return _zipCode;
             }
-            protected set
+            /*protected*/ set
             {
                 if (_zipCode != value)
                 {
