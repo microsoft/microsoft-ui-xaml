@@ -519,7 +519,7 @@ void CommandBarFlyoutCommandBar::ClearShadow()
         auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
         if (winrt::IUIElement10 grid_uiElement10 = grid)
         {
-            if (grid_uiElement10.Shadow() != nullptr)
+            if (grid_uiElement10.Shadow())
             {
                 grid_uiElement10.Shadow(nullptr);
 
