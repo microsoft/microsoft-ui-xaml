@@ -109,7 +109,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 targetHeightTextBlock = new TextBlock(FindElement.ByName("TargetHeightTextBlock"));
                 Verify.IsNotNull(targetHeightTextBlock);
             }
-            return targetYOffsetTextBlock;
+            return targetHeightTextBlock;
         }
         private TextBlock targetHeightTextBlock;
 
