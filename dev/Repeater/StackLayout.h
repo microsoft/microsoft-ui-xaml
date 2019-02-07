@@ -15,7 +15,6 @@ class StackLayout :
     public OrientationBasedMeasures
 {
 public:
-    StackLayout();
 
 #pragma region IStackLayout
     winrt::Orientation Orientation();

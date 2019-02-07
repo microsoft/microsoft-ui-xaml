@@ -8,14 +8,8 @@
 #include "UniformGridLayoutState.h"
 #include "UniformGridLayout.h"
 #include "UniformGridLayoutFactory.h"
-#include "RuntimeProfiler.h"
 
 #pragma region IGridLayout
-
-UniformGridLayout::UniformGridLayout()
-{
-    __RP_Marker_ClassById(RuntimeProfiler::ProfId_UniformGridLayout);
-}
 
 winrt::Orientation UniformGridLayout::Orientation()
 {
