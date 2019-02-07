@@ -14,7 +14,7 @@
 
 UniformGridLayout::UniformGridLayout()
 {
-    __RP_Marker_ByClassId(RuntimeProfiler::ProfId_UniformGridLayout);
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_UniformGridLayout);
 }
 
 winrt::Orientation UniformGridLayout::Orientation()

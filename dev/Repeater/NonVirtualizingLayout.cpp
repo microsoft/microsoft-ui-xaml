@@ -14,7 +14,7 @@ CppWinRTActivatableClassWithBasicFactory(NonVirtualizingLayout)
 
 NonVirtualizingLayout::NonVirtualizingLayout()
 {
-    __RP_Marker_ByClassId(RuntimeProfiler::ProfId_NonVirtualizingLayout);
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_NonVirtualizingLayout);
 }
 
 void NonVirtualizingLayout::InitializeForContextCore(winrt::LayoutContext const& context)

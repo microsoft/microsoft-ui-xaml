@@ -15,7 +15,7 @@
 
 StackLayout::StackLayout()
 {
-    __RP_Marker_ByClassId(RuntimeProfiler::ProfId_StackLayout);
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_StackLayout);
 }
 
 winrt::Orientation StackLayout::Orientation()

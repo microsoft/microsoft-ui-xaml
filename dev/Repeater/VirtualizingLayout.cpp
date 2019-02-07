@@ -13,7 +13,7 @@ CppWinRTActivatableClassWithBasicFactory(VirtualizingLayout)
 
 VirtualizingLayout::VirtualizingLayout()
 {
-    __RP_Marker_ByClassId(RuntimeProfiler::ProfId_VirtualizingLayout);
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_VirtualizingLayout);
 }
 
 void VirtualizingLayout::InitializeForContextCore(winrt::VirtualizingLayoutContext const& context)
