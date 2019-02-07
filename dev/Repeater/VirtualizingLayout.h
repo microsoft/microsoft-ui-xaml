@@ -10,7 +10,6 @@ class VirtualizingLayout :
     public winrt::implementation::VirtualizingLayoutT<VirtualizingLayout, Layout>
 {
 public:
-    VirtualizingLayout();
 
 #pragma region IVirtualizingLayoutOverrides
     virtual void InitializeForContextCore(winrt::VirtualizingLayoutContext const& context);

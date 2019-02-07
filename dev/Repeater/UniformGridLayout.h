@@ -15,8 +15,6 @@ class UniformGridLayout :
     public OrientationBasedMeasures
 {
 public:
-    UniformGridLayout();
-
 #pragma region IGridLayout
     winrt::Orientation Orientation();
     void Orientation(winrt::Orientation const& value);

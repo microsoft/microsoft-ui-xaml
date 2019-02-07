@@ -10,8 +10,6 @@ class NonVirtualizingLayout :
     public winrt::implementation::NonVirtualizingLayoutT<NonVirtualizingLayout, Layout>
 {
 public:
-    NonVirtualizingLayout();
-
 #pragma region INonVirtualizingLayoutOverrides
     virtual void InitializeForContextCore(winrt::LayoutContext const& context);
     virtual void UninitializeForContextCore(winrt::LayoutContext const& context);

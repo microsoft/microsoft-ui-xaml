@@ -38,6 +38,7 @@ private:
     winrt::NavigationView GetParentNavigationView();
     bool IsOnTopNavigation();
     bool IsOnTopNavigationOverflow();
+    bool IsSettingsItem();
     NavigationViewListPosition GetNavigationViewListPosition();
     int32_t GetNavigationViewItemCountInPrimaryList();
     int32_t GetNavigationViewItemCountInTopNav();
