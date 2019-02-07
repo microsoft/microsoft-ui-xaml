@@ -24,6 +24,11 @@ WinUI usage documentation can be found here:
 
 https://docs.microsoft.com/uwp/toolkits/winui
 
+To view the WinUI controls in an interactive format, check out the Xaml Controls Gallery:
+* Get the XAML Controls Gallery app from the [Microsoft Store](https://www.microsoft.com/store/productId/9MSVH128X2ZT)
+* Get the source code on [GitHub](https://github.com/Microsoft/Xaml-Controls-Gallery)
+
+
 ## Contributing to WinUI
 The WinUI team welcomes feedback and contributions!
 
@@ -81,7 +86,7 @@ Prerelease Microsoft.UI.Xaml packages also include previews of features and cont
 * [LayoutPanel](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.layoutpanel),
 [Repeater](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.repeater),
 [Scroller](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scroller),
-[ScrollerView](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollerview),
+[ScrollViewer](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollviewer),
 and
 [ScrollBar2](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollbar2)
 

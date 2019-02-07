@@ -1,5 +1,5 @@
 parameters:
-  nugetVersion: 4.9.1   
+  nugetVersion: 4.9.3
 
 steps:
   - task: NuGetToolInstaller@0

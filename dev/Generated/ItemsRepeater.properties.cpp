@@ -86,10 +86,10 @@ void ItemsRepeaterProperties::EnsureProperties()
         s_LayoutProperty =
             InitializeDependencyProperty(
                 L"Layout",
-                winrt::name_of<winrt::VirtualizingLayout>(),
+                winrt::name_of<winrt::Layout>(),
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
-                ValueHelper<winrt::VirtualizingLayout>::BoxedDefaultValue(),
+                ValueHelper<winrt::Layout>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_VerticalCacheLengthProperty)
@@ -166,14 +166,14 @@ winrt::IInspectable ItemsRepeaterProperties::ItemTemplate()
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<ItemsRepeater*>(this)->GetValue(s_ItemTemplateProperty));
 }
 
-void ItemsRepeaterProperties::Layout(winrt::VirtualizingLayout const& value)
+void ItemsRepeaterProperties::Layout(winrt::Layout const& value)
 {
-    static_cast<ItemsRepeater*>(this)->SetValue(s_LayoutProperty, ValueHelper<winrt::VirtualizingLayout>::BoxValueIfNecessary(value));
+    static_cast<ItemsRepeater*>(this)->SetValue(s_LayoutProperty, ValueHelper<winrt::Layout>::BoxValueIfNecessary(value));
 }
 
-winrt::VirtualizingLayout ItemsRepeaterProperties::Layout()
+winrt::Layout ItemsRepeaterProperties::Layout()
 {
-    return ValueHelper<winrt::VirtualizingLayout>::CastOrUnbox(static_cast<ItemsRepeater*>(this)->GetValue(s_LayoutProperty));
+    return ValueHelper<winrt::Layout>::CastOrUnbox(static_cast<ItemsRepeater*>(this)->GetValue(s_LayoutProperty));
 }
 
 void ItemsRepeaterProperties::VerticalCacheLength(double value)

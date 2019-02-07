@@ -102,6 +102,10 @@
       <Version>RS5</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ComboBox_19h1_themeresources.xaml">
+      <Version>19H1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)DatePicker_rs1_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -124,6 +128,10 @@
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)DateTimePickerFlyout_rs5_themeresources.xaml">
       <Version>RS5</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)DateTimePickerFlyout_19h1_themeresources.xaml">
+      <Version>19H1</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)Slider_rs1_themeresources.xaml">
@@ -162,7 +170,7 @@
       <Version>RS5</Version>
       <Type>ThemeResources</Type>
     </Page>
-        <Page Include="$(MSBuildThisFileDirectory)CommandBar_rs1_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)CommandBar_rs1_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>

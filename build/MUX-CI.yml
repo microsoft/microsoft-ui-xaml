@@ -58,7 +58,9 @@ jobs:
   parameters:
     jobName: CreateNugetPackage
     dependsOn: Build
-  
+    # This is the magic GUID from the pipeline visual designer for this feed: https://dev.azure.com/ms/microsoft-ui-xaml/_packaging?_a=feed&feed=MUX-CI
+    publishVstsFeed: 'd62f8eac-f05c-4c25-bccb-21f98b95c95f'
+ 
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:

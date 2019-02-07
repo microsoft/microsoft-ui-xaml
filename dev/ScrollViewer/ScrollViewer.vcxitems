@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{755F5DA9-087C-55A0-98D2-B884881C3ED0}</ItemsProjectGuid>
+    <ItemsProjectName>ScrollViewer</ItemsProjectName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ScrollViewer.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewerTrace.h" />
+  </ItemGroup>
+  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewer.xaml">
+      <IsPublic>false</IsPublic>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+      <FileType>Document</FileType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewer_themeresources.xaml">
+      <IsPublic>false</IsPublic>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <FileType>Document</FileType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)ScrollViewer.idl" />
+  </ItemGroup>
+</Project>

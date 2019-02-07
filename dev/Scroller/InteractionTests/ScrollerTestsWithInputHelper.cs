@@ -141,7 +141,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         Verify.IsTrue(scroller11.VerticalScrollPercent > minVerticalScrollPercent, "Verifying scroller11 VerticalScrollPercent is greater than " + minVerticalScrollPercent + "%");
                     }
 
-                    // scroller11's Child height is 1000px.
+                    // scroller11's Content height is 1000px.
                     double horizontalOffset;
                     double verticalOffset;
                     double minVerticalOffset = 1000.0 * (1.0 - scroller11.VerticalViewSize / 100.0) * minVerticalScrollPercent / 100.0;
@@ -248,7 +248,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         Verify.IsTrue(scroller51.VerticalScrollPercent > minVerticalScrollPercent, "Verifying scroller51 VerticalScrollPercent is greater than " + minVerticalScrollPercent + "%");
                     }
 
-                    // scroller51's Child size is 800x800px.
+                    // scroller51's Content size is 800x800px.
                     double horizontalOffset;
                     double verticalOffset;
                     double minHorizontalOffset = 800.0 * (1.0 - scroller51.HorizontalViewSize / 100.0) * minHorizontalScrollPercent / 100.0;
@@ -337,7 +337,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(scroller11.HorizontalScrollPercent, 0.0, "Verifying scroller11 HorizontalScrollPercent is 0%");
                 Verify.IsTrue(scroller11.VerticalScrollPercent > minVerticalScrollPercent, "Verifying scroller11 VerticalScrollPercent is greater than " + minVerticalScrollPercent + "%");
 
-                // scroller11's Child height is 1000px.
+                // scroller11's Content height is 1000px.
                 double horizontalOffset;
                 double verticalOffset;
                 double minVerticalOffset = 1000.0 * (1.0 - scroller11.VerticalViewSize / 100.0) * minVerticalScrollPercent / 100.0;
@@ -357,8 +357,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Pinch a Rectangle in a Scroller.")]
+        //[TestMethod]
+        //[TestProperty("Description", "Pinch a Rectangle in a Scroller.")]
+        // Disabled due to: ScrollerTestsWithInputHelper Pinch/Stretch tests fail on RS5 in Helix #132
         public void PinchRectangle()
         {
             if (PlatformConfiguration.IsDevice(DeviceType.Phone))
@@ -475,8 +476,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             while (additionalAttempts > 0);
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Stretch an Image in a Scroller.")]
+        //[TestMethod]
+        //[TestProperty("Description", "Stretch an Image in a Scroller.")]
+        // Disable due to: ScrollerTestsWithInputHelper Pinch/Stretch tests fail on RS5 in Helix #132
         public void StretchImage()
         {
             if (PlatformConfiguration.IsDevice(DeviceType.Phone))
@@ -572,8 +574,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             while (additionalAttempts > 0);
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Pinch a Rectangle in a Scroller with the mouse wheel.")]
+        //[TestMethod]
+        //[TestProperty("Description", "Pinch a Rectangle in a Scroller with the mouse wheel.")]
+        // Disabled due to: ScrollerTestsWithInputHelper Pinch/Stretch tests fail on RS5 in Helix #132
         public void PinchRectangleWithMouseWheel()
         {
             Log.Comment("Selecting Scroller tests");
@@ -603,7 +606,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 PrepareForScrollerManipulationStart("scroller12");
 
                 KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
-                InputHelper.RotateWheel(scroller12UIObject, -mouseWheelDeltaForVelocityUnit);
+                // Starting with 19H1, the InteractionTracker changes the scale by a factor of 1.1 for each 60 mouse wheel delta.
+                // For earlier versions, a mouse wheel delta of 120 is required for the same 1.1 scale change.
+                InputHelper.RotateWheel(scroller12UIObject,
+                    PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5) ? (int) (-mouseWheelDeltaForVelocityUnit / 2) : -mouseWheelDeltaForVelocityUnit);
                 KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
 
                 Log.Comment("Waiting for scroller12 pinch completion");
@@ -691,7 +697,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 PrepareForScrollerManipulationStart("scroller52");
 
                 KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
-                InputHelper.RotateWheel(scroller52UIObject, mouseWheelDeltaForVelocityUnit);
+                // Starting with 19H1, the InteractionTracker changes the scale by a factor of 1.1 for each 60 mouse wheel delta.
+                // For earlier versions, a mouse wheel delta of 120 is required for the same 1.1 scale change.
+                InputHelper.RotateWheel(scroller52UIObject,
+                    PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5) ? mouseWheelDeltaForVelocityUnit / 2 : mouseWheelDeltaForVelocityUnit);
                 KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
 
                 Log.Comment("Waiting for scroller52 stretch completion");
@@ -831,18 +840,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Pans an inner Scroller and chains to an outer ScrollViewer.")]
         public void PanWithChainingFromScrollerToScrollViewer()
         {
-            // Inner Scroller uses ScrollerChainingMode.Always
-            PanWithChainingFromScrollerToScrollViewerWithChainingMode(useScrollerChainingModeAlways: true);
+            // Inner Scroller uses ChainingMode.Always
+            PanWithChainingFromScrollerToScrollViewerWithChainingMode(useChainingModeAlways: true);
 
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
-                // Inner Scroller uses ScrollerChainingMode.Auto
+                // Inner Scroller uses ChainingMode.Auto
                 // Only running this case in RS4+ since the Auto behavior changed in RS4
-                PanWithChainingFromScrollerToScrollViewerWithChainingMode(useScrollerChainingModeAlways: false);
+                PanWithChainingFromScrollerToScrollViewerWithChainingMode(useChainingModeAlways: false);
             }
         }
 
-        public void PanWithChainingFromScrollerToScrollViewerWithChainingMode(bool useScrollerChainingModeAlways)
+        public void PanWithChainingFromScrollerToScrollViewerWithChainingMode(bool useChainingModeAlways)
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
             {
@@ -905,7 +914,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     Wait.ForIdle();
 
-                    if (useScrollerChainingModeAlways)
+                    if (useChainingModeAlways)
                     {
                         Log.Comment("Changing horizontal chaining to Always");
                         cmbHorizontalScrollChainingMode1.SelectItemByName("Always");

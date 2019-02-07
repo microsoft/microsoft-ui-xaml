@@ -39,10 +39,11 @@ using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFacto
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
@@ -79,7 +80,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Verify.AreEqual(2, realizationRects.Count);
                 Verify.AreEqual(new Rect(0, 0, 0, 0), realizationRects[0]);
-                Verify.AreEqual(new Rect(0, 0, float.MaxValue, float.MaxValue), realizationRects[1]);
+
+                if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                {
+                    Verify.AreEqual(new Rect(0, 0, float.MaxValue, float.MaxValue), realizationRects[1]);
+                }
+                else
+                {
+                    // Using Effective Viewport
+                    Verify.AreEqual(0, realizationRects[1].X);
+                    // 32 pixel title bar and some tolerance for borders
+                    Verify.IsLessThan(2.0, Math.Abs(realizationRects[1].Y - 32));
+                    // Width/Height depends on the window size, so just
+                    // validating something reasonable here to avoid flakiness.
+                    Verify.IsLessThan(500.0, realizationRects[1].Width);
+                    Verify.IsLessThan(500.0, realizationRects[1].Height);
+                }
+
                 realizationRects.Clear();
             });
         }
@@ -177,7 +194,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        [TestMethod]
+        //Unreliable test: RepeaterTests.ViewportTests.ValidateOneScrollerScenario #158
+        //[TestMethod]
         public void ValidateOneScrollerScenario()
         {
             var realizationRects = new List<Rect>();
@@ -195,7 +213,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 scroller = new Scroller
                 {
-                    Child = repeater,
+                    Content = repeater,
                     Width = 200,
                     Height = 300
                 };
@@ -275,8 +293,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 horizontalScroller = new Scroller
                 {
-                    Child = repeater,
-                    IsChildAvailableHeightConstrained = true
+                    Content = repeater,
+                    ContentOrientation = ContentOrientation.Horizontal
                 };
 
                 var grid = new Grid();
@@ -284,10 +302,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 verticalScroller = new Scroller
                 {
-                    Child = grid,
+                    Content = grid,
                     Width = 200,
                     Height = 200,
-                    IsChildAvailableWidthConstrained = true
+                    ContentOrientation = ContentOrientation.Vertical
                 };
 
                 Content = verticalScroller;
@@ -342,9 +360,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             // will force the viewport offset to a smaller value).
             // In this test, we are not testing a behavior that's specific to an OS version,
             // so we will run this test in RS2+ to keep it simple.
-            if(!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
             {
                 Log.Warning("Skipping ValidateSupportForScrollerConfigurationChanges");
+                return;
+            }
+
+            // Post RS4 configuration changes will not be raised.
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Comment("Skipping since version is greater than RS4 and configuration changes would not be raised.");
                 return;
             }
 
@@ -365,14 +390,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 for (int i = 0; i < scrollers.Length; ++i)
                 {
-                    grids[i] = new Grid();
+                    grids[i] = new Grid()
+                    {
+                        Name = "grid" + i,
+                        MaxWidth = 200,
+                        MaxHeight = 200
+                    };
                     grids[i].Children.Add(i > 0 ? (UIElement)scrollers[i - 1] : repeater);
-                    
+                    grids[i].SizeChanged += (sender, args) =>
+                    {
+                        Grid grid = sender as Grid;
+                        Log.Comment("Grid_SizeChanged for " + grid.Name + ", size=(" + grid.ActualWidth + ", " + grid.ActualHeight + ")");
+                    };
+
                     scrollers[i] = new Scroller()
                     {
-                        Child = grids[i],
-                        IsChildAvailableWidthConstrained = true,
-                        IsChildAvailableHeightConstrained = true
+                        Name = "scroller" + i,
+                        Content = grids[i],
+                    };
+                    scrollers[i].SizeChanged += (sender, args) =>
+                    {
+                        Scroller scroller = sender as Scroller;
+                        string scrollerName = scroller.Name;
+                        Log.Comment("Scroller_SizeChanged for " + scrollerName + ", size=(" + scroller.ActualWidth + ", " + scroller.ActualHeight + ")");
                     };
                 }
 
@@ -385,7 +425,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Verify.AreEqual(2, realizationRects.Count);
                 Verify.AreEqual(new Rect(0, 0, 0, 0), realizationRects[0]);
-                Verify.AreEqual(new Rect(0, 0, float.MaxValue, float.MaxValue), realizationRects[1]);
+                Verify.AreEqual(new Rect(0, 0, 200, 200), realizationRects[1]);
                 realizationRects.Clear();
 
                 for (int i = 0; i < scrollers.Length; ++i)
@@ -401,8 +441,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    scrollers[1].IsChildAvailableHeightConstrained = (scrollOrientation == ScrollOrientation.Horizontal);
-                    scrollers[2].IsChildAvailableWidthConstrained = (scrollOrientation == ScrollOrientation.Vertical);
+                    if (scrollOrientation == ScrollOrientation.Horizontal)
+                    {
+                        grids[0].MaxWidth = double.PositiveInfinity;
+                        grids[0].MaxHeight = 200;
+                        grids[1].MaxHeight = 200;
+                        grids[2].MaxWidth = double.PositiveInfinity;
+                        grids[2].MaxHeight = double.PositiveInfinity;
+                        scrollers[1].ContentOrientation = ContentOrientation.None;
+                        scrollers[2].ContentOrientation = ContentOrientation.Horizontal;
+                    }
+                    else
+                    {
+                        grids[0].MaxHeight = double.PositiveInfinity;
+                        grids[1].MaxWidth = double.PositiveInfinity;
+                        grids[1].MaxHeight = double.PositiveInfinity;
+                        scrollers[1].ContentOrientation = ContentOrientation.Vertical;
+                    }
                 });
                 IdleSynchronizer.Wait();
 
@@ -411,11 +466,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     viewChangeCompletedEvent.Reset();
                     if (scrollOrientation == ScrollOrientation.Vertical)
                     {
+                        Log.Comment("Scrolling Scroller #1 to vertical offset 100");
                         scrollers[1].ChangeOffsets(new ScrollerChangeOffsetsOptions(0.0, 100.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
                     }
                     else
                     {
-                        scrollers[2].ChangeOffsets(new ScrollerChangeOffsetsOptions(150.0, 0.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints)); 
+                        Log.Comment("Scrolling Scroller #2 to horizontal offset 150");
+                        scrollers[2].ChangeOffsets(new ScrollerChangeOffsetsOptions(150.0, 0.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
                     }
                 });
                 Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
@@ -424,11 +481,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 {
                     if (scrollOrientation == ScrollOrientation.Vertical)
                     {
-                        Verify.AreEqual(new Rect(0, 100, 200, 200), realizationRects.Last());
+                        Verify.AreEqual(scrollers[1].VerticalOffset, 100.0);
+                        Verify.AreEqual(new Rect(0, 0, 200, 500), realizationRects.Last());
                     }
                     else
                     {
-                        Verify.AreEqual(new Rect(150, 0, 200, 200), realizationRects.Last());
+                        Verify.AreEqual(scrollers[2].HorizontalOffset, 150.0);
+                        Verify.AreEqual(new Rect(0, -150, 500, 200), realizationRects.Last());
                     }
 
                     realizationRects.Clear();
@@ -481,7 +540,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Layout = layout
                 };
 
-                scroller.Child = repeater;
+                scroller.Content = repeater;
                 Content = scroller;
             });
 
@@ -522,6 +581,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void CanRegisterElementsWithScrollingSurfaces()
         {
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since RS5+ we use effective viewport instead of IRepeaterScrollingSurface");
+                return;
+            }
+
             // In this test, we validate that ItemsRepeater can register and unregister its children
             // with one or two scrollers.
             // The initial setup is 4 nested scrollers with a root repeater under which
@@ -698,6 +763,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateSuggestedElement()
         {
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("Skipping since RS5+ we use effective viewport instead of IRepeaterScrollingSurface");
+                return;
+            }
+
             // In this test, we validate that ItemsRepeater can suggested the correct anchor element
             // to its layout.
             // The initial setup is 4 nested scrollers with a root repeater under which

@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
     xmlns:localUtilities="using:MUXControlsTestApp.Utilities"
-    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controlsPrimitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -21,9 +21,9 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <controls:Scroller x:Name="scroller" ZoomMode="Enabled" Width="300" Height="500" Background="AliceBlue" Margin="4" VerticalAlignment="Top">
+        <controlsPrimitives:Scroller x:Name="scroller" ZoomMode="Enabled" Width="300" Height="500" Background="AliceBlue" Margin="4" VerticalAlignment="Top">
             <Image x:Name="img" Source="Assets/ingredient8.png" Width="1200" Height="1200"/>
-        </controls:Scroller>
+        </controlsPrimitives:Scroller>
 
         <localUtilities:BiDirectionalScrollController x:Name="biDirectionalScrollController" Width="400" Height="400" Margin="4" Grid.Column="1" VerticalAlignment="Top">
             <Image x:Name="imgSmall" Source="Assets/ingredient8.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>

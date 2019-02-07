@@ -10,10 +10,15 @@ jobs:
     value: $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
   - name: buildOutputDir
     value: $(Build.SourcesDirectory)\BuildOutput
-  - name: buildPlatform 
-    value: x86
-  - name: buildConfiguration 
-    value: Debug
+  strategy:
+    maxParallel: 4
+    matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'release'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'release'
 
   steps:
   - task: CmdLine@1
@@ -22,16 +27,16 @@ jobs:
       filename: 'set'
 
   - task: powershell@2
-    displayName: 'Install RS5 SDK (17763)'
+    displayName: 'Install Insider SDK (18323)'
     inputs:
       targetType: filePath
       filePath: build\Install-WindowsSdkISO.ps1
-      arguments: 17763
+      arguments: 18323
 
   - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.9.1'
+    displayName: 'Use NuGet 4.9.3'
     inputs:
-      versionSpec: 4.9.1
+      versionSpec: 4.9.3
         
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
     displayName: 'NuGet restore MUXControls.sln'
@@ -71,19 +76,26 @@ jobs:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
   variables:
-  - group: DotNet-HelixApi-Access
   - name: artifactsDir
     value: $(Build.SourcesDirectory)\Artifacts
-  - name: buildPlatform 
-    value: x86
-  - name: buildConfiguration 
-    value: Debug
+  strategy:
+    maxParallel: 4
+    matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'release'
+        # %3b is the escape code for ';' which is used as the delimiter
+        helixTargetQueues: 'Windows.10.Amd64.Open%3bWindows.10.Amd64.ClientRS3.DevEx.Open%3bWindows.10.Amd64.ServerRS5.Open'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'release'
+        helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open'
   steps:
 
   - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.9.1'
+    displayName: 'Use NuGet 4.9.3'
     inputs:
-      versionSpec: 4.9.1
+      versionSpec: 4.9.3
 
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
     displayName: 'NuGet restore build/Helix/packages.config'
@@ -103,6 +115,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\PrepareHelixPayload.ps1
+      arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
 
   - task: DotNetCoreCLI@2
     displayName: 'Run tests in Helix'
@@ -112,4 +125,11 @@ jobs:
       command: custom
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
-      arguments: '/p:HelixBuild=$(Build.BuildId) /p:Creator=WinUI /p:IsExternal=true'
+      arguments: '/binaryLogger:$(Build.SourcesDirectory)/RunTestsInHelix.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish RunTestsInHelix binlog'
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)/RunTestsInHelix.$(buildPlatform).$(buildConfiguration).binlog
+      artifactName: 'drop'

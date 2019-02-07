@@ -59,7 +59,7 @@ void ItemsRepeater::EnsureProperties()
         s_layoutProperty =
             InitializeDependencyProperty(
                 L"Layout",
-                winrt::name_of<winrt::VirtualizingLayout>(),
+                winrt::name_of<winrt::Layout>(),
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
                 winrt::StackLayout() /* defaultValue */,

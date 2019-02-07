@@ -16,18 +16,8 @@
 #include "Scroller.g.h"
 #include "Scroller.properties.h"
 
-#ifdef BUILD_WINDOWS
-#define USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-#endif
-
 class Scroller :
-    public ReferenceTracker<Scroller, DeriveFromPanelHelper_base, winrt::Scroller,
-#ifdef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-    winrt::Controls::IScrollAnchorProvider
-#else
-    winrt::IRepeaterScrollingSurface
-#endif
-    >,
+    public ReferenceTracker<Scroller, DeriveFromPanelHelper_base, winrt::Scroller, winrt::Controls::IScrollAnchorProvider, winrt::IRepeaterScrollingSurface>,
     public ScrollerProperties
 {
 public:
@@ -47,19 +37,23 @@ public:
     static constexpr std::wstring_view s_zoomFactorSourcePropertyName{ L"ZoomFactor"sv };
 
     // Properties' default values.
-    static constexpr winrt::ScrollerChainingMode s_defaultHorizontalScrollChainingMode{ winrt::ScrollerChainingMode::Auto };
-    static constexpr winrt::ScrollerChainingMode s_defaultVerticalScrollChainingMode{ winrt::ScrollerChainingMode::Auto };
-    static constexpr winrt::ScrollerRailingMode s_defaultHorizontalScrollRailingMode{ winrt::ScrollerRailingMode::Enabled };
-    static constexpr winrt::ScrollerRailingMode s_defaultVerticalScrollRailingMode{ winrt::ScrollerRailingMode::Enabled };
-    static constexpr winrt::ScrollerScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollerScrollMode::Auto };
-    static constexpr winrt::ScrollerScrollMode s_defaultVerticalScrollMode{ winrt::ScrollerScrollMode::Auto };
-    static constexpr winrt::ScrollerScrollMode s_defaultComputedHorizontalScrollMode{ winrt::ScrollerScrollMode::Disabled };
-    static constexpr winrt::ScrollerScrollMode s_defaultComputedVerticalScrollMode{ winrt::ScrollerScrollMode::Disabled };
-    static constexpr winrt::ScrollerChainingMode s_defaultZoomChainingMode{ winrt::ScrollerChainingMode::Auto };
-    static constexpr winrt::ScrollerZoomMode s_defaultZoomMode{ winrt::ScrollerZoomMode::Disabled };
-    static constexpr winrt::ScrollerInputKind s_defaultInputKind{ winrt::ScrollerInputKind::All };
-    static constexpr bool s_defaultIsChildAvailableWidthConstrained{ false };
-    static constexpr bool s_defaultIsChildAvailableHeightConstrained{ false };
+    static constexpr winrt::ChainingMode s_defaultHorizontalScrollChainingMode{ winrt::ChainingMode::Auto };
+    static constexpr winrt::ChainingMode s_defaultVerticalScrollChainingMode{ winrt::ChainingMode::Auto };
+    static constexpr winrt::RailingMode s_defaultHorizontalScrollRailingMode{ winrt::RailingMode::Enabled };
+    static constexpr winrt::RailingMode s_defaultVerticalScrollRailingMode{ winrt::RailingMode::Enabled };
+#ifdef USE_SCROLLMODE_AUTO
+    static constexpr winrt::ScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollMode::Auto };
+    static constexpr winrt::ScrollMode s_defaultVerticalScrollMode{ winrt::ScrollMode::Auto };
+#else
+    static constexpr winrt::ScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollMode::Enabled };
+    static constexpr winrt::ScrollMode s_defaultVerticalScrollMode{ winrt::ScrollMode::Enabled };
+#endif
+    static constexpr winrt::ScrollMode s_defaultComputedHorizontalScrollMode{ winrt::ScrollMode::Disabled };
+    static constexpr winrt::ScrollMode s_defaultComputedVerticalScrollMode{ winrt::ScrollMode::Disabled };
+    static constexpr winrt::ChainingMode s_defaultZoomChainingMode{ winrt::ChainingMode::Auto };
+    static constexpr winrt::ZoomMode s_defaultZoomMode{ winrt::ZoomMode::Disabled };
+    static constexpr winrt::InputKind s_defaultInputKind{ winrt::InputKind::All };
+    static constexpr winrt::ContentOrientation s_defaultContentOrientation{ winrt::ContentOrientation::None };
     static constexpr bool s_defaultAnchorAtExtent{ true };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
     static constexpr double s_defaultMaxZoomFactor{ 10.0 };
@@ -84,8 +78,6 @@ public:
     // 0.999972 closely matches the built-in InteractionTracker zooming behavior introduced in RS5.
     static constexpr float s_mouseWheelInertiaDecayRate = 0.999972f;
 
-#ifdef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-
 #pragma region IScrollAnchorProvider
     void RegisterAnchorCandidate(winrt::UIElement const& element);
     void UnregisterAnchorCandidate(winrt::UIElement const& element);
@@ -96,7 +88,6 @@ public:
     void Parent(winrt::Controls::IScrollAnchorProvider const& value) {}
 #pragma endregion
 
-#else
 #pragma region IRepeaterScrollingSurface
     bool IsHorizontallyScrollable();
 
@@ -116,15 +107,9 @@ public:
 
     void ConfigurationChanged(winrt::event_token const& token);
 
-    void RegisterAnchorCandidate(winrt::UIElement const& element);
-
-    void UnregisterAnchorCandidate(winrt::UIElement const& element);
-
     winrt::Rect GetRelativeViewport(
-        winrt::UIElement const& child);
+        winrt::UIElement const& content);
 #pragma endregion
-
-#endif
 
 #pragma region IFrameworkElementOverridesHelper
     // IFrameworkElementOverrides (unoverridden methods provided by FrameworkElementOverridesHelper)
@@ -160,10 +145,10 @@ public:
     winrt::IScrollController VerticalScrollController();
     void VerticalScrollController(winrt::IScrollController const& value);
 
-    winrt::ScrollerInputKind InputKind();
-    void InputKind(winrt::ScrollerInputKind const& value);
+    winrt::InputKind InputKind();
+    void InputKind(winrt::InputKind const& value);
 
-    winrt::ScrollerState State();
+    winrt::InteractionState State();
 
     winrt::IVector<winrt::ScrollerSnapPointBase> HorizontalSnapPoints();
 
@@ -178,11 +163,11 @@ public:
 
 #pragma endregion
 
-    // Invoked by both Scroller and ScrollerView controls
+    // Invoked by both Scroller and ScrollViewer controls
     static bool IsZoomFactorBoundaryValid(double value);
     static void ValidateZoomFactoryBoundary(double value);
 
-    // Invoked by both Scroller and ScrollerView controls
+    // Invoked by both Scroller and ScrollViewer controls
     static bool IsAnchorRatioValid(double value);
     static void ValidateAnchorRatio(double value);
 
@@ -190,18 +175,18 @@ public:
         const winrt::UIElement& element);
 
     // Invoked by ScrollerTestHooks
-    float GetChildLayoutOffsetX()
+    float GetContentLayoutOffsetX()
     {
-        return m_childLayoutOffsetX;
+        return m_contentLayoutOffsetX;
     }
 
-    float GetChildLayoutOffsetY()
+    float GetContentLayoutOffsetY()
     {
-        return m_childLayoutOffsetY;
+        return m_contentLayoutOffsetY;
     }
 
-    void SetChildLayoutOffsetX(float childLayoutOffsetX);
-    void SetChildLayoutOffsetY(float childLayoutOffsetY);
+    void SetContentLayoutOffsetX(float contentLayoutOffsetX);
+    void SetContentLayoutOffsetY(float contentLayoutOffsetY);
 
     winrt::IVector<winrt::ScrollerSnapPointBase> GetConsolidatedSnapPoints(winrt::ScrollerSnapPointDimension dimension);
 
@@ -209,7 +194,7 @@ public:
     void OnPropertyChanged(
         const winrt::DependencyPropertyChangedEventArgs& args);
 
-    void OnChildPropertyChanged(
+    void OnContentPropertyChanged(
         const winrt::DependencyObject& sender,
         const winrt::DependencyProperty& args);
 
@@ -251,15 +236,15 @@ private:
         ZoomFactor
     };
 
-    float ComputeChildLayoutOffsetDelta(ScrollerDimension dimension, float unzoomedDelta) const;
+    float ComputeContentLayoutOffsetDelta(ScrollerDimension dimension, float unzoomedDelta) const;
     float ComputeEndOfInertiaZoomFactor() const;
     winrt::float2 ComputeEndOfInertiaPosition();
     void ComputeMinMaxPositions(float zoomFactor, _Out_opt_ winrt::float2* minPosition, _Out_opt_ winrt::float2* maxPosition);
     winrt::float2 ComputePositionFromOffsets(double zoomedHorizontalOffset, double zoomedVerticalOffset);
     double ComputeValueAfterSnapPoints(double value, const std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator>& snapPoints);
-    winrt::float2 ComputeCenterPointerForMouseWheelZooming(const winrt::UIElement& child, const winrt::Point& pointerPosition) const;
+    winrt::float2 ComputeCenterPointerForMouseWheelZooming(const winrt::UIElement& content, const winrt::Point& pointerPosition) const;
     void ComputeBringIntoViewTargetOffsets(
-        const winrt::UIElement& child,
+        const winrt::UIElement& content,
         const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
         _Out_ double* targetZoomedHorizontalOffset,
         _Out_ double* targetZoomedVerticalOffset,
@@ -291,59 +276,59 @@ private:
     void SetupVisualInteractionSourceRailingMode(
         const winrt::VisualInteractionSource& visualInteractionSource,
         ScrollerDimension dimension,
-        const winrt::ScrollerRailingMode& railingMode);
+        const winrt::RailingMode& railingMode);
     void SetupVisualInteractionSourceChainingMode(
         const winrt::VisualInteractionSource& visualInteractionSource,
         ScrollerDimension dimension,
-        const winrt::ScrollerChainingMode& chainingMode);
+        const winrt::ChainingMode& chainingMode);
     void SetupVisualInteractionSourceMode(
         const winrt::VisualInteractionSource& visualInteractionSource,
         ScrollerDimension dimension,
-        const winrt::ScrollerScrollMode& scrollMode);
+        const winrt::ScrollMode& scrollMode);
     void SetupVisualInteractionSourceMode(
         const winrt::VisualInteractionSource& visualInteractionSource,
-        const winrt::ScrollerZoomMode& zoomMode);
+        const winrt::ZoomMode& zoomMode);
 #ifdef IsMouseWheelScrollDisabled
     void SetupVisualInteractionSourcePointerWheelConfig(
         const winrt::VisualInteractionSource& visualInteractionSource,
         ScrollerDimension dimension,
-        const winrt::ScrollerScrollMode& scrollMode);
+        const winrt::ScrollMode& scrollMode);
 #endif
 #ifdef IsMouseWheelZoomDisabled
     void SetupVisualInteractionSourcePointerWheelConfig(
         const winrt::VisualInteractionSource& visualInteractionSource,
-        const winrt::ScrollerZoomMode& zoomMode);
+        const winrt::ZoomMode& zoomMode);
 #endif
     void SetupVisualInteractionSourceRedirectionMode(
         const winrt::VisualInteractionSource& visualInteractionSource,
-        const winrt::ScrollerInputKind& inputKind);
+        const winrt::InputKind& inputKind);
     void SetupVisualInteractionSourceCenterPointModifier(
         const winrt::VisualInteractionSource& visualInteractionSource,
         ScrollerDimension dimension);
     void SetupPositionBoundariesExpressionAnimations(
-        const winrt::UIElement& child);
+        const winrt::UIElement& content);
     void SetupTransformExpressionAnimations(
-        const winrt::UIElement& child);
+        const winrt::UIElement& content);
     void StartTransformExpressionAnimations(
-        const winrt::UIElement& child);
+        const winrt::UIElement& content);
     void StopTransformExpressionAnimations(
-        const winrt::UIElement& child);
+        const winrt::UIElement& content);
     void StartExpressionAnimationSourcesAnimations();
     void StopExpressionAnimationSourcesAnimations();
     void StartScrollControllerExpressionAnimationSourcesAnimations(
         ScrollerDimension dimension);
     void StopScrollControllerExpressionAnimationSourcesAnimations(
         ScrollerDimension dimension);
-    void UpdateChild(
-        const winrt::UIElement& oldChild,
-        const winrt::UIElement& newChild);
+    void UpdateContent(
+        const winrt::UIElement& oldContent,
+        const winrt::UIElement& newContent);
     void UpdatePositionBoundaries(
-        const winrt::UIElement& child);
+        const winrt::UIElement& content);
     void UpdateTransformSource(
-        const winrt::UIElement& oldChild,
-        const winrt::UIElement& newChild);
+        const winrt::UIElement& oldContent,
+        const winrt::UIElement& newContent);
     void UpdateState(
-        const winrt::ScrollerState& state);
+        const winrt::InteractionState& state);
     void UpdateExpressionAnimationSources();
     void UpdateUnzoomedExtentAndViewport(
         double unzoomedExtentWidth, double unzoomedExtentHeight,
@@ -354,10 +339,10 @@ private:
     void UpdateVisualInteractionSourceMode(ScrollerDimension dimension);
     void UpdateManipulationRedirectionMode();
     void UpdateKeyEvents();
-    void OnChildSizeChanged(
-        const winrt::UIElement& child);
+    void OnContentSizeChanged(
+        const winrt::UIElement& content);
     void OnViewChanged(bool horizontalOffsetChanged, bool verticalOffsetChanged);
-    void OnChildLayoutOffsetChanged(ScrollerDimension dimension);
+    void OnContentLayoutOffsetChanged(ScrollerDimension dimension);
 
     void ChangeOffsetsPrivate(
         InteractionTrackerAsyncOperationTrigger operationTrigger,
@@ -422,34 +407,34 @@ private:
         bool isOperationTypeForOffsetsChange,
         InteractionTrackerAsyncOperationTrigger operationTrigger) const;
 
-    winrt::ScrollerScrollMode GetComputedScrollMode(ScrollerDimension dimension, bool ignoreZoomMode = false);
+    winrt::ScrollMode GetComputedScrollMode(ScrollerDimension dimension, bool ignoreZoomMode = false);
 #ifdef IsMouseWheelScrollDisabled
-    winrt::ScrollerScrollMode GetComputedMouseWheelScrollMode(ScrollerDimension dimension);
+    winrt::ScrollMode GetComputedMouseWheelScrollMode(ScrollerDimension dimension);
 #endif
 #ifdef IsMouseWheelZoomDisabled
-    winrt::ScrollerZoomMode GetMouseWheelZoomMode();
+    winrt::ZoomMode GetMouseWheelZoomMode();
 #endif
 
     double GetComputedMaxWidth(
         double defaultMaxWidth,
-        const winrt::FrameworkElement& child) const;
+        const winrt::FrameworkElement& content) const;
     double GetComputedMaxHeight(
         double defaultMaxHeight,
-        const winrt::FrameworkElement& child) const;
+        const winrt::FrameworkElement& content) const;
     winrt::float2 GetArrangeRenderSizesDelta(
-        const winrt::UIElement& child) const;
+        const winrt::UIElement& content) const;
     winrt::hstring GetMinPositionExpression(
-        const winrt::UIElement& child) const;
+        const winrt::UIElement& content) const;
     winrt::hstring GetMinPositionXExpression(
-        const winrt::UIElement& child) const;
+        const winrt::UIElement& content) const;
     winrt::hstring GetMinPositionYExpression(
-        const winrt::UIElement& child) const;
+        const winrt::UIElement& content) const;
     winrt::hstring GetMaxPositionExpression(
-        const winrt::UIElement& child) const;
+        const winrt::UIElement& content) const;
     winrt::hstring GetMaxPositionXExpression(
-        const winrt::UIElement& child) const;
+        const winrt::UIElement& content) const;
     winrt::hstring GetMaxPositionYExpression(
-        const winrt::UIElement& child) const;
+        const winrt::UIElement& content) const;
 
     winrt::CompositionAnimation GetPositionAnimation(
         double zoomedHorizontalOffset,
@@ -471,8 +456,8 @@ private:
 
     void HookCompositionTargetRendering();
     void HookScrollerEvents();
-    void HookChildPropertyChanged(
-        const winrt::UIElement& child);
+    void HookContentPropertyChanged(
+        const winrt::UIElement& content);
     void HookHorizontalScrollControllerEvents(
         const winrt::IScrollController& horizontalScrollController,
         bool hasInteractionVisual);
@@ -480,8 +465,8 @@ private:
         const winrt::IScrollController& verticalScrollController,
         bool hasInteractionVisual);
     void UnhookCompositionTargetRendering();
-    void UnhookChildPropertyChanged(
-        const winrt::UIElement& child);
+    void UnhookContentPropertyChanged(
+        const winrt::UIElement& content);
     void UnhookScrollerEvents();
     void UnhookHorizontalScrollControllerEvents(
         const winrt::IScrollController& horizontalScrollController);
@@ -581,11 +566,9 @@ private:
         std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator>* internalSet);
 
 #pragma region IRepeaterScrollingSurface Helpers
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
     void RaiseConfigurationChanged();
     void RaisePostArrange();
     void RaiseViewportChanged(const bool isFinal);
-#endif
     void RaiseAnchorRequested();
 
     void IsAnchoring(
@@ -616,7 +599,7 @@ private:
 
     void ProcessAnchorCandidate(
         const winrt::UIElement& anchorCandidate,
-        const winrt::UIElement& child,
+        const winrt::UIElement& content,
         const winrt::Rect& viewportAnchorBounds,
         double viewportAnchorPointHorizontalOffset,
         double viewportAnchorPointVerticalOffset,
@@ -625,28 +608,28 @@ private:
         _Inout_ winrt::Rect* bestAnchorCandidateBounds) const;
 
     static winrt::Rect GetDescendantBounds(
-        const winrt::UIElement& child,
+        const winrt::UIElement& content,
         const winrt::UIElement& descendant);
 
     static bool IsElementValidAnchor(
         const winrt::UIElement& element,
-        const winrt::UIElement& child);
+        const winrt::UIElement& content);
 #pragma endregion
 
-    static winrt::InteractionChainingMode InteractionChainingModeFromScrollerChainingMode(
-        const winrt::ScrollerChainingMode& chainingMode);
+    static winrt::InteractionChainingMode InteractionChainingModeFromChainingMode(
+        const winrt::ChainingMode& chainingMode);
 #ifdef IsMouseWheelScrollDisabled
-    static winrt::InteractionSourceRedirectionMode InteractionSourceRedirectionModeFromScrollerScrollMode(
-        const winrt::ScrollerScrollMode& scrollMode);
+    static winrt::InteractionSourceRedirectionMode InteractionSourceRedirectionModeFromScrollMode(
+        const winrt::ScrollMode& scrollMode);
 #endif
 #ifdef IsMouseWheelZoomDisabled
-    static winrt::InteractionSourceRedirectionMode InteractionSourceRedirectionModeFromScrollerZoomMode(
-        const winrt::ScrollerZoomMode& zoomMode);
+    static winrt::InteractionSourceRedirectionMode InteractionSourceRedirectionModeFromZoomMode(
+        const winrt::ZoomMode& zoomMode);
 #endif
-    static winrt::InteractionSourceMode InteractionSourceModeFromScrollerScrollMode(
-        const winrt::ScrollerScrollMode& scrollMode);
-    static winrt::InteractionSourceMode InteractionSourceModeFromScrollerZoomMode(
-        const winrt::ScrollerZoomMode& zoomMode);
+    static winrt::InteractionSourceMode InteractionSourceModeFromScrollMode(
+        const winrt::ScrollMode& scrollMode);
+    static winrt::InteractionSourceMode InteractionSourceModeFromZoomMode(
+        const winrt::ZoomMode& zoomMode);
 
     static double ComputeZoomedOffsetWithMinimalChange(
         double viewportStart,
@@ -655,7 +638,7 @@ private:
         double childEnd);
 
     static winrt::Rect GetDescendantBounds(
-        const winrt::UIElement& child,
+        const winrt::UIElement& content,
         const winrt::UIElement& descendant,
         const winrt::Rect& descendantRect);
 
@@ -674,8 +657,8 @@ private:
     winrt::float2 m_endOfInertiaPosition{ 0.0f, 0.0f };
     float m_endOfInertiaZoomFactor{ 1.0f };
     float m_zoomFactor{ 1.0f };
-    float m_childLayoutOffsetX{ 0.0f };
-    float m_childLayoutOffsetY{ 0.0f };
+    float m_contentLayoutOffsetX{ 0.0f };
+    float m_contentLayoutOffsetY{ 0.0f };
     double m_zoomedHorizontalOffset{ 0.0 };
     double m_zoomedVerticalOffset{ 0.0 };
     double m_unzoomedExtentWidth{ 0.0 };
@@ -685,9 +668,8 @@ private:
     bool m_isAnchorElementDirty{ true }; // False when m_anchorElement is up-to-date, True otherwise.
     bool m_isListeningToKeystrokes{ false }; // True when key-down/key-up handlers are used.
 
-    // For perf reasons, the values of Is[Horizontal|Vertical]ChildAvailableSizeConstrained are cached.
-    bool m_isChildAvailableWidthConstrained{ s_defaultIsChildAvailableWidthConstrained };
-    bool m_isChildAvailableHeightConstrained{ s_defaultIsChildAvailableHeightConstrained };
+    // For perf reasons, the value of ContentOrientation is cached.
+    winrt::ContentOrientation m_contentOrientation{ s_defaultContentOrientation };
     winrt::Size m_availableSize{};
 
     tracker_ref<winrt::IScrollController> m_horizontalScrollController{ this };
@@ -697,7 +679,7 @@ private:
     std::vector<tracker_ref<winrt::UIElement>> m_anchorCandidates;
     std::list<std::shared_ptr<InteractionTrackerAsyncOperation>> m_interactionTrackerAsyncOperations;
     winrt::Rect m_anchorElementBounds{};
-    winrt::ScrollerState m_state{ winrt::ScrollerState::Idle };
+    winrt::InteractionState m_state{ winrt::InteractionState::Idle };
     winrt::IInspectable m_pointerPressedEventHandler{ nullptr };
     winrt::CompositionPropertySet m_expressionAnimationSources{ nullptr };
     winrt::CompositionPropertySet m_horizontalScrollControllerExpressionAnimationSources{ nullptr };
@@ -736,8 +718,8 @@ private:
     winrt::event_token m_unloadedToken{};
     winrt::event_token m_bringIntoViewRequested{};
     winrt::event_token m_pointerWheelChangedToken{};
-    winrt::event_token m_childHorizontalAlignmentChangedToken{};
-    winrt::event_token m_childVerticalAlignmentChangedToken{};
+    winrt::event_token m_contentHorizontalAlignmentChangedToken{};
+    winrt::event_token m_contentVerticalAlignmentChangedToken{};
 
     winrt::event_token m_horizontalScrollControllerOffsetChangeRequestedToken{};
     winrt::event_token m_horizontalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken{};
@@ -771,7 +753,7 @@ private:
     std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator> m_sortedConsolidatedVerticalSnapPoints{};
     std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator> m_sortedConsolidatedZoomSnapPoints{};
 
-    // Property names being targeted for the Scroller.Child's Visual.
+    // Property names being targeted for the Scroller.Content's Visual.
     // RedStone v1 case:
     static constexpr std::wstring_view s_transformMatrixTranslateXPropertyName{ L"TransformMatrix._41"sv };
     static constexpr std::wstring_view s_transformMatrixTranslateYPropertyName{ L"TransformMatrix._42"sv };

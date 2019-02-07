@@ -110,7 +110,6 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_paneSearchButtonClickRevoker.revoke();
     m_paneSearchButton.set(nullptr);
 
-    m_buttonHolderGettingFocusRevoker.revoke();
     m_buttonHolderGrid.set(nullptr);
 }
 
@@ -135,6 +134,7 @@ NavigationView::NavigationView()
         });
 
     Unloaded({ this, &NavigationView::OnUnloaded });
+    Loaded({ this, &NavigationView::OnLoaded });
 }
 
 void NavigationView::OnApplyTemplate()
@@ -243,7 +243,7 @@ void NavigationView::OnApplyTemplate()
     {
         m_leftNavListView.set(leftNavListView);
 
-        m_leftNavListViewLoadedRevoker = leftNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnLoaded });
+        m_leftNavListViewLoadedRevoker = leftNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
 
         m_leftNavListViewSelectionChangedRevoker = leftNavListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
         m_leftNavListViewItemClickRevoker = leftNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
@@ -256,7 +256,7 @@ void NavigationView::OnApplyTemplate()
     {
         m_topNavListView.set(topNavListView);
 
-        m_topNavListViewLoadedRevoker = topNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnLoaded });
+        m_topNavListViewLoadedRevoker = topNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
 
         m_topNavListViewSelectionChangedRevoker = topNavListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
         m_topNavListViewItemClickRevoker = topNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
@@ -280,6 +280,13 @@ void NavigationView::OnApplyTemplate()
         topNavOverflowButton.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_NavigationOverflowButtonText)));
         auto visual = winrt::ElementCompositionPreview::GetElementVisual(topNavOverflowButton);
         CreateAndAttachHeaderAnimation(visual);
+
+#ifdef USE_INSIDER_SDK
+        if (winrt::IFlyoutBase6 topNavOverflowButtonAsFlyoutBase6 = topNavOverflowButton.Flyout())
+        {
+            topNavOverflowButtonAsFlyoutBase6.ShouldConstrainToRootBounds(false);
+        }
+#endif
     }
 
     if (auto topNavGrid = GetTemplateChildT<winrt::Grid>(c_topNavGrid, controlProtected))
@@ -333,17 +340,6 @@ void NavigationView::OnApplyTemplate()
         backButtonToolTip.Content(box_value(navigationBackButtonToolTip));
     }
 
-    if (auto buttonHolderGrid = GetTemplateChildT<winrt::Grid>(c_buttonHolderGrid, controlProtected))
-    {
-        // TrySetNewFocusedElement call in OnButtonHolderGridGettingFocus is RS4 only
-        if (buttonHolderGrid.try_as<winrt::IUIElement8>())
-        {
-            buttonHolderGrid.XYFocusKeyboardNavigation(winrt::XYFocusKeyboardNavigationMode::Enabled);
-            buttonHolderGrid.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);       
-            m_buttonHolderGettingFocusRevoker = buttonHolderGrid.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnButtonHolderGridGettingFocus });
-        }
-    }
-
     if (SharedHelpers::IsRS2OrHigher())
     {
         // Get hold of the outermost grid and enable XYKeyboardNavigationMode
@@ -379,7 +375,10 @@ void NavigationView::OnApplyTemplate()
                 {
                     winrt::ThemeShadow shadow;
                     shadow.Receivers().Append(contentRoot);
-                    paneRoot.Shadow(shadow);
+                    if (winrt::IUIElement10 paneRoot_uiElement10 = paneRoot)
+                    {
+                        paneRoot_uiElement10.Shadow(shadow);
+                    }
                 }
             }
         }
@@ -635,24 +634,6 @@ void NavigationView::OnPaneSearchButtonClick(const winrt::IInspectable& /*sender
     if (auto autoSuggestBox = AutoSuggestBox())
     {
         autoSuggestBox.Focus(winrt::FocusState::Keyboard);
-    }
-}
-
-void NavigationView::OnButtonHolderGridGettingFocus(winrt::UIElement const& sender, winrt::GettingFocusEventArgs const& args)
-{
-    if (auto backButton = m_backButton.get())
-    {
-        auto paneButton = m_paneToggleButton.get();
-        if (paneButton && paneButton.Visibility() == winrt::Visibility::Visible)
-        {
-            // We want the back button to only be able to receive focus from
-            // arrowing from the pane toggle button, not from tabbing there.
-            if (args.NewFocusedElement() == backButton &&
-                (args.Direction() == winrt::FocusNavigationDirection::Previous || args.Direction() == winrt::FocusNavigationDirection::Next))
-            {
-                args.TrySetNewFocusedElement(paneButton);
-            }
-        }
     }
 }
 
@@ -989,6 +970,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& prevItem
 
             winrt::Point prevPosPoint = prevIndicator.TransformToVisual(paneContentGrid).TransformPoint(point);
             winrt::Point nextPosPoint = nextIndicator.TransformToVisual(paneContentGrid).TransformPoint(point);
+            winrt::Size prevSize = prevIndicator.RenderSize();
+            winrt::Size nextSize = nextIndicator.RenderSize();
 
             if (IsTopNavigationView())
             {
@@ -1005,8 +988,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& prevItem
             winrt::CompositionScopedBatch scopedBatch = visual.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
 
             // Play the animation on both the previous and next indicators
-            PlayIndicatorAnimations(prevIndicator, 0, nextPos - prevPos, true);
-            PlayIndicatorAnimations(nextIndicator, prevPos - nextPos, 0, false);
+            PlayIndicatorAnimations(prevIndicator, 0, nextPos - prevPos, prevSize, nextSize, true);
+            PlayIndicatorAnimations(nextIndicator, prevPos - nextPos, 0, prevSize, nextSize, false);
 
             scopedBatch.End();
             m_prevIndicator.set(prevIndicator);
@@ -1039,13 +1022,21 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& prevItem
     }
 }
 
-void NavigationView::PlayIndicatorAnimations(const winrt::UIElement& indicator, float from, float to, bool isOutgoing)
+void NavigationView::PlayIndicatorAnimations(const winrt::UIElement& indicator, float from, float to, winrt::Size beginSize, winrt::Size endSize, bool isOutgoing)
 {
     winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(indicator);
     winrt::Compositor comp = visual.Compositor();
 
     winrt::Size size = indicator.RenderSize();
     float dimension = IsTopNavigationView() ? size.Width : size.Height;
+
+    float beginScale = 1.0f;
+    float endScale = 1.0f;
+    if (IsTopNavigationView() && fabs(size.Width) > 0.001f)
+    {
+        beginScale = beginSize.Width / size.Width;
+        endScale = endSize.Width / size.Width;
+    }
 
     winrt::StepEasingFunction singleStep = comp.CreateStepEasingFunction();
     singleStep.IsFinalStepSingleFrame(true);
@@ -1063,14 +1054,14 @@ void NavigationView::PlayIndicatorAnimations(const winrt::UIElement& indicator, 
     }
 
     winrt::ScalarKeyFrameAnimation posAnim = comp.CreateScalarKeyFrameAnimation();
-    posAnim.InsertKeyFrame(0.0f, from);
-    posAnim.InsertKeyFrame(0.333f, to, singleStep);
+    posAnim.InsertKeyFrame(0.0f, from < to ? from : (from + (dimension * (beginScale - 1))));
+    posAnim.InsertKeyFrame(0.333f, from < to ? (to + (dimension * (endScale - 1))) : to, singleStep);
     posAnim.Duration(600ms);
 
     winrt::ScalarKeyFrameAnimation scaleAnim = comp.CreateScalarKeyFrameAnimation();
-    scaleAnim.InsertKeyFrame(0.0f, 1);
-    scaleAnim.InsertKeyFrame(0.333f, abs(to - from) / dimension + 1, comp.CreateCubicBezierEasingFunction(c_frame1point1, c_frame1point2));
-    scaleAnim.InsertKeyFrame(1.0f, 1, comp.CreateCubicBezierEasingFunction(c_frame2point1, c_frame2point2));
+    scaleAnim.InsertKeyFrame(0.0f, beginScale);
+    scaleAnim.InsertKeyFrame(0.333f, abs(to - from) / dimension + (from < to ? endScale : beginScale), comp.CreateCubicBezierEasingFunction(c_frame1point1, c_frame1point2));
+    scaleAnim.InsertKeyFrame(1.0f, endScale, comp.CreateCubicBezierEasingFunction(c_frame2point1, c_frame2point2));
     scaleAnim.Duration(600ms);
 
     winrt::ScalarKeyFrameAnimation centerAnim = comp.CreateScalarKeyFrameAnimation();
@@ -1499,6 +1490,12 @@ void NavigationView::UpdateVisualStateForDisplayModeGroup(const winrt::Navigatio
             visualStateName = L"Expanded";
             splitViewDisplayMode = winrt::SplitViewDisplayMode::CompactInline;
             break;
+        }
+
+        // When the pane is made invisible we need to collapse the pane part of the SplitView
+        if (!IsPaneVisible())
+        {
+            splitViewDisplayMode = winrt::SplitViewDisplayMode::CompactOverlay;
         }
 
         auto handled = false;
@@ -2659,7 +2656,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_IsPaneVisibleProperty)
     {
         UpdatePaneVisibility();
-
+        UpdateVisualStateForDisplayModeGroup(DisplayMode());
     }
     else if (property == s_OverflowLabelModeProperty)
     {
@@ -2690,7 +2687,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
 }
 
 
-void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+void NavigationView::OnListViewLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     if (auto item = SelectedItem())
     {
@@ -2713,9 +2710,22 @@ void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEv
     }
 }
 
+// If app is .net app, the lifetime of NavigationView maybe depends on garbage collection.
+// Unlike other revoker, TitleBar is in global space and we need to stop receiving changed event when it's unloaded.
+// So we do hook it in Loaded and Unhook it in Unloaded
 void NavigationView::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
-    UnhookEventsAndClearFields();
+    m_titleBarMetricsChangedRevoker.revoke();
+    m_titleBarIsVisibleChangedRevoker.revoke();
+}
+
+void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+{
+    if (auto coreTitleBar = m_coreTitleBar.get())
+    {
+        m_titleBarMetricsChangedRevoker = coreTitleBar.LayoutMetricsChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarMetricsChanged });
+        m_titleBarIsVisibleChangedRevoker = coreTitleBar.IsVisibleChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarIsVisibleChanged });
+    }
 }
 
 void NavigationView::OnIsPaneOpenChanged()
@@ -2855,11 +2865,15 @@ void NavigationView::UpdatePaneVisibility()
             templateSettings->TopPaneVisibility(winrt::Visibility::Collapsed);
             templateSettings->LeftPaneVisibility(winrt::Visibility::Visible);
         }
+
+        winrt::VisualStateManager::GoToState(*this, L"PaneVisible", false /*useTransitions*/);
     }
     else
     {
         templateSettings->TopPaneVisibility(winrt::Visibility::Collapsed);
         templateSettings->LeftPaneVisibility(winrt::Visibility::Collapsed);
+
+        winrt::VisualStateManager::GoToState(*this, L"PaneCollapsed", false /*useTransitions*/);
     }
 }
 

@@ -4,11 +4,12 @@
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 
 #if !BUILD_WINDOWS
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 #endif
 
 namespace MUXControlsTestApp
@@ -36,7 +37,7 @@ namespace MUXControlsTestApp
             rect.Width = 900.0;
             rect.Height = 1200.0;
             rect.Fill = new SolidColorBrush(Colors.DarkRed);
-            scroller.Child = rect;
+            scroller.Content = rect;
 
             btnCreateScroller.IsEnabled = false;
             btnAddScroller.IsEnabled = true;
@@ -67,7 +68,7 @@ namespace MUXControlsTestApp
             if (scroller == null || grid.Children.Count == 6)
                 return;
 
-            scroller.Child = null;
+            scroller.Content = null;
             scroller = null;
 
             btnDeleteScroller.IsEnabled = false;

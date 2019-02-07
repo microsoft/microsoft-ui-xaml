@@ -3,17 +3,6 @@
 
 #pragma once
 
-// If Building in windows, repeater will use 
-// the effective viewport and anchoring features 
-// from the framework. In MUX, we only use the 
-// api available downlevel irrespective of where 
-// you are running (RS5 or donwlevel). This helps
-// keep the behavior the same when using MUX across
-// different OS versions.
-#ifdef BUILD_WINDOWS
-#define USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-#endif
-
 #include "AnimationManager.h"
 #include "ViewManager.h"
 #include "VirtualizationInfo.h"
@@ -21,12 +10,7 @@
 #include "ItemsRepeaterElementClearingEventArgs.h"
 #include "ItemsRepeaterElementIndexChangedEventArgs.h"
 #include "ItemsRepeater.g.h"
-
-#ifdef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-#include "ViewportManagerWithPlatformFeatures.h"
-#else
 #include "ViewportManager.h"
-#endif
 
 class VirtualizationInfo;
 
@@ -76,8 +60,8 @@ public:
     winrt::IElementFactory ItemTemplate();
     void ItemTemplate(winrt::IElementFactory const& value);
 
-    winrt::VirtualizingLayout Layout();
-    void Layout(winrt::VirtualizingLayout const& value);
+    winrt::Layout Layout();
+    void Layout(winrt::Layout const& value);
 
     winrt::ElementAnimator Animator();
     void Animator(winrt::ElementAnimator const& value);
@@ -132,10 +116,10 @@ public:
 
     winrt::IInspectable LayoutState() const { return m_layoutState.get(); }
     void LayoutState(const winrt::IInspectable& value) { m_layoutState.set(value); }
-    winrt::Rect VisibleWindow() const { return m_viewportManager.GetLayoutVisibleWindow(); }
-    winrt::Rect RealizationWindow() const { return m_viewportManager.GetLayoutRealizationWindow(); }
-    winrt::UIElement SuggestedAnchor() const { return m_viewportManager.SuggestedAnchor(); }
-    winrt::UIElement MadeAnchor() const { return m_viewportManager.MadeAnchor(); }
+    winrt::Rect VisibleWindow() const { return m_viewportManager->GetLayoutVisibleWindow(); }
+    winrt::Rect RealizationWindow() const { return m_viewportManager->GetLayoutRealizationWindow(); }
+    winrt::UIElement SuggestedAnchor() const { return m_viewportManager->SuggestedAnchor(); }
+    winrt::UIElement MadeAnchor() const { return m_viewportManager->MadeAnchor(); }
     winrt::Point LayoutOrigin() const { return m_layoutOrigin; }
     void LayoutOrigin(winrt::Point value) { m_layoutOrigin = value; }
 
@@ -186,7 +170,7 @@ private:
 
     void OnDataSourcePropertyChanged(const winrt::ItemsSourceView& oldValue, const winrt::ItemsSourceView& newValue);
     void OnItemTemplateChanged(const winrt::IElementFactory& oldValue, const winrt::IElementFactory& newValue);
-    void OnLayoutChanged(const winrt::VirtualizingLayout& oldValue, const winrt::VirtualizingLayout& newValue);
+    void OnLayoutChanged(const winrt::Layout& oldValue, const winrt::Layout& newValue);
     void OnAnimatorChanged(const winrt::ElementAnimator& oldValue, const winrt::ElementAnimator& newValue);
 
     void OnDataSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
@@ -200,12 +184,7 @@ private:
 
     ::AnimationManager m_animationManager{ this };
     ::ViewManager m_viewManager{ this };
-
-#ifdef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
-    ::ViewportManagerWithPlatformFeatures m_viewportManager{ this };
-#else
-    ::ViewportManager m_viewportManager{ this };
-#endif
+    std::shared_ptr<::ViewportManager> m_viewportManager{ nullptr };
 
     tracker_ref<winrt::ItemsSourceView> m_dataSource{ this };
     winrt::IElementFactory m_itemTemplate{ nullptr };
@@ -214,7 +193,7 @@ private:
     winrt::Microsoft::UI::Xaml::Controls::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
 #endif
 
-    winrt::VirtualizingLayout m_layout{ nullptr };
+    winrt::Layout m_layout{ nullptr };
     winrt::ElementAnimator m_animator{ nullptr };
 
     tracker_ref<winrt::VirtualizingLayoutContext> m_layoutContext{ this };

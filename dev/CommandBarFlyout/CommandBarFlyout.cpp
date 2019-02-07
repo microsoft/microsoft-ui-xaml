@@ -11,6 +11,13 @@
 CommandBarFlyout::CommandBarFlyout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_CommandBarFlyout);
+
+#ifdef USE_INSIDER_SDK
+    if (winrt::IFlyoutBase6 thisAsFlyoutBase6 = *this)
+    {
+        thisAsFlyoutBase6.ShouldConstrainToRootBounds(false);
+    }
+#endif
     
     if (winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this)
     {
@@ -253,7 +260,10 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     // We will provide our own shadow, not the one that FlyoutPresenter has by default.
     // We need to specifically target the CommandBar for the shadow, not the default node far
     // above that.
-    presenter.IsDefaultShadowEnabled(false);
+    if (winrt::IFlyoutPresenter2 presenter2 = presenter)
+    {
+        presenter2.IsDefaultShadowEnabled(false);
+    }
 #endif
 
     commandBar->SetOwningFlyout(*this);

@@ -5,10 +5,10 @@
 
 #ifdef BUILD_WINDOWS
 
-// USE_INSIDER_SDK is defined here because the definition 
+// USE_INTERNAL_SDK is defined here because the definition 
 // in environment.props is not used in razzle. The BUILD_WINDOWS label 
 // is defined by build.cmd automatically.
-#define USE_INSIDER_SDK
+#define USE_INTERNAL_SDK
 
 #define MU_XC_NAMESPACE Windows.UI.Xaml.Controls
 #define MU_XCP_NAMESPACE Windows.UI.Xaml.Controls.Primitives
@@ -243,7 +243,6 @@ namespace MU_XC_NAMESPACE
 #include <Repeater\ItemsRepeater.idl>
 #include <Repeater\RepeaterAutomationPeer.idl>
 #include <Scroller\Scroller.idl>
-#include <Scroller\ScrollerAutomationPeer.idl>
 #include <LayoutPanel\LayoutPanel.idl>
 
 #ifndef BUILD_WINDOWS
@@ -251,6 +250,9 @@ namespace MU_XC_NAMESPACE
 #endif
 
 #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
+#ifndef BUILD_WINDOWS
+#include <AnimatedVisualPlayer\AnimatedVisualPlayer.idl>
+#endif
 #include <ColorPicker\Common.idl>
 #include <ColorPicker\ColorPicker.idl>
 #include <CommandBarFlyout\CommandBarFlyout.idl>
@@ -259,8 +261,6 @@ namespace MU_XC_NAMESPACE
 #include <PullToRefresh\RefreshVisualizer\RefreshVisualizer.idl>
 #include <PullToRefresh\RefreshContainer\RefreshContainer.idl>
 #include <RatingControl\RatingControl.idl>
-#include <ScrollerView\ScrollerView.idl>
-#include <ScrollBar2\ScrollBar2.idl>
 #include <TwoPaneView\TwoPaneView.idl>
 #include <SwipeControl\SwipeControl.idl>
 #include <TreeView\TreeView.idl>
@@ -270,9 +270,12 @@ namespace MU_XC_NAMESPACE
 #include <DropDownButton\DropDownButtonAutomationPeer.idl>
 #include <RadioButtons\RadioButtons.idl>
 #include <RadioMenuFlyoutItem\RadioMenuFlyoutItem.idl>
+#ifndef BUILD_WINDOWS
+#include <ScrollViewer\ScrollViewer.idl>
+#include <ScrollBar2\ScrollBar2.idl>
+#endif
 #include <Forms\Forms.idl>
 #endif
-
 
 
     [WUXC_VERSION_MUXONLY]
@@ -294,6 +297,8 @@ namespace MU_XCP_NAMESPACE
 #include <RadioButtons\RadioButtonsPrimitives.idl>
 #endif
 #include <NavigationView\NavigationViewItemPresenter.idl>
+#include <Scroller\ScrollerPrimitives.idl>
+#include <Scroller\ScrollerAutomationPeer.idl>
 }
 
 namespace MU_XM_NAMESPACE
@@ -307,6 +312,9 @@ namespace MU_XAP_NAMESPACE
 #include <NavigationView\NavigationViewItemAutomationPeer.idl>
 
 #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
+#ifndef BUILD_WINDOWS
+#include <AnimatedVisualPlayer\AnimatedVisualPlayerAutomationPeer.idl>
+#endif
 #include <ColorPicker\ColorSpectrumAutomationPeer.idl>
 #include <ColorPicker\ColorPickerSliderAutomationPeer.idl>
 #include <MenuBar\MenuBarAutomationPeer.idl>
@@ -343,8 +351,10 @@ namespace MU_PRIVATE_CONTROLS_NAMESPACE
 #include <PullToRefresh\RefreshContainer\RefreshContainerPrivate.idl>
 #include <PullToRefresh\RefreshVisualizer\PullToRefreshHelperTestAPI.idl>
 #include <TwoPaneView\DisplayRegionHelperTestApi.idl>
-#include <TestHooks\ScrollerViewTestHooks.idl>
 #include <SplitButton\SplitButtonTestApi.idl>
+#ifndef BUILD_WINDOWS
+#include <TestHooks\ScrollViewerTestHooks.idl>
+#endif
 #endif
 }
 

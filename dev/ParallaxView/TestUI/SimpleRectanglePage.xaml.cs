@@ -6,14 +6,15 @@ using Windows.UI.Composition;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Common;
 
 #if !BUILD_WINDOWS
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
-using ScrollerScrollMode = Microsoft.UI.Xaml.Controls.ScrollerScrollMode;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 #endif
 
 namespace MUXControlsTestApp
@@ -329,9 +330,9 @@ namespace MUXControlsTestApp
             s.Height = 300;
             s.Background = new SolidColorBrush(Windows.UI.Colors.LightBlue);
             s.Margin = new Thickness(4);
-            s.HorizontalScrollMode = ScrollerScrollMode.Enabled;
-            s.VerticalScrollMode = ScrollerScrollMode.Enabled;
-            s.Child = rectSC;
+            s.HorizontalScrollMode = ScrollMode.Enabled;
+            s.VerticalScrollMode = ScrollMode.Enabled;
+            s.Content = rectSC;
             s.ViewChanged += Scroller_ViewChanged;
 
             sp.Children.Insert(0, s);

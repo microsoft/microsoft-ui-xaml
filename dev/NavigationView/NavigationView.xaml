@@ -130,6 +130,19 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="PaneVisibilityGroup">
+                                <VisualState x:Name="PaneVisible" />
+                                <VisualState x:Name="PaneCollapsed">
+                                    <VisualState.Setters>
+                                        <!-- Note that RootSplitView.DisplayMode is set in code so we don't want to -->
+                                        <!-- write it here and interfere. But these values work together to hide -->
+                                        <!-- the left pane. -->
+                                        <Setter Target="RootSplitView.CompactPaneLength" Value="0" />
+                                        <Setter Target="PaneToggleButtonGrid.Visibility" Value="Collapsed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Grid
@@ -163,7 +176,15 @@
                                     Style="{TemplateBinding PaneToggleButtonStyle}"
                                     AutomationProperties.LandmarkType="Navigation"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneToggleButtonVisibility}"
-                                    VerticalAlignment="Top"/>
+                                    VerticalAlignment="Top">
+                                    <TextBlock
+                                        x:Name="PaneTitleTextBlock" 
+                                        Grid.Column="0"
+                                        Text="{TemplateBinding PaneTitle}"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource NavigationViewItemHeaderTextStyle}"/>
+                                </Button>
                             </Grid>
                         </Grid>
 
@@ -346,17 +367,9 @@
 
                                         <Grid Grid.Row="2" Height="{StaticResource PaneToggleButtonHeight}">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="{ThemeResource PaneToggleButtonWidth}"/>
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
-
-                                            <TextBlock
-                                                x:Name="PaneTitleTextBlock" 
-                                                Grid.Column="0"
-                                                Text="{TemplateBinding PaneTitle}"
-                                                HorizontalAlignment="Left"
-                                                VerticalAlignment="Center"
-                                                Style="{StaticResource NavigationViewItemHeaderTextStyle}"/>
 
                                             <ContentControl
                                                 x:Name="PaneHeaderContentBorder"

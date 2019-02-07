@@ -8,17 +8,18 @@ using System.Numerics;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Windows.UI.Xaml.Navigation;
 
 #if !BUILD_WINDOWS
-using ScrollerSnapPointBase = Microsoft.UI.Xaml.Controls.ScrollerSnapPointBase;
-using ScrollerSnapPointRegular = Microsoft.UI.Xaml.Controls.ScrollerSnapPointRegular;
-using ScrollerSnapPointIrregular = Microsoft.UI.Xaml.Controls.ScrollerSnapPointIrregular;
-using ScrollerSnapPointAlignment = Microsoft.UI.Xaml.Controls.ScrollerSnapPointAlignment;
+using ScrollerSnapPointBase = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointBase;
+using ScrollerSnapPointRegular = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointRegular;
+using ScrollerSnapPointIrregular = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointIrregular;
+using ScrollerSnapPointAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment;
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
-using Scroller = Microsoft.UI.Xaml.Controls.Scroller;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 using ScrollerSnapPointDimension = Microsoft.UI.Private.Controls.ScrollerSnapPointDimension;
 using ScrollerChangeOffsetsWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions;

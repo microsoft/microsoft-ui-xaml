@@ -43,7 +43,7 @@ public:
 
     static bool IsFrameworkElementInvalidateViewportAvailable();
 
-    static bool IsDisplayRegionGetForCurrentViewAvailable();
+    static bool IsApplicationViewGetDisplayRegionsAvailable();
 
     static bool IsTranslationFacadeAvailable(const winrt::UIElement& element);
 
@@ -52,8 +52,6 @@ public:
     static bool IsStandardUICommandAvailable();
 
     static bool IsDispatcherQueueAvailable();
-
-    static bool IsXamlRootAvailable();
 
     static bool IsThemeShadowAvailable();
 

@@ -7,15 +7,14 @@
 #include "Scroller.h"
 #include "DoubleUtil.h"
 
-#ifndef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
 bool Scroller::IsHorizontallyScrollable()
 {
-    return !m_isChildAvailableWidthConstrained;
+    return m_contentOrientation != winrt::ContentOrientation::Vertical;
 }
 
 bool Scroller::IsVerticallyScrollable()
 {
-    return !m_isChildAvailableHeightConstrained;
+    return m_contentOrientation != winrt::ContentOrientation::Horizontal;
 }
 
 winrt::event_token Scroller::ViewportChanged(winrt::ViewportChangedEventHandler const& value)
@@ -52,12 +51,12 @@ winrt::Rect Scroller::GetRelativeViewport(
     winrt::UIElement const& child)
 {
     // The commented out code is expected to work but somehow the child.TransformToVisual(*this)
-    // transform returns unexpected values shortly after a Scroller.Child layout offset change.
-    // Bug 14999031 is tracking this issue. For now the m_childLayoutOffsetX/Y, m_zoomedHorizontalOffset,
+    // transform returns unexpected values shortly after a Scroller.Content layout offset change.
+    // Bug 14999031 is tracking this issue. For now the m_contentLayoutOffsetX/Y, m_zoomedHorizontalOffset,
     // m_zoomedVerticalOffset usage below mitigates the problem.
 
     //const winrt::GeneralTransform transform = child.TransformToVisual(*this);
-    const winrt::GeneralTransform transform = child.TransformToVisual(Child());
+    const winrt::GeneralTransform transform = child.TransformToVisual(Content());
     const winrt::Point elementOffset = transform.TransformPoint(winrt::Point{});
     const float viewportWidth = static_cast<float>(m_viewportWidth / m_zoomFactor);
     const float viewportHeight = static_cast<float>(m_viewportHeight / m_zoomFactor);
@@ -70,8 +69,8 @@ winrt::Rect Scroller::GetRelativeViewport(
 
     ComputeMinMaxPositions(m_zoomFactor, &minPosition, nullptr);
 
-    winrt::Rect result = { (minPosition.x - m_childLayoutOffsetX + static_cast<float>(m_zoomedHorizontalOffset) - elementOffset.X) / m_zoomFactor,
-        (minPosition.y - m_childLayoutOffsetY + static_cast<float>(m_zoomedVerticalOffset) - elementOffset.Y) / m_zoomFactor,
+    winrt::Rect result = { (minPosition.x - m_contentLayoutOffsetX + static_cast<float>(m_zoomedHorizontalOffset) - elementOffset.X) / m_zoomFactor,
+        (minPosition.y - m_contentLayoutOffsetY + static_cast<float>(m_zoomedVerticalOffset) - elementOffset.Y) / m_zoomFactor,
         viewportWidth, viewportHeight };
 
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, child, TypeLogging::RectToString(result).c_str());
@@ -79,13 +78,12 @@ winrt::Rect Scroller::GetRelativeViewport(
     return result;
 }
 
-#endif
-
-#ifdef USE_EFFECTIVE_VIEWPORT_AND_ANCHORING_FROM_PLATFORM
 winrt::UIElement Scroller::CurrentAnchor()
-#else
+{
+    return AnchorElement();
+}
+
 winrt::UIElement Scroller::AnchorElement()
-#endif
 {
     bool isAnchoringElementHorizontally = false;
     bool isAnchoringElementVertically = false;
@@ -105,6 +103,8 @@ winrt::UIElement Scroller::AnchorElement()
 
 void Scroller::RegisterAnchorCandidate(winrt::UIElement const& element)
 {
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
+
     if (!element)
     {
         throw winrt::hresult_error(E_INVALIDARG);

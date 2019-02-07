@@ -33,9 +33,15 @@ namespace RuntimeProfiler
         ProfId_TextCommandBarFlyout,
         ProfId_RadioButtons,
         ProfId_RadioMenuFlyoutItem,
+        ProfId_ItemsRepeater,
+        ProfId_NonVirtualizingLayout,
+        ProfId_StackLayout,
+        ProfId_UniformGridLayout,
+        ProfId_VirtualizingLayout,
+        ProfId_AnimatedVisualPlayer,
         ProfId_Forms,
         ProfId_FormRow,
-        ProfId_Size
+        ProfId_Size, // ProfId_Size is the last always.
     } ProfilerClassId;
 
     void FireEvent(bool Suspend) noexcept;

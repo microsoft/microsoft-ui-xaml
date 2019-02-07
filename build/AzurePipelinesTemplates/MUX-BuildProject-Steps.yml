@@ -21,8 +21,8 @@ steps:
     inputs:
       targetType: filePath
       filePath: build\Install-WindowsSdkISO.ps1
-      arguments: 17763
-    displayName: 'Install RS5 SDK (17763)'
+      arguments: 18323
+    displayName: 'Install Insider SDK (18323)'
 
   - template: MUX-InstallNuget-Steps.yml
 
