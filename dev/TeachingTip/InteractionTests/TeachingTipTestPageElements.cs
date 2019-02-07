@@ -1,16 +1,28 @@
-﻿using Microsoft.Windows.Apps.Test.Foundation.Controls;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
-
+using System;
+using System.Numerics;
+using Common;
 
 #if USING_TAEF
 using WEX.TestExecution;
+using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
 #else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
+#endif
+
+#if BUILD_WINDOWS
+using System.Windows.Automation;
+using MS.Internal.Mita.Foundation;
+using MS.Internal.Mita.Foundation.Controls;
+using MS.Internal.Mita.Foundation.Waiters;
+#else
+using Microsoft.Windows.Apps.Test.Automation;
+using Microsoft.Windows.Apps.Test.Foundation.Controls;
+using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using Microsoft.Windows.Apps.Test.Foundation;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
@@ -341,17 +353,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox isIdleCheckBox;
 
-        public Button GetBringIntoViewButton()
+        public Button GetBringTargetIntoViewButton()
         {
-            if (bringIntoViewButton == null)
+            if (bringTargetIntoViewButton == null)
             {
-                Log.Comment("Find the BringIntoViewButton");
-                bringIntoViewButton = new Button(FindElement.ByName("BringIntoViewButton"));
-                Verify.IsNotNull(bringIntoViewButton);
+                Log.Comment("Find the BringTargetIntoViewButton");
+                bringTargetIntoViewButton = new Button(FindElement.ByName("BringTargetIntoViewButton"));
+                Verify.IsNotNull(bringTargetIntoViewButton);
             }
-            return bringIntoViewButton;
+            return bringTargetIntoViewButton;
         }
-        private Button bringIntoViewButton;
+        private Button bringTargetIntoViewButton;
 
         public CheckBox GetTipFollowsTargetCheckBox()
         {
@@ -364,6 +376,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return tipFollowsTargetCheckBox;
         }
         private CheckBox tipFollowsTargetCheckBox;
+
+        public UIObject GetTeachingTip()
+        {
+            if (teachingTip == null)
+            {
+                Log.Comment("Find the TeachingTip");
+                teachingTip = FindElement.ByName("TeachingTip");
+                Verify.IsNotNull(teachingTip);
+            }
+            return teachingTip;
+        }
+        private UIObject teachingTip;
 
         public enum PlacementOptions
         {

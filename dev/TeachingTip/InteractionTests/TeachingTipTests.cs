@@ -278,7 +278,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void ScrollTargetIntoView()
         {
-            elements.GetBringIntoViewButton().Invoke();
+            elements.GetBringTargetIntoViewButton().Invoke();
+            Wait.ForIdle();
         }
 
         private void OpenTeachingTip()
@@ -311,11 +312,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void PressXCloseButton()
         {
-            Log.Comment("Find the teachingTip");
-            var teachingTip = FindElement.ByName("TeachingTip");
-            Verify.IsNotNull(teachingTip);
-
-            InputHelper.Tap(teachingTip, double.Parse(elements.GetTipWidthTextBlock().GetText()) + 90, 110);
+            InputHelper.Tap(elements.GetTeachingTip(), double.Parse(elements.GetTipWidthTextBlock().GetText()) + 90, 110);
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
                 WaitForUnchecked(elements.GetIsIdleCheckBox());
