@@ -54,8 +54,8 @@ Our test library and test app (the app that the test library interacts with
 when executing the tests) are here.
 
 MUXControls.Test is a [MSTest](https://docs.microsoft.com/dotnet/api/microsoft.visualstudio.testtools.unittesting) 
-DLL using MITALite that contains all of the test code for the various controls 
-by automating the MUXControlsTestApp.
+and [TAEF](https://docs.microsoft.com/en-us/windows-hardware/drivers/taef/) DLL that contains all 
+of the test code for the various controls by automating the MUXControlsTestApp.
 
 MUXControlsTestApp is a UWP app that exercises all the controls. This is just a 
 manual testing playground which can be driven by the automated tests for 
