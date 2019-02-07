@@ -26,7 +26,7 @@ have one).
     from upstream. They also enable you to create multiple PRs from the same 
     fork.
 4. Make and commit your changes. 
-    * Please follow our [Commit Messages](contribution_workflow.md#Commit%20Messages) 
+    * Please follow our [Commit Messages](contribution_workflow.md#Commit-Messages) 
     guidance.
 5. Add [new tests](developer_guide.md#Testing) corresponding to your change, if applicable.
 6. Build the repository with your changes. 
@@ -46,7 +46,7 @@ have one).
 ## DOs and DON'Ts
 
 Please do:
-* **DO** follow our [coding style](developer_guide.md#Code%20style%20and%20conventions).
+* **DO** follow our [coding style](code_style_and_conventions.md).
 * **DO** give priority to the current style of the project or file you're 
 changing even if it diverges from the general guidelines.
 * **DO** include tests when adding new features. When fixing bugs, start with 
