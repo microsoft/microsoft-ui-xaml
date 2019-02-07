@@ -202,11 +202,23 @@ void ScrollViewer::OnApplyTemplate()
 
         if (horizontalScrollBar)
         {
-            horizontalScrollController = m_horizontalScrollBarController.get_strong().as<winrt::IScrollController>();
+            if (!m_horizontalScrollBarController)
+            {
+                m_horizontalScrollBarController = winrt::make_self<ScrollBarController>();
+            }
+            horizontalScrollController = m_horizontalScrollBarController.as<winrt::IScrollController>();
         }
     }
 
-    m_horizontalScrollBarController.SetScrollBar(horizontalScrollBar);
+    if (horizontalScrollBar)
+    {
+        m_horizontalScrollBarController->SetScrollBar(horizontalScrollBar);
+    }
+    else
+    {
+        m_horizontalScrollBarController = nullptr;
+    }
+
     UpdateHorizontalScrollController(horizontalScrollController, horizontalScrollControllerElement);
 
     winrt::IUIElement verticalScrollControllerElement = GetTemplateChildT<winrt::IUIElement>(s_verticalScrollBarPartName, thisAsControlProtected);
@@ -219,11 +231,23 @@ void ScrollViewer::OnApplyTemplate()
 
         if (verticalScrollBar)
         {
-            verticalScrollController = m_verticalScrollBarController.get_strong().as<winrt::IScrollController>();
+            if (!m_verticalScrollBarController)
+            {
+                m_verticalScrollBarController = winrt::make_self<ScrollBarController>();
+            }
+            verticalScrollController = m_verticalScrollBarController.as<winrt::IScrollController>();
         }
     }
 
-    m_verticalScrollBarController.SetScrollBar(verticalScrollBar);
+    if (verticalScrollBar)
+    {
+        m_verticalScrollBarController->SetScrollBar(verticalScrollBar);
+    }
+    else
+    {
+        m_verticalScrollBarController = nullptr;
+    }
+
     UpdateVerticalScrollController(verticalScrollController, verticalScrollControllerElement);
 
     winrt::IUIElement scrollControllersSeparator = GetTemplateChildT<winrt::IUIElement>(s_scrollBarsSeparatorPartName, thisAsControlProtected);

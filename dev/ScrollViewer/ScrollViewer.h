@@ -229,8 +229,8 @@ private:
     static constexpr std::wstring_view s_verticalScrollBarPartName{ L"PART_VerticalScrollBar"sv };
     static constexpr std::wstring_view s_scrollBarsSeparatorPartName{ L"PART_ScrollBarsSeparator"sv };
 
-    ScrollBarController m_horizontalScrollBarController{ this };
-    ScrollBarController m_verticalScrollBarController{ this };
+    winrt::com_ptr<ScrollBarController> m_horizontalScrollBarController{ nullptr };
+    winrt::com_ptr<ScrollBarController> m_verticalScrollBarController{ nullptr };
 
     tracker_ref<winrt::IScrollController> m_horizontalScrollController{ this };
     tracker_ref<winrt::IScrollController> m_verticalScrollController{ this };

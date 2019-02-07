@@ -13,7 +13,7 @@ class ScrollBarController final:
     public winrt::implements<ScrollBarController, winrt::IScrollController>
 {
 public:
-    ScrollBarController(ScrollViewer* owner);
+    ScrollBarController();
     ~ScrollBarController();
 
     void SetScrollBar(const winrt::ScrollBar& scrollBar);
@@ -109,7 +109,7 @@ private:
     // Additional velocity at Minimum and Maximum positions to ensure hitting the extreme Value.
     static constexpr double s_minMaxEpsilon{ 0.001 };
 
-    tracker_ref<winrt::ScrollBar> m_scrollBar;
+    winrt::ScrollBar m_scrollBar;
     winrt::ScrollMode m_scrollMode{ winrt::ScrollMode::Disabled };
     int32_t m_lastViewChangeIdForOffsetChange{ -1 };
     int32_t m_lastViewChangeIdForOffsetChangeWithAdditionalVelocity{ -1 };

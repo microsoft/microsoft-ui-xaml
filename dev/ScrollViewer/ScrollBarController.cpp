@@ -9,11 +9,9 @@
 #include "ScrollControllerOffsetChangeRequestedEventArgs.h"
 #include "ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs.h"
 
-ScrollBarController::ScrollBarController(ScrollViewer* owner)
-    : m_scrollBar(owner)
+ScrollBarController::ScrollBarController()
 {
     SCROLLVIEWER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
-    MUX_ASSERT(owner);
 }
 
 ScrollBarController::~ScrollBarController()
@@ -32,7 +30,7 @@ void ScrollBarController::SetScrollBar(const winrt::ScrollBar& scrollBar)
 
     UnhookScrollBarEvent();
 
-    m_scrollBar.set(scrollBar);
+    m_scrollBar = scrollBar;
 
     HookScrollBarEvent();
 #ifdef _DEBUG
@@ -73,7 +71,7 @@ winrt::Orientation ScrollBarController::InteractionVisualScrollOrientation()
 {
     // Unused because InteractionVisual returns null.
     MUX_ASSERT(m_scrollBar);
-    return m_scrollBar.get().Orientation();
+    return m_scrollBar.Orientation();
 }
 
 void ScrollBarController::SetExpressionAnimationSources(
@@ -134,36 +132,34 @@ void ScrollBarController::SetValues(
 
     MUX_ASSERT(m_scrollBar);
 
-    winrt::ScrollBar scrollBar = m_scrollBar.get();
-
-    if (minOffset < scrollBar.Minimum())
+    if (minOffset < m_scrollBar.Minimum())
     {
-        scrollBar.Minimum(minOffset);
+        m_scrollBar.Minimum(minOffset);
     }
 
-    if (maxOffset > scrollBar.Maximum())
+    if (maxOffset > m_scrollBar.Maximum())
     {
-        scrollBar.Maximum(maxOffset);
+        m_scrollBar.Maximum(maxOffset);
     }
 
-    if (minOffset != scrollBar.Minimum())
+    if (minOffset != m_scrollBar.Minimum())
     {
-        scrollBar.Minimum(minOffset);
+        m_scrollBar.Minimum(minOffset);
     }
 
-    if (maxOffset != scrollBar.Maximum())
+    if (maxOffset != m_scrollBar.Maximum())
     {
-        scrollBar.Maximum(maxOffset);
+        m_scrollBar.Maximum(maxOffset);
     }
 
-    scrollBar.ViewportSize(viewport);
-    scrollBar.LargeChange(viewport);
-    scrollBar.SmallChange(max(1.0, viewport / s_defaultViewportToSmallChangeRatio));
+    m_scrollBar.ViewportSize(viewport);
+    m_scrollBar.LargeChange(viewport);
+    m_scrollBar.SmallChange(max(1.0, viewport / s_defaultViewportToSmallChangeRatio));
  
     // The ScrollBar Value is only updated when there is no operation in progress.
-    if (m_operationsCount == 0 || scrollBar.Value() < minOffset || scrollBar.Value() > maxOffset)
+    if (m_operationsCount == 0 || m_scrollBar.Value() < minOffset || m_scrollBar.Value() > maxOffset)
     {
-        scrollBar.Value(offset);
+        m_scrollBar.Value(offset);
         m_lastScrollBarValue = offset;
     }
 
@@ -198,30 +194,38 @@ void ScrollBarController::OnScrollCompleted(
     MUX_ASSERT(m_operationsCount > 0);
     m_operationsCount--;
 
-    if (m_operationsCount == 0 && m_scrollBar && m_scrollBar.get().Value() != m_lastOffset)
+    if (m_operationsCount == 0 && m_scrollBar && m_scrollBar.Value() != m_lastOffset)
     {
-        m_scrollBar.get().Value(m_lastOffset);
+        m_scrollBar.Value(m_lastOffset);
         m_lastScrollBarValue = m_lastOffset;
     }
 }
 
 winrt::event_token ScrollBarController::OffsetChangeRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerOffsetChangeRequestedEventArgs> const& value)
 {
+    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+
     return m_offsetChangeRequested.add(value);
 }
 
 void ScrollBarController::OffsetChangeRequested(winrt::event_token const& token)
 {
+    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+
     m_offsetChangeRequested.remove(token);
 }
 
 winrt::event_token ScrollBarController::OffsetChangeWithAdditionalVelocityRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs> const& value)
 {
+    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+
     return m_offsetChangeWithAdditionalVelocityRequested.add(value);
 }
 
 void ScrollBarController::OffsetChangeWithAdditionalVelocityRequested(winrt::event_token const& token)
 {
+    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+
     m_offsetChangeWithAdditionalVelocityRequested.remove(token);
 }
 
@@ -240,11 +244,15 @@ void ScrollBarController::InteractionRequested(winrt::event_token const& token)
 
 winrt::event_token ScrollBarController::InteractionInfoChanged(winrt::TypedEventHandler<winrt::IScrollController, winrt::IInspectable> const& value)
 {
+    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+
     return m_interactionInfoChanged.add(value);
 }
 
 void ScrollBarController::InteractionInfoChanged(winrt::event_token const& token)
 {
+    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+
     m_interactionInfoChanged.remove(token);
 }
 
@@ -252,15 +260,15 @@ void ScrollBarController::InteractionInfoChanged(winrt::event_token const& token
 
 void ScrollBarController::HookScrollBarPropertyChanged()
 {
+    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+
 #ifdef _DEBUG
     MUX_ASSERT(m_scrollBarIndicatorModeChangedToken.value == 0);
     MUX_ASSERT(m_scrollBarVisibilityChangedToken.value == 0);
 #endif //_DEBUG
     MUX_ASSERT(m_scrollBarIsEnabledChangedToken.value == 0);
 
-    winrt::ScrollBar scrollBar = m_scrollBar.get();
-
-    if (scrollBar)
+    if (m_scrollBar)
     {
 #ifdef _DEBUG
         m_scrollBarIndicatorModeChangedToken.value = scrollBar.RegisterPropertyChangedCallback(
@@ -270,34 +278,34 @@ void ScrollBarController::HookScrollBarPropertyChanged()
             winrt::UIElement::VisibilityProperty(), { this, &ScrollBarController::OnScrollBarPropertyChanged });
 #endif //_DEBUG
 
-        m_scrollBarIsEnabledChangedToken.value = scrollBar.RegisterPropertyChangedCallback(
+        m_scrollBarIsEnabledChangedToken.value = m_scrollBar.RegisterPropertyChangedCallback(
             winrt::Control::IsEnabledProperty(), { this, &ScrollBarController::OnScrollBarPropertyChanged });
     }
 }
 
 void ScrollBarController::UnhookScrollBarPropertyChanged()
 {
-    winrt::ScrollBar scrollBar = m_scrollBar.safe_get();
+    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
-    if (scrollBar)
+    if (m_scrollBar)
     {
 #ifdef _DEBUG
         if (m_scrollBarIndicatorModeChangedToken.value != 0)
         {
-            scrollBar.UnregisterPropertyChangedCallback(winrt::ScrollBar::IndicatorModeProperty(), m_scrollBarIndicatorModeChangedToken.value);
+            m_scrollBar.UnregisterPropertyChangedCallback(winrt::ScrollBar::IndicatorModeProperty(), m_scrollBarIndicatorModeChangedToken.value);
             m_scrollBarIndicatorModeChangedToken.value = 0;
         }
 
         if (m_scrollBarVisibilityChangedToken.value != 0)
         {
-            scrollBar.UnregisterPropertyChangedCallback(winrt::UIElement::VisibilityProperty(), m_scrollBarVisibilityChangedToken.value);
+            m_scrollBar.UnregisterPropertyChangedCallback(winrt::UIElement::VisibilityProperty(), m_scrollBarVisibilityChangedToken.value);
             m_scrollBarVisibilityChangedToken.value = 0;
         }
 #endif //_DEBUG
 
         if (m_scrollBarIsEnabledChangedToken.value != 0)
         {
-            scrollBar.UnregisterPropertyChangedCallback(winrt::Control::IsEnabledProperty(), m_scrollBarIsEnabledChangedToken.value);
+            m_scrollBar.UnregisterPropertyChangedCallback(winrt::Control::IsEnabledProperty(), m_scrollBarIsEnabledChangedToken.value);
             m_scrollBarIsEnabledChangedToken.value = 0;
         }
     }
@@ -306,12 +314,11 @@ void ScrollBarController::UnhookScrollBarPropertyChanged()
 void ScrollBarController::UpdateAreInteractionsAllowed()
 {
     bool oldAreInteractionsAllowed = m_areInteractionsAllowed;
-    winrt::ScrollBar scrollBar = m_scrollBar.get();
 
     m_areInteractionsAllowed =
-        scrollBar &&
-        scrollBar.IsEnabled() &&
-        scrollBar.Maximum() > scrollBar.Minimum() &&
+        m_scrollBar &&
+        m_scrollBar.IsEnabled() &&
+        m_scrollBar.Maximum() > m_scrollBar.Minimum() &&
         m_scrollMode != winrt::ScrollMode::Disabled;
 
     if (oldAreInteractionsAllowed != m_areInteractionsAllowed)
@@ -322,23 +329,23 @@ void ScrollBarController::UpdateAreInteractionsAllowed()
 
 void ScrollBarController::HookScrollBarEvent()
 {
+    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+
     MUX_ASSERT(m_scrollBarScrollToken.value == 0);
 
-    winrt::ScrollBar scrollBar = m_scrollBar.get();
-
-    if (scrollBar)
+    if (m_scrollBar)
     {
-        m_scrollBarScrollToken = scrollBar.Scroll({ this, &ScrollBarController::OnScroll });
+        m_scrollBarScrollToken = m_scrollBar.Scroll({ this, &ScrollBarController::OnScroll });
     }
 }
 
 void ScrollBarController::UnhookScrollBarEvent()
 {
-    winrt::ScrollBar scrollBar = m_scrollBar.safe_get();
+    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
-    if (scrollBar && m_scrollBarScrollToken.value != 0)
+    if (m_scrollBar && m_scrollBarScrollToken.value != 0)
     {
-        scrollBar.Scroll(m_scrollBarScrollToken);
+        m_scrollBar.Scroll(m_scrollBarScrollToken);
         m_scrollBarScrollToken.value = 0;
     }
 }
@@ -357,7 +364,7 @@ void ScrollBarController::OnScrollBarPropertyChanged(
             METH_NAME,
             this,
             L"IsEnabled",
-            m_scrollBar.get().IsEnabled());
+            m_scrollBar.IsEnabled());
 
         // Potentially changed ScrollBar.Minimum / ScrollBar.Maximum value(s) may have an effect
         // on the read-only IScrollController.AreInteractionsAllowed property.
@@ -372,7 +379,7 @@ void ScrollBarController::OnScrollBarPropertyChanged(
             METH_NAME,
             this,
             L"Visibility",
-            m_scrollBar.get().Visibility());
+            m_scrollBar.Visibility());
     }
     else if (args == winrt::ScrollBar::IndicatorModeProperty())
     {
@@ -382,7 +389,7 @@ void ScrollBarController::OnScrollBarPropertyChanged(
             METH_NAME,
             this,
             L"IndicatorMode",
-            TypeLogging::ScrollingIndicatorModeToString(m_scrollBar.get().IndicatorMode()).c_str());
+            TypeLogging::ScrollingIndicatorModeToString(m_scrollBar.IndicatorMode()).c_str());
     }
 #endif //_DEBUG
 }
@@ -400,9 +407,7 @@ void ScrollBarController::OnScroll(
         this,
         TypeLogging::ScrollEventTypeToString(scrollEventType).c_str());
 
-    winrt::ScrollBar scrollBar = m_scrollBar.get();
-
-    if (!scrollBar)
+    if (!m_scrollBar)
     {
         return;
     }
@@ -410,7 +415,7 @@ void ScrollBarController::OnScroll(
     if (m_scrollMode == winrt::ScrollMode::Disabled && scrollEventType != winrt::ScrollEventType::ThumbPosition)
     {
         // This ScrollBar is not interactive. Restore its previous Value.
-        scrollBar.Value(m_lastScrollBarValue);
+        m_scrollBar.Value(m_lastScrollBarValue);
         return;
     }
 
@@ -464,27 +469,27 @@ void ScrollBarController::OnScroll(
             switch (scrollEventType)
             {
             case winrt::ScrollEventType::LargeDecrement:
-                offsetChange = -min(m_lastScrollBarValue - scrollBar.Minimum(), scrollBar.LargeChange());
+                offsetChange = -min(m_lastScrollBarValue - m_scrollBar.Minimum(), m_scrollBar.LargeChange());
                 break;
             case winrt::ScrollEventType::LargeIncrement:
-                offsetChange = min(scrollBar.Maximum() - m_lastScrollBarValue, scrollBar.LargeChange());
+                offsetChange = min(m_scrollBar.Maximum() - m_lastScrollBarValue, m_scrollBar.LargeChange());
                 break;
             case winrt::ScrollEventType::SmallDecrement:
-                offsetChange = -min(m_lastScrollBarValue - scrollBar.Minimum(), scrollBar.SmallChange());
+                offsetChange = -min(m_lastScrollBarValue - m_scrollBar.Minimum(), m_scrollBar.SmallChange());
                 break;
             case winrt::ScrollEventType::SmallIncrement:
-                offsetChange = min(scrollBar.Maximum() - m_lastScrollBarValue, scrollBar.SmallChange());
+                offsetChange = min(m_scrollBar.Maximum() - m_lastScrollBarValue, m_scrollBar.SmallChange());
                 break;
             }
 
             // When the requested Value is near the Mininum or Maximum, include a little additional velocity
             // to ensure the extreme value is reached.
-            if (args.NewValue() - scrollBar.Minimum() < s_minMaxEpsilon)
+            if (args.NewValue() - m_scrollBar.Minimum() < s_minMaxEpsilon)
             {
                 MUX_ASSERT(offsetChange < 0.0);
                 offsetChange -= s_minMaxEpsilon;
             }
-            else if (scrollBar.Maximum() - args.NewValue() < s_minMaxEpsilon)
+            else if (m_scrollBar.Maximum() - args.NewValue() < s_minMaxEpsilon)
             {
                 MUX_ASSERT(offsetChange > 0.0);
                 offsetChange += s_minMaxEpsilon;
@@ -496,13 +501,13 @@ void ScrollBarController::OnScroll(
         if (!offsetChangeRequested)
         {
             // This request could not be requested, restore the previous Value.
-            scrollBar.Value(m_lastScrollBarValue);
+            m_scrollBar.Value(m_lastScrollBarValue);
         }
         break;
     }
     }
 
-    m_lastScrollBarValue = scrollBar.Value();
+    m_lastScrollBarValue = m_scrollBar.Value();
 }
 
 bool ScrollBarController::RaiseOffsetChangeRequested(
