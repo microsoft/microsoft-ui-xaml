@@ -495,13 +495,16 @@ void CommandBarFlyoutCommandBar::AddShadow()
         //animation
         winrt::IControlProtected thisAsControlProtected = *this;
         auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
-
-        if (grid != nullptr && grid.Shadow() == nullptr)
+        if (winrt::IUIElement10 grid_uiElement10 = grid)
         {
-            winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
-            grid.Shadow(shadow);
-            auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 32.0f };
-            grid.Translation(translation);
+            if (grid_uiElement10.Shadow() == nullptr)
+            {
+                winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
+                grid_uiElement10.Shadow(shadow);
+
+                auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 32.0f };
+                grid.Translation(translation);
+            }
         }
 #endif
     }
@@ -514,12 +517,16 @@ void CommandBarFlyoutCommandBar::ClearShadow()
 #ifdef USE_INSIDER_SDK
         winrt::IControlProtected thisAsControlProtected = *this;
         auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
-        if (grid != nullptr && grid.Shadow() != nullptr)
+        if (winrt::IUIElement10 grid_uiElement10 = grid)
         {
-            grid.Shadow(nullptr);
-            //Undo the elevation
-            auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 0.0f };
-            grid.Translation(translation);
+            if (grid_uiElement10.Shadow() != nullptr)
+            {
+                grid_uiElement10.Shadow(nullptr);
+
+                //Undo the elevation
+                auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 0.0f };
+                grid.Translation(translation);
+            }
         }
 #endif
     }
