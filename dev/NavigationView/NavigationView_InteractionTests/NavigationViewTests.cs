@@ -2349,6 +2349,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("NavViewTestSuite", "C")]
+        public void SettingsAccessibilitySetTest()
+        {
+            var testScenarios = RegressionTestScenario.BuildAllRegressionTestScenarios();
+            foreach (var testScenario in testScenarios)
+            {
+                using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
+                 page2 = new TestSetupHelper(testScenario.TestPageName))
+                {
+                    Log.Comment("Setting focus to Settings");
+                    UIObject settingsItem = testScenario.IsLeftNavTest ? FindElement.ByName("Settings") : FindElement.ByName("SettingsTopNavPaneItem");
+                    settingsItem.SetFocus();
+                    Wait.ForIdle();
+
+                    AutomationElement ae = AutomationElement.FocusedElement;
+                    int positionInSet = (int)ae.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
+                    int sizeOfSet = (int)ae.GetCurrentPropertyValue(AutomationElement.SizeOfSetProperty);
+
+                    Verify.AreEqual(1, positionInSet, "Position in set");
+                    Verify.AreEqual(1, sizeOfSet, "Size of set");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "C")]
         public void ItemsAccessibilitySetTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
