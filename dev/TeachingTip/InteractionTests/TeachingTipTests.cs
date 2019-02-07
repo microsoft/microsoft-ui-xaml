@@ -22,7 +22,9 @@ using MS.Internal.Mita.Foundation.Waiters;
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
+#endif 
+
+using static Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TeachingTipTestPageElements;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -32,76 +34,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // The longest observed animated view change took 5.4 seconds, so 9 seconds is picked
         // as the default timeout so there is a reasonable margin for reliability.
         const double defaultAnimatedViewChangeTimeout = 9000;
-
-        private struct TeachingTipTestPageElements
-        {
-            public ListBox lstTeachingTipEvents;
-
-            public TextBlock effectivePlacementTextBlock;
-
-            public Button getTargetBoundsButton;
-            public TextBlock targetXOffsetTextBlock;
-            public TextBlock targetYOffsetTextBlock;
-            public TextBlock targetWidthTextBlock;
-            public TextBlock targetHeightTextBlock;
-
-            public CheckBox useTestWindowBoundsCheckbox;
-            public Edit testWindowBoundsXTextBox;
-            public Edit testWindowBoundsYTextBox;
-            public Edit testWindowBoundsWidthTextBox;
-            public Edit testWindowBoundsHeightTextBox;
-
-            public TextBlock tipWidthTextBlock;
-
-            public TextBlock scrollViewerStateTextBox;
-            public Edit scrollViewerOffsetTextBox;
-            public Button scrollViewerOffsetButton;
-
-            public TextBlock popupVerticalOffsetTextBlock;
-
-            public ComboBox bleedingContentComboBox;
-            public Button setBleedingContentButton;
-
-            public ComboBox placementComboBox;
-            public Button setPlacementButton;
-
-            public ComboBox isLightDismissEnabledComboBox;
-            public Button isLightDismissEnabledButton;
-
-            public Button showButton;
-            public Button closeButton;
-            public CheckBox isOpenCheckBox;
-            public CheckBox isIdleCheckBox;
-
-            public Button bringIntoViewButton;
-
-            public CheckBox tipFollowsTargetCheckBox;
-        }
-
-        enum PlacementOptions
-        {
-            Top,
-            Bottom,
-            Left,
-            Right,
-            TopEdgeAlignedRight,
-            TopEdgeAlignedLeft,
-            BottomEdgeAlignedRight,
-            BottomEdgeAlignedLeft,
-            LeftEdgeAlignedTop,
-            LeftEdgeAlignedBottom,
-            RightEdgeAlignedTop,
-            RightEdgeAlignedBottom,
-            Auto
-        }
-
-        enum BleedingContentOptions
-        {
-            RedSquare,
-            BlueSquare,
-            Image,
-            NoContent
-        }
 
         TeachingTipTestPageElements elements;
 
@@ -346,397 +278,187 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void ScrollTargetIntoView()
         {
-            if (elements.bringIntoViewButton == null)
-            {
-                Log.Comment("Find the BringTargetIntoViewButton");
-                elements.bringIntoViewButton = new Button(FindElement.ByName("BringTargetIntoViewButton"));
-                Verify.IsNotNull(elements.bringIntoViewButton);
-            }
-            elements.bringIntoViewButton.Invoke();
+            elements.GetBringIntoViewButton().Invoke();
         }
 
         private void OpenTeachingTip()
         {
-            if (elements.showButton == null)
+            if(elements.GetIsOpenCheckBox().ToggleState != ToggleState.On)
             {
-                Log.Comment("Find the ShowButton");
-                elements.showButton = new Button(FindElement.ByName("ShowButton"));
-                Verify.IsNotNull(elements.showButton);
-            }
-            if (elements.isOpenCheckBox == null)
-            {
-                Log.Comment("Find the IsOpenCheckBox");
-                elements.isOpenCheckBox = new CheckBox(FindElement.ByName("IsOpenCheckBox"));
-                Verify.IsNotNull(elements.isOpenCheckBox);
-            }
-            if (elements.isIdleCheckBox == null)
-            {
-                Log.Comment("Find the IsIdleCheckBox");
-                elements.isIdleCheckBox = new CheckBox(FindElement.ByName("IsIdleCheckBox"));
-                Verify.IsNotNull(elements.isIdleCheckBox);
-            }
-            if(elements.isOpenCheckBox.ToggleState != ToggleState.On)
-            {
-                elements.showButton.Invoke();
+                elements.GetShowButton().Invoke();
                 if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
                 {
-                    WaitForUnchecked(elements.isIdleCheckBox);
+                    WaitForUnchecked(elements.GetIsIdleCheckBox());
                 }
-                WaitForChecked(elements.isOpenCheckBox);
-                WaitForChecked(elements.isIdleCheckBox);
+                WaitForChecked(elements.GetIsOpenCheckBox());
+                WaitForChecked(elements.GetIsIdleCheckBox());
             }
         }
 
         private void CloseTeachingTipProgrammatically()
         {
-            if (elements.closeButton == null)
+            if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
             {
-                Log.Comment("Find the CloseButton");
-                elements.closeButton = new Button(FindElement.ByName("CloseButton"));
-                Verify.IsNotNull(elements.closeButton);
-            }
-            if (elements.isOpenCheckBox == null)
-            {
-                Log.Comment("Find the IsOpenCheckBox");
-                elements.isOpenCheckBox = new CheckBox(FindElement.ByName("IsOpenCheckBox"));
-                Verify.IsNotNull(elements.isOpenCheckBox);
-            }
-            if (elements.isIdleCheckBox == null)
-            {
-                Log.Comment("Find the IsIdleCheckBox");
-                elements.isIdleCheckBox = new CheckBox(FindElement.ByName("IsIdleCheckBox"));
-                Verify.IsNotNull(elements.isIdleCheckBox);
-            }
-            if (elements.isOpenCheckBox.ToggleState != ToggleState.Off)
-            {
-                elements.closeButton.Invoke();
+                elements.GetCloseButton().Invoke();
                 if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
                 {
-                    WaitForUnchecked(elements.isIdleCheckBox);
+                    WaitForUnchecked(elements.GetIsIdleCheckBox());
                 }
-                WaitForUnchecked(elements.isOpenCheckBox);
-                WaitForChecked(elements.isIdleCheckBox);
+                WaitForUnchecked(elements.GetIsOpenCheckBox());
+                WaitForChecked(elements.GetIsIdleCheckBox());
             }
         }
 
         private void PressXCloseButton()
         {
-            if(elements.tipWidthTextBlock == null)
-            {
-                Log.Comment("Find the tipWidthTextBlock");
-                elements.tipWidthTextBlock = new TextBlock(FindElement.ByName("TipWidth"));
-                Verify.IsNotNull(elements.tipWidthTextBlock);
-            }
-            if (elements.isOpenCheckBox == null)
-            {
-                Log.Comment("Find the IsOpenCheckBox");
-                elements.isOpenCheckBox = new CheckBox(FindElement.ByName("IsOpenCheckBox"));
-                Verify.IsNotNull(elements.isOpenCheckBox);
-            }
-            if (elements.isIdleCheckBox == null)
-            {
-                Log.Comment("Find the IsIdleCheckBox");
-                elements.isIdleCheckBox = new CheckBox(FindElement.ByName("IsIdleCheckBox"));
-                Verify.IsNotNull(elements.isIdleCheckBox);
-            }
             Log.Comment("Find the teachingTip");
             var teachingTip = FindElement.ByName("TeachingTip");
             Verify.IsNotNull(teachingTip);
 
-            InputHelper.Tap(teachingTip, double.Parse(elements.tipWidthTextBlock.GetText()) + 90, 110);
+            InputHelper.Tap(teachingTip, double.Parse(elements.GetTipWidthTextBlock().GetText()) + 90, 110);
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                WaitForUnchecked(elements.isIdleCheckBox);
+                WaitForUnchecked(elements.GetIsIdleCheckBox());
             }
-            WaitForUnchecked(elements.isOpenCheckBox);
-            WaitForChecked(elements.isIdleCheckBox);
+            WaitForUnchecked(elements.GetIsOpenCheckBox());
+            WaitForChecked(elements.GetIsIdleCheckBox());
         }
 
         private void EnableLightDismiss(bool enable)
         {
-            if (elements.isLightDismissEnabledComboBox == null)
-            {
-                Log.Comment("Find the IsLightDismissEnabledComboBox");
-                elements.isLightDismissEnabledComboBox = new ComboBox(FindElement.ByName("IsLightDismissEnabledComboBox"));
-                Verify.IsNotNull(elements.isLightDismissEnabledComboBox);
-            }
-            if (elements.isLightDismissEnabledButton == null)
-            {
-                Log.Comment("Find the IsLightDismissEnabledButton");
-                elements.isLightDismissEnabledButton = new Button(FindElement.ByName("IsLightDismissEnabledButton"));
-                Verify.IsNotNull(elements.isLightDismissEnabledButton);
-            }
-
             if(enable)
             {
-                elements.isLightDismissEnabledComboBox.SelectItemByName("True");
+                elements.GetIsLightDismissEnabledComboBox().SelectItemByName("True");
             }
             else
             {
-                elements.isLightDismissEnabledComboBox.SelectItemByName("False");
+                elements.GetIsLightDismissEnabledComboBox().SelectItemByName("False");
             }
-            elements.isLightDismissEnabledButton.Invoke();
+            elements.GetIsLightDismissEnabledButton().Invoke();
         }
 
         private void SetPlacement(PlacementOptions placement)
         {
-            if (elements.placementComboBox == null)
-            {
-                Log.Comment("Find the PlacementComboBox");
-                elements.placementComboBox = new ComboBox(FindElement.ByName("PlacementComboBox"));
-                Verify.IsNotNull(elements.placementComboBox);
-            }
-
-            if (elements.setPlacementButton == null)
-            {
-                Log.Comment("Find the SetPlacementButton");
-                elements.setPlacementButton = new Button(FindElement.ByName("SetPlacementButton"));
-                Verify.IsNotNull(elements.setPlacementButton);
-            }
-
             switch (placement)
             {
                 case PlacementOptions.Top:
-                    elements.placementComboBox.SelectItemByName("Top");
+                    elements.GetPlacementComboBox().SelectItemByName("Top");
                     break;
                 case PlacementOptions.Bottom:
-                    elements.placementComboBox.SelectItemByName("Bottom");
+                    elements.GetPlacementComboBox().SelectItemByName("Bottom");
                     break;
                 case PlacementOptions.Left:
-                    elements.placementComboBox.SelectItemByName("Left");
+                    elements.GetPlacementComboBox().SelectItemByName("Left");
                     break;
                 case PlacementOptions.Right:
-                    elements.placementComboBox.SelectItemByName("Right");
+                    elements.GetPlacementComboBox().SelectItemByName("Right");
                     break;
                 case PlacementOptions.TopEdgeAlignedRight:
-                    elements.placementComboBox.SelectItemByName("TopEdgeAlignedRight");
+                    elements.GetPlacementComboBox().SelectItemByName("TopEdgeAlignedRight");
                     break;
                 case PlacementOptions.TopEdgeAlignedLeft:
-                    elements.placementComboBox.SelectItemByName("TopEdgeAlignedLeft");
+                    elements.GetPlacementComboBox().SelectItemByName("TopEdgeAlignedLeft");
                     break;
                 case PlacementOptions.BottomEdgeAlignedRight:
-                    elements.placementComboBox.SelectItemByName("BottomEdgeAlignedRight");
+                    elements.GetPlacementComboBox().SelectItemByName("BottomEdgeAlignedRight");
                     break;
                 case PlacementOptions.BottomEdgeAlignedLeft:
-                    elements.placementComboBox.SelectItemByName("BottomEdgeAlignedLeft");
+                    elements.GetPlacementComboBox().SelectItemByName("BottomEdgeAlignedLeft");
                     break;
                 case PlacementOptions.LeftEdgeAlignedTop:
-                    elements.placementComboBox.SelectItemByName("LeftEdgeAlignedTop");
+                    elements.GetPlacementComboBox().SelectItemByName("LeftEdgeAlignedTop");
                     break;
                 case PlacementOptions.LeftEdgeAlignedBottom:
-                    elements.placementComboBox.SelectItemByName("LeftEdgeAlignedBottom");
+                    elements.GetPlacementComboBox().SelectItemByName("LeftEdgeAlignedBottom");
                     break;
                 case PlacementOptions.RightEdgeAlignedTop:
-                    elements.placementComboBox.SelectItemByName("RightEdgeAlignedTop");
+                    elements.GetPlacementComboBox().SelectItemByName("RightEdgeAlignedTop");
                     break;
                 case PlacementOptions.RightEdgeAlignedBottom:
-                    elements.placementComboBox.SelectItemByName("RightEdgeAlignedBottom");
+                    elements.GetPlacementComboBox().SelectItemByName("RightEdgeAlignedBottom");
                     break;
                 default:
-                    elements.placementComboBox.SelectItemByName("Auto");
+                    elements.GetPlacementComboBox().SelectItemByName("Auto");
                     break;
             }
-            elements.setPlacementButton.Invoke();
+            elements.GetSetPlacementButton().Invoke();
         }
 
         private void SetBleedingContent(BleedingContentOptions bleedingContent)
         {
-            if (elements.bleedingContentComboBox == null)
-            {
-                Log.Comment("Find the BleedingContentComboBox");
-                elements.bleedingContentComboBox = new ComboBox(FindElement.ByName("BleedingContentComboBox"));
-                Verify.IsNotNull(elements.bleedingContentComboBox);
-            }
-
-            if (elements.setBleedingContentButton == null)
-            {
-                Log.Comment("Find the SetBleedingContentButton");
-                elements.setBleedingContentButton = new Button(FindElement.ByName("SetBleedingContentButton"));
-                Verify.IsNotNull(elements.setBleedingContentButton);
-            }
-
             switch (bleedingContent)
             {
                 case BleedingContentOptions.RedSquare:
-                    elements.bleedingContentComboBox.SelectItemByName("Red Square");
+                    elements.GetBleedingContentComboBox().SelectItemByName("Red Square");
                     break;
                 case BleedingContentOptions.BlueSquare:
-                    elements.bleedingContentComboBox.SelectItemByName("Blue Square");
+                    elements.GetBleedingContentComboBox().SelectItemByName("Blue Square");
                     break;
                 case BleedingContentOptions.Image:
-                    elements.bleedingContentComboBox.SelectItemByName("Image");
+                    elements.GetBleedingContentComboBox().SelectItemByName("Image");
                     break;
                 default:
-                    elements.bleedingContentComboBox.SelectItemByName("No Content");
+                    elements.GetBleedingContentComboBox().SelectItemByName("No Content");
                     break;
             }
-            elements.setBleedingContentButton.Invoke();
+            elements.GetSetBleedingContentButton().Invoke();
         }
 
         private double GetTipVerticalOffset()
         {
-            if (elements.popupVerticalOffsetTextBlock == null)
-            {
-                Log.Comment("Find the PopupVerticalOffsetTextBlock");
-                elements.popupVerticalOffsetTextBlock = new TextBlock(FindElement.ByName("PopupVerticalOffsetTextBlock"));
-                Verify.IsNotNull(elements.popupVerticalOffsetTextBlock);
-            }
-            return double.Parse(elements.popupVerticalOffsetTextBlock.GetText());
+            return double.Parse(elements.GetPopupVerticalOffsetTextBlock().GetText());
         }
 
         private double GetScrollViewerVerticalOffset()
         {
-            if (elements.scrollViewerOffsetTextBox == null)
-            {
-                Log.Comment("Find the ScrollViewerOffsetTextBox");
-                elements.scrollViewerOffsetTextBox = new Edit(FindElement.ByName("ScrollViewerOffsetTextBox"));
-                Verify.IsNotNull(elements.scrollViewerOffsetTextBox);
-            }
-            return double.Parse(elements.scrollViewerOffsetTextBox.GetText());
+            return double.Parse(elements.GetScrollViewerOffsetTextBox().GetText());
         }
 
         private void ScrollBy(double ammount)
         {
-            if (elements.scrollViewerOffsetTextBox == null)
-            {
-                Log.Comment("Find the ScrollViewerOffsetTextBox");
-                elements.scrollViewerOffsetTextBox = new Edit(FindElement.ByName("ScrollViewerOffsetTextBox"));
-                Verify.IsNotNull(elements.scrollViewerOffsetTextBox);
-            }
-
-            if (elements.scrollViewerOffsetButton == null)
-            {
-                Log.Comment("Find the ScrollViewerOffsetButton");
-                elements.scrollViewerOffsetButton = new Button(FindElement.ByName("ScrollViewerOffsetButton"));
-                Verify.IsNotNull(elements.scrollViewerOffsetButton);
-            }
-
-            double initialOffset = double.Parse(elements.scrollViewerOffsetTextBox.GetText());
-            elements.scrollViewerOffsetTextBox.SetValue((initialOffset + ammount).ToString());
-            elements.scrollViewerOffsetButton.Invoke();
+            double initialOffset = double.Parse(elements.GetScrollViewerOffsetTextBox().GetText());
+            elements.GetScrollViewerOffsetTextBox().SetValue((initialOffset + ammount).ToString());
+            elements.GetScrollViewerOffsetButton().Invoke();
         }
         
         private void UseTestWindowBounds(double x, double y, double width, double height)
         {
-            if (elements.useTestWindowBoundsCheckbox == null)
-            {
-                Log.Comment("Find the UseTestWindowBoundsCheckbox");
-                elements.useTestWindowBoundsCheckbox = new CheckBox(FindElement.ByName("UseTestWindowBoundsCheckbox"));
-                Verify.IsNotNull(elements.useTestWindowBoundsCheckbox);
-            }
+            elements.GetTestWindowBoundsXTextBox().SetValue(x.ToString());
+            elements.GetTestWindowBoundsYTextBox().SetValue(y.ToString());
+            elements.GetTestWindowBoundsWidthTextBox().SetValue(width.ToString());
+            elements.GetTestWindowBoundsHeightTextBox().SetValue(height.ToString());
 
-            if (elements.testWindowBoundsXTextBox == null)
-            {
-                Log.Comment("Find the TestWindowBoundsXTextBox");
-                elements.testWindowBoundsXTextBox = new Edit(FindElement.ByName("TestWindowBoundsXTextBox"));
-                Verify.IsNotNull(elements.testWindowBoundsXTextBox);
-            }
-
-            if (elements.testWindowBoundsYTextBox == null)
-            {
-                Log.Comment("Find the TestWindowBoundsYTextBox");
-                elements.testWindowBoundsYTextBox = new Edit(FindElement.ByName("TestWindowBoundsYTextBox"));
-                Verify.IsNotNull(elements.testWindowBoundsYTextBox);
-            }
-
-            if (elements.testWindowBoundsWidthTextBox == null)
-            {
-                Log.Comment("Find the TestWindowBoundsWidthTextBox");
-                elements.testWindowBoundsWidthTextBox = new Edit(FindElement.ByName("TestWindowBoundsWidthTextBox"));
-                Verify.IsNotNull(elements.testWindowBoundsWidthTextBox);
-            }
-
-            if (elements.testWindowBoundsHeightTextBox == null)
-            {
-                Log.Comment("Find the TestWindowBoundsHeightTextBox");
-                elements.testWindowBoundsHeightTextBox = new Edit(FindElement.ByName("TestWindowBoundsHeightTextBox"));
-                Verify.IsNotNull(elements.testWindowBoundsHeightTextBox);
-            }
-
-            elements.testWindowBoundsXTextBox.SetValue(x.ToString());
-            elements.testWindowBoundsYTextBox.SetValue(y.ToString());
-            elements.testWindowBoundsWidthTextBox.SetValue(width.ToString());
-            elements.testWindowBoundsHeightTextBox.SetValue(height.ToString());
-
-            elements.useTestWindowBoundsCheckbox.Uncheck();
-            elements.useTestWindowBoundsCheckbox.Check();
+            elements.GetUseTestWindowBoundsCheckbox().Uncheck();
+            elements.GetUseTestWindowBoundsCheckbox().Check();
         }
 
         private void SetTipFollowsTarget(bool tipFollowsTarget)
         {
-            if (elements.tipFollowsTargetCheckBox == null)
-            {
-                Log.Comment("Find the TipFollowsTargetCheckBox");
-                elements.tipFollowsTargetCheckBox = new CheckBox(FindElement.ByName("TipFollowsTargetCheckBox"));
-                Verify.IsNotNull(elements.tipFollowsTargetCheckBox);
-            }
-
             if(tipFollowsTarget)
             {
-                elements.tipFollowsTargetCheckBox.Check();
+                elements.GetTipFollowsTargetCheckBox().Check();
             }
             else
             {
-                elements.tipFollowsTargetCheckBox.Uncheck();
+                elements.GetTipFollowsTargetCheckBox().Uncheck();
             }
         }
 
         Vector4 GetTargetBounds()
         {
-            if (elements.getTargetBoundsButton == null)
-            {
-                Log.Comment("Find the GetTargetBoundsButton");
-                elements.getTargetBoundsButton = new Button(FindElement.ByName("GetTargetBoundsButton"));
-                Verify.IsNotNull(elements.getTargetBoundsButton);
-            }
-
-            if (elements.targetXOffsetTextBlock == null)
-            {
-                Log.Comment("Find the TargetXOffsetTextBlock");
-                elements.targetXOffsetTextBlock = new TextBlock(FindElement.ByName("TargetXOffsetTextBlock"));
-                Verify.IsNotNull(elements.targetXOffsetTextBlock);
-            }
-
-            if (elements.targetYOffsetTextBlock == null)
-            {
-                Log.Comment("Find the TargetYOffsetTextBlock");
-                elements.targetYOffsetTextBlock = new TextBlock(FindElement.ByName("TargetYOffsetTextBlock"));
-                Verify.IsNotNull(elements.targetYOffsetTextBlock);
-            }
-
-            if (elements.targetWidthTextBlock == null)
-            {
-                Log.Comment("Find the TargetWidthTextBlock");
-                elements.targetWidthTextBlock = new TextBlock(FindElement.ByName("TargetWidthTextBlock"));
-                Verify.IsNotNull(elements.targetWidthTextBlock);
-            }
-
-            if (elements.targetHeightTextBlock == null)
-            {
-                Log.Comment("Find the TargetHeightTextBlock");
-                elements.targetHeightTextBlock = new TextBlock(FindElement.ByName("TargetHeightTextBlock"));
-                Verify.IsNotNull(elements.targetHeightTextBlock);
-            }
-
-            elements.getTargetBoundsButton.Invoke();
+            elements.GetTargetBoundsButton().Invoke();
 
             var retVal = new Vector4();
-            retVal.W = (int)Math.Floor(double.Parse(elements.targetXOffsetTextBlock.GetText()));
-            retVal.X = (int)Math.Floor(double.Parse(elements.targetYOffsetTextBlock.GetText()));
-            retVal.Y = (int)Math.Floor(double.Parse(elements.targetWidthTextBlock.GetText()));
-            retVal.Z = (int)Math.Floor(double.Parse(elements.targetHeightTextBlock.GetText()));
+            retVal.W = (int)Math.Floor(double.Parse(elements.GetTargetXOffsetTextBlock().GetText()));
+            retVal.X = (int)Math.Floor(double.Parse(elements.GetTargetYOffsetTextBlock().GetText()));
+            retVal.Y = (int)Math.Floor(double.Parse(elements.GetTargetWidthTextBlock().GetText()));
+            retVal.Z = (int)Math.Floor(double.Parse(elements.GetTargetHeightTextBlock().GetText()));
             return retVal;
         }
 
         private string GetEffectivePlacement()
         {
-            if (elements.effectivePlacementTextBlock == null)
-            {
-                Log.Comment("Find the EffectivePlacementTextBlock");
-                elements.effectivePlacementTextBlock = new TextBlock(FindElement.ByName("EffectivePlacementTextBlock"));
-                Verify.IsNotNull(elements.effectivePlacementTextBlock);
-            }
-            return elements.effectivePlacementTextBlock.GetText();
+            return elements.GetEffectivePlacementTextBlock().GetText();
         }
 
         // The test UI has a list box which the teaching tip populates with messages about which events have fired and other useful
@@ -744,13 +466,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // the expected order.
         private ListBoxItem GetTeachingTipDebugMessage(int index)
         {
-            if (elements.lstTeachingTipEvents == null)
-            {
-                Log.Comment("Find the lstTeachingTipEvents");
-                elements.lstTeachingTipEvents = new ListBox(FindElement.ByName("lstTeachingTipEvents"));
-                Verify.IsNotNull(elements.lstTeachingTipEvents);
-            }
-            return elements.lstTeachingTipEvents.Items[index];
+            return elements.GetLstTeachingTipEvents().Items[index];
         }
 
         private bool WaitForChecked(CheckBox checkBox, double millisecondsTimeout = 2000, bool throwOnError = true)
@@ -796,16 +512,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             bool failOnError = true)
         {
             Log.Comment("WaitForOffsetUpdated with expectedValue: " + expectedValue);
-            if (elements.scrollViewerOffsetTextBox == null)
-            {
-                Log.Comment("Find the ScrollViewerOffsetTextBox");
-                elements.scrollViewerOffsetTextBox = new Edit(FindElement.ByName("ScrollViewerOffsetTextBox"));
-                Verify.IsNotNull(elements.scrollViewerOffsetTextBox);
-            }
 
             int warningCount = 0;
-            bool success = WaitForOffsetToSettle(elements.scrollViewerOffsetTextBox, millisecondsTimeout, failOnError);
-            double value = Convert.ToDouble(elements.scrollViewerOffsetTextBox.GetText());
+            bool success = WaitForOffsetToSettle(elements.GetScrollViewerOffsetTextBox(), millisecondsTimeout, failOnError);
+            double value = Convert.ToDouble(elements.GetScrollViewerOffsetTextBox().GetText());
             bool goodValue = value == expectedValue;
             Verify.IsTrue(goodValue);
             return warningCount;
@@ -813,13 +523,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private bool WaitForOffsetToSettle(Edit text, double millisecondsTimeout, bool failOnError)
         {
-            if (elements.scrollViewerStateTextBox == null)
-            {
-                Log.Comment("Find the scrollViewerStateTextBox");
-                elements.scrollViewerStateTextBox = new TextBlock(FindElement.ByName("ScrollViewerStateTextBox"));
-                Verify.IsNotNull(elements.scrollViewerStateTextBox);
-            }
-
             Wait.ForIdle();
 
             const double millisecondsNormalStepTimeout = 100;
@@ -828,11 +531,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             int unsuccessfulWaits = 0;
             int maxUnsuccessfulWaits = (int)(millisecondsIdleStepTimeout / millisecondsNormalStepTimeout);
 
-            Log.Comment("Original State: " + elements.scrollViewerStateTextBox.GetText());
+            Log.Comment("Original State: " + elements.GetScrollViewerStateTextBox().GetText());
             Log.Comment("Original Offset: " + text.Value);
 
             // When the initial State is still Idle, use a longer timeout to allow it to transition out of Idle.
-            double millisecondsWait = (elements.scrollViewerStateTextBox.GetText() == "Idle") ? millisecondsIdleStepTimeout : millisecondsNormalStepTimeout;
+            double millisecondsWait = (elements.GetScrollViewerStateTextBox().GetText() == "Idle") ? millisecondsIdleStepTimeout : millisecondsNormalStepTimeout;
             double millisecondsCumulatedWait = 0;
 
             do
@@ -850,16 +553,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 millisecondsCumulatedWait += millisecondsWait;
                 millisecondsWait = millisecondsNormalStepTimeout;
 
-                Log.Comment("Current State: " + elements.scrollViewerStateTextBox.GetText());
+                Log.Comment("Current State: " + elements.GetScrollViewerStateTextBox().GetText());
                 Log.Comment("Current Offset: " + text.Value);
 
                 Wait.ForIdle();
             }
-            while (elements.scrollViewerStateTextBox.GetText() != "Idle" &&
+            while (elements.GetScrollViewerStateTextBox().GetText() != "Idle" &&
                    millisecondsCumulatedWait < millisecondsTimeout &&
                    unsuccessfulWaits <= maxUnsuccessfulWaits);
 
-            if (elements.scrollViewerStateTextBox.GetText() == "Idle")
+            if (elements.GetScrollViewerStateTextBox().GetText() == "Idle")
             {
                 Log.Comment("Idle State reached after " + millisecondsCumulatedWait + " out of " + millisecondsTimeout + " milliseconds. Final Offset: " + text.Value);
                 return true;
