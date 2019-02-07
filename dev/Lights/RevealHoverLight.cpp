@@ -14,8 +14,6 @@
 
 CppWinRTActivatableClassWithBasicFactory(RevealHoverLight)
 
-using namespace std::chrono_literals;
-
 static constexpr EasingInfo c_LinearEasing = EasingInfo{ EasingTypes::Linear,{ 0.f, 0.f },{ 0.f, 0.f } };
 static constexpr EasingInfo c_CubicEasing1 = EasingInfo{ EasingTypes::CubicBezier,{ 0.5f, 0.f } ,{ 0.6f, 1.f } };
 static constexpr EasingInfo c_CubicEasingRelease = EasingInfo{ EasingTypes::CubicBezier,{ 0.33f, 0.f },{ 0.67f, 1.f } };
