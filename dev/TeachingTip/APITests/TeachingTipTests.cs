@@ -23,6 +23,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 #if !BUILD_WINDOWS
 using TeachingTip = Microsoft.UI.Xaml.Controls.TeachingTip;
+using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
+using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
@@ -80,6 +82,45 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreNotEqual(blueBrush.Color, ((SolidColorBrush)grandChildBackgroundBrush).Color);
                 }
             });
+        }
+
+        [TestMethod]
+        public void TeachingTipWithContentAndWithoutBleedingContentDoesNotCrash()
+        {
+            var loadedEvent = new AutoResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                Grid contentGrid = new Grid();
+                SymbolIconSource iconSource = new SymbolIconSource();
+                iconSource.Symbol = Symbol.People;
+                TeachingTip teachingTip = new TeachingTip();
+                teachingTip.Content = contentGrid;
+                teachingTip.IconSource = (IconSource)iconSource;
+                teachingTip.Loaded += (object sender, RoutedEventArgs args) => { loadedEvent.Set(); };
+                MUXControlsTestApp.App.TestContentRoot = teachingTip;
+            });
+
+            IdleSynchronizer.Wait();
+            loadedEvent.WaitOne();
+        }
+
+        [TestMethod]
+        public void TeachingTipWithContentAndWithoutIconSourceDoesNotCrash()
+        {
+            var loadedEvent = new AutoResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                Grid contentGrid = new Grid();
+                Grid bleedingGrid = new Grid();
+                TeachingTip teachingTip = new TeachingTip();
+                teachingTip.Content = contentGrid;
+                teachingTip.BleedingImageContent = bleedingGrid;
+                teachingTip.Loaded += (object sender, RoutedEventArgs args) => { loadedEvent.Set(); };
+                MUXControlsTestApp.App.TestContentRoot = teachingTip;
+            });
+
+            IdleSynchronizer.Wait();
+            loadedEvent.WaitOne();
         }
     }
 }

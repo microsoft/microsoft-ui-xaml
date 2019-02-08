@@ -106,8 +106,8 @@ private:
     tracker_ref<winrt::Grid> m_contentRootGrid{ this };
     tracker_ref<winrt::Grid> m_nonBleedingContentRootGrid{ this };
     tracker_ref<winrt::Grid> m_shadowTarget{ this };
-    tracker_ref<winrt::ContentPresenter> m_bleedingImageContentPresenter{ this };
-    tracker_ref<winrt::ContentPresenter> m_iconContentPresenter{ this };
+    tracker_ref<winrt::Border> m_bleedingImageContentBorder{ this };
+    tracker_ref<winrt::Border> m_iconBorder{ this };
     tracker_ref<winrt::Button> m_actionButton{ this };
     tracker_ref<winrt::Button> m_alternateCloseButton{ this };
     tracker_ref<winrt::Button> m_closeButton{ this };
@@ -172,8 +172,8 @@ private:
     static constexpr wstring_view s_contentRootGridName{ L"ContentRootGrid"sv };
     static constexpr wstring_view s_nonBleedingContentRootGridName{ L"NonBleedingContentRootGrid"sv };
     static constexpr wstring_view s_shadowTargetName{ L"ShadowTarget"sv };
-    static constexpr wstring_view s_bleedingImageContentPresenterName{ L"BleedingImageContentPresenter"sv };
-    static constexpr wstring_view s_iconName{ L"IconContentPresenter"sv };
+    static constexpr wstring_view s_bleedingImageBorderName{ L"BleedingImageBorder"sv };
+    static constexpr wstring_view s_iconBorderName{ L"IconBorder"sv };
     static constexpr wstring_view s_titlesStackPanelName{ L"TitlesStackPanel"sv };
     static constexpr wstring_view s_titleTextBoxName{ L"TitleTextBlock"sv };
     static constexpr wstring_view s_subtextTextBoxName{ L"SubtextTextBlock"sv };
