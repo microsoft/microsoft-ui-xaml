@@ -91,15 +91,17 @@ runtimeclass ScrollControllerInteractionRequestedEventArgs
 [webhosthidden]
 interface IScrollController
 {
+    Boolean AreInteractionsAllowed{ get; };
     Boolean AreScrollerInteractionsAllowed { get; };
     Boolean IsInteracting { get; };
+    Boolean IsInteractionVisualRailEnabled { get; };
     Windows.UI.Composition.Visual InteractionVisual { get; };
     Windows.UI.Xaml.Controls.Orientation InteractionVisualScrollOrientation { get; };
-    MU_XC_NAMESPACE.RailingMode InteractionVisualScrollRailingMode { get; };
     void SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet propertySet, String minOffsetPropertyName, String maxOffsetPropertyName, String offsetPropertyName, String multiplierPropertyName);
+    void SetScrollMode(MU_XC_NAMESPACE.ScrollMode scrollMode);
     void SetValues(Double minOffset, Double maxOffset, Double offset, Double viewport);
-    Windows.UI.Composition.CompositionAnimation GetOffsetChangeAnimation(Int32 offsetChangeId, Windows.Foundation.Numerics.Vector2 currentPosition, Windows.UI.Composition.CompositionAnimation defaultAnimation);
-    void OnOffsetChangeCompleted(Int32 offsetChangeId, MU_XC_NAMESPACE.ScrollerViewChangeResult result);
+    Windows.UI.Composition.CompositionAnimation GetScrollAnimation(Int32 offsetChangeId, Windows.Foundation.Numerics.Vector2 currentPosition, Windows.UI.Composition.CompositionAnimation defaultAnimation);
+    void OnScrollCompleted(Int32 offsetChangeId, MU_XC_NAMESPACE.ScrollerViewChangeResult result);
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerOffsetChangeRequestedEventArgs> OffsetChangeRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs> OffsetChangeWithAdditionalVelocityRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerInteractionRequestedEventArgs> InteractionRequested;
@@ -140,10 +142,12 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     MU_XC_NAMESPACE.ScrollMode HorizontalScrollMode { get; set; };
     [MUX_DEFAULT_VALUE("Scroller::s_defaultVerticalScrollMode")]
     MU_XC_NAMESPACE.ScrollMode VerticalScrollMode { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultComputedVerticalScrollMode")]
+#ifdef USE_SCROLLMODE_AUTO
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultComputedHorizontalScrollMode")]
     MU_XC_NAMESPACE.ScrollMode ComputedHorizontalScrollMode { get; };
     [MUX_DEFAULT_VALUE("Scroller::s_defaultComputedVerticalScrollMode")]
     MU_XC_NAMESPACE.ScrollMode ComputedVerticalScrollMode { get; };
+#endif
     [MUX_DEFAULT_VALUE("Scroller::s_defaultZoomChainingMode")]
     MU_XC_NAMESPACE.ChainingMode ZoomChainingMode { get; set; };
     [MUX_DEFAULT_VALUE("Scroller::s_defaultZoomMode")]
@@ -194,8 +198,10 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     static Windows.UI.Xaml.DependencyProperty VerticalScrollRailingModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalScrollModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalScrollModeProperty { get; };
+#ifdef USE_SCROLLMODE_AUTO
     static Windows.UI.Xaml.DependencyProperty ComputedHorizontalScrollModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ComputedVerticalScrollModeProperty { get; };
+#endif
     static Windows.UI.Xaml.DependencyProperty ZoomChainingModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ZoomModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty InputKindProperty { get; };
