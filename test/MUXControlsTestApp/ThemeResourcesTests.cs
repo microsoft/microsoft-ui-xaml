@@ -423,6 +423,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     PropertyInfo[] propertyInfoList = null;
 
+#if !ARM64
                     if (valueObject != null && mergedValueObject != null)
                     {
                         propertyInfoList = type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).Where((pi) => pi.PropertyType == typeof(DependencyProperty)).ToArray();
@@ -431,6 +432,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         propertyInfoList = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
                     }
+#endif
 
                     // If we've got a dependency object that we're checking, then we'll consider all of its dependency properties.
                     // We'll ignore any that aren't set.
