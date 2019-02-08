@@ -44,7 +44,7 @@
             <TextBlock Text="ScrollViewers with simple contents." Margin="2" VerticalAlignment="Center"/>
             <TextBlock Text="Show ScrollViewer:" Margin="6,2,2,2" VerticalAlignment="Center"/>
             <ComboBox x:Name="cmbShowScrollViewer" AutomationProperties.Name="cmbShowScrollViewer" 
-                    SelectedIndex="0" SelectionChanged="CmbShowScrollViewer_SelectionChanged" Width="120">
+                    SelectedIndex="0" SelectionChanged="CmbShowScrollViewer_SelectionChanged" Width="140">
                 <ComboBoxItem>All</ComboBoxItem>
                 <ComboBoxItem>scrollViewer_11</ComboBoxItem>
                 <ComboBoxItem>scrollViewer_21</ComboBoxItem>
@@ -119,7 +119,8 @@
         </Border>
         <Border Margin="1" Background="CadetBlue" Grid.Row="2" Grid.Column="4">
             <controls:ScrollViewer x:Name="scrollViewer51" AutomationProperties.Name="scrollViewer51" IsTabStop="True"
-                ContentOrientation="None" HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled">
+                ContentOrientation="None" IgnoredInputKind="Keyboard"
+                HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled">
                 <Image x:Name="img51" AutomationProperties.Name="img51" Source="Assets/ingredient5.png" Width="800" Height="800"/>
             </controls:ScrollViewer>
         </Border>
@@ -158,7 +159,8 @@
         </Border>
         <Border Margin="1" Background="CadetBlue" Grid.Row="3" Grid.Column="4">
             <controls:ScrollViewer x:Name="scrollViewer52" AutomationProperties.Name="scrollViewer52"
-                ContentOrientation="None" HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled" ZoomMode="Enabled">
+                ContentOrientation="None" IgnoredInputKind="Gamepad"
+                HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled" ZoomMode="Enabled">
                 <Image x:Name="img52" AutomationProperties.Name="img52" Source="Assets/ingredient5.png" Width="800" Height="800"/>
             </controls:ScrollViewer>
         </Border>
