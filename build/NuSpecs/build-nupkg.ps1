@@ -4,6 +4,7 @@ Param(
     [string]$OutputDir,
     [string]$VersionOverride,
     [string]$Subversion = "",
+    [string]$DateOverride,
     [string]$prereleaseversion,
     [string]$BuildFlavor = "release",
     [string]$BuildArch = "x86",
@@ -59,9 +60,15 @@ else
 
     $version = "$versionMajor.$versionMinor"
     
-    $pstZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
-    $pstTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $pstZone)
-    $version += "." + ($pstTime).ToString("yyMMdd") + "$subversion"
+    $versiondate = $DateOverride
+    if (-not $versiondate)
+    {
+        $pstZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
+        $pstTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $pstZone)
+        $versiondate += ($pstTime).ToString("yyMMdd")
+    }
+
+    $version += "." + $versiondate + "$subversion"
 
     Write-Verbose "Version = $version"
 }
