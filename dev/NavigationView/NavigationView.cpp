@@ -367,12 +367,21 @@ void NavigationView::OnApplyTemplate()
 #ifdef USE_INSIDER_SDK
         if (auto splitView = m_rootSplitView.get())
         {
-            if (auto contentRoot = splitView.Content())
+            if (auto paneRoot = splitView.Pane())
             {
-                if (auto paneRoot = splitView.Pane())
+                // Shadow will get clipped if casting on the splitView.Content directly
+                // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
+                winrt::Canvas shadowReceiver;
+                winrt::Thickness shadowReceiverMargin = { -OpenPaneLength(), -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
+                shadowReceiver.Margin(shadowReceiverMargin);
+
+                if (auto contentGrid = GetTemplateChildT<winrt::Grid>(c_contentGridName, controlProtected))
                 {
+                    contentGrid.SetRowSpan(shadowReceiver, contentGrid.RowDefinitions().Size());
+                    contentGrid.Children().Append(shadowReceiver);
+
                     winrt::ThemeShadow shadow;
-                    shadow.Receivers().Append(contentRoot);
+                    shadow.Receivers().Append(shadowReceiver);
                     if (winrt::IUIElement10 paneRoot_uiElement10 = paneRoot)
                     {
                         paneRoot_uiElement10.Shadow(shadow);
