@@ -46,14 +46,14 @@ public:
     winrt::CompositionPropertySet ExpressionAnimationSources();
 
     double HorizontalOffset();
-
     double VerticalOffset();
-
     float ZoomFactor();
-
     double ExtentWidth();
-
     double ExtentHeight();
+    double ViewportWidth();
+    double ViewportHeight();
+    double ScrollableWidth();
+    double ScrollableHeight();
 
     winrt::InteractionState State();
 

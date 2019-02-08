@@ -130,14 +130,14 @@ public:
     winrt::CompositionPropertySet ExpressionAnimationSources();
 
     double HorizontalOffset();
-
     double VerticalOffset();
-
     float ZoomFactor();
-
     double ExtentWidth();
-
     double ExtentHeight();
+    double ViewportWidth();
+    double ViewportHeight();
+    double ScrollableWidth();
+    double ScrollableHeight();
 
     winrt::IScrollController HorizontalScrollController();
     void HorizontalScrollController(winrt::IScrollController const& value);
@@ -202,8 +202,6 @@ public:
     // Public methods accessed by the CScrollerAutomationPeer class
     double GetZoomedExtentWidth() const;
     double GetZoomedExtentHeight() const;
-    double GetViewportWidth() const;
-    double GetViewportHeight() const;
 
     void PageLeft();
     void PageRight();

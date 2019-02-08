@@ -22,6 +22,10 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     Single ZoomFactor { get; };
     Double ExtentWidth { get; };
     Double ExtentHeight { get; };
+    Double ViewportWidth{ get; };
+    Double ViewportHeight{ get; };
+    Double ScrollableWidth{ get; };
+    Double ScrollableHeight{ get; };
     InteractionState State { get; };
     MU_XCP_NAMESPACE.IScrollController HorizontalScrollController { get; };
     MU_XCP_NAMESPACE.IScrollController VerticalScrollController { get; };

@@ -120,8 +120,12 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     Double HorizontalOffset { get; };
     Double VerticalOffset { get; };
     Single ZoomFactor { get; };
-    Double ExtentWidth { get; };
-    Double ExtentHeight { get; };
+    Double ExtentWidth{ get; };
+    Double ExtentHeight{ get; };
+    Double ViewportWidth{ get; };
+    Double ViewportHeight{ get; };
+    Double ScrollableWidth{ get; };
+    Double ScrollableHeight{ get; };
     [MUX_DEFAULT_VALUE("Scroller::s_defaultContentOrientation")]
     MU_XC_NAMESPACE.ContentOrientation ContentOrientation { get; set; };
     [MUX_DEFAULT_VALUE("Scroller::s_defaultHorizontalScrollChainingMode")]
