@@ -4,6 +4,7 @@
 using MUXControls.TestAppUtils;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.System.Threading;
@@ -16,6 +17,22 @@ namespace MUXControlsTestApp
 {
     public sealed class TestFrame : Frame
     {
+        private sealed class ApiTestRunner : IDisposable
+        {
+            private TestFrame parentFrame = null;
+
+            public ApiTestRunner(TestFrame parentFrame)
+            {
+                this.parentFrame = parentFrame;
+                parentFrame._apiTestCompleteCheckBox.IsChecked = false;
+            }
+
+            public void Dispose()
+            {
+                parentFrame._apiTestCompleteCheckBox.IsChecked = true;
+            }
+        }
+
         private static string _error = string.Empty;
         private static string _log = string.Empty;
 
@@ -34,6 +51,9 @@ namespace MUXControlsTestApp
         private Button _waitForDebuggerInvokerButton = null;
         private CheckBox _debuggerAttachedCheckBox = null;
         private TextBox _unhandledExceptionReportingTextBox = null;
+        private TextBox _apiTestErrorReportingTextBox = null;
+        private TextBox _apiTestLogReportingTextBox = null;
+        private CheckBox _apiTestCompleteCheckBox = null;
         private Type _mainPageType = null;
 
         public TestFrame(Type mainPageType)
@@ -50,6 +70,43 @@ namespace MUXControlsTestApp
             {
                 bar.Visibility = visibility;
             }
+        }
+
+        public async Task RunApiTest(Action apiTestAction)
+        {
+            using (ApiTestRunner runner = new ApiTestRunner(this))
+            {
+                string error = string.Empty;
+
+                await Windows.System.Threading.ThreadPool.RunAsync((action) =>
+                {
+                    try
+                    {
+                        apiTestAction();
+                    }
+                    catch (Exception e)
+                    {
+                        error = e.ToString();
+                    }
+                });
+
+                if (error.Length > 0)
+                {
+                    ReportApiTestError(error);
+                }
+            }
+        }
+
+        public void ReportApiTestLog(string log)
+        {
+            _apiTestLogReportingTextBox.Text = log;
+            _apiTestLogReportingTextBox.Text = string.Empty;
+        }
+
+        public void ReportApiTestError(string error)
+        {
+            _apiTestErrorReportingTextBox.Text = error;
+            _apiTestErrorReportingTextBox.Text = string.Empty;
         }
 
         private void TestFrame_Navigated(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
@@ -104,6 +161,7 @@ namespace MUXControlsTestApp
 
             _errorReportingTextBox = (TextBox)GetTemplateChild("ErrorReportingTextBox");
             _logReportingTextBox = (TextBox)GetTemplateChild("LogReportingTextBox");
+            _apiTestLogReportingTextBox = (TextBox)GetTemplateChild("ApiTestLogReportingTextBox");
 
             _currentPageTextBlock = (TextBlock)GetTemplateChild("CurrentPageTextBlock");
             _currentPageTextBlock.Text = "Home";
@@ -121,6 +179,10 @@ namespace MUXControlsTestApp
             _goFullScreenInvokerButton.Click += GoFullScreenInvokeButton_Click;
 
             _unhandledExceptionReportingTextBox = (TextBox)GetTemplateChild("UnhandledExceptionReportingTextBox");
+
+            _apiTestErrorReportingTextBox = (TextBox)GetTemplateChild("ApiTestErrorReportingTextBox");
+            _apiTestLogReportingTextBox = (TextBox)GetTemplateChild("ApiTestLogReportingTextBox");
+            _apiTestCompleteCheckBox = (CheckBox)GetTemplateChild("ApiTestCompleteCheckBox");
         }
 
         private void GoFullScreenInvokeButton_Click(object sender, RoutedEventArgs e)

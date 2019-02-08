@@ -16,6 +16,12 @@ namespace Common
     // to translate TAEF into MSTest.
     public static class Log
     {
+        public static Action<string> LogMessageAction
+        {
+            get;
+            set;
+        }
+
         public static void Comment(string format, params object[] args)
         {
             LogMessage(format, args);
@@ -40,7 +46,15 @@ namespace Common
                 format = format.Replace("{", "{{").Replace("}", "}}");
             }
 
-            Logger.LogMessage(format, args);
+            if (LogMessageAction != null)
+            {
+                string message = string.Format(format, args);
+                LogMessageAction(message);
+            }
+            else
+            {
+                Logger.LogMessage(format, args);
+            }
         }
     }
 

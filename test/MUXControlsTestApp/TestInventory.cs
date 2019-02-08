@@ -53,6 +53,10 @@ namespace MUXControlsTestApp
             Tests.Add(new TestDeclaration("Reveal Tests", typeof(RevealPage)));
             Tests.Add(new TestDeclaration("ItemsRepeater Tests", typeof(RepeaterTestUIPage)));
             Tests.Add(new TestDeclaration("Scroller Tests", typeof(ScrollerPage)));
+
+#if !USING_TAEF
+            Tests.Add(new TestDeclaration("API Tests", typeof(ApiTestPage)));
+#endif
         }
 
         public static List<TestDeclaration> Tests { get; private set; }

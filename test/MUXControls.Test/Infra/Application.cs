@@ -421,63 +421,85 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 #if !BUILD_WINDOWS
         private void BuildAndInstallTestAppIfNeeded()
         {
-            string[] architectures = { "x86", "x64", "ARM" };
+            string assemblyLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string remoteAppXPath = Path.Combine(assemblyLocation, "MUXControlsTestApp", "MUXControlsTestApp.appx");
+            bool runningRemotely = false;
 
-            // First, we need to figure out what the most recently built architecture was.
-            // Since MUXControls' interaction tests need to be built as AnyCPU, we can't just check our own architecture,
-            // so we'll check the last-write times of Microsoft.UI.Xaml.dll and MUXControlsTestApp.exe
-            // and go with what the latest was.
-            string baseDirectory = Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).Parent.FullName;
-
+            string baseDirectory = string.Empty;
             string mostRecentlyBuiltArchitecture = string.Empty;
-            DateTime timeMostRecentlyBuilt = DateTime.MinValue;
-
-            foreach (string architecture in architectures)
-            {
-                string muxPath = Path.Combine(baseDirectory, architecture, "Microsoft.UI.Xaml", "Microsoft.UI.Xaml.dll");
-                string testAppExePath = Path.Combine(baseDirectory, architecture, _packageName, _packageName + ".exe");
-
-                if (File.Exists(muxPath) && File.Exists(testAppExePath))
-                {
-                    DateTime muxWriteTime = File.GetLastWriteTime(muxPath);
-                    DateTime testAppExeWriteTime = File.GetLastWriteTime(testAppExePath);
-
-                    if (muxWriteTime > timeMostRecentlyBuilt || testAppExeWriteTime > timeMostRecentlyBuilt)
-                    {
-                        timeMostRecentlyBuilt = muxWriteTime > testAppExeWriteTime ? muxWriteTime : testAppExeWriteTime;
-                        mostRecentlyBuiltArchitecture = architecture;
-                    }
-                }
-            }
-
-            if (mostRecentlyBuiltArchitecture.Length == 0)
-            {
-                Log.Warning("Could not find most recently built architecture!  Defaulting to x86.");
-                mostRecentlyBuiltArchitecture = "x86";
-            }
-
-            // We'll see if we need to install the app.
-            // Since we can't run as administrator in MSTest, we need to call out
-            // to a script that'll install the app for us.
-            string architectureDirectory = Path.Combine(baseDirectory, mostRecentlyBuiltArchitecture);
-            string testAppDirectory = Path.Combine(architectureDirectory, _packageName);
-            string appxDirectory = Path.Combine(testAppDirectory, "AppPackages", _packageName + "_Test");
-            string appxPath = Path.Combine(appxDirectory, _packageName + ".appx");
+            string appxDirectory = string.Empty;
             bool appXPackagingNecessary = false;
 
-            if (!File.Exists(appxPath))
+            // If we're running locally, then everything will be in its output directories, and we may need
+            // to build the AppX file before deploying.  If we're running remotely, then everything will be
+            // in the same directory, and we don't need to build anything.  We'll differentiate between
+            // these two cases by checking whether the AppX file is present in a subdirectory off of the
+            // directory where the executing assembly exists.
+            if (File.Exists(remoteAppXPath))
             {
-                // If the AppX doesn't even exist, then we definitely need to package it.
-                appXPackagingNecessary = true;
+                appxDirectory = Path.GetDirectoryName(remoteAppXPath);
+                runningRemotely = true;
             }
             else
             {
-                // Otherwise, we need to package it if any of its contents have been built since the last packaging.
-                DateTime appxWriteTime = File.GetLastWriteTime(appxPath);
+                string[] architectures = { "x86", "x64", "ARM" };
 
-                appXPackagingNecessary =
-                    File.GetLastWriteTime(Path.Combine(testAppDirectory, _packageName + ".exe")) > appxWriteTime ||
-                    File.GetLastWriteTime(Path.Combine(architectureDirectory, "Microsoft.UI.Xaml", "Microsoft.UI.Xaml.dll")) > appxWriteTime;
+                // First, we need to figure out what the most recently built architecture was.
+                // Since MUXControls' interaction tests need to be built as AnyCPU, we can't just check our own architecture,
+                // so we'll check the last-write times of Microsoft.UI.Xaml.dll and MUXControlsTestApp.exe
+                // and go with what the latest was.
+                baseDirectory = Directory.GetParent(assemblyLocation).Parent.FullName;
+
+                mostRecentlyBuiltArchitecture = string.Empty;
+                DateTime timeMostRecentlyBuilt = DateTime.MinValue;
+
+                foreach (string architecture in architectures)
+                {
+                    string muxPath = Path.Combine(baseDirectory, architecture, "Microsoft.UI.Xaml", "Microsoft.UI.Xaml.dll");
+                    string testAppExePath = Path.Combine(baseDirectory, architecture, _packageName, _packageName + ".exe");
+
+                    if (File.Exists(muxPath) && File.Exists(testAppExePath))
+                    {
+                        DateTime muxWriteTime = File.GetLastWriteTime(muxPath);
+                        DateTime testAppExeWriteTime = File.GetLastWriteTime(testAppExePath);
+
+                        if (muxWriteTime > timeMostRecentlyBuilt || testAppExeWriteTime > timeMostRecentlyBuilt)
+                        {
+                            timeMostRecentlyBuilt = muxWriteTime > testAppExeWriteTime ? muxWriteTime : testAppExeWriteTime;
+                            mostRecentlyBuiltArchitecture = architecture;
+                        }
+                    }
+                }
+
+                if (mostRecentlyBuiltArchitecture.Length == 0)
+                {
+                    Log.Warning("Could not find most recently built architecture!  Defaulting to x86.");
+                    mostRecentlyBuiltArchitecture = "x86";
+                }
+
+                // We'll see if we need to install the app.
+                // Since we can't run as administrator in MSTest, we need to call out
+                // to a script that'll install the app for us.
+                string architectureDirectory = Path.Combine(baseDirectory, mostRecentlyBuiltArchitecture);
+                string testAppDirectory = Path.Combine(architectureDirectory, _packageName);
+                appxDirectory = Path.Combine(testAppDirectory, "AppPackages", _packageName + "_Test");
+                string appxPath = Path.Combine(appxDirectory, _packageName + ".appx");
+                appXPackagingNecessary = false;
+
+                if (!File.Exists(appxPath))
+                {
+                    // If the AppX doesn't even exist, then we definitely need to package it.
+                    appXPackagingNecessary = true;
+                }
+                else
+                {
+                    // Otherwise, we need to package it if any of its contents have been built since the last packaging.
+                    DateTime appxWriteTime = File.GetLastWriteTime(appxPath);
+
+                    appXPackagingNecessary =
+                        File.GetLastWriteTime(Path.Combine(testAppDirectory, _packageName + ".exe")) > appxWriteTime ||
+                        File.GetLastWriteTime(Path.Combine(architectureDirectory, "Microsoft.UI.Xaml", "Microsoft.UI.Xaml.dll")) > appxWriteTime;
+                }
             }
 
             // Only package the AppX or install the app if we need to - otherwise, we'll get unnecessary console windows showing up
@@ -512,15 +534,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 PackageManager packageManager = new PackageManager();
                 if (packageManager.FindPackagesForUser(string.Empty, _packageFamilyName).Count() == 0)
                 {
-                    Log.Comment("Packaging and installing AppX...");
+                    Log.Comment("Installing AppX...");
 
-                    string buildAndInstallScript = Path.Combine(baseDirectory, "AnyCPU", "MUXControls.Test", "InstallAppX.ps1");
+                    string installScript =
+                        runningRemotely ?
+                        Path.Combine(assemblyLocation, "InstallAppX.ps1") :
+                        Path.Combine(baseDirectory, "AnyCPU", "MUXControls.Test", "InstallAppX.ps1");
 
                     ProcessStartInfo powershellProcessStartInfo =
                         new ProcessStartInfo("powershell",
-                            string.Format("-ExecutionPolicy Unrestricted -File {0} {1}",
-                                buildAndInstallScript,
-                                appxDirectory));
+                            string.Format("-ExecutionPolicy Unrestricted -File {0} {1}{2}",
+                                installScript,
+                                appxDirectory,
+                                // We already know the certificate will have been installed on the remote machine,
+                                // so there's no reason to check.
+                                runningRemotely ? " -SkipCertificateCheck" : string.Empty));
 
                     powershellProcessStartInfo.UseShellExecute = true;
 

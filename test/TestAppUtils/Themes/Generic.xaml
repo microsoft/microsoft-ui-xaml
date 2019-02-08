@@ -68,6 +68,9 @@
                                 <CheckBox x:Name="DebuggerAttachedCheckBox" AutomationProperties.AutomationId="__DebuggerAttachedCheckBox" Style="{StaticResource AutomationHelperStyle}" />
                                 <TextBox x:Name="UnhandledExceptionReportingTextBox" AutomationProperties.AutomationId="__UnhandledExceptionReportingTextBox" Style="{StaticResource AutomationHelperStyle}" AcceptsReturn="True" />
                                 <CheckBox x:Name="TestContentLoadedCheckBox" IsChecked="False" AutomationProperties.AutomationId="__TestContentLoadedCheckBox" Content="TestContentLoadedCheckbox"  Style="{StaticResource AutomationHelperStyle}" />
+                                <TextBox x:Name="ApiTestErrorReportingTextBox" AutomationProperties.AutomationId="__ApiTestErrorReportingTextBox" Style="{StaticResource AutomationHelperStyle}" AcceptsReturn="True" />
+                                <TextBox x:Name="ApiTestLogReportingTextBox" AutomationProperties.AutomationId="__ApiTestLogReportingTextBox" Style="{StaticResource AutomationHelperStyle}" AcceptsReturn="True" />
+                                <CheckBox x:Name="ApiTestCompleteCheckBox" AutomationProperties.AutomationId="__ApiTestCompleteCheckBox" Style="{StaticResource AutomationHelperStyle}" />
 
                             </Grid>
 

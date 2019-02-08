@@ -38,4 +38,15 @@
   </ItemGroup>
   <Import Project="..\MUXControlsTestApp.Shared.projitems" />
   <Import Project="..\MUXControlsTestApp.Shared.targets" />
+  <ItemGroup>
+    <Page Include="ApiTestPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ApiTestPage.xaml.cs">
+      <DependentUpon>ApiTestPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

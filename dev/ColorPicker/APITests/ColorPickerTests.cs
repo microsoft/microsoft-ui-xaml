@@ -234,6 +234,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var colorPicker = new ColorPicker();
                 try
                 {
+                    Log.Comment("Setting MinHue to -1. An invalid argument exception should be raised.");
                     colorPicker.MinHue = -1;
                     Verify.Fail("Invalid argument exception wasn't raised.");
                 }
