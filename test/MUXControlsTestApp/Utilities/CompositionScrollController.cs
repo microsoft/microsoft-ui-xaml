@@ -15,7 +15,7 @@ using Windows.UI.Xaml.Input;
 
 #if !BUILD_WINDOWS
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
-using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewChangeResult = Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult;
@@ -92,6 +92,7 @@ namespace MUXControlsTestApp.Utilities
         RepeatButton verticalIncrementRepeatButton = null;
         private Visual interactionVisual = null;
         private Orientation orientation = Orientation.Vertical;
+        private ScrollMode scrollMode = ScrollMode.Disabled;
         private bool isThumbDragged = false;
         private bool isThumbPannable = true;
         private bool isThumbPositionMirrored = false;
@@ -282,6 +283,15 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
+        public void SetScrollMode(ScrollMode scrollMode)
+        {
+            RaiseLogMessage(
+                "CompositionScrollController: SetScrollMode for Orientation=" + Orientation +
+                " with scrollMode=" + scrollMode);
+            this.scrollMode = scrollMode;
+            UpdateAreInteractionsAllowed();
+        }
+
         public void SetValues(double minOffset, double maxOffset, double offset, double viewport)
         {
             RaiseLogMessage(
@@ -332,13 +342,13 @@ namespace MUXControlsTestApp.Utilities
             UpdateInteractionFrameworkElementOffset();
         }
 
-        public CompositionAnimation GetOffsetChangeAnimation(
+        public CompositionAnimation GetScrollAnimation(
             Int32 offsetChangeId,
             Vector2 currentPosition,
             CompositionAnimation defaultAnimation)
         {
             RaiseLogMessage(
-                "CompositionScrollController: GetOffsetChangeAnimation for Orientation=" + Orientation +
+                "CompositionScrollController: GetScrollAnimation for Orientation=" + Orientation +
                 " with offsetChangeId=" + offsetChangeId + ", currentPosition=" + currentPosition);
 
             try
@@ -445,18 +455,18 @@ namespace MUXControlsTestApp.Utilities
             }
             catch (Exception ex)
             {
-                RaiseLogMessage("CompositionScrollController: GetOffsetChangeAnimation exception=" + ex);
+                RaiseLogMessage("CompositionScrollController: GetScrollAnimation exception=" + ex);
             }
 
             return null;
         }
 
-        public void OnOffsetChangeCompleted(
+        public void OnScrollCompleted(
             Int32 offsetChangeId,
             ScrollerViewChangeResult result)
         {
             RaiseLogMessage(
-                "CompositionScrollController: OnOffsetChangeCompleted for Orientation=" + Orientation +
+                "CompositionScrollController: OnScrollCompleted for Orientation=" + Orientation +
                 " with offsetChangeId=" + offsetChangeId + ", result=" + result);
 
             if (lstOffsetChangeIds.Contains(offsetChangeId))
@@ -489,10 +499,17 @@ namespace MUXControlsTestApp.Utilities
             if (OffsetChangeCompleted != null)
             {
                 RaiseLogMessage(
-                    "CompositionScrollController: OnOffsetChangeCompleted raising OffsetChangeCompleted event.");
+                    "CompositionScrollController: OnScrollCompleted raising OffsetChangeCompleted event.");
                 OffsetChangeCompleted(this, new CompositionScrollControllerOffsetChangeCompletedEventArgs(offsetChangeId, result));
             }
         }
+
+        public bool AreInteractionsAllowed
+        {
+            get;
+            private set;
+        }
+
 
         public bool AreScrollerInteractionsAllowed
         {
@@ -504,6 +521,15 @@ namespace MUXControlsTestApp.Utilities
         {
             get;
             private set;
+        }
+
+        public bool IsInteractionVisualRailEnabled
+        {
+            get
+            {
+                RaiseLogMessage("CompositionScrollController: get_IsInteractionVisualRailEnabled for Orientation=" + Orientation);
+                return true;
+            }
         }
 
         public Visual InteractionVisual
@@ -523,15 +549,6 @@ namespace MUXControlsTestApp.Utilities
             {
                 RaiseLogMessage("CompositionScrollController: get_InteractionVisualScrollOrientation for Orientation=" + Orientation);
                 return Orientation;
-            }
-        }
-
-        public RailingMode InteractionVisualScrollRailingMode
-        {
-            get
-            {
-                RaiseLogMessage("CompositionScrollController: get_InteractionVisualScrollRailingMode for Orientation=" + Orientation);
-                return RailingMode.Enabled;
             }
         }
 
@@ -772,6 +789,20 @@ namespace MUXControlsTestApp.Utilities
                     parent.PointerPressed -= Parent_PointerPressed;
                 }
             }
+        }
+
+        private bool UpdateAreInteractionsAllowed()
+        {
+            bool oldAreInteractionsAllowed = AreInteractionsAllowed;
+
+            AreInteractionsAllowed = scrollMode != ScrollMode.Disabled && IsEnabled;
+
+            if (oldAreInteractionsAllowed != AreInteractionsAllowed)
+            {
+                RaiseInteractionInfoChanged();
+                return true;
+            }
+            return false;
         }
 
         private void UpdateOrientation()
@@ -1122,7 +1153,10 @@ namespace MUXControlsTestApp.Utilities
         private void CompositionScrollController_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             RaiseLogMessage("CompositionScrollController: IsEnabledChanged for Orientation=" + Orientation + ", IsEnabled=" + IsEnabled);
-            RaiseInteractionInfoChanged();
+            if (!UpdateAreInteractionsAllowed())
+            {
+                RaiseInteractionInfoChanged();
+            }
         }
 
         private void Parent_PointerPressed(object sender, PointerRoutedEventArgs e)

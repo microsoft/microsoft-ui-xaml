@@ -70,16 +70,29 @@ namespace MUXControlsTestApp
 
         private void Scroller_StateChanged(Scroller sender, object args)
         {
+            string senderId = "." + sender.Name;
             FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
-            FrameworkElement grandParent = VisualTreeHelper.GetParent(parent) as FrameworkElement;
-            string senderId = grandParent.Name + "." + parent.Name + "." + sender.Name;
+            if (parent != null)
+            {
+                senderId = "." + parent.Name + senderId;
+                FrameworkElement grandParent = VisualTreeHelper.GetParent(parent) as FrameworkElement;
+                if (grandParent != null)
+                {
+                    senderId = grandParent.Name + senderId;
+                }
+            }
             this.txtScrollerState.Text = senderId + " " + sender.State.ToString();
             this.fullLogs.Add(senderId + " StateChanged S=" + sender.State.ToString());
         }
 
         private void Scroller_ViewChanged(Scroller sender, object args)
         {
-            string senderId = (VisualTreeHelper.GetParent(sender) as FrameworkElement).Name + "." + sender.Name;
+            string senderId = "." + sender.Name;
+            FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
+            if (parent != null)
+            {
+                senderId = parent.Name + senderId;
+            }
             this.txtScrollerHorizontalOffset.Text = sender.HorizontalOffset.ToString();
             this.txtScrollerVerticalOffset.Text = sender.VerticalOffset.ToString();
             this.txtScrollerZoomFactor.Text = sender.ZoomFactor.ToString();
@@ -88,7 +101,12 @@ namespace MUXControlsTestApp
 
         private void Scroller_ViewChangeCompleted(Scroller sender, ScrollerViewChangeCompletedEventArgs args)
         {
-            string senderId = (VisualTreeHelper.GetParent(sender) as FrameworkElement).Name + "." + sender.Name;
+            string senderId = "." + sender.Name;
+            FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
+            if (parent != null)
+            {
+                senderId = parent.Name + senderId;
+            }
 
             this.fullLogs.Add(senderId + " View change completed. ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
 

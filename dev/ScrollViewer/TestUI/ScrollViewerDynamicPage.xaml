@@ -213,7 +213,6 @@
 
             <TextBlock Text="HorizontalScrollMode:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center"/>
             <ComboBox x:Name="cmbHorizontalScrollMode" Width="105" Margin="1" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center">
-                <ComboBoxItem>Auto</ComboBoxItem>
                 <ComboBoxItem>Enabled</ComboBoxItem>
                 <ComboBoxItem>Disabled</ComboBoxItem>
             </ComboBox>
@@ -239,7 +238,6 @@
 
             <TextBlock Text="VerticalScrollMode:" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center"/>
             <ComboBox x:Name="cmbVerticalScrollMode" Width="105" Margin="1" Grid.Row="6" Grid.Column="1" VerticalAlignment="Center">
-                <ComboBoxItem>Auto</ComboBoxItem>
                 <ComboBoxItem>Enabled</ComboBoxItem>
                 <ComboBoxItem>Disabled</ComboBoxItem>
             </ComboBox>
@@ -329,6 +327,7 @@
             <Button x:Name="btnGetVerticalAnchorRatio" Content="G" Margin="1" Grid.Row="17" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetVerticalAnchorRatio_Click"/>
             <Button x:Name="btnSetVerticalAnchorRatio" Content="S" Margin="1" Grid.Row="17" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetVerticalAnchorRatio_Click"/>
 
+            <!-- ifdef USE_SCROLLMODE_AUTO
             <TextBlock Text="ComputedHorizontalScrollMode:" Grid.Row="18" VerticalAlignment="Center"/>
             <Border BorderThickness="1" BorderBrush="DarkGray" Grid.Row="18" Grid.Column="1" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <TextBlock x:Name="tblComputedHorizontalScrollMode" Margin="1" VerticalAlignment="Center"/>
@@ -340,6 +339,7 @@
                 <TextBlock x:Name="tblComputedVerticalScrollMode" Margin="1" VerticalAlignment="Center"/>
             </Border>
             <Button x:Name="btnGetComputedVerticalScrollMode" Content="G" Margin="1" Grid.Row="19" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Center" Click="BtnGetComputedVerticalScrollMode_Click"/>
+            -->
         </Grid>
 
         <Grid x:Name="grdContentProperties" Grid.Row="1" Grid.Column="3" Margin="2" Background="LightYellow">
