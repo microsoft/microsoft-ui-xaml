@@ -215,7 +215,7 @@ namespace MUXControlsTestApp.Utilities
                     rowIndex++;
                 }
 
-#if !ARM64
+#if !ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found
                 foreach (PropertyInfo propertyInfo in typeEntity.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
                 {
                     bool skipUIAutoGeneration = !string.IsNullOrWhiteSpace(this.Filter) && !propertyInfo.Name.ToLower().Contains(this.Filter.ToLower());
@@ -423,7 +423,8 @@ namespace MUXControlsTestApp.Utilities
             comboBox.HorizontalAlignment = HorizontalAlignment.Stretch;
             comboBox.Margin = new Thickness(1);
             comboBox.Items.Add("Null");
-#if !ARM64
+
+#if !ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found	
             foreach (PropertyInfo colorPropertyInfo in typeof(Colors).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
             {
                 comboBox.Items.Add(colorPropertyInfo.Name);
@@ -435,7 +436,7 @@ namespace MUXControlsTestApp.Utilities
                 Color currentColor = currentBrush.Color;
                 bool isKnownColor = false;
 
-#if !ARM64
+#if !ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found
                 foreach (PropertyInfo colorPropertyInfo in typeof(Colors).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
                 {
                     if (colorPropertyInfo.GetValue(null).ToString() == currentColor.ToString())
@@ -507,7 +508,7 @@ namespace MUXControlsTestApp.Utilities
             {
                 comboBox.Items.Add("Null");
             }
-#if !ARM64
+#if !ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found
             foreach (FieldInfo fieldInfo in type.GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 comboBox.Items.Add(fieldInfo.Name);
