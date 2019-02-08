@@ -271,10 +271,10 @@ void ScrollBarController::HookScrollBarPropertyChanged()
     if (m_scrollBar)
     {
 #ifdef _DEBUG
-        m_scrollBarIndicatorModeChangedToken.value = scrollBar.RegisterPropertyChangedCallback(
+        m_scrollBarIndicatorModeChangedToken.value = m_scrollBar.RegisterPropertyChangedCallback(
             winrt::ScrollBar::IndicatorModeProperty(), { this, &ScrollBarController::OnScrollBarPropertyChanged });
 
-        m_scrollBarVisibilityChangedToken.value = scrollBar.RegisterPropertyChangedCallback(
+        m_scrollBarVisibilityChangedToken.value = m_scrollBar.RegisterPropertyChangedCallback(
             winrt::UIElement::VisibilityProperty(), { this, &ScrollBarController::OnScrollBarPropertyChanged });
 #endif //_DEBUG
 
