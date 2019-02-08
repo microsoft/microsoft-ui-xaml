@@ -474,7 +474,7 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["Scroller.HorizontalScrollChainingMode"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.HorizontalScrollMode"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.HorizontalScrollRailingMode"] = true;
-            NeedsPropChangedCallbackMetadata["Scroller.InputKind"] = true;
+            NeedsPropChangedCallbackMetadata["Scroller.IgnoredInputKind"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.IsAnchoredAtHorizontalExtent"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.IsAnchoredAtVerticalExtent"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.MaxZoomFactor"] = true;
@@ -496,7 +496,7 @@ namespace CustomTasks
             DefaultValueMetadata["Scroller.HorizontalScrollChainingMode"] = @"Scroller::s_defaultHorizontalScrollChainingMode";
             DefaultValueMetadata["Scroller.HorizontalScrollMode"] = @"Scroller::s_defaultHorizontalScrollMode";
             DefaultValueMetadata["Scroller.HorizontalScrollRailingMode"] = @"Scroller::s_defaultHorizontalScrollRailingMode";
-            DefaultValueMetadata["Scroller.InputKind"] = @"Scroller::s_defaultInputKind";
+            DefaultValueMetadata["Scroller.IgnoredInputKind"] = @"Scroller::s_defaultIgnoredInputKind";
             DefaultValueMetadata["Scroller.IsAnchoredAtHorizontalExtent"] = @"Scroller::s_defaultAnchorAtExtent";
             DefaultValueMetadata["Scroller.IsAnchoredAtVerticalExtent"] = @"Scroller::s_defaultAnchorAtExtent";
             DefaultValueMetadata["Scroller.MaxZoomFactor"] = @"Scroller::s_defaultMaxZoomFactor";
@@ -525,7 +525,7 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalScrollController"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalScrollMode"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalScrollRailingMode"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollViewer.InputKind"] = true;
+            NeedsPropChangedCallbackMetadata["ScrollViewer.IgnoredInputKind"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.IsAnchoredAtHorizontalExtent"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.IsAnchoredAtVerticalExtent"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.MaxZoomFactor"] = true;
@@ -552,7 +552,7 @@ namespace CustomTasks
             DefaultValueMetadata["ScrollViewer.HorizontalScrollChainingMode"] = @"ScrollViewer::s_defaultHorizontalScrollChainingMode";
             DefaultValueMetadata["ScrollViewer.HorizontalScrollMode"] = @"ScrollViewer::s_defaultHorizontalScrollMode";
             DefaultValueMetadata["ScrollViewer.HorizontalScrollRailingMode"] = @"ScrollViewer::s_defaultHorizontalScrollRailingMode";
-            DefaultValueMetadata["ScrollViewer.InputKind"] = @"ScrollViewer::s_defaultInputKind";
+            DefaultValueMetadata["ScrollViewer.IgnoredInputKind"] = @"ScrollViewer::s_defaultIgnoredInputKind";
             DefaultValueMetadata["ScrollViewer.IsAnchoredAtHorizontalExtent"] = @"ScrollViewer::s_defaultAnchorAtExtent";
             DefaultValueMetadata["ScrollViewer.IsAnchoredAtVerticalExtent"] = @"ScrollViewer::s_defaultAnchorAtExtent";
             DefaultValueMetadata["ScrollViewer.MaxZoomFactor"] = @"ScrollViewer::s_defaultMaxZoomFactor";

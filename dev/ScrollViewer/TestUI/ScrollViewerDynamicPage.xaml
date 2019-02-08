@@ -280,19 +280,18 @@
             <Button x:Name="btnGetZoomChainingMode" Content="G" Margin="1" Grid.Row="10" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetZoomChainingMode_Click"/>
             <Button x:Name="btnSetZoomChainingMode" Content="S" Margin="1" Grid.Row="10" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetZoomChainingMode_Click"/>
 
-            <TextBlock Text="InputMode:" Grid.Row="11" Grid.Column="0" VerticalAlignment="Center"/>
-            <ComboBox x:Name="cmbInputKind" Width="105" Margin="1" Grid.Row="11" Grid.Column="1" VerticalAlignment="Center">
-                <ComboBoxItem>All</ComboBoxItem>
+            <TextBlock Text="IgnoredInputKind:" Grid.Row="11" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbIgnoredInputKind" Width="105" Margin="1" Grid.Row="11" Grid.Column="1" VerticalAlignment="Center">
+                <ComboBoxItem>None</ComboBoxItem>
                 <ComboBoxItem>Touch</ComboBoxItem>
                 <ComboBoxItem>Pen</ComboBoxItem>
                 <ComboBoxItem>MouseWheel</ComboBoxItem>
-                <ComboBoxItem>Touch|MouseWheel</ComboBoxItem>
-                <ComboBoxItem>Touch|Pen</ComboBoxItem>
-                <ComboBoxItem>Pen|MouseWheel</ComboBoxItem>
-                <ComboBoxItem>Touch|Pen|MouseWheel</ComboBoxItem>
+                <ComboBoxItem>Keyboard</ComboBoxItem>
+                <ComboBoxItem>Gamepad</ComboBoxItem>
+                <ComboBoxItem>All</ComboBoxItem>
             </ComboBox>
-            <Button x:Name="btnGetInputKind" Content="G" Margin="1" Grid.Row="11" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetInputKind_Click"/>
-            <Button x:Name="btnSetInputKind" Content="S" Margin="1" Grid.Row="11" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetInputKind_Click"/>
+            <Button x:Name="btnGetIgnoredInputKind" Content="G" Margin="1" Grid.Row="11" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetIgnoredInputKind_Click"/>
+            <Button x:Name="btnSetIgnoredInputKind" Content="S" Margin="1" Grid.Row="11" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetIgnoredInputKind_Click"/>
 
             <TextBlock Text="MinZoomFactor:" Grid.Row="12" Grid.Column="0" VerticalAlignment="Center"/>
             <TextBox x:Name="txtMinZoomFactor" Width="105" Margin="1" Grid.Row="12" Grid.Column="1" VerticalAlignment="Center"/>

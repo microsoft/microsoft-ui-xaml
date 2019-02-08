@@ -182,17 +182,16 @@
                     <ComboBoxItem>Never</ComboBoxItem>
                 </ComboBox>
 
-                <TextBlock Text="InputKind:" Grid.Row="11" Grid.Column="0" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbInputKind" Margin="1" Grid.Row="11" Grid.Column="1" 
-                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbInputKind_SelectionChanged">
-                    <ComboBoxItem>All</ComboBoxItem>
+                <TextBlock Text="IgnoredInputKind:" Grid.Row="11" Grid.Column="0" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbIgnoredInputKind" Margin="1" Grid.Row="11" Grid.Column="1" 
+                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbIgnoredInputKind_SelectionChanged">
+                    <ComboBoxItem>None</ComboBoxItem>
                     <ComboBoxItem>Touch</ComboBoxItem>
                     <ComboBoxItem>Pen</ComboBoxItem>
                     <ComboBoxItem>MouseWheel</ComboBoxItem>
-                    <ComboBoxItem>Touch|MouseWheel</ComboBoxItem>
-                    <ComboBoxItem>Touch|Pen</ComboBoxItem>
-                    <ComboBoxItem>Pen|MouseWheel</ComboBoxItem>
-                    <ComboBoxItem>Touch|Pen|MouseWheel</ComboBoxItem>
+                    <ComboBoxItem>Keyboard</ComboBoxItem>
+                    <ComboBoxItem>Gamepad</ComboBoxItem>
+                    <ComboBoxItem>All</ComboBoxItem>
                 </ComboBox>
 
                 <TextBlock Text="Background:" Grid.Row="12" Grid.Column="0" VerticalAlignment="Center"/>

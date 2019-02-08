@@ -62,7 +62,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 #endif
         private const ChainingMode c_defaultZoomChainingMode = ChainingMode.Auto;
         private const ZoomMode c_defaultZoomMode = ZoomMode.Disabled;
-        private const InputKind c_defaultInputKind = InputKind.All;
+        private const InputKind c_defaultIgnoredInputKind = InputKind.None;
         private const ContentOrientation c_defaultContentOrientation = ContentOrientation.None;
         private const bool c_defaultIsAnchoredAtExtent = true;
         private const double c_defaultMinZoomFactor = 0.1;
@@ -116,7 +116,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scroller.ZoomChainingMode, c_defaultZoomChainingMode);
                 Verify.AreEqual(scroller.ContentOrientation, c_defaultContentOrientation);
                 Verify.AreEqual(scroller.ZoomMode, c_defaultZoomMode);
-                Verify.AreEqual(scroller.InputKind, c_defaultInputKind);
+                Verify.AreEqual(scroller.IgnoredInputKind, c_defaultIgnoredInputKind);
                 Verify.AreEqual(scroller.MinZoomFactor, c_defaultMinZoomFactor);
                 Verify.AreEqual(scroller.MaxZoomFactor, c_defaultMaxZoomFactor);
                 Verify.AreEqual(scroller.ZoomFactor, c_defaultZoomFactor);
@@ -154,7 +154,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scroller.VerticalScrollMode = ScrollMode.Disabled;
                 scroller.ZoomChainingMode = ChainingMode.Never;
                 scroller.ZoomMode = ZoomMode.Enabled;
-                scroller.InputKind = InputKind.MouseWheel;
+                scroller.IgnoredInputKind = InputKind.MouseWheel;
                 scroller.ContentOrientation = ContentOrientation.Horizontal;
                 scroller.MinZoomFactor = 0.5f;
                 scroller.MaxZoomFactor = 2.0f;
@@ -179,7 +179,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scroller.VerticalScrollMode, ScrollMode.Disabled);
                 Verify.AreEqual(scroller.ZoomChainingMode, ChainingMode.Never);
                 Verify.AreEqual(scroller.ZoomMode, ZoomMode.Enabled);
-                Verify.AreEqual(scroller.InputKind, InputKind.MouseWheel);
+                Verify.AreEqual(scroller.IgnoredInputKind, InputKind.MouseWheel);
                 Verify.AreEqual(scroller.ContentOrientation, ContentOrientation.Horizontal);
                 Verify.AreEqual(scroller.MinZoomFactor, 0.5f);
                 Verify.AreEqual(scroller.MaxZoomFactor, 2.0f);
@@ -333,7 +333,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scroller.VerticalScrollMode = ScrollMode.Disabled;
                     scroller.ZoomChainingMode = ChainingMode.Never;
                     scroller.ZoomMode = ZoomMode.Enabled;
-                    scroller.InputKind = InputKind.Touch;
+                    scroller.IgnoredInputKind = InputKind.All & ~InputKind.Touch;
                 });
 
                 IdleSynchronizer.Wait();

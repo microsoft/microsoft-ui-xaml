@@ -51,8 +51,8 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     ChainingMode ZoomChainingMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultZoomMode")]
     ZoomMode ZoomMode { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultInputKind")]
-    InputKind InputKind { get; set; };
+    [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultIgnoredInputKind")]
+    InputKind IgnoredInputKind { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultMinZoomFactor")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateZoomFactoryBoundary")]
     Double MinZoomFactor { get; set; };
@@ -100,7 +100,7 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty ComputedVerticalScrollModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ZoomChainingModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ZoomModeProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty InputKindProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IgnoredInputKindProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MinZoomFactorProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MaxZoomFactorProperty { get; };
     static Windows.UI.Xaml.DependencyProperty IsAnchoredAtHorizontalExtentProperty { get; };
