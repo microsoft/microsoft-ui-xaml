@@ -3344,8 +3344,6 @@ void NavigationView::UpdatePaneShadow()
     if (SharedHelpers::IsThemeShadowAvailable())
     {
 #ifdef USE_INSIDER_SDK
-        // Shadow will get clipped if casting on the splitView.Content directly
-        // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
         winrt::Canvas shadowReceiver = GetTemplateChildT<winrt::Canvas>(c_paneShadowReceiverCanvas, *this);
         if (!shadowReceiver)
         {
@@ -3372,6 +3370,8 @@ void NavigationView::UpdatePaneShadow()
             }
         }
 
+        // Shadow will get clipped if casting on the splitView.Content directly
+        // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
         winrt::Thickness shadowReceiverMargin = { -OpenPaneLength(), -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
         shadowReceiver.Margin(shadowReceiverMargin);
 #endif
