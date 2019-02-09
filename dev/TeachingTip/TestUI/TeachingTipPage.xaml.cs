@@ -62,8 +62,8 @@ namespace MUXControlsTestApp
 
         private void TeachingTip_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            this.TipHeight.Text = this.TeachingTip.ActualHeight.ToString();
-            this.TipWidth.Text = this.TeachingTip.ActualWidth.ToString();
+            this.TipHeightTextBlock.Text = this.TeachingTip.ActualHeight.ToString();
+            this.TipWidthTextBlock.Text = this.TeachingTip.ActualWidth.ToString();
         }
 
         private void TeachingTipTestHooks_OffsetChanged(TeachingTip sender, object args)

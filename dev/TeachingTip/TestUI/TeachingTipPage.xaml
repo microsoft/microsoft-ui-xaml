@@ -202,11 +202,11 @@
                 <TextBlock Grid.Row="25" Text="Teaching Tip Size:" Foreground="Red"/>
                 <StackPanel Orientation="Horizontal" Grid.Row="26">
                     <TextBlock Text="Height: "/>
-                    <TextBlock x:Name="TipHeight" AutomationProperties.Name="TipHeight"/>
+                    <TextBlock x:Name="TipHeightTextBlock" AutomationProperties.Name="TipHeightTextBlock"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Grid.Row="26" Grid.Column="1">
                     <TextBlock Text="Width: "/>
-                    <TextBlock x:Name="TipWidth" AutomationProperties.Name="TipWidth"/>
+                    <TextBlock x:Name="TipWidthTextBlock" AutomationProperties.Name="TipWidthTextBlock"/>
                 </StackPanel>
                 <TextBlock Grid.Row="27" Text="Effective Placement:"/>
                 <TextBlock x:Name="EffectivePlacementTextBlock" AutomationProperties.Name="EffectivePlacementTextBlock" Grid.Row="27" Grid.Column="1" />
