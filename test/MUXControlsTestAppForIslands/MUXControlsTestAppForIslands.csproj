@@ -26,6 +26,7 @@
     <EnableXBindDiagnostics>false</EnableXBindDiagnostics>
     <!-- Supress xaml warnings of type 'foo' is for evaluation purposes only and is subject to change or removal in future updates -->
     <NoWarn>$(NoWarn);8305</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86' Or '$(Configuration)|$(Platform)' == 'Debug_test|x86'">
     <DebugSymbols>true</DebugSymbols>

@@ -4,6 +4,8 @@
   <PropertyGroup>
     <ProjectGuid>{4D8C5D1B-F982-44A1-B744-DD0E51651BF2}</ProjectGuid>
     <DefineConstants>$(DefineConstants);USING_TAEF</DefineConstants>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
   </PropertyGroup>
   <PropertyGroup Condition="$(BuildingWithBuildExe) != 'true'">
     <TargetFramework>netcoreapp2.1</TargetFramework>
