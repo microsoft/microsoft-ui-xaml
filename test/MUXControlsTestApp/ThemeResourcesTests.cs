@@ -423,7 +423,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     PropertyInfo[] propertyInfoList = null;
 
-#if !ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found                    if (valueObject != null && mergedValueObject != null)
+#if !ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found                    
+                    if (valueObject != null && mergedValueObject != null)
                     {
                         propertyInfoList = type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).Where((pi) => pi.PropertyType == typeof(DependencyProperty)).ToArray();
                     }
