@@ -6,7 +6,7 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
     <Style TargetType="local:TreeViewItem" 
            BasedOn="{StaticResource ListViewItemRevealStyle}"
-           x:Key="TreeViewItemStyle">
+           x:Key="MUX_TreeViewItemStyle">
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Background" Value="{ThemeResource TreeViewItemBackground}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource TreeViewItemBorderBrush}"/>

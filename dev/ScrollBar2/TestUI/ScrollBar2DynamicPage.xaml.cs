@@ -9,7 +9,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using ScrollerViewChangeResult = Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerOffsetChangeRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeRequestedEventArgs;
@@ -212,24 +211,6 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnGetScrollMode_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateCmbScrollMode();
-        }
-
-        private void BtnSetScrollMode_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                scrollBar2.ScrollMode = (ScrollMode)cmbScrollMode.SelectedIndex;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollBar2Events.Items.Add(ex.ToString());
-            }
-        }
-
         private void BtnGetIndicatorMode_Click(object sender, RoutedEventArgs e)
         {
             UpdateCmbIndicatorMode();
@@ -266,19 +247,6 @@ namespace MUXControlsTestApp
             try
             {
                 cmbOrientation.SelectedIndex = scrollBar2.Orientation == Orientation.Horizontal ? 0 : 1;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollBar2Events.Items.Add(ex.ToString());
-            }
-        }
-
-        private void UpdateCmbScrollMode()
-        {
-            try
-            {
-                cmbScrollMode.SelectedIndex = (int)scrollBar2.ScrollMode;
             }
             catch (Exception ex)
             {
@@ -625,7 +593,7 @@ namespace MUXControlsTestApp
                 {
                     IScrollController sc = scrollBar2 as IScrollController;
 
-                    sc.OnOffsetChangeCompleted(offsetChangeId, ScrollerViewChangeResult.Completed);
+                    sc.OnScrollCompleted(offsetChangeId, ScrollerViewChangeResult.Completed);
                 }
                 viewChangeIds.Clear();
             }
@@ -665,7 +633,6 @@ namespace MUXControlsTestApp
                     MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
                 }
 
-                UpdateCmbScrollMode();
                 UpdateCmbIndicatorMode();
                 UpdateCmbIsEnabled();
                 UpdateCmbOrientation();

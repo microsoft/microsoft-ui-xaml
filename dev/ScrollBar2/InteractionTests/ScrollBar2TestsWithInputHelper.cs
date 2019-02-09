@@ -80,22 +80,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Tapping btnSetIndicatorMode");
                 InputHelper.Tap(btnSetIndicatorMode);
 
-                Log.Comment("Retrieving cmbScrollMode");
-                ComboBox cmbScrollMode = new ComboBox(FindElement.ByName("cmbScrollMode"));
-                Verify.IsNotNull(cmbScrollMode, "Verifying that cmbScrollMode was found");
-
-                Log.Comment("Changing ScrollMode to Enabled");
-                cmbScrollMode.SelectItemByName("Enabled");
-                Log.Comment("Selection is now {0}", cmbScrollMode.Selection[0].Name);
-
-                Log.Comment("Retrieving btnSetScrollMode");
-                UIObject btnSetScrollModeUIObject = FindElement.ByName("btnSetScrollMode");
-                Verify.IsNotNull(btnSetScrollModeUIObject, "Verifying that btnSetScrollMode Button was found");
-
-                Button btnSetScrollMode = new Button(btnSetScrollModeUIObject);
-                Log.Comment("Tapping btnSetScrollMode");
-                InputHelper.Tap(btnSetScrollMode);
-
                 Log.Comment("Retrieving cmbStyle");
                 ComboBox cmbStyle = new ComboBox(FindElement.ByName("cmbStyle"));
                 Verify.IsNotNull(cmbStyle, "Verifying that cmbStyle was found");

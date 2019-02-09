@@ -17,13 +17,13 @@
                         <ColumnDefinition Width="auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <Image Source="{x:Bind Image}" Stretch="UniformToFill"/>
+                    <Image Source="{x:Bind ImageSource}" Stretch="UniformToFill"/>
                     <TextBlock Text="{x:Bind Header}" Grid.Row="1" VerticalAlignment="Center" Margin="12"/>
                 </Grid>
             </DataTemplate>
 
             <DataTemplate x:Key="ImageItem" x:DataType="local:RevealGridItem">
-                <Image Source="{x:Bind Image}" Width="250" Stretch="UniformToFill"/>
+                <Image Source="{x:Bind ImageSource}" Width="250" Stretch="UniformToFill"/>
             </DataTemplate>
 
             <DataTemplate x:Key="SemiTransparentItem" x:DataType="local:RevealGridItem">
