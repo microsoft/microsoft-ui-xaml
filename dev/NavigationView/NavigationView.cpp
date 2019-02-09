@@ -2741,10 +2741,12 @@ void NavigationView::OnIsPaneOpenChanged()
 #ifdef USE_INSIDER_SDK
         if (auto splitView = m_rootSplitView.get())
         {
+            auto displayMode = splitView.DisplayMode();
+            auto isOverlay = displayMode == winrt::SplitViewDisplayMode::Overlay || displayMode == winrt::SplitViewDisplayMode::CompactOverlay;
             if (auto paneRoot = splitView.Pane())
             {
                 auto currentTranslation = paneRoot.Translation();
-                auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, IsPaneOpen() ? c_paneElevationTranslationZ : 0.0f };
+                auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, IsPaneOpen() && isOverlay ? c_paneElevationTranslationZ : 0.0f };
                 paneRoot.Translation(translation);
             }
         }
