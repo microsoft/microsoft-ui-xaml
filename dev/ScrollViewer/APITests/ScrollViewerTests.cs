@@ -114,6 +114,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scrollViewer.VerticalAnchorRatio, c_defaultAnchorRatio);
                 Verify.AreEqual(scrollViewer.IsAnchoredAtHorizontalExtent, c_defaultIsAnchoredAtExtent);
                 Verify.AreEqual(scrollViewer.IsAnchoredAtVerticalExtent, c_defaultIsAnchoredAtExtent);
+                Verify.AreEqual(scrollViewer.ExtentWidth, 0.0);
+                Verify.AreEqual(scrollViewer.ExtentHeight, 0.0);
+                Verify.AreEqual(scrollViewer.ViewportWidth, 0.0);
+                Verify.AreEqual(scrollViewer.ViewportHeight, 0.0);
+                Verify.AreEqual(scrollViewer.ScrollableWidth, 0.0);
+                Verify.AreEqual(scrollViewer.ScrollableHeight, 0.0);
             });
         }
 
@@ -231,6 +237,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(ScrollViewerTestHooks.GetScrollerPart(scrollViewer).Content, rectangleScrollViewerContent);
                     Verify.IsNotNull(scrollViewer.HorizontalScrollController);
                     Verify.IsNotNull(scrollViewer.VerticalScrollController);
+                    Verify.AreEqual(scrollViewer.ExtentWidth, c_defaultUIScrollViewerContentWidth);
+                    Verify.AreEqual(scrollViewer.ExtentHeight, c_defaultUIScrollViewerContentHeight);
+                    Verify.AreEqual(scrollViewer.ViewportWidth, c_defaultUIScrollViewerWidth);
+                    Verify.AreEqual(scrollViewer.ViewportHeight, c_defaultUIScrollViewerHeight);
+                    Verify.AreEqual(scrollViewer.ScrollableWidth, c_defaultUIScrollViewerContentWidth - c_defaultUIScrollViewerWidth);
+                    Verify.AreEqual(scrollViewer.ScrollableHeight, c_defaultUIScrollViewerContentHeight - c_defaultUIScrollViewerHeight);
 
                     Log.Comment("Resetting window content and ScrollViewer");
                     MUXControlsTestApp.App.TestContentRoot = null;

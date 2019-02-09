@@ -79,42 +79,32 @@ double Scroller::GetZoomedExtentHeight() const
     return m_unzoomedExtentHeight * m_zoomFactor;
 }
 
-double Scroller::GetViewportWidth() const
-{
-    return m_viewportWidth;
-}
-
-double Scroller::GetViewportHeight() const
-{
-    return m_viewportHeight;
-}
-
 void Scroller::PageLeft()
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    ScrollToHorizontalOffset(m_zoomedHorizontalOffset - GetViewportWidth());
+    ScrollToHorizontalOffset(m_zoomedHorizontalOffset - ViewportWidth());
 }
 
 void Scroller::PageRight()
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    ScrollToHorizontalOffset(m_zoomedHorizontalOffset + GetViewportWidth());
+    ScrollToHorizontalOffset(m_zoomedHorizontalOffset + ViewportWidth());
 }
 
 void Scroller::PageUp()
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    ScrollToVerticalOffset(m_zoomedVerticalOffset - GetViewportHeight());
+    ScrollToVerticalOffset(m_zoomedVerticalOffset - ViewportHeight());
 }
 
 void Scroller::PageDown()
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    ScrollToVerticalOffset(m_zoomedVerticalOffset + GetViewportHeight());
+    ScrollToVerticalOffset(m_zoomedVerticalOffset + ViewportHeight());
 }
 
 void Scroller::LineLeft()
@@ -229,7 +219,25 @@ double Scroller::ExtentHeight()
     return m_unzoomedExtentHeight;
 }
 
+double Scroller::ViewportWidth()
+{
+    return m_viewportWidth;
+}
 
+double Scroller::ViewportHeight()
+{
+    return m_viewportHeight;
+}
+
+double Scroller::ScrollableWidth()
+{
+    return std::max(0.0, GetZoomedExtentWidth() - ViewportWidth());
+}
+
+double Scroller::ScrollableHeight()
+{
+    return std::max(0.0, GetZoomedExtentHeight() - ViewportHeight());
+}
 
 winrt::IScrollController Scroller::HorizontalScrollController()
 {
@@ -2367,12 +2375,12 @@ winrt::ScrollMode Scroller::GetComputedScrollMode(ScrollerDimension dimension, b
             if (dimension == ScrollerDimension::HorizontalScroll)
             {
                 // Enable horizontal scrolling only when the Content's width is larger than the Scroller's width
-                newComputedScrollMode = GetZoomedExtentWidth() > GetViewportWidth() ? winrt::ScrollMode::Enabled : winrt::ScrollMode::Disabled;
+                newComputedScrollMode = ScrollableWidth() > 0.0 ? winrt::ScrollMode::Enabled : winrt::ScrollMode::Disabled;
             }
             else
             {
                 // Enable vertical scrolling only when the Content's height is larger than the Scroller's height
-                newComputedScrollMode = GetZoomedExtentHeight() > GetViewportHeight() ? winrt::ScrollMode::Enabled : winrt::ScrollMode::Disabled;
+                newComputedScrollMode = ScrollableHeight() > 0.0 ? winrt::ScrollMode::Enabled : winrt::ScrollMode::Disabled;
             }
         }
     }
@@ -4691,9 +4699,9 @@ void Scroller::UpdateScrollControllerValues(ScrollerDimension dimension)
         {
             m_horizontalScrollController.get().SetValues(
                 0.0 /*minOffset*/,
-                std::max(0.0, GetZoomedExtentWidth() - GetViewportWidth()) /*maxOffset*/,
+                ScrollableWidth() /*maxOffset*/,
                 m_zoomedHorizontalOffset /*offset*/,
-                GetViewportWidth() /*viewport*/);
+                ViewportWidth() /*viewport*/);
         }
     }
     else
@@ -4704,9 +4712,9 @@ void Scroller::UpdateScrollControllerValues(ScrollerDimension dimension)
         {
             m_verticalScrollController.get().SetValues(
                 0.0 /*minOffset*/,
-                std::max(0.0, GetZoomedExtentHeight() - GetViewportHeight()) /*maxOffset*/,
+                ScrollableHeight() /*maxOffset*/,
                 m_zoomedVerticalOffset /*offset*/,
-                GetViewportHeight() /*viewport*/);
+                ViewportHeight() /*viewport*/);
         }
     }
 }
