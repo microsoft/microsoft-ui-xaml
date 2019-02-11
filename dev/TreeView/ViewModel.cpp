@@ -202,8 +202,29 @@ bool ViewModel::IndexOf(winrt::IInspectable const& value, uint32_t& index)
     else
     {
         auto inner = GetVectorInnerImpl();
-        return inner->IndexOf(value, index);
+        if (value.try_as<winrt::TreeViewNode>())
+        {
+            return inner->IndexOf(value, index);
+        }
+        // The vector 'inner' consists of TreeViewNodes. However, in some automation scenarios for earlier versions of windows,
+        // (e.g. ScrollItemPattern) this function is called with a container as the 'value' parameter.
+        else
+        {
+            if (m_listView)
+            {
+                if(auto depObj = value.try_as<winrt::DependencyObject>())
+                {
+                    auto lvIndex = static_cast<uint32_t>(m_listView.get().IndexFromContainer(depObj));
+                    if (lvIndex >= 0)
+                    {
+                        index = lvIndex;
+                        return true;
+                    }
+                }
+            }
+        }
     }
+    return false;
 }
 
 uint32_t ViewModel::GetMany(uint32_t const startIndex, winrt::array_view<winrt::IInspectable> values)

@@ -1458,8 +1458,6 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
 {
     auto clickedItem = args.ClickedItem();
 
-    auto test = GetContainerForClickedItem(clickedItem);
-
     // 'GetContainerForClickedItem' was introduced to fix a bug for TopNav (see NavigationViewList.h, m_lastItemCalledInIsItemItsOwnContainerOverride).
     // However, this workaround returns the wrong container when databinding is used. So in order to have functional behavior without removing the previous
     // bug fix, first we try the standard approach of finding the container, and if that fails, we attempt the workaround.

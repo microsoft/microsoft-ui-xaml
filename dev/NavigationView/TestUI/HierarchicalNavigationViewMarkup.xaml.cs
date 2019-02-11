@@ -3,19 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using mux = Microsoft.UI.Xaml.Controls;
+
+#if !BUILD_WINDOWS
+using NavigationViewItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs;
+using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
+#endif
 
 namespace MUXControlsTestApp
 {
@@ -27,7 +21,7 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
         }
 
-        private void ClickedItem(object sender, mux.NavigationViewItemInvokedEventArgs e)
+        private void ClickedItem(object sender, NavigationViewItemInvokedEventArgs e)
         {
         }
 
@@ -36,7 +30,7 @@ namespace MUXControlsTestApp
             var selectedItem = navview.SelectedItem;
             if (selectedItem != null)
             {
-                var label = (String)((mux.NavigationViewItem)selectedItem).Content;
+                var label = (String)((NavigationViewItem)selectedItem).Content;
                 SelectedItemLabel.Text = label;
             }
         }
@@ -46,7 +40,7 @@ namespace MUXControlsTestApp
             var selectedItem = navview.SelectedItem;
             if(selectedItem != null)
             {
-                var container = (mux.NavigationViewItem)navview.ContainerFromMenuItem(selectedItem);
+                var container = (NavigationViewItem)navview.ContainerFromMenuItem(selectedItem);
                 container.IsExpanded = false;
             }
         }
@@ -69,7 +63,7 @@ namespace MUXControlsTestApp
 
         private string BuildIsChildSelectedString(IList<object> items, string itemstring)
         {
-            foreach (mux.NavigationViewItem item in items)
+            foreach (NavigationViewItem item in items)
             {
                 if (item.IsChildSelected == true)
                 {

@@ -9,7 +9,6 @@ struct bringintoview_event_revoker;
 #include "NavigationViewItem.g.h"
 #include "NavigationViewItemPresenter.h"
 #include "NavigationViewItem.properties.h"
-#include "DispatcherHelper.h"
 #include "TreeViewNode.h"
 
 class NavigationViewItem :
