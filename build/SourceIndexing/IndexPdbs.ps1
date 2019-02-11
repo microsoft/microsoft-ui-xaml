@@ -27,7 +27,8 @@ foreach ($file in (Get-ChildItem -r:$recursive "$SearchDir\*.pdb"))
 
     $allFiles = & $srctoolExe -r "$file"
 
-    # If the pdb didn't have enough files then skip it.
+    # If the pdb didn't have enough files then skip it (the srctool output has a blank line even when there's no info
+    # so check for less than 2 lines)
     if ($allFiles.Length -lt 2)
     {
         continue
@@ -37,7 +38,6 @@ foreach ($file in (Get-ChildItem -r:$recursive "$SearchDir\*.pdb"))
     {
         if ($allFiles[$i].StartsWith($SourceRoot, [StringComparison]::OrdinalIgnoreCase))
         {
-            # Git urls are case-sensitive but the PDB might contain a lowercased version of the file path.
             $relative = $allFiles[$i].Substring($SourceRoot.Length).TrimStart("\")
             $relative = $relative.Replace("\", "/")
 
