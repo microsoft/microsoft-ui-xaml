@@ -11,16 +11,10 @@ using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-
 using muxcp = Microsoft.UI.Xaml.Controls.Primitives;
-
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace DEPControlsTestApp
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class FileExplorerScenario : Page
     {
         public List<Item> allItems = new List<Item>();
@@ -85,7 +79,7 @@ namespace DEPControlsTestApp
 
         private void DropHandler(object args)
         {
-            var payload = args as DragAndDropPayload;
+            var payload = args as DragDropTargetInfo;
             if (payload != null)
             {
                 var itemsView = payload.Data as ItemsView;

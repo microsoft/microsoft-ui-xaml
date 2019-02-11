@@ -42,9 +42,6 @@
                 <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}" >
                     <DataTemplate x:Key="StackItemTemplate" x:DataType="dep:Item">
                         <l:ItemContainer Layout="{StaticResource stackLayout}" Background="LightGray">
-                            <l:DragAndDropBehavior.Source>
-                                <l:DragAndDropPayload Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" Operation="Copy" />
-                            </l:DragAndDropBehavior.Source>
                             <TextBlock Text="{x:Bind Rank}" />
                             <TextBlock Text="{x:Bind Mountain}" />
                             <TextBlock Text="{x:Bind Height_m}" />
@@ -60,9 +57,6 @@
                 <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
                     <DataTemplate x:Key="GridItemTemplate" x:DataType="dep:Item">
                         <l:ItemContainer Layout="{StaticResource gridLayout}" Background="LightGray" BorderBrush="Gray" BorderThickness="1">
-                            <l:DragAndDropBehavior.Source>
-                                <l:DragAndDropPayload Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" Operation="Copy" />
-                            </l:DragAndDropBehavior.Source>
                             <TextBlock Text="{x:Bind Rank}" />
                             <TextBlock Text="{x:Bind Mountain}" />
                             <TextBlock Text="{x:Bind Height_m}" />
@@ -78,9 +72,6 @@
                 <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
                     <DataTemplate x:Key="IconItemTemplate" x:DataType="dep:Item">
                         <l:ItemContainer Layout="{StaticResource iconItemLayout}" Background="LightGray" BorderBrush="Gray" BorderThickness="1">
-                            <l:DragAndDropBehavior.Source>
-                                <l:DragAndDropPayload Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" Operation="Copy" />
-                            </l:DragAndDropBehavior.Source>
                             <Image Grid.Column="0" Width="60" Height="60">
                                 <Image.Source>
                                     <BitmapImage UriSource="{x:Bind ImageUri}" />
@@ -186,13 +177,15 @@
                 <TextBlock Text="Drop selected items into one of the boxes below" />
                 <Grid HorizontalAlignment="Left" Background="LightGray" AllowDrop="True" l:DragAndDropBehavior.DropCommand="{x:Bind DropCommand}" Width="100" Height="100" BorderBrush="Black" BorderThickness="1">
                     <l:DragAndDropBehavior.Target>
-                        <l:DragAndDropPayload Data="{Binding ElementName=itemsView}" Operation="Copy" />
+                        <l:DragDropTargetInfo Data="{Binding ElementName=itemsView}" Operation="Copy" />
                     </l:DragAndDropBehavior.Target>
+                    <TextBlock Text="Copy" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Grid>
                 <Grid Margin="0,5,0,10" HorizontalAlignment="Left" Background="LightGray" AllowDrop="True" l:DragAndDropBehavior.DropCommand="{x:Bind DropCommand}" Width="100" Height="100" BorderBrush="Black" BorderThickness="1">
                     <l:DragAndDropBehavior.Target>
-                        <l:DragAndDropPayload Data="{Binding ElementName=itemsView}" Operation="Move" />
+                        <l:DragDropTargetInfo Data="{Binding ElementName=itemsView}" Operation="Move" />
                     </l:DragAndDropBehavior.Target>
+                    <TextBlock Text="Move" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Grid>
                 <TextBlock Text="Dropped item(s) info:" />
                 <StackPanel x:Name="dropStack" MinWidth="100" MinHeight="150" BorderBrush="Black" BorderThickness="1" />
