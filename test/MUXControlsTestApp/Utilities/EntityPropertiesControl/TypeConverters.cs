@@ -35,7 +35,9 @@ namespace MUXControlsTestApp.Utilities
 
                 if (enumType.GetTypeInfo().IsEnum)
                 {
-#if !ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found
+#if ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found                    
+                    throw new NotImplementedException();
+#else
                     foreach (FieldInfo fieldInfo in enumType.GetFields(BindingFlags.Public | BindingFlags.Static))
                     {
                         if (fieldInfo.GetValue(null).Equals(value) || (valueTypeIsInt && (int)fieldInfo.GetValue(null) == (int)value))
@@ -69,7 +71,9 @@ namespace MUXControlsTestApp.Utilities
 
                     if (enumType.GetTypeInfo().IsEnum)
                     {
-#if !ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found
+#if ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found                    
+                        throw new NotImplementedException();
+#else
                         foreach (FieldInfo fieldInfo in enumType.GetFields(BindingFlags.Public | BindingFlags.Static))
                         {
                             if (fieldInfo.Name == valueAsStr)
@@ -98,7 +102,9 @@ namespace MUXControlsTestApp.Utilities
                 {
                     string str = scb.Color.ToString();
 
-#if !ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found
+#if ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found                    
+                    throw new NotImplementedException();
+#else
                     foreach (PropertyInfo colorPropertyInfo in typeof(Colors).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
                     {
                         if (colorPropertyInfo.GetValue(null).ToString() == str)
