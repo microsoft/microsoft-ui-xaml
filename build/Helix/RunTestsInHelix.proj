@@ -31,10 +31,6 @@
       <Timeout>00:20:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollerTestsWithInputHelper.*</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="InteractionTests.ScrollBar2TestsWithInputHelper">
-      <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollBar2TestsWithInputHelper.*</Command>
-    </HelixWorkItem>
     <HelixWorkItem Include="InteractionTests.ScrollViewerTestsWithInputHelper">
       <Timeout>00:20:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollViewerTestsWithInputHelper.*</Command>
@@ -162,10 +158,6 @@
     <HelixWorkItem Include="ApiTests.RatingControlTests">
       <Timeout>00:20:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.RatingControlTests.*</Command>
-    </HelixWorkItem>
-    <HelixWorkItem Include="ApiTests.ScrollBar2Tests">
-      <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.ApiTests.ScrollBar2Tests.*</Command>
     </HelixWorkItem>
     <HelixWorkItem Include="ApiTests.ScrollerTests">
       <Timeout>00:20:00</Timeout>

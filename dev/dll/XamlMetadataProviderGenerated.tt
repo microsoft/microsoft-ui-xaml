@@ -52,7 +52,6 @@
 #ifndef BUILD_WINDOWS
 #include "AnimatedVisualPlayer.h"
 #include "ScrollViewer.h"
-#include "ScrollBar2.h"
 #include "ScrollViewerTestHooksFactory.h"
 #endif
 #endif

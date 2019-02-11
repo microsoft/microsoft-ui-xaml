@@ -436,29 +436,6 @@ namespace CustomTasks
             DefaultValueMetadata["RevealBrush.State"] = @"winrt::RevealBrushState::Normal";
             DefaultValueMetadata["RevealBrush.TargetTheme"] = @"winrt::ApplicationTheme::Light";
 
-            IncludedTypesMetadata["ScrollBar2"] = true;
-            // ScrollBar2 -- NeedsPropChangedCallbackMetadata
-            NeedsPropChangedCallbackMetadata["ScrollBar2.IndicatorMode"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.IsEnabled"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.LargeChange"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.MaxOffset"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.MinOffset"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.Offset"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.Orientation"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.ScrollBarStyle"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.SmallChange"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.Viewport"] = true;
-            // ScrollBar2 -- DefaultValueMetadata
-            DefaultValueMetadata["ScrollBar2.IndicatorMode"] = @"ScrollBar2::s_defaultIndicatorMode";
-            DefaultValueMetadata["ScrollBar2.IsEnabled"] = @"ScrollBar2::s_defaultIsEnabled";
-            DefaultValueMetadata["ScrollBar2.LargeChange"] = @"ScrollBar2::s_defaultLargeChange";
-            DefaultValueMetadata["ScrollBar2.MaxOffset"] = @"ScrollBar2::s_defaultMaxOffset";
-            DefaultValueMetadata["ScrollBar2.MinOffset"] = @"ScrollBar2::s_defaultMinOffset";
-            DefaultValueMetadata["ScrollBar2.Offset"] = @"ScrollBar2::s_defaultOffset";
-            DefaultValueMetadata["ScrollBar2.Orientation"] = @"ScrollBar2::s_defaultOrientation";
-            DefaultValueMetadata["ScrollBar2.SmallChange"] = @"ScrollBar2::s_defaultSmallChange";
-            DefaultValueMetadata["ScrollBar2.Viewport"] = @"ScrollBar2::s_defaultViewport";
-
             IncludedTypesMetadata["Scroller"] = true;
             // Scroller -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["Scroller.Background"] = true;

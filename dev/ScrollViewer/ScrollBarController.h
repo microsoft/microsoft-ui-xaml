@@ -94,7 +94,7 @@ private:
     // Private constants
 
     // Default amount to scroll when hitting the SmallIncrement/SmallDecrement buttons: 1/8 of the viewport size.
-    // This amount can be overridden by setting the ScrollBar2.SmallChange property to something else than double.NaN.
+    // This amount can be overridden by setting the ScrollBar.SmallChange property to something else than double.NaN.
     static constexpr double s_defaultViewportToSmallChangeRatio{ 8.0 };
 
     // Minimum initial velocity required by InteractionTracker.TryUpdatePositionWithAdditionalVelocity to affect the Position.

@@ -430,7 +430,6 @@
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <CheckBox x:Name="chkLogScrollerMessages" Content="Log Scroller Messages?" Margin="1" Checked="ChkLogScrollerMessages_Checked" Unchecked="ChkLogScrollerMessages_Unchecked"/>
-                        <CheckBox x:Name="chkLogScrollBar2Messages" Content="Log ScrollBar2 Messages?" Margin="1" Checked="ChkLogScrollBar2Messages_Checked" Unchecked="ChkLogScrollBar2Messages_Unchecked"/>
                         <CheckBox x:Name="chkLogScrollViewerMessages" Content="Log ScrollViewer Messages?" Margin="1" Checked="ChkLogScrollViewerMessages_Checked" Unchecked="ChkLogScrollViewerMessages_Unchecked"/>
                     </StackPanel>
                 </StackPanel>
