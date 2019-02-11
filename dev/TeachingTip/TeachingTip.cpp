@@ -33,8 +33,8 @@ void TeachingTip::OnApplyTemplate()
     m_beakOcclusionGrid.set(GetTemplateChildT<winrt::Grid>(s_beakOcclusionGridName, controlProtected));
     m_contentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_contentRootGridName, controlProtected));
     m_nonBleedingContentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_nonBleedingContentRootGridName, controlProtected));
-    m_bleedingImageContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(s_bleedingImageContentPresenterName, controlProtected));
-    m_iconContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(s_iconName, controlProtected));
+    m_bleedingImageContentBorder.set(GetTemplateChildT<winrt::Border>(s_bleedingImageBorderName, controlProtected));
+    m_iconBorder.set(GetTemplateChildT<winrt::Border>(s_iconBorderName, controlProtected));
     m_actionButton.set(GetTemplateChildT<winrt::Button>(s_actionButtonName, controlProtected));
     m_alternateCloseButton.set(GetTemplateChildT<winrt::Button>(s_alternateCloseButtonName, controlProtected));
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
@@ -762,18 +762,14 @@ void TeachingTip::OnIconSourceChanged()
     if (auto source = IconSource())
     {
         winrt::VisualStateManager::GoToState(*this, L"Icon"sv, false);
-        if (m_iconContentPresenter)
+        if (m_iconBorder)
         {
-            m_iconContentPresenter.get().Content(SharedHelpers::MakeIconElementFrom(source));
+            m_iconBorder.get().Child(SharedHelpers::MakeIconElementFrom(source));
         }
     }
     else
     {
         winrt::VisualStateManager::GoToState(*this, L"NoIcon"sv, false);
-        if (m_iconContentPresenter)
-        {
-            m_iconContentPresenter.get().Content(nullptr);
-        }
     }
 }
 
@@ -1175,7 +1171,7 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
 
             if (BleedingImageContent())
             {
-                if (m_bleedingImageContentPresenter.get().ActualHeight() > m_nonBleedingContentRootGrid.get().ActualHeight() - BeakLongSideActualLength())
+                if (m_bleedingImageContentBorder.get().ActualHeight() > m_nonBleedingContentRootGrid.get().ActualHeight() - BeakLongSideActualLength())
                 {
                     leftCenterAvailable = false;
                     rightCenterAvailable = false;
