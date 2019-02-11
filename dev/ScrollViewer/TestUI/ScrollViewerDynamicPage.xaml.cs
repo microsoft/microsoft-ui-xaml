@@ -351,42 +351,6 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnGetIsAnchoredAtHorizontalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateCmbIsAnchoredAtHorizontalExtent();
-        }
-
-        private void BtnSetIsAnchoredAtHorizontalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                scrollViewer.IsAnchoredAtHorizontalExtent = cmbIsAnchoredAtHorizontalExtent.SelectedIndex == 0;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstLogs.Items.Add(ex.ToString());
-            }
-        }
-
-        private void BtnGetIsAnchoredAtVerticalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateCmbIsAnchoredAtVerticalExtent();
-        }
-
-        private void BtnSetIsAnchoredAtVerticalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                scrollViewer.IsAnchoredAtVerticalExtent = cmbIsAnchoredAtVerticalExtent.SelectedIndex == 0;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstLogs.Items.Add(ex.ToString());
-            }
-        }
-
         private void BtnGetHorizontalAnchorRatio_Click(object sender, RoutedEventArgs e)
         {
             UpdateHorizontalAnchorRatio();
@@ -492,32 +456,6 @@ namespace MUXControlsTestApp
             try
             {
                 cmbXYFocusKeyboardNavigation.SelectedIndex = (int)scrollViewer.XYFocusKeyboardNavigation;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstLogs.Items.Add(ex.ToString());
-            }
-        }
-
-        private void UpdateCmbIsAnchoredAtHorizontalExtent()
-        {
-            try
-            {
-                cmbIsAnchoredAtHorizontalExtent.SelectedIndex = scrollViewer.IsAnchoredAtHorizontalExtent ? 0 : 1;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstLogs.Items.Add(ex.ToString());
-            }
-        }
-
-        private void UpdateCmbIsAnchoredAtVerticalExtent()
-        {
-            try
-            {
-                cmbIsAnchoredAtVerticalExtent.SelectedIndex = scrollViewer.IsAnchoredAtVerticalExtent ? 0 : 1;
             }
             catch (Exception ex)
             {
@@ -1341,8 +1279,6 @@ namespace MUXControlsTestApp
                 UpdateCmbHorizontalScrollBarVisibility();
                 UpdateCmbVerticalScrollBarVisibility();
                 UpdateCmbXYFocusKeyboardNavigation();
-                UpdateCmbIsAnchoredAtHorizontalExtent();
-                UpdateCmbIsAnchoredAtVerticalExtent();
                 UpdateHorizontalAnchorRatio();
                 UpdateVerticalAnchorRatio();
 #if USE_SCROLLMODE_AUTO

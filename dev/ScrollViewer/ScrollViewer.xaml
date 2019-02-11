@@ -21,8 +21,6 @@
         <Setter Property="InputKind" Value="All"/>
         <Setter Property="MinZoomFactor" Value="0.1"/>
         <Setter Property="MaxZoomFactor" Value="10.0"/>
-        <Setter Property="IsAnchoredAtHorizontalExtent" Value="True"/>
-        <Setter Property="IsAnchoredAtVerticalExtent" Value="True"/>
         <Setter Property="HorizontalAnchorRatio" Value="0.0"/>
         <Setter Property="VerticalAnchorRatio" Value="0.0"/>
         <Setter Property="Template">
@@ -221,8 +219,6 @@
                             InputKind="{TemplateBinding InputKind}"
                             MinZoomFactor="{TemplateBinding MinZoomFactor}"
                             MaxZoomFactor="{TemplateBinding MaxZoomFactor}"
-                            IsAnchoredAtHorizontalExtent="{TemplateBinding IsAnchoredAtHorizontalExtent}"
-                            IsAnchoredAtVerticalExtent="{TemplateBinding IsAnchoredAtVerticalExtent}"
                             HorizontalAnchorRatio="{TemplateBinding HorizontalAnchorRatio}"
                             VerticalAnchorRatio="{TemplateBinding VerticalAnchorRatio}"/>
                         <ScrollBar x:Name="PART_HorizontalScrollBar" 

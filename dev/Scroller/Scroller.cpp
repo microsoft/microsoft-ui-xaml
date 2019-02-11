@@ -3288,11 +3288,6 @@ void Scroller::OnPropertyChanged(
 
         m_isAnchorElementDirty = true;
     }
-    else if (dependencyProperty == s_IsAnchoredAtHorizontalExtentProperty ||
-        dependencyProperty == s_IsAnchoredAtVerticalExtentProperty)
-    {
-        m_isAnchorElementDirty = true;
-    }
     else if (m_scrollerVisualInteractionSource)
     {
         if (dependencyProperty == s_HorizontalScrollChainingModeProperty)
@@ -6587,14 +6582,6 @@ winrt::hstring Scroller::DependencyPropertyToString(const winrt::IDependencyProp
     else if (dependencyProperty == s_MaxZoomFactorProperty)
     {
         return L"MaxZoomFactor";
-    }
-    else if (dependencyProperty == s_IsAnchoredAtHorizontalExtentProperty)
-    {
-        return L"IsAnchoredAtHorizontalExtent";
-    }
-    else if (dependencyProperty == s_IsAnchoredAtVerticalExtentProperty)
-    {
-        return L"IsAnchoredAtVerticalExtent";
     }
     else if (dependencyProperty == s_HorizontalAnchorRatioProperty)
     {
