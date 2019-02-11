@@ -2664,9 +2664,9 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         UpdateVisualState();
     }
-    else if (property == s_OpenPaneLengthProperty)
+    else if (property == s_CompactPaneLengthProperty)
     {
-        // Need to update receiver margins when OpenPaneLength changes
+        // Need to update receiver margins when CompactPaneLength changes
         UpdatePaneShadow();
     }
 }
@@ -3372,7 +3372,7 @@ void NavigationView::UpdatePaneShadow()
 
         // Shadow will get clipped if casting on the splitView.Content directly
         // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
-        winrt::Thickness shadowReceiverMargin = { -OpenPaneLength(), -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
+        winrt::Thickness shadowReceiverMargin = { -CompactPaneLength(), -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
         shadowReceiver.Margin(shadowReceiverMargin);
 #endif
     }
