@@ -148,4 +148,18 @@ namespace DEPControlsTestApp.ItemsViewPrototype
 
         #endregion
     }
+
+    public class GroupedObservableCollection<T> : ObservableCollection<T>
+    {
+        public string Key
+        {
+            get;
+            set;
+        }
+
+        public GroupedObservableCollection(string key, IEnumerable<T> collection) : base(collection)
+        {
+            this.Key = key;
+        }
+    }
 }

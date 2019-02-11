@@ -81,7 +81,7 @@
                             <l:DragAndDropBehavior.Source>
                                 <l:DragAndDropPayload Data="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}" Operation="Copy" />
                             </l:DragAndDropBehavior.Source>
-                            <Image Grid.Column="0" Width="60" Height="60"  >
+                            <Image Grid.Column="0" Width="60" Height="60">
                                 <Image.Source>
                                     <BitmapImage UriSource="{x:Bind ImageUri}" />
                                 </Image.Source>
@@ -93,8 +93,8 @@
             </l:ViewDefinition.ItemTemplate>
         </l:ViewDefinition>
 
-        <l:ItemsViewTextColumnDefinition DisplayMemberPath="Rank" x:Key="Rank"/>
-        <l:ItemsViewTextColumnDefinition DisplayMemberPath="Mountain" x:Key="Mountain"/>
+        <l:ItemsViewColumnDefinition x:Key="Rank" ColumnName="Rank" Heading="Rank" CellTemplate="{StaticResource rankTemplate}"/>
+        <l:ItemsViewColumnDefinition x:Key="Mountain" ColumnName="Mountain" Heading="Mountain" CellTemplate="{StaticResource mountainTemplate}"/>
         <l:ItemsViewTextColumnDefinition DisplayMemberPath="Height_m" Heading="Height (m)" x:Key="Height_m"/>
         <l:ItemsViewTextColumnDefinition DisplayMemberPath="Range" x:Key="Range"/>
         <l:ItemsViewTextColumnDefinition DisplayMemberPath="Coordinates" x:Key="Coordinates"/>
@@ -117,7 +117,7 @@
 
         <l:TableDefinition x:Name="groupedTableDefinition" IsGroup="IsGroup">
             <l:ItemsViewTextColumnDefinition DisplayMemberPath="Rank"/>
-            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Mountain"/>
+            <l:ItemsViewColumnDefinition ColumnName="Mountain" Heading="Mountain" CellTemplate="{StaticResource mountainTemplate}"/>
             <l:ItemsViewTextColumnDefinition DisplayMemberPath="Height_m" Heading="Height (m)"/>
             <l:ItemsViewTextColumnDefinition DisplayMemberPath="Range"/>
             <l:ItemsViewTextColumnDefinition DisplayMemberPath="Coordinates"/>
@@ -181,15 +181,21 @@
                      ItemsSource="{x:Bind Items}" 
                      ViewDefinition="{StaticResource flatTableDefinition}"/>
 
-
         <ScrollViewer Grid.Row="1" Grid.Column="1" Margin="10">
-            <StackPanel >
-                <TextBlock Text="Drop selected items into the box below" />
-                <StackPanel x:Name="dropStack"  Background="LightGray" AllowDrop="True"  l:DragAndDropBehavior.DropCommand="{x:Bind DropCommand}" MinWidth="150" MinHeight="150" BorderBrush="Black" BorderThickness="1">
+            <StackPanel>
+                <TextBlock Text="Drop selected items into one of the boxes below" />
+                <Grid HorizontalAlignment="Left" Background="LightGray" AllowDrop="True" l:DragAndDropBehavior.DropCommand="{x:Bind DropCommand}" Width="100" Height="100" BorderBrush="Black" BorderThickness="1">
                     <l:DragAndDropBehavior.Target>
                         <l:DragAndDropPayload Data="{Binding ElementName=itemsView}" Operation="Copy" />
                     </l:DragAndDropBehavior.Target>
-                </StackPanel>
+                </Grid>
+                <Grid Margin="0,5,0,10" HorizontalAlignment="Left" Background="LightGray" AllowDrop="True" l:DragAndDropBehavior.DropCommand="{x:Bind DropCommand}" Width="100" Height="100" BorderBrush="Black" BorderThickness="1">
+                    <l:DragAndDropBehavior.Target>
+                        <l:DragAndDropPayload Data="{Binding ElementName=itemsView}" Operation="Move" />
+                    </l:DragAndDropBehavior.Target>
+                </Grid>
+                <TextBlock Text="Dropped item(s) info:" />
+                <StackPanel x:Name="dropStack" MinWidth="100" MinHeight="150" BorderBrush="Black" BorderThickness="1" />
             </StackPanel>
         </ScrollViewer>
     </Grid>

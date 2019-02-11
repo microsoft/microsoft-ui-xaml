@@ -57,7 +57,7 @@ namespace DEPControlsTestApp.ItemsViewPrototype
             var element = (UIElement)sender;
             var payload = DragAndDropBehavior.GetTarget(element);
             var command = DragAndDropBehavior.GetDropCommand((UIElement)sender);
-            command?.Execute(payload.Data);
+            command?.Execute(payload);
         }
 
         private static void OnSourcePropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
@@ -85,7 +85,7 @@ namespace DEPControlsTestApp.ItemsViewPrototype
             var operation = payload.Operation.ToDataPackageOperation();
             var data = payload.Data;
 
-            args.AllowedOperations = operation;
+            args.AllowedOperations = DataPackageOperation.Move | DataPackageOperation.Copy;
         }
 
         private static DataPackageOperation ToDataPackageOperation(this DragAndDropOperation operation)
@@ -112,7 +112,6 @@ namespace DEPControlsTestApp.ItemsViewPrototype
             propertyType: typeof(DragAndDropPayload),
             ownerType: typeof(DragAndDropBehavior),
             defaultMetadata: new PropertyMetadata(default(DragAndDropPayload), DragAndDropBehavior.OnTargetPropertyChanged));
-
 
         private static DependencyProperty DropCommandProperty = DependencyProperty.RegisterAttached(
             name: "DropCommand",
