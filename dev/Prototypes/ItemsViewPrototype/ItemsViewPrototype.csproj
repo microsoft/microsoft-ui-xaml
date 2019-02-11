@@ -122,6 +122,9 @@
     <Compile Include="Control\Animations\ItemsViewAnimator.cs" />
     <Compile Include="Control\Data\Book.cs" />
     <Compile Include="Control\Data\ObservableDataSource.cs" />
+    <Compile Include="Control\DragDrop\Command.cs" />
+    <Compile Include="Control\DragDrop\DragDropBehavior.cs" />
+    <Compile Include="Control\DragDrop\DragDropInfo.cs" />
     <Compile Include="Control\Hierarchy\HierarchicalDataTemplate.cs" />
     <Compile Include="Control\ItemsView.cs" />
     <Compile Include="Control\ItemsViewAutomationPeer.cs" />

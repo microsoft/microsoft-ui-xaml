@@ -5,34 +5,32 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Windows.Input;
 using Windows.Devices.Geolocation;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-
 using muxcp = Microsoft.UI.Xaml.Controls.Primitives;
-
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace DEPControlsTestApp
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class FileExplorerScenario : Page
     {
         public List<Item> allItems = new List<Item>();
         public ObservableDataSource<Item> Items = new ObservableDataSource<Item>();
-        public ObservableDataSource<IGrouping<string, Item>> ItemsGroupedByParentMountain = new ObservableDataSource<IGrouping<string, Item>>();
+        public ObservableDataSource<GroupedObservableCollection<Item>> ItemsGroupedByParentMountain = new ObservableDataSource<GroupedObservableCollection<Item>>();
         bool isGrouped = false;
+
+        public ICommand DropCommand { get; }
 
         public FileExplorerScenario()
         {
             this.InitializeComponent();
 
+            this.DropCommand = new Command { ExecuteHandler = args => DropHandler(args) };
+
             this.Loaded += FileExplorerScenario_Loaded;
-            isGrouped = true;
 
             flatStackButton.Click += (sender, args) =>
             {
@@ -78,7 +76,53 @@ namespace DEPControlsTestApp
             itemsView.SortFunc = SortItems;
             itemsView.FilterFunc = FilterItems;
         }
-        
+
+        private void DropHandler(object args)
+        {
+            var payload = args as DragDropTargetInfo;
+            if (payload != null)
+            {
+                var itemsView = payload.Data as ItemsView;
+                if (itemsView != null)
+                {
+                    dropStack.Children.Clear();
+                    var selector = itemsView.Selector;
+                    foreach (var selected in selector.Model.SelectedItems)
+                    {
+                        dropStack.Children.Add(new TextBlock() { Text = selected.ToString() });
+                    }
+
+                    if (payload.Operation == DragAndDropOperation.Move)
+                    {
+                        if (isGrouped)
+                        {
+                            // traverse in reverse order so we can keep indices valid as we remove
+                            foreach (var indexPath in selector.Model.SelectedIndices.Reverse())
+                            {
+                                Debug.Assert(indexPath.GetSize() == 2);
+                                int groupIndex = indexPath.GetAt(0);
+                                int itemIndex = indexPath.GetAt(1);
+                                ItemsGroupedByParentMountain[groupIndex].RemoveAt(itemIndex);
+                                // when there are no more items left in the group, remove the group too.
+                                if (ItemsGroupedByParentMountain[groupIndex].Count == 0)
+                                {
+                                    ItemsGroupedByParentMountain.RemoveAt(groupIndex);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // traverse in reverse order so we can keep indices valid as we remove
+                            foreach (var indexPath in selector.Model.SelectedIndices.Reverse())
+                            {
+                                Items.RemoveAt(indexPath.GetAt(0));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private void FileExplorerScenario_Loaded(object sender, RoutedEventArgs e)
         {
             LoadItems();
@@ -150,8 +194,7 @@ namespace DEPControlsTestApp
                         double longitude = GetDecimalDegrees(coordinates[1]);
 
                         allItems.Add(
-                            new Item()
-                            {
+                            new Item() {
                                 Rank = uint.Parse(values[0]),
                                 Mountain = values[1],
                                 Height_m = uint.Parse(values[2]),
@@ -170,7 +213,13 @@ namespace DEPControlsTestApp
                     var groups = from item in items
                                  group item by item.Parent_mountain into g
                                  select g;
-                    ItemsGroupedByParentMountain.Data = new ObservableCollection<IGrouping<string, Item>>(groups);
+
+                    ItemsGroupedByParentMountain.Data = new ObservableCollection<GroupedObservableCollection<Item>>();
+                    foreach (var group in groups)
+                    {
+                        var groupedCollection = new GroupedObservableCollection<Item>(group.Key, group);
+                        ItemsGroupedByParentMountain.Add(groupedCollection);
+                    }
                 }
             }
         }
@@ -377,7 +426,7 @@ namespace DEPControlsTestApp
 
         private void IsGroup(object sender, IsGroupEventArgs args)
         {
-            if (args.Item is IGrouping<string, Item>)
+            if (args.Item is GroupedObservableCollection<Item>)
             {
                 args.IsGroup = true;
             }
@@ -411,7 +460,11 @@ namespace DEPControlsTestApp
             }
         }
 
-
         public Geopoint mapCenter { get; set; }
+
+        public override string ToString()
+        {
+            return Mountain;
+        }
     }
 }

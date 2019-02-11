@@ -29,6 +29,10 @@ namespace DEPControlsTestApp.ItemsViewPrototype
         public ItemContainer()
         {
             DefaultStyleKey = typeof(ItemContainer);
+            DragAndDropBehavior.SetSource(this,
+                new DragDropSourceInfo() {
+                    AllowedOperations = DragAndDropOperation.Copy | DragAndDropOperation.Move
+                });
         }
 
         public Layout Layout
