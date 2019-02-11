@@ -17,9 +17,6 @@ jobs:
   strategy:
     maxParallel: 10
     matrix:
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
       Release_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
