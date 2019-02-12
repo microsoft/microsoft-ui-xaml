@@ -1052,6 +1052,7 @@ Global
 		{FBC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|ARM.Build.0 = Debug_test|ARM
 		{FBC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|ARM.Deploy.0 = Debug_test|ARM
 		{FBC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|arm64.ActiveCfg = Debug_test|arm64
+		{FBC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|arm64.Build.0 = Debug_test|arm64
 		{FBC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|x64.ActiveCfg = Debug_test|x64
 		{FBC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|x64.Build.0 = Debug_test|x64
 		{FBC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|x64.Deploy.0 = Debug_test|x64
