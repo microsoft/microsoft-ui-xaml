@@ -43,7 +43,7 @@
         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="20" Margin="2">
             <TextBlock Text="ScrollViewers with simple contents." Margin="2" VerticalAlignment="Center"/>
             <TextBlock Text="Show ScrollViewer:" Margin="6,2,2,2" VerticalAlignment="Center"/>
-            <ComboBox x:Name="cmbShowScrollViewer" AutomationProperties.Name="cmbShowScrollViewer" 
+            <ComboBox x:Name="cmbShowScrollViewer" AutomationProperties.Name="cmbShowScrollViewer" VerticalAlignment="Center"
                     SelectedIndex="0" SelectionChanged="CmbShowScrollViewer_SelectionChanged" Width="140">
                 <ComboBoxItem>All</ComboBoxItem>
                 <ComboBoxItem>scrollViewer_11</ComboBoxItem>
@@ -72,6 +72,18 @@
             <TextBox x:Name="txtScrollerVerticalOffset" AutomationProperties.AutomationId="txtScrollerVerticalOffset" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="175"/>
             <TextBlock Text="ZoomFactor:" Margin="6,2,2,2" VerticalAlignment="Center"/>
             <TextBox x:Name="txtScrollerZoomFactor" AutomationProperties.AutomationId="txtScrollerZoomFactor" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="175"/>
+            <TextBlock Text="IgnoredInputKind:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbIgnoredInputKind" AutomationProperties.Name="cmbIgnoredInputKind" VerticalAlignment="Center"
+                    SelectedIndex="0" SelectionChanged="CmbIgnoredInputKind_SelectionChanged" Width="140" IsEnabled="False" IsTabStop="False">
+                <ComboBoxItem/>
+                <ComboBoxItem>None</ComboBoxItem>
+                <ComboBoxItem>Touch</ComboBoxItem>
+                <ComboBoxItem>Pen</ComboBoxItem>
+                <ComboBoxItem>MouseWheel</ComboBoxItem>
+                <ComboBoxItem>Keyboard</ComboBoxItem>
+                <ComboBoxItem>Gamepad</ComboBoxItem>
+                <ComboBoxItem>All</ComboBoxItem>
+            </ComboBox>
         </StackPanel>
 
         <Border Margin="1" Background="Cyan" Grid.Row="2" Grid.Column="0">
@@ -119,8 +131,7 @@
         </Border>
         <Border Margin="1" Background="CadetBlue" Grid.Row="2" Grid.Column="4">
             <controls:ScrollViewer x:Name="scrollViewer51" AutomationProperties.Name="scrollViewer51" IsTabStop="True"
-                ContentOrientation="None" IgnoredInputKind="Keyboard"
-                HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled">
+                ContentOrientation="None" HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled">
                 <Image x:Name="img51" AutomationProperties.Name="img51" Source="Assets/ingredient5.png" Width="800" Height="800"/>
             </controls:ScrollViewer>
         </Border>
@@ -159,8 +170,7 @@
         </Border>
         <Border Margin="1" Background="CadetBlue" Grid.Row="3" Grid.Column="4">
             <controls:ScrollViewer x:Name="scrollViewer52" AutomationProperties.Name="scrollViewer52"
-                ContentOrientation="None" IgnoredInputKind="Gamepad"
-                HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled" ZoomMode="Enabled">
+                ContentOrientation="None" HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled" ZoomMode="Enabled">
                 <Image x:Name="img52" AutomationProperties.Name="img52" Source="Assets/ingredient5.png" Width="800" Height="800"/>
             </controls:ScrollViewer>
         </Border>

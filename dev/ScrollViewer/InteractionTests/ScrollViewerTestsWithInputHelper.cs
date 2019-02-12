@@ -341,6 +341,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 SetupScrollViewerTestWithImage("51", out img51, out scroller51);
 
+                Log.Comment("Retrieving cmbIgnoredInputKind");
+                ComboBox cmbIgnoredInputKind = new ComboBox(FindElement.ByName("cmbIgnoredInputKind"));
+                Verify.IsNotNull(cmbIgnoredInputKind, "Verifying that cmbIgnoredInputKind was found");
+
+                Log.Comment("Changing ScrollViewer.IgnoredInputKind to Keyboard");
+                cmbIgnoredInputKind.SelectItemByName("Keyboard");
+                Log.Comment("Selection is now {0}", cmbIgnoredInputKind.Selection[0].Name);
+
                 Log.Comment("Pressing Down key");
                 KeyboardHelper.PressKey(scroller51, Key.Down, modifierKey: ModifierKey.None, numPresses: 1, useDebugMode: true);
                 VerifyScrollViewerRemainsAtView(0.0, 0.0, 1.0f);
@@ -536,6 +544,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Scroller scroller52;
 
                 SetupScrollViewerTestWithImage("52", out img52, out scroller52);
+
+                Log.Comment("Retrieving cmbIgnoredInputKind");
+                ComboBox cmbIgnoredInputKind = new ComboBox(FindElement.ByName("cmbIgnoredInputKind"));
+                Verify.IsNotNull(cmbIgnoredInputKind, "Verifying that cmbIgnoredInputKind was found");
+
+                Log.Comment("Changing ScrollViewer.IgnoredInputKind to Gamepad");
+                cmbIgnoredInputKind.SelectItemByName("Gamepad");
+                Log.Comment("Selection is now {0}", cmbIgnoredInputKind.Selection[0].Name);
 
                 Log.Comment("Pressing LeftThumbstick Down");
                 GamepadHelper.PressButton(null, GamepadButton.LeftThumbstickDown);
