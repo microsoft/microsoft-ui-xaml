@@ -15,17 +15,7 @@ jobs:
     - ${{ parameters.dependsOn }}
 
   steps:
-    # Extract the build revision number from Build.BuildNumber. This is needed to pass to build-nupkg.
-    # This relies on the format of the pipeline name being of the format: $(date:yyMM).$(date:dd)$(rev:rrr)
-    # We can't use those variables here (they only work in the *name* of the top level Yaml), so
-    # pull them out here and set the variables for use in the nuget package version.
-  - powershell: |
-      $yymm = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 10, 4)
-      $dd = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 5, 2)
-      $revision = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 3, 3)
-      Write-Host "##vso[task.setvariable variable=builddate]$yymm$dd"
-      Write-Host "##vso[task.setvariable variable=buildrevision]$revision"
-    displayName: 'Get build revision number'
+  - template: MUX-PopulateBuildDateAndRevision-Steps.yml
   
   - script: |
       echo parameters.jobName '${{ parameters.jobName }}'
@@ -33,7 +23,7 @@ jobs:
       echo parameters.nupkgdir '${{ parameters.nupkgdir }}'
       echo parameters.publishPath '${{ parameters.publishPath }}'
       echo buildrevision=$(buildrevision)
-      echo buildrevision=$(builddate)
+      echo builddate=$(builddate)
     displayName: 'CreateNugetPackage: Display parameters'
 
   - task: DownloadBuildArtifacts@0 
@@ -56,7 +46,7 @@ jobs:
         -Subversion '$(buildrevision)' 
         -SkipFrameworkPackage
         -BuildArch ${{ parameters.primaryBuildArch }}
-        -BuildFlavor ${{ parameters.buildFlavor }} 
+        -BuildFlavor ${{ parameters.buildFlavor }}
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish artifact: nupkg'

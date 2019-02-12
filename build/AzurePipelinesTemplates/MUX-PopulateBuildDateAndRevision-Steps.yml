@@ -1,0 +1,19 @@
+steps:
+    # Extract the build revision number from Build.BuildNumber. This is needed to pass to build-nupkg.
+    # This relies on the format of the pipeline name being of the format: $(date:yyMM).$(date:dd)$(rev:rrr)
+    # We can't use those variables here (they only work in the *name* of the top level Yaml), so
+    # pull them out here and set the variables for use in the nuget package version.
+  - powershell: |
+      $yymm = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 10, 4)
+      $dd = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 5, 2)
+      $revision = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 3, 3)
+      Write-Host "##vso[task.setvariable variable=builddate]$yymm$dd"
+      Write-Host "##vso[task.setvariable variable=builddate_yymm]$yymm"
+      Write-Host "##vso[task.setvariable variable=builddate_dd]$dd"
+      Write-Host "##vso[task.setvariable variable=buildrevision]$revision"
+
+      Write-Host builddate=$yymm$dd
+      Write-Host builddate_yymm=$yymm
+      Write-Host builddate_dd=$dd
+      Write-Host buildrevision=$revision
+    displayName: 'Get build revision number'
