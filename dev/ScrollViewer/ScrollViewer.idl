@@ -79,6 +79,8 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultAnchorRatio")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateAnchorRatio")]
     Double VerticalAnchorRatio { get; set; };
+    void RegisterAnchorCandidate(Windows.UI.Xaml.UIElement element);
+    void UnregisterAnchorCandidate(Windows.UI.Xaml.UIElement element);
     Int32 ChangeOffsets(ScrollerChangeOffsetsOptions options);
     Int32 ChangeOffsetsWithAdditionalVelocity(ScrollerChangeOffsetsWithAdditionalVelocityOptions options);
     Int32 ChangeZoomFactor(ScrollerChangeZoomFactorOptions options);

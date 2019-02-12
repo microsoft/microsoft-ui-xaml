@@ -62,6 +62,8 @@ public:
     winrt::InputKind InputKind();
     void InputKind(winrt::InputKind const& value);
 
+    void RegisterAnchorCandidate(winrt::UIElement const& element);
+    void UnregisterAnchorCandidate(winrt::UIElement const& element);
     int32_t ChangeOffsets(winrt::ScrollerChangeOffsetsOptions const& options);
     int32_t ChangeOffsetsWithAdditionalVelocity(winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions const& options);
     int32_t ChangeZoomFactor(winrt::ScrollerChangeZoomFactorOptions const& options);

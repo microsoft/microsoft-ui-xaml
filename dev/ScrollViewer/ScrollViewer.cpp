@@ -162,6 +162,26 @@ void ScrollViewer::InputKind(winrt::InputKind const& value)
     SetValue(s_InputKindProperty, box_value(value));
 }
 
+void ScrollViewer::RegisterAnchorCandidate(winrt::UIElement const& element)
+{
+    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    if (auto scroller = m_scroller.get())
+    {
+        scroller.RegisterAnchorCandidate(element);
+    }
+}
+
+void ScrollViewer::UnregisterAnchorCandidate(winrt::UIElement const& element)
+{
+    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    if (auto scroller = m_scroller.get())
+    {
+        scroller.UnregisterAnchorCandidate(element);
+    }
+}
+
 int32_t ScrollViewer::ChangeOffsets(
     winrt::ScrollerChangeOffsetsOptions const& options)
 {
