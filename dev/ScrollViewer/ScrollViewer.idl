@@ -34,7 +34,7 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultVerticalScrollBarVisibility")]
     ScrollBarVisibility VerticalScrollBarVisibility { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultContentOrientation")]
-    MU_XC_NAMESPACE.ContentOrientation ContentOrientation { get; set; };
+    ContentOrientation ContentOrientation { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultHorizontalScrollChainingMode")]
     ChainingMode HorizontalScrollChainingMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultVerticalScrollChainingMode")]
@@ -79,6 +79,49 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultAnchorRatio")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateAnchorRatio")]
     Double VerticalAnchorRatio { get; set; };
+    [method_name("ScrollTo")]
+    ScrollInfo ScrollTo(
+        Double horizontalOffset,
+        Double verticalOffset);
+    [method_name("ScrollToWithOptions")]
+    ScrollInfo ScrollTo(
+        Double horizontalOffset,
+        Double verticalOffset,
+        ScrollOptions options);
+    [method_name("ScrollBy")]
+    ScrollInfo ScrollBy(
+        Double horizontalOffsetDelta,
+        Double verticalOffsetDelta);
+    [method_name("ScrollByWithOptions")]
+    ScrollInfo ScrollBy(
+        Double horizontalOffsetDelta,
+        Double verticalOffsetDelta,
+        ScrollOptions options);
+    ScrollInfo ScrollFrom(
+        Windows.Foundation.Numerics.Vector2 offsetsVelocity,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
+    [method_name("ZoomTo")]
+    ZoomInfo ZoomTo(
+        Single zoomFactor,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint);
+    [method_name("ZoomToWithOptions")]
+    ZoomInfo ZoomTo(
+        Single zoomFactor,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
+        ZoomOptions options);
+    [method_name("ZoomBy")]
+    ZoomInfo ZoomBy(
+        Single zoomFactorDelta,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint);
+    [method_name("ZoomByWithOptions")]
+    ZoomInfo ZoomBy(
+        Single zoomFactorDelta,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
+        ZoomOptions options);
+    ZoomInfo ZoomFrom(
+        Single zoomFactorVelocity,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
+        Windows.Foundation.IReference<Single> inertiaDecayRate);
     Int32 ChangeOffsets(ScrollerChangeOffsetsOptions options);
     Int32 ChangeOffsetsWithAdditionalVelocity(ScrollerChangeOffsetsWithAdditionalVelocityOptions options);
     Int32 ChangeZoomFactor(ScrollerChangeZoomFactorOptions options);

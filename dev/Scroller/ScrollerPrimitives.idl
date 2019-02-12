@@ -176,6 +176,49 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> HorizontalSnapPoints{ get; };
     Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> VerticalSnapPoints{ get; };
     Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> ZoomSnapPoints{ get; };
+    [method_name("ScrollTo")]
+    MU_XC_NAMESPACE.ScrollInfo ScrollTo(
+        Double horizontalOffset,
+        Double verticalOffset);
+    [method_name("ScrollToWithOptions")]
+    MU_XC_NAMESPACE.ScrollInfo ScrollTo(
+        Double horizontalOffset,
+        Double verticalOffset,
+        MU_XC_NAMESPACE.ScrollOptions options);
+    [method_name("ScrollBy")]
+    MU_XC_NAMESPACE.ScrollInfo ScrollBy(
+        Double horizontalOffsetDelta,
+        Double verticalOffsetDelta);
+    [method_name("ScrollByWithOptions")]
+    MU_XC_NAMESPACE.ScrollInfo ScrollBy(
+        Double horizontalOffsetDelta,
+        Double verticalOffsetDelta,
+        MU_XC_NAMESPACE.ScrollOptions options);
+    MU_XC_NAMESPACE.ScrollInfo ScrollFrom(
+        Windows.Foundation.Numerics.Vector2 offsetsVelocity,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
+    [method_name("ZoomTo")]
+    MU_XC_NAMESPACE.ZoomInfo ZoomTo(
+        Single zoomFactor,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint);
+    [method_name("ZoomToWithOptions")]
+    MU_XC_NAMESPACE.ZoomInfo ZoomTo(
+        Single zoomFactor,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
+        MU_XC_NAMESPACE.ZoomOptions options);
+    [method_name("ZoomBy")]
+    MU_XC_NAMESPACE.ZoomInfo ZoomBy(
+        Single zoomFactorDelta,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint);
+    [method_name("ZoomByWithOptions")]
+    MU_XC_NAMESPACE.ZoomInfo ZoomBy(
+        Single zoomFactorDelta,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
+        MU_XC_NAMESPACE.ZoomOptions options);
+    MU_XC_NAMESPACE.ZoomInfo ZoomFrom(
+        Single zoomFactorVelocity,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
+        Windows.Foundation.IReference<Single> inertiaDecayRate);
     Int32 ChangeOffsets(MU_XC_NAMESPACE.ScrollerChangeOffsetsOptions options);
     Int32 ChangeOffsetsWithAdditionalVelocity(MU_XC_NAMESPACE.ScrollerChangeOffsetsWithAdditionalVelocityOptions options);
     Int32 ChangeZoomFactor(MU_XC_NAMESPACE.ScrollerChangeZoomFactorOptions options);

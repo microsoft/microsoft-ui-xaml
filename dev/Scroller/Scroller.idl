@@ -1,5 +1,19 @@
 ﻿[WUXC_VERSION_PREVIEW]
 [webhosthidden]
+struct ScrollInfo 
+{ 
+    Int32 OffsetsChangeId;
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+struct ZoomInfo
+{
+    Int32 ZoomFactorChangeId;
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
 enum ContentOrientation
 {
     Vertical = 0,
@@ -70,6 +84,22 @@ enum InputKind
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
+enum AnimationMode 
+{ 
+   Disabled = 0,
+   Enabled = 1,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum SnapPointsMode
+{
+    Default = 0,
+    Ignore = 1,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
 enum ScrollerViewKind
 {
     Absolute = 0,
@@ -101,6 +131,30 @@ enum ScrollerViewChangeResult
     Interrupted = 1,
     Ignored = 2,
 };
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[marshaling_behavior(agile)]
+[threading(both)]
+unsealed runtimeclass ScrollOptions
+{
+    ScrollOptions(AnimationMode animationMode);
+    ScrollOptions(AnimationMode animationMode, SnapPointsMode snapPointsMode);
+ 
+    AnimationMode AnimationMode { get; set; };
+    SnapPointsMode SnapPointsMode { get; set; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[marshaling_behavior(agile)]
+[threading(both)]
+unsealed runtimeclass ZoomOptions
+{
+    ZoomOptions(AnimationMode animationMode);
+ 
+    AnimationMode AnimationMode { get; set; };
+}
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
