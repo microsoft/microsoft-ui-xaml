@@ -39,8 +39,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const int c_MaxWaitDuration = 5000;
         private const double c_epsilon = 0.0000001;
 
-        private const ScrollMode c_defaultComputedHorizontalScrollMode = ScrollMode.Disabled;
-        private const ScrollMode c_defaultComputedVerticalScrollMode = ScrollMode.Disabled;
         private const InputKind c_defaultIgnoredInputKind = InputKind.None;
         private const ChainingMode c_defaultHorizontalScrollChainingMode = ChainingMode.Auto;
         private const ChainingMode c_defaultVerticalScrollChainingMode = ChainingMode.Auto;
