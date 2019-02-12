@@ -54,6 +54,7 @@ private:
     winrt::FrameworkElement::EffectiveViewportChanged_revoker m_targetEffectiveViewportChangedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_targetLayoutUpdatedRevoker{};
     winrt::Popup::Closed_revoker m_popupClosedRevoker{};
+    winrt::event_token m_popupLightDismissIsOpenPropertyChangedCallback{ 0 };
     winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
     void UpdateBeak();
     void PositionPopup();
@@ -81,6 +82,7 @@ private:
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnPopupLightDismissIsOpenChanged(const winrt::IInspectable&, const winrt::IInspectable&);
 
     void RaiseClosingEvent();
     void ClosePopupWithAnimationIfAvailable();

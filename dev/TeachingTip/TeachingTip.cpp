@@ -680,10 +680,11 @@ void TeachingTip::OnIsOpenChanged()
         {
             m_popup.set(winrt::Popup());
             m_popupClosedRevoker = m_popup.get().Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
-            if (IsLightDismissEnabled())
-            {
-                m_popup.get().IsLightDismissEnabled(true);
-            }
+        }
+        if (IsLightDismissEnabled())
+        {
+            m_popupLightDismissIsOpenPropertyChangedCallback.value = m_popup.get().RegisterPropertyChangedCallback(winrt::Popup::IsOpenProperty(), { this, &TeachingTip::OnPopupLightDismissIsOpenChanged });
+            m_popup.get().IsLightDismissEnabled(true);
         }
         if (!m_contractAnimation)
         {
@@ -786,6 +787,10 @@ void TeachingTip::OnIsLightDismissEnabledChanged()
     if (m_popup)
     {
         m_popup.get().IsLightDismissEnabled(IsLightDismissEnabled());
+        if (m_popup.get().IsOpen())
+        {
+            m_popupLightDismissIsOpenPropertyChangedCallback.value = m_popup.get().RegisterPropertyChangedCallback(winrt::Popup::IsOpenProperty(), { this, &TeachingTip::OnPopupLightDismissIsOpenChanged });
+        }
     }
 
     if (IsLightDismissEnabled())
@@ -847,6 +852,11 @@ void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt:
 
 void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
 {
+    if (m_popupLightDismissIsOpenPropertyChangedCallback)
+    {
+        m_popup.get().UnregisterPropertyChangedCallback(winrt::Popup::IsOpenProperty(), m_popupLightDismissIsOpenPropertyChangedCallback.value);
+        m_popupLightDismissIsOpenPropertyChangedCallback.value = 0;
+    }
     m_popup.get().Child(nullptr);
     auto myArgs = winrt::make_self<TeachingTipClosedEventArgs>();
     if (IsOpen())
@@ -856,6 +866,18 @@ void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspec
     }
     myArgs->Reason(m_lastCloseReason);
     m_closedEventSource(*this, *myArgs);
+}
+
+void TeachingTip::OnPopupLightDismissIsOpenChanged(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+    if (m_popup && !m_popup.get().IsOpen())
+    {
+        m_popup.get().UnregisterPropertyChangedCallback(winrt::Popup::IsOpenProperty(), m_popupLightDismissIsOpenPropertyChangedCallback.value);
+        m_popupLightDismissIsOpenPropertyChangedCallback.value = 0;
+
+        m_popup.get().IsOpen(true);
+        ClosePopupWithAnimationIfAvailable();
+    }
 }
 
 void TeachingTip::RaiseClosingEvent()
@@ -889,23 +911,31 @@ void TeachingTip::RaiseClosingEvent()
 
 void TeachingTip::ClosePopupWithAnimationIfAvailable()
 {
-    if (m_popup && m_popup.get().IsOpen())
+    if (m_popup)
     {
-        if (SharedHelpers::IsRS5OrHigher())
+        if (m_popupLightDismissIsOpenPropertyChangedCallback)
         {
-            StartContractToClose();
+            m_popup.get().UnregisterPropertyChangedCallback(winrt::Popup::IsOpenProperty(), m_popupLightDismissIsOpenPropertyChangedCallback.value);
+            m_popupLightDismissIsOpenPropertyChangedCallback.value = 0;
         }
-        else
+        if (m_popup.get().IsOpen())
         {
-            ClosePopup();
-        }
+            if (SharedHelpers::IsRS5OrHigher())
+            {
+                StartContractToClose();
+            }
+            else
+            {
+                ClosePopup();
+            }
 
-        // Under normal circumstances we would have launched an animation just now, if we did not then we should make sure
-        // that the idle state is correct.
-        if (!m_isContractAnimationPlaying && !m_isIdle && !m_isExpandAnimationPlaying)
-        {
-            m_isIdle = true;
-            TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
+            // Under normal circumstances we would have launched an animation just now, if we did not then we should make sure
+            // that the idle state is correct.
+            if (!m_isContractAnimationPlaying && !m_isIdle && !m_isExpandAnimationPlaying)
+            {
+                m_isIdle = true;
+                TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
+            }
         }
     }
 }
@@ -914,6 +944,11 @@ void TeachingTip::ClosePopup()
 {
     if (m_popup)
     {
+        if (m_popupLightDismissIsOpenPropertyChangedCallback)
+        {
+            m_popup.get().UnregisterPropertyChangedCallback(winrt::Popup::IsOpenProperty(), m_popupLightDismissIsOpenPropertyChangedCallback.value);
+            m_popupLightDismissIsOpenPropertyChangedCallback.value = 0;
+        }
         m_popup.get().IsOpen(false);
     }
     if (SharedHelpers::IsRS5OrHigher() && m_beakOcclusionGrid)
