@@ -107,24 +107,25 @@
                             <VisualStateGroup x:Name="IconStates">
                                 <VisualState x:Name="Icon">
                                     <VisualState.Setters>
-                                        <Setter Target="IconContentPresenter.Margin" Value="{StaticResource TeachingTipIconPresenterMarginWithIcon}"/>
+                                        <Setter Target="IconBorder.Margin" Value="{StaticResource TeachingTipIconPresenterMarginWithIcon}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="NoIcon">
                                     <VisualState.Setters>
-                                        <Setter Target="IconContentPresenter.Margin" Value="{StaticResource TeachingTipIconPresenterMarginWithoutIcon}"/>
+                                        <Setter Target="IconBorder.Margin" Value="{StaticResource TeachingTipIconPresenterMarginWithoutIcon}"/>
+                                        <Setter Target="IconBorder.Child" Value=""/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="BleedingContentPlacementStates">
                                 <VisualState x:Name="BleedingContentTop">
                                     <VisualState.Setters>
-                                        <Setter Target="BleedingImageContentPresenter.(Grid.Row)" Value="0"/>
+                                        <Setter Target="BleedingImageBorder.(Grid.Row)" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="BleedingContentBottom">
                                     <VisualState.Setters>
-                                        <Setter Target="BleedingImageContentPresenter.(Grid.Row)" Value="2"/>
+                                        <Setter Target="BleedingImageBorder.(Grid.Row)" Value="2"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -479,7 +480,7 @@
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <ContentPresenter x:Name="BleedingImageContentPresenter" Grid.Row="0" Content="{TemplateBinding BleedingImageContent}" Background="{TemplateBinding Background}"/>
+                                <Border x:Name="BleedingImageBorder" Grid.Row="0" Child="{TemplateBinding BleedingImageContent}" Background="{TemplateBinding Background}"/>
                                 <Grid x:Name="NonBleedingContentRootGrid" Grid.Row="1">
                                     <ScrollViewer>
                                         <StackPanel Margin="{StaticResource TeachingTipContentMargin}">
@@ -489,7 +490,7 @@
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <ContentPresenter x:Name="IconContentPresenter" Grid.Column="0"/>
+                                                <Border x:Name="IconBorder" Grid.Column="0"/>
                                                 <StackPanel x:Name="TitlesStackPanel" Grid.Column="1">
                                                     <TextBlock x:Name="TitleTextBlock" Grid.Column="0" Text="{TemplateBinding Title}" TextWrapping="WrapWholeWords" FontWeight="SemiBold"/>
                                                     <TextBlock x:Name="SubtextTextBlock" Grid.Row="1" Text="{TemplateBinding Subtext}" TextWrapping="WrapWholeWords"/>

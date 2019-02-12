@@ -140,7 +140,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Scrolls an Image in a ScrollViewer using the mouse on the ScrollBar2 thumb, then pans it with touch.")]
+        [TestProperty("Description", "Scrolls an Image in a ScrollViewer using the mouse on the ScrollBar thumb, then pans it with touch.")]
         public void ScrollThenPanScrollViewer()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
@@ -187,10 +187,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Tapping button before attempting pan operation to guarantee effective touch input
                 TapResetViewsButton();
 
-                Log.Comment("Left mouse buttom down over ScrollBar2 thumb");
+                Log.Comment("Left mouse buttom down over ScrollBar thumb");
                 InputHelper.LeftMouseButtonDown(scroller51, 140 /*offsetX*/, -100 /*offsetY*/);
 
-                Log.Comment("Mouse drag and left mouse buttom up over ScrollBar2 thumb");
+                Log.Comment("Mouse drag and left mouse buttom up over ScrollBar thumb");
                 InputHelper.LeftMouseButtonUp(scroller51, 140 /*offsetX*/, -50 /*offsetY*/);
 
                 Log.Comment("scroller51.HorizontalScrollPercent={0}", scroller51.HorizontalScrollPercent);

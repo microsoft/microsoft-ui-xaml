@@ -1271,17 +1271,13 @@ namespace MUXControlsTestApp
 
             try
             {
-                if (scrollViewer == null && (chkLogScrollViewerMessages.IsChecked == true || chkLogScrollBar2Messages.IsChecked == true || chkLogScrollerMessages.IsChecked == true))
+                if (scrollViewer == null && (chkLogScrollViewerMessages.IsChecked == true || chkLogScrollerMessages.IsChecked == true))
                 {
                     MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
 
                     if (chkLogScrollerMessages.IsChecked == true)
                     {
                         MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
-                    }
-                    if (chkLogScrollBar2Messages.IsChecked == true)
-                    {
-                        MUXControlsTestHooks.SetLoggingLevelForType("ScrollBar2", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
                     }
                     if (chkLogScrollViewerMessages.IsChecked == true)
                     {
@@ -1538,42 +1534,28 @@ namespace MUXControlsTestApp
         private void ChkLogScrollerMessages_Checked(object sender, RoutedEventArgs e)
         {
             MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
-            if (chkLogScrollBar2Messages.IsChecked == false && chkLogScrollViewerMessages.IsChecked == false)
+            if (chkLogScrollViewerMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
         private void ChkLogScrollerMessages_Unchecked(object sender, RoutedEventArgs e)
         {
             MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
-            if (chkLogScrollBar2Messages.IsChecked == false && chkLogScrollViewerMessages.IsChecked == false)
-                MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
-        }
-
-        private void ChkLogScrollBar2Messages_Checked(object sender, RoutedEventArgs e)
-        {
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollBar2", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
-            if (chkLogScrollerMessages.IsChecked == false && chkLogScrollViewerMessages.IsChecked == false)
-                MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
-        }
-
-        private void ChkLogScrollBar2Messages_Unchecked(object sender, RoutedEventArgs e)
-        {
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollBar2", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
-            if (chkLogScrollerMessages.IsChecked == false && chkLogScrollViewerMessages.IsChecked == false)
+            if (chkLogScrollViewerMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
 
         private void ChkLogScrollViewerMessages_Checked(object sender, RoutedEventArgs e)
         {
             MUXControlsTestHooks.SetLoggingLevelForType("ScrollViewer", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
-            if (chkLogScrollBar2Messages.IsChecked == false && chkLogScrollerMessages.IsChecked == false)
+            if (chkLogScrollerMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
         private void ChkLogScrollViewerMessages_Unchecked(object sender, RoutedEventArgs e)
         {
             MUXControlsTestHooks.SetLoggingLevelForType("ScrollViewer", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
-            if (chkLogScrollBar2Messages.IsChecked == false && chkLogScrollerMessages.IsChecked == false)
+            if (chkLogScrollerMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
 

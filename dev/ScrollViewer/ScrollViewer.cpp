@@ -93,6 +93,46 @@ double ScrollViewer::ExtentHeight()
     return 0.0;
 }
 
+double ScrollViewer::ViewportWidth()
+{
+    if (auto scroller = m_scroller.get())
+    {
+        return scroller.ViewportWidth();
+    }
+
+    return 0.0;
+}
+
+double ScrollViewer::ViewportHeight()
+{
+    if (auto scroller = m_scroller.get())
+    {
+        return scroller.ViewportHeight();
+    }
+
+    return 0.0;
+}
+
+double ScrollViewer::ScrollableWidth()
+{
+    if (auto scroller = m_scroller.get())
+    {
+        return scroller.ScrollableWidth();
+    }
+
+    return 0.0;
+}
+
+double ScrollViewer::ScrollableHeight()
+{
+    if (auto scroller = m_scroller.get())
+    {
+        return scroller.ScrollableHeight();
+    }
+
+    return 0.0;
+}
+
 winrt::InteractionState ScrollViewer::State()
 {
     if (auto scroller = m_scroller.get())

@@ -273,7 +273,6 @@ namespace MU_XC_NAMESPACE
 #include <TeachingTip\TeachingTip.idl>
 #ifndef BUILD_WINDOWS
 #include <ScrollViewer\ScrollViewer.idl>
-#include <ScrollBar2\ScrollBar2.idl>
 #endif
 #endif
 

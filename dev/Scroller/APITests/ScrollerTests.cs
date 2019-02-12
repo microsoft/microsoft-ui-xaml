@@ -126,6 +126,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scroller.VerticalAnchorRatio, c_defaultAnchorRatio);
                 Verify.AreEqual(scroller.IsAnchoredAtHorizontalExtent, c_defaultIsAnchoredAtExtent);
                 Verify.AreEqual(scroller.IsAnchoredAtVerticalExtent, c_defaultIsAnchoredAtExtent);
+                Verify.AreEqual(scroller.ExtentWidth, 0.0);
+                Verify.AreEqual(scroller.ExtentHeight, 0.0);
+                Verify.AreEqual(scroller.ViewportWidth, 0.0);
+                Verify.AreEqual(scroller.ViewportHeight, 0.0);
+                Verify.AreEqual(scroller.ScrollableWidth, 0.0);
+                Verify.AreEqual(scroller.ScrollableHeight, 0.0);
             });
         }
 
@@ -187,6 +193,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scroller.VerticalAnchorRatio, 0.75f);
                 Verify.AreEqual(scroller.IsAnchoredAtHorizontalExtent, !c_defaultIsAnchoredAtExtent);
                 Verify.AreEqual(scroller.IsAnchoredAtVerticalExtent, !c_defaultIsAnchoredAtExtent);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the Scroller ExtentWidth/Height, ViewportWidth/Height and ScrollableWidth/Height properties.")]
+        public void VerifyExtentAndViewportProperties()
+        {
+            Scroller scroller = null;
+            Rectangle rectangleScrollerContent = null;
+            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                rectangleScrollerContent = new Rectangle();
+                scroller = new Scroller();
+
+                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent, setAsContentRoot: true);
+            });
+
+            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(scroller.ExtentWidth, c_defaultUIScrollerContentWidth);
+                Verify.AreEqual(scroller.ExtentHeight, c_defaultUIScrollerContentHeight);
+                Verify.AreEqual(scroller.ViewportWidth, c_defaultUIScrollerWidth);
+                Verify.AreEqual(scroller.ViewportHeight, c_defaultUIScrollerHeight);
+                Verify.AreEqual(scroller.ScrollableWidth, c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth);
+                Verify.AreEqual(scroller.ScrollableHeight, c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight);
             });
         }
 
@@ -970,7 +1005,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Log.Comment("Waiting for captured properties to be updated");
             CompositionPropertySpy.SynchronouslyTickUIThread(10);
-
 
             Log.Comment("Reading Scroller.Content's Visual Transform");
             CompositionGetValueStatus status;
