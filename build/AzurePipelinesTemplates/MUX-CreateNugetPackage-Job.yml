@@ -44,7 +44,6 @@ jobs:
         -prereleaseversion prerelease 
         -DateOverride '$(builddate)'
         -Subversion '$(buildrevision)' 
-        -SkipFrameworkPackage
         -BuildArch ${{ parameters.primaryBuildArch }}
         -BuildFlavor ${{ parameters.buildFlavor }}
 
