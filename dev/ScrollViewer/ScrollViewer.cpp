@@ -168,9 +168,7 @@ void ScrollViewer::RegisterAnchorCandidate(winrt::UIElement const& element)
 
     if (auto scroller = m_scroller.get())
     {
-        const winrt::Controls::IScrollAnchorProvider scrollerAsAnchorProvider = scroller.try_as<winrt::Controls::IScrollAnchorProvider>();
-
-        if (scrollerAsAnchorProvider)
+        if (const auto scrollerAsAnchorProvider = scroller.try_as<winrt::Controls::IScrollAnchorProvider>())
         {
             scrollerAsAnchorProvider.RegisterAnchorCandidate(element);
             return;
@@ -186,9 +184,7 @@ void ScrollViewer::UnregisterAnchorCandidate(winrt::UIElement const& element)
 
     if (auto scroller = m_scroller.get())
     {
-        const winrt::Controls::IScrollAnchorProvider scrollerAsAnchorProvider = scroller.try_as<winrt::Controls::IScrollAnchorProvider>();
-
-        if (scrollerAsAnchorProvider)
+        if (const auto scrollerAsAnchorProvider = scroller.try_as<winrt::Controls::IScrollAnchorProvider>())
         {
             scrollerAsAnchorProvider.UnregisterAnchorCandidate(element);
             return;
