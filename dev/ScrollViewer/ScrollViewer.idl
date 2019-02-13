@@ -69,10 +69,6 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultMaxZoomFactor")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateZoomFactoryBoundary")]
     Double MaxZoomFactor { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultAnchorAtExtent")]
-    Boolean IsAnchoredAtHorizontalExtent { get; set; };
-    [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultAnchorAtExtent")]
-    Boolean IsAnchoredAtVerticalExtent { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultAnchorRatio")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateAnchorRatio")]
     Double HorizontalAnchorRatio { get; set; };
@@ -119,8 +115,6 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty InputKindProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MinZoomFactorProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MaxZoomFactorProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty IsAnchoredAtHorizontalExtentProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty IsAnchoredAtVerticalExtentProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalAnchorRatioProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalAnchorRatioProperty { get; };
 }

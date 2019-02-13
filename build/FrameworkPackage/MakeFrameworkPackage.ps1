@@ -6,7 +6,9 @@ Param(
     [string]$Configuration,
     [string]$Publisher = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
     [string]$VersionOverride,
-    [string]$Subversion = "000",
+    [int]$Subversion = "000",
+    [string]$builddate_yymm,
+    [string]$builddate_dd,
     [string]$TestAppManifest,
     [string]$WindowsSdkBinDir,
     [string]$BasePackageName,
@@ -40,14 +42,8 @@ Copy-IntoNewDirectory FrameworkPackageContents\* $fullOutputPath\PackageContents
 
 Copy-IntoNewDirectory PriConfig\* $fullOutputPath
 
-if (!$WindowsSdkBinDir -and $env:WindowsSdkVerBinPath)
-{
-    $WindowsSdkBinDir = "${env:WindowsSdkVerBinPath}\x86"
-}
-else
-{
-    $WindowsSdkBinDir = "${env:ProgramFiles(x86)}\Windows Kits\10\bin\x86"
-}
+$KitsRoot10 = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows Kits\Installed Roots" -Name KitsRoot10).KitsRoot10
+$WindowsSdkBinDir = Join-Path $KitsRoot10 "bin\x86"
 
 $scriptDirectory = Split-Path -Path $script:MyInvocation.MyCommand.Path -Parent
 
@@ -142,6 +138,7 @@ Write-Verbose "CustomProps = $customProps, VersionMajor = '$versionMajor', Versi
         Exit 1
     }
 
+    
     $pstZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
     $pstTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $pstZone)
     # Split version into yyMM.dd because appx versions can't be greater than 65535
@@ -158,7 +155,19 @@ Write-Verbose "CustomProps = $customProps, VersionMajor = '$versionMajor', Versi
         $versionMinor = ""
     }
 
-    $version = "${versionMajor}.${versionMinor}" + ($pstTime).ToString("yyMM") + "." + ($pstTime).ToString("dd").TrimStart("0") + "$subversion.0"
+    if (-not $builddate_yymm)
+    {
+        $builddate_yymm = ($pstTime).ToString("yyMM")
+    }
+    if (-not $builddate_dd)
+    {
+        $builddate_dd = ($pstTime).ToString("dd")
+    }
+
+    # Pad subversion up to 3 digits
+    $subversionPadded = $subversion.ToString("000")
+
+    $version = "${versionMajor}.${versionMinor}" + $builddate_yymm + "." + $builddate_dd.TrimStart("0") + "$subversionPadded.0"
 
     Write-Verbose "Version = $version"
 }
