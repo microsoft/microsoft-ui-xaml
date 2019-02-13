@@ -38,7 +38,7 @@ public:
     static const winrt::ZoomInfo s_noOpZoomInfo;
     static const winrt::ChainingMode s_defaultZoomChainingMode{ winrt::ChainingMode::Auto };
     static const winrt::ZoomMode s_defaultZoomMode{ winrt::ZoomMode::Disabled };
-    static const winrt::InputKind s_defaultInputKind{ winrt::InputKind::All };
+    static const winrt::InputKind s_defaultIgnoredInputKind{ winrt::InputKind::None };
     static const winrt::ContentOrientation s_defaultContentOrientation{ winrt::ContentOrientation::Vertical };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
     static constexpr double s_defaultMaxZoomFactor{ 10.0 };
@@ -61,8 +61,11 @@ public:
 
     winrt::InteractionState State();
 
-    winrt::InputKind InputKind();
-    void InputKind(winrt::InputKind const& value);
+    winrt::InputKind IgnoredInputKind();
+    void IgnoredInputKind(winrt::InputKind const& value);
+
+    void RegisterAnchorCandidate(winrt::UIElement const& element);
+    void UnregisterAnchorCandidate(winrt::UIElement const& element);
 
     winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset);
     winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options);
@@ -213,6 +216,7 @@ private:
     void UpdateScrollControllersVisibility(bool horizontalChange, bool verticalChange);
 
     bool IsLoaded();
+    bool IsInputKindIgnored(winrt::InputKind const& inputKind);
 
     bool AreAllScrollControllersCollapsed();
     bool AreBothScrollControllersVisible();
@@ -241,6 +245,8 @@ private:
     static constexpr std::wstring_view s_horizontalScrollBarPartName{ L"PART_HorizontalScrollBar"sv };
     static constexpr std::wstring_view s_verticalScrollBarPartName{ L"PART_VerticalScrollBar"sv };
     static constexpr std::wstring_view s_scrollBarsSeparatorPartName{ L"PART_ScrollBarsSeparator"sv };
+    static constexpr std::wstring_view s_iScrollAnchorProviderNotImpl{ L"Template part named PART_Scroller does not implement IScrollAnchorProvider."sv };
+    static constexpr std::wstring_view s_noScrollerPart{ L"No template part named PART_Scroller was loaded."sv };
 
     winrt::com_ptr<ScrollBarController> m_horizontalScrollBarController{ nullptr };
     winrt::com_ptr<ScrollBarController> m_verticalScrollBarController{ nullptr };

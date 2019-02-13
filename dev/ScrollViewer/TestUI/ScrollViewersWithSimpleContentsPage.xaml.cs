@@ -7,6 +7,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
+using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
 using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
@@ -160,6 +161,9 @@ namespace MUXControlsTestApp
 
                     for (int columnIndex = 0; columnIndex < 5; columnIndex++)
                         this.rootGrid.ColumnDefinitions[columnIndex].Width = new GridLength(1, GridUnitType.Star);
+
+                    cmbIgnoredInputKind.IsEnabled = false;
+                    cmbIgnoredInputKind.SelectedIndex = 0;
                 }
                 else
                 {
@@ -180,41 +184,9 @@ namespace MUXControlsTestApp
                     for (int columnIndex = 0; columnIndex < 5; columnIndex++)
                         this.rootGrid.ColumnDefinitions[columnIndex].Width = GridLength.Auto;
 
-                    ScrollViewer scrollViewer = null;
+                    cmbIgnoredInputKind.IsEnabled = true;
 
-                    switch (cmbShowScrollViewer.SelectedIndex)
-                    {
-                        case 1:
-                            scrollViewer = this.scrollViewer11;
-                            break;
-                        case 2:
-                            scrollViewer = this.scrollViewer21;
-                            break;
-                        case 3:
-                            scrollViewer = this.scrollViewer31;
-                            break;
-                        case 4:
-                            scrollViewer = this.scrollViewer41;
-                            break;
-                        case 5:
-                            scrollViewer = this.scrollViewer51;
-                            break;
-                        case 6:
-                            scrollViewer = this.scrollViewer12;
-                            break;
-                        case 7:
-                            scrollViewer = this.scrollViewer22;
-                            break;
-                        case 8:
-                            scrollViewer = this.scrollViewer32;
-                            break;
-                        case 9:
-                            scrollViewer = this.scrollViewer42;
-                            break;
-                        case 10:
-                            scrollViewer = this.scrollViewer52;
-                            break;
-                    }
+                    ScrollViewer scrollViewer = SelectedScrollViewer;
 
                     scrollViewer.Visibility = Visibility.Visible;
                     scrollViewer.Width = 300;
@@ -223,8 +195,71 @@ namespace MUXControlsTestApp
                     txtScrollerHorizontalOffset.Text = scrollViewer.HorizontalOffset.ToString();
                     txtScrollerVerticalOffset.Text = scrollViewer.VerticalOffset.ToString();
                     txtScrollerZoomFactor.Text = scrollViewer.ZoomFactor.ToString();
+
+                    switch (scrollViewer.IgnoredInputKind)
+                    {
+                        case InputKind.None:
+                            cmbIgnoredInputKind.SelectedIndex = 1;
+                            break;
+                        case InputKind.Touch:
+                            cmbIgnoredInputKind.SelectedIndex = 2;
+                            break;
+                        case InputKind.Pen:
+                            cmbIgnoredInputKind.SelectedIndex = 3;
+                            break;
+                        case InputKind.MouseWheel:
+                            cmbIgnoredInputKind.SelectedIndex = 4;
+                            break;
+                        case InputKind.Keyboard:
+                            cmbIgnoredInputKind.SelectedIndex = 5;
+                            break;
+                        case InputKind.Gamepad:
+                            cmbIgnoredInputKind.SelectedIndex = 6;
+                            break;
+                        case InputKind.All:
+                            cmbIgnoredInputKind.SelectedIndex = 7;
+                            break;
+                        default:
+                            cmbIgnoredInputKind.SelectedIndex = 0;
+                            break;
+                    }
                 }
             }
+        }
+
+        private void CmbIgnoredInputKind_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            InputKind ignoredInputKind;
+            ScrollViewer scrollViewer = SelectedScrollViewer;
+
+            switch (cmbIgnoredInputKind.SelectedIndex)
+            {
+                case 0:
+                    return;
+                case 1:
+                    ignoredInputKind = InputKind.None;
+                    break;
+                case 2:
+                    ignoredInputKind = InputKind.Touch;
+                    break;
+                case 3:
+                    ignoredInputKind = InputKind.Pen;
+                    break;
+                case 4:
+                    ignoredInputKind = InputKind.MouseWheel;
+                    break;
+                case 5:
+                    ignoredInputKind = InputKind.Keyboard;
+                    break;
+                case 6:
+                    ignoredInputKind = InputKind.Gamepad;
+                    break;
+                default:
+                    ignoredInputKind = InputKind.All;
+                    break;
+            }
+
+            scrollViewer.IgnoredInputKind = ignoredInputKind;
         }
 
         private void btnGetFullLog_Click(object sender, RoutedEventArgs e)
@@ -269,6 +304,50 @@ namespace MUXControlsTestApp
 
             if (scrollViewer == this.scrollViewer52)
                 scrollViewer52ZoomFactorChangeId = viewChangeId;
+        }
+
+        private ScrollViewer SelectedScrollViewer
+        {
+            get
+            {
+                ScrollViewer scrollViewer = null;
+
+                switch (cmbShowScrollViewer.SelectedIndex)
+                {
+                    case 1:
+                        scrollViewer = this.scrollViewer11;
+                        break;
+                    case 2:
+                        scrollViewer = this.scrollViewer21;
+                        break;
+                    case 3:
+                        scrollViewer = this.scrollViewer31;
+                        break;
+                    case 4:
+                        scrollViewer = this.scrollViewer41;
+                        break;
+                    case 5:
+                        scrollViewer = this.scrollViewer51;
+                        break;
+                    case 6:
+                        scrollViewer = this.scrollViewer12;
+                        break;
+                    case 7:
+                        scrollViewer = this.scrollViewer22;
+                        break;
+                    case 8:
+                        scrollViewer = this.scrollViewer32;
+                        break;
+                    case 9:
+                        scrollViewer = this.scrollViewer42;
+                        break;
+                    case 10:
+                        scrollViewer = this.scrollViewer52;
+                        break;
+                }
+
+                return scrollViewer;
+            }
         }
     }
 }

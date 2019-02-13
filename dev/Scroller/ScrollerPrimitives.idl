@@ -152,8 +152,8 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     MU_XC_NAMESPACE.ChainingMode ZoomChainingMode { get; set; };
     [MUX_DEFAULT_VALUE("Scroller::s_defaultZoomMode")]
     MU_XC_NAMESPACE.ZoomMode ZoomMode { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultInputKind")]
-    MU_XC_NAMESPACE.InputKind InputKind { get; set; };
+    [MUX_DEFAULT_VALUE("Scroller::s_defaultIgnoredInputKind")]
+    MU_XC_NAMESPACE.InputKind IgnoredInputKind { get; set; };
     [MUX_DEFAULT_VALUE("Scroller::s_defaultMinZoomFactor")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateZoomFactoryBoundary")]
     Double MinZoomFactor { get; set; };
@@ -163,10 +163,6 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     MU_XC_NAMESPACE.InteractionState State { get; };
     IScrollController HorizontalScrollController { get; set; };
     IScrollController VerticalScrollController { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultAnchorAtExtent")]
-    Boolean IsAnchoredAtHorizontalExtent { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultAnchorAtExtent")]
-    Boolean IsAnchoredAtVerticalExtent { get; set; };
     [MUX_DEFAULT_VALUE("Scroller::s_defaultAnchorRatio")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateAnchorRatio")]
     Double HorizontalAnchorRatio { get; set; };
@@ -247,11 +243,9 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
 #endif
     static Windows.UI.Xaml.DependencyProperty ZoomChainingModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ZoomModeProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty InputKindProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty IgnoredInputKindProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MinZoomFactorProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MaxZoomFactorProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty IsAnchoredAtHorizontalExtentProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty IsAnchoredAtVerticalExtentProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalAnchorRatioProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalAnchorRatioProperty { get; };
 }

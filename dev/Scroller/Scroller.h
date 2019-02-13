@@ -52,7 +52,7 @@ public:
 #endif
     static constexpr winrt::ChainingMode s_defaultZoomChainingMode{ winrt::ChainingMode::Auto };
     static constexpr winrt::ZoomMode s_defaultZoomMode{ winrt::ZoomMode::Disabled };
-    static constexpr winrt::InputKind s_defaultInputKind{ winrt::InputKind::All };
+    static constexpr winrt::InputKind s_defaultIgnoredInputKind{ winrt::InputKind::None };
     static constexpr winrt::ContentOrientation s_defaultContentOrientation{ winrt::ContentOrientation::None };
     static constexpr bool s_defaultAnchorAtExtent{ true };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
@@ -148,8 +148,8 @@ public:
     winrt::IScrollController VerticalScrollController();
     void VerticalScrollController(winrt::IScrollController const& value);
 
-    winrt::InputKind InputKind();
-    void InputKind(winrt::InputKind const& value);
+    winrt::InputKind IgnoredInputKind();
+    void IgnoredInputKind(winrt::InputKind const& value);
 
     winrt::InteractionState State();
 
@@ -313,7 +313,7 @@ private:
 #endif
     void SetupVisualInteractionSourceRedirectionMode(
         const winrt::VisualInteractionSource& visualInteractionSource,
-        const winrt::InputKind& inputKind);
+        const winrt::InputKind& ignoredinputKind);
     void SetupVisualInteractionSourceCenterPointModifier(
         const winrt::VisualInteractionSource& visualInteractionSource,
         ScrollerDimension dimension);
@@ -463,6 +463,7 @@ private:
 
     bool IsLoaded();
     bool IsLoadedAndSetUp();
+    bool IsInputKindIgnored(winrt::InputKind const& inputKind);
     bool HasBringingIntoViewListener() const
     {
         return !!m_bringingIntoViewEventSource;

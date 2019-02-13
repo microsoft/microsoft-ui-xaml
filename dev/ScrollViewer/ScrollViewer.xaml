@@ -18,11 +18,9 @@
         <Setter Property="VerticalScrollRailingMode" Value="Enabled"/>
         <Setter Property="ZoomChainingMode" Value="Auto"/>
         <Setter Property="ZoomMode" Value="Disabled"/>
-        <Setter Property="InputKind" Value="All"/>
+        <Setter Property="IgnoredInputKind" Value="None"/>
         <Setter Property="MinZoomFactor" Value="0.1"/>
         <Setter Property="MaxZoomFactor" Value="10.0"/>
-        <Setter Property="IsAnchoredAtHorizontalExtent" Value="True"/>
-        <Setter Property="IsAnchoredAtVerticalExtent" Value="True"/>
         <Setter Property="HorizontalAnchorRatio" Value="0.0"/>
         <Setter Property="VerticalAnchorRatio" Value="0.0"/>
         <Setter Property="Template">
@@ -218,11 +216,9 @@
                             VerticalScrollRailingMode="{TemplateBinding VerticalScrollRailingMode}"
                             ZoomChainingMode="{TemplateBinding ZoomChainingMode}"
                             ZoomMode="{TemplateBinding ZoomMode}"
-                            InputKind="{TemplateBinding InputKind}"
+                            IgnoredInputKind="{TemplateBinding IgnoredInputKind}"
                             MinZoomFactor="{TemplateBinding MinZoomFactor}"
                             MaxZoomFactor="{TemplateBinding MaxZoomFactor}"
-                            IsAnchoredAtHorizontalExtent="{TemplateBinding IsAnchoredAtHorizontalExtent}"
-                            IsAnchoredAtVerticalExtent="{TemplateBinding IsAnchoredAtVerticalExtent}"
                             HorizontalAnchorRatio="{TemplateBinding HorizontalAnchorRatio}"
                             VerticalAnchorRatio="{TemplateBinding VerticalAnchorRatio}"/>
                         <ScrollBar x:Name="PART_HorizontalScrollBar" 
