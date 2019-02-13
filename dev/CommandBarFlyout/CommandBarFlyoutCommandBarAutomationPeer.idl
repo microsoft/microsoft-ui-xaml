@@ -1,0 +1,6 @@
+﻿[WUXC_VERSION_19H1]
+[webhosthidden]
+unsealed runtimeclass CommandBarFlyoutCommandBarAutomationPeer : Windows.UI.Xaml.Automation.Peers.AppBarAutomationPeer
+{
+    [method_name("CreateInstanceWithOwner")] CommandBarFlyoutCommandBarAutomationPeer(MU_XCP_NAMESPACE.CommandBarFlyoutCommandBar owner);
+}

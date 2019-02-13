@@ -14,10 +14,15 @@ public:
     CommandBarFlyoutCommandBar();
     virtual ~CommandBarFlyoutCommandBar();
 
+    // IUIElementOverrides
+    winrt::AutomationPeer OnCreateAutomationPeer();
+
     // IFrameworkElementOverrides
     void OnApplyTemplate();
     
     void SetOwningFlyout(winrt::CommandBarFlyout const& owningFlyout);
+
+    winrt::IVector<winrt::AutomationPeer> GetAutomationChildren();
 
     bool HasOpenAnimation();
     void PlayOpenAnimation();

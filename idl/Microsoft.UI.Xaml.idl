@@ -318,6 +318,7 @@ namespace MU_XAP_NAMESPACE
 #include <TeachingTip\TeachingTipAutomationPeer.idl>
 #include <ColorPicker\ColorSpectrumAutomationPeer.idl>
 #include <ColorPicker\ColorPickerSliderAutomationPeer.idl>
+#include <CommandBarFlyout\CommandBarFlyoutCommandBarAutomationPeer.idl>
 #include <MenuBar\MenuBarAutomationPeer.idl>
 #include <PersonPicture\PersonPictureAutomationPeer.idl>
 #include <RatingControl\RatingControlAutomationPeer.idl>

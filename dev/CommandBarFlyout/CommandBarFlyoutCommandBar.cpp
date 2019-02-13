@@ -3,7 +3,9 @@
 
 #include "pch.h"
 #include "common.h"
+#include "Vector.h"
 #include "CommandBarFlyoutCommandBar.h"
+#include "CommandBarFlyoutCommandBarAutomationPeer.h"
 #include "CommandBarFlyoutCommandBarTemplateSettings.h"
 
 CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
@@ -93,6 +95,56 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
 void CommandBarFlyoutCommandBar::SetOwningFlyout(winrt::CommandBarFlyout const& owningFlyout)
 {
     m_owningFlyout = owningFlyout;
+}
+
+winrt::AutomationPeer CommandBarFlyoutCommandBar::OnCreateAutomationPeer()
+{
+    return winrt::make<CommandBarFlyoutCommandBarAutomationPeer>(*this);
+}
+
+winrt::IVector<winrt::AutomationPeer> CommandBarFlyoutCommandBar::GetAutomationChildren()
+{
+    int childrenCount = PrimaryCommands().Size() + SecondaryCommands().Size();
+    bool includeMoreButton = PrimaryCommands().Size() > 0 && SecondaryCommands().Size() > 0;
+
+    // If we have at least one primary command and one secondary command,
+    // then we'll have the "..." button as a child as well.  Otherwise,
+    // it'll be hidden from view.
+    if (includeMoreButton)
+    {
+        childrenCount++;
+    }
+
+    auto peers = winrt::make<Vector<winrt::AutomationPeer, MakeVectorParam<VectorFlag::DependencyObjectBase>()>>(childrenCount);
+
+    for (auto const& primaryCommand : PrimaryCommands())
+    {
+        auto commandAsElement = safe_try_cast<winrt::FrameworkElement>(primaryCommand);
+        auto commandPeer = winrt::FrameworkElementAutomationPeer::FromElement(commandAsElement);
+
+        if (commandPeer)
+        {
+            peers.Append(commandPeer);
+        }
+    }
+
+    if (includeMoreButton && m_moreButton)
+    {
+        peers.Append(winrt::FrameworkElementAutomationPeer::FromElement(m_moreButton.get()));
+    }
+
+    for (auto const& secondaryCommand : SecondaryCommands())
+    {
+        auto commandAsElement = safe_try_cast<winrt::FrameworkElement>(secondaryCommand);
+        auto commandPeer = winrt::FrameworkElementAutomationPeer::FromElement(commandAsElement);
+
+        if (commandPeer)
+        {
+            peers.Append(commandPeer);
+        }
+    }
+
+    return peers;
 }
 
 void CommandBarFlyoutCommandBar::AttachEventHandlers()
