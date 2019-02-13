@@ -38,6 +38,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerChangingOffsetsEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerChangingZoomFactorEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerAnchorRequestedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollOptions.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ZoomOptions.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Scroller.properties.cpp" />
@@ -60,5 +62,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerAnchorRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerPrivate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerAnchoring.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollOptions.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ZoomOptions.cpp" />
   </ItemGroup>
 </Project>

@@ -152,8 +152,10 @@ unsealed runtimeclass ScrollOptions
 unsealed runtimeclass ZoomOptions
 {
     ZoomOptions(AnimationMode animationMode);
- 
+    ZoomOptions(AnimationMode animationMode, SnapPointsMode snapPointsMode);
+
     AnimationMode AnimationMode { get; set; };
+    SnapPointsMode SnapPointsMode{ get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]

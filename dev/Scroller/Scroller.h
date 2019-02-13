@@ -78,6 +78,9 @@ public:
     // 0.999972 closely matches the built-in InteractionTracker zooming behavior introduced in RS5.
     static constexpr float s_mouseWheelInertiaDecayRate = 0.999972f;
 
+    static const winrt::ScrollInfo s_noOpScrollInfo;
+    static const winrt::ZoomInfo s_noOpZoomInfo;
+
 #pragma region IScrollAnchorProvider
     void RegisterAnchorCandidate(winrt::UIElement const& element);
     void UnregisterAnchorCandidate(winrt::UIElement const& element);
@@ -155,6 +158,17 @@ public:
     winrt::IVector<winrt::ScrollerSnapPointBase> VerticalSnapPoints();
 
     winrt::IVector<winrt::ScrollerSnapPointBase> ZoomSnapPoints();
+
+    winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset);
+    winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options);
+    winrt::ScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
+    winrt::ScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollOptions const& options);
+    winrt::ScrollInfo ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
+    winrt::ZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
+    winrt::ZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
+    winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
+    winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
+    winrt::ZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 
     int32_t ChangeOffsets(winrt::ScrollerChangeOffsetsOptions const& options);
     int32_t ChangeOffsetsWithAdditionalVelocity(winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions const& options);

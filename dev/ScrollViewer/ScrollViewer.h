@@ -34,6 +34,8 @@ public:
     static const winrt::ScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollMode::Enabled };
     static const winrt::ScrollMode s_defaultVerticalScrollMode{ winrt::ScrollMode::Enabled };
 #endif
+    static const winrt::ScrollInfo s_noOpScrollInfo;
+    static const winrt::ZoomInfo s_noOpZoomInfo;
     static const winrt::ChainingMode s_defaultZoomChainingMode{ winrt::ChainingMode::Auto };
     static const winrt::ZoomMode s_defaultZoomMode{ winrt::ZoomMode::Disabled };
     static const winrt::InputKind s_defaultInputKind{ winrt::InputKind::All };
@@ -61,6 +63,17 @@ public:
 
     winrt::InputKind InputKind();
     void InputKind(winrt::InputKind const& value);
+
+    winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset);
+    winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options);
+    winrt::ScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
+    winrt::ScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollOptions const& options);
+    winrt::ScrollInfo ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
+    winrt::ZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
+    winrt::ZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
+    winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
+    winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
+    winrt::ZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 
     int32_t ChangeOffsets(winrt::ScrollerChangeOffsetsOptions const& options);
     int32_t ChangeOffsetsWithAdditionalVelocity(winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions const& options);

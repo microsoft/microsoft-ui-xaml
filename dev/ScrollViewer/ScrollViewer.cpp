@@ -13,6 +13,9 @@
 bool ScrollViewerTrace::s_IsDebugOutputEnabled{ false };
 bool ScrollViewerTrace::s_IsVerboseDebugOutputEnabled{ false };
 
+const winrt::ScrollInfo ScrollViewer::s_noOpScrollInfo{ -1 };
+const winrt::ZoomInfo ScrollViewer::s_noOpZoomInfo{ -1 };
+
 ScrollViewer::ScrollViewer()
 {
     SCROLLVIEWER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
@@ -160,6 +163,142 @@ void ScrollViewer::InputKind(winrt::InputKind const& value)
 {
     SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::InputKindToString(value).c_str());
     SetValue(s_InputKindProperty, box_value(value));
+}
+
+
+winrt::ScrollInfo ScrollViewer::ScrollTo(double horizontalOffset, double verticalOffset)
+{
+    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalOffset, verticalOffset);
+
+    if (auto scroller = m_scroller.get())
+    {
+        return scroller.ScrollTo(horizontalOffset, verticalOffset);
+    }
+
+    return s_noOpScrollInfo;
+}
+
+winrt::ScrollInfo ScrollViewer::ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options)
+{
+    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
+        horizontalOffset, verticalOffset, TypeLogging::ScrollOptionsToString(options).c_str());
+
+    if (auto scroller = m_scroller.get())
+    {
+        return scroller.ScrollTo(horizontalOffset, verticalOffset, options);
+    }
+
+    return s_noOpScrollInfo;
+}
+
+winrt::ScrollInfo ScrollViewer::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta)
+{
+    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalOffsetDelta, verticalOffsetDelta);
+
+    if (auto scroller = m_scroller.get())
+    {
+        return scroller.ScrollBy(horizontalOffsetDelta, verticalOffsetDelta);
+    }
+
+    return s_noOpScrollInfo;
+}
+
+winrt::ScrollInfo ScrollViewer::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollOptions const& options)
+{
+    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
+        horizontalOffsetDelta, verticalOffsetDelta, TypeLogging::ScrollOptionsToString(options).c_str());
+
+    if (auto scroller = m_scroller.get())
+    {
+        return scroller.ScrollBy(horizontalOffsetDelta, verticalOffsetDelta, options);
+    }
+
+    return s_noOpScrollInfo;
+}
+
+winrt::ScrollInfo ScrollViewer::ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate)
+{
+    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
+        TypeLogging::Float2ToString(offsetsVelocity).c_str(), TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
+
+    if (auto scroller = m_scroller.get())
+    {
+        return scroller.ScrollFrom(offsetsVelocity, inertiaDecayRate);
+    }
+
+    return s_noOpScrollInfo;
+}
+
+winrt::ZoomInfo ScrollViewer::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint)
+{
+    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(), zoomFactor);
+
+    if (auto scroller = m_scroller.get())
+    {
+        return scroller.ZoomTo(zoomFactor, centerPoint);
+    }
+
+    return s_noOpZoomInfo;
+}
+
+winrt::ZoomInfo ScrollViewer::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options)
+{
+    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        TypeLogging::ZoomOptionsToString(options).c_str(),
+        zoomFactor);
+
+    if (auto scroller = m_scroller.get())
+    {
+        return scroller.ZoomTo(zoomFactor, centerPoint, options);
+    }
+
+    return s_noOpZoomInfo;
+}
+
+winrt::ZoomInfo ScrollViewer::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint)
+{
+    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        zoomFactorDelta);
+
+    if (auto scroller = m_scroller.get())
+    {
+        return scroller.ZoomBy(zoomFactorDelta, centerPoint);
+    }
+
+    return s_noOpZoomInfo;
+}
+
+winrt::ZoomInfo ScrollViewer::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options)
+{
+    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        TypeLogging::ZoomOptionsToString(options).c_str(),
+        zoomFactorDelta);
+
+    if (auto scroller = m_scroller.get())
+    {
+        return scroller.ZoomBy(zoomFactorDelta, centerPoint, options);
+    }
+
+    return s_noOpZoomInfo;
+}
+
+winrt::ZoomInfo ScrollViewer::ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate)
+{
+    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        TypeLogging::NullableFloatToString(inertiaDecayRate).c_str(),
+        zoomFactorVelocity);
+
+    if (auto scroller = m_scroller.get())
+    {
+        return scroller.ZoomFrom(zoomFactorVelocity, centerPoint, inertiaDecayRate);
+    }
+
+    return s_noOpZoomInfo;
 }
 
 int32_t ScrollViewer::ChangeOffsets(

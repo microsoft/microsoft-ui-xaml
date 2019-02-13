@@ -33,6 +33,30 @@ winrt::hstring TypeLogging::Float2ToString(const winrt::float2& v2)
     return StringUtil::FormatString(L"(%1!i!, %2!i!)", static_cast<int32_t>(v2.x), static_cast<int32_t>(v2.y));
 }
 
+winrt::hstring TypeLogging::NullableFloatToString(const winrt::IReference<float>& nf)
+{
+    if (nf)
+    {
+        return StringUtil::FormatString(L"%1!i!", static_cast<int32_t>(nf.Value()));
+    }
+    else
+    {
+        return L"null";
+    }
+}
+
+winrt::hstring TypeLogging::NullableFloat2ToString(const winrt::IReference<winrt::float2>& nv2)
+{
+    if (nv2)
+    {
+        return Float2ToString(nv2.Value());
+    }
+    else
+    {
+        return L"null";
+    }
+}
+
 winrt::hstring TypeLogging::OrientationToString(const winrt::Orientation& orientation)
 {
     return orientation == winrt::Orientation::Horizontal ? L"Horizontal" : L"Vertical";
@@ -196,6 +220,34 @@ winrt::hstring TypeLogging::InputKindToString(const winrt::InputKind& inputKind)
     }
 }
 
+winrt::hstring TypeLogging::AnimationModeToString(const winrt::AnimationMode& animationMode)
+{
+    switch (animationMode)
+    {
+    case winrt::AnimationMode::Disabled:
+        return L"Disabled";
+    case winrt::AnimationMode::Enabled:
+        return L"Enabled";
+    default:
+        MUX_ASSERT(false);
+        return L"";
+    }
+}
+
+winrt::hstring TypeLogging::SnapPointsModeToString(const winrt::SnapPointsMode& snapPointsMode)
+{
+    switch (snapPointsMode)
+    {
+    case winrt::SnapPointsMode::Default:
+        return L"Default";
+    case winrt::SnapPointsMode::Ignore:
+        return L"Ignore";
+    default:
+        MUX_ASSERT(false);
+        return L"";
+    }
+}
+
 winrt::hstring TypeLogging::ScrollerViewKindToString(const winrt::ScrollerViewKind& viewKind)
 {
     switch (viewKind)
@@ -274,6 +326,22 @@ winrt::hstring TypeLogging::ScrollAmountToString(const winrt::ScrollAmount& scro
         MUX_ASSERT(false);
         return L"";
     }
+}
+
+winrt::hstring TypeLogging::ScrollOptionsToString(const winrt::ScrollOptions& options)
+{
+    return StringUtil::FormatString(L"ScrollOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
+        options,
+        AnimationModeToString(options.AnimationMode()).c_str(),
+        SnapPointsModeToString(options.SnapPointsMode()).c_str());
+}
+
+winrt::hstring TypeLogging::ZoomOptionsToString(const winrt::ZoomOptions& options)
+{
+    return StringUtil::FormatString(L"ZoomOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
+        options,
+        AnimationModeToString(options.AnimationMode()).c_str(),
+        SnapPointsModeToString(options.SnapPointsMode()).c_str());
 }
 
 winrt::hstring TypeLogging::ScrollerChangeOffsetsOptionsToString(const winrt::ScrollerChangeOffsetsOptions& options)

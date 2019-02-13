@@ -28,6 +28,9 @@ const double c_scrollerLineDelta = 16.0;
 // an offset change with additional velocity.
 const float c_scrollerDefaultInertiaDecayRate = 0.95f;
 
+const winrt::ScrollInfo Scroller::s_noOpScrollInfo{ -1 };
+const winrt::ZoomInfo Scroller::s_noOpZoomInfo{ -1 };
+
 Scroller::~Scroller()
 {
     SCROLLER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
@@ -424,6 +427,91 @@ winrt::IVector<winrt::ScrollerSnapPointBase> Scroller::ZoomSnapPoints()
         }
     }
     return m_zoomSnapPoints;
+}
+
+winrt::ScrollInfo Scroller::ScrollTo(double horizontalOffset, double verticalOffset)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalOffset, verticalOffset);
+
+    return s_noOpScrollInfo;
+}
+
+winrt::ScrollInfo Scroller::ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
+        horizontalOffset, verticalOffset, TypeLogging::ScrollOptionsToString(options).c_str());
+
+    return s_noOpScrollInfo;
+}
+
+winrt::ScrollInfo Scroller::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalOffsetDelta, verticalOffsetDelta);
+
+    return s_noOpScrollInfo;
+}
+
+winrt::ScrollInfo Scroller::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollOptions const& options)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
+        horizontalOffsetDelta, verticalOffsetDelta, TypeLogging::ScrollOptionsToString(options).c_str());
+
+    return s_noOpScrollInfo;
+}
+
+winrt::ScrollInfo Scroller::ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
+        TypeLogging::Float2ToString(offsetsVelocity).c_str(), TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
+
+    return s_noOpScrollInfo;
+}
+
+winrt::ZoomInfo Scroller::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(), zoomFactor);
+
+    return s_noOpZoomInfo;
+}
+
+winrt::ZoomInfo Scroller::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        TypeLogging::ZoomOptionsToString(options).c_str(),
+        zoomFactor);
+
+    return s_noOpZoomInfo;
+}
+
+winrt::ZoomInfo Scroller::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        zoomFactorDelta);
+
+    return s_noOpZoomInfo;
+}
+
+winrt::ZoomInfo Scroller::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        TypeLogging::ZoomOptionsToString(options).c_str(),
+        zoomFactorDelta);
+
+    return s_noOpZoomInfo;
+}
+
+winrt::ZoomInfo Scroller::ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        TypeLogging::NullableFloatToString(inertiaDecayRate).c_str(),
+        zoomFactorVelocity);
+
+    return s_noOpZoomInfo;
 }
 
 // Allows to change the HorizontalOffset/VerticalOffset properties in an asynchronous manner, either through an animation or jump.
