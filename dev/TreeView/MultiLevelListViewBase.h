@@ -9,7 +9,6 @@ class MultiLevelListViewBase
 {
 public:
     MultiLevelListViewBase(const ITrackerHandleManager* m_owner, const winrt::ListView& lv);
-    ~MultiLevelListViewBase();
 
     winrt::com_ptr<ViewModel> ListViewModel() const;
     void ListViewModel(winrt::com_ptr<ViewModel> const& viewModel);
@@ -20,5 +19,5 @@ public:
 
 private:
     tracker_com_ref<ViewModel> m_viewModel;
-    tracker_ref<winrt::ListView> m_listView;
+    winrt::weak_ref<winrt::ListView> m_listView{ nullptr };
 };

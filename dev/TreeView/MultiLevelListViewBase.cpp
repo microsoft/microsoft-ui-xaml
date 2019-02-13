@@ -6,13 +6,9 @@
 #include "MultiLevelListViewBase.h"
 
 MultiLevelListViewBase::MultiLevelListViewBase(const ITrackerHandleManager* m_owner, const winrt::ListView& lv)
-    : m_viewModel(m_owner), m_listView(m_owner)
+    : m_viewModel(m_owner)
 {
-    m_listView.set(lv);
-}
-
-MultiLevelListViewBase::~MultiLevelListViewBase()
-{
+    m_listView = winrt::make_weak<winrt::ListView>(lv);
 }
 
 com_ptr<ViewModel> MultiLevelListViewBase::ListViewModel() const

@@ -60,7 +60,6 @@ private:
     int m_emptySlotIndex{ 0 };
     bool m_itemsSourceAttached{ false };
     bool m_isMultiselectEnabled{ false };
-    tracker_com_ref<ViewModel> m_viewModel{ this };
     tracker_ref<winrt::TreeViewNode> m_draggedTreeViewNode{ this };
 };
 
