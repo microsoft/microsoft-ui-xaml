@@ -15,12 +15,9 @@ jobs:
         buildConfiguration: 'Release'
 
   variables:
-  - name: appxPackageDir
-    value: $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
-  - name: buildOutputDir
-    value: $(Build.SourcesDirectory)\BuildOutput
-  - name: publishDir
-    value: $(Build.ArtifactStagingDirectory)
+    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+    publishDir : $(Build.ArtifactStagingDirectory)
 
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml

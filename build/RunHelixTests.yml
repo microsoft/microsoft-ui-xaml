@@ -31,8 +31,7 @@ jobs:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
   variables:
-  - name: artifactsDir
-    value: $(Build.SourcesDirectory)\Artifacts
+    artifactsDir : $(Build.SourcesDirectory)\Artifacts
   strategy:
     maxParallel: 4
     matrix:
