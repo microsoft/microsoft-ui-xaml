@@ -164,22 +164,38 @@ void ScrollViewer::InputKind(winrt::InputKind const& value)
 
 void ScrollViewer::RegisterAnchorCandidate(winrt::UIElement const& element)
 {
-    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
 
     if (auto scroller = m_scroller.get())
     {
-        scroller.RegisterAnchorCandidate(element);
+        const winrt::Controls::IScrollAnchorProvider scrollerAsAnchorProvider = scroller.try_as<winrt::Controls::IScrollAnchorProvider>();
+
+        if (scrollerAsAnchorProvider)
+        {
+            scrollerAsAnchorProvider.RegisterAnchorCandidate(element);
+            return;
+        }
+        throw winrt::hresult_error(E_INVALID_OPERATION, s_iScrollAnchorProviderNotImpl);
     }
+    throw winrt::hresult_error(E_INVALID_OPERATION, s_noScrollerPart);
 }
 
 void ScrollViewer::UnregisterAnchorCandidate(winrt::UIElement const& element)
 {
-    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
 
     if (auto scroller = m_scroller.get())
     {
-        scroller.UnregisterAnchorCandidate(element);
+        const winrt::Controls::IScrollAnchorProvider scrollerAsAnchorProvider = scroller.try_as<winrt::Controls::IScrollAnchorProvider>();
+
+        if (scrollerAsAnchorProvider)
+        {
+            scrollerAsAnchorProvider.UnregisterAnchorCandidate(element);
+            return;
+        }
+        throw winrt::hresult_error(E_INVALID_OPERATION, s_iScrollAnchorProviderNotImpl);
     }
+    throw winrt::hresult_error(E_INVALID_OPERATION, s_noScrollerPart);
 }
 
 int32_t ScrollViewer::ChangeOffsets(
