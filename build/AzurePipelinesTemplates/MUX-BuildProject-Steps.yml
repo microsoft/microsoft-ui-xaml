@@ -42,7 +42,14 @@ steps:
       vsVersion: 15.0
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
-      msbuildArgs: '/p:AppxPackageDir="${{ parameters.appxPackageDir }}" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false'
+      msbuildArgs: '/p:AppxPackageDir="${{ parameters.appxPackageDir }}" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:${{ parameters.solutionPath }}.$(buildPlatform).$(buildConfiguration).binlog '
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish solution binlog'
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: ${{ parameters.solutionPath }}.$(buildPlatform).$(buildConfiguration).binlog
+      artifactName: 'drop'
 
   - task: powershell@2
     displayName: 'Source Index PDBs'
