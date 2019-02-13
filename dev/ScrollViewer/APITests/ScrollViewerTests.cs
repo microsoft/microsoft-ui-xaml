@@ -56,7 +56,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const ChainingMode c_defaultZoomChainingMode = ChainingMode.Auto;
         private const ZoomMode c_defaultZoomMode = ZoomMode.Disabled;
         private const ContentOrientation c_defaultContentOrientation = ContentOrientation.Vertical;
-        private const bool c_defaultIsAnchoredAtExtent = true;
         private const double c_defaultMinZoomFactor = 0.1;
         private const double c_defaultMaxZoomFactor = 10.0;
         private const double c_defaultAnchorRatio = 0.0;
@@ -112,8 +111,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsLessThan(scrollViewer.MaxZoomFactor, c_defaultMaxZoomFactor + c_epsilon);
                 Verify.AreEqual(scrollViewer.HorizontalAnchorRatio, c_defaultAnchorRatio);
                 Verify.AreEqual(scrollViewer.VerticalAnchorRatio, c_defaultAnchorRatio);
-                Verify.AreEqual(scrollViewer.IsAnchoredAtHorizontalExtent, c_defaultIsAnchoredAtExtent);
-                Verify.AreEqual(scrollViewer.IsAnchoredAtVerticalExtent, c_defaultIsAnchoredAtExtent);
                 Verify.AreEqual(scrollViewer.ExtentWidth, 0.0);
                 Verify.AreEqual(scrollViewer.ExtentHeight, 0.0);
                 Verify.AreEqual(scrollViewer.ViewportWidth, 0.0);

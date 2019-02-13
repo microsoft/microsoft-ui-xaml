@@ -64,7 +64,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const ZoomMode c_defaultZoomMode = ZoomMode.Disabled;
         private const InputKind c_defaultInputKind = InputKind.All;
         private const ContentOrientation c_defaultContentOrientation = ContentOrientation.None;
-        private const bool c_defaultIsAnchoredAtExtent = true;
         private const double c_defaultMinZoomFactor = 0.1;
         private const double c_defaultZoomFactor = 1.0;
         private const double c_defaultMaxZoomFactor = 10.0;
@@ -124,8 +123,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scroller.VerticalOffset, c_defaultVerticalOffset);
                 Verify.AreEqual(scroller.HorizontalAnchorRatio, c_defaultAnchorRatio);
                 Verify.AreEqual(scroller.VerticalAnchorRatio, c_defaultAnchorRatio);
-                Verify.AreEqual(scroller.IsAnchoredAtHorizontalExtent, c_defaultIsAnchoredAtExtent);
-                Verify.AreEqual(scroller.IsAnchoredAtVerticalExtent, c_defaultIsAnchoredAtExtent);
                 Verify.AreEqual(scroller.ExtentWidth, 0.0);
                 Verify.AreEqual(scroller.ExtentHeight, 0.0);
                 Verify.AreEqual(scroller.ViewportWidth, 0.0);
@@ -166,8 +163,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scroller.MaxZoomFactor = 2.0f;
                 scroller.HorizontalAnchorRatio = 0.25f;
                 scroller.VerticalAnchorRatio = 0.75f;
-                scroller.IsAnchoredAtHorizontalExtent = !c_defaultIsAnchoredAtExtent;
-                scroller.IsAnchoredAtVerticalExtent = !c_defaultIsAnchoredAtExtent;
             });
 
             IdleSynchronizer.Wait();
@@ -191,8 +186,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scroller.MaxZoomFactor, 2.0f);
                 Verify.AreEqual(scroller.HorizontalAnchorRatio, 0.25f);
                 Verify.AreEqual(scroller.VerticalAnchorRatio, 0.75f);
-                Verify.AreEqual(scroller.IsAnchoredAtHorizontalExtent, !c_defaultIsAnchoredAtExtent);
-                Verify.AreEqual(scroller.IsAnchoredAtVerticalExtent, !c_defaultIsAnchoredAtExtent);
             });
         }
 
