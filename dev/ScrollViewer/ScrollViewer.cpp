@@ -2031,14 +2031,6 @@ winrt::hstring ScrollViewer::DependencyPropertyToString(const winrt::IDependency
     {
         return L"MaxZoomFactor";
     }
-    else if (dependencyProperty == s_IsAnchoredAtHorizontalExtentProperty)
-    {
-        return L"IsAnchoredAtHorizontalExtent";
-    }
-    else if (dependencyProperty == s_IsAnchoredAtVerticalExtentProperty)
-    {
-        return L"IsAnchoredAtVerticalExtent";
-    }
     else if (dependencyProperty == s_HorizontalAnchorRatioProperty)
     {
         return L"HorizontalAnchorRatio";

@@ -49,14 +49,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const int c_defaultAnchoringUIRepeaterChildrenCount = 16;
 
         [TestMethod]
-        [TestProperty("Description", "Verifies HorizontalOffset remains at 0 when inserting an item at the beginning (IsAnchoredAtHorizontalExtent=True, HorizontalAnchorRatio=0).")]
+        [TestProperty("Description", "Verifies HorizontalOffset remains at 0 when inserting an item at the beginning (HorizontalAnchorRatio=0).")]
         public void AnchoringAtLeftEdge()
         {
             AnchoringAtNearEdge(Orientation.Horizontal);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies VerticalOffset remains at 0 when inserting an item at the beginning (IsAnchoredAtVerticalExtent=True, VerticalAnchorRatio=0).")]
+        [TestProperty("Description", "Verifies VerticalOffset remains at 0 when inserting an item at the beginning (VerticalAnchorRatio=0).")]
         public void AnchoringAtTopEdge()
         {
             AnchoringAtNearEdge(Orientation.Vertical);
@@ -102,42 +102,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies HorizontalOffset growns to max value when inserting an item at the end (IsAnchoredAtHorizontalExtent=True, HorizontalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies HorizontalOffset growns to max value when inserting an item at the end (HorizontalAnchorRatio=1).")]
         public void AnchoringAtRightEdgeWhileIncreasingContentWidth()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Horizontal, 0 /*viewportSizeChange*/, 3876 /*expectedFinalOffset*/);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end (IsAnchoredAtVerticalExtent=True, VerticalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end (VerticalAnchorRatio=1).")]
         public void AnchoringAtBottomEdgeWhileIncreasingContentHeight()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Vertical, 0 /*viewportSizeChange*/, 3876 /*expectedFinalOffset*/);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies HorizontalOffset growns to max value when inserting an item at the end and growing viewport (IsAnchoredAtHorizontalExtent=True, HorizontalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies HorizontalOffset growns to max value when inserting an item at the end and growing viewport (HorizontalAnchorRatio=1).")]
         public void AnchoringAtRightEdgeWhileIncreasingContentAndViewportWidth()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Horizontal, 10 /*viewportSizeChange*/, 3866 /*expectedFinalOffset*/);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end and growning viewport (IsAnchoredAtVerticalExtent=True, VerticalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end and growning viewport (VerticalAnchorRatio=1).")]
         public void AnchoringAtBottomEdgeWhileIncreasingContentAndViewportHeight()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Vertical, 10 /*viewportSizeChange*/, 3866 /*expectedFinalOffset*/);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies HorizontalOffset growns to max value when inserting an item at the end and shrinking viewport (IsAnchoredAtHorizontalExtent=True, HorizontalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies HorizontalOffset growns to max value when inserting an item at the end and shrinking viewport (HorizontalAnchorRatio=1).")]
         public void AnchoringAtRightEdgeWhileIncreasingContentAndDecreasingViewportWidth()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Horizontal, -10 /*viewportSizeChange*/, 3886 /*expectedFinalOffset*/);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end and shrinking viewport (IsAnchoredAtVerticalExtent=True, VerticalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end and shrinking viewport (VerticalAnchorRatio=1).")]
         public void AnchoringAtBottomEdgeWhileIncreasingContentAndDecreasingViewportHeight()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Vertical, -10 /*viewportSizeChange*/, 3886 /*expectedFinalOffset*/);
@@ -240,14 +240,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies HorizontalOffset shrinks to max value when decreasing viewport width (IsAnchoredAtHorizontalExtent=True, HorizontalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies HorizontalOffset shrinks to max value when decreasing viewport width (HorizontalAnchorRatio=1).")]
         public void AnchoringAtRightEdgeWhileDecreasingViewportWidth()
         {
             AnchoringAtFarEdgeWhileDecreasingViewport(Orientation.Horizontal);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies VerticalOffset shrinks to max value when decreasing viewport height (IsAnchoredAtVerticalExtent=True, VerticalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies VerticalOffset shrinks to max value when decreasing viewport height (VerticalAnchorRatio=1).")]
         public void AnchoringAtBottomEdgeWhileDecreasingViewportHeight()
         {
             AnchoringAtFarEdgeWhileDecreasingViewport(Orientation.Vertical);
@@ -340,14 +340,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies HorizontalOffset growns when inserting an item at the beginning (IsAnchoredAtHorizontalExtent=True, HorizontalAnchorRatio=0).")]
+        [TestProperty("Description", "Verifies HorizontalOffset growns when inserting an item at the beginning (HorizontalAnchorRatio=0).")]
         public void AnchoringAtAlmostLeftEdge()
         {
             AnchoringAtAlmostNearEdge(Orientation.Horizontal);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies VerticalOffset grows when inserting an item at the beginning (IsAnchoredAtVerticalExtent=True, VerticalAnchorRatio=0).")]
+        [TestProperty("Description", "Verifies VerticalOffset grows when inserting an item at the beginning (VerticalAnchorRatio=0).")]
         public void AnchoringAtAlmostTopEdge()
         {
             AnchoringAtAlmostNearEdge(Orientation.Vertical);
@@ -407,14 +407,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies HorizontalOffset does not change when inserting an item at the end (IsAnchoredAtHorizontalExtent=True, HorizontalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies HorizontalOffset does not change when inserting an item at the end (HorizontalAnchorRatio=1).")]
         public void AnchoringAtAlmostRightEdge()
         {
             AnchoringAtAlmostFarEdge(Orientation.Horizontal);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies VerticalOffset does not change when inserting an item at the end (IsAnchoredAtVerticalExtent=True, VerticalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies VerticalOffset does not change when inserting an item at the end (VerticalAnchorRatio=1).")]
         public void AnchoringAtAlmostBottomEdge()
         {
             AnchoringAtAlmostFarEdge(Orientation.Vertical);

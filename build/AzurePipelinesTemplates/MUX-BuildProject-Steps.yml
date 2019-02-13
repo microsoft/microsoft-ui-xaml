@@ -5,6 +5,8 @@ parameters:
   appxPackageDir: '$(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages'
 
 steps:
+  - template: MUX-PopulateBuildDateAndRevision-Steps.yml
+
   - script: |
       echo parameters.solutionPath = '${{ parameters.solutionPath }}'
       echo parameters.nugetConfigPath = '${{ parameters.nugetConfigPath }}'

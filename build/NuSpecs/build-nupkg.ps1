@@ -137,9 +137,13 @@ Write-Host $NugetCmdLine
 Invoke-Expression $NugetCmdLine
 if ($lastexitcode -ne 0)
 {
-    Exit $lastexitcode; 
     Write-Host "Nuget returned $lastexitcode"
+    Exit $lastexitcode; 
 }
+
+Write-Host
+Write-Host "SkipFrameworkPackage = $SkipFrameworkPackage"
+Write-Host
 
 if(-not $SkipFrameworkPackage)
 {
@@ -162,8 +166,8 @@ if(-not $SkipFrameworkPackage)
     Invoke-Expression $NugetCmdLine
     if ($lastexitcode -ne 0)
     {
-        Exit $lastexitcode; 
         Write-Host "Nuget returned $lastexitcode"
+        Exit $lastexitcode; 
     }
 }
 
