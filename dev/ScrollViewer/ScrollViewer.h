@@ -62,6 +62,8 @@ public:
     winrt::InputKind IgnoredInputKind();
     void IgnoredInputKind(winrt::InputKind const& value);
 
+    void RegisterAnchorCandidate(winrt::UIElement const& element);
+    void UnregisterAnchorCandidate(winrt::UIElement const& element);
     int32_t ChangeOffsets(winrt::ScrollerChangeOffsetsOptions const& options);
     int32_t ChangeOffsetsWithAdditionalVelocity(winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions const& options);
     int32_t ChangeZoomFactor(winrt::ScrollerChangeZoomFactorOptions const& options);
@@ -229,6 +231,8 @@ private:
     static constexpr std::wstring_view s_horizontalScrollBarPartName{ L"PART_HorizontalScrollBar"sv };
     static constexpr std::wstring_view s_verticalScrollBarPartName{ L"PART_VerticalScrollBar"sv };
     static constexpr std::wstring_view s_scrollBarsSeparatorPartName{ L"PART_ScrollBarsSeparator"sv };
+    static constexpr std::wstring_view s_iScrollAnchorProviderNotImpl{ L"Template part named PART_Scroller does not implement IScrollAnchorProvider."sv };
+    static constexpr std::wstring_view s_noScrollerPart{ L"No template part named PART_Scroller was loaded."sv };
 
     winrt::com_ptr<ScrollBarController> m_horizontalScrollBarController{ nullptr };
     winrt::com_ptr<ScrollBarController> m_verticalScrollBarController{ nullptr };

@@ -162,6 +162,38 @@ void ScrollViewer::IgnoredInputKind(winrt::InputKind const& value)
     SetValue(s_IgnoredInputKindProperty, box_value(value));
 }
 
+void ScrollViewer::RegisterAnchorCandidate(winrt::UIElement const& element)
+{
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
+
+    if (auto scroller = m_scroller.get())
+    {
+        if (const auto scrollerAsAnchorProvider = scroller.try_as<winrt::Controls::IScrollAnchorProvider>())
+        {
+            scrollerAsAnchorProvider.RegisterAnchorCandidate(element);
+            return;
+        }
+        throw winrt::hresult_error(E_INVALID_OPERATION, s_iScrollAnchorProviderNotImpl);
+    }
+    throw winrt::hresult_error(E_INVALID_OPERATION, s_noScrollerPart);
+}
+
+void ScrollViewer::UnregisterAnchorCandidate(winrt::UIElement const& element)
+{
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
+
+    if (auto scroller = m_scroller.get())
+    {
+        if (const auto scrollerAsAnchorProvider = scroller.try_as<winrt::Controls::IScrollAnchorProvider>())
+        {
+            scrollerAsAnchorProvider.UnregisterAnchorCandidate(element);
+            return;
+        }
+        throw winrt::hresult_error(E_INVALID_OPERATION, s_iScrollAnchorProviderNotImpl);
+    }
+    throw winrt::hresult_error(E_INVALID_OPERATION, s_noScrollerPart);
+}
+
 int32_t ScrollViewer::ChangeOffsets(
     winrt::ScrollerChangeOffsetsOptions const& options)
 {
