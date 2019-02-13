@@ -36,7 +36,7 @@ public:
 #endif
     static const winrt::ChainingMode s_defaultZoomChainingMode{ winrt::ChainingMode::Auto };
     static const winrt::ZoomMode s_defaultZoomMode{ winrt::ZoomMode::Disabled };
-    static const winrt::InputKind s_defaultInputKind{ winrt::InputKind::All };
+    static const winrt::InputKind s_defaultIgnoredInputKind{ winrt::InputKind::None };
     static const winrt::ContentOrientation s_defaultContentOrientation{ winrt::ContentOrientation::Vertical };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
     static constexpr double s_defaultMaxZoomFactor{ 10.0 };
@@ -59,8 +59,8 @@ public:
 
     winrt::InteractionState State();
 
-    winrt::InputKind InputKind();
-    void InputKind(winrt::InputKind const& value);
+    winrt::InputKind IgnoredInputKind();
+    void IgnoredInputKind(winrt::InputKind const& value);
 
     int32_t ChangeOffsets(winrt::ScrollerChangeOffsetsOptions const& options);
     int32_t ChangeOffsetsWithAdditionalVelocity(winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions const& options);
@@ -200,6 +200,7 @@ private:
     void UpdateScrollControllersVisibility(bool horizontalChange, bool verticalChange);
 
     bool IsLoaded();
+    bool IsInputKindIgnored(winrt::InputKind const& inputKind);
 
     bool AreAllScrollControllersCollapsed();
     bool AreBothScrollControllersVisible();

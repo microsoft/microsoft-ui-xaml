@@ -15,7 +15,7 @@ GlobalDependencyProperty ScrollerProperties::s_HorizontalAnchorRatioProperty{ nu
 GlobalDependencyProperty ScrollerProperties::s_HorizontalScrollChainingModeProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_HorizontalScrollModeProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_HorizontalScrollRailingModeProperty{ nullptr };
-GlobalDependencyProperty ScrollerProperties::s_InputKindProperty{ nullptr };
+GlobalDependencyProperty ScrollerProperties::s_IgnoredInputKindProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_MaxZoomFactorProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_MinZoomFactorProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_VerticalAnchorRatioProperty{ nullptr };
@@ -117,15 +117,15 @@ void ScrollerProperties::EnsureProperties()
                 ValueHelper<winrt::RailingMode>::BoxValueIfNecessary(Scroller::s_defaultHorizontalScrollRailingMode),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
-    if (!s_InputKindProperty)
+    if (!s_IgnoredInputKindProperty)
     {
-        s_InputKindProperty =
+        s_IgnoredInputKindProperty =
             InitializeDependencyProperty(
-                L"InputKind",
+                L"IgnoredInputKind",
                 winrt::name_of<winrt::InputKind>(),
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
-                ValueHelper<winrt::InputKind>::BoxValueIfNecessary(Scroller::s_defaultInputKind),
+                ValueHelper<winrt::InputKind>::BoxValueIfNecessary(Scroller::s_defaultIgnoredInputKind),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_MaxZoomFactorProperty)
@@ -227,7 +227,7 @@ void ScrollerProperties::ClearProperties()
     s_HorizontalScrollChainingModeProperty = nullptr;
     s_HorizontalScrollModeProperty = nullptr;
     s_HorizontalScrollRailingModeProperty = nullptr;
-    s_InputKindProperty = nullptr;
+    s_IgnoredInputKindProperty = nullptr;
     s_MaxZoomFactorProperty = nullptr;
     s_MinZoomFactorProperty = nullptr;
     s_VerticalAnchorRatioProperty = nullptr;
@@ -351,14 +351,14 @@ winrt::RailingMode ScrollerProperties::HorizontalScrollRailingMode()
     return ValueHelper<winrt::RailingMode>::CastOrUnbox(static_cast<Scroller*>(this)->GetValue(s_HorizontalScrollRailingModeProperty));
 }
 
-void ScrollerProperties::InputKind(winrt::InputKind const& value)
+void ScrollerProperties::IgnoredInputKind(winrt::InputKind const& value)
 {
-    static_cast<Scroller*>(this)->SetValue(s_InputKindProperty, ValueHelper<winrt::InputKind>::BoxValueIfNecessary(value));
+    static_cast<Scroller*>(this)->SetValue(s_IgnoredInputKindProperty, ValueHelper<winrt::InputKind>::BoxValueIfNecessary(value));
 }
 
-winrt::InputKind ScrollerProperties::InputKind()
+winrt::InputKind ScrollerProperties::IgnoredInputKind()
 {
-    return ValueHelper<winrt::InputKind>::CastOrUnbox(static_cast<Scroller*>(this)->GetValue(s_InputKindProperty));
+    return ValueHelper<winrt::InputKind>::CastOrUnbox(static_cast<Scroller*>(this)->GetValue(s_IgnoredInputKindProperty));
 }
 
 void ScrollerProperties::MaxZoomFactor(double value)

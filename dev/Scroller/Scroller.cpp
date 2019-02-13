@@ -357,12 +357,11 @@ void Scroller::VerticalScrollController(winrt::IScrollController const& value)
     }
 }
 
-
-winrt::InputKind Scroller::InputKind()
+winrt::InputKind Scroller::IgnoredInputKind()
 {
     // Workaround for Bug 17377013: XamlCompiler codegen for Enum CreateFromString always returns boxed int which is wrong for [flags] enums (should be uint)
-    // Check if the boxed InputKind is an IReference<int> first in which case we unbox as int.
-    auto boxedKind = GetValue(s_InputKindProperty);
+    // Check if the boxed IgnoredInputKind is an IReference<int> first in which case we unbox as int.
+    auto boxedKind = GetValue(s_IgnoredInputKindProperty);
     if (auto boxedInt = boxedKind.try_as<winrt::IReference<int32_t>>())
     {
         return winrt::InputKind{ static_cast<uint32_t>(unbox_value<int32_t>(boxedInt)) };
@@ -371,9 +370,9 @@ winrt::InputKind Scroller::InputKind()
     return auto_unbox(boxedKind);
 }
 
-void Scroller::InputKind(winrt::InputKind const& value)
+void Scroller::IgnoredInputKind(winrt::InputKind const& value)
 {
-    SetValue(s_InputKindProperty, box_value(value));
+    SetValue(s_IgnoredInputKindProperty, box_value(value));
 }
 
 winrt::InteractionState Scroller::State()
@@ -2275,12 +2274,12 @@ void Scroller::SetupVisualInteractionSourcePointerWheelConfig(
 
 void Scroller::SetupVisualInteractionSourceRedirectionMode(
     const winrt::VisualInteractionSource& visualInteractionSource,
-    const winrt::InputKind& inputKind)
+    const winrt::InputKind& ignoredInputKind)
 {
     winrt::VisualInteractionSourceRedirectionMode redirectionMode = winrt::VisualInteractionSourceRedirectionMode::CapableTouchpadOnly;
 
     if (SharedHelpers::AreInteractionTrackerPointerWheelRedirectionModesAvailable() &&
-        (inputKind & winrt::InputKind::MouseWheel) == winrt::InputKind::MouseWheel)
+        !IsInputKindIgnored(winrt::InputKind::MouseWheel))
     {
         redirectionMode = winrt::VisualInteractionSourceRedirectionMode::CapableTouchpadAndPointerWheel;
     }
@@ -3358,7 +3357,7 @@ void Scroller::OnPropertyChanged(
             }
 #endif
         }
-        else if (dependencyProperty == s_InputKindProperty)
+        else if (dependencyProperty == s_IgnoredInputKindProperty)
         {
             UpdateKeyEvents();
             UpdateManipulationRedirectionMode();
@@ -3567,9 +3566,9 @@ void Scroller::OnPointerWheelChangedHandler(
         return;
     }
 
-    if ((InputKind() & winrt::InputKind::MouseWheel) != winrt::InputKind::MouseWheel)
+    if (IsInputKindIgnored(winrt::InputKind::MouseWheel))
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"InputKind::MouseWheel off");
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"InputKind::MouseWheel ignored");
 
         // MouseWheel input is ignored.
         return;
@@ -3883,11 +3882,11 @@ void Scroller::OnPointerPressed(
     switch (args.Pointer().PointerDeviceType())
     {
         case winrt::Devices::Input::PointerDeviceType::Touch:
-            if ((InputKind() & winrt::InputKind::Touch) != winrt::InputKind::Touch)
+            if (IsInputKindIgnored(winrt::InputKind::Touch))
                 return;
             break;
         case winrt::Devices::Input::PointerDeviceType::Pen:
-            if ((InputKind() & winrt::InputKind::Pen) != winrt::InputKind::Pen)
+            if (IsInputKindIgnored(winrt::InputKind::Pen))
                 return;
             break;
         default:
@@ -4747,9 +4746,9 @@ void Scroller::UpdateManipulationRedirectionMode()
 {
     if (m_scrollerVisualInteractionSource)
     {
-        winrt::InputKind inputKind = InputKind();
+        winrt::InputKind ignoredInputKind = IgnoredInputKind();
 
-        if ((inputKind & winrt::InputKind::MouseWheel) == winrt::InputKind::MouseWheel)
+        if (!IsInputKindIgnored(winrt::InputKind::MouseWheel))
         {
             bool suppressMouseWheel = true;
 
@@ -4772,13 +4771,13 @@ void Scroller::UpdateManipulationRedirectionMode()
 
             if (suppressMouseWheel)
             {
-                inputKind &= ~winrt::InputKind::MouseWheel;
+                ignoredInputKind |= winrt::InputKind::MouseWheel;
             }
         }
 
         SetupVisualInteractionSourceRedirectionMode(
             m_scrollerVisualInteractionSource,
-            inputKind);
+            ignoredInputKind);
     }
 }
 
@@ -4788,7 +4787,7 @@ void Scroller::UpdateKeyEvents()
 
     if (SharedHelpers::IsRS4OrHigher() && !Scroller::IsInteractionTrackerMouseWheelZoomingEnabled())
     {
-        if ((InputKind() & winrt::InputKind::MouseWheel) == winrt::InputKind::MouseWheel)
+        if (!IsInputKindIgnored(winrt::InputKind::MouseWheel))
         {
             SetKeyEvents();
         }
@@ -5929,6 +5928,11 @@ bool Scroller::IsLoadedAndSetUp()
     return IsLoaded() && m_interactionTracker;
 }
 
+bool Scroller::IsInputKindIgnored(winrt::InputKind const& inputKind)
+{
+    return (IgnoredInputKind() & inputKind) == inputKind;
+}
+
 void Scroller::HookCompositionTargetRendering()
 {
     if (m_renderingToken.value == 0)
@@ -6571,9 +6575,9 @@ winrt::hstring Scroller::DependencyPropertyToString(const winrt::IDependencyProp
     {
         return L"ZoomMode";
     }
-    else if (dependencyProperty == s_InputKindProperty)
+    else if (dependencyProperty == s_IgnoredInputKindProperty)
     {
-        return L"InputKind";
+        return L"IgnoredInputKind";
     }
     else if (dependencyProperty == s_MinZoomFactorProperty)
     {

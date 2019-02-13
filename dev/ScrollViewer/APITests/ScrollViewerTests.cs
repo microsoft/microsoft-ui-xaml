@@ -39,7 +39,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const int c_MaxWaitDuration = 5000;
         private const double c_epsilon = 0.0000001;
 
-        private const InputKind c_defaultInputKind = InputKind.All;
+        private const InputKind c_defaultIgnoredInputKind = InputKind.None;
         private const ChainingMode c_defaultHorizontalScrollChainingMode = ChainingMode.Auto;
         private const ChainingMode c_defaultVerticalScrollChainingMode = ChainingMode.Auto;
         private const RailingMode c_defaultHorizontalScrollRailingMode = RailingMode.Enabled;
@@ -95,7 +95,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scrollViewer.ComputedHorizontalScrollMode, c_defaultComputedHorizontalScrollMode);
                 Verify.AreEqual(scrollViewer.ComputedVerticalScrollMode, c_defaultComputedVerticalScrollMode);
 #endif
-                Verify.AreEqual(scrollViewer.InputKind, c_defaultInputKind);
+                Verify.AreEqual(scrollViewer.IgnoredInputKind, c_defaultIgnoredInputKind);
                 Verify.AreEqual(scrollViewer.ContentOrientation, c_defaultContentOrientation);
                 Verify.AreEqual(scrollViewer.HorizontalScrollChainingMode, c_defaultHorizontalScrollChainingMode);
                 Verify.AreEqual(scrollViewer.VerticalScrollChainingMode, c_defaultVerticalScrollChainingMode);
@@ -150,7 +150,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Setting Scroller-cloned properties to non-default values");
-                    scrollViewer.InputKind = InputKind.MouseWheel | InputKind.Pen;
+                    scrollViewer.IgnoredInputKind = InputKind.MouseWheel | InputKind.Pen;
                     scrollViewer.ContentOrientation = ContentOrientation.Horizontal;
                     scrollViewer.HorizontalScrollChainingMode = ChainingMode.Always;
                     scrollViewer.VerticalScrollChainingMode = ChainingMode.Never;
@@ -164,7 +164,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollViewer.MaxZoomFactor = 8.0;
 
                     Log.Comment("Verifying Scroller-cloned non-default properties");
-                    Verify.AreEqual(scrollViewer.InputKind, InputKind.MouseWheel | InputKind.Pen);
+                    Verify.AreEqual(scrollViewer.IgnoredInputKind, InputKind.MouseWheel | InputKind.Pen);
                     Verify.AreEqual(scrollViewer.ContentOrientation, ContentOrientation.Horizontal);
                     Verify.AreEqual(scrollViewer.HorizontalScrollChainingMode, ChainingMode.Always);
                     Verify.AreEqual(scrollViewer.VerticalScrollChainingMode, ChainingMode.Never);
