@@ -5145,6 +5145,7 @@ namespace AnimatedVisuals
             Vector2 IAnimatedVisual.Size => new Vector2(375, 667);
             void IDisposable.Dispose() => _root?.Dispose();
 
+#pragma warning disable 0649
             ref struct D2D1_RECT_F
             {
                 internal float left;
@@ -5159,6 +5160,8 @@ namespace AnimatedVisuals
                 internal float radiusX;
                 internal float radiusY;
             }
+
+#pragma warning restore 0649
 
             ref struct D2D1_BEZIER_SEGMENT
             {

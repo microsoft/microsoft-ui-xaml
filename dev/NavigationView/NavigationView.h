@@ -112,6 +112,7 @@ private:
     void PropagateNavigationViewAsParent();
     void PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget target, std::function<void(NavigationViewList*)> const& function);
     void PropagateChangeToNavigationViewList(winrt::ListView const& listView, std::function<void(NavigationViewList*)> const& function);
+    void UpdatePaneShadow();
 
     void InvalidateTopNavPrimaryLayout();
     // Measure functions for top navigation   

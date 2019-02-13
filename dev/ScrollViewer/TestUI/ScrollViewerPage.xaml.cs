@@ -42,11 +42,6 @@ namespace MUXControlsTestApp
                 cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 2);
 
             MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                "ScrollBar2",
-                cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 1 || cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 2,
-                cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 2);
-
-            MUXControlsTestHooks.SetOutputDebugStringLevelForType(
                 "Scroller",
                 cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 1 || cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 2,
                 cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 2);

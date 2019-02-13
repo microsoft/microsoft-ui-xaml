@@ -20,6 +20,7 @@ namespace MUXControlsTestApp
             Tests.Add(new TestDeclaration("RatingControl Tests", typeof(RatingControlPage)));
             Tests.Add(new TestDeclaration("SwipeControl Tests", typeof(SwipePage)));
             Tests.Add(new TestDeclaration("TreeView Tests", typeof(TreeViewPage)));
+            Tests.Add(new TestDeclaration("TeachingTip Tests", typeof(TeachingTipPage)));
             Tests.Add(new TestDeclaration("TwoPaneView Tests", typeof(TwoPaneViewPage)));
             Tests.Add(new TestDeclaration("PTR Tests", typeof(PTRPage)));
             Tests.Add(new TestDeclaration("MenuBar Tests", typeof(MenuBarPage)));
@@ -37,7 +38,6 @@ namespace MUXControlsTestApp
             // We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
             // to non-public types.  So for now we'll just exclude these from the OS repo.
 #if (!BUILD_WINDOWS && !BUILD_LEAN_MUX_FOR_THE_STORE_APP)
-            Tests.Add(new TestDeclaration("ScrollBar2 Tests", typeof(ScrollBar2Page)));
             Tests.Add(new TestDeclaration("ScrollViewer Tests", typeof(ScrollViewerPage)));
 #if (USE_INTERNAL_SDK)
             Tests.Add(new TestDeclaration("ButtonInteraction Tests", typeof(ButtonInteractionPage)));

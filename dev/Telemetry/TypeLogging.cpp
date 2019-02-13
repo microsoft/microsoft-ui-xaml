@@ -176,23 +176,20 @@ winrt::hstring TypeLogging::InputKindToString(const winrt::InputKind& inputKind)
 {
     switch (static_cast<int>(inputKind))
     {
-    case static_cast<int>(winrt::InputKind::All):
+    case static_cast<int>(winrt::InputKind::None) :
+        return L"None";
+    case static_cast<int>(winrt::InputKind::All) :
         return L"All";
     case static_cast<int>(winrt::InputKind::Touch):
         return L"Touch";
     case static_cast<int>(winrt::InputKind::Pen):
         return L"Pen";
-    case static_cast<int>(winrt::InputKind::Touch | winrt::InputKind::MouseWheel):
-        return L"Touch|MouseWheel";
-    case static_cast<int>(winrt::InputKind::Touch | winrt::InputKind::Pen):
-        return L"Touch|Pen";
-    case static_cast<int>(winrt::InputKind::Pen | winrt::InputKind::MouseWheel) :
-        return L"Pen|MouseWheel";
-    case static_cast<int>(winrt::InputKind::Touch | winrt::InputKind::Pen | winrt::InputKind::MouseWheel) :
-        return L"Touch|Pen|MouseWheel";
+    case static_cast<int>(winrt::InputKind::Keyboard):
+        return L"Keyboard";
+    case static_cast<int>(winrt::InputKind::Gamepad):
+        return L"Gamepad";
     default:
-        MUX_ASSERT(false);
-        return L"";
+        return L"InputKind combination";
     }
 }
 

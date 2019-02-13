@@ -141,6 +141,10 @@
     <value>뒤로 단추</value>
     <comment>Automation name for the nav view provided back button</comment>
   </data>
+  <data name="NavigationBackButtonToolTip" xml:space="preserve">
+    <value>뒤로</value>
+    <comment>ToolTip caption for the back button</comment>
+  </data>
   <data name="NavigationOverflowButtonName" xml:space="preserve">
     <value>기타 단추</value>
     <comment>Automation name for the nav view more button when panel is on top</comment>

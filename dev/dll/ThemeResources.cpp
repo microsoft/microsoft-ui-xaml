@@ -26,7 +26,7 @@ ThemeResources::ThemeResources()
             // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
             bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
             bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
-            bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher();
+            bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
 
             bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
@@ -132,7 +132,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
             // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
             bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
             bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
-            bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher();
+            bool isRS5OrHigher = SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsControlCornerRadiusAvailable();
             bool is19H1OrHigher = SharedHelpers::Is19H1OrHigher();
 
             bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();

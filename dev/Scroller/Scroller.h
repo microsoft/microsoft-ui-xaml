@@ -44,15 +44,15 @@ public:
 #ifdef USE_SCROLLMODE_AUTO
     static constexpr winrt::ScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollMode::Auto };
     static constexpr winrt::ScrollMode s_defaultVerticalScrollMode{ winrt::ScrollMode::Auto };
+    static constexpr winrt::ScrollMode s_defaultComputedHorizontalScrollMode{ winrt::ScrollMode::Disabled };
+    static constexpr winrt::ScrollMode s_defaultComputedVerticalScrollMode{ winrt::ScrollMode::Disabled };
 #else
     static constexpr winrt::ScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollMode::Enabled };
     static constexpr winrt::ScrollMode s_defaultVerticalScrollMode{ winrt::ScrollMode::Enabled };
 #endif
-    static constexpr winrt::ScrollMode s_defaultComputedHorizontalScrollMode{ winrt::ScrollMode::Disabled };
-    static constexpr winrt::ScrollMode s_defaultComputedVerticalScrollMode{ winrt::ScrollMode::Disabled };
     static constexpr winrt::ChainingMode s_defaultZoomChainingMode{ winrt::ChainingMode::Auto };
     static constexpr winrt::ZoomMode s_defaultZoomMode{ winrt::ZoomMode::Disabled };
-    static constexpr winrt::InputKind s_defaultInputKind{ winrt::InputKind::All };
+    static constexpr winrt::InputKind s_defaultIgnoredInputKind{ winrt::InputKind::None };
     static constexpr winrt::ContentOrientation s_defaultContentOrientation{ winrt::ContentOrientation::None };
     static constexpr bool s_defaultAnchorAtExtent{ true };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
@@ -130,14 +130,14 @@ public:
     winrt::CompositionPropertySet ExpressionAnimationSources();
 
     double HorizontalOffset();
-
     double VerticalOffset();
-
     float ZoomFactor();
-
     double ExtentWidth();
-
     double ExtentHeight();
+    double ViewportWidth();
+    double ViewportHeight();
+    double ScrollableWidth();
+    double ScrollableHeight();
 
     winrt::IScrollController HorizontalScrollController();
     void HorizontalScrollController(winrt::IScrollController const& value);
@@ -145,8 +145,8 @@ public:
     winrt::IScrollController VerticalScrollController();
     void VerticalScrollController(winrt::IScrollController const& value);
 
-    winrt::InputKind InputKind();
-    void InputKind(winrt::InputKind const& value);
+    winrt::InputKind IgnoredInputKind();
+    void IgnoredInputKind(winrt::InputKind const& value);
 
     winrt::InteractionState State();
 
@@ -202,8 +202,6 @@ public:
     // Public methods accessed by the CScrollerAutomationPeer class
     double GetZoomedExtentWidth() const;
     double GetZoomedExtentHeight() const;
-    double GetViewportWidth() const;
-    double GetViewportHeight() const;
 
     void PageLeft();
     void PageRight();
@@ -301,7 +299,7 @@ private:
 #endif
     void SetupVisualInteractionSourceRedirectionMode(
         const winrt::VisualInteractionSource& visualInteractionSource,
-        const winrt::InputKind& inputKind);
+        const winrt::InputKind& ignoredinputKind);
     void SetupVisualInteractionSourceCenterPointModifier(
         const winrt::VisualInteractionSource& visualInteractionSource,
         ScrollerDimension dimension);
@@ -335,6 +333,7 @@ private:
         double viewportWidth, double viewportHeight);
     void UpdateScrollAutomationPatternProperties();
     void UpdateOffset(ScrollerDimension dimension, double zoomedOffset);
+    void UpdateScrollControllerInteractionsAllowed(ScrollerDimension dimension);
     void UpdateScrollControllerValues(ScrollerDimension dimension);
     void UpdateVisualInteractionSourceMode(ScrollerDimension dimension);
     void UpdateManipulationRedirectionMode();
@@ -406,8 +405,9 @@ private:
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationWithAdditionalVelocity(
         bool isOperationTypeForOffsetsChange,
         InteractionTrackerAsyncOperationTrigger operationTrigger) const;
-
+#ifdef USE_SCROLLMODE_AUTO
     winrt::ScrollMode GetComputedScrollMode(ScrollerDimension dimension, bool ignoreZoomMode = false);
+#endif
 #ifdef IsMouseWheelScrollDisabled
     winrt::ScrollMode GetComputedMouseWheelScrollMode(ScrollerDimension dimension);
 #endif
@@ -449,6 +449,7 @@ private:
 
     bool IsLoaded();
     bool IsLoadedAndSetUp();
+    bool IsInputKindIgnored(winrt::InputKind const& inputKind);
     bool HasBringingIntoViewListener() const
     {
         return !!m_bringingIntoViewEventSource;

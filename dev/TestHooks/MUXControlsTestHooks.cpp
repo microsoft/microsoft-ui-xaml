@@ -10,7 +10,6 @@
 #include "SwipeControlTrace.h"
 #ifndef BUILD_WINDOWS
 #include "ScrollViewerTrace.h"
-#include "ScrollBar2Trace.h"
 #endif
 #endif
 
@@ -75,11 +74,6 @@ void MUXControlsTestHooks::SetOutputDebugStringLevelForTypeImpl(const wstring_vi
     {
         ScrollViewerTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
         ScrollViewerTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
-    }
-    if (type == L"ScrollBar2" || type.empty())
-    {
-        ScrollBar2Trace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
-        ScrollBar2Trace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
     }
     #endif
     #endif

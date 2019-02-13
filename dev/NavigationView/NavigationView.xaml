@@ -323,7 +323,7 @@
 
                                     <local:NavigationViewItem
                                             x:Name="SettingsTopNavPaneItem"
-                                            Style="{ThemeResource NavigationViewSettingsItemStyleWhenOnTopPane}"
+                                            Style="{ThemeResource MUX_NavigationViewSettingsItemStyleWhenOnTopPane}"
                                             Grid.Column="8"
                                             Icon="Setting"/>
 
@@ -513,27 +513,27 @@
                             <VisualStateGroup x:Name="ItemOnNavigationViewListPositionStates">
                                 <VisualState x:Name="OnLeftNavigation">
                                     <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnLeftPane}" />
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPane}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OnLeftNavigationReveal">
                                     <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnLeftPaneWithRevealFocus}" />
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPaneWithRevealFocus}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OnTopNavigationPrimary">
                                     <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnTopPane}" />
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPane}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OnTopNavigationPrimaryReveal">
                                     <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus}" />
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OnTopNavigationOverflow">
                                     <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnTopPaneOverflow}" />
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPaneOverflow}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
