@@ -357,7 +357,6 @@ void Scroller::VerticalScrollController(winrt::IScrollController const& value)
     }
 }
 
-
 winrt::InputKind Scroller::IgnoredInputKind()
 {
     // Workaround for Bug 17377013: XamlCompiler codegen for Enum CreateFromString always returns boxed int which is wrong for [flags] enums (should be uint)
@@ -2280,7 +2279,7 @@ void Scroller::SetupVisualInteractionSourceRedirectionMode(
     winrt::VisualInteractionSourceRedirectionMode redirectionMode = winrt::VisualInteractionSourceRedirectionMode::CapableTouchpadOnly;
 
     if (SharedHelpers::AreInteractionTrackerPointerWheelRedirectionModesAvailable() &&
-        (ignoredInputKind & winrt::InputKind::MouseWheel) != winrt::InputKind::MouseWheel)
+        !IsInputKindIgnored(winrt::InputKind::MouseWheel))
     {
         redirectionMode = winrt::VisualInteractionSourceRedirectionMode::CapableTouchpadAndPointerWheel;
     }
@@ -3572,7 +3571,7 @@ void Scroller::OnPointerWheelChangedHandler(
         return;
     }
 
-    if ((IgnoredInputKind() & winrt::InputKind::MouseWheel) == winrt::InputKind::MouseWheel)
+    if (IsInputKindIgnored(winrt::InputKind::MouseWheel))
     {
         SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"InputKind::MouseWheel ignored");
 
@@ -3888,11 +3887,11 @@ void Scroller::OnPointerPressed(
     switch (args.Pointer().PointerDeviceType())
     {
         case winrt::Devices::Input::PointerDeviceType::Touch:
-            if ((IgnoredInputKind() & winrt::InputKind::Touch) == winrt::InputKind::Touch)
+            if (IsInputKindIgnored(winrt::InputKind::Touch))
                 return;
             break;
         case winrt::Devices::Input::PointerDeviceType::Pen:
-            if ((IgnoredInputKind() & winrt::InputKind::Pen) == winrt::InputKind::Pen)
+            if (IsInputKindIgnored(winrt::InputKind::Pen))
                 return;
             break;
         default:
@@ -4754,7 +4753,7 @@ void Scroller::UpdateManipulationRedirectionMode()
     {
         winrt::InputKind ignoredInputKind = IgnoredInputKind();
 
-        if ((ignoredInputKind & winrt::InputKind::MouseWheel) != winrt::InputKind::MouseWheel)
+        if (!IsInputKindIgnored(winrt::InputKind::MouseWheel))
         {
             bool suppressMouseWheel = true;
 
@@ -4793,7 +4792,7 @@ void Scroller::UpdateKeyEvents()
 
     if (SharedHelpers::IsRS4OrHigher() && !Scroller::IsInteractionTrackerMouseWheelZoomingEnabled())
     {
-        if ((IgnoredInputKind() & winrt::InputKind::MouseWheel) != winrt::InputKind::MouseWheel)
+        if (!IsInputKindIgnored(winrt::InputKind::MouseWheel))
         {
             SetKeyEvents();
         }
@@ -5932,6 +5931,11 @@ bool Scroller::IsLoaded()
 bool Scroller::IsLoadedAndSetUp()
 {
     return IsLoaded() && m_interactionTracker;
+}
+
+bool Scroller::IsInputKindIgnored(winrt::InputKind const& inputKind)
+{
+    return (IgnoredInputKind() & inputKind) == inputKind;
 }
 
 void Scroller::HookCompositionTargetRendering()

@@ -200,6 +200,7 @@ private:
     void UpdateScrollControllersVisibility(bool horizontalChange, bool verticalChange);
 
     bool IsLoaded();
+    bool IsInputKindIgnored(winrt::InputKind const& inputKind);
 
     bool AreAllScrollControllersCollapsed();
     bool AreBothScrollControllersVisible();

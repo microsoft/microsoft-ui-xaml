@@ -1316,6 +1316,11 @@ bool ScrollViewer::IsLoaded()
     return winrt::VisualTreeHelper::GetParent(*this) != nullptr;
 }
 
+bool ScrollViewer::IsInputKindIgnored(winrt::InputKind const& inputKind)
+{
+    return (IgnoredInputKind() & inputKind) == inputKind;
+}
+
 bool ScrollViewer::AreAllScrollControllersCollapsed()
 {
     return (!m_horizontalScrollControllerElement || m_horizontalScrollControllerElement.get().Visibility() == winrt::Visibility::Collapsed) &&
@@ -1426,14 +1431,14 @@ void ScrollViewer::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
 
             if (isGamepadKey)
             {
-                if ((IgnoredInputKind() & winrt::InputKind::Gamepad) == winrt::InputKind::Gamepad)
+                if (IsInputKindIgnored(winrt::InputKind::Gamepad))
                 {
                     return;
                 }
             }
             else
             {
-                if ((IgnoredInputKind() & winrt::InputKind::Keyboard) == winrt::InputKind::Keyboard)
+                if (IsInputKindIgnored(winrt::InputKind::Keyboard))
                 {
                     return;
                 }

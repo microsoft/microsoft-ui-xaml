@@ -449,6 +449,7 @@ private:
 
     bool IsLoaded();
     bool IsLoadedAndSetUp();
+    bool IsInputKindIgnored(winrt::InputKind const& inputKind);
     bool HasBringingIntoViewListener() const
     {
         return !!m_bringingIntoViewEventSource;
