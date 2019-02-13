@@ -283,7 +283,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     rectangleScrollViewerContent = new Rectangle();
                     scrollViewer = new ScrollViewer();
                     scrollViewer.HorizontalAnchorRatio = 0.1;
-                    scrollViewer.IsAnchoredAtHorizontalExtent = false;
 
                     SetupDefaultUI(scrollViewer, rectangleScrollViewerContent, scrollViewerLoadedEvent);
 
