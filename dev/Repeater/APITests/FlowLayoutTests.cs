@@ -556,14 +556,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     int lineSpacing = 0;
                     Log.Comment("Validate with no spacing");
                     ValidateFlowLayoutChildrenLayoutBounds(
-                        om, 
-                        (i) => panel.Children[i], 
-                        minItemSpacing, 
-                        lineSpacing, 
-                        panel.Children.Count, 
+                        om,
+                        (i) => panel.Children[i],
+                        minItemSpacing,
+                        lineSpacing,
+                        panel.Children.Count,
                         panel.DesiredSize,
-                        scrollOrientation == ScrollOrientation.Vertical? 50:100,
-                        scrollOrientation == ScrollOrientation.Vertical ? 100 : 50 );
+                        scrollOrientation == ScrollOrientation.Vertical ? 50 : 100,
+                        scrollOrientation == ScrollOrientation.Vertical ? 100 : 50);
 
                     minItemSpacing = 10;
                     lineSpacing = 10;
@@ -573,14 +573,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Log.Comment("Validate with spacing");
                     ValidateFlowLayoutChildrenLayoutBounds(
                         om,
-                        (i) => panel.Children[i], 
-                        minItemSpacing, 
-                        lineSpacing, 
+                        (i) => panel.Children[i],
+                        minItemSpacing,
+                        lineSpacing,
                         panel.Children.Count,
                         panel.DesiredSize,
                         scrollOrientation == ScrollOrientation.Vertical ? 50 : 100,
                         scrollOrientation == ScrollOrientation.Vertical ? 100 : 50);
-
                 }
             });
         }
