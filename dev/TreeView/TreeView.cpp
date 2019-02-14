@@ -70,9 +70,10 @@ winrt::TreeViewNode TreeView::SelectedNode()
     {
         if (auto selectedItem = listControl->SelectedItem())
         {
-            return listControl->IsContentMode() ? listControl->NodeFromItem(selectedItem) : safe_try_cast<winrt::TreeViewNode>(selectedItem);
+            return listControl->NodeFromItem(selectedItem);
         }
     }
+
     return nullptr;
 }
 
@@ -95,7 +96,7 @@ void TreeView::SelectedItem(winrt::IInspectable const& item)
 {
     if (auto listControl = ListControl())
     {
-        auto node = listControl->IsContentMode() ? listControl->NodeFromItem(item) : safe_try_cast<winrt::TreeViewNode>(item);
+        auto node = listControl->NodeFromItem(item);
         listControl->SelectedItem(node);
     }
 }

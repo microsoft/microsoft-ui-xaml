@@ -685,6 +685,7 @@ winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode cons
     {
         return ContainerFromItem(node.Content());
     }
+
     return ContainerFromItem(node);
 }
 
@@ -695,8 +696,13 @@ winrt::TreeViewNode TreeViewList::NodeFromItem(winrt::IInspectable const& item)
         return nullptr;
     }
 
-    auto container = ContainerFromItem(item);
-    return NodeFromContainer(container);
+    if (IsContentMode())
+    {
+        auto container = ContainerFromItem(item);
+        return NodeFromContainer(container);
+    }
+
+    return safe_try_cast<winrt::TreeViewNode>(item);
 }
 
 winrt::IInspectable TreeViewList::ItemFromNode(winrt::TreeViewNode const& node)
