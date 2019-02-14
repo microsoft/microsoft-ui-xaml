@@ -531,7 +531,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         }
                     };
 
-                    SetPanelMinorSize(panel, om, 150);
+                    SetPanelMinorSize(panel, om, 180);
                     for (int i = 0; i < numItems; i++)
                     {
                         var child = new Button() { Content = i };
