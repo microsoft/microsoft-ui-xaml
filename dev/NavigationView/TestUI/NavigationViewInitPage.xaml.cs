@@ -13,6 +13,8 @@ using Windows.UI.Xaml.Navigation;
 #if !BUILD_WINDOWS
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
+using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
+using NavigationViewItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs;
 #endif
 
 namespace MUXControlsTestApp
@@ -85,6 +87,34 @@ namespace MUXControlsTestApp
         private void FlipOrientation_Click(object sender, RoutedEventArgs e)
         {
             NavView.PaneDisplayMode = NavView.PaneDisplayMode == NavigationViewPaneDisplayMode.Top ? NavigationViewPaneDisplayMode.Auto : NavigationViewPaneDisplayMode.Top;
+        }
+
+        private void SwitchFrame_Click(object sender, RoutedEventArgs e)
+        {
+            if (Frame2.Content == null)
+            {
+                var content = Frame1.Content;
+                Frame1.Content = null;
+                Frame2.Content = content;
+            }
+            else
+            {
+                var content = Frame2.Content;
+                Frame2.Content = null;
+                Frame1.Content = content;
+            }
+        }
+
+        private void NavView2_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        {
+            if (Frame2.Content == null)
+            {
+                MyLocationResult.Text = "Frame1";
+            }
+            else
+            {
+                MyLocationResult.Text = "Frame2";
+            }
         }
     }
 }

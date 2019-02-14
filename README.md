@@ -86,9 +86,8 @@ Prerelease Microsoft.UI.Xaml packages also include previews of features and cont
 * [LayoutPanel](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.layoutpanel),
 [Repeater](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.repeater),
 [Scroller](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scroller),
-[ScrollViewer](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollviewer),
 and
-[ScrollBar2](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollbar2)
+[ScrollViewer](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollviewer),
 
 The **Microsoft.UI.Xaml.Core.Direct** package includes:
 

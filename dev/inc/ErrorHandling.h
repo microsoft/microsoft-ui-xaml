@@ -6,6 +6,10 @@
 #include <windows.h>
 #include <exception>
 
+#ifndef E_INVALID_OPERATION
+#define E_INVALID_OPERATION HRESULT_FROM_WIN32(ERROR_INVALID_OPERATION)
+#endif
+
 // CATCH_RETURN macro should be used in all ABI methods like this:
 // IFACEMETHODIMP CFoo::Bar(...) try
 // {

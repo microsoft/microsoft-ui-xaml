@@ -48,6 +48,6 @@
         </Setter>
     </Style>
     
-    <Style TargetType="local:TreeViewItem" BasedOn="{StaticResource TreeViewItemStyle}"/>
+    <Style TargetType="local:TreeViewItem" BasedOn="{StaticResource MUX_TreeViewItemStyle}"/>
     
 </ResourceDictionary>

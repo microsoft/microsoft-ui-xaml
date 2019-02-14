@@ -33,5 +33,32 @@ namespace MUXControlsTestApp.Utilities
 
             return null;
         }
+
+        public static DependencyObject FindVisualChildByName(FrameworkElement parent, string name)
+        {
+            if (parent.Name == name)
+            {
+                return parent;
+            }
+
+            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+
+            for (int i = 0; i < childrenCount; i++)
+            {
+                FrameworkElement childAsFE = VisualTreeHelper.GetChild(parent, i) as FrameworkElement;
+
+                if (childAsFE != null)
+                {
+                    DependencyObject result = FindVisualChildByName(childAsFE, name);
+
+                    if (result != null)
+                    {
+                        return result;
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 }

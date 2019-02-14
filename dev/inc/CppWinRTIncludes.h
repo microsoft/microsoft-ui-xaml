@@ -206,6 +206,7 @@ namespace winrt
     using DragItemsStartingEventArgs = winrt::Windows::UI::Xaml::Controls::DragItemsStartingEventArgs;
     using DragItemsStartingEventHandler = winrt::Windows::UI::Xaml::Controls::DragItemsStartingEventHandler;
     using FlyoutPresenter = winrt::Windows::UI::Xaml::Controls::FlyoutPresenter;
+    using IFlyoutPresenter2 = winrt::Windows::UI::Xaml::Controls::IFlyoutPresenter2;
     using FocusDisengagedEventArgs = winrt::Windows::UI::Xaml::Controls::FocusDisengagedEventArgs;
     using FocusEngagedEventArgs = winrt::Windows::UI::Xaml::Controls::FocusEngagedEventArgs;
     using FontIcon = winrt::Windows::UI::Xaml::Controls::FontIcon;
@@ -303,6 +304,7 @@ namespace winrt
     using RectangleGeometry = winrt::Windows::UI::Xaml::Media::RectangleGeometry;
     using SolidColorBrush = ::winrt::Windows::UI::Xaml::Media::SolidColorBrush;
     using Stretch = winrt::Windows::UI::Xaml::Media::Stretch;
+    using ThemeShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow;
     using TranslateTransform = winrt::Windows::UI::Xaml::Media::TranslateTransform;
     using VisualTreeHelper = winrt::Windows::UI::Xaml::Media::VisualTreeHelper;
     using XamlCompositionBrushBase = ::winrt::Windows::UI::Xaml::Media::XamlCompositionBrushBase;

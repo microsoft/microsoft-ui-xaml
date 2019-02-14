@@ -54,8 +54,9 @@ public:
     winrt::DependencyObject ContainerFromMenuItem(winrt::IInspectable const& item);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&  args);
-    void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnListViewLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
 
     void OnSettingsInvoked();
 
@@ -104,6 +105,7 @@ private:
     void PropagateNavigationViewAsParent();
     void PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget target, std::function<void(NavigationViewList*)> const& function);
     void PropagateChangeToNavigationViewList(winrt::ListView const& listView, std::function<void(NavigationViewList*)> const& function);
+    void UpdatePaneShadow();
 
     void InvalidateTopNavPrimaryLayout();
     // Measure functions for top navigation   

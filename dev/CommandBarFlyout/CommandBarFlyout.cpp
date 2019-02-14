@@ -134,21 +134,6 @@ CommandBarFlyout::CommandBarFlyout()
         {
             if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
             {
-                if (SharedHelpers::IsThemeShadowAvailable())
-                {
-#if defined(BUILD_WINDOWS)
-                    if (Feature_CommandBarFlyoutShadow::IsEnabled())
-                    {
-                        // Apply a shadow (only if we have a CommandBar worth shadowing)
-                        winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
-                        commandBar->Shadow(shadow);
-                        bool havePrimaryCommands = PrimaryCommands().Size() > 0;
-                        auto translation = havePrimaryCommands ? winrt::float3{ 0.0f, 0.0f, 32.0f } : winrt::float3{ 0.0f, 0.0f, 0.0f };
-                        commandBar->Translation(translation);
-                    }
-#endif
-                }
-
                 if (commandBar->HasOpenAnimation())
                 {
                     commandBar->PlayOpenAnimation();
@@ -175,6 +160,10 @@ CommandBarFlyout::CommandBarFlyout()
                         });
                     commandBar->IsOpen(false);
                 }
+                //CommandBarFlyoutCommandBar.Closed will be called when
+                //clicking the more (...) button, we clear the translations
+                //here
+                commandBar->ClearShadow();
             }
         }
     });
@@ -186,18 +175,6 @@ CommandBarFlyout::CommandBarFlyout()
         {
             if (auto commandBar = m_commandBar.get())
             {
-                if (SharedHelpers::IsThemeShadowAvailable())
-                {
-#if defined(BUILD_WINDOWS)
-                    if (Feature_CommandBarFlyoutShadow::IsEnabled())
-                    {
-                        // Clear the shadow
-                        auto translation = winrt::float3{ 0.0f, 0.0f, 0.0f };
-                        commandBar.Translation(translation);
-                    }
-#endif
-                }
-
                 if (commandBar.IsOpen())
                 {
                     commandBar.IsOpen(false);
@@ -260,7 +237,10 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     // We will provide our own shadow, not the one that FlyoutPresenter has by default.
     // We need to specifically target the CommandBar for the shadow, not the default node far
     // above that.
-    presenter.IsDefaultShadowEnabled(false);
+    if (winrt::IFlyoutPresenter2 presenter2 = presenter)
+    {
+        presenter2.IsDefaultShadowEnabled(false);
+    }
 #endif
 
     commandBar->SetOwningFlyout(*this);

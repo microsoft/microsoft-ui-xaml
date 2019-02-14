@@ -1,0 +1,90 @@
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+jobs:
+- job: ComponentDetection
+  pool:
+    vmImage: 'VS2017-Win2016'
+
+  steps:
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: 'Component Detection'
+
+- job: Build
+  pool:
+    name: Package ES Custom Demands Lab A
+    demands:
+      - ClientAlias -equals depcontrols2
+  timeoutInMinutes: 120
+  strategy:
+    maxParallel: 10
+    matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+      Release_Arm:
+        buildPlatform: 'arm'
+        buildConfiguration: 'Release'
+      Release_Arm64:
+        buildPlatform: 'arm64'
+        buildConfiguration: 'Release'
+
+  variables:
+  - name: appxPackageDir
+    value: $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+  - name: buildOutputDir
+    value: $(Build.BinariesDirectory)
+  - name: publishDir
+    value: $(Build.ArtifactStagingDirectory)
+
+  steps:
+  - task: PkgESSetupBuild@10
+    displayName: 'XESSetupBuild'
+    inputs:
+      productName: dep.controls
+      branchVersion: true
+      nugetVer: true
+
+  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+
+  - task: PkgESCodeSign@10
+    displayName: CodeSign
+    inputs:
+      signConfigXml: '$(Build.SourcesDirectory)\build\SignConfig.xml'
+      inPathRoot: '$(buildOutputDir)\$(buildConfiguration)\$(buildPlatform)'
+      outPathRoot: '$(buildOutputDir)\$(buildConfiguration)\$(buildPlatform)\signed'
+
+  - task: CmdLine@1
+    displayName: 'Publish Symbol'
+    inputs:
+      filename: '$(Build.SourcesDirectory)\tools\PublishSymbols\PublishSymbols.cmd'      
+
+  - template: AzurePipelinesTemplates\MUX-PublishDevProject-Steps.yml
+
+# Create Nuget Package
+- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+  parameters:
+    jobName: CreateNugetPackage
+    dependsOn: Build
+    # This is the magic GUID from the pipeline visual designer for this feed: https://dev.azure.com/ms/microsoft-ui-xaml/_packaging?_a=feed&feed=MUX-CI
+    # publishVstsFeed: 'd62f8eac-f05c-4c25-bccb-21f98b95c95f'
+ 
+# Build solution that depends on nuget package
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    dependsOn: CreateNugetPackage
+    useNupkgFromArtifacts: true
+    matrix: 
+      Debug_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Debug'
+      Debug_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Debug'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+      Release_arm:
+        buildPlatform: 'arm'
+        buildConfiguration: 'Release'

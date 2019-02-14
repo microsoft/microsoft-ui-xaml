@@ -237,3 +237,70 @@ struct WINRT_EBO DeriveFromPanelHelper_base : winrt::Windows::UI::Xaml::Controls
         return hstring{ winrt::name_of<T>() };
     }
 };
+
+//
+// An awaitable object. Completes when the CompleteAwaits() method is called.
+// cf. .NET's TaskCompletionSource.
+//
+struct Awaitable
+{
+    Awaitable()
+    {
+        m_signal.attach(::CreateEvent(nullptr, true, false, nullptr));
+    }
+
+    // Awaitable contract.
+    // Blocks until the awaitable is completed, or error.
+    bool await_ready() const noexcept
+    {
+        return ::WaitForSingleObject(m_signal.get(), 0) == 0;
+    }
+
+    // Registers a callback that will be called when the awaitable is completed.
+    void await_suspend(std::experimental::coroutine_handle<> resume)
+    {
+        m_wait.attach(
+            winrt::check_pointer(
+                ::CreateThreadpoolWait(CoroutineCompletedCallback, resume.address(), nullptr)
+            )
+        );
+        ::SetThreadpoolWait(m_wait.get(), m_signal.get(), nullptr);
+    }
+
+    // Called to get the value of the awaitable. 
+    // This awaitable has no value, so nothing to do.
+    void await_resume() const noexcept { }
+
+protected:
+    void CompleteAwaits() const noexcept
+    {
+        ::SetEvent(m_signal.get());
+    }
+
+private:
+    static void __stdcall CoroutineCompletedCallback(PTP_CALLBACK_INSTANCE, void* context, PTP_WAIT, TP_WAIT_RESULT) noexcept
+    {
+        // Resumes anyone waiting on the awaitable.
+        std::experimental::coroutine_handle<>::from_address(context)();
+    }
+
+    //
+    // Describes a PTP_WAIT.
+    //
+    struct PTP_WAIT_traits
+    {
+        using type = PTP_WAIT;
+
+        static void close(type value) noexcept
+        {
+            ::CloseThreadpoolWait(value);
+        }
+
+        static constexpr type invalid() noexcept
+        {
+            return nullptr;
+        }
+    };
+    winrt::handle m_signal;
+    winrt::handle_type<PTP_WAIT_traits> m_wait;
+};

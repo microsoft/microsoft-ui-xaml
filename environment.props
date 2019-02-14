@@ -56,6 +56,9 @@
   <PropertyGroup Condition="$(UseInsiderSDK) == 'true'">
     <DefineConstants>$(DefineConstants);USE_INSIDER_SDK</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="$(UseInternalSDK) == 'true'">
+    <DefineConstants>$(DefineConstants);USE_INTERNAL_SDK</DefineConstants>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="$(BuildLeanMuxForTheStoreApp) == 'true'">
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);BUILD_LEAN_MUX_FOR_THE_STORE_APP</PreprocessorDefinitions>
