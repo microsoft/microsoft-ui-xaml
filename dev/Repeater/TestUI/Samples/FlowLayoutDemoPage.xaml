@@ -6,7 +6,7 @@
     xmlns:local="using:MUXControlsTestApp.Samples"
     xmlns:mux="using:Microsoft.UI.Xaml.Controls">
 
-    <ScrollViewer Margin="12">
+    <ScrollViewer Width="180">
         <mux:ItemsRepeater x:Name="repeater"
                               HorizontalAlignment="Center"
                               HorizontalCacheLength="0"
@@ -16,14 +16,12 @@
             </mux:ItemsRepeater.Layout>
             <mux:ItemsRepeater.ItemTemplate>
                 <DataTemplate x:DataType="local:MyItem">
-                    <AppBarButton MinWidth="96"
-                          Label="{x:Bind Label}"
+                    <Button Width="50"
+                          Content="{x:Bind Label}"
+                            Height="{x:Bind Height}"
                           BorderBrush="Black"
                           BorderThickness="1">
-                        <AppBarButton.Icon>
-                            <SymbolIcon Symbol="{x:Bind Icon}"/>
-                        </AppBarButton.Icon>
-                    </AppBarButton>
+                    </Button>
                 </DataTemplate>
             </mux:ItemsRepeater.ItemTemplate>
         </mux:ItemsRepeater>

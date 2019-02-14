@@ -15,20 +15,17 @@ namespace MUXControlsTestApp.Samples
         {
             this.InitializeComponent();
 
-            Random r = new Random();
             repeater.ItemsSource = (from i in Enumerable.Range(0, 1000)
                                select new MyItem() {
-                                   Icon = (Symbol)(r.Next((int)0xE100, (int)0xE200)),
-                                   Label = i.ToString() + " " + LoremIpsum.Substring(0, Math.Max(5, r.Next(LoremIpsum.Length)))
+                                   Label = i.ToString(),
+                                   Height = 50 + i % 2 * 50
                                }).ToList();
         }
-
-        private const string LoremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
     }
 
     public class MyItem
     {
         public string Label { get; set; }
-        public Symbol Icon { get; set; }
+        public float Height { get; set; }
     }
 }

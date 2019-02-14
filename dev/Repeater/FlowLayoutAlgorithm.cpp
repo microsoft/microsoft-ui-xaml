@@ -310,12 +310,9 @@ void FlowLayoutAlgorithm::Generate(
                         for (int i = 0; i < countInLine; i++)
                         {
                             auto dataIndex = currentIndex - 1 - i;
-                            if (dataIndex != anchorIndex)
-                            {
-                                auto bounds = m_elementManager.GetLayoutBoundsForDataIndex(dataIndex);
-                                bounds.*MajorSize() = lineMajorSize;
-                                m_elementManager.SetLayoutBoundsForDataIndex(dataIndex, bounds);
-                            }
+                            auto bounds = m_elementManager.GetLayoutBoundsForDataIndex(dataIndex);
+                            bounds.*MajorSize() = lineMajorSize;
+                            m_elementManager.SetLayoutBoundsForDataIndex(dataIndex, bounds);
                         }
                     }
 
