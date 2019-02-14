@@ -27,5 +27,5 @@ namespace MUXControlsTestApp.Samples
     {
         public string Label { get; set; }
         public float Height { get; set; }
-    }
+    } 
 }
