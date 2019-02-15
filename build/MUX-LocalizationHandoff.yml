@@ -1,0 +1,15 @@
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+jobs:
+- job: LocalizationHandoff
+  pool:
+    name: Package ES Custom Demands Lab A
+
+  steps:
+  - template: AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml
+
+  - task: CmdLine@1
+    displayName: 'Run Loc Workflow'
+    inputs:
+      filename: '$(Build.SourcesDirectory)\tools\VSTSRunLocWorkflow.cmd'
+
+
