@@ -26,27 +26,33 @@ class SelectedTreeNodeVector :
     Implement_Vector_Read(SelectedTreeNodeVectorOptions)
 
 private:
-    ViewModel* m_viewModel{ nullptr };
+    winrt::weak_ref<winrt::DependencyObject> m_viewModel{ nullptr };
     void UpdateSelection(winrt::TreeViewNode const& node, TreeNodeSelectionState state)
     {
         if (winrt::get_self<TreeViewNode>(node)->SelectionState() != state)
         {
-            m_viewModel->UpdateSelection(node, state);
-            m_viewModel->NotifyContainerOfSelectionChange(node, state);
+            if (auto viewModel = m_viewModel.get().try_as<ViewModel>())
+            {
+                viewModel->UpdateSelection(node, state);
+                viewModel->NotifyContainerOfSelectionChange(node, state);
+            }
         }
     }
 
 public:
-    void SetViewModel(ViewModel* viewModel)
+    void SetViewModel(ViewModel const& viewModel)
     {
-        m_viewModel = viewModel;
+        m_viewModel = winrt::make_weak(viewModel.try_as<winrt::DependencyObject>());
     }
 
     void Append(winrt::TreeViewNode const& node)
     {
-        if (!m_viewModel->IsInSingleSelectionMode())
+        if (auto viewModel = m_viewModel.get().try_as<ViewModel>())
         {
-            InsertAt(Size(), node);
+            if (!viewModel->IsInSingleSelectionMode())
+            {
+                InsertAt(Size(), node);
+            }
         }
     }
 
@@ -109,13 +115,16 @@ public:
         GetVectorInnerImpl()->InsertAt(index, node);
 
         // Keep SelectedItems and SelectedNodes in sync
-        auto selectedItems = m_viewModel->GetSelectedItems();
-        if (selectedItems.Size() != Size())
+        if (auto viewModel = m_viewModel.get().try_as<ViewModel>())
         {
-            auto treeViewList = winrt::get_self<TreeViewList>(m_viewModel->ListControl().get());
-            if (auto item = treeViewList->ItemFromNode(node))
+            auto selectedItems = viewModel->GetSelectedItems();
+            if (selectedItems.Size() != Size())
             {
-                selectedItems.InsertAt(index, item);
+                auto treeViewList = winrt::get_self<TreeViewList>(viewModel->ListControl().get());
+                if (auto item = treeViewList->ItemFromNode(node))
+                {
+                    selectedItems.InsertAt(index, item);
+                }
             }
         }
     }
@@ -125,10 +134,13 @@ public:
         GetVectorInnerImpl()->RemoveAt(index);
 
         // Keep SelectedItems and SelectedNodes in sync
-        auto selectedItems = m_viewModel->GetSelectedItems();
-        if (Size() != selectedItems.Size())
+        if (auto viewModel = m_viewModel.get().try_as<ViewModel>())
         {
-            selectedItems.RemoveAt(index);
+            auto selectedItems = viewModel->GetSelectedItems();
+            if (Size() != selectedItems.Size())
+            {
+                selectedItems.RemoveAt(index);
+            }
         }
     }
 };
@@ -152,12 +164,12 @@ class SelectedItemsVector :
     Implement_Vector_Read(SelectedItemsVectorOptions)
 
 private:
-    ViewModel* m_viewModel{ nullptr };
+    winrt::weak_ref<winrt::DependencyObject> m_viewModel{ nullptr };
 
 public:
-    void SetViewModel(ViewModel* viewModel)
+    void SetViewModel(ViewModel const& viewModel)
     {
-        m_viewModel = viewModel;
+        m_viewModel = winrt::make_weak(viewModel.try_as<winrt::DependencyObject>());
     }
 
     void Append(winrt::IInspectable const& item)
@@ -172,13 +184,16 @@ public:
             GetVectorInnerImpl()->InsertAt(index, item);
 
             // Keep SelectedNodes and SelectedItems in sync
-            auto selectedNodes = m_viewModel->GetSelectedNodes();
-            if (selectedNodes.Size() != Size())
+            if (auto viewModel = m_viewModel.get().try_as<ViewModel>())
             {
-                auto listControl = winrt::get_self<TreeViewList>(m_viewModel->ListControl().get());
-                if (auto node = listControl->NodeFromItem(item))
+                auto selectedNodes = viewModel->GetSelectedNodes();
+                if (selectedNodes.Size() != Size())
                 {
-                    selectedNodes.InsertAt(index, node);
+                    auto listControl = winrt::get_self<TreeViewList>(viewModel->ListControl().get());
+                    if (auto node = listControl->NodeFromItem(item))
+                    {
+                        selectedNodes.InsertAt(index, node);
+                    }
                 }
             }
         }
@@ -195,10 +210,13 @@ public:
         GetVectorInnerImpl()->RemoveAt(index);
 
         // Keep SelectedNodes and SelectedItems in sync
-        auto selectedNodes = m_viewModel->GetSelectedNodes();
-        if (Size() != selectedNodes.Size())
+        if (auto viewModel = m_viewModel.get().try_as<ViewModel>())
         {
-            selectedNodes.RemoveAt(index);
+            auto selectedNodes = viewModel->GetSelectedNodes();
+            if (Size() != selectedNodes.Size())
+            {
+                selectedNodes.RemoveAt(index);
+            }
         }
     }
 
@@ -237,11 +255,11 @@ public:
 ViewModel::ViewModel()
 {
     auto selectedNodes = winrt::make_self<SelectedTreeNodeVector>();
-    selectedNodes->SetViewModel(this);
+    selectedNodes->SetViewModel(*this);
     m_selectedNodes.set(*selectedNodes);
 
     auto selectedItems = winrt::make_self<SelectedItemsVector>();
-    selectedItems->SetViewModel(this);
+    selectedItems->SetViewModel(*this);
     m_selectedItems.set(*selectedItems);
 }
 
