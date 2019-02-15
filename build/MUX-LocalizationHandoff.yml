@@ -3,8 +3,17 @@ jobs:
 - job: LocalizationHandoff
   pool:
     name: Package ES Custom Demands Lab A
+    demands:
+      - ClientAlias -equals depcontrols2
 
   steps:
+  - task: PkgESSetupBuild@10
+    displayName: 'XESSetupBuild'
+    inputs:
+      productName: dep.controls
+      branchVersion: true
+      nugetVer: true
+
   - template: AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml
 
   - task: CmdLine@1
