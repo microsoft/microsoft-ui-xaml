@@ -78,7 +78,7 @@ FindAndReplaceInFile ($muxControlsDir + "\dev\dll\XamlMetadataProviderGenerated.
 "@
 
 # Add new profiler id to RuntimeProfiler.h
-FindAndReplaceInFile ($muxControlsDir + "\dev\Telemetry\RuntimeProfiler.h") "(\s*ProfId_Size\s*})" @"
+FindAndReplaceInFile ($muxControlsDir + "\dev\Telemetry\RuntimeProfiler.h") "(\s*ProfId_Size, .*\s*})" @"
 
         ProfId_$controlName,`$1
 "@
