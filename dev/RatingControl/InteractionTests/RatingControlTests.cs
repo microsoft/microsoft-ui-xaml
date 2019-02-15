@@ -346,7 +346,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
+        //[TestMethod]
         public void VerifyThatProgrammaticallyRemovingEngagementResetsValue()
         {
             using (var setup = new TestSetupHelper("RatingControl Tests"))  // This literally clicks the button corresponding to the test page.
