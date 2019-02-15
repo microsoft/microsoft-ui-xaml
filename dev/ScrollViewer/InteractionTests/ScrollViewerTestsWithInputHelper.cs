@@ -566,6 +566,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        //Test failures with keyboard/gamepad/mousewheel input #269
         //[TestMethod]
         //[TestProperty("Description", "Tests GamePad interaction")]
         public void VerifyScrollViewerGamePadHorizontalInteraction()

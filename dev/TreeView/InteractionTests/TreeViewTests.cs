@@ -516,6 +516,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewKeyDownRightToLeftTest();
         }
 
+        //Test failures with keyboard/gamepad/mousewheel input #269
         //[TestMethod]
         //[TestProperty("TreeViewTestSuite", "A")]
         public void TreeViewKeyDownRightToLeftTest_ContentMode()
@@ -1712,6 +1713,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewMultiSelectGamepadTest();
         }
 
+        //Test failures with keyboard/gamepad/mousewheel input #269
         //[TestMethod]
         //[TestProperty("TreeViewTestSuite", "B")]
         public void TreeViewMultiSelectGamepadTest_ContentMode()
