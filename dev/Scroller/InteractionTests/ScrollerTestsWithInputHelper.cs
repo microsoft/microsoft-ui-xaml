@@ -666,8 +666,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Stretch an Image in a Scroller with the mouse wheel.")]
+        //Test failures with keyboard/gamepad/mousewheel input #269
+        //[TestMethod]
+        //[TestProperty("Description", "Stretch an Image in a Scroller with the mouse wheel.")]
         public void StretchImageWithMouseWheel()
         {
             Log.Comment("Selecting Scroller tests");

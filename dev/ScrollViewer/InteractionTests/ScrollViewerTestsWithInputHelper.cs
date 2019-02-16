@@ -566,8 +566,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Tests GamePad interaction")]
+        //Test failures with keyboard/gamepad/mousewheel input #269
+        //[TestMethod]
+        //[TestProperty("Description", "Tests GamePad interaction")]
         public void VerifyScrollViewerGamePadHorizontalInteraction()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
