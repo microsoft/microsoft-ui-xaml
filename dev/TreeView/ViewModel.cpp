@@ -27,11 +27,22 @@ class SelectedTreeNodeVector :
 
 private:
     winrt::weak_ref<winrt::DependencyObject> m_viewModel{ nullptr };
+
+    com_ptr<ViewModel> GetViewModel()
+    {
+        if (auto viewModelDO = m_viewModel.get())
+        {
+            return viewModelDO.try_as<ViewModel>();
+        }
+
+        return nullptr;
+    }
+
     void UpdateSelection(winrt::TreeViewNode const& node, TreeNodeSelectionState state)
     {
         if (winrt::get_self<TreeViewNode>(node)->SelectionState() != state)
         {
-            if (auto viewModel = m_viewModel.get().try_as<ViewModel>())
+            if (auto viewModel = GetViewModel())
             {
                 viewModel->UpdateSelection(node, state);
                 viewModel->NotifyContainerOfSelectionChange(node, state);
@@ -47,7 +58,7 @@ public:
 
     void Append(winrt::TreeViewNode const& node)
     {
-        if (auto viewModel = m_viewModel.get().try_as<ViewModel>())
+        if (auto viewModel = GetViewModel())
         {
             if (!viewModel->IsInSingleSelectionMode())
             {
@@ -115,7 +126,7 @@ public:
         GetVectorInnerImpl()->InsertAt(index, node);
 
         // Keep SelectedItems and SelectedNodes in sync
-        if (auto viewModel = m_viewModel.get().try_as<ViewModel>())
+        if (auto viewModel = GetViewModel())
         {
             auto selectedItems = viewModel->GetSelectedItems();
             if (selectedItems.Size() != Size())
@@ -134,7 +145,7 @@ public:
         GetVectorInnerImpl()->RemoveAt(index);
 
         // Keep SelectedItems and SelectedNodes in sync
-        if (auto viewModel = m_viewModel.get().try_as<ViewModel>())
+        if (auto viewModel = GetViewModel())
         {
             auto selectedItems = viewModel->GetSelectedItems();
             if (Size() != selectedItems.Size())
@@ -166,6 +177,16 @@ class SelectedItemsVector :
 private:
     winrt::weak_ref<winrt::DependencyObject> m_viewModel{ nullptr };
 
+    com_ptr<ViewModel> GetViewModel()
+    {
+        if (auto viewModelDO = m_viewModel.get())
+        {
+            return viewModelDO.try_as<ViewModel>();
+        }
+
+        return nullptr;
+    }
+
 public:
     void SetViewModel(ViewModel const& viewModel)
     {
@@ -184,7 +205,7 @@ public:
             GetVectorInnerImpl()->InsertAt(index, item);
 
             // Keep SelectedNodes and SelectedItems in sync
-            if (auto viewModel = m_viewModel.get().try_as<ViewModel>())
+            if (auto viewModel = GetViewModel())
             {
                 auto selectedNodes = viewModel->GetSelectedNodes();
                 if (selectedNodes.Size() != Size())
@@ -210,7 +231,7 @@ public:
         GetVectorInnerImpl()->RemoveAt(index);
 
         // Keep SelectedNodes and SelectedItems in sync
-        if (auto viewModel = m_viewModel.get().try_as<ViewModel>())
+        if (auto viewModel = GetViewModel())
         {
             auto selectedNodes = viewModel->GetSelectedNodes();
             if (Size() != selectedNodes.Size())
