@@ -82,6 +82,22 @@ void TeachingTipTestHooks::SetTipFollowsTarget(const winrt::TeachingTip& teachin
     }
 }
 
+void TeachingTipTestHooks::SetExpandAnimationDuration(const winrt::TeachingTip& teachingTip, const winrt::TimeSpan& expandAnimationDuration)
+{
+    if (teachingTip)
+    {
+        winrt::get_self<TeachingTip>(teachingTip)->SetExpandAnimationDuration(expandAnimationDuration);
+    }
+}
+
+void TeachingTipTestHooks::SetContractAnimationDuration(const winrt::TeachingTip& teachingTip, const winrt::TimeSpan& contractAnimationDuration)
+{
+    if (teachingTip)
+    {
+        winrt::get_self<TeachingTip>(teachingTip)->SetContractAnimationDuration(contractAnimationDuration);
+    }
+}
+
 void TeachingTipTestHooks::NotifyOpenedStatusChanged(const winrt::TeachingTip& sender)
 {
     auto hooks = EnsureGlobalTestHooks();

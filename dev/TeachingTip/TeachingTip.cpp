@@ -1003,14 +1003,14 @@ void TeachingTip::CreateExpandAnimation()
     }
     expandAnimation.InsertExpressionKeyFrame(0.0f, L"Vector3(Min(0.01, 20.0 / Width), Min(0.01, 20.0 / Height), 1.0)");
     expandAnimation.InsertKeyFrame(1.0f, { 1.0f, 1.0f, 1.0f }, m_expandEasingFunction.get());
-    expandAnimation.Duration(s_expandAnimationDuration);
+    expandAnimation.Duration(m_expandAnimationDuration);
     expandAnimation.Target(s_scaleTargetName);
     m_expandAnimation.set(expandAnimation);
 
     auto expandElevationAnimation = compositor.CreateVector3KeyFrameAnimation();
     expandElevationAnimation.InsertExpressionKeyFrame(1.0f, L"Vector3(this.Target.Translation.X, this.Target.Translation.Y, contentElevation)", m_expandEasingFunction.get());
     expandElevationAnimation.SetScalarParameter(L"contentElevation", m_contentElevation);
-    expandElevationAnimation.Duration(s_expandAnimationDuration);
+    expandElevationAnimation.Duration(m_expandAnimationDuration);
     expandElevationAnimation.Target(s_translationTargetName);
     m_expandElevationAnimation.set(expandElevationAnimation);
 }
@@ -1036,13 +1036,13 @@ void TeachingTip::CreateContractAnimation()
     }
     contractAnimation.InsertKeyFrame(0.0f, { 1.0f, 1.0f, 1.0f });
     contractAnimation.InsertExpressionKeyFrame(1.0f, L"Vector3(20.0 / Width, 20.0 / Height, 1.0)", m_contractEasingFunction.get());
-    contractAnimation.Duration(s_contractAnimationDuration);
+    contractAnimation.Duration(m_contractAnimationDuration);
     contractAnimation.Target(s_scaleTargetName);
     m_contractAnimation.set(contractAnimation);
 
     auto contractElevationAnimation = compositor.CreateVector3KeyFrameAnimation();
     contractElevationAnimation.InsertExpressionKeyFrame(1.0f, L"Vector3(this.Target.Translation.X, this.Target.Translation.Y, 0.0f)", m_contractEasingFunction.get());
-    contractElevationAnimation.Duration(s_contractAnimationDuration);
+    contractElevationAnimation.Duration(m_contractAnimationDuration);
     contractElevationAnimation.Target(s_translationTargetName);
     m_contractElevationAnimation.set(contractElevationAnimation);
 }
@@ -1532,6 +1532,32 @@ void TeachingTip::SetTipFollowsTarget(bool tipFollowsTarget)
         {
             RevokeViewportChangedEvent();
         }
+    }
+}
+
+void TeachingTip::SetExpandAnimationDuration(const winrt::TimeSpan& expandAnimationDuration)
+{
+    m_expandAnimationDuration = expandAnimationDuration;
+    if (m_expandAnimation)
+    {
+        m_expandAnimation.get().Duration(m_expandAnimationDuration);
+    }
+    if (m_expandElevationAnimation)
+    {
+        m_expandElevationAnimation.get().Duration(m_expandAnimationDuration);
+    }
+}
+
+void TeachingTip::SetContractAnimationDuration(const winrt::TimeSpan& contractAnimationDuration)
+{
+    m_contractAnimationDuration = contractAnimationDuration;
+    if (m_contractAnimation)
+    {
+        m_contractAnimation.get().Duration(m_contractAnimationDuration);
+    }
+    if (m_contractElevationAnimation)
+    {
+        m_contractElevationAnimation.get().Duration(m_contractAnimationDuration);
     }
 }
 

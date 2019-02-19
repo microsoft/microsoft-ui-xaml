@@ -532,6 +532,14 @@ namespace MUXControlsTestApp
             TeachingTipTestHooks.SetContractEasingFunction(this.TeachingTip, contractEasing);
         }
 
+        public void OnSetAnimationDurationsButtonClicked(object sender, RoutedEventArgs args)
+        {
+            var expandDuration = new TimeSpan(0, 0, 0, 0, int.Parse(ExpandAnimationDuration.Text));
+            var contractDuration = new TimeSpan(0, 0, 0, 0, int.Parse(ContractAnimationDuration.Text));
+            TeachingTipTestHooks.SetExpandAnimationDuration(this.TeachingTip, expandDuration);
+            TeachingTipTestHooks.SetContractAnimationDuration(this.TeachingTip, contractDuration);
+        }
+
         public void ContentElevationSliderChanged(object sender, RangeBaseValueChangedEventArgs args)
         {
             TeachingTipTestHooks.SetContentElevation(this.TeachingTip, (float)args.NewValue);

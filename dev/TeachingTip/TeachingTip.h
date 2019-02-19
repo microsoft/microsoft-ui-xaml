@@ -45,6 +45,8 @@ public:
     void SetUseTestWindowBounds(bool useTestWindowBounds);
     void SetTestWindowBounds(const winrt::Rect& testWindowBounds);
     void SetTipFollowsTarget(bool tipFollowsTarget);
+    void SetExpandAnimationDuration(const winrt::TimeSpan& expandAnimationDuration);
+    void SetContractAnimationDuration(const winrt::TimeSpan& contractAnimationDuration);
 
 private:
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
@@ -142,6 +144,9 @@ private:
 
     bool m_isIdle{ true };
 
+    winrt::TimeSpan m_expandAnimationDuration{ 300ms };
+    winrt::TimeSpan m_contractAnimationDuration{ 200ms };
+
     winrt::TeachingTipCloseReason m_lastCloseReason{ winrt::TeachingTipCloseReason::Programmatic };
 
     // These values are shifted by one because this is the 1px highlight that sits adjacent to the tip border.
@@ -161,9 +166,6 @@ private:
     static inline double UntargetedTipFarPlacementOffset(float windowSize, double tipSize, double offset) { return windowSize - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
     static inline double UntargetedTipCenterPlacementOffset(float windowSize, double tipSize, double nearOffset, double farOffset) { return (windowSize / 2) - (tipSize / 2) + nearOffset - farOffset; }
     static inline double UntargetedTipNearPlacementOffset(double offset) { return s_untargetedTipWindowEdgeMargin + offset; }
-
-    static constexpr winrt::TimeSpan s_expandAnimationDuration{ 300ms };
-    static constexpr winrt::TimeSpan s_contractAnimationDuration{ 200ms };
 
     static constexpr wstring_view s_scaleTargetName{ L"Scale"sv };
     static constexpr wstring_view s_translationTargetName{ L"Translation"sv };
