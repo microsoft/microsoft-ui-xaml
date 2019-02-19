@@ -63,6 +63,13 @@ jobs:
         packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg
 
   - ${{if parameters.signConfig }}:
+    - task: PkgESSetupBuild@10
+      displayName: 'XESSetupBuild'
+      inputs:
+        productName: dep.controls
+        branchVersion: true
+        nugetVer: true
+
     - task: PkgESCodeSign@10
       displayName: CodeSign
       inputs:
