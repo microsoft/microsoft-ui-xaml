@@ -8,6 +8,7 @@ parameters:
   primaryBuildArch: x86
   buildFlavor: Release
   publishVstsFeed: ''
+  signConfig: ''
 
 jobs:
 - job: ${{ parameters.jobName }}
@@ -60,4 +61,12 @@ jobs:
         command: push
         publishVstsFeed: ${{ parameters.publishVstsFeed }}
         packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg
+
+  - ${{if parameters.signConfig }}:
+    - task: PkgESCodeSign@10
+      displayName: CodeSign
+      inputs:
+        signConfigXml: ${{ parameters.signConfig }}
+        inPathRoot: '$(buildOutputDir)\$(buildConfiguration)\$(buildPlatform)'
+        outPathRoot: '$(buildOutputDir)\$(buildConfiguration)\$(buildPlatform)\signed'
 
