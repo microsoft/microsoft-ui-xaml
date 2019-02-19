@@ -18,11 +18,12 @@
 
     <Grid>
         <muxcontrols:NavigationView x:Name="navview" MenuItemsSource="{x:Bind categories, Mode=OneWay}" MenuItemTemplate="{StaticResource NavigationViewMenuItem}" ItemInvoked="{x:Bind ClickedItem}">
-            <StackPanel>
-                <TextBlock x:Name="SelectedItemLabel" Text="uninitialized" Margin="10,10,0,0"/>
-                <Button Content="Get Selected Item Label" Click="PrintSelectedItem" Margin="10,0,0,0"/>
-                <Button Content="Add MenuItem" Click="AddMenuItem" Margin="10,10,0,0"/>
-                <Button Content="Remove Second MenuItem" Click="RemoveSecondMenuItem" Margin="10,10,0,0"/>
+            <StackPanel Margin="10,10,0,0">
+                <TextBlock x:Name="SelectedItemLabel" Text="uninitialized"/>
+                <Button Content="Get Selected Item Label" Click="PrintSelectedItem"/>
+                <Button Content="Add MenuItem" Click="AddMenuItem"/>
+                <Button Content="Remove Second MenuItem" Click="RemoveSecondMenuItem" />
+                <Button Content="Select Second Item" Click="SelectSecondItem"/>
             </StackPanel>
         </muxcontrols:NavigationView>
     </Grid>

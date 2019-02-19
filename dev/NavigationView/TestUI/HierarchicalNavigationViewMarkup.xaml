@@ -42,6 +42,7 @@
                 <Button Content="Remove Second MenuItem" Click="RemoveSecondMenuItem"/>
                 <TextBlock x:Name="IsChildSelectedLabel" Text="uninitialized"/>
                 <Button Content="Print all 'isChildSelected=true' items" Click="PrintAllIsChildSelectedItems"/>
+                <Button Content="Select Second Item" Click="SelectSecondItem"/>
             </StackPanel>
         </muxcontrols:NavigationView>
 

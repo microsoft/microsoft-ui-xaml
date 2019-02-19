@@ -73,5 +73,12 @@ namespace MUXControlsTestApp
             }
             return itemstring;
         }
+
+        private void SelectSecondItem(object sender, RoutedEventArgs e)
+        {
+            IList<Object> menuItems = navview.MenuItems;
+            navview.SelectedItem = menuItems[1];
+
+        }
     }
 }

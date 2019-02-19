@@ -1283,7 +1283,10 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
             // To simplify the logic, OnItemClick didn't raise the event and it's been delayed to here.
             RaiseItemInvoked(nextActualItem, isSettingsItem);
 
-            ToggleIsExpandedFromItem(nextActualItem);
+            if (m_shouldRaiseInvokeItemInSelectionChange)
+            {
+                ToggleIsExpandedFromItem(nextActualItem);
+            }
         }
         else
         {
@@ -1341,7 +1344,10 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
 
             UpdateIsChildSelected(prevItem, nextActualItem);
 
-            ToggleIsExpandedFromItem(nextActualItem);
+            if (m_shouldRaiseInvokeItemInSelectionChange)
+            {
+                ToggleIsExpandedFromItem(nextActualItem);
+            }
 
             AnimateSelectionChanged(prevItem, nextActualItem);
 

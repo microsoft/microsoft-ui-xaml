@@ -83,5 +83,9 @@ namespace MUXControlsTestApp
         {
             categories.RemoveAt(1);
         }
+        private void SelectSecondItem(object sender, RoutedEventArgs e)
+        {
+            navview.SelectedItem = categories[1];
+        }
     }
 }
