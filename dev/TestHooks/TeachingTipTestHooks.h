@@ -19,6 +19,7 @@ public:
 
     static void SetExpandEasingFunction(const winrt::TeachingTip& teachingTip, const winrt::CompositionEasingFunction& easingFunction);
     static void SetContractEasingFunction(const winrt::TeachingTip& teachingTip, const winrt::CompositionEasingFunction& easingFunction);
+    static void SetTipShadow(const winrt::TeachingTip& teachingTip, bool tipShadow);
     static void SetContentElevation(const winrt::TeachingTip& teachingTip, float elevation);
     static void SetBeakElevation(const winrt::TeachingTip& teachingTip, float elevation);
     static void SetBeakShadowTargetsShadowTarget(const winrt::TeachingTip& teachingTip, bool targetsShadowTarget);

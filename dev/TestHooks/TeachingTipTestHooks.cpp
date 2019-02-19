@@ -34,6 +34,14 @@ void TeachingTipTestHooks::SetContractEasingFunction(const winrt::TeachingTip& t
     }
 }
 
+void TeachingTipTestHooks::SetTipShadow(const winrt::TeachingTip& teachingTip, bool tipShadow)
+{
+    if (teachingTip)
+    {
+        winrt::get_self<TeachingTip>(teachingTip)->SetTipShadow(tipShadow);
+    }
+}
+
 void TeachingTipTestHooks::SetContentElevation(const winrt::TeachingTip& teachingTip, float elevation)
 {
     if (teachingTip)

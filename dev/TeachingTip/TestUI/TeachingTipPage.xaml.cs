@@ -550,6 +550,16 @@ namespace MUXControlsTestApp
             TeachingTipTestHooks.SetBeakElevation(this.TeachingTip, (float)args.NewValue);
         }
 
+        public void OnTipShadowChecked(object sender, RoutedEventArgs args)
+        {
+            TeachingTipTestHooks.SetTipShadow(this.TeachingTip, true);
+        }
+
+        public void OnTipShadowUnchecked(object sender, RoutedEventArgs args)
+        {
+            TeachingTipTestHooks.SetTipShadow(this.TeachingTip, false);
+        }
+
         public void OnBeakShadowTargetChecked(object sender, RoutedEventArgs args)
         {
             TeachingTipTestHooks.SetBeakShadowTargetsShadowTarget(this.TeachingTip, true);

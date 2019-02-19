@@ -1391,13 +1391,13 @@ void TeachingTip::EstablishShadows()
         // This facilitates an experiment around faking a proper beak shadow, shadows are expensive though so we don't want it present for release builds.
         auto beakShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
         beakShadow.Receivers().Append(m_target.get());
-        m_beakPolygon.get().Shadow(beakShadow);
+        m_beakPolygon.get().Shadow(m_tipShadow ? beakShadow : nullptr);
         m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
 #endif
 #endif
         auto contentShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
         contentShadow.Receivers().Append(m_shadowTarget.get());
-        m_contentRootGrid.get().Shadow(contentShadow);
+        m_contentRootGrid.get().Shadow(m_tipShadow ? contentShadow : nullptr);
         m_contentRootGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
     }
 #endif
@@ -1458,6 +1458,15 @@ void TeachingTip::SetContractEasingFunction(const winrt::CompositionEasingFuncti
 {
     m_contractEasingFunction.set(easingFunction);
     CreateContractAnimation();
+}
+
+void TeachingTip::SetTipShadow(bool tipShadow)
+{
+    if (m_tipShadow != tipShadow)
+    {
+        m_tipShadow = tipShadow;
+        EstablishShadows();
+    }
 }
 
 void TeachingTip::SetContentElevation(float elevation)

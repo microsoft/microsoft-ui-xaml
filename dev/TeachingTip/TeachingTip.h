@@ -34,6 +34,7 @@ public:
     // TestHooks
     void SetExpandEasingFunction(const winrt::CompositionEasingFunction& easingFunction);
     void SetContractEasingFunction(const winrt::CompositionEasingFunction& easingFunction);
+    void SetTipShadow(bool tipShadow);
     void SetContentElevation(float elevation);
     void SetBeakElevation(float elevation);
     void SetBeakShadowTargetsShadowTarget(bool targetsShadowTarget);
@@ -133,6 +134,8 @@ private:
 
     bool m_useTestWindowBounds{ false };
     winrt::Rect m_testWindowBounds{ 0,0,0,0 };
+
+    bool m_tipShadow{ true };
 
     bool m_tipFollowsTarget{ false };
 
