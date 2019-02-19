@@ -22,12 +22,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
 using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
 using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
+using ScrollerAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 using ScrollViewerTestHooks = Microsoft.UI.Private.Controls.ScrollViewerTestHooks;
 
@@ -257,6 +259,73 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies anchor candidate registration and unregistration.")]
+        public void VerifyAnchorCandidateRegistration()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled on pre-RS2 because ScrollViewer not supported pre-RS2");
+                return;
+            }
+
+            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer", "Scroller"))
+            {
+                int expectedAnchorCandidatesCount = 0;
+                Scroller scroller = null;
+                ScrollViewer scrollViewer = null;
+                Rectangle rectangleScrollViewerContent = null;
+                AutoResetEvent scrollViewerLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollViewerAnchorRequestedEvent = new AutoResetEvent(false);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    rectangleScrollViewerContent = new Rectangle();
+                    scrollViewer = new ScrollViewer();
+                    scrollViewer.HorizontalAnchorRatio = 0.1;
+
+                    SetupDefaultUI(scrollViewer, rectangleScrollViewerContent, scrollViewerLoadedEvent);
+
+                    scrollViewer.AnchorRequested += (ScrollViewer sender, ScrollerAnchorRequestedEventArgs args) =>
+                    {
+                        Log.Comment("ScrollViewer.AnchorRequested event handler. args.AnchorCandidates.Count: " + args.AnchorCandidates.Count);
+                        Verify.IsNull(args.AnchorElement);
+                        Verify.AreEqual(expectedAnchorCandidatesCount, args.AnchorCandidates.Count);
+                        scrollViewerAnchorRequestedEvent.Set();
+                    };
+                });
+
+                WaitForEvent("Waiting for Loaded event", scrollViewerLoadedEvent);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Accessing inner Scroller control");
+                    scroller = ScrollViewerTestHooks.GetScrollerPart(scrollViewer);
+
+                    Log.Comment("Registering Rectangle as anchor candidate");
+                    scrollViewer.RegisterAnchorCandidate(rectangleScrollViewerContent);
+                    expectedAnchorCandidatesCount = 1;
+
+                    Log.Comment("Forcing Scroller layout");
+                    scroller.InvalidateArrange();
+                });
+
+                WaitForEvent("Waiting for AnchorRequested event", scrollViewerAnchorRequestedEvent);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Unregistering Rectangle as anchor candidate");
+                    scrollViewer.UnregisterAnchorCandidate(rectangleScrollViewerContent);
+                    expectedAnchorCandidatesCount = 0;
+
+                    Log.Comment("Forcing Scroller layout");
+                    scroller.InvalidateArrange();
+                });
+
+                WaitForEvent("Waiting for AnchorRequested event", scrollViewerAnchorRequestedEvent);
+            }
+        }
+
         private void SetupDefaultUI(
             ScrollViewer scrollViewer,
             Rectangle rectangleScrollViewerContent = null,
@@ -294,7 +363,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollViewer.Loaded += (object sender, RoutedEventArgs e) =>
                 {
-                    Log.Comment("Scroller.Loaded event handler");
+                    Log.Comment("ScrollViewer.Loaded event handler");
                     scrollViewerLoadedEvent.Set();
                 };
             }
@@ -303,7 +372,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollViewer.Unloaded += (object sender, RoutedEventArgs e) =>
                 {
-                    Log.Comment("Scroller.Unloaded event handler");
+                    Log.Comment("ScrollViewer.Unloaded event handler");
                     scrollViewerUnloadedEvent.Set();
                 };
             }
