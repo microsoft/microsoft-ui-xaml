@@ -1060,8 +1060,12 @@ void TeachingTip::StartExpandToOpen()
         if (m_beakOcclusionGrid)
         {
             m_beakOcclusionGrid.get().StartAnimation(m_expandAnimation.get());
-            m_beakOcclusionGrid.get().StartAnimation(m_expandElevationAnimation.get());
             m_isExpandAnimationPlaying = true;
+        }
+        if (m_contentRootGrid)
+        {
+            m_contentRootGrid.get().StartAnimation(m_expandElevationAnimation.get());
+            m_isContractAnimationPlaying = true;
         }
         if (m_beakEdgeBorder)
         {
@@ -1104,7 +1108,11 @@ void TeachingTip::StartContractToClose()
         if (m_beakOcclusionGrid)
         {
             m_beakOcclusionGrid.get().StartAnimation(m_contractAnimation.get());
-            m_beakOcclusionGrid.get().StartAnimation(m_contractElevationAnimation.get());
+            m_isContractAnimationPlaying = true;
+        }
+        if (m_contentRootGrid)
+        {
+            m_contentRootGrid.get().StartAnimation(m_contractElevationAnimation.get());
             m_isContractAnimationPlaying = true;
         }
         if (m_beakEdgeBorder)
@@ -1375,9 +1383,10 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
 
 void TeachingTip::EstablishShadows()
 {
-#ifdef USE_INTERNAL_SDK
+#ifdef USE_INSIDER_SDK
     if (SharedHelpers::IsThemeShadowAvailable())
     {
+#ifdef BEAK_SHADOW
 #ifdef _DEBUG
         // This facilitates an experiment around faking a proper beak shadow, shadows are expensive though so we don't want it present for release builds.
         auto beakShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
@@ -1385,10 +1394,11 @@ void TeachingTip::EstablishShadows()
         m_beakPolygon.get().Shadow(beakShadow);
         m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
 #endif
+#endif
         auto contentShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
         contentShadow.Receivers().Append(m_shadowTarget.get());
-        m_beakOcclusionGrid.get().Shadow(contentShadow);
-        m_beakOcclusionGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
+        m_contentRootGrid.get().Shadow(contentShadow);
+        m_contentRootGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
     }
 #endif
 }
@@ -1457,7 +1467,7 @@ void TeachingTip::SetContentElevation(float elevation)
     {
         if (m_beakOcclusionGrid)
         {
-            m_beakOcclusionGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
+            m_contentRootGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
         }
         if (m_expandElevationAnimation)
         {
@@ -1477,7 +1487,7 @@ void TeachingTip::SetBeakElevation(float elevation)
 
 void TeachingTip::SetBeakShadowTargetsShadowTarget(const bool targetsShadowTarget)
 {
-#ifdef USE_INTERNAL_SDK
+#ifdef USE_INSIDER_SDK
     m_beakShadowTargetsShadowTarget = targetsShadowTarget;
     if (SharedHelpers::IsThemeShadowAvailable() && m_beakPolygon)
     {
