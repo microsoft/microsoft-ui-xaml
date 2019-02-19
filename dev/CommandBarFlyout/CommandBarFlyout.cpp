@@ -116,6 +116,16 @@ CommandBarFlyout::CommandBarFlyout()
     Opening({
         [this](auto const&, auto const&)
         {
+            // If this flyout is already open and we're trying to reopen it (e.g., right-clicking when a right-click menu is showing),
+            // then we want to ensure that we halt the close animation before opening, since otherwise we get visual glitches.
+            if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
+            {
+                if (commandBar->HasCloseAnimation())
+                {
+                    commandBar->CompleteCloseAnimation();
+                }
+            }
+
             // The CommandBarFlyout is shown in standard mode in the case
             // where it's being opened as a context menu, rather than as a selection flyout.
             // In that circumstance, we want to have the flyout be open from the start.

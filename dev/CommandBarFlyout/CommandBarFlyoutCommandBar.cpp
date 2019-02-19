@@ -201,6 +201,14 @@ void CommandBarFlyoutCommandBar::PlayCloseAnimation(std::function<void()> onComp
     }
 }
 
+void CommandBarFlyoutCommandBar::CompleteCloseAnimation()
+{
+    if (auto closingStoryboard = m_closingStoryboard.get())
+    {
+        closingStoryboard.SkipToFill();
+    }
+}
+
 void CommandBarFlyoutCommandBar::UpdateFlowsFromAndFlowsTo()
 {
     if (m_currentPrimaryItemsEndElement)

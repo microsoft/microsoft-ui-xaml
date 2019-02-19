@@ -23,6 +23,7 @@ public:
     void PlayOpenAnimation();
     bool HasCloseAnimation();
     void PlayCloseAnimation(std::function<void()> onCompleteFunc);
+    void CompleteCloseAnimation();
     void ClearShadow();
 
 private:

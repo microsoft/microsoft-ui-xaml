@@ -228,6 +228,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         }
     }
 
+    public class LongAnimationsEnabler : IDisposable
+    {
+        public LongAnimationsEnabler()
+        {
+            CheckBox longAnimationsDisabledCheckBox = FindElement.ById<CheckBox>("LongAnimationsDisabled");
+
+            if (longAnimationsDisabledCheckBox.ToggleState == ToggleState.On)
+            {
+                longAnimationsDisabledCheckBox.ToggleAndWait();
+            }
+        }
+
+        public virtual void Dispose()
+        {
+            CheckBox longAnimationsDisabledCheckBox = FindElement.ById<CheckBox>("LongAnimationsDisabled");
+
+            if (longAnimationsDisabledCheckBox.ToggleState == ToggleState.Off)
+            {
+                longAnimationsDisabledCheckBox.ToggleAndWait();
+            }
+        }
+    }
+
     public class TestCleanupHelper
     {
         public static int TestSetupHelperPendingDisposals { get; set; }

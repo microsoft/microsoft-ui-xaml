@@ -593,6 +593,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void ValidateRightClickCanOpenFlyoutWithFlyoutOpen()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.NineteenH1))
+            {
+                Log.Warning("Test is disabled pre-19H1 because this requires a bug fix that didn't exist before then.");
+                return;
+            }
+
+            // The bug fix this validates only occurs when we have the closing animation on the CommandBarFlyout,
+            // so we'll enable long animations for the duration of this test to ensure we properly test the fix.
+            using (var longAnimationsEnabler = new LongAnimationsEnabler())
+            {
+                using (var setup1 = new TestSetupHelper("CommandBarFlyout Tests"))
+                {
+                    using (var setup2 = new TestSetupHelper("Extra CommandBarFlyout Tests"))
+                    {
+                        Log.Comment("Right-click on the rich text block.");
+                        InputHelper.RightClick(FindElement.ById("RichTextBlock"), 20, 10);
+
+                        Log.Comment("There should now be two popups open, since the CommandBarFlyout uses two popups (one for primary commands, another for secondary commands).");
+                        FindElement.ById<Button>("CountPopupsButton").InvokeAndWait();
+
+                        Verify.AreEqual("2", FindElement.ById<Edit>("PopupCountTextBox").Value);
+
+                        Log.Comment("Right-click on the rich text block again.");
+                        InputHelper.RightClick(FindElement.ById("RichTextBlock"), 10, 10);
+
+                        Log.Comment("There should still be two popups open.");
+                        FindElement.ById<Button>("CountPopupsButton").InvokeAndWait();
+
+                        Verify.AreEqual("2", FindElement.ById<Edit>("PopupCountTextBox").Value);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
         public void ValidateRichTextBlockOverflowUsesSourceFlyouts()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))

@@ -96,18 +96,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             Wait.ForIdle();
         }
 
-        public static void ToggleAndWait(this ToggleButton toggleButton)
+        public static void ToggleAndWait(this IToggle toggle)
         {
-            if (toggleButton == null)
+            if (toggle == null)
             {
-                Log.Error("Attempted to toggle a null toggle button! Dumping context...");
+                Log.Error("Attempted to toggle a null toggle pattern! Dumping context...");
                 DumpHelper.DumpFullContext();
-                throw new ArgumentNullException("toggleButton");
+                throw new ArgumentNullException("toggle");
             }
             
-            using (var waiter = toggleButton.GetToggledWaiter())
+            using (var waiter = toggle.GetToggledWaiter())
             {
-                toggleButton.Toggle();
+                toggle.Toggle();
                 waiter.Wait();
             }
 
