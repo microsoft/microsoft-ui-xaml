@@ -40,7 +40,7 @@ void TeachingTip::OnApplyTemplate()
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
     m_beakEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_beakEdgeBorderName, controlProtected));
     m_beakPolygon.set(GetTemplateChildT<winrt::Polygon>(s_beakPolygonName, controlProtected));
-    if (SharedHelpers::IsThemeShadowAvailable())
+    if (m_contentRootGrid.try_as<winrt::IUIElement10>())
     {
         m_shadowTarget.set(GetTemplateChildT<winrt::Grid>(s_shadowTargetName, controlProtected));
     }
@@ -1384,21 +1384,50 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
 void TeachingTip::EstablishShadows()
 {
 #ifdef USE_INSIDER_SDK
-    if (SharedHelpers::IsThemeShadowAvailable())
-    {
 #ifdef BEAK_SHADOW
 #ifdef _DEBUG
-        // This facilitates an experiment around faking a proper beak shadow, shadows are expensive though so we don't want it present for release builds.
-        auto beakShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
-        beakShadow.Receivers().Append(m_target.get());
-        m_beakPolygon.get().Shadow(m_tipShadow ? beakShadow : nullptr);
-        m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
+    if (winrt::IUIElement10 beakPolygon_uiElement10 = m_contentRootGrid)
+    {
+        if (m_tipShadow)
+        {
+            if (!beakPolygon_uiElement10.Shadow())
+            {
+                // This facilitates an experiment around faking a proper beak shadow, shadows are expensive though so we don't want it present for release builds.
+                auto beakShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
+                beakShadow.Receivers().Append(m_target.get());
+                beakPolygon_uiElement10.Shadow(beakShadow);
+                m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
+            }
+        }
+        else
+        {
+            if (beakPolygon_uiElement10.Shadow())
+            {
+                beakPolygon_uiElement10.Shadow(nullptr);
+            }
+        }
+    }
 #endif
 #endif
-        auto contentShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
-        contentShadow.Receivers().Append(m_shadowTarget.get());
-        m_contentRootGrid.get().Shadow(m_tipShadow ? contentShadow : nullptr);
-        m_contentRootGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
+    if (winrt::IUIElement10 m_contentRootGrid_uiElement10 = m_contentRootGrid.get())
+    {
+        if (m_tipShadow)
+        {
+            if (!m_contentRootGrid_uiElement10.Shadow())
+            {
+                auto contentShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
+                contentShadow.Receivers().Append(m_shadowTarget.get());
+                m_contentRootGrid_uiElement10.Shadow(contentShadow);
+                m_contentRootGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
+            }
+        }
+        else
+        {
+            if (m_contentRootGrid_uiElement10.Shadow())
+            {
+                m_contentRootGrid_uiElement10.Shadow(nullptr);
+            }
+        }
     }
 #endif
 }
@@ -1498,20 +1527,17 @@ void TeachingTip::SetBeakShadowTargetsShadowTarget(const bool targetsShadowTarge
 {
 #ifdef USE_INSIDER_SDK
     m_beakShadowTargetsShadowTarget = targetsShadowTarget;
-    if (SharedHelpers::IsThemeShadowAvailable() && m_beakPolygon)
+    if (winrt::IUIElement10 beakPolygon_uiElement10 = m_beakPolygon.get())
     {
-        if (auto shadow = m_beakPolygon.get().Shadow())
+        if (auto themeShadow = beakPolygon_uiElement10.Shadow().as<winrt::Windows::UI::Xaml::Media::ThemeShadow>())
         {
-            if (auto themeShadow = m_beakPolygon.get().Shadow().as<winrt::Windows::UI::Xaml::Media::ThemeShadow>())
+            if (targetsShadowTarget)
             {
-                if (targetsShadowTarget)
-                {
-                    themeShadow.Receivers().Append(m_shadowTarget.get());
-                }
-                else
-                {
-                    themeShadow.Receivers().RemoveAtEnd();
-                }
+                themeShadow.Receivers().Append(m_shadowTarget.get());
+            }
+            else
+            {
+                themeShadow.Receivers().RemoveAtEnd();
             }
         }
     }
