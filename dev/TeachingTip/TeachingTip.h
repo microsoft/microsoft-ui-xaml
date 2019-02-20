@@ -108,7 +108,6 @@ private:
     tracker_ref<winrt::Grid> m_beakOcclusionGrid{ this };
     tracker_ref<winrt::Grid> m_contentRootGrid{ this };
     tracker_ref<winrt::Grid> m_nonBleedingContentRootGrid{ this };
-    tracker_ref<winrt::Grid> m_shadowTarget{ this };
     tracker_ref<winrt::Border> m_bleedingImageContentBorder{ this };
     tracker_ref<winrt::Border> m_iconBorder{ this };
     tracker_ref<winrt::Button> m_actionButton{ this };

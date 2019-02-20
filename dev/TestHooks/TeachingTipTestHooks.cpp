@@ -58,14 +58,6 @@ void TeachingTipTestHooks::SetBeakElevation(const winrt::TeachingTip& teachingTi
     }
 }
 
-void TeachingTipTestHooks::SetBeakShadowTargetsShadowTarget(const winrt::TeachingTip& teachingTip, bool targetsShadowTarget)
-{
-    if (teachingTip)
-    {
-        winrt::get_self<TeachingTip>(teachingTip)->SetBeakShadowTargetsShadowTarget(targetsShadowTarget);
-    }
-}
-
 void TeachingTipTestHooks::SetUseTestWindowBounds(const winrt::TeachingTip& teachingTip, bool useTestWindowBounds)
 {
     if (teachingTip)

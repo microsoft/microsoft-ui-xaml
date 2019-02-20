@@ -560,16 +560,6 @@ namespace MUXControlsTestApp
             TeachingTipTestHooks.SetTipShadow(this.TeachingTip, false);
         }
 
-        public void OnBeakShadowTargetChecked(object sender, RoutedEventArgs args)
-        {
-            TeachingTipTestHooks.SetBeakShadowTargetsShadowTarget(this.TeachingTip, true);
-        }
-
-        public void OnBeakShadowTargetUnchecked(object sender, RoutedEventArgs args)
-        {
-            TeachingTipTestHooks.SetBeakShadowTargetsShadowTarget(this.TeachingTip, false);
-        }
-
         public void OnTeachingTipClosed(object sender, TeachingTipClosedEventArgs args)
         {
             lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") " + args.ToString() + " Reason: " + args.Reason.ToString());

@@ -395,8 +395,6 @@
             <CheckBox Grid.Row="31" Grid.Column="1" Checked="OnTipShadowChecked" Unchecked="OnTipShadowUnchecked" IsChecked="True"/>
             <TextBlock Grid.Row="32" Foreground="Red" Text="Beak Elevation" VerticalAlignment="Center"/>
             <Slider Grid.Row="33" Grid.ColumnSpan="2" Minimum="0" Maximum="100" ValueChanged="BeakElevationSliderChanged" Value="0"/>
-            <TextBlock Grid.Row="34" Foreground="Red" Text="Beak Shadow Targets Shadow Target:" VerticalAlignment="Center"/>
-            <CheckBox Grid.Row="34" Grid.Column="1" Checked="OnBeakShadowTargetChecked" Unchecked="OnBeakShadowTargetUnchecked" IsChecked="False"/>
         </Grid>
 
         <!-- Logging Output -->

@@ -40,10 +40,6 @@ void TeachingTip::OnApplyTemplate()
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
     m_beakEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_beakEdgeBorderName, controlProtected));
     m_beakPolygon.set(GetTemplateChildT<winrt::Polygon>(s_beakPolygonName, controlProtected));
-    if (m_contentRootGrid.try_as<winrt::IUIElement10>())
-    {
-        m_shadowTarget.set(GetTemplateChildT<winrt::Grid>(s_shadowTargetName, controlProtected));
-    }
 
     if (m_beakOcclusionGrid)
     {
@@ -1415,9 +1411,7 @@ void TeachingTip::EstablishShadows()
         {
             if (!m_contentRootGrid_uiElement10.Shadow())
             {
-                auto contentShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
-                contentShadow.Receivers().Append(m_shadowTarget.get());
-                m_contentRootGrid_uiElement10.Shadow(contentShadow);
+                m_contentRootGrid_uiElement10.Shadow(winrt::ThemeShadow{});
                 m_contentRootGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
             }
         }
@@ -1521,27 +1515,6 @@ void TeachingTip::SetBeakElevation(float elevation)
     {
         m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
     }
-}
-
-void TeachingTip::SetBeakShadowTargetsShadowTarget(const bool targetsShadowTarget)
-{
-#ifdef USE_INSIDER_SDK
-    m_beakShadowTargetsShadowTarget = targetsShadowTarget;
-    if (winrt::IUIElement10 beakPolygon_uiElement10 = m_beakPolygon.get())
-    {
-        if (auto themeShadow = beakPolygon_uiElement10.Shadow().as<winrt::Windows::UI::Xaml::Media::ThemeShadow>())
-        {
-            if (targetsShadowTarget)
-            {
-                themeShadow.Receivers().Append(m_shadowTarget.get());
-            }
-            else
-            {
-                themeShadow.Receivers().RemoveAtEnd();
-            }
-        }
-    }
-#endif
 }
 
 void TeachingTip::SetUseTestWindowBounds(bool useTestWindowBounds)

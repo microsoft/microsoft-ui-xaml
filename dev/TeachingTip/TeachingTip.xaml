@@ -420,10 +420,6 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <!-- Because we do not have support for shadows on the beak we can't use the shadows that we get for free from flyout. Instead we need the BeakOcclusionGrid
-                             to cast the shadow. But in order for the BeakOcclusionGrid to cast a shadow we need to specify which elements are to receive that shadow. Since we
-                             can't know this from the tip's code we need to instead have an element within the template we can target. This is that element. -->
-                        <Grid x:Name="ShadowTarget" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" Margin="-100" Grid.ColumnSpan="5" Grid.RowSpan="5"/>
                         <!-- This BeakEdgeBorder needs to be z ordered underneath the BeakPolygon while the BeakOcclusionGrid needs to be over it, hence declaring these parts
                              in this order. This is to achieve the desired occlusion of the beaks content edge border. The beak edge border is a low opacity highlight,
                              which means we need to have the background color present underneath the highlight, hence the double grid here. -->
