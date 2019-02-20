@@ -57,7 +57,6 @@ private:
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
     winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
     void CreateLightDismissIndicatorPopup();
-    void RemoveLightDismissIndicatorPopup();
     void UpdateBeak();
     void PositionPopup();
     void PositionTargetedPopup();
