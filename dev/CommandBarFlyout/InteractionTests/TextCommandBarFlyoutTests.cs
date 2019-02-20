@@ -609,21 +609,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     using (var setup2 = new TestSetupHelper("Extra CommandBarFlyout Tests"))
                     {
+                        UIObject richTextBlock = FindElement.ById("RichTextBlock");
+
                         Log.Comment("Right-click on the rich text block.");
-                        InputHelper.RightClick(FindElement.ById("RichTextBlock"), 20, 10);
+                        InputHelper.RightClick(richTextBlock, 20, 10);
+
+                        Button countPopupsButton = FindElement.ById<Button>("CountPopupsButton");
 
                         Log.Comment("There should now be two popups open, since the CommandBarFlyout uses two popups (one for primary commands, another for secondary commands).");
-                        FindElement.ById<Button>("CountPopupsButton").InvokeAndWait();
+                        countPopupsButton.InvokeAndWait();
 
-                        Verify.AreEqual("2", FindElement.ById<Edit>("PopupCountTextBox").Value);
+                        Edit popupCountTextBox = FindElement.ById<Edit>("PopupCountTextBox");
+
+                        Verify.AreEqual("2", popupCountTextBox.Value);
+
+                        Edit popupXPositionTextBox = FindElement.ById<Edit>("PopupXPositionTextBox");
+                        Edit popupYPositionTextBox = FindElement.ById<Edit>("PopupYPositionTextBox");
+
+                        int initialXPosition = int.Parse(popupXPositionTextBox.Value);
+                        int initialYPosition = int.Parse(popupYPositionTextBox.Value);
 
                         Log.Comment("Right-click on the rich text block again.");
-                        InputHelper.RightClick(FindElement.ById("RichTextBlock"), 10, 10);
+                        InputHelper.RightClick(richTextBlock, 10, 10);
 
-                        Log.Comment("There should still be two popups open.");
-                        FindElement.ById<Button>("CountPopupsButton").InvokeAndWait();
+                        Log.Comment("There should still be two popups open, but at a different position.");
+                        countPopupsButton.InvokeAndWait();
 
-                        Verify.AreEqual("2", FindElement.ById<Edit>("PopupCountTextBox").Value);
+                        Verify.AreEqual("2", popupCountTextBox.Value);
+                        Verify.IsLessThan(int.Parse(popupXPositionTextBox.Value), initialXPosition);
+                        Verify.AreEqual(int.Parse(popupYPositionTextBox.Value), initialYPosition);
                     }
                 }
             }

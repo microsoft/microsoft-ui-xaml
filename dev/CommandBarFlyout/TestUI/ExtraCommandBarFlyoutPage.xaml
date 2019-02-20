@@ -21,6 +21,10 @@
             <Button AutomationProperties.AutomationId="ClearClipboardContentsButton" Content="Clear clipboard" Margin="10" Click="OnClearClipboardContentsClicked" />
             <Button AutomationProperties.AutomationId="CountPopupsButton" Content="Count popups" Margin="10" Click="OnCountPopupsClicked" />
             <TextBox x:Name="PopupCountTextBox" AutomationProperties.AutomationId="PopupCountTextBox" IsReadOnly="True" />
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="PopupXPositionTextBox" AutomationProperties.AutomationId="PopupXPositionTextBox" IsReadOnly="True" />
+                <TextBox x:Name="PopupYPositionTextBox" AutomationProperties.AutomationId="PopupYPositionTextBox" IsReadOnly="True" />
+            </StackPanel>
             <RichTextBlock x:Name="RichTextBlock1" AutomationProperties.AutomationId="RichTextBlock" Margin="10" OverflowContentTarget="{x:Bind RichTextBlockOverflow1}" ContextFlyout="{x:Bind TextCommandBarContextFlyout}" SelectionFlyout="{x:Bind TextCommandBarSelectionFlyout}" Width="100" Height="50" HorizontalAlignment="Center">
                 <RichTextBlock.Blocks>
                     <Paragraph>
