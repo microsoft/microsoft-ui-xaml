@@ -36,8 +36,8 @@
                 <muxcontrols:NavigationViewItem Content="Menu Item 9" Icon="Home" x:Name="MI9"/>
             </muxcontrols:NavigationView.MenuItems>
             <StackPanel Margin="10,10,0,0">
-                <TextBlock x:Name="SelectedItemLabel" Text="uninitialized"/>
-                <Button Content="Get Selected Item Label" Click="PrintSelectedItem"/>
+                <TextBlock x:Name="SelectedItemLabel" AutomationProperties.Name="SelectedItemLabel" Text="uninitialized"/>
+                <Button Content="Get Selected Item Label" AutomationProperties.Name="GetSelectedItemLabelButton" Click="PrintSelectedItem"/>
                 <Button Content="Collapse Selected Item" Click="CollapseSelectedItem"/>
                 <Button Content="Remove Second MenuItem" Click="RemoveSecondMenuItem"/>
                 <TextBlock x:Name="IsChildSelectedLabel" Text="uninitialized"/>
