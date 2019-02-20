@@ -951,48 +951,82 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& prevItem
 
         if ((prevItem != nextItem) && paneContentGrid && prevIndicator && nextIndicator && SharedHelpers::IsAnimationsEnabled())
         {
-            // Make sure both indicators are visible and in their original locations
-            ResetElementAnimationProperties(prevIndicator, 1.0f);
-            ResetElementAnimationProperties(nextIndicator, 1.0f);
+            // Check whether animating selection indicator between levels
+            auto prevContainer = NavigationViewItemOrSettingsContentFromData(prevItem);
+            auto nextContainer = NavigationViewItemOrSettingsContentFromData(nextItem);
+            auto prevItemDepth = winrt::get_self<NavigationViewItem>(prevContainer)->GetDepth();
+            auto nextItemDepth = winrt::get_self<NavigationViewItem>(nextContainer)->GetDepth();
 
-            // get the item positions in the pane
-            winrt::Point point = winrt::Point(0, 0);
-            float prevPos;
-            float nextPos;
-
-            winrt::Point prevPosPoint = prevIndicator.TransformToVisual(paneContentGrid).TransformPoint(point);
-            winrt::Point nextPosPoint = nextIndicator.TransformToVisual(paneContentGrid).TransformPoint(point);
-            winrt::Size prevSize = prevIndicator.RenderSize();
-            winrt::Size nextSize = nextIndicator.RenderSize();
-
-            if (IsTopNavigationView())
+            if (prevItemDepth != nextItemDepth)
             {
-                prevPos = prevPosPoint.X;
-                nextPos = nextPosPoint.X;
-            }
-            else
-            {
-                prevPos = prevPosPoint.Y;
-                nextPos = nextPosPoint.Y;
+                // Make sure both indicators are visible and in their original locations
+                ResetElementAnimationProperties(prevIndicator, 1.0f);
+                ResetElementAnimationProperties(nextIndicator, 1.0f);
             }
 
-            winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
-            winrt::CompositionScopedBatch scopedBatch = visual.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
 
-            // Play the animation on both the previous and next indicators
-            PlayIndicatorAnimations(prevIndicator, 0, nextPos - prevPos, prevSize, nextSize, true);
-            PlayIndicatorAnimations(nextIndicator, prevPos - nextPos, 0, prevSize, nextSize, false);
+            //if (prevItemDepth != nextItemDepth)
+            //{
+            //    //AnimateSelectionChangedToNewDepth(prevIndicator, nextIndicator);
+            //    if (auto rectIndicator = prevIndicator.try_as<winrt::Rectangle>())
+            //    {
 
-            scopedBatch.End();
-            m_prevIndicator.set(prevIndicator);
-            m_nextIndicator.set(nextIndicator);
+            //    }
+            //    if (auto rectIndicator = nextIndicator.try_as<winrt::Rectangle>())
+            //    {
 
-            auto strongThis = get_strong();
-            scopedBatch.Completed(
-                [strongThis](auto sender, auto args)
+            //    }
+            //}
+            //else
             {
-                strongThis->OnAnimationComplete(sender, args);
-            });
+                // get the item positions in the pane
+                winrt::Point point = winrt::Point(0, 0);
+                float prevPos;
+                float nextPos;
+
+                winrt::Point prevPosPoint = prevIndicator.TransformToVisual(paneContentGrid).TransformPoint(point);
+                winrt::Point nextPosPoint = nextIndicator.TransformToVisual(paneContentGrid).TransformPoint(point);
+                winrt::Size prevSize = prevIndicator.RenderSize();
+                winrt::Size nextSize = nextIndicator.RenderSize();
+
+                if (IsTopNavigationView())
+                {
+                    prevPos = prevPosPoint.X;
+                    nextPos = nextPosPoint.X;
+                }
+                else
+                {
+                    prevPos = prevPosPoint.Y;
+                    nextPos = nextPosPoint.Y;
+                }
+
+                winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
+                winrt::CompositionScopedBatch scopedBatch = visual.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+
+                if (prevItemDepth != nextItemDepth)
+                {
+                    // Play the animation on both the previous and next indicators
+                    AnimateSelectionChangedToNewDepth(prevIndicator, false);
+                    AnimateSelectionChangedToNewDepth(nextIndicator, true);
+                }
+                else
+                {
+                    // Play the animation on both the previous and next indicators
+                    PlayIndicatorAnimations(prevIndicator, 0, nextPos - prevPos, prevSize, nextSize, true);
+                    PlayIndicatorAnimations(nextIndicator, prevPos - nextPos, 0, prevSize, nextSize, false);
+                }
+
+                scopedBatch.End();
+                m_prevIndicator.set(prevIndicator);
+                m_nextIndicator.set(nextIndicator);
+
+                auto strongThis = get_strong();
+                scopedBatch.Completed(
+                    [strongThis](auto sender, auto args)
+                {
+                    strongThis->OnAnimationComplete(sender, args);
+                });
+            }
         }
         else
         {
@@ -1012,6 +1046,32 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& prevItem
             }
         }
     }
+}
+
+void NavigationView::AnimateSelectionChangedToNewDepth(const winrt::UIElement& indicator, bool showing)
+{
+
+    winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(indicator);
+    winrt::Compositor comp = visual.Compositor();
+
+    winrt::Size indicatorSize = indicator.RenderSize();
+
+    float beginScale = 0.0;
+    float endScale = 1.0;
+    if (!showing)
+    {
+        beginScale = 1.0;
+        endScale = 0.0;
+    }
+
+    auto center = indicator.CenterPoint();
+
+    winrt::ScalarKeyFrameAnimation scaleAnim = comp.CreateScalarKeyFrameAnimation();
+    scaleAnim.InsertKeyFrame(0.0f, beginScale);
+    scaleAnim.InsertKeyFrame(1.0f, endScale, comp.CreateCubicBezierEasingFunction(c_frame2point1, c_frame2point2));
+    scaleAnim.Duration(600ms);
+
+    visual.StartAnimation(L"Scale.Y", scaleAnim);
 }
 
 void NavigationView::PlayIndicatorAnimations(const winrt::UIElement& indicator, float from, float to, winrt::Size beginSize, winrt::Size endSize, bool isOutgoing)
