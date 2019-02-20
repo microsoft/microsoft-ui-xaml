@@ -123,7 +123,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     Log.Comment("Looking for CoreWindow...");
                     for (int retries = 0; retries < 5; ++retries)
                     {
-                        if(didFindCoreWindow = topWindowObj.Children.TryFind(_windowCondition, out coreWindowObject))
+                        if (topWindowObj.Children.TryFind(_windowCondition, out var coreWindowObject))
                         {
                             CoreWindow = coreWindowObject;
                             Log.Comment("Found CoreWindow.");
