@@ -94,15 +94,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             var topWindowCondition = _windowCondition.OrWith(_appFrameWindowCondition);
 
             UIObject topWindowObj = null;
-            bool didFindWindow = false;
-            try
-            {
-                didFindWindow = UIObject.Root.Children.TryFind(topWindowCondition, out topWindowObj);
-            }
-            catch (UIObjectNotFoundException)
-            {
-                didFindWindow = false;
-            }
+            bool didFindWindow = UIObject.Root.Children.TryFind(topWindowCondition, out topWindowObj);
 
             // Only try to launch the app if we couldn't find the window.
             if (doLaunch && !didFindWindow)
@@ -124,16 +116,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 else
                 {
                     Verify.IsTrue(topWindowObj.Matches(_appFrameWindowCondition));
-
                     ApplicationFrameWindow = topWindowObj;
-                    CoreWindow = topWindowObj.Children.Find(_windowCondition);
-                }
+                    UIObject coreWindowObject = null;
+                    bool didFindCoreWindow = false;
 
+                    Log.Comment("Looking for CoreWindow...");
+                    for (int retries = 0; retries < 5; ++retries)
+                    {
+                        if(didFindCoreWindow = topWindowObj.Children.TryFind(_windowCondition, out coreWindowObject))
+                        {
+                            CoreWindow = coreWindowObject;
+                            Log.Comment("Found CoreWindow.");
+                            break;
+                        }
+
+                        Log.Comment("CoreWindow not found. Sleep for 500 ms and retry");
+                        Thread.Sleep(500);
+                    }
+                }
             }
 
             if (CoreWindow == null)
             {
                 // We expect to have a window by this point.
+                TestEnvironment.LogDumpTree(UIObject.Root);
                 throw new UIObjectNotFoundException("Could not find application window.");
             }
 
