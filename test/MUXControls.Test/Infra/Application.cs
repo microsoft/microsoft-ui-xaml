@@ -94,7 +94,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             var topWindowCondition = _windowCondition.OrWith(_appFrameWindowCondition);
 
             UIObject topWindowObj = null;
-            bool didFindWindow = UIObject.Root.Children.TryFind(topWindowCondition, out topWindowObj);
+            bool didFindWindow = false;
+            try
+            {
+                didFindWindow = UIObject.Root.Children.TryFind(topWindowCondition, out topWindowObj);
+            }
+            catch (UIObjectNotFoundException)
+            {
+                didFindWindow = false;
+            }
 
             // Only try to launch the app if we couldn't find the window.
             if (doLaunch && !didFindWindow)
