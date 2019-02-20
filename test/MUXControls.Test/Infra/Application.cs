@@ -117,8 +117,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 {
                     Verify.IsTrue(topWindowObj.Matches(_appFrameWindowCondition));
                     ApplicationFrameWindow = topWindowObj;
-                    UIObject coreWindowObject = null;
-                    bool didFindCoreWindow = false;
 
                     Log.Comment("Looking for CoreWindow...");
                     for (int retries = 0; retries < 5; ++retries)
