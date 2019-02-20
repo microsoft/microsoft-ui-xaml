@@ -70,6 +70,7 @@ COMMITID=$CommitId
 HTTP_ALIAS=https://raw.githubusercontent.com/%ORGANIZATION%/%REPO%/%COMMITID%/
 HTTP_EXTRACT_TARGET=%HTTP_ALIAS%%var2%
 SRCSRVTRG=%HTTP_EXTRACT_TARGET%
+SRC_INDEX=public
 SRCSRV: source files ---------------------------------------
 $($mappedFiles -join "`r`n")
 SRCSRV: end ------------------------------------------------

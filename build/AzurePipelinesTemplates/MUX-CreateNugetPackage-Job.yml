@@ -15,7 +15,23 @@ jobs:
   dependsOn:
     - ${{ parameters.dependsOn }}
 
+  # XES tasks need to be on PackageES machines.
+  ${{if parameters.signConfig }}:
+    pool:
+      name: Package ES Custom Demands Lab A
+      demands:
+        - ClientAlias -equals depcontrols2
+
+
   steps:
+  - ${{if parameters.signConfig }}:
+    - task: PkgESSetupBuild@10
+      displayName: 'XESSetupBuild'
+      inputs:
+        productName: dep.controls
+        branchVersion: true
+        nugetVer: true
+
   - template: MUX-PopulateBuildDateAndRevision-Steps.yml
   
   - script: |
@@ -48,6 +64,14 @@ jobs:
         -BuildArch ${{ parameters.primaryBuildArch }}
         -BuildFlavor ${{ parameters.buildFlavor }}
 
+  - ${{if parameters.signConfig }}:
+    - task: PkgESCodeSign@10
+      displayName: CodeSign
+      inputs:
+        signConfigXml: ${{ parameters.signConfig }}
+        inPathRoot: '${{ parameters.nupkgdir }}'
+        outPathRoot: '${{ parameters.nupkgdir }}\signed'
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish artifact: nupkg'
     inputs:
@@ -61,19 +85,3 @@ jobs:
         command: push
         publishVstsFeed: ${{ parameters.publishVstsFeed }}
         packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg
-
-  - ${{if parameters.signConfig }}:
-    - task: PkgESSetupBuild@10
-      displayName: 'XESSetupBuild'
-      inputs:
-        productName: dep.controls
-        branchVersion: true
-        nugetVer: true
-
-    - task: PkgESCodeSign@10
-      displayName: CodeSign
-      inputs:
-        signConfigXml: ${{ parameters.signConfig }}
-        inPathRoot: '$(buildOutputDir)\$(buildConfiguration)\$(buildPlatform)'
-        outPathRoot: '$(buildOutputDir)\$(buildConfiguration)\$(buildPlatform)\signed'
-
