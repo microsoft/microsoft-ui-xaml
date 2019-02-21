@@ -241,7 +241,6 @@ namespace MU_XC_NAMESPACE
 #include <NavigationView\NavigationView.idl>
 #include <ParallaxView\ParallaxView.idl>
 #include <Repeater\ItemsRepeater.idl>
-#include <Repeater\RepeaterAutomationPeer.idl>
 #include <Scroller\Scroller.idl>
 #include <LayoutPanel\LayoutPanel.idl>
 
@@ -322,6 +321,7 @@ namespace MU_XAP_NAMESPACE
 #include <RatingControl\RatingControlAutomationPeer.idl>
 #include <TreeView\TreeViewAutomationPeers.idl>
 #include <RadioButtons\RadioButtonsAutomationPeer.idl>
+#include <Repeater\RepeaterAutomationPeer.idl>
 #endif
 }
 
