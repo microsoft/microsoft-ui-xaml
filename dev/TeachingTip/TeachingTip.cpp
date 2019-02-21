@@ -146,6 +146,13 @@ void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const 
     }
 }
 
+// Playing a closing animation when the Teaching Tip is closed via light dismiss requires this work around.
+// This is because there is no event that occurs when a popup is closing due to light dismiss so we have no way to intercept
+// the close and play our animation first. To work around this we've created a second popup which has no content and sits
+// underneath the teaching tip and is put into light dismiss mode instead of the primary popup. Then when this popup closes
+// due to light dismiss we know we are supposed to close the primary popup as well. To ensure that this popup does not block
+// interaction to the primary popup we need to make sure that the LightDismissIndicatorPopup is always opened first, so that
+// it is Z ordered underneath the primary popup.
 void TeachingTip::CreateLightDismissIndicatorPopup()
 {
     if (!m_lightDismissIndicatorPopup)
@@ -698,8 +705,9 @@ void TeachingTip::OnIsOpenChanged()
         }
         if (IsLightDismissEnabled())
         {
-            m_lightDismissIndicatorPopup.get().IsLightDismissEnabled(true);
-            m_lightDismissIndicatorPopupClosedRevoker = m_lightDismissIndicatorPopup.get().Closed(winrt::auto_revoke, { this, &TeachingTip::OnLightDismissIndicatorPopupClosed });
+            auto lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get();
+            lightDismissIndicatorPopup.IsLightDismissEnabled(true);
+            m_lightDismissIndicatorPopupClosedRevoker = lightDismissIndicatorPopup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnLightDismissIndicatorPopupClosed });
         }
         if (!m_contractAnimation)
         {
@@ -803,18 +811,18 @@ void TeachingTip::OnIsLightDismissEnabledChanged()
     if (IsLightDismissEnabled())
     {
         winrt::VisualStateManager::GoToState(*this, L"LightDismiss"sv, false);
-        if (m_lightDismissIndicatorPopup)
+        if (auto lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
         {
-            m_lightDismissIndicatorPopup.get().IsLightDismissEnabled(true);
-            m_lightDismissIndicatorPopupClosedRevoker = m_lightDismissIndicatorPopup.get().Closed(winrt::auto_revoke, { this, &TeachingTip::OnLightDismissIndicatorPopupClosed });
+            lightDismissIndicatorPopup.IsLightDismissEnabled(true);
+            m_lightDismissIndicatorPopupClosedRevoker = lightDismissIndicatorPopup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnLightDismissIndicatorPopupClosed });
         }
     }
     else
     {
         winrt::VisualStateManager::GoToState(*this, L"NormalDismiss"sv, false);
-        if (m_lightDismissIndicatorPopup)
+        if (auto lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
         {
-            m_lightDismissIndicatorPopup.get().IsLightDismissEnabled(false);
+            lightDismissIndicatorPopup.IsLightDismissEnabled(false);
         }
         if (m_lightDismissIndicatorPopupClosedRevoker)
         {
@@ -946,9 +954,9 @@ void TeachingTip::ClosePopup()
     {
         m_popup.get().IsOpen(false);
     }
-    if (m_lightDismissIndicatorPopup)
+    if (auto lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
     {
-        m_lightDismissIndicatorPopup.get().IsOpen(false);
+        lightDismissIndicatorPopup.IsOpen(false);
     }
     if (SharedHelpers::IsRS5OrHigher() && m_beakOcclusionGrid)
     {
