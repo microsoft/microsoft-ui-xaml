@@ -116,16 +116,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 else
                 {
                     Verify.IsTrue(topWindowObj.Matches(_appFrameWindowCondition));
-
                     ApplicationFrameWindow = topWindowObj;
-                    CoreWindow = topWindowObj.Children.Find(_windowCondition);
-                }
 
+                    Log.Comment("Looking for CoreWindow...");
+                    for (int retries = 0; retries < 5; ++retries)
+                    {
+                        if (topWindowObj.Children.TryFind(_windowCondition, out var coreWindowObject))
+                        {
+                            CoreWindow = coreWindowObject;
+                            Log.Comment("Found CoreWindow.");
+                            break;
+                        }
+
+                        Log.Comment("CoreWindow not found. Sleep for 500 ms and retry");
+                        Thread.Sleep(500);
+                    }
+                }
             }
 
             if (CoreWindow == null)
             {
                 // We expect to have a window by this point.
+                TestEnvironment.LogDumpTree(UIObject.Root);
                 throw new UIObjectNotFoundException("Could not find application window.");
             }
 
