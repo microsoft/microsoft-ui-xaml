@@ -29,6 +29,32 @@
                 </RichTextBlock.Blocks>
             </RichTextBlock>
             <RichTextBlockOverflow x:Name="RichTextBlockOverflow1" AutomationProperties.AutomationId="RichTextBlockOverflow" Margin="10" HorizontalAlignment="Center" />
+            <Button Content="Click for a CommandBarFlyout with many items">
+                <Button.Flyout>
+                    <muxc:CommandBarFlyout>
+                        <AppBarButton Label="Item 1" Icon="Favorite" />
+                        <AppBarButton Label="Item 2" Icon="Favorite" />
+                        <AppBarButton Label="Item 3" Icon="Favorite" />
+                        <AppBarButton Label="Item 4" Icon="Favorite" />
+                        <AppBarButton Label="Item 5" Icon="Favorite" />
+                        <AppBarButton Label="Item 6" Icon="Favorite" />
+                        <AppBarButton Label="Item 7" Icon="Favorite" />
+                        <AppBarButton Label="Item 8" Icon="Favorite" />
+                        <AppBarButton Label="Item 9" Icon="Favorite" />
+                        <AppBarButton Label="Item 10" Icon="Favorite" />
+                        <AppBarButton Label="Item 11" Icon="Favorite" />
+                        <AppBarButton Label="Item 12" Icon="Favorite" />
+                        <AppBarButton Label="Item 13" Icon="Favorite" />
+                        <AppBarButton Label="Item 14" Icon="Favorite" />
+                        <AppBarButton Label="Item 15" Icon="Favorite" />
+                        <AppBarButton Label="Item 16" Icon="Favorite" />
+                        <AppBarButton Label="Item 17" Icon="Favorite" />
+                        <AppBarButton Label="Item 18" Icon="Favorite" />
+                        <AppBarButton Label="Item 19" Icon="Favorite" />
+                        <AppBarButton Label="Item 20" Icon="Favorite" />
+                    </muxc:CommandBarFlyout>
+                </Button.Flyout>
+            </Button>
         </StackPanel>
     </Grid>
 </local:TestPage>

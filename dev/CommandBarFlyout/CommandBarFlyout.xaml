@@ -21,7 +21,7 @@
         <Setter Property="DefaultLabelPosition" Value="Collapsed" />
         <Setter Property="MaxWidth" Value="440" />
         <Setter Property="Height" Value="40" />
-        <Setter Property="IsDynamicOverflowEnabled" Value="False" />
+        <Setter Property="IsDynamicOverflowEnabled" Value="True" />
         <Setter Property="CommandBarOverflowPresenterStyle" Value="{StaticResource CommandBarFlyoutCommandBarOverflowPresenterStyle}" />
         <Setter Property="Template">
             <Setter.Value>
