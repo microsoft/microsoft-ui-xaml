@@ -607,6 +607,13 @@ winrt::CompositionEffectBrush AcrylicBrush::CreateAcrylicBrushWorker(
         }
     }
 
+#ifndef BUILD_WINDOWS
+    if (acrylicBrush)
+    {
+        acrylicBrush.Properties().InsertScalar(L"ShouldRenderAsFallbackInIslands", 1.0f);
+    }
+#endif
+
     return acrylicBrush;
 }
 

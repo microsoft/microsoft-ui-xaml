@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Navigation;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
 using ScrollerChangeOffsetsWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions;
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
@@ -82,8 +83,6 @@ namespace MUXControlsTestApp
 
                 UpdateRaiseAnchorNotifications(raiseAnchorNotifications: true);
 
-                UpdateCmbIsAnchoredAtHorizontalExtent();
-                UpdateCmbIsAnchoredAtVerticalExtent();
                 UpdateHorizontalAnchorRatio();
                 UpdateVerticalAnchorRatio();
 
@@ -601,42 +600,6 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnGetIsAnchoredAtHorizontalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateCmbIsAnchoredAtHorizontalExtent();
-        }
-
-        private void BtnSetIsAnchoredAtHorizontalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                scroller.IsAnchoredAtHorizontalExtent = cmbIsAnchoredAtHorizontalExtent.SelectedIndex == 0;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
-        }
-
-        private void BtnGetIsAnchoredAtVerticalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateCmbIsAnchoredAtVerticalExtent();
-        }
-
-        private void BtnSetIsAnchoredAtVerticalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                scroller.IsAnchoredAtVerticalExtent = cmbIsAnchoredAtVerticalExtent.SelectedIndex == 0;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
-        }
-
         private void BtnGetHorizontalAnchorRatio_Click(object sender, RoutedEventArgs e)
         {
             UpdateHorizontalAnchorRatio();
@@ -787,32 +750,6 @@ namespace MUXControlsTestApp
                 tblItemIndex.Visibility = txtItemIndex.Visibility = cmbAnchorElement.SelectedIndex == 4 ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void UpdateCmbIsAnchoredAtHorizontalExtent()
-        {
-            try
-            {
-                cmbIsAnchoredAtHorizontalExtent.SelectedIndex = scroller.IsAnchoredAtHorizontalExtent ? 0 : 1;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
-        }
-
-        private void UpdateCmbIsAnchoredAtVerticalExtent()
-        {
-            try
-            {
-                cmbIsAnchoredAtVerticalExtent.SelectedIndex = scroller.IsAnchoredAtVerticalExtent ? 0 : 1;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
-        }
-
         private void UpdateHorizontalAnchorRatio()
         {
             txtHorizontalAnchorRatio.Text = scroller.HorizontalAnchorRatio.ToString();
@@ -956,8 +893,7 @@ namespace MUXControlsTestApp
         private void ChkHorizontalOrientation_Checked(object sender, RoutedEventArgs e)
         {
             stackPanel.Orientation = Orientation.Horizontal;
-            scroller.IsChildAvailableWidthConstrained = false;
-            scroller.IsChildAvailableHeightConstrained = true;
+            scroller.ContentOrientation = ContentOrientation.Horizontal;
             scroller.Width = 600;
             scroller.Height = 300;
             cnsAnchorPoint.Width = 600;
@@ -977,8 +913,7 @@ namespace MUXControlsTestApp
         private void ChkHorizontalOrientation_Unchecked(object sender, RoutedEventArgs e)
         {
             stackPanel.Orientation = Orientation.Vertical;
-            scroller.IsChildAvailableWidthConstrained = true;
-            scroller.IsChildAvailableHeightConstrained = false;
+            scroller.ContentOrientation = ContentOrientation.Vertical;
             scroller.Width = 300;
             scroller.Height = 600;
             cnsAnchorPoint.Width = 300;

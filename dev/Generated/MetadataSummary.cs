@@ -49,6 +49,23 @@ namespace CustomTasks
             DefaultValueMetadata["AcrylicBrush.TintOpacity"] = @"AcrylicBrush::sc_defaultTintOpacity";
             DefaultValueMetadata["AcrylicBrush.TintTransitionDuration"] = @"AcrylicBrush::sc_defaultTintTransitionDuration";
 
+            IncludedTypesMetadata["AnimatedVisualPlayer"] = true;
+            // AnimatedVisualPlayer -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.AutoPlay"] = true;
+            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.AutoPlay"] = "OnAutoPlayPropertyChanged";
+            NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.FallbackContent"] = true;
+            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.FallbackContent"] = "OnFallbackContentPropertyChanged";
+            NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.PlaybackRate"] = true;
+            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.PlaybackRate"] = "OnPlaybackRatePropertyChanged";
+            NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.Source"] = true;
+            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.Source"] = "OnSourcePropertyChanged";
+            NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.Stretch"] = true;
+            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.Stretch"] = "OnStretchPropertyChanged";
+            // AnimatedVisualPlayer -- DefaultValueMetadata
+            DefaultValueMetadata["AnimatedVisualPlayer.AutoPlay"] = @"true";
+            DefaultValueMetadata["AnimatedVisualPlayer.PlaybackRate"] = @"1";
+            DefaultValueMetadata["AnimatedVisualPlayer.Stretch"] = @"winrt::Stretch::Uniform";
+
             IncludedTypesMetadata["BitmapIconSource"] = true;
             // BitmapIconSource -- NeedsPropChangedCallbackMetadata
             // BitmapIconSource -- DefaultValueMetadata
@@ -176,6 +193,10 @@ namespace CustomTasks
             IncludedTypesMetadata["IconSource"] = true;
             // IconSource -- NeedsPropChangedCallbackMetadata
             // IconSource -- DefaultValueMetadata
+
+            IncludedTypesMetadata["IDynamicAnimatedVisualSource"] = true;
+            // IDynamicAnimatedVisualSource -- NeedsPropChangedCallbackMetadata
+            // IDynamicAnimatedVisualSource -- DefaultValueMetadata
 
             IncludedTypesMetadata["IRefreshInfoProvider"] = true;
             // IRefreshInfoProvider -- NeedsPropChangedCallbackMetadata
@@ -415,48 +436,17 @@ namespace CustomTasks
             DefaultValueMetadata["RevealBrush.State"] = @"winrt::RevealBrushState::Normal";
             DefaultValueMetadata["RevealBrush.TargetTheme"] = @"winrt::ApplicationTheme::Light";
 
-            IncludedTypesMetadata["ScrollBar2"] = true;
-            // ScrollBar2 -- NeedsPropChangedCallbackMetadata
-            NeedsPropChangedCallbackMetadata["ScrollBar2.IndicatorMode"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.IsEnabled"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.LargeChange"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.MaxOffset"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.MinOffset"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.Offset"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.Orientation"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.ScrollBarStyle"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.ScrollMode"] = true;
-            PropValidationCallbackMetadata["ScrollBar2.ScrollMode"] = "ValidateScrollMode";
-            NeedsPropChangedCallbackMetadata["ScrollBar2.SmallChange"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollBar2.Viewport"] = true;
-            // ScrollBar2 -- DefaultValueMetadata
-            DefaultValueMetadata["ScrollBar2.IndicatorMode"] = @"ScrollBar2::s_defaultIndicatorMode";
-            DefaultValueMetadata["ScrollBar2.IsEnabled"] = @"ScrollBar2::s_defaultIsEnabled";
-            DefaultValueMetadata["ScrollBar2.LargeChange"] = @"ScrollBar2::s_defaultLargeChange";
-            DefaultValueMetadata["ScrollBar2.MaxOffset"] = @"ScrollBar2::s_defaultMaxOffset";
-            DefaultValueMetadata["ScrollBar2.MinOffset"] = @"ScrollBar2::s_defaultMinOffset";
-            DefaultValueMetadata["ScrollBar2.Offset"] = @"ScrollBar2::s_defaultOffset";
-            DefaultValueMetadata["ScrollBar2.Orientation"] = @"ScrollBar2::s_defaultOrientation";
-            DefaultValueMetadata["ScrollBar2.ScrollMode"] = @"ScrollBar2::s_defaultScrollMode";
-            DefaultValueMetadata["ScrollBar2.SmallChange"] = @"ScrollBar2::s_defaultSmallChange";
-            DefaultValueMetadata["ScrollBar2.Viewport"] = @"ScrollBar2::s_defaultViewport";
-
             IncludedTypesMetadata["Scroller"] = true;
             // Scroller -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["Scroller.Background"] = true;
-            NeedsPropChangedCallbackMetadata["Scroller.Child"] = true;
-            NeedsPropChangedCallbackMetadata["Scroller.ComputedHorizontalScrollMode"] = true;
-            NeedsPropChangedCallbackMetadata["Scroller.ComputedVerticalScrollMode"] = true;
+            NeedsPropChangedCallbackMetadata["Scroller.Content"] = true;
+            NeedsPropChangedCallbackMetadata["Scroller.ContentOrientation"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.HorizontalAnchorRatio"] = true;
             PropValidationCallbackMetadata["Scroller.HorizontalAnchorRatio"] = "ValidateAnchorRatio";
             NeedsPropChangedCallbackMetadata["Scroller.HorizontalScrollChainingMode"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.HorizontalScrollMode"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.HorizontalScrollRailingMode"] = true;
-            NeedsPropChangedCallbackMetadata["Scroller.InputKind"] = true;
-            NeedsPropChangedCallbackMetadata["Scroller.IsAnchoredAtHorizontalExtent"] = true;
-            NeedsPropChangedCallbackMetadata["Scroller.IsAnchoredAtVerticalExtent"] = true;
-            NeedsPropChangedCallbackMetadata["Scroller.IsChildAvailableHeightConstrained"] = true;
-            NeedsPropChangedCallbackMetadata["Scroller.IsChildAvailableWidthConstrained"] = true;
+            NeedsPropChangedCallbackMetadata["Scroller.IgnoredInputKind"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.MaxZoomFactor"] = true;
             PropValidationCallbackMetadata["Scroller.MaxZoomFactor"] = "ValidateZoomFactoryBoundary";
             NeedsPropChangedCallbackMetadata["Scroller.MinZoomFactor"] = true;
@@ -469,17 +459,12 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["Scroller.ZoomChainingMode"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.ZoomMode"] = true;
             // Scroller -- DefaultValueMetadata
-            DefaultValueMetadata["Scroller.ComputedHorizontalScrollMode"] = @"Scroller::s_defaultComputedVerticalScrollMode";
-            DefaultValueMetadata["Scroller.ComputedVerticalScrollMode"] = @"Scroller::s_defaultComputedVerticalScrollMode";
+            DefaultValueMetadata["Scroller.ContentOrientation"] = @"Scroller::s_defaultContentOrientation";
             DefaultValueMetadata["Scroller.HorizontalAnchorRatio"] = @"Scroller::s_defaultAnchorRatio";
             DefaultValueMetadata["Scroller.HorizontalScrollChainingMode"] = @"Scroller::s_defaultHorizontalScrollChainingMode";
             DefaultValueMetadata["Scroller.HorizontalScrollMode"] = @"Scroller::s_defaultHorizontalScrollMode";
             DefaultValueMetadata["Scroller.HorizontalScrollRailingMode"] = @"Scroller::s_defaultHorizontalScrollRailingMode";
-            DefaultValueMetadata["Scroller.InputKind"] = @"Scroller::s_defaultInputKind";
-            DefaultValueMetadata["Scroller.IsAnchoredAtHorizontalExtent"] = @"Scroller::s_defaultAnchorAtExtent";
-            DefaultValueMetadata["Scroller.IsAnchoredAtVerticalExtent"] = @"Scroller::s_defaultAnchorAtExtent";
-            DefaultValueMetadata["Scroller.IsChildAvailableHeightConstrained"] = @"Scroller::s_defaultIsChildAvailableHeightConstrained";
-            DefaultValueMetadata["Scroller.IsChildAvailableWidthConstrained"] = @"Scroller::s_defaultIsChildAvailableWidthConstrained";
+            DefaultValueMetadata["Scroller.IgnoredInputKind"] = @"Scroller::s_defaultIgnoredInputKind";
             DefaultValueMetadata["Scroller.MaxZoomFactor"] = @"Scroller::s_defaultMaxZoomFactor";
             DefaultValueMetadata["Scroller.MinZoomFactor"] = @"Scroller::s_defaultMinZoomFactor";
             DefaultValueMetadata["Scroller.VerticalAnchorRatio"] = @"Scroller::s_defaultAnchorRatio";
@@ -495,9 +480,10 @@ namespace CustomTasks
 
             IncludedTypesMetadata["ScrollViewer"] = true;
             // ScrollViewer -- NeedsPropChangedCallbackMetadata
-            NeedsPropChangedCallbackMetadata["ScrollViewer.ComputedHorizontalScrollMode"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollViewer.ComputedVerticalScrollMode"] = true;
+            NeedsPropChangedCallbackMetadata["ScrollViewer.ComputedHorizontalScrollBarVisibility"] = true;
+            NeedsPropChangedCallbackMetadata["ScrollViewer.ComputedVerticalScrollBarVisibility"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.Content"] = true;
+            NeedsPropChangedCallbackMetadata["ScrollViewer.ContentOrientation"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalAnchorRatio"] = true;
             PropValidationCallbackMetadata["ScrollViewer.HorizontalAnchorRatio"] = "ValidateAnchorRatio";
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalScrollBarVisibility"] = true;
@@ -505,11 +491,7 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalScrollController"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalScrollMode"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalScrollRailingMode"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollViewer.InputKind"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollViewer.IsAnchoredAtHorizontalExtent"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollViewer.IsAnchoredAtVerticalExtent"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollViewer.IsChildAvailableHeightConstrained"] = true;
-            NeedsPropChangedCallbackMetadata["ScrollViewer.IsChildAvailableWidthConstrained"] = true;
+            NeedsPropChangedCallbackMetadata["ScrollViewer.IgnoredInputKind"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.MaxZoomFactor"] = true;
             PropValidationCallbackMetadata["ScrollViewer.MaxZoomFactor"] = "ValidateZoomFactoryBoundary";
             NeedsPropChangedCallbackMetadata["ScrollViewer.MinZoomFactor"] = true;
@@ -526,18 +508,15 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["ScrollViewer.ZoomChainingMode"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.ZoomMode"] = true;
             // ScrollViewer -- DefaultValueMetadata
-            DefaultValueMetadata["ScrollViewer.ComputedHorizontalScrollMode"] = @"ScrollViewer::s_defaultComputedHorizontalScrollMode";
-            DefaultValueMetadata["ScrollViewer.ComputedVerticalScrollMode"] = @"ScrollViewer::s_defaultComputedVerticalScrollMode";
+            DefaultValueMetadata["ScrollViewer.ComputedHorizontalScrollBarVisibility"] = @"ScrollViewer::s_defaultComputedHorizontalScrollBarVisibility";
+            DefaultValueMetadata["ScrollViewer.ComputedVerticalScrollBarVisibility"] = @"ScrollViewer::s_defaultComputedVerticalScrollBarVisibility";
+            DefaultValueMetadata["ScrollViewer.ContentOrientation"] = @"ScrollViewer::s_defaultContentOrientation";
             DefaultValueMetadata["ScrollViewer.HorizontalAnchorRatio"] = @"ScrollViewer::s_defaultAnchorRatio";
             DefaultValueMetadata["ScrollViewer.HorizontalScrollBarVisibility"] = @"ScrollViewer::s_defaultHorizontalScrollBarVisibility";
             DefaultValueMetadata["ScrollViewer.HorizontalScrollChainingMode"] = @"ScrollViewer::s_defaultHorizontalScrollChainingMode";
             DefaultValueMetadata["ScrollViewer.HorizontalScrollMode"] = @"ScrollViewer::s_defaultHorizontalScrollMode";
             DefaultValueMetadata["ScrollViewer.HorizontalScrollRailingMode"] = @"ScrollViewer::s_defaultHorizontalScrollRailingMode";
-            DefaultValueMetadata["ScrollViewer.InputKind"] = @"ScrollViewer::s_defaultInputKind";
-            DefaultValueMetadata["ScrollViewer.IsAnchoredAtHorizontalExtent"] = @"ScrollViewer::s_defaultAnchorAtExtent";
-            DefaultValueMetadata["ScrollViewer.IsAnchoredAtVerticalExtent"] = @"ScrollViewer::s_defaultAnchorAtExtent";
-            DefaultValueMetadata["ScrollViewer.IsChildAvailableHeightConstrained"] = @"ScrollViewer::s_defaultIsChildAvailableHeightConstrained";
-            DefaultValueMetadata["ScrollViewer.IsChildAvailableWidthConstrained"] = @"ScrollViewer::s_defaultIsChildAvailableWidthConstrained";
+            DefaultValueMetadata["ScrollViewer.IgnoredInputKind"] = @"ScrollViewer::s_defaultIgnoredInputKind";
             DefaultValueMetadata["ScrollViewer.MaxZoomFactor"] = @"ScrollViewer::s_defaultMaxZoomFactor";
             DefaultValueMetadata["ScrollViewer.MinZoomFactor"] = @"ScrollViewer::s_defaultMinZoomFactor";
             DefaultValueMetadata["ScrollViewer.VerticalAnchorRatio"] = @"ScrollViewer::s_defaultAnchorRatio";
@@ -605,6 +584,43 @@ namespace CustomTasks
             // SymbolIconSource -- NeedsPropChangedCallbackMetadata
             // SymbolIconSource -- DefaultValueMetadata
             DefaultValueMetadata["SymbolIconSource.Symbol"] = @"winrt::Symbol::Emoji";
+
+            IncludedTypesMetadata["TeachingTip"] = true;
+            // TeachingTip -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonCommand"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonCommandParameter"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonStyle"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonText"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.Attach"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.BleedingImageContent"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.BleedingImagePlacement"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonCommand"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonCommandParameter"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonKind"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonStyle"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonText"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.IconSource"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.IsLightDismissEnabled"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.IsOpen"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.Placement"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.Subtext"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.TargetOffset"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.TemplateSettings"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.Title"] = true;
+            // TeachingTip -- DefaultValueMetadata
+            DefaultValueMetadata["TeachingTip.BleedingImagePlacement"] = @"winrt::TeachingTipBleedingImagePlacementMode::Auto";
+            DefaultValueMetadata["TeachingTip.CloseButtonKind"] = @"winrt::TeachingTipCloseButtonKind::Auto";
+            DefaultValueMetadata["TeachingTip.IsLightDismissEnabled"] = @"false";
+            DefaultValueMetadata["TeachingTip.IsOpen"] = @"false";
+            DefaultValueMetadata["TeachingTip.Placement"] = @"winrt::TeachingTipPlacementMode::Auto";
+
+            IncludedTypesMetadata["TeachingTipTemplateSettings"] = true;
+            // TeachingTipTemplateSettings -- NeedsPropChangedCallbackMetadata
+            // TeachingTipTemplateSettings -- DefaultValueMetadata
+
+            IncludedTypesMetadata["TeachingTipTestHooks"] = true;
+            // TeachingTipTestHooks -- NeedsPropChangedCallbackMetadata
+            // TeachingTipTestHooks -- DefaultValueMetadata
 
             IncludedTypesMetadata["ToggleSplitButton"] = true;
             // ToggleSplitButton -- NeedsPropChangedCallbackMetadata

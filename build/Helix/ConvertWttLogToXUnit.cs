@@ -92,6 +92,7 @@ namespace HelixTestHelpers
                     StringBuilder errorMessage = new StringBuilder();
 
                     errorMessage.AppendLine("Log: " + GetUploadedFileUrl(wttInputPath, helixResultsContainerUri, helixResultsContainerRsas));
+                    errorMessage.AppendLine();
                     
                     if(result.Screenshots.Any())
                     {
@@ -99,6 +100,7 @@ namespace HelixTestHelpers
                         foreach(var screenshot in result.Screenshots)
                         {
                             errorMessage.AppendLine(GetUploadedFileUrl(screenshot, helixResultsContainerUri, helixResultsContainerRsas));
+                            errorMessage.AppendLine();
                         }
                     }
 

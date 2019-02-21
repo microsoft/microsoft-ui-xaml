@@ -34,7 +34,7 @@
         </Grid.ColumnDefinitions>
 
         <controlsPrimitives:Scroller x:Name="scroller" Width="400" Height="600" Margin="1" Background="AliceBlue"
-            VerticalAlignment="Top" IsChildAvailableWidthConstrained="True" ZoomMode="Enabled">
+            VerticalAlignment="Top" ContentOrientation="Vertical" ZoomMode="Enabled">
             <Border x:Name="border" BorderThickness="3" BorderBrush="Chartreuse" Margin="15" Background="Beige">
                 <controls:ItemsRepeater x:Name="repeater" Margin="30">
                     <controls:ItemsRepeater.Layout>
@@ -62,8 +62,6 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -74,54 +72,38 @@
 
             <TextBlock Text="Scroller Properties" Grid.ColumnSpan="4" Foreground="Red"/>
 
-            <TextBlock Text="IsAnchoredAtHorizontalExtent:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
-            <ComboBox x:Name="cmbIsAnchoredAtHorizontalExtent" Width="75" Margin="1" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">
-                <ComboBoxItem>Yes</ComboBoxItem>
-                <ComboBoxItem>No</ComboBoxItem>
-            </ComboBox>
-            <Button x:Name="btnGetIsAnchoredAtHorizontalExtent" Content="G" Margin="1" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetIsAnchoredAtHorizontalExtent_Click"/>
-            <Button x:Name="btnSetIsAnchoredAtHorizontalExtent" Content="S" Margin="1" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetIsAnchoredAtHorizontalExtent_Click"/>
+            <TextBlock Text="HorizontalAnchorRatio:" Grid.Row="1" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtHorizontalAnchorRatio" Grid.Row="1" Grid.Column="1" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetHorizontalAnchorRatio" Content="G" Margin="1" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetHorizontalAnchorRatio_Click"/>
+            <Button x:Name="btnSetHorizontalAnchorRatio" Content="S" Margin="1" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetHorizontalAnchorRatio_Click"/>
 
-            <TextBlock Text="IsAnchoredAtVerticalExtent:" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
-            <ComboBox x:Name="cmbIsAnchoredAtVerticalExtent" Width="75" Margin="1" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center">
-                <ComboBoxItem>Yes</ComboBoxItem>
-                <ComboBoxItem>No</ComboBoxItem>
-            </ComboBox>
-            <Button x:Name="btnGetIsAnchoredAtVerticalExtent" Content="G" Margin="1" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetIsAnchoredAtVerticalExtent_Click"/>
-            <Button x:Name="btnSetIsAnchoredAtVerticalExtent" Content="S" Margin="1" Grid.Row="2" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetIsAnchoredAtVerticalExtent_Click"/>
+            <TextBlock Text="VerticalAnchorRatio:" Grid.Row="2" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtVerticalAnchorRatio" Grid.Row="2" Grid.Column="1" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetVerticalAnchorRatio" Content="G" Margin="1" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetVerticalAnchorRatio_Click"/>
+            <Button x:Name="btnSetVerticalAnchorRatio" Content="S" Margin="1" Grid.Row="2" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetVerticalAnchorRatio_Click"/>
 
-            <TextBlock Text="HorizontalAnchorRatio:" Grid.Row="3" VerticalAlignment="Center"/>
-            <TextBox x:Name="txtHorizontalAnchorRatio" Grid.Row="3" Grid.Column="1" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-            <Button x:Name="btnGetHorizontalAnchorRatio" Content="G" Margin="1" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetHorizontalAnchorRatio_Click"/>
-            <Button x:Name="btnSetHorizontalAnchorRatio" Content="S" Margin="1" Grid.Row="3" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetHorizontalAnchorRatio_Click"/>
-
-            <TextBlock Text="VerticalAnchorRatio:" Grid.Row="4" VerticalAlignment="Center"/>
-            <TextBox x:Name="txtVerticalAnchorRatio" Grid.Row="4" Grid.Column="1" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-            <Button x:Name="btnGetVerticalAnchorRatio" Content="G" Margin="1" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetVerticalAnchorRatio_Click"/>
-            <Button x:Name="btnSetVerticalAnchorRatio" Content="S" Margin="1" Grid.Row="4" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetVerticalAnchorRatio_Click"/>
-
-            <TextBlock x:Name="tblCollapsedAnchorElement" Grid.Row="5" Grid.Column="0"/>
-            <TextBlock Text="AnchorElement:" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center"/>
-            <ComboBox x:Name="cmbAnchorElement" Width="75" Margin="1" Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CmbAnchorElement_SelectionChanged">
+            <TextBlock x:Name="tblCollapsedAnchorElement" Grid.Row="3" Grid.Column="0"/>
+            <TextBlock Text="AnchorElement:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbAnchorElement" Width="75" Margin="1" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CmbAnchorElement_SelectionChanged">
                 <ComboBoxItem>Null</ComboBoxItem>
                 <ComboBoxItem>External</ComboBoxItem>
                 <ComboBoxItem>Collapsed</ComboBoxItem>
                 <ComboBoxItem>Border</ComboBoxItem>
                 <ComboBoxItem>Item</ComboBoxItem>
             </ComboBox>
-            <Button x:Name="btnGetAnchorElement" Content="G" Margin="1" Grid.Row="5" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetAnchorElement_Click"/>
-            <Button x:Name="btnSetAnchorElement" Content="S" Margin="1" Grid.Row="5" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetAnchorElement_Click"/>
+            <Button x:Name="btnGetAnchorElement" Content="G" Margin="1" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetAnchorElement_Click"/>
+            <Button x:Name="btnSetAnchorElement" Content="S" Margin="1" Grid.Row="3" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetAnchorElement_Click"/>
 
-            <TextBlock x:Name="tblItemIndex" Text="Item Index:" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Visibility="Collapsed"/>
-            <TextBox x:Name="txtItemIndex" Text="0" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Visibility="Collapsed"/>
+            <TextBlock x:Name="tblItemIndex" Text="Item Index:" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Visibility="Collapsed"/>
+            <TextBox x:Name="txtItemIndex" Text="0" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Visibility="Collapsed"/>
 
-            <TextBlock Text="Scroller Methods" Grid.ColumnSpan="4" Foreground="Red" Grid.Row="7" Margin="0,4,0,0"/>
+            <TextBlock Text="Scroller Methods" Grid.ColumnSpan="4" Foreground="Red" Grid.Row="5" Margin="0,4,0,0"/>
 
-            <Button x:Name="btnInvalidateArrange" Content="InvalidateArrange" Margin="1" Grid.Row="8" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnInvalidateArrange_Click"/>
+            <Button x:Name="btnInvalidateArrange" Content="InvalidateArrange" Margin="1" Grid.Row="6" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnInvalidateArrange_Click"/>
 
-            <TextBlock Text="ItemsRepeater Properties" Grid.Row="9" Grid.ColumnSpan="4" Foreground="Red" Margin="0,4,0,0"/>
+            <TextBlock Text="ItemsRepeater Properties" Grid.Row="7" Grid.ColumnSpan="4" Foreground="Red" Margin="0,4,0,0"/>
 
-            <CheckBox x:Name="chkUseAnimator" Content="Use Animator?" Grid.Row="10" Grid.ColumnSpan="4" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" 
+            <CheckBox x:Name="chkUseAnimator" Content="Use Animator?" Grid.Row="8" Grid.ColumnSpan="4" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" 
                       Checked="ChkUseAnimator_Checked" Unchecked="ChkUseAnimator_Unchecked"/>
         </Grid>
 

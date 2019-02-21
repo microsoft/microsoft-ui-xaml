@@ -8,7 +8,7 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
-            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
+            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumColor" />
             <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
             <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
 
@@ -68,7 +68,7 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
+            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumColor" />
             <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
             <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
 
@@ -128,7 +128,7 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
+            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumColor" />
             <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
             <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
 
@@ -212,16 +212,23 @@
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="BorderThickness" Value="{ThemeResource NavigationViewToggleBorderThickness}" />
-        <Setter Property="Content" Value="&#xE700;" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Grid
                         x:Name="LayoutRoot"
+                        MinWidth="{TemplateBinding MinWidth}"
                         Height="{TemplateBinding MinHeight}"
                         Margin="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}"
                         HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{ThemeResource PaneToggleButtonWidth}"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="{ThemeResource PaneToggleButtonHeight}"/>
+                        </Grid.RowDefinitions>
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -271,36 +278,47 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <Grid Width="{TemplateBinding MinWidth}" HorizontalAlignment="Left">
-                            <Viewbox
-                                x:Name="IconHost"
-                                Width="16"
-                                Height="16"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                AutomationProperties.AccessibilityView="Raw">
+                        <Viewbox
+                            x:Name="IconHost"
+                            Width="16"
+                            Height="16"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            AutomationProperties.AccessibilityView="Raw">
 
-                                <ContentPresenter
-                                    x:Name="ContentPresenter"
-                                    Content="{TemplateBinding Content}"
-                                    FontSize="{TemplateBinding FontSize}"
-                                    AutomationProperties.AccessibilityView="Raw"/>
-                            </Viewbox>
-                        </Grid>
+                            <TextBlock
+                                x:Name="Icon"
+                                Text="&#xE700;"
+                                FontSize="{TemplateBinding FontSize}"
+                                AutomationProperties.AccessibilityView="Raw"/>
+
+                        </Viewbox>
+                        
+                        <ContentPresenter
+                            x:Name="ContentPresenter"
+                            VerticalContentAlignment="Center"
+                            Content="{TemplateBinding Content}"
+                            FontSize="{TemplateBinding FontSize}"
+                            Grid.Column="1"/>
 
                         <Border
                             x:Name="RevealBorder"
                             BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}" />
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Grid.ColumnSpan="2"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
-    <Style x:Key="NavigationViewPaneSearchButtonStyle" BasedOn="{StaticResource PaneToggleButtonStyle}" TargetType="Button">
+    <Style x:Key="NavigationViewPaneSearchButtonStyle" TargetType="Button">
         <Setter Property="MinHeight" Value="40"/>
         <Setter Property="Content" Value="&#xE11A;"/>
+        <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+        <Setter Property="BorderThickness" Value="{ThemeResource NavigationViewToggleBorderThickness}" />
+        <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
     </Style>
 
     <Style x:Key="NavigationViewOverflowButtonStyleWhenPaneOnTop" TargetType="Button">
@@ -434,7 +452,7 @@
     </Style>
 
 
-    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="NavigationViewItemPresenterStyleWhenOnLeftPane">
+    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnLeftPane">
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
@@ -549,7 +567,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="NavigationViewItemPresenterStyleWhenOnLeftPaneWithRevealFocus">
+    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnLeftPaneWithRevealFocus">
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
@@ -647,7 +665,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="local:NavigationViewItem" x:Key="NavigationViewSettingsItemStyleWhenOnTopPane">
+    <Style TargetType="local:NavigationViewItem" x:Key="MUX_NavigationViewSettingsItemStyleWhenOnTopPane">
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
@@ -745,7 +763,7 @@
         </Setter>
     </Style>
     
-    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="NavigationViewItemPresenterStyleWhenOnTopPane">
+    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnTopPane">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:NavigationViewItemPresenter">
@@ -876,7 +894,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus">
+    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:NavigationViewItemPresenter">
@@ -973,7 +991,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="NavigationViewItemPresenterStyleWhenOnTopPaneOverflow">
+    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnTopPaneOverflow">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:NavigationViewItemPresenter">
@@ -1079,7 +1097,7 @@
     </Style>
 
     <Style x:Key="NavigationViewItemHeaderTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
-        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="OpticalMarginAlignment" Value="TrimSideBearings" />
         <Setter Property="TextWrapping" Value="NoWrap"/>        
     </Style>

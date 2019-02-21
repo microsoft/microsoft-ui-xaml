@@ -653,6 +653,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("NavViewTestSuite", "A")]
+        public void VerifyNavigationViewItemResponseToClickAfterBeingMovedBetweenFrames()
+        {
+            using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
+                            page2 = new TestSetupHelper("NavigationView Init Test"))
+            {
+                var myLocationButton = FindElement.ByName<Button>("MyLocation");
+                var switchFrameButton = FindElement.ByName<Button>("SwitchFrame");
+                var result = new TextBlock(FindElement.ByName("MyLocationResult"));
+ 
+                Log.Comment("Click on MyLocation Item and verify it's on Frame1");
+                myLocationButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual(result.GetText(), "Frame1");
+
+                Log.Comment("Click on SwitchFrame");
+                switchFrameButton.Invoke();
+                Wait.ForIdle();
+
+                // tree structure changed and rebuild the cache.
+                ElementCache.Clear();
+
+                Log.Comment("Click on MyLocation Item and verify it's on Frame2");
+                myLocationButton = FindElement.ByName<Button>("MyLocation");
+                myLocationButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual(result.GetText(), "Frame2");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "A")]
         public void ForceIsPaneOpenToFalseOnLeftNavTest()
         {
             using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
@@ -2318,6 +2349,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("NavViewTestSuite", "C")]
+        public void SettingsAccessibilitySetTest()
+        {
+            var testScenarios = RegressionTestScenario.BuildAllRegressionTestScenarios();
+            foreach (var testScenario in testScenarios)
+            {
+                using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
+                 page2 = new TestSetupHelper(testScenario.TestPageName))
+                {
+                    Log.Comment("Setting focus to Settings");
+                    UIObject settingsItem = testScenario.IsLeftNavTest ? FindElement.ByName("Settings") : FindElement.ByName("SettingsTopNavPaneItem");
+                    settingsItem.SetFocus();
+                    Wait.ForIdle();
+
+                    AutomationElement ae = AutomationElement.FocusedElement;
+                    int positionInSet = (int)ae.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
+                    int sizeOfSet = (int)ae.GetCurrentPropertyValue(AutomationElement.SizeOfSetProperty);
+
+                    Verify.AreEqual(1, positionInSet, "Position in set");
+                    Verify.AreEqual(1, sizeOfSet, "Size of set");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "C")]
         public void ItemsAccessibilitySetTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -3178,64 +3234,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("NavViewTestSuite", "D")]
-        public void VerifyBackButtonAccessibleOnlyViaXYKeyboard()
-        {
-            var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
-            foreach (var testScenario in testScenarios)
-            {
-                using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
-                 page2 = new TestSetupHelper(testScenario.TestPageName))
-                {
-                    bool doVerfications = true;
-
-                    if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
-                    {
-                        // I want the test to still run, just to uncover any crashes that could occur
-                        Log.Warning("This test only works on RS4, but is running without 'verifications' on RS3 and below to weasel our crashes");
-                        doVerfications = false;
-                    }
-
-                    Button backButton = new Button(FindElement.ByName("NavigationViewBackButton"));
-                    Button navButton = new Button(FindElement.ById("TogglePaneButton"));
-                    Button systemBackButton = new Button(UIObject.Root.Descendants.Find(UICondition.CreateFromId("__BackButton")));
-                    UIObject searchBox = FindElement.ByNameAndClassName("PaneAutoSuggestBox", "TextBox");
-
-                    CheckBox checkBox = new CheckBox(FindElement.ByName("BackButtonEnabledCheckbox"));
-                    checkBox.Toggle();
-                    searchBox.SetFocus();
-                    Wait.ForIdle();
-                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-                    if (doVerfications) Verify.AreEqual(true, navButton.HasKeyboardFocus);
-
-                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-                    if (doVerfications) Verify.AreEqual(true, systemBackButton.HasKeyboardFocus);
-
-                    KeyboardHelper.PressKey(Key.Tab);
-                    if (doVerfications) Verify.AreEqual(true, navButton.HasKeyboardFocus);
-
-                    KeyboardHelper.PressKey(Key.Up);
-                    if (doVerfications) Verify.AreEqual(true, backButton.HasKeyboardFocus);
-
-                    Log.Comment("Test that it works with left/right in minimal closed mode");
-                    SetNavViewWidth(ControlWidth.Narrow);
-                    Wait.ForIdle();
-
-                    navButton.SetFocus();
-                    Wait.ForIdle();
-                    KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-                    if (doVerfications) Verify.AreEqual(true, systemBackButton.HasKeyboardFocus);
-
-                    KeyboardHelper.PressKey(Key.Tab);
-                    if (doVerfications) Verify.AreEqual(true, navButton.HasKeyboardFocus);
-
-                    KeyboardHelper.PressKey(Key.Left);
-                    if (doVerfications) Verify.AreEqual(true, backButton.HasKeyboardFocus);
-                }
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
         public void VerifyDeselectionDisabled()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -3730,6 +3728,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                              page2 = new TestSetupHelper("NavigationView Test"))
             {
                 EnsurePaneHeaderCanBeModifiedHelper(RegressionTestType.TopNav);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "D")]
+        public void EnsurePaneCanBeHidden()
+        {
+            using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
+                             page2 = new TestSetupHelper("NavigationView Test"))
+            {
+                var paneRoot = FindElement.ById("PaneRoot");
+                Verify.IsFalse(paneRoot.IsOffscreen);
+
+                var paneVisibleCheckBox = new CheckBox(FindElement.ByName("IsPaneVisibleCheckBox"));
+                paneVisibleCheckBox.Uncheck();
+                Wait.ForIdle();
+
+                Verify.IsTrue(paneRoot.IsOffscreen);
             }
         }
 

@@ -169,20 +169,24 @@ namespace MUXControlsTestApp
 
         private void SetRootGridSizeFromWindowSize()
         {
+            var size = new Size(Window.Current.Bounds.Width, Window.Current.Bounds.Height);
+
 #if USE_INSIDER_SDK
             if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.Xaml.XamlRoot"))
             {
-                var xamlRoot = _rootGrid.XamlRoot;
-                var size = xamlRoot.Size;
-                _rootGrid.Width = size.Width;
-                _rootGrid.Height = size.Height;
+                try
+                {
+                    var xamlRoot = _rootGrid.XamlRoot;
+                    size = xamlRoot.Size;
+                }
+                catch (InvalidCastException)
+                {
+                    // If running on mismatched OS build, just fall back to window bounds.
+                }
             }
-            else
 #endif
-            {
-                _rootGrid.Width = Window.Current.Bounds.Width;
-                _rootGrid.Height = Window.Current.Bounds.Height;
-            }
+            _rootGrid.Width = size.Width;
+            _rootGrid.Height = size.Height;
         }
 
         private void GoBackInvokerButton_Click(object sender, RoutedEventArgs e)

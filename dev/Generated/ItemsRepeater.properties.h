@@ -24,8 +24,8 @@ public:
     void ItemTemplate(winrt::IInspectable const& value);
     winrt::IInspectable ItemTemplate();
 
-    void Layout(winrt::VirtualizingLayout const& value);
-    winrt::VirtualizingLayout Layout();
+    void Layout(winrt::Layout const& value);
+    winrt::Layout Layout();
 
     void VerticalCacheLength(double value);
     double VerticalCacheLength();

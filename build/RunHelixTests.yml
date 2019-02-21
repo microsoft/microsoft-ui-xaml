@@ -4,69 +4,24 @@ jobs:
   pool:
     vmImage: VS2017-Win2016
   timeoutInMinutes: 120
-  variables:
-  - group: DotNet-HelixApi-Access
-  - name: appxPackageDir
-    value: $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
-  - name: buildOutputDir
-    value: $(Build.SourcesDirectory)\BuildOutput
   strategy:
     maxParallel: 4
     matrix:
       Release_x86:
         buildPlatform: 'x86'
-        buildConfiguration: 'Release'
+        buildConfiguration: 'release'
       Release_x64:
         buildPlatform: 'x64'
-        buildConfiguration: 'Release'
+        buildConfiguration: 'release'
+
+  variables:
+    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+    publishDir : $(Build.ArtifactStagingDirectory)
 
   steps:
-  - task: CmdLine@1
-    displayName: 'Display build machine environment variables'
-    inputs:
-      filename: 'set'
-
-  - task: powershell@2
-    displayName: 'Install RS5 SDK (17763)'
-    inputs:
-      targetType: filePath
-      filePath: build\Install-WindowsSdkISO.ps1
-      arguments: 17763
-
-  - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.9.1'
-    inputs:
-      versionSpec: 4.9.1
-        
-  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-    displayName: 'NuGet restore MUXControls.sln'
-    inputs:
-      restoreSolution: MUXControls.sln
-      feedsToUse: config
-      nugetConfigPath: nuget.config
-
-  - task: VSBuild@1
-    displayName: 'Build solution MUXControls.sln'
-    inputs:
-      solution: MUXControls.sln
-      vsVersion: 15.0
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
-      msbuildArgs: '/p:AppxPackageDir="$(appxPackageDir)" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false'
-
-  - task: powershell@2
-    displayName: 'Copy files to staging dir'
-    inputs:
-      targetType: filePath
-      filePath: build\CopyFilesToStagingDir.ps1
-      arguments: -BuildOutputDir '$(buildOutputDir)' -PublishDir '$(Build.ArtifactStagingDirectory)' -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish artifact: drop'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'drop'
-
+  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+  - template: AzurePipelinesTemplates\MUX-PublishDevProject-Steps.yml
 
 
 - job: RunTests
@@ -76,27 +31,25 @@ jobs:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
   variables:
-  - group: DotNet-HelixApi-Access
-  - name: artifactsDir
-    value: $(Build.SourcesDirectory)\Artifacts
+    artifactsDir : $(Build.SourcesDirectory)\Artifacts
   strategy:
     maxParallel: 4
     matrix:
       Release_x86:
         buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-        helixTargetQueues: 'Windows.10.Amd64.ClientRS4.Open'
+        buildConfiguration: 'release'
+        # %3b is the escape code for ';' which is used as the delimiter
+        helixTargetQueues: 'Windows.10.Amd64.Open%3bWindows.10.Amd64.ClientRS3.DevEx.Open%3bWindows.10.Amd64.ServerRS5.Open'
       Release_x64:
         buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-        # %3b is the escape code for ';' which is used as the delimiter
-        helixTargetQueues: 'Windows.10.Amd64.Open%3bWindows.10.Amd64.ServerRS5.Open'
+        buildConfiguration: 'release'
+        helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open'
   steps:
 
   - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.9.1'
+    displayName: 'Use NuGet 4.9.3'
     inputs:
-      versionSpec: 4.9.1
+      versionSpec: 4.9.3
 
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
     displayName: 'NuGet restore build/Helix/packages.config'
@@ -126,5 +79,11 @@ jobs:
       command: custom
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
-      arguments: '/p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues)'
-      
+      arguments: '/binaryLogger:$(Build.SourcesDirectory)/RunTestsInHelix.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish RunTestsInHelix binlog'
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)/RunTestsInHelix.$(buildPlatform).$(buildConfiguration).binlog
+      artifactName: 'drop'

@@ -19,7 +19,7 @@ using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollControlle
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerOffsetChangeRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeRequestedEventArgs;
 using ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs;
-using ScrollerRailingMode = Microsoft.UI.Xaml.Controls.ScrollerRailingMode;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using ScrollerViewChangeResult = Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
@@ -626,6 +626,12 @@ namespace MUXControlsTestApp
             }
         }
 
+        public bool AreInteractionsAllowed
+        {
+            get;
+            private set;
+        }
+
         public bool AreScrollerInteractionsAllowed
         {
             get;
@@ -636,6 +642,15 @@ namespace MUXControlsTestApp
         {
             get;
             private set;
+        }
+
+        public bool IsInteractionVisualRailEnabled
+        {
+            get
+            {
+                // Unused because InteractionVisual returns null.
+                return false;
+            }
         }
 
         public Visual InteractionVisual
@@ -651,15 +666,6 @@ namespace MUXControlsTestApp
             get
             {
                 return Orientation;
-            }
-        }
-
-        public ScrollerRailingMode InteractionVisualScrollRailingMode
-        {
-            get
-            {
-                // Unused because InteractionVisual returns null.
-                return ScrollerRailingMode.Disabled;
             }
         }
 
@@ -688,6 +694,12 @@ namespace MUXControlsTestApp
             */
         }
 
+        public void SetScrollMode(ScrollMode scrollMode)
+        {
+            LogMessage("ScrollBarController: SetScrollMode for Orientation=" + Orientation + " with scrollMode=" + scrollMode);
+            AreInteractionsAllowed = scrollMode != ScrollMode.Disabled && IsEnabled;
+        }
+
         public void SetValues(
             double minOffset,
             double maxOffset,
@@ -709,23 +721,23 @@ namespace MUXControlsTestApp
             scrollBar.LargeChange = viewport;
         }
 
-        public CompositionAnimation GetOffsetChangeAnimation(
+        public CompositionAnimation GetScrollAnimation(
             Int32 offsetChangeId,
             Vector2 currentPosition,
             CompositionAnimation defaultAnimation)
         {
             LogMessage(
-                "ScrollBarController: GetOffsetChangeAnimation for Orientation=" + Orientation +
+                "ScrollBarController: GetScrollAnimation for Orientation=" + Orientation +
                 " with offsetChangeId=" + offsetChangeId + ", currentPosition=" + currentPosition);
             return null;
         }
 
-        public void OnOffsetChangeCompleted(
+        public void OnScrollCompleted(
             Int32 offsetChangeId,
             ScrollerViewChangeResult result)
         {
             LogMessage(
-                "ScrollBarController: OnOffsetChangeCompleted for Orientation=" + Orientation +
+                "ScrollBarController: OnScrollCompleted for Orientation=" + Orientation +
                 " with offsetChangeId=" + offsetChangeId + ", result=" + result);
 
             if (lstOffsetChangeIds.Contains(offsetChangeId))

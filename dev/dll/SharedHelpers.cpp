@@ -161,12 +161,21 @@ bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
     return s_isFrameworkElementInvalidateViewportAvailable;
 }
 
-bool SharedHelpers::IsDisplayRegionGetForCurrentViewAvailable()
+bool SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable()
 {
-    static bool s_isDisplayRegionGetForCurrentViewAvailable =
+    static bool s_isApplicationViewGetDisplayRegionsAvailable =
         Is19H1OrHigher() ||
-        winrt::ApiInformation::IsMethodPresent(L"Windows.ApplicationModel.Core.DisplayRegion", L"GetForCurrentView");
-    return s_isDisplayRegionGetForCurrentViewAvailable;
+        winrt::ApiInformation::IsMethodPresent(L"Windows.UI.ViewManagement.ApplicationView", L"GetDisplayRegions");
+    return s_isApplicationViewGetDisplayRegionsAvailable;
+}
+
+bool SharedHelpers::IsControlCornerRadiusAvailable()
+{
+    static bool s_isControlCornerRadiusAvailable =
+        IsSystemDll() ||
+        Is19H1OrHigher() ||
+        (IsRS5OrHigher() && winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.Control", L"CornerRadius"));
+    return s_isControlCornerRadiusAvailable;
 }
 
 bool SharedHelpers::IsTranslationFacadeAvailable(const winrt::UIElement& element)
@@ -201,15 +210,6 @@ bool SharedHelpers::IsDispatcherQueueAvailable()
         IsRS4OrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.System.DispatcherQueue");
     return s_isAvailable;
-}
-
-bool SharedHelpers::IsXamlRootAvailable()
-{
-    static bool s_IsXamlRootAvailable =
-        IsSystemDll() ||
-        IsVanadiumOrHigher() ||
-        winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.XamlRoot");
-    return s_IsXamlRootAvailable;
 }
 
 bool SharedHelpers::IsThemeShadowAvailable()

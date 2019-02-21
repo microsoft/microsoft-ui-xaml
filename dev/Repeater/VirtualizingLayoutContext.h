@@ -40,4 +40,8 @@ public:
     virtual void LayoutOriginCore(winrt::Point const& value);
 #pragma endregion
 
+    winrt::NonVirtualizingLayoutContext GetNonVirtualizingContextAdapter();
+
+private:
+    winrt::NonVirtualizingLayoutContext m_contextAdapter{ nullptr };
 };

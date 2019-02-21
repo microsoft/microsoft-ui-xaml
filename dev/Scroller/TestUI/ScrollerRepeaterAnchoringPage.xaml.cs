@@ -78,8 +78,6 @@ namespace MUXControlsTestApp
 
                 UpdateRaiseAnchorNotifications(true /*raiseAnchorNotifications*/);
 
-                UpdateCmbIsAnchoredAtHorizontalExtent();
-                UpdateCmbIsAnchoredAtVerticalExtent();
                 UpdateHorizontalAnchorRatio();
                 UpdateVerticalAnchorRatio();
 
@@ -363,42 +361,6 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnGetIsAnchoredAtHorizontalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateCmbIsAnchoredAtHorizontalExtent();
-        }
-
-        private void BtnSetIsAnchoredAtHorizontalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                scroller.IsAnchoredAtHorizontalExtent = cmbIsAnchoredAtHorizontalExtent.SelectedIndex == 0;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
-        }
-
-        private void BtnGetIsAnchoredAtVerticalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateCmbIsAnchoredAtVerticalExtent();
-        }
-
-        private void BtnSetIsAnchoredAtVerticalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                scroller.IsAnchoredAtVerticalExtent = cmbIsAnchoredAtVerticalExtent.SelectedIndex == 0;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
-        }
-
         private void BtnGetHorizontalAnchorRatio_Click(object sender, RoutedEventArgs e)
         {
             UpdateHorizontalAnchorRatio();
@@ -509,32 +471,6 @@ namespace MUXControlsTestApp
         {
             if (tblItemIndex != null && txtItemIndex != null && cmbAnchorElement != null)
                 tblItemIndex.Visibility = txtItemIndex.Visibility = cmbAnchorElement.SelectedIndex == 4 ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        private void UpdateCmbIsAnchoredAtHorizontalExtent()
-        {
-            try
-            {
-                cmbIsAnchoredAtHorizontalExtent.SelectedIndex = scroller.IsAnchoredAtHorizontalExtent ? 0 : 1;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
-        }
-
-        private void UpdateCmbIsAnchoredAtVerticalExtent()
-        {
-            try
-            {
-                cmbIsAnchoredAtVerticalExtent.SelectedIndex = scroller.IsAnchoredAtVerticalExtent ? 0 : 1;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
         }
 
         private void UpdateHorizontalAnchorRatio()

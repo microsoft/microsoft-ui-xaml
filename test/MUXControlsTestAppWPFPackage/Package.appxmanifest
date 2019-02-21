@@ -126,7 +126,6 @@
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.ElementFactoryRecycleArgs" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.SwipeItems" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointRegular" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.ScrollBar2" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.FlowLayoutState" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.RatingControl" ThreadingModel="both" />

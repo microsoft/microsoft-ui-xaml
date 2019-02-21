@@ -516,8 +516,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewKeyDownRightToLeftTest();
         }
 
-        [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        //Test failures with keyboard/gamepad/mousewheel input #269
+        //[TestMethod]
+        //[TestProperty("TreeViewTestSuite", "A")]
         public void TreeViewKeyDownRightToLeftTest_ContentMode()
         {
             TreeViewKeyDownRightToLeftTest(isContentMode:true);
@@ -1712,8 +1713,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewMultiSelectGamepadTest();
         }
 
-        [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        //Test failures with keyboard/gamepad/mousewheel input #269
+        //[TestMethod]
+        //[TestProperty("TreeViewTestSuite", "B")]
         public void TreeViewMultiSelectGamepadTest_ContentMode()
         {
             TreeViewMultiSelectGamepadTest(isContentMode:true);
@@ -1804,6 +1806,41 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 rootSelectionItemPattern.AddToSelection();
                 Verify.AreEqual(true, rootSelectionItemPattern.Current.IsSelected);
                 Verify.AreEqual(true, item1SelectionItemPattern.Current.IsSelected);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TreeViewTestSuite", "B")]
+        public void TreeViewListMultipleSelectionUIATest()
+        {
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(false);
+
+                UIObject ItemRoot = LabelFirstItem();
+
+                InputHelper.Tap(ItemRoot);
+
+                ClickButton("LabelItems");
+                ClickButton("ToggleSelectionMode");
+
+                Log.Comment("Retrieve first item as generic UIElement");
+                UIObject Item1 = FindElement.ById("Root.1");
+                Verify.IsNotNull(Item1, "Verifying that we found a UIElement called Root.1");
+
+                Item1.SetFocus();
+                AutomationElement itemPeer = AutomationElement.FocusedElement;
+
+                var selectionItemPeer = (SelectionItemPattern)itemPeer.GetCurrentPattern(SelectionItemPattern.Pattern);
+                var treeViewListPeer = selectionItemPeer.Current.SelectionContainer;
+
+                var multipleSelectionPattern = (SelectionPattern)treeViewListPeer.GetCurrentPattern(SelectionPattern.Pattern);
+                Verify.IsNotNull(multipleSelectionPattern);
+                Verify.IsTrue(multipleSelectionPattern.Current.CanSelectMultiple);
+                Verify.IsFalse(multipleSelectionPattern.Current.IsSelectionRequired);
+                var elements = multipleSelectionPattern.Current.GetSelection();
+                Verify.IsNotNull(elements);
+                Verify.AreEqual(0, elements.Length);
             }
         }
 

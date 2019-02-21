@@ -706,7 +706,7 @@ foreach ($xamlFile in $XamlFileList.Split(';'))
         continue
     }
 
-    $xamlFileContent = Get-Content $xamlFile -Raw
+    [string]$xamlFileContent = Get-Content $xamlFile -Raw
 
     # We need to make sure that every newline is of the form CR LF since some of our regular expressions depend on that,
     # so let's replace every newline with that to make sure that we've got the correct newline pattern.

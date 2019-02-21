@@ -1,5 +1,11 @@
 robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP
 
+reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
+
+cd scripts
+powershell -ExecutionPolicy Bypass .\InstallTestAppDependencies.ps1
+cd ..
+
 te MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError %* 
 
 %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te.wtl -result_name te.wtl

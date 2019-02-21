@@ -121,7 +121,7 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     Object ItemTemplate { get; set; };
  #endif
 
-    VirtualizingLayout Layout { get; set; };
+    Layout Layout { get; set; };
     
     [WUXC_VERSION_PREVIEW]
     {

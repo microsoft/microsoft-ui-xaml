@@ -156,12 +156,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateResizingFirstItemResizesOtherItemsInGridLayout()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277320: MUX Repeater tests fail on RS5_Release
-                return;
-            }
-
             RunOnUIThread.Execute(() =>
             {
                 const int numItems = 10;
@@ -246,36 +240,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateDefaultWidthForGridLayoutItemsIsBasedOnFirstItem()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277320: MUX Repeater tests fail on RS5_Release
-                return;
-            }
-
             ValidateDimensionForGridLayoutItemsIsBasedOnFirstItem(DimensionChoice.Width);
         }
 
         [TestMethod]
         public void ValidateDefaultHeightForGridLayoutItemsIsBasedOnFirstItem()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277320: MUX Repeater tests fail on RS5_Release
-                return;
-            }
-
             ValidateDimensionForGridLayoutItemsIsBasedOnFirstItem(DimensionChoice.Height);
         }
 
         [TestMethod]
         public void ValidateDefaultSizeForGridLayoutItemsIsBasedOnFirstItem()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277320: MUX Repeater tests fail on RS5_Release
-                return;
-            }
-
             ValidateDimensionForGridLayoutItemsIsBasedOnFirstItem(DimensionChoice.Size);
         }
 
@@ -314,36 +290,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateAdaptabilityWhenChangingFirstElementWidthForGridLayout()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277320: MUX Repeater tests fail on RS5_Release
-                return;
-            }
-
             ValidateAdaptabilityWhenChangingTheFirstElementForGridLayout(DimensionChoice.Width);
         }
 
         [TestMethod]
         public void ValidateAdaptabilityWhenChangingFirstElementHeightForGridLayout()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277320: MUX Repeater tests fail on RS5_Release
-                return;
-            }
-
             ValidateAdaptabilityWhenChangingTheFirstElementForGridLayout(DimensionChoice.Height);
         }
 
         [TestMethod]
         public void ValidateAdaptabilityWhenChangingFirstElementSizeForGridLayout()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277320: MUX Repeater tests fail on RS5_Release
-                return;
-            }
-
             ValidateAdaptabilityWhenChangingTheFirstElementForGridLayout(DimensionChoice.Size);
         }
 

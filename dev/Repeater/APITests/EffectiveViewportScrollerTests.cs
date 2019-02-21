@@ -41,6 +41,7 @@ using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
 using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
 using IRepeaterScrollingSurface = Microsoft.UI.Private.Controls.IRepeaterScrollingSurface;
@@ -79,7 +80,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 scroller = new Scroller
                 {
-                    Child = repeater,
+                    Content = repeater,
                     Width = 200,
                     Height = 300
                 };
@@ -150,8 +151,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 horizontalScroller = new Scroller
                 {
-                    Child = repeater,
-                    IsChildAvailableHeightConstrained = true
+                    Content = repeater,
+                    ContentOrientation = ContentOrientation.Horizontal
                 };
 
                 // Placing a Grid in between two Scroller controls to avoid
@@ -161,10 +162,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 verticalScroller = new Scroller
                 {
-                    Child = grid,
+                    Content = grid,
                     Width = 200,
                     Height = 200,
-                    IsChildAvailableWidthConstrained = true
+                    ContentOrientation = ContentOrientation.Vertical
                 };
 
                 Content = verticalScroller;
@@ -264,7 +265,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Layout = layout
                 };
 
-                scroller.Child = repeater;
+                scroller.Content = repeater;
                 Content = scroller;
             });
 
@@ -314,6 +315,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             var rootLoadedEvent = new AutoResetEvent(initialState: false);
             var effectiveViewChangeCompletedEvent = new AutoResetEvent(initialState: false);
             var viewChangeCompletedEvent = new AutoResetEvent(initialState: false);
+            var waitingForIndex = -1;
+            var indexRealized = new AutoResetEvent(initialState: false);
 
             var viewChangedOffsets = new List<double>();
 
@@ -321,7 +324,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 var lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam laoreet erat vel massa rutrum, eget mollis massa vulputate. Vivamus semper augue leo, eget faucibus nulla mattis nec. Donec scelerisque lacus at dui ultricies, eget auctor ipsum placerat. Integer aliquet libero sed nisi eleifend, nec rutrum arcu lacinia. Sed a sem et ante gravida congue sit amet ut augue. Donec quis pellentesque urna, non finibus metus. Proin sed ornare tellus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam laoreet erat vel massa rutrum, eget mollis massa vulputate. Vivamus semper augue leo, eget faucibus nulla mattis nec. Donec scelerisque lacus at dui ultricies, eget auctor ipsum placerat. Integer aliquet libero sed nisi eleifend, nec rutrum arcu lacinia. Sed a sem et ante gravida congue sit amet ut augue. Donec quis pellentesque urna, non finibus metus. Proin sed ornare tellus.";
                 var root = (Grid)XamlReader.Load(TestUtilities.ProcessTestXamlForRepo(
-                     @"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' xmlns:controls='using:Microsoft.UI.Xaml.Controls'> 
+                     @"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
+                             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                             xmlns:controls='using:Microsoft.UI.Xaml.Controls' 
+                             xmlns:primitives='using:Microsoft.UI.Xaml.Controls.Primitives'> 
                          <Grid.Resources>
                            <controls:StackLayout x:Name='VerticalStackLayout' />
                            <controls:RecyclingElementFactory x:Key='ElementFactory'>
@@ -335,19 +341,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                              </DataTemplate>
                            </controls:RecyclingElementFactory>
                          </Grid.Resources>
-                         <controls:Scroller x:Name='Scroller' Width='400' Height='600' IsChildAvailableWidthConstrained='True' Background='Gray'>
+                         <primitives:Scroller x:Name='Scroller' Width='400' Height='600' ContentOrientation='Vertical' Background='Gray'>
                            <controls:ItemsRepeater
                              x:Name='ItemsRepeater'
                              ItemTemplate='{StaticResource ElementFactory}'
                              Layout='{StaticResource VerticalStackLayout}'
                              HorizontalCacheLength='0'
                              VerticalCacheLength='0' />
-                         </controls:Scroller>
+                         </primitives:Scroller>
                        </Grid>"));
 
                 var elementFactory = (RecyclingElementFactory)root.Resources["ElementFactory"];
                 scroller = (Scroller)root.FindName("Scroller");
                 repeater = (ItemsRepeater)root.FindName("ItemsRepeater");
+
+                repeater.ElementPrepared += (sender, args) =>
+                {
+                    if (args.Index == waitingForIndex)
+                    {
+                        indexRealized.Set();
+                    }
+                };
 
                 var items = Enumerable.Range(0, 400).Select(i => string.Format("{0}: {1}", i, lorem.Substring(0, 250)));
 
@@ -388,6 +402,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
+                waitingForIndex = 101;
+                indexRealized.Reset();
                 repeater.GetOrCreateElement(100).StartBringIntoView();
                 repeater.UpdateLayout();
             });
@@ -396,6 +412,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             IdleSynchronizer.Wait();
             Verify.AreEqual(1, viewChangedOffsets.Count);
             viewChangedOffsets.Clear();
+            Verify.IsTrue(indexRealized.WaitOne(DefaultWaitTimeInMS));
 
             ValidateRealizedRange(repeater, 99, 106);
 
@@ -419,6 +436,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Scroll item 0 to the top w/ animation and 0.5 vertical alignment.");
+                waitingForIndex = 1;
+                indexRealized.Reset();
                 repeater.GetOrCreateElement(0).StartBringIntoView(new BringIntoViewOptions
                 {
                     VerticalAlignmentRatio = 0.5,
@@ -429,6 +448,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             IdleSynchronizer.Wait();
             viewChangedOffsets.Clear();
+            Verify.IsTrue(indexRealized.WaitOne(DefaultWaitTimeInMS));
+
+            // Test Reliability fix. If offset is not 0 yet, give 
+            // some more time for the animation to settle down.
+            double verticalOffset = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                verticalOffset = scroller.VerticalOffset;
+            });
+
+            if (verticalOffset != 0)
+            {
+                Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
+                IdleSynchronizer.Wait();
+                viewChangedOffsets.Clear();
+            }
+
             ValidateRealizedRange(repeater, 0, 6);
 
             RunOnUIThread.Execute(() =>
@@ -437,6 +473,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(0, scroller.VerticalOffset);
 
                 Log.Comment("Scroll to item 20.");
+                waitingForIndex = 21;
+                indexRealized.Reset();
                 repeater.GetOrCreateElement(20).StartBringIntoView(new BringIntoViewOptions
                 {
                     VerticalAlignmentRatio = 0.0
@@ -446,6 +484,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             IdleSynchronizer.Wait();
+            Verify.IsTrue(indexRealized.WaitOne(DefaultWaitTimeInMS));
+
             ValidateRealizedRange(repeater, 19, 26);
         }
 

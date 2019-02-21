@@ -54,8 +54,9 @@ public:
     winrt::DependencyObject ContainerFromMenuItem(winrt::IInspectable const& item);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&  args);
-    void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnListViewLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
 
     void OnSettingsInvoked();
 
@@ -104,6 +105,7 @@ private:
     void PropagateNavigationViewAsParent();
     void PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget target, std::function<void(NavigationViewList*)> const& function);
     void PropagateChangeToNavigationViewList(winrt::ListView const& listView, std::function<void(NavigationViewList*)> const& function);
+    void UpdatePaneShadow();
 
     void InvalidateTopNavPrimaryLayout();
     // Measure functions for top navigation   
@@ -171,7 +173,6 @@ private:
     void OnSettingsKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnSettingsKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnPaneSearchButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void NavigationView::OnButtonHolderGridGettingFocus(winrt::UIElement const& sender, winrt::GettingFocusEventArgs const& args);
 
     void OnItemClick(const winrt::IInspectable& sender, const winrt::ItemClickEventArgs& args);
     void RaiseItemInvoked(winrt::IInspectable const& item, 
@@ -193,7 +194,7 @@ private:
     void RaiseDisplayModeChanged(const winrt::NavigationViewDisplayMode& displayMode);
     void AnimateSelectionChanged(const winrt::IInspectable& lastItem, const winrt::IInspectable& currentItem);
     void AnimateSelectionChangedToItem(const winrt::IInspectable& selectedItem);
-    void PlayIndicatorAnimations(const winrt::UIElement& indicator, float yFrom, float yTo, bool isOutgoing);
+    void PlayIndicatorAnimations(const winrt::UIElement& indicator, float yFrom, float yTo, winrt::Size beginSize, winrt::Size endSize, bool isOutgoing);
     void OnAnimationComplete(const winrt::IInspectable& sender, const winrt::CompositionBatchCompletedEventArgs& args);
     void ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity);
     winrt::NavigationViewItem NavigationViewItemOrSettingsContentFromData(const winrt::IInspectable& data);
@@ -312,7 +313,6 @@ private:
     winrt::CoreApplicationViewTitleBar::LayoutMetricsChanged_revoker m_titleBarMetricsChangedRevoker{};
     winrt::CoreApplicationViewTitleBar::IsVisibleChanged_revoker m_titleBarIsVisibleChangedRevoker{};
     winrt::Button::Click_revoker m_backButtonClickedRevoker{};
-    winrt::Button::GettingFocus_revoker m_buttonHolderGettingFocusRevoker{};
     winrt::ListView::ItemClick_revoker m_leftNavListViewItemClickRevoker{};
     winrt::ListView::Loaded_revoker m_leftNavListViewLoadedRevoker{};
     winrt::ListView::SelectionChanged_revoker m_leftNavListViewSelectionChangedRevoker{};

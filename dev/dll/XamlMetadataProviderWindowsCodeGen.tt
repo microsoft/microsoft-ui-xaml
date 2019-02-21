@@ -64,6 +64,13 @@ namespace Windows.UI.Composition
     public sealed class CompositionAnimation
     {
     }
+
+    [Imported]
+    [WindowsTypePattern]
+    [TypeTable(IsExcludedFromDXaml = true)]
+    public sealed class CompositionObject
+    {
+    }
 }
 
 namespace Windows.UI.Composition.Interactions

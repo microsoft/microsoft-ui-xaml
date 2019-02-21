@@ -16,9 +16,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ScrollViewer.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollBarController.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollBarController.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewerTrace.h" />
   </ItemGroup>
