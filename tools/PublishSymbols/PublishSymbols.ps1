@@ -10,17 +10,22 @@ if ((!$versionMajor) -or (!$versionMinor))
     Exit 1
 }
 
-$buildVersion = $versionMajor + "." + $versionMinor + "." + $env:TFS_VersionNumber
+$buildVersion = $versionMajor + "." + $versionMinor + "." + $env:BUILD_BUILDNUMBER
 
 Write-Host "Build = $buildVersion"
 
-$buildId=$env:TFS_BuildNumber + "_" + $env:TFS_Platform
-$directory=$env:XES_DFSDROP + "\" + $env:TFS_BuildConfiguration + "\" + $env:TFS_Platform + "\Microsoft.UI.Xaml"
+$buildId="$($env:BUILD_BUILDNUMBER)_$($env:BUILDCONFIGURATION)_$($env:BUILDPLATFORM)"
+$localDirectory=$env:BUILD_BINARIESDIRECTORY + "\" + $env:BUILDCONFIGURATION + "\" + $env:BUILDPLATFORM + "\Microsoft.UI.Xaml"
+$directory = "$env:XES_DFSDROP\$env:XES_RELATIVEOUTPUTROOT\Microsoft.UI.Xaml"
+
+Write-Host "Local path: '$localDirectory'"
+Write-Host "Build share: '$directory'"
+
+Copy-Item -Recurse "$localDirectory" "$directory"
 
 Write-Host "buildId = $buildId"
-Write-Host "directory = $directory"
 
-copy pdb_index_template.ini pdb_index.ini
+Copy-Item pdb_index_template.ini pdb_index.ini
 Add-Content pdb_index.ini "Build=$buildVersion"
 
 \\symbols\Tools\createrequest.cmd -i .\pdb_index.ini -d .\requests -c -a -b $buildId -e Release -g $directory

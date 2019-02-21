@@ -9,11 +9,11 @@ class ScrollViewerProperties
 public:
     ScrollViewerProperties();
 
-    void ComputedHorizontalScrollMode(winrt::ScrollMode const& value);
-    winrt::ScrollMode ComputedHorizontalScrollMode();
+    void ComputedHorizontalScrollBarVisibility(winrt::Visibility const& value);
+    winrt::Visibility ComputedHorizontalScrollBarVisibility();
 
-    void ComputedVerticalScrollMode(winrt::ScrollMode const& value);
-    winrt::ScrollMode ComputedVerticalScrollMode();
+    void ComputedVerticalScrollBarVisibility(winrt::Visibility const& value);
+    winrt::Visibility ComputedVerticalScrollBarVisibility();
 
     void Content(winrt::UIElement const& value);
     winrt::UIElement Content();
@@ -39,14 +39,8 @@ public:
     void HorizontalScrollRailingMode(winrt::RailingMode const& value);
     winrt::RailingMode HorizontalScrollRailingMode();
 
-    void InputKind(winrt::InputKind const& value);
-    winrt::InputKind InputKind();
-
-    void IsAnchoredAtHorizontalExtent(bool value);
-    bool IsAnchoredAtHorizontalExtent();
-
-    void IsAnchoredAtVerticalExtent(bool value);
-    bool IsAnchoredAtVerticalExtent();
+    void IgnoredInputKind(winrt::InputKind const& value);
+    winrt::InputKind IgnoredInputKind();
 
     void MaxZoomFactor(double value);
     double MaxZoomFactor();
@@ -78,8 +72,8 @@ public:
     void ZoomMode(winrt::ZoomMode const& value);
     winrt::ZoomMode ZoomMode();
 
-    static winrt::DependencyProperty ComputedHorizontalScrollModeProperty() { return s_ComputedHorizontalScrollModeProperty; }
-    static winrt::DependencyProperty ComputedVerticalScrollModeProperty() { return s_ComputedVerticalScrollModeProperty; }
+    static winrt::DependencyProperty ComputedHorizontalScrollBarVisibilityProperty() { return s_ComputedHorizontalScrollBarVisibilityProperty; }
+    static winrt::DependencyProperty ComputedVerticalScrollBarVisibilityProperty() { return s_ComputedVerticalScrollBarVisibilityProperty; }
     static winrt::DependencyProperty ContentProperty() { return s_ContentProperty; }
     static winrt::DependencyProperty ContentOrientationProperty() { return s_ContentOrientationProperty; }
     static winrt::DependencyProperty HorizontalAnchorRatioProperty() { return s_HorizontalAnchorRatioProperty; }
@@ -88,9 +82,7 @@ public:
     static winrt::DependencyProperty HorizontalScrollControllerProperty() { return s_HorizontalScrollControllerProperty; }
     static winrt::DependencyProperty HorizontalScrollModeProperty() { return s_HorizontalScrollModeProperty; }
     static winrt::DependencyProperty HorizontalScrollRailingModeProperty() { return s_HorizontalScrollRailingModeProperty; }
-    static winrt::DependencyProperty InputKindProperty() { return s_InputKindProperty; }
-    static winrt::DependencyProperty IsAnchoredAtHorizontalExtentProperty() { return s_IsAnchoredAtHorizontalExtentProperty; }
-    static winrt::DependencyProperty IsAnchoredAtVerticalExtentProperty() { return s_IsAnchoredAtVerticalExtentProperty; }
+    static winrt::DependencyProperty IgnoredInputKindProperty() { return s_IgnoredInputKindProperty; }
     static winrt::DependencyProperty MaxZoomFactorProperty() { return s_MaxZoomFactorProperty; }
     static winrt::DependencyProperty MinZoomFactorProperty() { return s_MinZoomFactorProperty; }
     static winrt::DependencyProperty ScrollerProperty() { return s_ScrollerProperty; }
@@ -103,8 +95,8 @@ public:
     static winrt::DependencyProperty ZoomChainingModeProperty() { return s_ZoomChainingModeProperty; }
     static winrt::DependencyProperty ZoomModeProperty() { return s_ZoomModeProperty; }
 
-    static GlobalDependencyProperty s_ComputedHorizontalScrollModeProperty;
-    static GlobalDependencyProperty s_ComputedVerticalScrollModeProperty;
+    static GlobalDependencyProperty s_ComputedHorizontalScrollBarVisibilityProperty;
+    static GlobalDependencyProperty s_ComputedVerticalScrollBarVisibilityProperty;
     static GlobalDependencyProperty s_ContentProperty;
     static GlobalDependencyProperty s_ContentOrientationProperty;
     static GlobalDependencyProperty s_HorizontalAnchorRatioProperty;
@@ -113,9 +105,7 @@ public:
     static GlobalDependencyProperty s_HorizontalScrollControllerProperty;
     static GlobalDependencyProperty s_HorizontalScrollModeProperty;
     static GlobalDependencyProperty s_HorizontalScrollRailingModeProperty;
-    static GlobalDependencyProperty s_InputKindProperty;
-    static GlobalDependencyProperty s_IsAnchoredAtHorizontalExtentProperty;
-    static GlobalDependencyProperty s_IsAnchoredAtVerticalExtentProperty;
+    static GlobalDependencyProperty s_IgnoredInputKindProperty;
     static GlobalDependencyProperty s_MaxZoomFactorProperty;
     static GlobalDependencyProperty s_MinZoomFactorProperty;
     static GlobalDependencyProperty s_ScrollerProperty;

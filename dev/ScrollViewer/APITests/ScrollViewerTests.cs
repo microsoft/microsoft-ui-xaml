@@ -22,12 +22,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
+using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
 using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
 using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
+using ScrollerAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 using ScrollViewerTestHooks = Microsoft.UI.Private.Controls.ScrollViewerTestHooks;
 
@@ -39,14 +41,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const int c_MaxWaitDuration = 5000;
         private const double c_epsilon = 0.0000001;
 
-        private const ScrollMode c_defaultComputedHorizontalScrollMode = ScrollMode.Disabled;
-        private const ScrollMode c_defaultComputedVerticalScrollMode = ScrollMode.Disabled;
-        private const InputKind c_defaultInputKind = InputKind.All;
+        private const InputKind c_defaultIgnoredInputKind = InputKind.None;
         private const ChainingMode c_defaultHorizontalScrollChainingMode = ChainingMode.Auto;
         private const ChainingMode c_defaultVerticalScrollChainingMode = ChainingMode.Auto;
         private const RailingMode c_defaultHorizontalScrollRailingMode = RailingMode.Enabled;
         private const RailingMode c_defaultVerticalScrollRailingMode = RailingMode.Enabled;
 #if USE_SCROLLMODE_AUTO
+        private const ScrollMode c_defaultComputedHorizontalScrollMode = ScrollMode.Disabled;
+        private const ScrollMode c_defaultComputedVerticalScrollMode = ScrollMode.Disabled;
         private const ScrollMode c_defaultHorizontalScrollMode = ScrollMode.Auto;
         private const ScrollMode c_defaultVerticalScrollMode = ScrollMode.Auto;
 #else
@@ -56,7 +58,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const ChainingMode c_defaultZoomChainingMode = ChainingMode.Auto;
         private const ZoomMode c_defaultZoomMode = ZoomMode.Disabled;
         private const ContentOrientation c_defaultContentOrientation = ContentOrientation.Vertical;
-        private const bool c_defaultIsAnchoredAtExtent = true;
         private const double c_defaultMinZoomFactor = 0.1;
         private const double c_defaultMaxZoomFactor = 10.0;
         private const double c_defaultAnchorRatio = 0.0;
@@ -92,9 +93,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(ScrollViewerTestHooks.GetScrollerPart(scrollViewer));
                 Verify.IsNull(scrollViewer.HorizontalScrollController);
                 Verify.IsNull(scrollViewer.VerticalScrollController);
+#if USE_SCROLLMODE_AUTO
                 Verify.AreEqual(scrollViewer.ComputedHorizontalScrollMode, c_defaultComputedHorizontalScrollMode);
                 Verify.AreEqual(scrollViewer.ComputedVerticalScrollMode, c_defaultComputedVerticalScrollMode);
-                Verify.AreEqual(scrollViewer.InputKind, c_defaultInputKind);
+#endif
+                Verify.AreEqual(scrollViewer.IgnoredInputKind, c_defaultIgnoredInputKind);
                 Verify.AreEqual(scrollViewer.ContentOrientation, c_defaultContentOrientation);
                 Verify.AreEqual(scrollViewer.HorizontalScrollChainingMode, c_defaultHorizontalScrollChainingMode);
                 Verify.AreEqual(scrollViewer.VerticalScrollChainingMode, c_defaultVerticalScrollChainingMode);
@@ -110,8 +113,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsLessThan(scrollViewer.MaxZoomFactor, c_defaultMaxZoomFactor + c_epsilon);
                 Verify.AreEqual(scrollViewer.HorizontalAnchorRatio, c_defaultAnchorRatio);
                 Verify.AreEqual(scrollViewer.VerticalAnchorRatio, c_defaultAnchorRatio);
-                Verify.AreEqual(scrollViewer.IsAnchoredAtHorizontalExtent, c_defaultIsAnchoredAtExtent);
-                Verify.AreEqual(scrollViewer.IsAnchoredAtVerticalExtent, c_defaultIsAnchoredAtExtent);
+                Verify.AreEqual(scrollViewer.ExtentWidth, 0.0);
+                Verify.AreEqual(scrollViewer.ExtentHeight, 0.0);
+                Verify.AreEqual(scrollViewer.ViewportWidth, 0.0);
+                Verify.AreEqual(scrollViewer.ViewportHeight, 0.0);
+                Verify.AreEqual(scrollViewer.ScrollableWidth, 0.0);
+                Verify.AreEqual(scrollViewer.ScrollableHeight, 0.0);
             });
         }
 
@@ -145,7 +152,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Setting Scroller-cloned properties to non-default values");
-                    scrollViewer.InputKind = InputKind.MouseWheel | InputKind.Pen;
+                    scrollViewer.IgnoredInputKind = InputKind.MouseWheel | InputKind.Pen;
                     scrollViewer.ContentOrientation = ContentOrientation.Horizontal;
                     scrollViewer.HorizontalScrollChainingMode = ChainingMode.Always;
                     scrollViewer.VerticalScrollChainingMode = ChainingMode.Never;
@@ -159,7 +166,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollViewer.MaxZoomFactor = 8.0;
 
                     Log.Comment("Verifying Scroller-cloned non-default properties");
-                    Verify.AreEqual(scrollViewer.InputKind, InputKind.MouseWheel | InputKind.Pen);
+                    Verify.AreEqual(scrollViewer.IgnoredInputKind, InputKind.MouseWheel | InputKind.Pen);
                     Verify.AreEqual(scrollViewer.ContentOrientation, ContentOrientation.Horizontal);
                     Verify.AreEqual(scrollViewer.HorizontalScrollChainingMode, ChainingMode.Always);
                     Verify.AreEqual(scrollViewer.VerticalScrollChainingMode, ChainingMode.Never);
@@ -167,8 +174,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(scrollViewer.VerticalScrollRailingMode, RailingMode.Disabled);
                     Verify.AreEqual(scrollViewer.HorizontalScrollMode, ScrollMode.Enabled);
                     Verify.AreEqual(scrollViewer.VerticalScrollMode, ScrollMode.Disabled);
+#if USE_SCROLLMODE_AUTO
                     Verify.AreEqual(scrollViewer.ComputedHorizontalScrollMode, ScrollMode.Enabled);
                     Verify.AreEqual(scrollViewer.ComputedVerticalScrollMode, ScrollMode.Disabled);
+#endif
                     Verify.AreEqual(scrollViewer.ZoomMode, ZoomMode.Enabled);
                     Verify.AreEqual(scrollViewer.ZoomChainingMode, ChainingMode.Never);
                     Verify.IsGreaterThan(scrollViewer.MinZoomFactor, 2.0 - c_epsilon);
@@ -227,6 +236,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(ScrollViewerTestHooks.GetScrollerPart(scrollViewer).Content, rectangleScrollViewerContent);
                     Verify.IsNotNull(scrollViewer.HorizontalScrollController);
                     Verify.IsNotNull(scrollViewer.VerticalScrollController);
+                    Verify.AreEqual(scrollViewer.ExtentWidth, c_defaultUIScrollViewerContentWidth);
+                    Verify.AreEqual(scrollViewer.ExtentHeight, c_defaultUIScrollViewerContentHeight);
+                    Verify.AreEqual(scrollViewer.ViewportWidth, c_defaultUIScrollViewerWidth);
+                    Verify.AreEqual(scrollViewer.ViewportHeight, c_defaultUIScrollViewerHeight);
+                    Verify.AreEqual(scrollViewer.ScrollableWidth, c_defaultUIScrollViewerContentWidth - c_defaultUIScrollViewerWidth);
+                    Verify.AreEqual(scrollViewer.ScrollableHeight, c_defaultUIScrollViewerContentHeight - c_defaultUIScrollViewerHeight);
 
                     Log.Comment("Resetting window content and ScrollViewer");
                     MUXControlsTestApp.App.TestContentRoot = null;
@@ -241,6 +256,73 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
                 Log.Comment("Done");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies anchor candidate registration and unregistration.")]
+        public void VerifyAnchorCandidateRegistration()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled on pre-RS2 because ScrollViewer not supported pre-RS2");
+                return;
+            }
+
+            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer", "Scroller"))
+            {
+                int expectedAnchorCandidatesCount = 0;
+                Scroller scroller = null;
+                ScrollViewer scrollViewer = null;
+                Rectangle rectangleScrollViewerContent = null;
+                AutoResetEvent scrollViewerLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollViewerAnchorRequestedEvent = new AutoResetEvent(false);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    rectangleScrollViewerContent = new Rectangle();
+                    scrollViewer = new ScrollViewer();
+                    scrollViewer.HorizontalAnchorRatio = 0.1;
+
+                    SetupDefaultUI(scrollViewer, rectangleScrollViewerContent, scrollViewerLoadedEvent);
+
+                    scrollViewer.AnchorRequested += (ScrollViewer sender, ScrollerAnchorRequestedEventArgs args) =>
+                    {
+                        Log.Comment("ScrollViewer.AnchorRequested event handler. args.AnchorCandidates.Count: " + args.AnchorCandidates.Count);
+                        Verify.IsNull(args.AnchorElement);
+                        Verify.AreEqual(expectedAnchorCandidatesCount, args.AnchorCandidates.Count);
+                        scrollViewerAnchorRequestedEvent.Set();
+                    };
+                });
+
+                WaitForEvent("Waiting for Loaded event", scrollViewerLoadedEvent);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Accessing inner Scroller control");
+                    scroller = ScrollViewerTestHooks.GetScrollerPart(scrollViewer);
+
+                    Log.Comment("Registering Rectangle as anchor candidate");
+                    scrollViewer.RegisterAnchorCandidate(rectangleScrollViewerContent);
+                    expectedAnchorCandidatesCount = 1;
+
+                    Log.Comment("Forcing Scroller layout");
+                    scroller.InvalidateArrange();
+                });
+
+                WaitForEvent("Waiting for AnchorRequested event", scrollViewerAnchorRequestedEvent);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Unregistering Rectangle as anchor candidate");
+                    scrollViewer.UnregisterAnchorCandidate(rectangleScrollViewerContent);
+                    expectedAnchorCandidatesCount = 0;
+
+                    Log.Comment("Forcing Scroller layout");
+                    scroller.InvalidateArrange();
+                });
+
+                WaitForEvent("Waiting for AnchorRequested event", scrollViewerAnchorRequestedEvent);
             }
         }
 
@@ -281,7 +363,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollViewer.Loaded += (object sender, RoutedEventArgs e) =>
                 {
-                    Log.Comment("Scroller.Loaded event handler");
+                    Log.Comment("ScrollViewer.Loaded event handler");
                     scrollViewerLoadedEvent.Set();
                 };
             }
@@ -290,7 +372,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollViewer.Unloaded += (object sender, RoutedEventArgs e) =>
                 {
-                    Log.Comment("Scroller.Unloaded event handler");
+                    Log.Comment("ScrollViewer.Unloaded event handler");
                     scrollViewerUnloadedEvent.Set();
                 };
             }

@@ -15,7 +15,7 @@ using Windows.UI.Xaml.Input;
 
 #if !BUILD_WINDOWS
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
-using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
 using ScrollerViewChangeResult = Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult;
@@ -90,6 +90,12 @@ namespace MUXControlsTestApp.Utilities
                 Viewport = 0.0;
             }
 
+            public bool AreInteractionsAllowed
+            {
+                get;
+                private set;
+            }
+
             public bool AreScrollerInteractionsAllowed
             {
                 get
@@ -108,6 +114,15 @@ namespace MUXControlsTestApp.Utilities
                 }
             }
 
+            public bool IsInteractionVisualRailEnabled
+            {
+                get
+                {
+                    RaiseLogMessage("UniScrollController: get_IsInteractionVisualRailEnabled for Orientation=" + Orientation);
+                    return Owner.IsRailing;
+                }
+            }
+
             public Visual InteractionVisual
             {
                 get
@@ -123,15 +138,6 @@ namespace MUXControlsTestApp.Utilities
                 {
                     RaiseLogMessage("UniScrollController: get_InteractionVisualScrollOrientation for Orientation=" + Orientation);
                     return Orientation;
-                }
-            }
-
-            public RailingMode InteractionVisualScrollRailingMode
-            {
-                get
-                {
-                    RaiseLogMessage("UniScrollController: get_InteractionVisualScrollRailingMode for Orientation=" + Orientation);
-                    return Owner.IsRailing ? RailingMode.Enabled : RailingMode.Disabled;
                 }
             }
 
@@ -157,6 +163,12 @@ namespace MUXControlsTestApp.Utilities
             {
                 get;
                 private set;
+            }
+
+            private ScrollMode ScrollMode
+            {
+                get;
+                set;
             }
 
             private Orientation Orientation
@@ -244,6 +256,15 @@ namespace MUXControlsTestApp.Utilities
                 }
             }
 
+            public void SetScrollMode(ScrollMode scrollMode)
+            {
+                RaiseLogMessage(
+                    "UniScrollController: SetScrollMode for Orientation=" + Orientation +
+                    " with scrollMode=" + scrollMode);
+                ScrollMode = scrollMode;
+                UpdateAreInteractionsAllowed();
+            }
+
             public void SetValues(double minOffset, double maxOffset, double offset, double viewport)
             {
                 RaiseLogMessage(
@@ -293,36 +314,49 @@ namespace MUXControlsTestApp.Utilities
                 MaxOffset = maxOffset;
                 Viewport = viewport;
 
-                if (updateThumbSize)
+                if (updateThumbSize && !Owner.UpdateThumbSize())
                 {
-                    if (!Owner.UpdateThumbSize())
-                        UpdateInteractionVisualScrollMultiplier();
+                    UpdateInteractionVisualScrollMultiplier();
                 }
             }
 
-            public CompositionAnimation GetOffsetChangeAnimation(
+            public CompositionAnimation GetScrollAnimation(
                 Int32 offsetChangeId,
                 Vector2 currentPosition,
                 CompositionAnimation defaultAnimation)
             {
                 RaiseLogMessage(
-                    "UniScrollController: GetOffsetChangeAnimation for Orientation=" + Orientation +
+                    "UniScrollController: GetScrollAnimation for Orientation=" + Orientation +
                     " with offsetChangeId=" + offsetChangeId + ", currentPosition=" + currentPosition);
                 return defaultAnimation;
             }
 
-            public void OnOffsetChangeCompleted(
+            public void OnScrollCompleted(
                 Int32 offsetChangeId,
                 ScrollerViewChangeResult result)
             {
                 RaiseLogMessage(
-                    "UniScrollController: OnOffsetChangeCompleted for Orientation=" + Orientation +
+                    "UniScrollController: OnScrollCompleted for Orientation=" + Orientation +
                     " with offsetChangeId=" + offsetChangeId + ", result=" + result);
 
                 if (OffsetChangeCompleted != null)
                 {
                     OffsetChangeCompleted(this, new UniScrollControllerOffsetChangeCompletedEventArgs(offsetChangeId, result));
                 }
+            }
+
+            internal bool UpdateAreInteractionsAllowed()
+            {
+                bool oldAreInteractionsAllowed = AreInteractionsAllowed;
+
+                AreInteractionsAllowed = ScrollMode != ScrollMode.Disabled && Owner.IsEnabled;
+
+                if (oldAreInteractionsAllowed != AreInteractionsAllowed)
+                {
+                    RaiseInteractionInfoChanged();
+                    return true;
+                }
+                return false;
             }
 
             internal void UpdateInteractionVisualScrollMultiplier()
@@ -948,7 +982,11 @@ namespace MUXControlsTestApp.Utilities
         private void BiDirectionalScrollController_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             RaiseLogMessage("BiDirectionalScrollController: IsEnabledChanged with IsEnabled=" + IsEnabled);
-            RaiseInteractionInfoChanged();
+            if (!horizontalScrollController.UpdateAreInteractionsAllowed() ||
+                !verticalScrollController.UpdateAreInteractionsAllowed())
+            {
+                RaiseInteractionInfoChanged();
+            }
         }
 
         private void BiDirectionalScrollController_SizeChanged(object sender, SizeChangedEventArgs e)

@@ -43,8 +43,8 @@
         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="20" Margin="2">
             <TextBlock Text="ScrollViewers with simple contents." Margin="2" VerticalAlignment="Center"/>
             <TextBlock Text="Show ScrollViewer:" Margin="6,2,2,2" VerticalAlignment="Center"/>
-            <ComboBox x:Name="cmbShowScrollViewer" AutomationProperties.Name="cmbShowScrollViewer" 
-                    SelectedIndex="0" SelectionChanged="CmbShowScrollViewer_SelectionChanged" Width="120">
+            <ComboBox x:Name="cmbShowScrollViewer" AutomationProperties.Name="cmbShowScrollViewer" VerticalAlignment="Center"
+                    SelectedIndex="0" SelectionChanged="CmbShowScrollViewer_SelectionChanged" Width="140">
                 <ComboBoxItem>All</ComboBoxItem>
                 <ComboBoxItem>scrollViewer_11</ComboBoxItem>
                 <ComboBoxItem>scrollViewer_21</ComboBoxItem>
@@ -72,6 +72,18 @@
             <TextBox x:Name="txtScrollerVerticalOffset" AutomationProperties.AutomationId="txtScrollerVerticalOffset" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="175"/>
             <TextBlock Text="ZoomFactor:" Margin="6,2,2,2" VerticalAlignment="Center"/>
             <TextBox x:Name="txtScrollerZoomFactor" AutomationProperties.AutomationId="txtScrollerZoomFactor" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="175"/>
+            <TextBlock Text="IgnoredInputKind:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbIgnoredInputKind" AutomationProperties.Name="cmbIgnoredInputKind" VerticalAlignment="Center"
+                    SelectedIndex="0" SelectionChanged="CmbIgnoredInputKind_SelectionChanged" Width="140" IsEnabled="False" IsTabStop="False">
+                <ComboBoxItem/>
+                <ComboBoxItem>None</ComboBoxItem>
+                <ComboBoxItem>Touch</ComboBoxItem>
+                <ComboBoxItem>Pen</ComboBoxItem>
+                <ComboBoxItem>MouseWheel</ComboBoxItem>
+                <ComboBoxItem>Keyboard</ComboBoxItem>
+                <ComboBoxItem>Gamepad</ComboBoxItem>
+                <ComboBoxItem>All</ComboBoxItem>
+            </ComboBox>
         </StackPanel>
 
         <Border Margin="1" Background="Cyan" Grid.Row="2" Grid.Column="0">

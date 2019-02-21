@@ -64,7 +64,12 @@ winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::Patt
 int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
 {
     int32_t positionInSet = 0;
-    
+
+    if (IsSettingsItem())
+    {
+        return 1;
+    }
+
     if (IsOnTopNavigation())
     {
         if (auto navigationView = GetParentNavigationView())
@@ -85,7 +90,12 @@ int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
 int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
 {
     int32_t sizeOfSet = 0;
-    
+
+    if (IsSettingsItem())
+    {
+        return 1;
+    }
+
     if (IsOnTopNavigation())
     {
         if (auto navview = GetParentNavigationView())
@@ -147,6 +157,20 @@ int32_t NavigationViewItemAutomationPeer::GetNavigationViewItemCountInTopNav()
         count = winrt::get_self<NavigationView>(navigationView)->GetNavigationViewItemCountInTopNav();
     }
     return count;
+}
+
+bool NavigationViewItemAutomationPeer::IsSettingsItem()
+{
+    if (auto navView = GetParentNavigationView())
+    {
+        winrt::NavigationViewItem item = Owner().try_as<winrt::NavigationViewItem>();
+        auto settingsItem = navView.SettingsItem();
+        if (item && settingsItem && (item == settingsItem || item.Content() == settingsItem))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool NavigationViewItemAutomationPeer::IsOnTopNavigation()

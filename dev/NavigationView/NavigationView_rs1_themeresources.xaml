@@ -8,7 +8,7 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
-            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
+            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumColor" />
             <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
             <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
 
@@ -68,7 +68,7 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
+            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumColor" />
             <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
             <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
 
@@ -128,7 +128,7 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
+            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemChromeMediumColor" />
             <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
             <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SystemChromeMediumHighColor" />
 
@@ -452,7 +452,7 @@
     </Style>
 
 
-    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="NavigationViewItemPresenterStyleWhenOnLeftPane">
+    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnLeftPane">
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
@@ -567,7 +567,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="NavigationViewItemPresenterStyleWhenOnLeftPaneWithRevealFocus">
+    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnLeftPaneWithRevealFocus">
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
@@ -665,7 +665,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="local:NavigationViewItem" x:Key="NavigationViewSettingsItemStyleWhenOnTopPane">
+    <Style TargetType="local:NavigationViewItem" x:Key="MUX_NavigationViewSettingsItemStyleWhenOnTopPane">
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
@@ -763,7 +763,7 @@
         </Setter>
     </Style>
     
-    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="NavigationViewItemPresenterStyleWhenOnTopPane">
+    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnTopPane">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:NavigationViewItemPresenter">
@@ -894,7 +894,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus">
+    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:NavigationViewItemPresenter">
@@ -991,7 +991,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="NavigationViewItemPresenterStyleWhenOnTopPaneOverflow">
+    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnTopPaneOverflow">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:NavigationViewItemPresenter">
@@ -1097,7 +1097,7 @@
     </Style>
 
     <Style x:Key="NavigationViewItemHeaderTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
-        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="OpticalMarginAlignment" Value="TrimSideBearings" />
         <Setter Property="TextWrapping" Value="NoWrap"/>        
     </Style>

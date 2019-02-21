@@ -5,6 +5,7 @@
     <DefineConstants>$(DefineConstants);USING_TAEF</DefineConstants>
     <ProjectGuid>{02800516-6BE8-42A9-9665-5446896BB5C5}</ProjectGuid>
     <IsTaefTestProject Condition="'$(IsTDPConfiguration)' == 'true'">true</IsTaefTestProject>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup>
     <ProjectGuid>{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}</ProjectGuid>

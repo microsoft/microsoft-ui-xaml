@@ -62,9 +62,12 @@ enum RailingMode
 [flags]
 enum InputKind
 {
+    None = 0,
     Touch = 1,
     Pen = 2,
     MouseWheel = 4,
+    Keyboard = 8,
+    Gamepad = 16,
     All = 255,
 };
 

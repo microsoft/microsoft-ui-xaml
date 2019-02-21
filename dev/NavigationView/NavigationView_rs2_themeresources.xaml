@@ -8,7 +8,7 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemControlChromeMediumLowAcrylicElementMediumBrush" />
+            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemControlAcrylicElementBrush" />
             <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SystemControlChromeMediumLowAcrylicWindowMediumBrush" />
             <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SystemControlChromeMediumLowAcrylicElementMediumBrush" />
 
@@ -40,7 +40,7 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemControlChromeMediumLowAcrylicElementMediumBrush" />
+            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemControlAcrylicElementBrush" />
             <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SystemControlChromeMediumLowAcrylicWindowMediumBrush" />
             <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SystemControlChromeMediumLowAcrylicElementMediumBrush" />
 
@@ -72,7 +72,7 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemControlChromeMediumLowAcrylicElementMediumBrush" />
+            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SystemControlAcrylicElementBrush" />
             <StaticResource x:Key="NavigationViewExpandedPaneBackground" ResourceKey="SystemControlChromeMediumLowAcrylicWindowMediumBrush" />
             <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="SystemControlChromeMediumLowAcrylicElementMediumBrush" />
 
@@ -106,7 +106,7 @@
 
     <Thickness x:Key="NavigationViewItemBorderThickness">1</Thickness>
 
-    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="NavigationViewItemPresenterStyleWhenOnLeftPane">
+    <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnLeftPane">
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
