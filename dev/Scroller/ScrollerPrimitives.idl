@@ -56,25 +56,35 @@ unsealed runtimeclass ScrollerSnapPointRegular : ScrollerSnapPointBase
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ScrollControllerOffsetChangeRequestedEventArgs
+runtimeclass ScrollControllerScrollToRequestedEventArgs
 {
-    ScrollControllerOffsetChangeRequestedEventArgs(Double offset, MU_XC_NAMESPACE.ScrollerViewKind offsetKind, MU_XC_NAMESPACE.ScrollerViewChangeKind offsetChangeKind);
+    ScrollControllerScrollToRequestedEventArgs(Double offset, MU_XC_NAMESPACE.ScrollOptions options);
 
     Double Offset { get; };
-    MU_XC_NAMESPACE.ScrollerViewKind OffsetKind { get; };
-    MU_XC_NAMESPACE.ScrollerViewChangeKind OffsetChangeKind { get; };
-    Int32 ViewChangeId { get; set; };
+    MU_XC_NAMESPACE.ScrollOptions Options{ get; };
+    MU_XC_NAMESPACE.ScrollInfo ScrollInfo { get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs
+runtimeclass ScrollControllerScrollByRequestedEventArgs
 {
-    ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs(Single additionalVelocity, Windows.Foundation.IReference<Single> inertiaDecayRate);
+    ScrollControllerScrollByRequestedEventArgs(Double offsetDelta, MU_XC_NAMESPACE.ScrollOptions options);
 
-    Single AdditionalVelocity { get; };
+    Double OffsetDelta { get; };
+    MU_XC_NAMESPACE.ScrollOptions Options { get; };
+    MU_XC_NAMESPACE.ScrollInfo ScrollInfo { get; set; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollControllerScrollFromRequestedEventArgs
+{
+    ScrollControllerScrollFromRequestedEventArgs(Single offsetVelocity, Windows.Foundation.IReference<Single> inertiaDecayRate);
+
+    Single OffsetVelocity { get; };
     Windows.Foundation.IReference<Single> InertiaDecayRate { get; };
-    Int32 ViewChangeId { get; set; };
+    MU_XC_NAMESPACE.ScrollInfo ScrollInfo { get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -102,8 +112,9 @@ interface IScrollController
     void SetValues(Double minOffset, Double maxOffset, Double offset, Double viewport);
     Windows.UI.Composition.CompositionAnimation GetScrollAnimation(Int32 offsetChangeId, Windows.Foundation.Numerics.Vector2 currentPosition, Windows.UI.Composition.CompositionAnimation defaultAnimation);
     void OnScrollCompleted(Int32 offsetChangeId, MU_XC_NAMESPACE.ScrollerViewChangeResult result);
-    event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerOffsetChangeRequestedEventArgs> OffsetChangeRequested;
-    event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs> OffsetChangeWithAdditionalVelocityRequested;
+    event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
+    event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
+    event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollFromRequestedEventArgs> ScrollFromRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerInteractionRequestedEventArgs> InteractionRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, Object> InteractionInfoChanged;
 }

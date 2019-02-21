@@ -22,3 +22,10 @@ ZoomFactorChangeWithAdditionalVelocity::~ZoomFactorChangeWithAdditionalVelocity(
 {
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }
+
+void ZoomFactorChangeWithAdditionalVelocity::ZoomFactorVelocity(float zoomFactorVelocity)
+{
+    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_FLT, METH_NAME, this, zoomFactorVelocity);
+
+    m_zoomFactorVelocity = zoomFactorVelocity;
+}

@@ -23,3 +23,17 @@ OffsetsChange::~OffsetsChange()
 {
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }
+
+void OffsetsChange::ZoomedHorizontalOffset(double zoomedHorizontalOffset)
+{
+    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, zoomedHorizontalOffset);
+
+    m_zoomedHorizontalOffset = zoomedHorizontalOffset;
+}
+
+void OffsetsChange::ZoomedVerticalOffset(double zoomedVerticalOffset)
+{
+    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, zoomedVerticalOffset);
+
+    m_zoomedVerticalOffset = zoomedVerticalOffset;
+}

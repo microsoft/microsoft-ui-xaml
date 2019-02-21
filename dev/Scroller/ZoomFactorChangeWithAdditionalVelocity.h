@@ -14,6 +14,23 @@ public:
         winrt::IReference<float> inertiaDecayRate);
     ~ZoomFactorChangeWithAdditionalVelocity();
 
+    float ZoomFactorVelocity() const
+    {
+        return m_zoomFactorVelocity;
+    }
+
+    void ZoomFactorVelocity(float zoomFactorVelocity);
+
+    winrt::IReference<winrt::float2> CenterPoint() const
+    {
+        return m_centerPoint;
+    }
+
+    winrt::IReference<float> InertiaDecayRate() const
+    {
+        return m_inertiaDecayRate;
+    }
+
 private:
     float m_zoomFactorVelocity{};
     winrt::IReference<winrt::float2> m_centerPoint{};

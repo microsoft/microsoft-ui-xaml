@@ -29,7 +29,7 @@ ScrollOptions::ScrollOptions(
     m_snapPointsMode = snapPointsMode;
 }
 
-winrt::AnimationMode ScrollOptions::AnimationMode()
+winrt::AnimationMode ScrollOptions::AnimationMode() const
 {
     return m_animationMode;
 }
@@ -38,10 +38,11 @@ void ScrollOptions::AnimationMode(winrt::AnimationMode const& animationMode)
 {
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str());
+
     m_animationMode = animationMode;
 }
 
-winrt::SnapPointsMode ScrollOptions::SnapPointsMode()
+winrt::SnapPointsMode ScrollOptions::SnapPointsMode() const
 {
     return m_snapPointsMode;
 }
@@ -50,6 +51,7 @@ void ScrollOptions::SnapPointsMode(winrt::SnapPointsMode const& snapPointsMode)
 {
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::SnapPointsModeToString(snapPointsMode).c_str());
+
     m_snapPointsMode = snapPointsMode;
 }
 

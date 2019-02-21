@@ -25,8 +25,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)OffsetsChange.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)OffsetsChangeWithAdditionalVelocity.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerInteractionRequestedEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerOffsetChangeRequestedEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerScrollByRequestedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerScrollFromRequestedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerScrollToRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Scroller.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerBringingIntoViewEventArgs.h" />
@@ -54,8 +55,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)OffsetsChange.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)OffsetsChangeWithAdditionalVelocity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerInteractionRequestedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerOffsetChangeRequestedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerScrollByRequestedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerScrollFromRequestedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerScrollToRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Scroller.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerBringingIntoViewEventArgs.cpp" />

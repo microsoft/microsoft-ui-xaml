@@ -29,7 +29,7 @@ ZoomOptions::ZoomOptions(
     m_snapPointsMode = snapPointsMode;
 }
 
-winrt::AnimationMode ZoomOptions::AnimationMode()
+winrt::AnimationMode ZoomOptions::AnimationMode() const
 {
     return m_animationMode;
 }
@@ -41,7 +41,7 @@ void ZoomOptions::AnimationMode(winrt::AnimationMode const& animationMode)
     m_animationMode = animationMode;
 }
 
-winrt::SnapPointsMode ZoomOptions::SnapPointsMode()
+winrt::SnapPointsMode ZoomOptions::SnapPointsMode() const
 {
     return m_snapPointsMode;
 }

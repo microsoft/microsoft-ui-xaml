@@ -3800,35 +3800,39 @@ void Scroller::OnPointerWheelChangedHandler(
     // Incremental zoom factor change per velocity unit
     const float c_zoomFactorChangePerVelocityUnit = 0.1f;
 
-    winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions optionsClone = nullptr;
-    float additionalVelocity = static_cast<float>(mouseWheelDelta) / mouseWheelDeltaForVelocityUnit;
+    std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity = nullptr;
+    float zoomFactorVelocity = static_cast<float>(mouseWheelDelta) / mouseWheelDeltaForVelocityUnit;
 
     if (interactionTrackerAsyncOperation)
     {
-        winrt::IInspectable options = interactionTrackerAsyncOperation->GetOptions();
-        optionsClone = options.as<winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions>();
-        additionalVelocity += optionsClone.AdditionalVelocity();
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+        zoomFactorChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<ZoomFactorChangeWithAdditionalVelocity>(viewChangeBase);
+
+        if (zoomFactorChangeWithAdditionalVelocity)
+        {
+            zoomFactorVelocity += zoomFactorChangeWithAdditionalVelocity->ZoomFactorVelocity();
+        }
     }
 
-    if (additionalVelocity > 0.0f)
+    if (zoomFactorVelocity > 0.0f)
     {
         MUX_ASSERT(endOfInertiaZoomFactor < maxZoomFactor);
 
         // No point in exceeding the maximum effective velocity
-        additionalVelocity = std::min(c_maxVelocityUnits, additionalVelocity);
+        zoomFactorVelocity = std::min(c_maxVelocityUnits, zoomFactorVelocity);
 
         // Do not attempt to zoom factor beyond the MaxZoomFactor value
-        additionalVelocity = std::min((maxZoomFactor - endOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, additionalVelocity);
+        zoomFactorVelocity = std::min((maxZoomFactor - endOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, zoomFactorVelocity);
     }
     else
     {
         MUX_ASSERT(endOfInertiaZoomFactor > minZoomFactor);
 
         // No point in exceeding the minimum effective velocity
-        additionalVelocity = std::max(-c_maxVelocityUnits, additionalVelocity);
+        zoomFactorVelocity = std::max(-c_maxVelocityUnits, zoomFactorVelocity);
 
         // Do not attempt to zoom factor beyond the MinZoomFactor value
-        additionalVelocity = std::max((minZoomFactor - endOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, additionalVelocity);
+        zoomFactorVelocity = std::max((minZoomFactor - endOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, zoomFactorVelocity);
     }
 
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this,
@@ -3849,28 +3853,25 @@ void Scroller::OnPointerWheelChangedHandler(
         }
 
         // Make sure the initial velocity is larger than the minimum effective velocity
-        additionalVelocity += (additionalVelocity > 0.0f) ? c_minVelocityUnits : -c_minVelocityUnits;
+        zoomFactorVelocity += (zoomFactorVelocity > 0.0f) ? c_minVelocityUnits : -c_minVelocityUnits;
 
         winrt::IInspectable inertiaDecayRateAsInsp = box_value(mouseWheelInertiaDecayRate);
         winrt::IReference<float> inertiaDecayRate = inertiaDecayRateAsInsp.as<winrt::IReference<float>>();
         winrt::float2 centerPoint = ComputeCenterPointerForMouseWheelZooming(Content(), pointerPoint.Position());
 
-        auto options = winrt::make_self<ScrollerChangeZoomFactorWithAdditionalVelocityOptions>(
-            additionalVelocity,
-            inertiaDecayRate,
-            centerPoint);
-
         int32_t viewChangeId = -1;
 
         // Queue up a zooming with additional velocity operation
         ChangeZoomFactorWithAdditionalVelocityPrivate(
+            zoomFactorVelocity,
+            centerPoint,
+            inertiaDecayRate,
             InteractionTrackerAsyncOperationTrigger::MouseWheel,
-            *options,
             &viewChangeId);
     }
-    else
+    else if (zoomFactorChangeWithAdditionalVelocity)
     {
-        optionsClone.AdditionalVelocity(additionalVelocity);
+        zoomFactorChangeWithAdditionalVelocity->ZoomFactorVelocity(zoomFactorVelocity);
     }
 
     args.Handled(true);
@@ -4245,11 +4246,11 @@ void Scroller::OnScrollControllerInteractionInfoChanged(
     }
 }
 
-// Invoked when a IScrollController::OffsetChangeRequested event is raised in order to perform the
-// equivalent of a Scroller::ChangeOffsets operation.
-void Scroller::OnScrollControllerOffsetChangeRequested(
+// Invoked when a IScrollController::ScrollToRequested event is raised in order to perform the
+// equivalent of a Scroller::ScrollTo operation.
+void Scroller::OnScrollControllerScrollToRequested(
     const winrt::IScrollController& sender,
-    const winrt::ScrollControllerOffsetChangeRequestedEventArgs& args)
+    const winrt::ScrollControllerScrollToRequestedEventArgs& args)
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, sender);
 
@@ -4264,25 +4265,21 @@ void Scroller::OnScrollControllerOffsetChangeRequested(
     int32_t viewChangeId = -1;
 
     // Attempt to find an offset change request from an IScrollController with the same ScrollerViewKind,
-    // the same ScrollerViewChangeKind and same tick.
+    // the same ScrollOptions settings and same tick.
     std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationFromKinds(
         true /*isOperationTypeForOffsetsChange*/,
         static_cast<InteractionTrackerAsyncOperationTrigger>(static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest) + static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest)),
-        args.OffsetKind(),
-        args.OffsetChangeKind());
+        ScrollerViewKind::Absolute,
+        args.Options());
 
     if (!interactionTrackerAsyncOperation)
     {
-        auto options = winrt::make_self<ScrollerChangeOffsetsOptions>(
+        ChangeOffsetsPrivate(
             isFromHorizontalScrollController ? args.Offset() : m_zoomedHorizontalOffset,
             isFromHorizontalScrollController ? m_zoomedVerticalOffset : args.Offset(),
-            args.OffsetKind(),
-            args.OffsetChangeKind(),
-            winrt::ScrollerViewChangeSnapPointRespect::RespectSnapPoints);
-
-        ChangeOffsetsPrivate(
+            ScrollerViewKind::Absolute,
+            args.Options(),
             isFromHorizontalScrollController ? InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest : InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest,
-            *options,
             -1 /*existingViewChangeId*/,
             &viewChangeId);
     }
@@ -4290,18 +4287,18 @@ void Scroller::OnScrollControllerOffsetChangeRequested(
     {
         // Coalesce requests
         int32_t existingViewChangeId = interactionTrackerAsyncOperation->GetViewChangeId();
-        winrt::IInspectable options = interactionTrackerAsyncOperation->GetOptions();
-        winrt::ScrollerChangeOffsetsOptions optionsClone = options.as<winrt::ScrollerChangeOffsetsOptions>();
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+        std::shared_ptr<OffsetsChange> offsetsChange = std::reinterpret_pointer_cast<OffsetsChange>(viewChangeBase);
 
         interactionTrackerAsyncOperation->SetIsScrollControllerRequest(isFromHorizontalScrollController);
 
         if (isFromHorizontalScrollController)
         {
-            optionsClone.HorizontalOffset(args.Offset());
+            offsetsChange->ZoomedHorizontalOffset(args.Offset());
         }
         else
         {
-            optionsClone.VerticalOffset(args.Offset());
+            offsetsChange->ZoomedVerticalOffset(args.Offset());
         }
 
         viewChangeId = existingViewChangeId;
@@ -4309,15 +4306,79 @@ void Scroller::OnScrollControllerOffsetChangeRequested(
 
     if (viewChangeId != -1)
     {
-        args.ViewChangeId(viewChangeId);
+        args.ScrollInfo(winrt::ScrollInfo{ viewChangeId });
     }
 }
 
-// Invoked when a IScrollController::OffsetChangeWithAdditionalVelocityRequested event is raised in order to perform the
-// equivalent of a Scroller::ChangeOffsetsWithAdditionalVelocityAsync operation.
-void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
+// Invoked when a IScrollController::ScrollByRequested event is raised in order to perform the
+// equivalent of a Scroller::ScrollBy operation.
+void Scroller::OnScrollControllerScrollByRequested(
     const winrt::IScrollController& sender,
-    const winrt::ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs& args)
+    const winrt::ScrollControllerScrollByRequestedEventArgs& args)
+{
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, sender);
+
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        throw winrt::hresult_error(E_NOTIMPL);
+    }
+
+    MUX_ASSERT(sender == m_horizontalScrollController.get() || sender == m_verticalScrollController.get());
+
+    bool isFromHorizontalScrollController = sender == m_horizontalScrollController.get();
+    int32_t viewChangeId = -1;
+
+    // Attempt to find an offset change request from an IScrollController with the same ScrollerViewKind,
+    // the same ScrollOptions settings and same tick.
+    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationFromKinds(
+        true /*isOperationTypeForOffsetsChange*/,
+        static_cast<InteractionTrackerAsyncOperationTrigger>(static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest) + static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest)),
+        ScrollerViewKind::RelativeToCurrentView,
+        args.Options());
+
+    if (!interactionTrackerAsyncOperation)
+    {
+        ChangeOffsetsPrivate(
+            isFromHorizontalScrollController ? args.OffsetDelta() : 0.0 /*zoomedHorizontalOffset*/,
+            isFromHorizontalScrollController ? 0.0 : args.OffsetDelta() /*zoomedVerticalOffset*/,
+            ScrollerViewKind::RelativeToCurrentView,
+            args.Options(),
+            isFromHorizontalScrollController ? InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest : InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest,
+            -1 /*existingViewChangeId*/,
+            &viewChangeId);
+    }
+    else
+    {
+        // Coalesce requests
+        int32_t existingViewChangeId = interactionTrackerAsyncOperation->GetViewChangeId();
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+        std::shared_ptr<OffsetsChange> offsetsChange = std::reinterpret_pointer_cast<OffsetsChange>(viewChangeBase);
+
+        interactionTrackerAsyncOperation->SetIsScrollControllerRequest(isFromHorizontalScrollController);
+
+        if (isFromHorizontalScrollController)
+        {
+            offsetsChange->ZoomedHorizontalOffset(offsetsChange->ZoomedHorizontalOffset() + args.OffsetDelta());
+        }
+        else
+        {
+            offsetsChange->ZoomedVerticalOffset(offsetsChange->ZoomedVerticalOffset() + args.OffsetDelta());
+        }
+
+        viewChangeId = existingViewChangeId;
+    }
+
+    if (viewChangeId != -1)
+    {
+        args.ScrollInfo(winrt::ScrollInfo{ viewChangeId });
+    }
+}
+
+// Invoked when a IScrollController::ScrollFromRequested event is raised in order to perform the
+// equivalent of a Scroller::ScrollFrom operation.
+void Scroller::OnScrollControllerScrollFromRequested(
+    const winrt::IScrollController& sender,
+    const winrt::ScrollControllerScrollFromRequestedEventArgs& args)
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, sender);
 
@@ -4341,16 +4402,16 @@ void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
     if (!interactionTrackerAsyncOperation)
     {
         winrt::IReference<winrt::float2> inertiaDecayRate = nullptr;
-        winrt::float2 additionalVelocity{};
+        winrt::float2 offsetsVelocity{};
 
         if (isFromHorizontalScrollController)
         {
-            additionalVelocity.x = args.AdditionalVelocity();
+            offsetsVelocity.x = args.OffsetVelocity();
             horizontalInertiaDecayRate = args.InertiaDecayRate();
         }
         else
         {
-            additionalVelocity.y = args.AdditionalVelocity();
+            offsetsVelocity.y = args.OffsetVelocity();
             verticalInertiaDecayRate = args.InertiaDecayRate();
         }
 
@@ -4370,13 +4431,10 @@ void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
             inertiaDecayRate = inertiaDecayRateAsInsp.as<winrt::IReference<winrt::float2>>();
         }
 
-        auto options = winrt::make_self<ScrollerChangeOffsetsWithAdditionalVelocityOptions>(
-            additionalVelocity,
-            inertiaDecayRate);
-
         ChangeOffsetsWithAdditionalVelocityPrivate(
+            offsetsVelocity,
+            inertiaDecayRate,
             isFromHorizontalScrollController ? InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest : InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest,
-            *options,
             &viewChangeId);
     }
     else
@@ -4385,14 +4443,14 @@ void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
         int32_t existingViewChangeId = interactionTrackerAsyncOperation->GetViewChangeId();
         winrt::IInspectable options = interactionTrackerAsyncOperation->GetOptions();
         winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions optionsClone = options.as<winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions>();
-        winrt::float2 additionalVelocity = optionsClone.AdditionalVelocity();
+        winrt::float2 offsetsVelocity = optionsClone.AdditionalVelocity();
         winrt::IReference<winrt::float2> inertiaDecayRate = optionsClone.InertiaDecayRate();
 
         interactionTrackerAsyncOperation->SetIsScrollControllerRequest(isFromHorizontalScrollController);
 
         if (isFromHorizontalScrollController)
         {
-            additionalVelocity.x = args.AdditionalVelocity();
+            offsetsVelocity.x = args.OffsetVelocity();
             horizontalInertiaDecayRate = args.InertiaDecayRate();
 
             if (!horizontalInertiaDecayRate)
@@ -4436,7 +4494,7 @@ void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
         }
         else
         {
-            additionalVelocity.y = args.AdditionalVelocity();
+            offsetsVelocity.y = args.OffsetVelocity();
             verticalInertiaDecayRate = args.InertiaDecayRate();
 
             if (!verticalInertiaDecayRate)
@@ -4479,14 +4537,14 @@ void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
             }
         }
 
-        optionsClone.AdditionalVelocity(additionalVelocity);
+        optionsClone.AdditionalVelocity(offsetsVelocity);
 
         viewChangeId = existingViewChangeId;
     }
 
     if (viewChangeId != -1)
     {
-        args.ViewChangeId(viewChangeId);
+        args.ScrollInfo(winrt::ScrollInfo{ viewChangeId });
     }
 }
 
@@ -5472,7 +5530,7 @@ void Scroller::ChangeOffsetsWithAdditionalVelocityPrivate(
     winrt::IReference<winrt::float2> inertiaDecayRate = options.InertiaDecayRate();
 
     // Clone the options for this request. The clone will be used if the operation ever gets processed.
-    // Options are cloned so that they can be modified by the caller after this ChangeOffsetsWithAdditionalVelocityAsync call without affecting the outcome of the operation.
+    // Options are cloned so that they can be modified by the caller after this ScrollFrom call without affecting the outcome of the operation.
     auto optionsClone = winrt::make_self<ScrollerChangeOffsetsWithAdditionalVelocityOptions>(
         additionalVelocity, inertiaDecayRate);
 
@@ -6421,6 +6479,102 @@ std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTracke
 std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTrackerOperationFromKinds(
     bool isOperationTypeForOffsetsChange,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
+    ScrollerViewKind const& viewKind,
+    winrt::ScrollOptions const& options) const
+{
+    for (auto& interactionTrackerAsyncOperation : m_interactionTrackerAsyncOperations)
+    {
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+
+        if ((static_cast<int>(interactionTrackerAsyncOperation->GetOperationTrigger()) & static_cast<int>(operationTrigger)) == 0x00 ||
+            !interactionTrackerAsyncOperation->IsQueued() ||
+            interactionTrackerAsyncOperation->IsUnqueueing() ||
+            interactionTrackerAsyncOperation->IsCanceled() ||
+            !viewChangeBase)
+        {
+            continue;
+        }
+
+        switch (interactionTrackerAsyncOperation->GetOperationType())
+        {
+        case InteractionTrackerAsyncOperationType::TryUpdatePosition:
+        case InteractionTrackerAsyncOperationType::TryUpdatePositionBy:
+        case InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation:
+        {
+            if (!isOperationTypeForOffsetsChange)
+            {
+                continue;
+            }
+
+            std::shared_ptr<ViewChange> viewChange = std::reinterpret_pointer_cast<ViewChange>(viewChangeBase);
+
+            if (viewChange->ViewKind() != viewKind)
+            {
+                continue;
+            }
+
+            winrt::ScrollOptions optionsClone = viewChange->Options().try_as<winrt::ScrollOptions>();
+            winrt::AnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
+            winrt::AnimationMode animationModeClone = optionsClone ? optionsClone.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
+
+            if (animationModeClone != animationMode)
+            {
+                continue;
+            }
+
+            winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+            winrt::SnapPointsMode snapPointsModeClone = optionsClone ? optionsClone.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+
+            if (snapPointsModeClone != snapPointsMode)
+            {
+                continue;
+            }
+            break;
+        }
+        case InteractionTrackerAsyncOperationType::TryUpdateScale:
+        case InteractionTrackerAsyncOperationType::TryUpdateScaleWithAnimation:
+        {
+            if (isOperationTypeForOffsetsChange)
+            {
+                continue;
+            }
+
+            std::shared_ptr<ViewChange> viewChange = std::reinterpret_pointer_cast<ViewChange>(viewChangeBase);
+
+            if (viewChange->ViewKind() != viewKind)
+            {
+                continue;
+            }
+
+            winrt::ZoomOptions optionsClone = viewChange->Options().try_as<winrt::ZoomOptions>();
+            winrt::AnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
+            winrt::AnimationMode animationModeClone = optionsClone ? optionsClone.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
+
+            if (animationModeClone != animationMode)
+            {
+                continue;
+            }
+
+            winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+            winrt::SnapPointsMode snapPointsModeClone = optionsClone ? optionsClone.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+
+            if (snapPointsModeClone != snapPointsMode)
+            {
+                continue;
+            }
+            break;
+        }
+        }
+
+        return interactionTrackerAsyncOperation;
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTrackerOperationFromKinds(
+    bool isOperationTypeForOffsetsChange,
+    InteractionTrackerAsyncOperationTrigger operationTrigger,
     const winrt::ScrollerViewKind& viewKind,
     const winrt::ScrollerViewChangeKind& viewChangeKind) const
 {
@@ -6482,13 +6636,13 @@ std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTracke
 {
     for (auto& interactionTrackerAsyncOperation : m_interactionTrackerAsyncOperations)
     {
-        winrt::IInspectable options = interactionTrackerAsyncOperation->GetOptions();
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
 
         if ((static_cast<int>(interactionTrackerAsyncOperation->GetOperationTrigger()) & static_cast<int>(operationTrigger)) == 0x00 ||
             !interactionTrackerAsyncOperation->IsQueued() ||
             interactionTrackerAsyncOperation->IsUnqueueing() ||
             interactionTrackerAsyncOperation->IsCanceled() ||
-            !options)
+            !viewChangeBase)
         {
             continue;
         }
@@ -6703,14 +6857,19 @@ void Scroller::HookHorizontalScrollControllerEvents(
         m_horizontalScrollControllerInteractionInfoChangedToken = horizontalScrollController.InteractionInfoChanged({ this, &Scroller::OnScrollControllerInteractionInfoChanged });
     }
 
-    if (m_horizontalScrollControllerOffsetChangeRequestedToken.value == 0)
+    if (m_horizontalScrollControllerScrollToRequestedToken.value == 0)
     {
-        m_horizontalScrollControllerOffsetChangeRequestedToken = horizontalScrollController.OffsetChangeRequested({ this, &Scroller::OnScrollControllerOffsetChangeRequested });
+        m_horizontalScrollControllerScrollToRequestedToken = horizontalScrollController.ScrollToRequested({ this, &Scroller::OnScrollControllerScrollToRequested });
     }
 
-    if (m_horizontalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken.value == 0)
+    if (m_horizontalScrollControllerScrollByRequestedToken.value == 0)
     {
-        m_horizontalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken = horizontalScrollController.OffsetChangeWithAdditionalVelocityRequested({ this, &Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested });
+        m_horizontalScrollControllerScrollByRequestedToken = horizontalScrollController.ScrollByRequested({ this, &Scroller::OnScrollControllerScrollByRequested });
+    }
+
+    if (m_horizontalScrollControllerScrollFromRequestedToken.value == 0)
+    {
+        m_horizontalScrollControllerScrollFromRequestedToken = horizontalScrollController.ScrollFromRequested({ this, &Scroller::OnScrollControllerScrollFromRequested });
     }
 }
 
@@ -6730,14 +6889,19 @@ void Scroller::HookVerticalScrollControllerEvents(
         m_verticalScrollControllerInteractionInfoChangedToken = verticalScrollController.InteractionInfoChanged({ this, &Scroller::OnScrollControllerInteractionInfoChanged });
     }
 
-    if (m_verticalScrollControllerOffsetChangeRequestedToken.value == 0)
+    if (m_verticalScrollControllerScrollToRequestedToken.value == 0)
     {
-        m_verticalScrollControllerOffsetChangeRequestedToken = verticalScrollController.OffsetChangeRequested({ this, &Scroller::OnScrollControllerOffsetChangeRequested });
+        m_verticalScrollControllerScrollToRequestedToken = verticalScrollController.ScrollToRequested({ this, &Scroller::OnScrollControllerScrollToRequested });
     }
 
-    if (m_verticalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken.value == 0)
+    if (m_verticalScrollControllerScrollByRequestedToken.value == 0)
     {
-        m_verticalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken = verticalScrollController.OffsetChangeWithAdditionalVelocityRequested({ this, &Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested });
+        m_verticalScrollControllerScrollByRequestedToken = verticalScrollController.ScrollByRequested({ this, &Scroller::OnScrollControllerScrollByRequested });
+    }
+
+    if (m_verticalScrollControllerScrollFromRequestedToken.value == 0)
+    {
+        m_verticalScrollControllerScrollFromRequestedToken = verticalScrollController.ScrollFromRequested({ this, &Scroller::OnScrollControllerScrollFromRequested });
     }
 }
 
@@ -6758,16 +6922,22 @@ void Scroller::UnhookHorizontalScrollControllerEvents(
         m_horizontalScrollControllerInteractionInfoChangedToken.value = 0;
     }
 
-    if (m_horizontalScrollControllerOffsetChangeRequestedToken.value != 0)
+    if (m_verticalScrollControllerScrollToRequestedToken.value != 0)
     {
-        horizontalScrollController.OffsetChangeRequested(m_horizontalScrollControllerOffsetChangeRequestedToken);
-        m_horizontalScrollControllerOffsetChangeRequestedToken.value = 0;
+        horizontalScrollController.ScrollToRequested(m_horizontalScrollControllerScrollToRequestedToken);
+        m_verticalScrollControllerScrollToRequestedToken.value = 0;
     }
 
-    if (m_horizontalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken.value != 0)
+    if (m_verticalScrollControllerScrollByRequestedToken.value != 0)
     {
-        horizontalScrollController.OffsetChangeWithAdditionalVelocityRequested(m_horizontalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken);
-        m_horizontalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken.value = 0;
+        horizontalScrollController.ScrollByRequested(m_horizontalScrollControllerScrollByRequestedToken);
+        m_verticalScrollControllerScrollByRequestedToken.value = 0;
+    }
+
+    if (m_horizontalScrollControllerScrollFromRequestedToken.value != 0)
+    {
+        horizontalScrollController.ScrollFromRequested(m_horizontalScrollControllerScrollFromRequestedToken);
+        m_horizontalScrollControllerScrollFromRequestedToken.value = 0;
     }
 }
 
@@ -6788,16 +6958,22 @@ void Scroller::UnhookVerticalScrollControllerEvents(
         m_verticalScrollControllerInteractionInfoChangedToken.value = 0;
     }
 
-    if (m_verticalScrollControllerOffsetChangeRequestedToken.value != 0)
+    if (m_verticalScrollControllerScrollToRequestedToken.value != 0)
     {
-        verticalScrollController.OffsetChangeRequested(m_verticalScrollControllerOffsetChangeRequestedToken);
-        m_verticalScrollControllerOffsetChangeRequestedToken.value = 0;
+        verticalScrollController.ScrollToRequested(m_verticalScrollControllerScrollToRequestedToken);
+        m_verticalScrollControllerScrollToRequestedToken.value = 0;
     }
 
-    if (m_verticalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken.value != 0)
+    if (m_verticalScrollControllerScrollByRequestedToken.value != 0)
     {
-        verticalScrollController.OffsetChangeWithAdditionalVelocityRequested(m_verticalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken);
-        m_verticalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken.value = 0;
+        verticalScrollController.ScrollByRequested(m_verticalScrollControllerScrollByRequestedToken);
+        m_verticalScrollControllerScrollByRequestedToken.value = 0;
+    }
+
+    if (m_verticalScrollControllerScrollFromRequestedToken.value != 0)
+    {
+        verticalScrollController.ScrollFromRequested(m_verticalScrollControllerScrollFromRequestedToken);
+        m_verticalScrollControllerScrollFromRequestedToken.value = 0;
     }
 }
 

@@ -15,15 +15,18 @@ public:
         winrt::ScrollOptions const& options);
     ~OffsetsChange();
 
-    double GetZoomedHorizontalOffset() const
+    double ZoomedHorizontalOffset() const
     {
         return m_zoomedHorizontalOffset;
     }
 
-    double GetZoomedVerticalOffset() const
+    double ZoomedVerticalOffset() const
     {
         return m_zoomedVerticalOffset;
     }
+
+    void ZoomedHorizontalOffset(double zoomedHorizontalOffset);
+    void ZoomedVerticalOffset(double zoomedVerticalOffset);
 
 private:
     double m_zoomedHorizontalOffset{};

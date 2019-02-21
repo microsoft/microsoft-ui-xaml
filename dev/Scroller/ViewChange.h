@@ -20,12 +20,12 @@ public:
         winrt::IInspectable const& options);
     ~ViewChange();
 
-    ScrollerViewKind GetViewKind() const
+    ScrollerViewKind ViewKind() const
     {
         return m_viewKind;
     }
 
-    winrt::IInspectable GetOptions() const
+    winrt::IInspectable Options() const
     {
         return m_options;
     }

@@ -440,6 +440,11 @@ private:
         bool includeNonAnimatedOperations) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromRequestId(
         int requestId) const;
+    std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTrackerOperationFromKinds(
+        bool isOperationTypeForOffsetsChange,
+        InteractionTrackerAsyncOperationTrigger operationTrigger,
+        ScrollerViewKind const& viewKind,
+        winrt::ScrollOptions const& options) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromKinds(
         bool isOperationTypeForOffsetsChange,
         InteractionTrackerAsyncOperationTrigger trigger,
@@ -580,12 +585,15 @@ private:
     void OnScrollControllerInteractionInfoChanged(
         const winrt::IScrollController& sender,
         const winrt::IInspectable& args);
-    void OnScrollControllerOffsetChangeRequested(
+    void OnScrollControllerScrollToRequested(
         const winrt::IScrollController& sender,
-        const winrt::ScrollControllerOffsetChangeRequestedEventArgs& args);
-    void OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
+        const winrt::ScrollControllerScrollToRequestedEventArgs& args);
+    void OnScrollControllerScrollByRequested(
         const winrt::IScrollController& sender,
-        const winrt::ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs& args);
+        const winrt::ScrollControllerScrollByRequestedEventArgs& args);
+    void OnScrollControllerScrollFromRequested(
+        const winrt::IScrollController& sender,
+        const winrt::ScrollControllerScrollFromRequestedEventArgs& args);
 
     void OnHorizontalSnapPointsVectorChanged(
         const winrt::IObservableVector<winrt::ScrollerSnapPointBase>& sender,
@@ -765,13 +773,15 @@ private:
     winrt::event_token m_contentHorizontalAlignmentChangedToken{};
     winrt::event_token m_contentVerticalAlignmentChangedToken{};
 
-    winrt::event_token m_horizontalScrollControllerOffsetChangeRequestedToken{};
-    winrt::event_token m_horizontalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken{};
+    winrt::event_token m_horizontalScrollControllerScrollToRequestedToken{};
+    winrt::event_token m_horizontalScrollControllerScrollByRequestedToken{};
+    winrt::event_token m_horizontalScrollControllerScrollFromRequestedToken{};
     winrt::event_token m_horizontalScrollControllerInteractionRequestedToken{};
     winrt::event_token m_horizontalScrollControllerInteractionInfoChangedToken{};
 
-    winrt::event_token m_verticalScrollControllerOffsetChangeRequestedToken{};
-    winrt::event_token m_verticalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken{};
+    winrt::event_token m_verticalScrollControllerScrollToRequestedToken{};
+    winrt::event_token m_verticalScrollControllerScrollByRequestedToken{};
+    winrt::event_token m_verticalScrollControllerScrollFromRequestedToken{};
     winrt::event_token m_verticalScrollControllerInteractionRequestedToken{};
     winrt::event_token m_verticalScrollControllerInteractionInfoChangedToken{};
 

@@ -15,6 +15,16 @@ public:
         winrt::ZoomOptions const& options);
     ~ZoomFactorChange();
 
+    float ZoomFactor() const
+    {
+        return m_zoomFactor;
+    }
+
+    winrt::IReference<winrt::float2> CenterPoint() const
+    {
+        return m_centerPoint;
+    }
+
 private:
     float m_zoomFactor{};
     winrt::IReference<winrt::float2> m_centerPoint{};
