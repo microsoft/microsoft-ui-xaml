@@ -12,6 +12,7 @@
 #include "ScrollerAnchorRequestedEventArgs.h"
 #include "ScrollerSnapPoint.h"
 #include "ScrollerTrace.h"
+#include "ViewChange.h"
 
 #include "Scroller.g.h"
 #include "Scroller.properties.h"
@@ -358,6 +359,20 @@ private:
     void OnContentLayoutOffsetChanged(ScrollerDimension dimension);
 
     void ChangeOffsetsPrivate(
+        double zoomedHorizontalOffset,
+        double zoomedVerticalOffset,
+        ScrollerViewKind offsetsKind,
+        winrt::ScrollOptions const& options,
+        InteractionTrackerAsyncOperationTrigger operationTrigger,
+        int32_t existingViewChangeId,
+        _Out_opt_ int32_t* viewChangeId);
+    void ChangeOffsetsWithAdditionalVelocityPrivate(
+        winrt::float2 offsetsVelocity,
+        winrt::IReference<winrt::float2> inertiaDecayRate,
+        InteractionTrackerAsyncOperationTrigger operationTrigger,
+        _Out_opt_ int32_t* viewChangeId);
+
+    void ChangeOffsetsPrivate(
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         const winrt::ScrollerChangeOffsetsOptions& options,
         int32_t existingViewChangeId,
@@ -366,6 +381,20 @@ private:
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         const winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions& options,
         _Out_opt_ int32_t* viewChangeId);
+
+    void ChangeZoomFactorPrivate(
+        float zoomFactor,
+        winrt::IReference<winrt::float2> centerPoint,
+        ScrollerViewKind zoomFactorKind,
+        winrt::ZoomOptions const& options,
+        _Out_opt_ int32_t* viewChangeId);
+    void ChangeZoomFactorWithAdditionalVelocityPrivate(
+        float zoomFactorVelocity,
+        winrt::IReference<winrt::float2> centerPoint,
+        winrt::IReference<float> inertiaDecayRate,
+        InteractionTrackerAsyncOperationTrigger operationTrigger,
+        _Out_opt_ int32_t* viewChangeId);
+
     void ChangeZoomFactorPrivate(
         const winrt::ScrollerChangeZoomFactorOptions& options,
         _Out_opt_ int32_t* viewChangeId);

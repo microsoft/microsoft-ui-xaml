@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "ViewChangeBase.h"
 #include "ScrollerTrace.h"
 
 enum class InteractionTrackerAsyncOperationType
@@ -19,8 +20,7 @@ enum class InteractionTrackerAsyncOperationType
 
 enum class InteractionTrackerAsyncOperationTrigger
 {
-    // Operation is triggered by a direct call to Scroller::ChangeOffsets, Scroller::ChangeZoomFactor,
-    // Scroller::ChangeOffsetsWithAdditionalVelocity or Scroller::ChangeZoomFactorWithAdditionalVelocity
+    // Operation is triggered by a direct call to Scroller's ScrollTo/ScrollBy/ScrollFrom or ZoomTo/ZoomBy/ZoomFrom
     DirectViewChange = 0x01,
     // Operation is triggered by the horizontal IScrollController.
     HorizontalScrollControllerRequest = 0x02,
@@ -46,6 +46,11 @@ public:
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         bool isDelayed,
         const winrt::IInspectable& options);
+    InteractionTrackerAsyncOperation(
+        InteractionTrackerAsyncOperationType operationType,
+        InteractionTrackerAsyncOperationTrigger operationTrigger,
+        bool isDelayed,
+        std::shared_ptr<ViewChangeBase> viewChangeBase);
     ~InteractionTrackerAsyncOperation();
 
     int32_t GetViewChangeId() const
@@ -189,6 +194,11 @@ public:
         return m_options;
     }
 
+    std::shared_ptr<ViewChangeBase> GetViewChangeBase() const
+    {
+        return m_viewChangeBase;
+    }
+
 private:
     // Identifies the InteractionTracker request type for this operation.
     InteractionTrackerAsyncOperationType m_operationType{ InteractionTrackerAsyncOperationType::None };
@@ -220,6 +230,9 @@ private:
     // ScrollerChangeOffsetsOptions, ScrollerChangeOffsetsWithAdditionalVelocityOptions, ScrollerChangeZoomFactorOptions or 
     // ScrollerChangeZoomFactorWithAdditionalVelocityOptions instance associated with this operation.
     winrt::IInspectable m_options{ nullptr };
+
+    // OffsetsChange or ZoomFactorChange instance associated with this operation.
+    std::shared_ptr<ViewChangeBase> m_viewChangeBase;
 
     // ViewChangeId associated with this operation.
     int32_t m_viewChangeId{ -1 };

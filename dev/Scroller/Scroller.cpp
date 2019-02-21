@@ -4,10 +4,16 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
+#include "OffsetsChange.h"
+#include "OffsetsChangeWithAdditionalVelocity.h"
+#include "ZoomFactorChangeWithAdditionalVelocity.h"
+#include "ZoomFactorChange.h"
 #include "ResourceAccessor.h"
 #include "RuntimeProfiler.h"
 #include "InteractionTrackerOwner.h"
 #include "Scroller.h"
+#include "ScrollOptions.h"
+#include "ZoomOptions.h"
 #include "ScrollerChangeOffsetsOptions.h"
 #include "ScrollerChangeOffsetsWithAdditionalVelocityOptions.h"
 #include "ScrollerChangeZoomFactorOptions.h"
@@ -432,7 +438,7 @@ winrt::ScrollInfo Scroller::ScrollTo(double horizontalOffset, double verticalOff
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalOffset, verticalOffset);
 
-    return s_noOpScrollInfo;
+    return ScrollTo(horizontalOffset, verticalOffset, nullptr /*options*/);
 }
 
 winrt::ScrollInfo Scroller::ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options)
@@ -440,14 +446,29 @@ winrt::ScrollInfo Scroller::ScrollTo(double horizontalOffset, double verticalOff
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
         horizontalOffset, verticalOffset, TypeLogging::ScrollOptionsToString(options).c_str());
 
-    return s_noOpScrollInfo;
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        throw winrt::hresult_error(E_NOTIMPL);
+    }
+
+    int32_t viewChangeId;
+    ChangeOffsetsPrivate(
+        horizontalOffset /*zoomedHorizontalOffset*/,
+        verticalOffset /*zoomedVerticalOffset*/,
+        ScrollerViewKind::Absolute,
+        options,
+        InteractionTrackerAsyncOperationTrigger::DirectViewChange,
+        -1 /*existingViewChangeId*/,
+        &viewChangeId);
+
+    return winrt::ScrollInfo{ viewChangeId };
 }
 
 winrt::ScrollInfo Scroller::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta)
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalOffsetDelta, verticalOffsetDelta);
 
-    return s_noOpScrollInfo;
+    return ScrollBy(horizontalOffsetDelta, verticalOffsetDelta, nullptr /*options*/);
 }
 
 winrt::ScrollInfo Scroller::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollOptions const& options)
@@ -455,7 +476,22 @@ winrt::ScrollInfo Scroller::ScrollBy(double horizontalOffsetDelta, double vertic
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
         horizontalOffsetDelta, verticalOffsetDelta, TypeLogging::ScrollOptionsToString(options).c_str());
 
-    return s_noOpScrollInfo;
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        throw winrt::hresult_error(E_NOTIMPL);
+    }
+
+    int32_t viewChangeId;
+    ChangeOffsetsPrivate(
+        horizontalOffsetDelta /*zoomedHorizontalOffset*/,
+        verticalOffsetDelta /*zoomedVerticalOffset*/,
+        ScrollerViewKind::RelativeToCurrentView,
+        options,
+        InteractionTrackerAsyncOperationTrigger::DirectViewChange,
+        -1 /*existingViewChangeId*/,
+        &viewChangeId);
+
+    return winrt::ScrollInfo{ viewChangeId };
 }
 
 winrt::ScrollInfo Scroller::ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate)
@@ -463,7 +499,19 @@ winrt::ScrollInfo Scroller::ScrollFrom(winrt::float2 offsetsVelocity, winrt::IRe
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
         TypeLogging::Float2ToString(offsetsVelocity).c_str(), TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
 
-    return s_noOpScrollInfo;
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        throw winrt::hresult_error(E_NOTIMPL);
+    }
+
+    int32_t viewChangeId;
+    ChangeOffsetsWithAdditionalVelocityPrivate(
+        offsetsVelocity,
+        inertiaDecayRate,
+        InteractionTrackerAsyncOperationTrigger::DirectViewChange,
+        &viewChangeId);
+
+    return winrt::ScrollInfo{ viewChangeId };
 }
 
 winrt::ZoomInfo Scroller::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint)
@@ -471,7 +519,7 @@ winrt::ZoomInfo Scroller::ZoomTo(float zoomFactor, winrt::IReference<winrt::floa
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(), zoomFactor);
 
-    return s_noOpZoomInfo;
+    return ZoomTo(zoomFactor, centerPoint, nullptr /*options*/);
 }
 
 winrt::ZoomInfo Scroller::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options)
@@ -481,7 +529,20 @@ winrt::ZoomInfo Scroller::ZoomTo(float zoomFactor, winrt::IReference<winrt::floa
         TypeLogging::ZoomOptionsToString(options).c_str(),
         zoomFactor);
 
-    return s_noOpZoomInfo;
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        throw winrt::hresult_error(E_NOTIMPL);
+    }
+
+    int32_t viewChangeId;
+    ChangeZoomFactorPrivate(
+        zoomFactor,
+        centerPoint,
+        ScrollerViewKind::Absolute,
+        options,
+        &viewChangeId);
+
+    return winrt::ZoomInfo{ viewChangeId };
 }
 
 winrt::ZoomInfo Scroller::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint)
@@ -490,7 +551,7 @@ winrt::ZoomInfo Scroller::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt:
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
         zoomFactorDelta);
 
-    return s_noOpZoomInfo;
+    return ZoomBy(zoomFactorDelta, centerPoint, nullptr /*options*/);
 }
 
 winrt::ZoomInfo Scroller::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options)
@@ -500,7 +561,20 @@ winrt::ZoomInfo Scroller::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt:
         TypeLogging::ZoomOptionsToString(options).c_str(),
         zoomFactorDelta);
 
-    return s_noOpZoomInfo;
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        throw winrt::hresult_error(E_NOTIMPL);
+    }
+
+    int32_t viewChangeId;
+    ChangeZoomFactorPrivate(
+        zoomFactorDelta,
+        centerPoint,
+        ScrollerViewKind::RelativeToCurrentView,
+        options,
+        &viewChangeId);
+
+    return winrt::ZoomInfo{ viewChangeId };
 }
 
 winrt::ZoomInfo Scroller::ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate)
@@ -510,7 +584,20 @@ winrt::ZoomInfo Scroller::ZoomFrom(float zoomFactorVelocity, winrt::IReference<w
         TypeLogging::NullableFloatToString(inertiaDecayRate).c_str(),
         zoomFactorVelocity);
 
-    return s_noOpZoomInfo;
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        throw winrt::hresult_error(E_NOTIMPL);
+    }
+
+    int32_t viewChangeId;
+    ChangeZoomFactorWithAdditionalVelocityPrivate(
+        zoomFactorVelocity,
+        centerPoint,
+        inertiaDecayRate,
+        InteractionTrackerAsyncOperationTrigger::DirectViewChange,
+        &viewChangeId);
+
+    return winrt::ZoomInfo{ viewChangeId };
 }
 
 // Allows to change the HorizontalOffset/VerticalOffset properties in an asynchronous manner, either through an animation or jump.
@@ -4976,6 +5063,166 @@ void Scroller::OnContentLayoutOffsetChanged(ScrollerDimension dimension)
 }
 
 void Scroller::ChangeOffsetsPrivate(
+    double zoomedHorizontalOffset,
+    double zoomedVerticalOffset,
+    ScrollerViewKind offsetsKind,
+    winrt::ScrollOptions const& options,
+    InteractionTrackerAsyncOperationTrigger operationTrigger,
+    int32_t existingViewChangeId,
+    _Out_opt_ int32_t* viewChangeId)
+{
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
+        zoomedHorizontalOffset,
+        zoomedVerticalOffset,
+        TypeLogging::ScrollOptionsToString(options).c_str());
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
+        TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str(),
+        TypeLogging::ScrollerViewKindToString(offsetsKind).c_str());
+
+    if (viewChangeId)
+    {
+        *viewChangeId = -1;
+    }
+
+    winrt::AnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
+    winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+    InteractionTrackerAsyncOperationType operationType;
+
+    switch (animationMode)
+    {
+    case winrt::AnimationMode::Disabled:
+    {
+        switch (offsetsKind)
+        {
+        case ScrollerViewKind::Absolute:
+        case ScrollerViewKind::RelativeToEndOfInertiaView:
+        {
+            operationType = InteractionTrackerAsyncOperationType::TryUpdatePosition;
+            break;
+        }
+        case ScrollerViewKind::RelativeToCurrentView:
+        {
+            operationType = InteractionTrackerAsyncOperationType::TryUpdatePositionBy;
+            break;
+        }
+        }
+        break;
+    }
+    case winrt::AnimationMode::Enabled:
+    {
+        switch (offsetsKind)
+        {
+        case ScrollerViewKind::Absolute:
+        case ScrollerViewKind::RelativeToCurrentView:
+        case ScrollerViewKind::RelativeToEndOfInertiaView:
+        {
+            operationType = InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation;
+            break;
+        }
+        }
+        break;
+    }
+    }
+
+    if (!Content())
+    {
+        // When there is no content, skip the view change request and return -1, indicating that no action was taken.
+        return;
+    }
+
+    // When the Scroller is not loaded or not set up yet, delay the offsets change request until it gets loaded.
+    // OnCompositionTargetRendering will launch the delayed changes at that point.
+    bool delayOperation = !IsLoadedAndSetUp();
+
+    // Set to True when workaround for RS5 InteractionTracker bug 18827625 was applied (i.e. on-going TryUpdatePositionWithAnimation operation
+    // is interrupted with TryUpdatePositionBy operation).
+    bool offsetsChangeWithAnimationInterrupted = false;
+
+    com_ptr<ScrollOptions> optionsClone{ nullptr };
+
+    // Clone the options for this request if needed. The clone or original options will be used if the operation ever gets processed.
+    const bool isScrollControllerRequest =
+        static_cast<char>(operationTrigger) &
+        (static_cast<char>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest) |
+            static_cast<char>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest));
+
+    if (options && !isScrollControllerRequest)
+    {
+        // Options are cloned so that they can be modified by the caller after this offsets change call without affecting the outcome of the operation.
+        optionsClone = winrt::make_self<ScrollOptions>(
+            animationMode,
+            snapPointsMode);
+    }
+
+    if (!delayOperation)
+    {
+        MUX_ASSERT(m_interactionTracker);
+
+        // Prevent any existing delayed operation from being processed after this request and overriding it.
+        // All delayed operations are completed with the Interrupted result.
+        CompleteDelayedOperations();
+
+        HookCompositionTargetRendering();
+
+        if (animationMode == winrt::AnimationMode::Enabled)
+        {
+            // Workaround for RS5 InteractionTracker bug 18827625: Interrupt on-going TryUpdatePositionWithAnimation
+            // operation before launching new one.
+            offsetsChangeWithAnimationInterrupted = InterruptViewChangeWithAnimation(InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation);
+        }
+    }
+
+    std::shared_ptr<ViewChange> offsetsChange = 
+        std::make_shared<OffsetsChange>(
+            zoomedHorizontalOffset,
+            zoomedVerticalOffset,
+            offsetsKind,
+            optionsClone ? *optionsClone : options);
+
+    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation(
+        std::make_shared<InteractionTrackerAsyncOperation>(
+            operationType,
+            operationTrigger,
+            delayOperation,
+            offsetsChange));
+
+    if (offsetsChangeWithAnimationInterrupted)
+    {
+        // Adding an extra tick to the default countdown to allow the InteractionTracker to reach and remain in the Idle state
+        // long enough to avoid its RS5 bug 18827625.
+        interactionTrackerAsyncOperation->SetTicksCountdown(interactionTrackerAsyncOperation->GetTicksCountdown() + 1);
+    }
+    else if (operationTrigger != InteractionTrackerAsyncOperationTrigger::DirectViewChange)
+    {
+        // User-triggered operations are processed as quickly as possible by minimizing their TicksCountDown
+        int ticksCountdown = GetInteractionTrackerOperationsTicksCountdownForTrigger(InteractionTrackerAsyncOperationTrigger::DirectViewChange);
+
+        interactionTrackerAsyncOperation->SetTicksCountdown(std::max(1, ticksCountdown));
+    }
+
+    m_interactionTrackerAsyncOperations.push_back(interactionTrackerAsyncOperation);
+
+    if (viewChangeId)
+    {
+        if (existingViewChangeId != -1)
+        {
+            interactionTrackerAsyncOperation->SetViewChangeId(existingViewChangeId);
+            *viewChangeId = existingViewChangeId;
+        }
+        else
+        {
+            m_latestViewChangeId = GetNextViewChangeId();
+            interactionTrackerAsyncOperation->SetViewChangeId(m_latestViewChangeId);
+            *viewChangeId = m_latestViewChangeId;
+        }
+    }
+    else if (existingViewChangeId != -1)
+    {
+        interactionTrackerAsyncOperation->SetViewChangeId(existingViewChangeId);
+    }
+}
+
+void Scroller::ChangeOffsetsPrivate(
     InteractionTrackerAsyncOperationTrigger operationTrigger,
     const winrt::ScrollerChangeOffsetsOptions& options,
     int32_t existingViewChangeId,
@@ -5132,6 +5379,72 @@ void Scroller::ChangeOffsetsPrivate(
 }
 
 void Scroller::ChangeOffsetsWithAdditionalVelocityPrivate(
+    winrt::float2 offsetsVelocity,
+    winrt::IReference<winrt::float2> inertiaDecayRate,
+    InteractionTrackerAsyncOperationTrigger operationTrigger,
+    _Out_opt_ int32_t* viewChangeId)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_STR, METH_NAME, this,
+        TypeLogging::Float2ToString(offsetsVelocity).c_str(),
+        TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str(),
+        TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str());
+
+    if (viewChangeId)
+    {
+        *viewChangeId = -1;
+    }
+
+    if (!Content())
+    {
+        // When there is no content, skip the view change request and return -1, indicating that no action was taken.
+        return;
+    }
+
+    // When the Scroller is not loaded or not set up yet, delay the offsets change request until it gets loaded.
+    // OnCompositionTargetRendering will launch the delayed changes at that point.
+    bool delayOperation = !IsLoadedAndSetUp();
+
+    std::shared_ptr<ViewChangeBase> offsetsChangeWithAdditionalVelocity =
+        std::make_shared<OffsetsChangeWithAdditionalVelocity>(
+            offsetsVelocity, inertiaDecayRate);
+
+    if (!delayOperation)
+    {
+        MUX_ASSERT(m_interactionTracker);
+
+        // Prevent any existing delayed operation from being processed after this request and overriding it.
+        // All delayed operations are completed with the Interrupted result.
+        CompleteDelayedOperations();
+
+        HookCompositionTargetRendering();
+    }
+
+    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation(
+        std::make_shared<InteractionTrackerAsyncOperation>(
+            InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity,
+            operationTrigger,
+            delayOperation,
+            offsetsChangeWithAdditionalVelocity));
+
+    if (operationTrigger != InteractionTrackerAsyncOperationTrigger::DirectViewChange)
+    {
+        // User-triggered operations are processed as quickly as possible by minimizing their TicksCountDown
+        int ticksCountdown = GetInteractionTrackerOperationsTicksCountdownForTrigger(InteractionTrackerAsyncOperationTrigger::DirectViewChange);
+
+        interactionTrackerAsyncOperation->SetTicksCountdown(std::max(1, ticksCountdown));
+    }
+
+    m_interactionTrackerAsyncOperations.push_back(interactionTrackerAsyncOperation);
+
+    if (viewChangeId)
+    {
+        m_latestViewChangeId = GetNextViewChangeId();
+        interactionTrackerAsyncOperation->SetViewChangeId(m_latestViewChangeId);
+        *viewChangeId = m_latestViewChangeId;
+    }
+}
+
+void Scroller::ChangeOffsetsWithAdditionalVelocityPrivate(
     InteractionTrackerAsyncOperationTrigger operationTrigger,
     const winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions& options,
     _Out_opt_ int32_t* viewChangeId)
@@ -5200,6 +5513,135 @@ void Scroller::ChangeOffsetsWithAdditionalVelocityPrivate(
 }
 
 void Scroller::ChangeZoomFactorPrivate(
+    float zoomFactor,
+    winrt::IReference<winrt::float2> centerPoint,
+    ScrollerViewKind zoomFactorKind,
+    winrt::ZoomOptions const& options,
+    _Out_opt_ int32_t* viewChangeId)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        zoomFactor);
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,        
+        TypeLogging::ScrollerViewKindToString(zoomFactorKind).c_str(),
+        TypeLogging::ZoomOptionsToString(options).c_str());
+
+    if (viewChangeId)
+    {
+        *viewChangeId = -1;
+    }
+
+    if (!Content())
+    {
+        // When there is no content, skip the view change request and return -1, indicating that no action was taken.
+        return;
+    }
+
+    winrt::AnimationMode animationMode = options ? options.AnimationMode() : ZoomOptions::s_defaultAnimationMode;
+    winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ZoomOptions::s_defaultSnapPointsMode;
+    InteractionTrackerAsyncOperationType operationType;
+
+    switch (animationMode)
+    {
+        case winrt::AnimationMode::Disabled:
+        {
+            switch (zoomFactorKind)
+            {
+                case ScrollerViewKind::Absolute:
+                case ScrollerViewKind::RelativeToEndOfInertiaView:
+                case ScrollerViewKind::RelativeToCurrentView:
+                {
+                    operationType = InteractionTrackerAsyncOperationType::TryUpdateScale;
+                    break;
+                }
+            }
+            break;
+        }
+        case winrt::AnimationMode::Enabled:
+        {
+            switch (zoomFactorKind)
+            {
+                case ScrollerViewKind::Absolute:
+                case ScrollerViewKind::RelativeToEndOfInertiaView:
+                case ScrollerViewKind::RelativeToCurrentView:
+                {
+                    operationType = InteractionTrackerAsyncOperationType::TryUpdateScaleWithAnimation;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+
+    // When the Scroller is not loaded or not set up yet (delayOperation==True), delay the zoomFactor change request until it gets loaded.
+    // OnCompositionTargetRendering will launch the delayed changes at that point.
+    bool delayOperation = !IsLoadedAndSetUp();
+
+    // Set to True when workaround for RS5 InteractionTracker bug 18827625 was applied (i.e. on-going TryUpdateScaleWithAnimation operation
+    // is interrupted with TryUpdateScale operation).
+    bool scaleChangeWithAnimationInterrupted = false;
+
+    com_ptr<ZoomOptions> optionsClone{ nullptr };
+
+    // Clone the original options if any. The clone will be used if the operation ever gets processed.
+    if (options)
+    {
+        // Options are cloned so that they can be modified by the caller after this zoom factor change call without affecting the outcome of the operation.
+        optionsClone = winrt::make_self<ZoomOptions>(
+            animationMode,
+            snapPointsMode);
+    }
+
+    if (!delayOperation)
+    {
+        MUX_ASSERT(m_interactionTracker);
+
+        // Prevent any existing delayed operation from being processed after this request and overriding it.
+        // All delayed operations are completed with the Interrupted result.
+        CompleteDelayedOperations();
+
+        HookCompositionTargetRendering();
+
+        if (animationMode == winrt::AnimationMode::Enabled)
+        {
+            // Workaround for RS5 InteractionTracker bug 18827625: Interrupt on-going TryUpdateScaleWithAnimation
+            // operation before launching new one.
+            scaleChangeWithAnimationInterrupted = InterruptViewChangeWithAnimation(InteractionTrackerAsyncOperationType::TryUpdateScaleWithAnimation);
+        }
+    }
+
+    std::shared_ptr<ViewChange> zoomFactorChange =
+        std::make_shared<ZoomFactorChange>(
+            zoomFactor,
+            centerPoint,
+            zoomFactorKind,
+            optionsClone ? *optionsClone : options);
+
+    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation(
+        std::make_shared<InteractionTrackerAsyncOperation>(
+            operationType,
+            InteractionTrackerAsyncOperationTrigger::DirectViewChange,
+            delayOperation,
+            zoomFactorChange));
+
+    if (scaleChangeWithAnimationInterrupted)
+    {
+        // Adding an extra tick to the default countdown to allow the InteractionTracker to reach and remain in the Idle state
+        // long enough to avoid its RS5 bug 18827625.
+        interactionTrackerAsyncOperation->SetTicksCountdown(interactionTrackerAsyncOperation->GetTicksCountdown() + 1);
+    }
+
+    m_interactionTrackerAsyncOperations.push_back(interactionTrackerAsyncOperation);
+
+    if (viewChangeId)
+    {
+        m_latestViewChangeId = GetNextViewChangeId();
+        interactionTrackerAsyncOperation->SetViewChangeId(m_latestViewChangeId);
+        *viewChangeId = m_latestViewChangeId;
+    }
+}
+
+void Scroller::ChangeZoomFactorPrivate(
     const winrt::ScrollerChangeZoomFactorOptions& options,
     _Out_opt_ int32_t* viewChangeId)
 {
@@ -5223,34 +5665,34 @@ void Scroller::ChangeZoomFactorPrivate(
 
     switch (viewChangeKind)
     {
-        case winrt::ScrollerViewChangeKind::DisableAnimation:
+    case winrt::ScrollerViewChangeKind::DisableAnimation:
+    {
+        switch (zoomFactorViewKind)
         {
-            switch (zoomFactorViewKind)
-            {
-                case winrt::ScrollerViewKind::Absolute:
-                case winrt::ScrollerViewKind::RelativeToEndOfInertiaView:
-                case winrt::ScrollerViewKind::RelativeToCurrentView:
-                {
-                    operationType = InteractionTrackerAsyncOperationType::TryUpdateScale;
-                    break;
-                }
-            }
+        case winrt::ScrollerViewKind::Absolute:
+        case winrt::ScrollerViewKind::RelativeToEndOfInertiaView:
+        case winrt::ScrollerViewKind::RelativeToCurrentView:
+        {
+            operationType = InteractionTrackerAsyncOperationType::TryUpdateScale;
             break;
         }
-        case winrt::ScrollerViewChangeKind::AllowAnimation:
+        }
+        break;
+    }
+    case winrt::ScrollerViewChangeKind::AllowAnimation:
+    {
+        switch (zoomFactorViewKind)
         {
-            switch (zoomFactorViewKind)
-            {
-                case winrt::ScrollerViewKind::Absolute:
-                case winrt::ScrollerViewKind::RelativeToEndOfInertiaView:
-                case winrt::ScrollerViewKind::RelativeToCurrentView:
-                {
-                    operationType = InteractionTrackerAsyncOperationType::TryUpdateScaleWithAnimation;
-                    break;
-                }
-            }
+        case winrt::ScrollerViewKind::Absolute:
+        case winrt::ScrollerViewKind::RelativeToEndOfInertiaView:
+        case winrt::ScrollerViewKind::RelativeToCurrentView:
+        {
+            operationType = InteractionTrackerAsyncOperationType::TryUpdateScaleWithAnimation;
             break;
         }
+        }
+        break;
+    }
     }
 
     // When the Scroller is not loaded or not set up yet (delayOperation==True), delay the zoomFactor change request until it gets loaded.
@@ -5303,6 +5745,75 @@ void Scroller::ChangeZoomFactorPrivate(
         // Adding an extra tick to the default countdown to allow the InteractionTracker to reach and remain in the Idle state
         // long enough to avoid its RS5 bug 18827625.
         interactionTrackerAsyncOperation->SetTicksCountdown(interactionTrackerAsyncOperation->GetTicksCountdown() + 1);
+    }
+
+    m_interactionTrackerAsyncOperations.push_back(interactionTrackerAsyncOperation);
+
+    if (viewChangeId)
+    {
+        m_latestViewChangeId = GetNextViewChangeId();
+        interactionTrackerAsyncOperation->SetViewChangeId(m_latestViewChangeId);
+        *viewChangeId = m_latestViewChangeId;
+    }
+}
+
+void Scroller::ChangeZoomFactorWithAdditionalVelocityPrivate(
+    float zoomFactorVelocity,
+    winrt::IReference<winrt::float2> centerPoint,
+    winrt::IReference<float> inertiaDecayRate,
+    InteractionTrackerAsyncOperationTrigger operationTrigger,
+    _Out_opt_ int32_t* viewChangeId)
+{
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        TypeLogging::NullableFloatToString(inertiaDecayRate).c_str(),
+        zoomFactorVelocity);
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this,
+        TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str());
+
+    if (viewChangeId)
+    {
+        *viewChangeId = -1;
+    }
+
+    if (!Content())
+    {
+        // When there is no content, skip the view change request and return -1, indicating that no action was taken.
+        return;
+    }
+
+    // When the Scroller is not loaded or not set up yet (delayOperation==True), delay the zoom factor change request until it gets loaded.
+    // OnCompositionTargetRendering will launch the delayed changes at that point.
+    bool delayOperation = !IsLoadedAndSetUp();
+
+    std::shared_ptr<ViewChangeBase> zoomFactorChangeWithAdditionalVelocity =
+        std::make_shared<ZoomFactorChangeWithAdditionalVelocity>(
+            zoomFactorVelocity, centerPoint, inertiaDecayRate);
+
+    if (!delayOperation)
+    {
+        MUX_ASSERT(m_interactionTracker);
+
+        // Prevent any existing delayed operation from being processed after this request and overriding it.
+        // All delayed operations are completed with the Interrupted result.
+        CompleteDelayedOperations();
+
+        HookCompositionTargetRendering();
+    }
+
+    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation(
+        std::make_shared<InteractionTrackerAsyncOperation>(
+            InteractionTrackerAsyncOperationType::TryUpdateScaleWithAdditionalVelocity,
+            operationTrigger,
+            delayOperation,
+            zoomFactorChangeWithAdditionalVelocity));
+
+    if (operationTrigger != InteractionTrackerAsyncOperationTrigger::DirectViewChange)
+    {
+        // User-triggered operations are processed as quickly as possible by minimizing their TicksCountDown
+        int ticksCountdown = GetInteractionTrackerOperationsTicksCountdownForTrigger(InteractionTrackerAsyncOperationTrigger::DirectViewChange);
+
+        interactionTrackerAsyncOperation->SetTicksCountdown(std::max(1, ticksCountdown));
     }
 
     m_interactionTrackerAsyncOperations.push_back(interactionTrackerAsyncOperation);

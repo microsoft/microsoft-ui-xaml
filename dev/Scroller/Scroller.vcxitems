@@ -22,6 +22,8 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)InteractionTrackerAsyncOperation.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InteractionTrackerOwner.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)OffsetsChange.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)OffsetsChangeWithAdditionalVelocity.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerInteractionRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerOffsetChangeRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs.h" />
@@ -39,12 +41,18 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerChangingZoomFactorEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollerAnchorRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollOptions.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ViewChange.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ViewChangeBase.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ZoomFactorChange.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ZoomFactorChangeWithAdditionalVelocity.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ZoomOptions.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Scroller.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InteractionTrackerAsyncOperation.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InteractionTrackerOwner.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)OffsetsChange.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)OffsetsChangeWithAdditionalVelocity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerInteractionRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerOffsetChangeRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs.cpp" />
@@ -63,6 +71,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerPrivate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollerAnchoring.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollOptions.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ViewChange.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ZoomFactorChange.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ZoomFactorChangeWithAdditionalVelocity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ZoomOptions.cpp" />
   </ItemGroup>
 </Project>

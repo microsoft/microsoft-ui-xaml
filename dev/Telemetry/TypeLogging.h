@@ -3,7 +3,9 @@
 
 #pragma once
 
+#include "ViewChange.h"
 #include "InteractionTrackerAsyncOperation.h"
+#include "Scroller.h"
 
 class TypeLogging
 {
@@ -35,7 +37,8 @@ static winrt::hstring ScrollBarVisibilityToString(const winrt::ScrollBarVisibili
     static winrt::hstring InputKindToString(const winrt::InputKind& inputKind);
     static winrt::hstring AnimationModeToString(const winrt::AnimationMode& animationMode);
     static winrt::hstring SnapPointsModeToString(const winrt::SnapPointsMode& snapPointsMode);
-    static winrt::hstring ScrollerViewKindToString(const winrt::ScrollerViewKind& offsetKind);
+    static winrt::hstring ScrollerViewKindToString(ScrollerViewKind viewKind);
+    static winrt::hstring ScrollerViewKindToString(const winrt::ScrollerViewKind& viewKind);
     static winrt::hstring ScrollerViewChangeKindToString(const winrt::ScrollerViewChangeKind& viewChangeKind);
     static winrt::hstring ScrollerViewChangeSnapPointRespectToString(const winrt::ScrollerViewChangeSnapPointRespect& snapPointRespect);
     static winrt::hstring ScrollerViewChangeResultToString(const winrt::ScrollerViewChangeResult& result);

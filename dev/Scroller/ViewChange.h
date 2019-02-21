@@ -1,0 +1,38 @@
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#pragma once
+
+#include "ViewChangeBase.h"
+
+enum class ScrollerViewKind
+{
+    Absolute,
+    RelativeToCurrentView,
+    RelativeToEndOfInertiaView,
+};
+
+class ViewChange : public ViewChangeBase
+{
+public:
+    ViewChange(
+        ScrollerViewKind viewKind,
+        winrt::IInspectable const& options);
+    ~ViewChange();
+
+    ScrollerViewKind GetViewKind() const
+    {
+        return m_viewKind;
+    }
+
+    winrt::IInspectable GetOptions() const
+    {
+        return m_options;
+    }
+
+private:
+    ScrollerViewKind m_viewKind{ ScrollerViewKind::Absolute };
+    // ScrollOptions or ZoomOptions instance associated with this view change.
+    winrt::IInspectable m_options{ nullptr };
+};
+

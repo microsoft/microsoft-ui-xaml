@@ -245,6 +245,22 @@ winrt::hstring TypeLogging::SnapPointsModeToString(const winrt::SnapPointsMode& 
     }
 }
 
+winrt::hstring TypeLogging::ScrollerViewKindToString(ScrollerViewKind viewKind)
+{
+    switch (viewKind)
+    {
+    case ScrollerViewKind::Absolute:
+        return L"Absolute";
+    case ScrollerViewKind::RelativeToCurrentView:
+        return L"RelativeToCurrentView";
+    case ScrollerViewKind::RelativeToEndOfInertiaView:
+        return L"RelativeToEndOfInertiaView";
+    default:
+        MUX_ASSERT(false);
+        return L"";
+    }
+}
+
 winrt::hstring TypeLogging::ScrollerViewKindToString(const winrt::ScrollerViewKind& viewKind)
 {
     switch (viewKind)
@@ -327,18 +343,32 @@ winrt::hstring TypeLogging::ScrollAmountToString(const winrt::ScrollAmount& scro
 
 winrt::hstring TypeLogging::ScrollOptionsToString(const winrt::ScrollOptions& options)
 {
-    return StringUtil::FormatString(L"ScrollOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
-        options,
-        AnimationModeToString(options.AnimationMode()).c_str(),
-        SnapPointsModeToString(options.SnapPointsMode()).c_str());
+    if (options)
+    {
+        return StringUtil::FormatString(L"ScrollOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
+            options,
+            AnimationModeToString(options.AnimationMode()).c_str(),
+            SnapPointsModeToString(options.SnapPointsMode()).c_str());
+    }
+    else
+    {
+        return L"ScrollOptions[null]";
+    }
 }
 
 winrt::hstring TypeLogging::ZoomOptionsToString(const winrt::ZoomOptions& options)
 {
-    return StringUtil::FormatString(L"ZoomOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
-        options,
-        AnimationModeToString(options.AnimationMode()).c_str(),
-        SnapPointsModeToString(options.SnapPointsMode()).c_str());
+    if (options)
+    {
+        return StringUtil::FormatString(L"ZoomOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
+            options,
+            AnimationModeToString(options.AnimationMode()).c_str(),
+            SnapPointsModeToString(options.SnapPointsMode()).c_str());
+    }
+    else
+    {
+        return L"ZoomOptions[null]";
+    }
 }
 
 winrt::hstring TypeLogging::ScrollerChangeOffsetsOptionsToString(const winrt::ScrollerChangeOffsetsOptions& options)
