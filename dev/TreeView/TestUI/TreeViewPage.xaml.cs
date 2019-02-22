@@ -802,9 +802,9 @@ namespace MUXControlsTestApp
             Frame.NavigateWithoutAnimation(typeof(TreeViewLateDataInitTest));
         }
 
-        private void TreeViewNodeInXamlTestPage_Click(object sender, RoutedEventArgs e)
+        private void TreeViewNodeInMarkupTestPage_Click(object sender, RoutedEventArgs e)
         {
-            Frame.NavigateWithoutAnimation(typeof(TreeViewNodeInXamlTestPage));
+            Frame.NavigateWithoutAnimation(typeof(TreeViewNodeInMarkupTestPage));
         }
 
     }

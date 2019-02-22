@@ -19,8 +19,8 @@
       <DependentUpon>TreeViewLateDataInitTestPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)TreeViewNode2.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TreeViewNodeInXamlTestPage.xaml.cs">
-      <DependentUpon>TreeViewNodeInXamlTestPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)TreeViewNodeInMarkupTestPage.xaml.cs">
+      <DependentUpon>TreeViewNodeInMarkupTestPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)TreeViewPage.xaml.cs">
       <DependentUpon>TreeViewPage.xaml</DependentUpon>
@@ -36,7 +36,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TreeViewNodeInXamlTestPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TreeViewNodeInMarkupTestPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
