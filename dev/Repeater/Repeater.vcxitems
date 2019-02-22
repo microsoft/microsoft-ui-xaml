@@ -43,7 +43,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)UniformGridLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FlowLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FlowLayoutAlgorithm.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)UniformGridLayoutFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)UniformGridLayoutState.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FlowLayoutState.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)IndexPath.h" />
@@ -59,7 +58,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)SelectionNode.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SelectionTreeHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StackLayout.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)StackLayoutFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StackLayoutState.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollAnchorProvider.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InspectingDataSource.h" />
@@ -87,6 +85,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\FlowLayout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ItemsRepeater.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Layout.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\StackLayout.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\UniformGridLayout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimationManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ChildrenInTabFocusOrderIterable.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BuildTreeScheduler.cpp" />
@@ -111,7 +111,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)UniformGridLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FlowLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FlowLayoutAlgorithm.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)UniformGridLayoutFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)UniformGridLayoutState.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FlowLayoutState.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)IndexPath.cpp" />
@@ -129,7 +128,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)SelectionNode.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SelectionTreeHelper.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)StackLayout.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)StackLayoutFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)StackLayoutState.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Layout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)LayoutContext.cpp" />

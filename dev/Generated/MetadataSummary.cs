@@ -563,7 +563,11 @@ namespace CustomTasks
 
             IncludedTypesMetadata["StackLayout"] = true;
             // StackLayout -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["StackLayout.Orientation"] = true;
+            NeedsPropChangedCallbackMetadata["StackLayout.Spacing"] = true;
             // StackLayout -- DefaultValueMetadata
+            DefaultValueMetadata["StackLayout.Orientation"] = @"winrt::Orientation::Vertical";
+            DefaultValueMetadata["StackLayout.Spacing"] = @"0.0";
 
             IncludedTypesMetadata["SwipeControl"] = true;
             // SwipeControl -- NeedsPropChangedCallbackMetadata
@@ -699,7 +703,21 @@ namespace CustomTasks
 
             IncludedTypesMetadata["UniformGridLayout"] = true;
             // UniformGridLayout -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["UniformGridLayout.ItemsJustification"] = true;
+            NeedsPropChangedCallbackMetadata["UniformGridLayout.ItemsStretch"] = true;
+            NeedsPropChangedCallbackMetadata["UniformGridLayout.MinColumnSpacing"] = true;
+            NeedsPropChangedCallbackMetadata["UniformGridLayout.MinItemHeight"] = true;
+            NeedsPropChangedCallbackMetadata["UniformGridLayout.MinItemWidth"] = true;
+            NeedsPropChangedCallbackMetadata["UniformGridLayout.MinRowSpacing"] = true;
+            NeedsPropChangedCallbackMetadata["UniformGridLayout.Orientation"] = true;
             // UniformGridLayout -- DefaultValueMetadata
+            DefaultValueMetadata["UniformGridLayout.ItemsJustification"] = @"winrt::UniformGridLayoutItemsJustification::Start";
+            DefaultValueMetadata["UniformGridLayout.ItemsStretch"] = @"winrt::UniformGridLayoutItemsStretch::None";
+            DefaultValueMetadata["UniformGridLayout.MinColumnSpacing"] = @"0.0";
+            DefaultValueMetadata["UniformGridLayout.MinItemHeight"] = @"0.0";
+            DefaultValueMetadata["UniformGridLayout.MinItemWidth"] = @"0.0";
+            DefaultValueMetadata["UniformGridLayout.MinRowSpacing"] = @"0.0";
+            DefaultValueMetadata["UniformGridLayout.Orientation"] = @"winrt::Orientation::Horizontal";
 
             IncludedTypesMetadata["XamlAmbientLight"] = true;
             // XamlAmbientLight -- NeedsPropChangedCallbackMetadata

@@ -5,6 +5,7 @@
 
 #include "VirtualizingLayout.h"
 #include "StackLayout.g.h"
+#include "StackLayout.properties.h"
 #include "IFlowLayoutAlgorithmDelegates.h"
 #include "OrientationBasedMeasures.h"
 #include "StackLayoutState.h"
@@ -12,18 +13,11 @@
 class StackLayout :
     public ReferenceTracker<StackLayout, winrt::implementation::StackLayoutT, VirtualizingLayout>,
     public IFlowLayoutAlgorithmDelegates,
-    public OrientationBasedMeasures
+    public OrientationBasedMeasures,
+    public StackLayoutProperties
 {
 public:
     StackLayout();
-
-#pragma region IStackLayout
-    winrt::Orientation Orientation();
-    void Orientation(winrt::Orientation const& value);
-
-    double Spacing();
-    void Spacing(double value);
-#pragma endregion
 
 #pragma region IVirtualizingLayoutOverrides
     void InitializeForContextCore(winrt::VirtualizingLayoutContext const& context);
@@ -100,20 +94,6 @@ public:
 #pragma endregion
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-
-    static winrt::DependencyProperty OrientationProperty() { return s_orientationProperty; }
-    static winrt::DependencyProperty SpacingProperty() { return s_spacingProperty; }
-
-    static GlobalDependencyProperty s_orientationProperty;
-    static GlobalDependencyProperty s_spacingProperty;
-
-    static void EnsureProperties();
-    static void ClearProperties();
-
-private:
-    static void StackLayout::OnPropertyChanged(
-        const winrt::DependencyObject& sender,
-        const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     double GetAverageElementSize(

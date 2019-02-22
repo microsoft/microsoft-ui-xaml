@@ -115,10 +115,6 @@ public:
      void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
-    static void FlowLayout::OnPropertyChanged(
-        const winrt::DependencyObject& sender,
-        const winrt::DependencyPropertyChangedEventArgs& args);
-
     double GetAverageLineInfo(
         const winrt::Size& availableSize,
         const winrt::VirtualizingLayoutContext& context,
