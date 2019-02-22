@@ -1397,10 +1397,7 @@ void TeachingTip::EstablishShadows()
         }
         else
         {
-            if (beakPolygon_uiElement10.Shadow())
-            {
-                beakPolygon_uiElement10.Shadow(nullptr);
-            }
+            beakPolygon_uiElement10.Shadow(nullptr);
         }
     }
 #endif
@@ -1419,10 +1416,7 @@ void TeachingTip::EstablishShadows()
         }
         else
         {
-            if (m_contentRootGrid_uiElement10.Shadow())
-            {
-                m_contentRootGrid_uiElement10.Shadow(nullptr);
-            }
+            m_contentRootGrid_uiElement10.Shadow(nullptr);
         }
     }
 #endif
