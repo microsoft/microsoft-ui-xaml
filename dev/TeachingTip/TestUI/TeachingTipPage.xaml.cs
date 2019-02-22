@@ -552,12 +552,12 @@ namespace MUXControlsTestApp
 
         public void OnTipShadowChecked(object sender, RoutedEventArgs args)
         {
-            TeachingTipTestHooks.SetTipShadow(this.TeachingTip, true);
+            TeachingTipTestHooks.SetTipShouldHaveShadow(this.TeachingTip, true);
         }
 
         public void OnTipShadowUnchecked(object sender, RoutedEventArgs args)
         {
-            TeachingTipTestHooks.SetTipShadow(this.TeachingTip, false);
+            TeachingTipTestHooks.SetTipShouldHaveShadow(this.TeachingTip, false);
         }
 
         public void OnTeachingTipClosed(object sender, TeachingTipClosedEventArgs args)

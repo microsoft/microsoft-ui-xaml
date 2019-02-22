@@ -5,7 +5,7 @@ runtimeclass TeachingTipTestHooks
 {
     static void SetExpandEasingFunction(MU_XC_NAMESPACE.TeachingTip teachingTip, Windows.UI.Composition.CompositionEasingFunction easingFunction);
     static void SetContractEasingFunction(MU_XC_NAMESPACE.TeachingTip teachingTip, Windows.UI.Composition.CompositionEasingFunction easingFunction);
-    static void SetTipShadow(MU_XC_NAMESPACE.TeachingTip teachingTip, Boolean tipShadow);
+    static void SetTipShouldHaveShadow(MU_XC_NAMESPACE.TeachingTip teachingTip, Boolean tipShouldHaveShadow);
     static void SetContentElevation(MU_XC_NAMESPACE.TeachingTip teachingTip, Single elevation);
     static void SetBeakElevation(MU_XC_NAMESPACE.TeachingTip teachingTip, Single elevation);
     static void SetUseTestWindowBounds(MU_XC_NAMESPACE.TeachingTip teachingTip, Boolean useTestWindowBounds);

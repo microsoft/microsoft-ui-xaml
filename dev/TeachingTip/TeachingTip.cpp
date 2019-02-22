@@ -1407,12 +1407,14 @@ void TeachingTip::EstablishShadows()
 #endif
     if (winrt::IUIElement10 m_contentRootGrid_uiElement10 = m_contentRootGrid.get())
     {
-        if (m_tipShadow)
+        if (m_tipShouldHaveShadow)
         {
             if (!m_contentRootGrid_uiElement10.Shadow())
             {
                 m_contentRootGrid_uiElement10.Shadow(winrt::ThemeShadow{});
-                m_contentRootGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
+                auto contentRootGrid = m_contentRootGrid.get();
+                auto contentRootGridTranslation = contentRootGrid.Translation();
+                contentRootGrid.Translation({ contentRootGridTranslation.x, contentRootGridTranslation.y, m_contentElevation });
             }
         }
         else
@@ -1483,11 +1485,11 @@ void TeachingTip::SetContractEasingFunction(const winrt::CompositionEasingFuncti
     CreateContractAnimation();
 }
 
-void TeachingTip::SetTipShadow(bool tipShadow)
+void TeachingTip::SetTipShouldHaveShadow(bool tipShouldHaveShadow)
 {
-    if (m_tipShadow != tipShadow)
+    if (m_tipShouldHaveShadow != tipShouldHaveShadow)
     {
-        m_tipShadow = tipShadow;
+        m_tipShouldHaveShadow = tipShouldHaveShadow;
         EstablishShadows();
     }
 }

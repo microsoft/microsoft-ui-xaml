@@ -34,11 +34,11 @@ void TeachingTipTestHooks::SetContractEasingFunction(const winrt::TeachingTip& t
     }
 }
 
-void TeachingTipTestHooks::SetTipShadow(const winrt::TeachingTip& teachingTip, bool tipShadow)
+void TeachingTipTestHooks::SetTipShouldHaveShadow(const winrt::TeachingTip& teachingTip, bool tipShouldHaveShadow)
 {
     if (teachingTip)
     {
-        winrt::get_self<TeachingTip>(teachingTip)->SetTipShadow(tipShadow);
+        winrt::get_self<TeachingTip>(teachingTip)->SetTipShouldHaveShadow(tipShouldHaveShadow);
     }
 }
 
