@@ -10,37 +10,50 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Page.Resources>
-        <!--<controls:RecyclePool x:Key="RecyclePool" />
-        <controls:RecyclingElementFactory x:Name="elementFactory"
-                            RecyclePool="{StaticResource RecyclePool}">
-            <DataTemplate x:Key="Item">
-                <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                    <TextBlock Text="{Binding}" />
-                </Button>
-            </DataTemplate>
-        </controls:RecyclingElementFactory>-->
 
-        <local:FormsElementFactory x:Name="elementFactory"/>
-    </Page.Resources>
-
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="24">
         <StackPanel Orientation="Vertical">
-            <!--<controls:Forms />-->
 
-            <controls:FormSection Header="Section One" Columns="2">
+            <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Name" Margin="1,0,0,16"/>
+
+            <controls:FormSection Columns="2">
                 <TextBox Header="First Name"/>
 
                 <TextBox Header="Last Name"/>
 
                 <controls:FormRow>
                     <TextBox Header="M.I." controls:FormRow.Length="Auto"/>
-                    <TextBox Header="Phone Number"/>
+                    <TextBox Header="Nickname"/>
                 </controls:FormRow>
 
                 <controls:FormRow>
                     <TextBox Header="Title"/>
-                    <TextBox Header="Nickname"/>
+                    <ComboBox x:Name="SuffixCombobox" Header="Suffix" controls:FormRow.Length="80" HorizontalAlignment="Stretch"/>
+                </controls:FormRow>
+
+                <TextBox Header="Nickname"/>
+            </controls:FormSection>
+
+            <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Personal Info" Margin="1,32,0,16"/>
+
+            <controls:FormSection Columns="2">
+                <TextBox Header="Address Line 1"/>
+
+                <TextBox Header="Address Line 2"/>
+
+                <controls:FormRow>
+                    <TextBox Header="City"/>
+                    <TextBox Header="State"/>
+                </controls:FormRow>
+
+                <controls:FormRow>
+                    <TextBox Header="Zip Code"/>
+                    <TextBox Header="Country"/>
+                </controls:FormRow>
+
+                <controls:FormRow>
+                    <TextBox Header="Phone Number"/>
+                    <TextBox Header="Ext." controls:FormRow.Length="Auto"/>
                 </controls:FormRow>
 
                 <controls:FormRow>
@@ -48,9 +61,12 @@
                     <TextBox Header="One" controls:FormRow.Length="Auto"/>
                     <TextBox Header="Two" controls:FormRow.Length="100"/>
                 </controls:FormRow>
+
+                <TextBox Header="More Info"/>
+
+                <TextBox Header="Etc."/>
             </controls:FormSection>
 
-            <!--<controls:ItemsRepeater x:Name="Repeater"/>-->
         </StackPanel>
     </Grid>
 </local:TestPage>

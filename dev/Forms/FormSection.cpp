@@ -21,18 +21,30 @@ winrt::Size FormSection::MeasureOverride(winrt::Size const& availableSize)
 
     auto children = Children();
     float height = 0.0;
+    float rowWidth = Columns() >= 2 ? 350.0f : 500.0f; // ### magic
+    float maxHeight = 0.0;
 
     for (unsigned i = 0u; i < children.Size(); ++i)
     {
-        auto child = children.GetAt(i);
-        child.Measure(availableSize);
+        int column = i % Columns();
 
-        // ### this is obviously wrong because it's not taking buddies into account but who cares for now...
-        height += child.DesiredSize().Height + (float)itemPadding.Top + (float)itemPadding.Bottom;
+        auto child = children.GetAt(i);
+        child.Measure({rowWidth, availableSize.Height});
+
+        if (child.DesiredSize().Height > maxHeight)
+        {
+            maxHeight = child.DesiredSize().Height;
+        }
+
+        if (column == Columns() - 1 || i == children.Size() - 1)
+        {
+            height += maxHeight + (float)itemPadding.Top + (float)itemPadding.Bottom;
+            maxHeight = 0.0;
+        }
     }
 
     // ### for now
-    return winrt::Size(500.0f, height);
+    return winrt::Size(rowWidth * (float)Columns(), height);
 }
 
 winrt::Size FormSection::ArrangeOverride(winrt::Size const& finalSize)
@@ -48,6 +60,8 @@ winrt::Size FormSection::ArrangeOverride(winrt::Size const& finalSize)
 
     auto children = Children();
     float y = 0.0;
+    float maxHeight = 0.0;
+    float rowWidth = Columns() >= 2 ? 350.0f : 500.0f; // ### magic
 
     for (unsigned i = 0u; i < children.Size(); ++i)
     {
@@ -55,9 +69,20 @@ winrt::Size FormSection::ArrangeOverride(winrt::Size const& finalSize)
         float width = child.DesiredSize().Width;
         float height = child.DesiredSize().Height;
 
-        child.Arrange(winrt::Rect(0.0f + (float)itemPadding.Left, y + (float)itemPadding.Top, 500.0f, height)); // ### maaaaagic
+        int column = i % Columns();
 
-        y += height + (float)itemPadding.Top + (float)itemPadding.Bottom;
+        child.Arrange(winrt::Rect(column * rowWidth + (float)itemPadding.Left + column * 24, y + (float)itemPadding.Top, rowWidth, height));
+
+        if (height > maxHeight)
+        {
+            maxHeight = height;
+        }
+
+        if (column == Columns() - 1 || i == children.Size() - 1)
+        {
+            y += maxHeight + (float)itemPadding.Top + (float)itemPadding.Bottom;
+            maxHeight = 0.0;
+        }
     }
 
     // ### for now

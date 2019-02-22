@@ -33,7 +33,7 @@ winrt::Size FormRow::MeasureOverride(winrt::Size const& availableSize)
     }
 
     // ### for now
-    return winrt::Size(500.0f, maxHeight);
+    return winrt::Size(availableSize.Width, maxHeight);
 }
 
 winrt::Size FormRow::ArrangeOverride(winrt::Size const& finalSize)
@@ -77,8 +77,7 @@ winrt::Size FormRow::ArrangeOverride(winrt::Size const& finalSize)
         }
     }
 
-    // ### magic 500px
-    float remainingWidth = 500.0f - requiredWidth;
+    float remainingWidth = finalSize.Width - requiredWidth;
     float starWidth = remainingWidth / numStars;
 
     // second pass: * elements
