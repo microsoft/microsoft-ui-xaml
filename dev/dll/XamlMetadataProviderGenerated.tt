@@ -66,7 +66,7 @@
 #include "MUXControlsTestHooksFactory.h"
 #include "ItemsRepeater.h"
 #include "RepeaterTestHooksFactory.h"
-#include "FlowLayoutFactory.h"
+#include "FlowLayout.h"
 #include "UniformGridLayoutFactory.h"
 #include "StackLayoutFactory.h"
 #include "RecyclePoolFactory.h"

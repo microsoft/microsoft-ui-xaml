@@ -27,6 +27,8 @@ public:
     // A convention we use in the ItemsRepeater codebase for an invalid Rect value.
     static winrt::Rect InvalidRect;
 
+    using ItemsRepeaterProperties::Background;
+
 #pragma region IUIElementOverrides
 
     winrt::AutomationPeer OnCreateAutomationPeer();
@@ -107,6 +109,14 @@ public:
 
     static winrt::DependencyProperty GetVirtualizationInfoProperty()
     {
+        static GlobalDependencyProperty s_VirtualizationInfoProperty =
+            InitializeDependencyProperty(
+                L"VirtualizationInfo",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::ItemsRepeater>(),
+                true /* isAttached */,
+                nullptr /* defaultValue */);
+
         return s_VirtualizationInfoProperty;
     }
 
@@ -114,8 +124,6 @@ private:
     static void ItemsRepeater::OnPropertyChanged(
         const winrt::DependencyObject& sender,
         const winrt::DependencyPropertyChangedEventArgs& args);
-
-    static GlobalDependencyProperty s_VirtualizationInfoProperty;
 
     void OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/);
     void OnUnloaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/);

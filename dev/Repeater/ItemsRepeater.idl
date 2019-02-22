@@ -437,13 +437,18 @@ unsealed runtimeclass FlowLayoutState
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 unsealed runtimeclass FlowLayout : VirtualizingLayout
 {
     FlowLayout();
 
+    [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
     Windows.UI.Xaml.Controls.Orientation Orientation { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double MinRowSpacing { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double MinColumnSpacing { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::FlowLayoutLineAlignment::Start")]
     FlowLayoutLineAlignment LineAlignment { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };

@@ -5,6 +5,7 @@
 
 #include "VirtualizingLayout.h"
 #include "FlowLayout.g.h"
+#include "FlowLayout.properties.h"
 #include "IFlowLayoutAlgorithmDelegates.h"
 #include "OrientationBasedMeasures.h"
 #include "FlowLayoutState.h"
@@ -12,22 +13,13 @@
 class FlowLayout :
     public ReferenceTracker<FlowLayout, winrt::implementation::FlowLayoutT, VirtualizingLayout>,
     public IFlowLayoutAlgorithmDelegates,
-    public OrientationBasedMeasures
+    public OrientationBasedMeasures,
+    public FlowLayoutProperties
 {
 public:
-#pragma region IFlowLayout
-    winrt::Orientation Orientation();
-    void Orientation(winrt::Orientation const& value);
-
-    double MinRowSpacing();
-    void MinRowSpacing(double value);
-
-    double MinColumnSpacing();
-    void MinColumnSpacing(double value);
-
-    winrt::FlowLayoutLineAlignment LineAlignment();
-    void LineAlignment(winrt::FlowLayoutLineAlignment const& value);
-#pragma endregion
+    // Disambiguate EnsureProperties and ClearProperties
+    using FlowLayoutProperties::EnsureProperties;
+    using FlowLayoutProperties::ClearProperties;
 
 #pragma region IVirtualizingLayoutOverrides
     void InitializeForContextCore(winrt::VirtualizingLayoutContext const& context);
@@ -121,19 +113,6 @@ public:
 #pragma endregion
 
      void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-
-     static winrt::DependencyProperty OrientationProperty() { return s_orientationProperty; }
-     static winrt::DependencyProperty MinRowSpacingProperty() { return s_minRowSpacingProperty; }
-     static winrt::DependencyProperty MinColumnSpacingProperty() { return s_minColumnSpacingProperty; }
-     static winrt::DependencyProperty LineAlignmentProperty() { return s_lineAlignmentProperty; }
-
-     static GlobalDependencyProperty s_orientationProperty;
-     static GlobalDependencyProperty s_minRowSpacingProperty;
-     static GlobalDependencyProperty s_minColumnSpacingProperty;
-     static GlobalDependencyProperty s_lineAlignmentProperty;
-
-     static void EnsureProperties();
-     static void ClearProperties();
 
 private:
     static void FlowLayout::OnPropertyChanged(

@@ -5,7 +5,6 @@
 #include <common.h>
 #include "ItemsRepeater.common.h"
 #include "ItemsRepeater.h"
-#include "RepeaterFactory.h"
 #include "RepeaterLayoutContext.h"
 #include "ChildrenInTabFocusOrderIterable.h"
 #include "SharedHelpers.h"
@@ -359,7 +358,7 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
 {
     winrt::IDependencyProperty property = args.Property();
 
-    if (property == s_itemsSourceProperty)
+    if (property == s_ItemsSourceProperty)
     {
         auto newValue = args.NewValue();
         auto newDataSource = safe_try_cast<winrt::ItemsSourceView>(newValue);
@@ -370,23 +369,23 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
 
         OnDataSourcePropertyChanged(m_dataSource.get(), newDataSource);
     }
-    else if (property == s_itemTemplateProperty)
+    else if (property == s_ItemTemplateProperty)
     {
         OnItemTemplateChanged(safe_cast<winrt::IElementFactory>(args.OldValue()), safe_cast<winrt::IElementFactory>(args.NewValue()));
     }
-    else if (property == s_layoutProperty)
+    else if (property == s_LayoutProperty)
     {
         OnLayoutChanged(safe_cast<winrt::Layout>(args.OldValue()), safe_cast<winrt::Layout>(args.NewValue()));
     }
-    else if (property == s_animatorProperty)
+    else if (property == s_AnimatorProperty)
     {
         OnAnimatorChanged(safe_cast<winrt::ElementAnimator>(args.OldValue()), safe_cast<winrt::ElementAnimator>(args.NewValue()));
     }
-    else if (property == s_horizontalCacheLengthProperty)
+    else if (property == s_HorizontalCacheLengthProperty)
     {
         m_viewportManager->HorizontalCacheLength(unbox_value<double>(args.NewValue()));
     }
-    else if (property == s_verticalCacheLengthProperty)
+    else if (property == s_VerticalCacheLengthProperty)
     {
         m_viewportManager->VerticalCacheLength(unbox_value<double>(args.NewValue()));
     }

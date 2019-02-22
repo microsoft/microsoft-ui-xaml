@@ -31,7 +31,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementIndexChangedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementPreparedEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FlowLayoutFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryGetArgs.h" Condition="$(BuildingWithBuildExe) != 'true'" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryGetArgsDownlevel.h" Condition="$(BuildingWithBuildExe) == 'true'" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsSourceViewFactory.h" />
@@ -85,7 +84,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)VirtualLayoutContextAdapter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\FlowLayout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ItemsRepeater.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Layout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimationManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ChildrenInTabFocusOrderIterable.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BuildTreeScheduler.cpp" />
@@ -100,7 +101,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsSourceViewFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollAnchorProvider.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ElementManager.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FlowLayoutFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemTemplateWrapper.cpp" Condition="$(BuildingWithBuildExe) != 'true'" />
     <ClCompile Include="$(MSBuildThisFileDirectory)LayoutContextAdapter.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NonVirtualizingLayout.cpp" />

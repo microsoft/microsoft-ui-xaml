@@ -4,10 +4,12 @@
 #pragma once
 
 #include "Layout.g.h"
+#include "Layout.properties.h"
 #include "NonVirtualizingLayout.g.h"
 
 class Layout :
-    public winrt::implementation::LayoutT<Layout, winrt::composable>
+    public winrt::implementation::LayoutT<Layout, winrt::composable>,
+    public LayoutProperties
 {
 public:
 #pragma region ILayout
@@ -20,12 +22,6 @@ public:
     
     winrt::Size Measure(winrt::LayoutContext const& context, winrt::Size const& availableSize);
     winrt::Size Arrange(winrt::LayoutContext const& context, winrt::Size const& finalSize);
-
-    winrt::event_token MeasureInvalidated(winrt::TypedEventHandler<winrt::Layout, winrt::IInspectable> const& value);
-    void MeasureInvalidated(winrt::event_token const& token);
-
-    winrt::event_token ArrangeInvalidated(winrt::TypedEventHandler<winrt::Layout, winrt::IInspectable> const& value);
-    void ArrangeInvalidated(winrt::event_token const& token);
 #pragma endregion
 
 #pragma region ILayoutProtected
@@ -35,9 +31,6 @@ public:
 
 
 private:
-     event<winrt::TypedEventHandler<winrt::Layout, winrt::IInspectable>> m_measureInvalidatedEventSource{ };
-     event<winrt::TypedEventHandler<winrt::Layout, winrt::IInspectable>> m_arrangeInvalidatedEventSource { };
-
      // TODO: This is for debugging purposes only. It should be removed when 
      // the Layout.LayoutId API is removed.
      winrt::hstring m_layoutId;

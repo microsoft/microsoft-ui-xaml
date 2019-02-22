@@ -179,7 +179,15 @@ namespace CustomTasks
 
             IncludedTypesMetadata["FlowLayout"] = true;
             // FlowLayout -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["FlowLayout.LineAlignment"] = true;
+            NeedsPropChangedCallbackMetadata["FlowLayout.MinColumnSpacing"] = true;
+            NeedsPropChangedCallbackMetadata["FlowLayout.MinRowSpacing"] = true;
+            NeedsPropChangedCallbackMetadata["FlowLayout.Orientation"] = true;
             // FlowLayout -- DefaultValueMetadata
+            DefaultValueMetadata["FlowLayout.LineAlignment"] = @"winrt::FlowLayoutLineAlignment::Start";
+            DefaultValueMetadata["FlowLayout.MinColumnSpacing"] = @"0.0";
+            DefaultValueMetadata["FlowLayout.MinRowSpacing"] = @"0.0";
+            DefaultValueMetadata["FlowLayout.Orientation"] = @"winrt::Orientation::Horizontal";
 
             IncludedTypesMetadata["FontIconSource"] = true;
             // FontIconSource -- NeedsPropChangedCallbackMetadata
