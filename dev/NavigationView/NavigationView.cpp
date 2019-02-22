@@ -1387,14 +1387,12 @@ void NavigationView::RaiseItemInvoked(winrt::IInspectable const& item,
 // forceSetDisplayMode: On first call to SetDisplayMode, force setting to initial values
 void NavigationView::SetDisplayMode(const winrt::NavigationViewDisplayMode& displayMode, bool forceSetDisplayMode)
 {
-    auto changingDisplayMode = DisplayMode() != displayMode;
-
     // Need to keep the VisualStateGroup "DisplayModeGroup" updated even if the actual
     // display mode is not changed. This is due to the fact that there can be a transition between
     // 'Minimal' and 'MinimalWithBackButton'.
     UpdateVisualStateForDisplayModeGroup(displayMode);
 
-    if (forceSetDisplayMode || changingDisplayMode)
+    if (forceSetDisplayMode || DisplayMode() != displayMode)
     {
         // Update header visibility based on what the new display mode will be
         UpdateHeaderVisibility(displayMode);
