@@ -72,20 +72,6 @@ CommandBarFlyoutCommandBar::~CommandBarFlyoutCommandBar()
     DetachEventHandlers(true /* useSafeGet */);
 }
 
-winrt::Size CommandBarFlyoutCommandBar::MeasureOverride(winrt::Size const& availableSize)
-{
-    winrt::Size size{};
-    winrt::Size previousPrimaryItemsSize{};
-
-    while (previousPrimaryItemsSize != m_primaryItemsControl.get().DesiredSize())
-    {
-        previousPrimaryItemsSize = m_primaryItemsControl.get().DesiredSize();
-        size = __super::MeasureOverride(availableSize);
-    }
-
-    return size;
-}
-
 void CommandBarFlyoutCommandBar::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
@@ -94,7 +80,6 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
     winrt::IControlProtected thisAsControlProtected = *this;
 
     m_primaryItemsRoot.set(GetTemplateChildT<winrt::FrameworkElement>(L"PrimaryItemsRoot", thisAsControlProtected));
-    m_primaryItemsControl.set(GetTemplateChildT<winrt::FrameworkElement>(L"PrimaryItemsControl", thisAsControlProtected));
     m_secondaryItemsRoot.set(GetTemplateChildT<winrt::FrameworkElement>(L"OverflowContentRoot", thisAsControlProtected));
     m_moreButton.set(GetTemplateChildT<winrt::ButtonBase>(L"MoreButton", thisAsControlProtected));
     m_openingStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"OpeningStoryboard", thisAsControlProtected));
@@ -485,12 +470,6 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
         {
             flyoutTemplateSettings->ExpandDownOverflowVerticalPosition(0);
         }
-
-        // Measuring the primary items root unconstrained causes problems when we try to have dynamic overflow,
-        // since that relies on an original value of DesiredSize being constrained by its parent.
-        // To fix that, let's re-measure the root at the desired size of the CommandBar.
-        Measure(infiniteSize);
-        m_primaryItemsRoot.get().Measure(DesiredSize());
     }
 }
 

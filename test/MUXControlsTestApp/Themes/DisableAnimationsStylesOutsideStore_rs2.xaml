@@ -21,7 +21,7 @@
         <Setter Property="DefaultLabelPosition" Value="Collapsed" />
         <Setter Property="MaxWidth" Value="440" />
         <Setter Property="Height" Value="40" />
-        <Setter Property="IsDynamicOverflowEnabled" Value="True" />
+        <Setter Property="IsDynamicOverflowEnabled" Value="False" />
         <Setter Property="CommandBarOverflowPresenterStyle" Value="{StaticResource CommandBarFlyoutCommandBarOverflowPresenterStyle}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -141,7 +141,6 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <ItemsControl x:Name="PrimaryItemsControl"
-                                        MaxWidth="440"
                                         Height="40"
                                         Grid.Column="0"
                                         IsTabStop="False">
@@ -168,7 +167,7 @@
                                             Glyph="&#xE10C;" />
                                     </Button>
                                 </Grid>
-                                <Popup x:Name="OverflowPopup" MaxWidth="440">
+                                <Popup x:Name="OverflowPopup">
                                     <Grid
                                         x:Name="OuterOverflowContentRoot"
                                         Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}"

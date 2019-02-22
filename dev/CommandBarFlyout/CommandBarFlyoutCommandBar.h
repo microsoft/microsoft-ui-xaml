@@ -15,7 +15,6 @@ public:
     virtual ~CommandBarFlyoutCommandBar();
 
     // IFrameworkElementOverrides
-    winrt::Size MeasureOverride(winrt::Size const& availableSize);
     void OnApplyTemplate();
     
     void SetOwningFlyout(winrt::CommandBarFlyout const& owningFlyout);
@@ -39,7 +38,6 @@ private:
     void UpdateShadow();
 
     tracker_ref<winrt::FrameworkElement> m_primaryItemsRoot{ this };
-    tracker_ref<winrt::FrameworkElement> m_primaryItemsControl{ this };
     tracker_ref<winrt::FrameworkElement> m_secondaryItemsRoot{ this };
     tracker_ref<winrt::ButtonBase> m_moreButton{ this };
     weak_ref<winrt::CommandBarFlyout> m_owningFlyout{ nullptr };
