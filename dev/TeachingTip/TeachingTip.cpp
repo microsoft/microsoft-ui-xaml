@@ -703,12 +703,7 @@ void TeachingTip::OnIsOpenChanged()
             m_popup.set(winrt::Popup());
             m_popupClosedRevoker = m_popup.get().Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
         }
-        if (IsLightDismissEnabled())
-        {
-            auto lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get();
-            lightDismissIndicatorPopup.IsLightDismissEnabled(true);
-            m_lightDismissIndicatorPopupClosedRevoker = lightDismissIndicatorPopup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnLightDismissIndicatorPopupClosed });
-        }
+        OnIsLightDismissEnabledChanged();
         if (!m_contractAnimation)
         {
             CreateContractAnimation();
