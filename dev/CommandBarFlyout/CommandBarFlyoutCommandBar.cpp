@@ -270,7 +270,10 @@ void CommandBarFlyoutCommandBar::UpdateUI(bool useTransitions)
 {
     UpdateTemplateSettings();
     UpdateVisualState(useTransitions);
+
+#ifdef USE_INSIDER_SDK
     UpdateShadow();
+#endif
 }
 
 void CommandBarFlyoutCommandBar::UpdateVisualState(bool useTransitions)
@@ -473,6 +476,7 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
     }
 }
 
+#ifdef USE_INSIDER_SDK
 void CommandBarFlyoutCommandBar::UpdateShadow()
 {
     if (PrimaryCommands().Size() > 0)
@@ -489,12 +493,12 @@ void CommandBarFlyoutCommandBar::AddShadow()
 {
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-#ifdef USE_INSIDER_SDK
         //Apply Shadow on the Grid named "ContentRoot", this is the first element below
         //the clip animation of the commandBar. This guarantees that shadow respects the 
         //animation
         winrt::IControlProtected thisAsControlProtected = *this;
         auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
+
         if (winrt::IUIElement10 grid_uiElement10 = grid)
         {
             if (!grid_uiElement10.Shadow())
@@ -506,7 +510,6 @@ void CommandBarFlyoutCommandBar::AddShadow()
                 grid.Translation(translation);
             }
         }
-#endif
     }
 }
 
@@ -514,7 +517,6 @@ void CommandBarFlyoutCommandBar::ClearShadow()
 {
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-#ifdef USE_INSIDER_SDK
         winrt::IControlProtected thisAsControlProtected = *this;
         auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
         if (winrt::IUIElement10 grid_uiElement10 = grid)
@@ -528,6 +530,6 @@ void CommandBarFlyoutCommandBar::ClearShadow()
                 grid.Translation(translation);
             }
         }
-#endif
     }
 }
+#endif
