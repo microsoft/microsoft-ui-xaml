@@ -139,6 +139,27 @@ winrt::Size Layout::Arrange(
     }
 }
 
+winrt::event_token Layout::MeasureInvalidated(winrt::TypedEventHandler<winrt::Layout, winrt::IInspectable> const& value)
+{
+    return m_measureInvalidatedEventSource.add(value);
+}
+
+void Layout::MeasureInvalidated(winrt::event_token const& token)
+{
+    m_measureInvalidatedEventSource.remove(token);
+}
+
+winrt::event_token Layout::ArrangeInvalidated(winrt::TypedEventHandler<winrt::Layout, winrt::IInspectable> const& value)
+{
+    return m_arrangeInvalidatedEventSource.add(value);
+}
+
+void Layout::ArrangeInvalidated(winrt::event_token const& token)
+{
+    m_arrangeInvalidatedEventSource.remove(token);
+}
+
+
 #pragma endregion
 
 #pragma region ILayoutProtected
