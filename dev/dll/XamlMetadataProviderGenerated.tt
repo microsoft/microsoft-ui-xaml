@@ -64,7 +64,7 @@
 #include "XamlAmbientLight.h"
 #include "MaterialHelperTestApiFactory.h"
 #include "MUXControlsTestHooksFactory.h"
-#include "RepeaterFactory.h"
+#include "ItemsRepeater.h"
 #include "RepeaterTestHooksFactory.h"
 #include "FlowLayoutFactory.h"
 #include "UniformGridLayoutFactory.h"

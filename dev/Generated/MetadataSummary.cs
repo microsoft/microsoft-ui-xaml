@@ -212,7 +212,14 @@ namespace CustomTasks
 
             IncludedTypesMetadata["ItemsRepeater"] = true;
             // ItemsRepeater -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["ItemsRepeater.Animator"] = true;
+            NeedsPropChangedCallbackMetadata["ItemsRepeater.HorizontalCacheLength"] = true;
+            NeedsPropChangedCallbackMetadata["ItemsRepeater.ItemsSource"] = true;
+            NeedsPropChangedCallbackMetadata["ItemsRepeater.ItemTemplate"] = true;
+            NeedsPropChangedCallbackMetadata["ItemsRepeater.Layout"] = true;
+            NeedsPropChangedCallbackMetadata["ItemsRepeater.VerticalCacheLength"] = true;
             // ItemsRepeater -- DefaultValueMetadata
+            DefaultValueMetadata["ItemsRepeater.Layout"] = @"winrt::StackLayout()";
 
             IncludedTypesMetadata["Layout"] = true;
             // Layout -- NeedsPropChangedCallbackMetadata

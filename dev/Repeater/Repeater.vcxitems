@@ -70,7 +70,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)LayoutContext.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RecyclePool.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeater.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterLayoutContext.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SelectTemplateEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)UniqueIdElementPool.h" />
@@ -86,6 +85,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)VirtualLayoutContextAdapter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ItemsRepeater.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimationManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ChildrenInTabFocusOrderIterable.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BuildTreeScheduler.cpp" />
@@ -135,7 +135,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)LayoutContext.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RecyclePool.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeater.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterLayoutContext.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SelectTemplateEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)UniqueIdElementPool.cpp" />

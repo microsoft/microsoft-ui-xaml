@@ -112,23 +112,30 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
 {
     ItemsRepeater();
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Object ItemsSource { get; set; };
     ItemsSourceView ItemsSourceView { get; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 #ifdef BUILD_WINDOWS
     Windows.UI.Xaml.IElementFactory ItemTemplate { get; set; };
  #else
     Object ItemTemplate { get; set; };
  #endif
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::StackLayout()")]
     Layout Layout { get; set; };
     
     [WUXC_VERSION_PREVIEW]
     {
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         ElementAnimator Animator{ get; set; };
     }
     
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Double HorizontalCacheLength { get; set; };
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Double VerticalCacheLength { get; set; };
 
     Windows.UI.Xaml.Media.Brush Background{ get; set; };
