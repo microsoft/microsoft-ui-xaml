@@ -2547,6 +2547,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("Platform", "Desktop")]
+        public void TreeViewNodeInXamlTest()
+        {
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                Wait.ForIdle();
+                using (var nextPage = new TestSetupHelper("TreeViewNodeInXamlTestPage"))
+                {
+                    UIObject root = FindElement.ByName("Root");
+                    Verify.IsNotNull(root, "Verify root node content");
+                }
+            }
+        }
+
         private void ClickButton(string buttonName)
         {
             var button = new Button(FindElement.ByName(buttonName));
