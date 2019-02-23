@@ -4004,8 +4004,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private string GetSelectedItemName()
         {
-            var printSelectedItemButton = FindElement.ByName<Button>("Get Selected Item Label");
-            printSelectedItemButton.Invoke();
+            UIObject printSelectedItemButton = FindElement.ByName("GetSelectedItemLabelButton");
+            InputHelper.LeftClick(printSelectedItemButton);
             Wait.ForIdle();
             var result = new TextBlock(TryFindElement.ById("SelectedItemLabel"));
             return result.GetText();

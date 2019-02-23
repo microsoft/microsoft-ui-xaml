@@ -21,7 +21,7 @@
                                     ItemInvoked="{x:Bind ClickedItem}" Expanding="ExpandingItem" Collapsed="CollapsedItem">
             <StackPanel Margin="10,10,0,0">
                 <TextBlock x:Name="SelectedItemLabel" AutomationProperties.Name="SelectedItemLabel" Text="uninitialized"/>
-                <Button Content="Get Selected Item Label" AutomationProperties.Name="GetSelectedItemLabelButton" Click="PrintSelectedItem"/>
+                <Button Content="Get Selected Item Label" x:Name="GetSelectedItemLabelButton" AutomationProperties.Name="GetSelectedItemLabelButton" Click="PrintSelectedItem"/>
                 <Button Content="Add MenuItem" Click="AddMenuItem"/>
                 <Button Content="Remove Second MenuItem" Click="RemoveSecondMenuItem" />
                 <Button Content="Select Second Item" Click="SelectSecondItem"/>
