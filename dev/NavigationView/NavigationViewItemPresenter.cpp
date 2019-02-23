@@ -4,16 +4,15 @@
 #include "pch.h"
 #include "common.h"
 #include "NavigationViewItemPresenter.h"
+#include "NavigationViewItemPresenterTemplateSettings.h"
 #include "NavigationViewItem.h"
 #include "SharedHelpers.h"
 
-static constexpr wstring_view c_navigationViewItemPresenterContentGridName = L"ContentGrid"sv;
-static constexpr wstring_view c_selectionIndicatorWrapperName = L"SelectionIndicatorWrapper"sv;
-static constexpr int s_selectionIndicatorIndentationOffset = 4;
 static constexpr int s_indentation = 16;
 
 NavigationViewItemPresenter::NavigationViewItemPresenter()
 {
+    SetValue(s_TemplateSettingsProperty, winrt::make<NavigationViewItemPresenterTemplateSettings>());
     SetDefaultStyleKey(this);
 }
 
@@ -70,20 +69,7 @@ NavigationViewItem* NavigationViewItemPresenter::GetNavigationViewItem()
 
 void NavigationViewItemPresenter::UpdateIndentations()
 {
-    winrt::IControlProtected controlProtected = *this;
-    auto presenterContentGrid = GetTemplateChildT<winrt::Grid>(c_navigationViewItemPresenterContentGridName, controlProtected);
-    if (presenterContentGrid)
-    {
-        auto leftIndentation = s_indentation * m_depth;
-        auto thickness = winrt::ThicknessHelper::FromLengths(leftIndentation, 0, 0, 0);
-        presenterContentGrid.Margin(thickness);
-    }
-
-    auto selectionIndicatorWrapper = GetTemplateChildT<winrt::Grid>(c_selectionIndicatorWrapperName, controlProtected);
-    if (selectionIndicatorWrapper)
-    {
-        auto leftIndentation = s_indentation * m_depth + s_selectionIndicatorIndentationOffset;
-        auto thickness = winrt::ThicknessHelper::FromLengths(leftIndentation, 0, 0, 0);
-        selectionIndicatorWrapper.Margin(thickness);
-    }
+    auto leftIndentation = s_indentation * m_depth;
+    auto thickness = winrt::ThicknessHelper::FromLengths(leftIndentation, 0, 0, 0);
+    winrt::get_self<NavigationViewItemPresenterTemplateSettings>(TemplateSettings())->Indentation(thickness);
 }

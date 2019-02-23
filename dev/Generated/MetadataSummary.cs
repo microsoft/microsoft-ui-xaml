@@ -314,6 +314,10 @@ namespace CustomTasks
             // NavigationViewItemPresenter -- NeedsPropChangedCallbackMetadata
             // NavigationViewItemPresenter -- DefaultValueMetadata
 
+            IncludedTypesMetadata["NavigationViewItemPresenterTemplateSettings"] = true;
+            // NavigationViewItemPresenterTemplateSettings -- NeedsPropChangedCallbackMetadata
+            // NavigationViewItemPresenterTemplateSettings -- DefaultValueMetadata
+
             IncludedTypesMetadata["NavigationViewTemplateSettings"] = true;
             // NavigationViewTemplateSettings -- NeedsPropChangedCallbackMetadata
             // NavigationViewTemplateSettings -- DefaultValueMetadata

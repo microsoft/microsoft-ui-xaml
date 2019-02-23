@@ -187,49 +187,50 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <!-- Wrap SelectionIndicator in a grid so that its offset is 0,0 - this enables the offset animation. -->
-                        <Grid
-                            x:Name="SelectionIndicatorWrapper"
-                            Margin="4,0,0,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center">
-
-                            <Rectangle
-                                x:Name="SelectionIndicator"
-                                Width="2"
-                                Height="24"
-                                Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
-                                Opacity="0.0"/>
-                        </Grid>
-
                         <Border
                             x:Name="RevealBorder"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}" />
 
-                        <Grid Height="40" HorizontalAlignment="Left" x:Name="ContentGrid">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition x:Name="IconColumn" Width="48" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
+                        <Grid Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Indentation}">
+                            <!-- Wrap SelectionIndicator in a grid so that its offset is 0,0 - this enables the offset animation. -->
+                            <Grid
+                                Margin="4,0,0,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center">
 
-                            <Viewbox x:Name="IconBox"                                
-                                Margin="{ThemeResource NavigationViewItemIconBoxMargin}">
-                                <ContentPresenter 
-                                    x:Name="Icon" 
-                                    Content="{TemplateBinding Icon}" />
-                            </Viewbox>
+                                <Rectangle
+                                    x:Name="SelectionIndicator"
+                                    Width="2"
+                                    Height="24"
+                                    Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
+                                    Opacity="0.0"/>
+                            </Grid>
 
-                            <ContentPresenter x:Name="ContentPresenter"
-                                Grid.Column="1"
-                                ContentTransitions="{TemplateBinding ContentTransitions}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                Content="{TemplateBinding Content}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                                Margin="{TemplateBinding Padding}"
-                                AutomationProperties.AccessibilityView="Raw"/>
+                            <Grid Height="40" HorizontalAlignment="Left" x:Name="ContentGrid">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition x:Name="IconColumn" Width="48" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Viewbox x:Name="IconBox"                                
+                                    Margin="{ThemeResource NavigationViewItemIconBoxMargin}">
+                                    <ContentPresenter 
+                                        x:Name="Icon" 
+                                        Content="{TemplateBinding Icon}" />
+                                </Viewbox>
+
+                                <ContentPresenter x:Name="ContentPresenter"
+                                    Grid.Column="1"
+                                    ContentTransitions="{TemplateBinding ContentTransitions}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    Content="{TemplateBinding Content}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                    Margin="{TemplateBinding Padding}"
+                                    AutomationProperties.AccessibilityView="Raw"/>
+                            </Grid>
                         </Grid>
                     </Grid>
                 </ControlTemplate>

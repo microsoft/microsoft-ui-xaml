@@ -7,7 +7,7 @@
 #include "NavigationViewItemBaseTemplateSettings.properties.h"
 
 class NavigationViewItemBaseTemplateSettings :
-	public winrt::implementation::NavigationViewItemBaseTemplateSettingsT<NavigationViewItemBaseTemplateSettings>,
-	public NavigationViewItemBaseTemplateSettingsProperties
+    public winrt::implementation::NavigationViewItemBaseTemplateSettingsT<NavigationViewItemBaseTemplateSettings>,
+    public NavigationViewItemBaseTemplateSettingsProperties
 {
 };

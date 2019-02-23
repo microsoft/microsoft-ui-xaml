@@ -15,6 +15,7 @@ public:
 
     winrt::TreeViewNode NodeAtFlatIndex(int index) const;
     winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
+    winrt::TreeViewNode NodeFromItem(winrt::IInspectable const& item);
     winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
 
 private:

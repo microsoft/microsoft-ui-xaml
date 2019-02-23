@@ -9,6 +9,8 @@ using Windows.UI.Xaml.Controls;
 #if !BUILD_WINDOWS
 using NavigationViewItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs;
 using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
+using NavigationViewItemExpandingEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewExpandingEventArgs;
+using NavigationViewCollapsedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewCollapsedEventArgs;
 #endif
 
 namespace MUXControlsTestApp
@@ -32,6 +34,10 @@ namespace MUXControlsTestApp
             {
                 var label = (String)((NavigationViewItem)selectedItem).Content;
                 SelectedItemLabel.Text = label;
+            }
+            else
+            {
+                SelectedItemLabel.Text = "No Item Selected";
             }
         }
 
@@ -79,6 +85,34 @@ namespace MUXControlsTestApp
             IList<Object> menuItems = navview.MenuItems;
             navview.SelectedItem = menuItems[1];
 
+        }
+
+        private void ExpandingItem(object sender, NavigationViewItemExpandingEventArgs e)
+        {
+            var nvib = e.ExpandingItemContainer;
+            if (nvib != null)
+            {
+                var name = "Last Expanding: " + nvib.Content;
+                ExpandingItemLabel.Text = name;
+            }
+            else
+            {
+                ExpandingItemLabel.Text = "Last Expanding: ERROR - No container returned!";
+            }
+        }
+
+        private void CollapsedItem(object sender, NavigationViewCollapsedEventArgs e)
+        {
+            var nvib = e.CollapsedItemContainer;
+            if (nvib != null)
+            {
+                var name = "Last Collapsed: " + nvib.Content;
+                CollapsedItemLabel.Text = name;
+            }
+            else
+            {
+                CollapsedItemLabel.Text = "Last Collapsed: ERROR - No container returned!";
+            }
         }
     }
 }

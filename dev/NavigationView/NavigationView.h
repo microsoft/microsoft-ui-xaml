@@ -85,6 +85,8 @@ public:
     void Collapse(winrt::NavigationViewItem const& value);
 
     winrt::NavigationViewItem GetLastExpandedItem();
+    void RaiseIsExpanding(winrt::NavigationViewItemBase const& item);
+    void RaiseCollapsed(winrt::NavigationViewItemBase const& item);
 
 private:
     bool ShouldIgnoreMeasureOverride();
@@ -207,9 +209,6 @@ private:
     winrt::NavigationViewItem NavigationViewItemOrSettingsContentFromData(const winrt::IInspectable& data);
     winrt::NavigationViewItemBase NavigationViewItemBaseOrSettingsContentFromData(const winrt::IInspectable& data);
 
-    void RaiseIsExpanding(winrt::NavigationViewItemBase const& item);
-    void RaiseCollapsed(winrt::NavigationViewItemBase const& item);
-
     // Cache these objects for the view as they are expensive to query via GetForCurrentView() calls.
     winrt::ViewManagement::ApplicationView m_applicationView{ nullptr };
     winrt::ViewManagement::UIViewSettings m_uiViewSettings{ nullptr };
@@ -275,13 +274,10 @@ private:
 
     void SyncRootNodesWithItemsSource(winrt::IInspectable const& items);
     void ToggleIsExpandedFromItem(const winrt::IInspectable& item);
-    void ToggleIsExpanded(winrt::NavigationViewItem const& item);
     void UpdateIsChildSelected(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
 
     winrt::NavigationViewList GetActiveListView();
     winrt::IVector<winrt::TreeViewNode> RootNodes();
-    winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
-    winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
     winrt::TreeViewNode NodeFromPreviouslySelectedItem(winrt::IInspectable const& item);
 
     // Visual components

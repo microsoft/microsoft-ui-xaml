@@ -227,10 +227,7 @@ void TreeViewNode::SyncChildrenNodesWithItemsSource()
             // Required to create the whole tree when used in NavigationView Markup
             if (auto nvi = item.try_as<winrt::NavigationViewItem>())
             {
-                if (nvi.MenuItems().Size() > 0)
-                {
-                    node->ItemsSource(nvi.MenuItems());
-                }
+                node->ItemsSource(nvi.MenuItems());
             }
             children->AppendCore(*node);
         }

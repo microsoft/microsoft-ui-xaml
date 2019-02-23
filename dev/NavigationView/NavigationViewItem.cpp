@@ -456,3 +456,30 @@ void NavigationViewItem::OnIsSelectedChanged(const winrt::DependencyObject& /*se
 {
     UpdateSelectionIndicatorVisiblity();
 }
+
+void NavigationViewItem::ToggleIsExpanded()
+{
+    if (HasChildren())
+    {
+        auto nv = winrt::get_self<NavigationView>(GetNavigationView());
+        auto isItemBeingExpanded = !IsExpanded();
+        if (isItemBeingExpanded)
+        {
+            nv->RaiseIsExpanding(*this);
+        }
+
+        IsExpanded(isItemBeingExpanded);
+
+        if (!isItemBeingExpanded)
+        {
+            nv->RaiseCollapsed(*this);
+        }
+    }
+}
+
+bool NavigationViewItem::HasChildren()
+{
+    return (MenuItems().Size() > 0 ||
+            MenuItemsSource() ||
+            HasUnrealizedChildren());
+}

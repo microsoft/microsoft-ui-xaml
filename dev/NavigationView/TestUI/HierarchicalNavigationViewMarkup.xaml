@@ -11,7 +11,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <muxcontrols:NavigationView x:Name="navview" ItemInvoked="{x:Bind ClickedItem}">
+        <muxcontrols:NavigationView x:Name="navview" ItemInvoked="{x:Bind ClickedItem}" Expanding="ExpandingItem" Collapsed="CollapsedItem">
             <muxcontrols:NavigationView.MenuItems>
                 <muxcontrols:NavigationViewItem Content="Menu Item 1" Icon="Home" x:Name="MI1" SelectsOnInvoked="False">
                     <muxcontrols:NavigationViewItem.MenuItems>
@@ -43,6 +43,8 @@
                 <TextBlock x:Name="IsChildSelectedLabel" Text="uninitialized"/>
                 <Button Content="Print all 'isChildSelected=true' items" Click="PrintAllIsChildSelectedItems"/>
                 <Button Content="Select Second Item" Click="SelectSecondItem"/>
+                <TextBlock Margin="0,10,0,0" x:Name="ExpandingItemLabel" Text="Last Expanding: N/A"/>
+                <TextBlock x:Name="CollapsedItemLabel" Text="Last Collapsed: N/A"/>
             </StackPanel>
         </muxcontrols:NavigationView>
 

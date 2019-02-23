@@ -10,6 +10,8 @@
 #include "NavigationViewDisplayModeChangedEventArgs.h"
 #include "NavigationViewPaneClosingEventArgs.h"
 #include "NavigationViewBackRequestedEventArgs.h"
+#include "NavigationViewExpandingEventArgs.h"
+#include "NavigationViewCollapsedEventArgs.h"
 #include "ResourceAccessor.h"
 #include "CppWinRTHelpers.h"
 #include "NavigationViewItem.h"
@@ -1255,7 +1257,7 @@ void NavigationView::ToggleIsExpandedFromItem(const winrt::IInspectable& item)
     auto container = NavigationViewItemOrSettingsContentFromData(item);
     if (container)
     {
-        ToggleIsExpanded(container);
+        winrt::get_self<NavigationViewItem>(container)->ToggleIsExpanded();
     }
 }
  
@@ -1368,40 +1370,32 @@ void NavigationView::UpdateIsChildSelected(winrt::IInspectable const& prevItem, 
     }
 
     auto lv = GetActiveListView();
-    auto viewModel = winrt::get_self<NavigationViewList>(lv)->ListViewModel();
-
-    if (lv && prevItem && !IsSettingsItem(prevItem))
+    if (lv)
     {
-        winrt::TreeViewNode prevItemNode{ nullptr };
+        auto lvImpl = winrt::get_self<NavigationViewList>(lv);
+        auto viewModel = lvImpl->ListViewModel();
 
-        if (auto container = lv.ContainerFromItem(prevItem))
+        if (viewModel && prevItem && !IsSettingsItem(prevItem))
         {
-            prevItemNode = NodeFromContainer(container);
+            winrt::TreeViewNode prevItemNode{ nullptr };
+
+            prevItemNode = lvImpl->NodeFromItem(prevItem);
+            if (!prevItemNode)
+            {
+                prevItemNode = NodeFromPreviouslySelectedItem(prevItem);
+            }
+
+            if (prevItemNode && prevItemNode.Parent())
+            {
+                auto nodeParent = prevItemNode.Parent();
+                viewModel->UpdateSelection(nodeParent, TreeNodeSelectionState::UnSelected);
+                viewModel->NotifyContainerOfSelectionChange(nodeParent, TreeNodeSelectionState::UnSelected);
+            }
         }
-        else
+
+        if (viewModel && nextItem && !IsSettingsItem(nextItem))
         {
-            prevItemNode = NodeFromPreviouslySelectedItem(prevItem);
-        }
-
-        MUX_ASSERT(prevItemNode);
-
-        if (prevItemNode && prevItemNode.Parent())
-        {
-            auto nodeParent = prevItemNode.Parent();
-            viewModel->UpdateSelection(nodeParent, TreeNodeSelectionState::UnSelected);
-            viewModel->NotifyContainerOfSelectionChange(nodeParent, TreeNodeSelectionState::UnSelected);
-        }
-    }
-
-    if (lv && nextItem && !IsSettingsItem(nextItem))
-    {
-        // The next item being selected must be in the listview
-        if (auto container = lv.ContainerFromItem(nextItem))
-        {
-            auto nextItemNode = NodeFromContainer(container);
-
-            MUX_ASSERT(nextItemNode);
-
+            auto nextItemNode = lvImpl->NodeFromItem(nextItem);
             if (nextItemNode && nextItemNode.Parent())
             {
                 auto nodeParent = nextItemNode.Parent();
@@ -1422,10 +1416,8 @@ winrt::TreeViewNode NavigationView::NodeFromPreviouslySelectedItem(winrt::IInspe
     while (updatedNodeList && nodeList && nodeList.Size() > 0)
     {
         updatedNodeList = false;
-        for (uint32_t i = 0; i < nodeList.Size(); i++)
+        for (auto const& node : nodeList)
         {
-            auto node = nodeList.GetAt(i);
-
             if (winrt::get_self<TreeViewNode>(node)->Content() == item)
             {
                 return node;
@@ -1471,40 +1463,18 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
     }
 }
 
-void NavigationView::ToggleIsExpanded(winrt::NavigationViewItem const& item)
-{
-    if (item)
-    {
-        bool hasChildren = (item.MenuItems().Size() > 0 ||
-                            item.MenuItemsSource() ||
-                            item.HasUnrealizedChildren());
-        if (hasChildren)
-        {
-            auto isItemBeingExpanded = !item.IsExpanded();
-            if (isItemBeingExpanded)
-            {
-                RaiseIsExpanding(item);
-            }
-
-            item.IsExpanded(isItemBeingExpanded);
-
-            if (!isItemBeingExpanded)
-            {
-                RaiseCollapsed(item);
-            }
-        }
-    }
-}
-
-
 void NavigationView::RaiseIsExpanding(winrt::NavigationViewItemBase const& item)
 {
-
+    auto eventArgs = winrt::make_self<NavigationViewExpandingEventArgs>();
+    eventArgs->ExpandingItemContainer(item);
+    m_expandingEventSource(*this, *eventArgs);
 }
 
 void NavigationView::RaiseCollapsed(winrt::NavigationViewItemBase const& item)
 {
-
+    auto eventArgs = winrt::make_self<NavigationViewCollapsedEventArgs>();
+    eventArgs->CollapsedItemContainer(item);
+    m_collapsedEventSource(*this, *eventArgs);
 }
 
 void NavigationView::RaiseItemInvoked(winrt::IInspectable const& item,
@@ -3574,24 +3544,6 @@ void NavigationView::Expand(winrt::NavigationViewItem const& value)
 void NavigationView::Collapse(winrt::NavigationViewItem const& value)
 {
 
-}
-
-winrt::TreeViewNode NavigationView::NodeFromContainer(winrt::DependencyObject const& container)
-{
-    if (auto navListView = GetActiveListView())
-    {
-        return winrt::get_self<NavigationViewList>(navListView)->NodeFromContainer(container);
-    }
-    return nullptr;
-}
-
-winrt::DependencyObject NavigationView::ContainerFromNode(winrt::TreeViewNode const& node)
-{
-    if (auto navListView = GetActiveListView())
-    {
-        return winrt::get_self<NavigationViewList>(navListView)->ContainerFromNode(node);
-    }
-    return nullptr;
 }
 
 //TODO: Update to work with Overflow Popup

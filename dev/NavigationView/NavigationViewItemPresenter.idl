@@ -1,3 +1,13 @@
+﻿[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass NavigationViewItemPresenterTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    NavigationViewItemPresenterTemplateSettings();
+
+    Windows.UI.Xaml.Thickness Indentation{ get; };
+    static Windows.UI.Xaml.DependencyProperty IndentationProperty{ get; };
+}
+
 [WUXC_VERSION_RS5]
 [webhosthidden]
 unsealed runtimeclass NavigationViewItemPresenter : Windows.UI.Xaml.Controls.ContentControl
@@ -5,5 +15,8 @@ unsealed runtimeclass NavigationViewItemPresenter : Windows.UI.Xaml.Controls.Con
     NavigationViewItemPresenter();
 
     Windows.UI.Xaml.Controls.IconElement Icon { get; set; };
+    NavigationViewItemPresenterTemplateSettings TemplateSettings{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IconProperty { get; };
 }

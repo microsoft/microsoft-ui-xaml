@@ -10,7 +10,7 @@
 
 class NavigationViewItemBase :
     public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>,
-	public NavigationViewItemBaseProperties
+    public NavigationViewItemBaseProperties
 {
 public:
     // Promote all overrides that our derived classes want into virtual so that our shim will call them.

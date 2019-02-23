@@ -56,6 +56,8 @@ public:
 
     winrt::TreeViewNode TreeNode();
 
+    void ToggleIsExpanded();
+
 private:
     void UpdateNavigationViewItemToolTip();
     void SuggestedToolTipChanged(winrt::IInspectable const& newContent);
@@ -102,4 +104,5 @@ private:
     void PropagateDepth();
 
     void OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
+    bool HasChildren();
 };

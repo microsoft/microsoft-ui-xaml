@@ -622,6 +622,10 @@ void ViewModel::UpdateSelectionStateOfAncestors(winrt::TreeViewNode const& targe
     }
 }
 
+// Note: Now that Hierarchical Navigation View is also dependent on the ViewModel, any potential
+// change in the selection state behavior should be made with Navigation View in mind. More specifically,
+// Navigation View is dependent on the current 'PartialSelected' selection state change behavior in order to properly determine
+// which nodes are parents of a selected child.
 TreeNodeSelectionState ViewModel::SelectionStateBasedOnChildren(winrt::TreeViewNode const& node)
 {
     bool hasSelectedChildren{ false };

@@ -57,6 +57,5 @@ namespace MUXControlsTestApp
         {
             NavView.PaneDisplayMode = NavView.PaneDisplayMode == NavigationViewPaneDisplayMode.Top ? NavigationViewPaneDisplayMode.Auto : NavigationViewPaneDisplayMode.Top;
         }
-
     }
 }

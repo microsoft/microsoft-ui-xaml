@@ -42,3 +42,12 @@ winrt::DependencyObject MultiLevelListViewBase::ContainerFromNode(winrt::TreeVie
 {
     return m_listView.get().ContainerFromItem(node.Content());
 }
+
+winrt::TreeViewNode MultiLevelListViewBase::NodeFromItem(winrt::IInspectable const& item)
+{
+    if (auto container = m_listView.get().ContainerFromItem(item))
+    {
+        return NodeFromContainer(container);
+    }
+    return nullptr;
+}
