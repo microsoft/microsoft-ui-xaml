@@ -84,7 +84,6 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\FlowLayout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ItemsRepeater.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\Layout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\StackLayout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\UniformGridLayout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimationManager.cpp" />
