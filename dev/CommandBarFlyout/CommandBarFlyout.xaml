@@ -21,7 +21,7 @@
         <Setter Property="DefaultLabelPosition" Value="Collapsed" />
         <Setter Property="MaxWidth" Value="440" />
         <Setter Property="Height" Value="40" />
-        <Setter Property="IsDynamicOverflowEnabled" Value="False" />
+        <Setter Property="IsDynamicOverflowEnabled" Value="True" />
         <Setter Property="CommandBarOverflowPresenterStyle" Value="{StaticResource CommandBarFlyoutCommandBarOverflowPresenterStyle}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -295,16 +295,18 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <ItemsControl x:Name="PrimaryItemsControl"
-                                        Height="40"
-                                        Grid.Column="0"
-                                        IsTabStop="False">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <StackPanel Orientation="Horizontal" />
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                    </ItemsControl>
+                                    <Grid MaxWidth="400"
+                                        Grid.Column="0">
+                                        <ItemsControl x:Name="PrimaryItemsControl"
+                                            Height="40"
+                                            IsTabStop="False">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </Grid>
                                     <Button x:Name="MoreButton"
                                         Foreground="{TemplateBinding Foreground}"
                                         Style="{StaticResource CommandBarFlyoutEllipsisButtonStyle}"
