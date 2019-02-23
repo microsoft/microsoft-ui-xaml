@@ -137,7 +137,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             if (CoreWindow == null)
             {
                 // We expect to have a window by this point.
-                TestEnvironment.LogDumpTree(UIObject.Root);
+                LogDumpTree();
                 throw new UIObjectNotFoundException("Could not find application window.");
             }
 
@@ -233,7 +233,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 catch (UIObjectNotFoundException)
                 {
                     Log.Error("Could not find the view scaling CheckBox.");
-                    TestEnvironment.LogDumpTree(UIObject.Root);
+                    LogDumpTree();
                     throw;
                 }
             }
@@ -262,7 +262,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 {
                     Log.Comment("Failed to launch app. Exception: " + ex.ToString());
                     Log.Comment("Dumping UIA tree...");
-                    TestEnvironment.LogDumpTree(UIObject.Root);
+                    LogDumpTree();
 
                     if (retries < MaxLaunchRetries)
                     {
@@ -335,7 +335,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 else
                 {
                     Log.Comment("Application.Close: Failed to find close app invoker: {0}", closeAppInvoker);
-                    TestEnvironment.LogDumpTree(UIObject.Root);
+                    LogDumpTree();
                 }
 
                 // We'll wait until the window closes.  For some reason, ProcessClosedWaiter
@@ -549,5 +549,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 #endif
 
         #endregion
+
+        private void LogDumpTree()
+        {
+            try
+            {
+                TestEnvironment.LogDumpTree(UIObject.Root);
+            }
+            catch(Exception e)
+            {
+                Log.Comment(e.Message);
+            }
+        }
     }
 }
