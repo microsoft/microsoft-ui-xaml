@@ -253,54 +253,12 @@ winrt::hstring TypeLogging::ScrollerViewKindToString(ScrollerViewKind viewKind)
         return L"Absolute";
     case ScrollerViewKind::RelativeToCurrentView:
         return L"RelativeToCurrentView";
+#ifdef ScrollerViewKind_RelativeToEndOfInertiaView
     case ScrollerViewKind::RelativeToEndOfInertiaView:
         return L"RelativeToEndOfInertiaView";
+#endif
     default:
         MUX_ASSERT(false);
-        return L"";
-    }
-}
-
-winrt::hstring TypeLogging::ScrollerViewKindToString(const winrt::ScrollerViewKind& viewKind)
-{
-    switch (viewKind)
-    {
-    case winrt::ScrollerViewKind::Absolute:
-        return L"Absolute";
-    case winrt::ScrollerViewKind::RelativeToCurrentView:
-        return L"RelativeToCurrentView";
-    case winrt::ScrollerViewKind::RelativeToEndOfInertiaView:
-        return L"RelativeToEndOfInertiaView";
-    default:
-        MUX_ASSERT(false);
-        return L"";
-    }
-}
-
-winrt::hstring TypeLogging::ScrollerViewChangeKindToString(const winrt::ScrollerViewChangeKind& viewChangeKind)
-{
-    switch (viewChangeKind)
-    {
-    case winrt::ScrollerViewChangeKind::AllowAnimation:
-        return L"AllowAnimation";
-    case winrt::ScrollerViewChangeKind::DisableAnimation:
-        return L"DisableAnimation";
-    default:
-        MUX_ASSERT(false);
-        return L"";
-    }
-}
-
-winrt::hstring TypeLogging::ScrollerViewChangeSnapPointRespectToString(const winrt::ScrollerViewChangeSnapPointRespect& snapPointRespect)
-{
-    switch (snapPointRespect)
-    {
-    case winrt::ScrollerViewChangeSnapPointRespect::IgnoreSnapPoints:
-        return L"IgnoreSnapPoints";
-    case winrt::ScrollerViewChangeSnapPointRespect::RespectSnapPoints:
-        return L"RespectSnapPoints";
-    default:
-        assert(false);
         return L"";
     }
 }
@@ -369,46 +327,6 @@ winrt::hstring TypeLogging::ZoomOptionsToString(const winrt::ZoomOptions& option
     {
         return L"ZoomOptions[null]";
     }
-}
-
-winrt::hstring TypeLogging::ScrollerChangeOffsetsOptionsToString(const winrt::ScrollerChangeOffsetsOptions& options)
-{
-    return StringUtil::FormatString(L"ScrollerChangeOffsetsOptions[0x%1!p!]: HorizontalOffset: %2!i!, VerticalOffset: %3!i!, OffsetsKind: %4!s!, ViewChangeKind: %5!s!, SnapPointRespect: %6!s!",
-        options,
-        static_cast<int32_t>(options.HorizontalOffset()),
-        static_cast<int32_t>(options.VerticalOffset()),
-        ScrollerViewKindToString(options.OffsetsKind()).c_str(),
-        ScrollerViewChangeKindToString(options.ViewChangeKind()).c_str(),
-        ScrollerViewChangeSnapPointRespectToString(options.SnapPointRespect()).c_str());
-}
-
-winrt::hstring TypeLogging::ScrollerChangeOffsetsWithAdditionalVelocityOptionsToString(const winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions& options)
-{
-    return StringUtil::FormatString(L"ScrollerChangeOffsetsWithAdditionalVelocityOptions[0x%1!p!]: AdditionalVelocity: (%2!i!, %3!i!), 1000*InertiaDecayRate: (%4!i!, %5!i!)",
-        options,
-        static_cast<int32_t>(options.AdditionalVelocity().x),
-        static_cast<int32_t>(options.AdditionalVelocity().y),
-        static_cast<int32_t>(options.InertiaDecayRate() ? 1000.0f * options.InertiaDecayRate().Value().x : -1.0f),
-        static_cast<int32_t>(options.InertiaDecayRate() ? 1000.0f * options.InertiaDecayRate().Value().y : -1.0f));
-}
-
-winrt::hstring TypeLogging::ScrollerChangeZoomFactorOptionsToString(const winrt::ScrollerChangeZoomFactorOptions& options)
-{
-    return StringUtil::FormatString(L"ScrollerChangeZoomFactorOptions[0x%1!p!]: 1000*ZoomFactor: %2!u!, CenterPoint: %3!s!, ZoomFactorKind: %4!s!, ViewChangeKind: %5!s!",
-        options,
-        static_cast<uint32_t>(options.ZoomFactor() * 1000.0f),
-        Float2ToString(options.CenterPoint()).c_str(),
-        ScrollerViewKindToString(options.ZoomFactorKind()).c_str(),
-        ScrollerViewChangeKindToString(options.ViewChangeKind()).c_str());
-}
-
-winrt::hstring TypeLogging::ScrollerChangeZoomFactorWithAdditionalVelocityOptionsToString(const winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions& options)
-{
-    return StringUtil::FormatString(L"ScrollerChangeZoomFactorWithAdditionalVelocityOptions[0x%1!p!]: AdditionalVelocity: %2!i!, 1000*InertiaDecayRate: %3!i!, CenterPoint: %4!s!",
-        options,
-        static_cast<int32_t>(options.AdditionalVelocity()),
-        static_cast<int32_t>(options.InertiaDecayRate() ? 1000.0f * options.InertiaDecayRate().Value() : -1.0f),
-        Float2ToString(options.CenterPoint()).c_str());
 }
 
 winrt::hstring TypeLogging::InteractionTrackerAsyncOperationTypeToString(InteractionTrackerAsyncOperationType operationType)

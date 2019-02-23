@@ -20,3 +20,17 @@ OffsetsChangeWithAdditionalVelocity::~OffsetsChangeWithAdditionalVelocity()
 {
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }
+
+void OffsetsChangeWithAdditionalVelocity::OffsetsVelocity(winrt::float2 const& offsetsVelocity)
+{
+    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::Float2ToString(offsetsVelocity).c_str());
+
+    m_offsetsVelocity = offsetsVelocity;
+}
+
+void OffsetsChangeWithAdditionalVelocity::InertiaDecayRate(winrt::IReference<winrt::float2> const& inertiaDecayRate)
+{
+    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
+
+    m_inertiaDecayRate = inertiaDecayRate;
+}

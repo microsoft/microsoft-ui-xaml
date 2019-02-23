@@ -24,12 +24,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 #if !BUILD_WINDOWS
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
-using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
-using ScrollerChangeOffsetsWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions;
-using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
@@ -136,47 +132,45 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
 
             Log.Comment("Jump to offsets");
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 2.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 true /*hookViewChanged*/,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 2.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0);
 
             Log.Comment("Animate to offsets");
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 4.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.AllowAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Enabled,
+                SnapPointsMode.Ignore,
                 false /*hookViewChanged*/,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 4.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0);
 
             Log.Comment("Jump to zoomFactor 2.0");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 2.0f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 false /*hookViewChanged*/);
 
             Log.Comment("Animate to zoomFactor 1.5");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 1.5f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.AllowAnimation,
+                AnimationMode.Enabled,
+                SnapPointsMode.Ignore,
                 false /*hookViewChanged*/);
         }
 
@@ -251,13 +245,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             Log.Comment("Jump to zoomFactor 0.75");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 0.75f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation);
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
@@ -371,13 +365,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             Log.Comment("Jump to zoomFactor 0.75");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 0.75f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation);
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
@@ -496,47 +490,45 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
 
             Log.Comment("Jump to offsets");
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 2.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 true /*hookViewChanged*/,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 2.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0);
 
             Log.Comment("Animate to offsets");
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 4.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.AllowAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Enabled,
+                SnapPointsMode.Ignore,
                 false /*hookViewChanged*/,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 4.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0);
 
             Log.Comment("Jump to zoomFactor 2.0");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 2.0f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 false /*hookViewChanged*/);
 
             Log.Comment("Animate to zoomFactor 1.5");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 1.5f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.AllowAnimation,
+                AnimationMode.Enabled,
+                SnapPointsMode.Ignore,
                 false /*hookViewChanged*/);
         }
 
@@ -593,13 +585,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             Log.Comment("Jump to zoomFactor 0.75");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 0.75f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation);
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
@@ -673,7 +665,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 biDirectionalScrollController.ViewChangeCompleted += (BiDirectionalScrollController sender, BiDirectionalScrollControllerViewChangeCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffsetsWithAdditionalVelocity completed. ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
+                    Log.Comment("ScrollFrom completed. ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
 
                     Log.Comment("Setting completion event");
                     viewChangeCompletedEvent.Set();
@@ -688,13 +680,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             Log.Comment("Jump to zoomFactor 0.75");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 0.75f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation);
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {

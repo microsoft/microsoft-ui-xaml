@@ -45,11 +45,6 @@ public:
         InteractionTrackerAsyncOperationType operationType,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         bool isDelayed,
-        const winrt::IInspectable& options);
-    InteractionTrackerAsyncOperation(
-        InteractionTrackerAsyncOperationType operationType,
-        InteractionTrackerAsyncOperationTrigger operationTrigger,
-        bool isDelayed,
         std::shared_ptr<ViewChangeBase> viewChangeBase);
     ~InteractionTrackerAsyncOperation();
 
@@ -189,11 +184,6 @@ public:
         m_requestId = requestId;
     }
 
-    winrt::IInspectable GetOptions() const
-    {
-        return m_options;
-    }
-
     std::shared_ptr<ViewChangeBase> GetViewChangeBase() const
     {
         return m_viewChangeBase;
@@ -226,10 +216,6 @@ private:
 
     // Set to True when the operation is delayed until the scroller is loaded.
     bool m_isDelayed{ false };
-
-    // ScrollerChangeOffsetsOptions, ScrollerChangeOffsetsWithAdditionalVelocityOptions, ScrollerChangeZoomFactorOptions or 
-    // ScrollerChangeZoomFactorWithAdditionalVelocityOptions instance associated with this operation.
-    winrt::IInspectable m_options{ nullptr };
 
     // OffsetsChange or ZoomFactorChange instance associated with this operation.
     std::shared_ptr<ViewChangeBase> m_viewChangeBase;

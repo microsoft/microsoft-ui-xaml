@@ -13,6 +13,10 @@
 #include "ScrollerSnapPoint.h"
 #include "ScrollerTrace.h"
 #include "ViewChange.h"
+#include "OffsetsChange.h"
+#include "OffsetsChangeWithAdditionalVelocity.h"
+#include "ZoomFactorChange.h"
+#include "ZoomFactorChangeWithAdditionalVelocity.h"
 
 #include "Scroller.g.h"
 #include "Scroller.properties.h"
@@ -170,11 +174,6 @@ public:
     winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
     winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
     winrt::ZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
-
-    int32_t ChangeOffsets(winrt::ScrollerChangeOffsetsOptions const& options);
-    int32_t ChangeOffsetsWithAdditionalVelocity(winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions const& options);
-    int32_t ChangeZoomFactor(winrt::ScrollerChangeZoomFactorOptions const& options);
-    int32_t ChangeZoomFactorWithAdditionalVelocity(winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions const& options);
 
 #pragma endregion
 
@@ -372,16 +371,6 @@ private:
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         _Out_opt_ int32_t* viewChangeId);
 
-    void ChangeOffsetsPrivate(
-        InteractionTrackerAsyncOperationTrigger operationTrigger,
-        const winrt::ScrollerChangeOffsetsOptions& options,
-        int32_t existingViewChangeId,
-        _Out_opt_ int32_t* viewChangeId);
-    void ChangeOffsetsWithAdditionalVelocityPrivate(
-        InteractionTrackerAsyncOperationTrigger operationTrigger,
-        const winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions& options,
-        _Out_opt_ int32_t* viewChangeId);
-
     void ChangeZoomFactorPrivate(
         float zoomFactor,
         winrt::IReference<winrt::float2> centerPoint,
@@ -395,29 +384,22 @@ private:
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         _Out_opt_ int32_t* viewChangeId);
 
-    void ChangeZoomFactorPrivate(
-        const winrt::ScrollerChangeZoomFactorOptions& options,
-        _Out_opt_ int32_t* viewChangeId);
-    void ChangeZoomFactorWithAdditionalVelocityPrivate(
-        InteractionTrackerAsyncOperationTrigger operationTrigger,
-        const winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions& options,
-        _Out_opt_ int32_t* viewChangeId);
     void ProcessDequeuedViewChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
     void ProcessOffsetsChange(
         InteractionTrackerAsyncOperationTrigger operationTrigger,
-        const winrt::ScrollerChangeOffsetsOptions& options,
+        std::shared_ptr<OffsetsChange> offsetsChange,
         int32_t viewChangeId,
         bool isForAsyncOperation);
     void ProcessOffsetsChange(
-        const winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions& options);
+        std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity);
     void PostProcessOffsetsChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
     void ProcessZoomFactorChange(
-        const winrt::ScrollerChangeZoomFactorOptions& options,
+        std::shared_ptr<ZoomFactorChange> zoomFactorChange,
         int32_t viewChangeId);
     void ProcessZoomFactorChange(
-        const winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions& options);
+        std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity);
     void PostProcessZoomFactorChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
     bool InterruptViewChangeWithAnimation(InteractionTrackerAsyncOperationType interactionTrackerAsyncOperationType);
@@ -445,11 +427,6 @@ private:
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         ScrollerViewKind const& viewKind,
         winrt::ScrollOptions const& options) const;
-    std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromKinds(
-        bool isOperationTypeForOffsetsChange,
-        InteractionTrackerAsyncOperationTrigger trigger,
-        const winrt::ScrollerViewKind& viewKind,
-        const winrt::ScrollerViewChangeKind& viewChangeKind) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationWithAdditionalVelocity(
         bool isOperationTypeForOffsetsChange,
         InteractionTrackerAsyncOperationTrigger operationTrigger) const;

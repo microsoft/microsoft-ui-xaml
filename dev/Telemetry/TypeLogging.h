@@ -38,17 +38,10 @@ static winrt::hstring ScrollBarVisibilityToString(const winrt::ScrollBarVisibili
     static winrt::hstring AnimationModeToString(const winrt::AnimationMode& animationMode);
     static winrt::hstring SnapPointsModeToString(const winrt::SnapPointsMode& snapPointsMode);
     static winrt::hstring ScrollerViewKindToString(ScrollerViewKind viewKind);
-    static winrt::hstring ScrollerViewKindToString(const winrt::ScrollerViewKind& viewKind);
-    static winrt::hstring ScrollerViewChangeKindToString(const winrt::ScrollerViewChangeKind& viewChangeKind);
-    static winrt::hstring ScrollerViewChangeSnapPointRespectToString(const winrt::ScrollerViewChangeSnapPointRespect& snapPointRespect);
     static winrt::hstring ScrollerViewChangeResultToString(const winrt::ScrollerViewChangeResult& result);
     static winrt::hstring ScrollAmountToString(const winrt::ScrollAmount& scrollAmount);
     static winrt::hstring ScrollOptionsToString(const winrt::ScrollOptions& options);
     static winrt::hstring ZoomOptionsToString(const winrt::ZoomOptions& options);
-    static winrt::hstring ScrollerChangeOffsetsOptionsToString(const winrt::ScrollerChangeOffsetsOptions& options);
-    static winrt::hstring ScrollerChangeOffsetsWithAdditionalVelocityOptionsToString(const winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions& options);
-    static winrt::hstring ScrollerChangeZoomFactorOptionsToString(const winrt::ScrollerChangeZoomFactorOptions& options);
-    static winrt::hstring ScrollerChangeZoomFactorWithAdditionalVelocityOptionsToString(const winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions& options);
     static winrt::hstring InteractionTrackerAsyncOperationTypeToString(InteractionTrackerAsyncOperationType operationType);
     static winrt::hstring InteractionTrackerAsyncOperationTriggerToString(InteractionTrackerAsyncOperationTrigger operationTrigger);
 #pragma endregion

@@ -103,31 +103,6 @@ enum SnapPointsMode
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ScrollerViewKind
-{
-    Absolute = 0,
-    RelativeToCurrentView = 1,
-    RelativeToEndOfInertiaView = 2,
-};
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-enum ScrollerViewChangeKind
-{
-    DisableAnimation = 0,
-    AllowAnimation = 1,
-};
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-enum ScrollerViewChangeSnapPointRespect
-{
-    IgnoreSnapPoints = 0,
-    RespectSnapPoints = 1,
-};
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
 enum ScrollerViewChangeResult
 {
     Completed = 0,
@@ -159,65 +134,6 @@ unsealed runtimeclass ZoomOptions
 
     AnimationMode AnimationMode { get; set; };
     SnapPointsMode SnapPointsMode{ get; set; };
-}
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-[marshaling_behavior(agile)]
-[threading(both)]
-runtimeclass ScrollerChangeOffsetsOptions
-{
-    ScrollerChangeOffsetsOptions(
-        Double horizontalOffset,
-        Double verticalOffset,
-        ScrollerViewKind offsetsKind,
-        ScrollerViewChangeKind viewChangeKind,
-        ScrollerViewChangeSnapPointRespect snapPointRespect);
-
-    Double HorizontalOffset { get; set; };
-    Double VerticalOffset { get; set; };
-    ScrollerViewKind OffsetsKind { get; set; };
-    ScrollerViewChangeKind ViewChangeKind { get; set; };
-    ScrollerViewChangeSnapPointRespect SnapPointRespect{ get; set; };
-}
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-runtimeclass ScrollerChangeOffsetsWithAdditionalVelocityOptions
-{
-    ScrollerChangeOffsetsWithAdditionalVelocityOptions(Windows.Foundation.Numerics.Vector2 additionalVelocity, Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
-
-    Windows.Foundation.Numerics.Vector2 AdditionalVelocity { get; set; };
-    Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> InertiaDecayRate { get; set; };
-}
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-runtimeclass ScrollerChangeZoomFactorOptions
-{
-    ScrollerChangeZoomFactorOptions(
-        Single zoomFactor,
-        ScrollerViewKind zoomFactorKind,
-        Windows.Foundation.Numerics.Vector2 centerPoint,
-        ScrollerViewChangeKind viewChangeKind,
-        ScrollerViewChangeSnapPointRespect snapPointRespect);
-
-    Single ZoomFactor { get; set; };
-    ScrollerViewKind ZoomFactorKind { get; set; };
-    Windows.Foundation.Numerics.Vector2 CenterPoint { get; set; };
-    ScrollerViewChangeKind ViewChangeKind { get; set; };
-    ScrollerViewChangeSnapPointRespect SnapPointRespect{ get; set; };
-}
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-runtimeclass ScrollerChangeZoomFactorWithAdditionalVelocityOptions
-{
-    ScrollerChangeZoomFactorWithAdditionalVelocityOptions(Single additionalVelocity, Windows.Foundation.IReference<Single> inertiaDecayRate, Windows.Foundation.Numerics.Vector2 centerPoint);
-
-    Single AdditionalVelocity { get; set; };
-    Windows.Foundation.IReference<Single> InertiaDecayRate { get; set; };
-    Windows.Foundation.Numerics.Vector2 CenterPoint { get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]

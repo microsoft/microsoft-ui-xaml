@@ -77,11 +77,6 @@ public:
     winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
     winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
     winrt::ZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
-
-    int32_t ChangeOffsets(winrt::ScrollerChangeOffsetsOptions const& options);
-    int32_t ChangeOffsetsWithAdditionalVelocity(winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions const& options);
-    int32_t ChangeZoomFactor(winrt::ScrollerChangeZoomFactorOptions const& options);
-    int32_t ChangeZoomFactorWithAdditionalVelocity(winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions const& options);
 #pragma endregion
 
     // Invoked by ScrollViewerTestHooks

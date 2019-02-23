@@ -333,58 +333,6 @@ winrt::ZoomInfo ScrollViewer::ZoomFrom(float zoomFactorVelocity, winrt::IReferen
     return s_noOpZoomInfo;
 }
 
-int32_t ScrollViewer::ChangeOffsets(
-    winrt::ScrollerChangeOffsetsOptions const& options)
-{
-    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::ScrollerChangeOffsetsOptionsToString(options).c_str());
-
-    if (auto scroller = m_scroller.get())
-    {
-        return scroller.ChangeOffsets(options);
-    }
-
-    return -1;
-}
-
-int32_t ScrollViewer::ChangeOffsetsWithAdditionalVelocity(
-    winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions const& options)
-{
-    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::ScrollerChangeOffsetsWithAdditionalVelocityOptionsToString(options).c_str());
-
-    if (auto scroller = m_scroller.get())
-    {
-        return scroller.ChangeOffsetsWithAdditionalVelocity(options);
-    }
-
-    return -1;
-}
-
-int32_t ScrollViewer::ChangeZoomFactor(
-    winrt::ScrollerChangeZoomFactorOptions const& options)
-{
-    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::ScrollerChangeZoomFactorOptionsToString(options).c_str());
-
-    if (auto scroller = m_scroller.get())
-    {
-        return scroller.ChangeZoomFactor(options);
-    }
-
-    return -1;
-}
-
-int32_t ScrollViewer::ChangeZoomFactorWithAdditionalVelocity(
-    winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions const& options)
-{
-    SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::ScrollerChangeZoomFactorWithAdditionalVelocityOptionsToString(options).c_str());
-
-    if (auto scroller = m_scroller.get())
-    {
-        return scroller.ChangeZoomFactorWithAdditionalVelocity(options);
-    }
-
-    return -1;
-}
-
 #pragma endregion
 
 #pragma region IFrameworkElementOverrides
@@ -1896,8 +1844,7 @@ bool ScrollViewer::DoScrollForKey(winrt::VirtualKey key, double scrollProportion
                 horizontalOffset = scroller.ExtentWidth() * scroller.ZoomFactor() - scroller.ActualWidth();
             }
 
-            winrt::ScrollerChangeOffsetsOptions options(horizontalOffset, verticalOffset, winrt::ScrollerViewKind::Absolute, winrt::ScrollerViewChangeKind::AllowAnimation, winrt::ScrollerViewChangeSnapPointRespect::RespectSnapPoints);
-            scroller.ChangeOffsets(options);
+            scroller.ScrollTo(horizontalOffset, verticalOffset);
         }
     }
     else if (key == winrt::VirtualKey::End)
@@ -1921,8 +1868,7 @@ bool ScrollViewer::DoScrollForKey(winrt::VirtualKey key, double scrollProportion
                 horizontalOffset = 0.0;
             }
 
-            winrt::ScrollerChangeOffsetsOptions options(horizontalOffset, verticalOffset, winrt::ScrollerViewKind::Absolute, winrt::ScrollerViewChangeKind::AllowAnimation, winrt::ScrollerViewChangeSnapPointRespect::RespectSnapPoints);
-            scroller.ChangeOffsets(options);
+            scroller.ScrollTo(horizontalOffset, verticalOffset);
         }
     }
 
@@ -1968,16 +1914,14 @@ void ScrollViewer::DoScroll(double offset, winrt::Orientation orientation)
 
         if (isVertical)
         {
-            winrt::float2 additionalVelocity(0.0f, velocity);
-            winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions options(additionalVelocity, inertiaDecayRate);
-            m_verticalScrollWithKeyboardViewChangeId = scroller.ChangeOffsetsWithAdditionalVelocity(options);
+            winrt::float2 offsetsVelocity(0.0f, velocity);
+            m_verticalScrollWithKeyboardViewChangeId = scroller.ScrollFrom(offsetsVelocity, inertiaDecayRate).OffsetsChangeId;
             m_verticalScrollWithKeyboardDirection = scrollDir;
         }
         else
         {
-            winrt::float2 additionalVelocity(velocity, 0.0f);
-            winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions options(additionalVelocity, inertiaDecayRate);
-            m_horizontalScrollWithKeyboardViewChangeId = scroller.ChangeOffsetsWithAdditionalVelocity(options);
+            winrt::float2 offsetsVelocity(velocity, 0.0f);
+            m_horizontalScrollWithKeyboardViewChangeId = scroller.ScrollFrom(offsetsVelocity, inertiaDecayRate).OffsetsChangeId;
             m_horizontalScrollWithKeyboardDirection = scrollDir;
         }
     }

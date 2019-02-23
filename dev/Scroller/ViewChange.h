@@ -9,7 +9,9 @@ enum class ScrollerViewKind
 {
     Absolute,
     RelativeToCurrentView,
+#ifdef ScrollerViewKind_RelativeToEndOfInertiaView
     RelativeToEndOfInertiaView,
+#endif
 };
 
 class ViewChange : public ViewChangeBase

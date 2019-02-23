@@ -12,7 +12,7 @@ public:
         double zoomedHorizontalOffset,
         double zoomedVerticalOffset,
         ScrollerViewKind offsetsKind,
-        winrt::ScrollOptions const& options);
+        winrt::IInspectable const& options);
     ~OffsetsChange();
 
     double ZoomedHorizontalOffset() const

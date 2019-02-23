@@ -226,10 +226,7 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
         Single zoomFactorVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         Windows.Foundation.IReference<Single> inertiaDecayRate);
-    Int32 ChangeOffsets(MU_XC_NAMESPACE.ScrollerChangeOffsetsOptions options);
-    Int32 ChangeOffsetsWithAdditionalVelocity(MU_XC_NAMESPACE.ScrollerChangeOffsetsWithAdditionalVelocityOptions options);
-    Int32 ChangeZoomFactor(MU_XC_NAMESPACE.ScrollerChangeZoomFactorOptions options);
-    Int32 ChangeZoomFactorWithAdditionalVelocity(MU_XC_NAMESPACE.ScrollerChangeZoomFactorWithAdditionalVelocityOptions options);
+
     event Windows.Foundation.TypedEventHandler<Scroller, Object> ExtentChanged;
     event Windows.Foundation.TypedEventHandler<Scroller, Object> StateChanged;
     event Windows.Foundation.TypedEventHandler<Scroller, Object> ViewChanged;

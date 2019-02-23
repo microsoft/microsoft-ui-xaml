@@ -7,25 +7,6 @@
 #include "InteractionTrackerAsyncOperation.h"
 
 InteractionTrackerAsyncOperation::InteractionTrackerAsyncOperation(
-    InteractionTrackerAsyncOperationType operationType, 
-    InteractionTrackerAsyncOperationTrigger operationTrigger,
-    bool isDelayed, 
-    const winrt::IInspectable& options)
-    : m_operationType(operationType)
-    , m_operationTrigger(operationTrigger)
-    , m_isDelayed(isDelayed)
-    , m_options(options)
-{
-    SCROLLER_TRACE_VERBOSE(nullptr, L"%s[0x%p](operationType: %s, operationTrigger: %s, isDelayed: %d, options: 0x%p)\n",
-        METH_NAME, this, TypeLogging::InteractionTrackerAsyncOperationTypeToString(operationType).c_str(), TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str(), isDelayed, options);
-
-    if (!IsAnimated())
-    {
-        m_postProcessingTicksCountdown = c_maxNonAnimatedOperationTicks;
-    }
-}
-
-InteractionTrackerAsyncOperation::InteractionTrackerAsyncOperation(
     InteractionTrackerAsyncOperationType operationType,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
     bool isDelayed,

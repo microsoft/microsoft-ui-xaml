@@ -10,7 +10,7 @@ OffsetsChange::OffsetsChange(
     double zoomedHorizontalOffset,
     double zoomedVerticalOffset,
     ScrollerViewKind offsetsKind,
-    winrt::ScrollOptions const& options) :
+    winrt::IInspectable const& options) :
         m_zoomedHorizontalOffset(zoomedHorizontalOffset),
         m_zoomedVerticalOffset(zoomedVerticalOffset),
         ViewChange(offsetsKind, options)

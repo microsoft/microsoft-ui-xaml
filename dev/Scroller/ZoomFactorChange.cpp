@@ -10,7 +10,7 @@ ZoomFactorChange::ZoomFactorChange(
     float zoomFactor,
     winrt::IReference<winrt::float2> centerPoint,
     ScrollerViewKind zoomFactorKind,
-    winrt::ZoomOptions const& options) :
+    winrt::IInspectable const& options) :
         m_zoomFactor(zoomFactor),
         m_centerPoint(centerPoint),
         ViewChange(zoomFactorKind, options)
