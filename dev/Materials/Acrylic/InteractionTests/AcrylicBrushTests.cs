@@ -101,8 +101,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (IDisposable page1 = new TestSetupHelper("Acrylic Tests"),
-                               page2 = new TestSetupHelper("navigateToBasicAcrylic"))
+            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 ChooseFromComboBox("TestNameComboBox", "BasicAcrylicOnRectangle");
 
@@ -124,8 +123,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (IDisposable page1 = new TestSetupHelper("Acrylic Tests"),
-                               page2 = new TestSetupHelper("navigateToBasicAcrylic"))
+            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 ChooseFromComboBox("TestNameComboBox", "AcrylicPropertyChanges");
 
@@ -157,8 +155,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (IDisposable page1 = new TestSetupHelper("Acrylic Tests"),
-                               page2 = new TestSetupHelper("navigateToBasicAcrylic"))
+            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 {
                     ChooseFromComboBox("TestNameComboBox", "HideAndShowWindow");
@@ -254,8 +251,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (IDisposable page1 = new TestSetupHelper("Acrylic Tests"),
-                               page2 = new TestSetupHelper("navigateToBasicAcrylic"))
+            using (var page1 = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 {
                     ChooseFromComboBox("TestNameComboBox", "AcrylicAlwaysUseFallback");
@@ -286,8 +282,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (IDisposable page1 = new TestSetupHelper("Acrylic Tests"),
-                               page2 = new TestSetupHelper("navigateToBasicAcrylic"))
+            using (var page1 = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 {
                     ChooseFromComboBox("TestNameComboBox", "AcrylicCreatedInFallbackMode");
@@ -311,8 +306,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (IDisposable page1 = new TestSetupHelper("Acrylic Tests"),
-                               page2 = new TestSetupHelper("navigateToBasicAcrylic"))
+            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 {
                     ChooseFromComboBox("TestNameComboBox", "VerifyDisconnectedState");
@@ -343,8 +337,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (IDisposable page1 = new TestSetupHelper("Acrylic Tests"),
-                               page2 = new TestSetupHelper("navigateToMarkupAcrylic"))
+            using (var setup = new TestSetupHelper(new string[]{ "Acrylic Tests", "navigateToMarkupAcrylic" }))
             {
                 {
                     var result = new Edit(FindElement.ById("TestResult"));
@@ -387,8 +380,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Acrylic Tests"),
-                               page2 = new TestSetupHelper("navigateToRenderingAcrylic"))
+            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToRenderingAcrylic" }))
             {
                 {
                     var result = new Edit(FindElement.ById("TestResult"));
@@ -413,8 +405,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             // Opaque Tint Optimization removed with Luminosity-based Acrylic recipe added in 19H1
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.NineteenH1)) { return; }
 
-            using (IDisposable page1 = new TestSetupHelper("Acrylic Tests"),
-                               page2 = new TestSetupHelper("navigateToBasicAcrylic"))
+            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 {
                     ChooseFromComboBox("TestNameComboBox", "VerifyOpaqueTintOptimization");
@@ -445,8 +436,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (IDisposable page1 = new TestSetupHelper("Acrylic Tests"),
-                               page2 = new TestSetupHelper("navigateToBasicAcrylic"))
+            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 ChooseFromComboBox("TestNameComboBox", "TintTransitionDuration");
 
@@ -471,8 +461,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (IDisposable page1 = new TestSetupHelper("Acrylic Tests"),
-                               page2 = new TestSetupHelper("navigateToBasicAcrylic"))
+            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 ChooseFromComboBox("TestNameComboBox", "AcrylicNoiseCache");
 
@@ -494,8 +483,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (IDisposable page1 = new TestSetupHelper("Acrylic Tests"),
-                               page2 = new TestSetupHelper("navigateToBasicAcrylic"))
+            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 ChooseFromComboBox("TestNameComboBox", "VerifyAcrylicBrushEffect");
 
@@ -516,8 +504,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (IDisposable page1 = new TestSetupHelper("Acrylic Tests"),
-                               page2 = new TestSetupHelper("navigateToBasicAcrylic"))
+            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 // Just click the button to show acrylic and then hide it to make sure that the API works.
                 // There's not much we can validate beyond that because we can't peer into the effect brush.
@@ -541,8 +528,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Acrylic Tests"),
-                               page2 = new TestSetupHelper("navigateToRenderingAcrylic"))
+            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToRenderingAcrylic" }))
             {
                 {
                     var result = new Edit(FindElement.ById("TestResult"));
