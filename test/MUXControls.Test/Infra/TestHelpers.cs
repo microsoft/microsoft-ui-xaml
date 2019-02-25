@@ -38,9 +38,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
     {
         private bool AttemptRestartOnDispose { get; set; }
 
+        public TestSetupHelper(string testName, string languageOverride = "", bool attemptRestartOnDispose = true)
+            :this(new string[] { testName }, languageOverride, attemptRestartOnDispose)
+        {}
+
         // The value of 'testName' should match that which was used when
         // registering the test in TestInventory.cs in the test app project.
-        public TestSetupHelper(string testName, string languageOverride = "", bool attemptRestartOnDispose = true)
+        public TestSetupHelper(ICollection<string> testNames, string languageOverride = "", bool attemptRestartOnDispose = true)
         {
             // If a test crashes, it can take a little bit of time before we can 
             // restart the app again especially if watson is collecting dumps. Adding a 
@@ -53,8 +57,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 {
                     AttemptRestartOnDispose = attemptRestartOnDispose;
                     bool restartedTestApp = false;
-
-                    Log.Comment(testName + " initializing TestSetupHelper");
 
                     if (TestEnvironment.ShouldRestartApplication)
                     {
@@ -97,74 +99,79 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     ElementCache.Clear();
                     Wait.ForIdle();
 
-                    // Before we navigate to the test page, we need to make sure that we've set the language to what was requested.
-                    var languageChooser = TryFindElement.ById("LanguageChooser");
-
-                    // Sometimes TestSetupHelper is used to navigate off of a page other than the main page.  In those circumstances,
-                    // we won't have a pseudo-loc check box on the page, which is fine - we can just skip this step when that's the case,
-                    // as we'll have already gone into whatever language we wanted previously.
-                    if (languageChooser != null)
+                    foreach (string testName in testNames)
                     {
-                        ComboBox languageChooserComboBox = new ComboBox(languageChooser);
+                        Log.Comment(testName + " initializing TestSetupHelper");
 
-                        if (!String.IsNullOrEmpty(languageOverride))
+                        // Before we navigate to the test page, we need to make sure that we've set the language to what was requested.
+                        var languageChooser = TryFindElement.ById("LanguageChooser");
+
+                        // Sometimes TestSetupHelper is used to navigate off of a page other than the main page.  In those circumstances,
+                        // we won't have a pseudo-loc check box on the page, which is fine - we can just skip this step when that's the case,
+                        // as we'll have already gone into whatever language we wanted previously.
+                        if (languageChooser != null)
                         {
-                            languageChooserComboBox.SelectItemById(languageOverride);
+                            ComboBox languageChooserComboBox = new ComboBox(languageChooser);
+
+                            if (!String.IsNullOrEmpty(languageOverride))
+                            {
+                                languageChooserComboBox.SelectItemById(languageOverride);
+                            }
                         }
-                    }
 
-                    // We were hitting an issue in the lab where sometimes the very first click would fail to go through resulting in 
-                    // test instability. We work around this by clicking on element when the app launches. 
-                    var currentPageTextBlock = FindElement.ById("__CurrentPage");
-                    if (currentPageTextBlock == null)
-                    {
-                        string errorMessage = "Cannot find __CurrentPage textblock";
-                        Log.Error(errorMessage);
-                        DumpHelper.DumpFullContext();
-                        throw new InvalidOperationException(errorMessage);
-                    }
-                    InputHelper.LeftClick(currentPageTextBlock);
+                        // We were hitting an issue in the lab where sometimes the very first click would fail to go through resulting in 
+                        // test instability. We work around this by clicking on element when the app launches. 
+                        var currentPageTextBlock = FindElement.ById("__CurrentPage");
+                        if (currentPageTextBlock == null)
+                        {
+                            string errorMessage = "Cannot find __CurrentPage textblock";
+                            Log.Error(errorMessage);
+                            DumpHelper.DumpFullContext();
+                            throw new InvalidOperationException(errorMessage);
+                        }
+                        InputHelper.LeftClick(currentPageTextBlock);
 
-                    var uiObject = FindElement.ByNameAndClassName(testName, "Button");
-                    if (uiObject == null)
-                    {
-                        string errorMessage = string.Format("Cannot find test page for: {0}.", testName);
+                        var uiObject = FindElement.ByNameAndClassName(testName, "Button");
+                        if (uiObject == null)
+                        {
+                            string errorMessage = string.Format("Cannot find test page for: {0}.", testName);
 
-                        // We'll raise the error message first so the dump has proper context preceding it,
-                        // and will then throw it as an exception so we immediately cease execution.
-                        Log.Error(errorMessage);
-                        DumpHelper.DumpFullContext();
-                        throw new InvalidOperationException(errorMessage);
-                    }
+                            // We'll raise the error message first so the dump has proper context preceding it,
+                            // and will then throw it as an exception so we immediately cease execution.
+                            Log.Error(errorMessage);
+                            DumpHelper.DumpFullContext();
+                            throw new InvalidOperationException(errorMessage);
+                        }
 
-                    // We're now entering a new test page, so everything has changed.  As such, we should clear our
-                    // element cache in order to ensure that we don't accidentally retrieve any stale UI objects.
-                    ElementCache.Clear();
+                        // We're now entering a new test page, so everything has changed.  As such, we should clear our
+                        // element cache in order to ensure that we don't accidentally retrieve any stale UI objects.
+                        ElementCache.Clear();
 
-                    Log.Comment("Waiting until __TestContentLoadedCheckBox to be checked by test app.");
-                    CheckBox cb = new CheckBox(FindElement.ById("__TestContentLoadedCheckBox"));
+                        Log.Comment("Waiting until __TestContentLoadedCheckBox to be checked by test app.");
+                        CheckBox cb = new CheckBox(FindElement.ById("__TestContentLoadedCheckBox"));
 
-                    if (cb.ToggleState != ToggleState.On)
-                    {
-                        using (var waiter = cb.GetToggledWaiter())
+                        if (cb.ToggleState != ToggleState.On)
+                        {
+                            using (var waiter = cb.GetToggledWaiter())
+                            {
+                                var testButton = new Button(uiObject);
+                                testButton.Invoke();
+                                Wait.ForIdle();
+                                waiter.Wait();
+                            }
+                        }
+                        else
                         {
                             var testButton = new Button(uiObject);
                             testButton.Invoke();
-                            Wait.ForIdle();
-                            waiter.Wait();
                         }
+
+                        Wait.ForIdle();
+
+                        Log.Comment("__TestContentLoadedCheckBox checkbox checked, page has loaded");
+
+                        TestCleanupHelper.TestSetupHelperPendingDisposals++;
                     }
-                    else
-                    {
-                        var testButton = new Button(uiObject);
-                        testButton.Invoke();
-                    }
-
-                    Wait.ForIdle();
-
-                    Log.Comment("__TestContentLoadedCheckBox checkbox checked, page has loaded");
-
-                    TestCleanupHelper.TestSetupHelperPendingDisposals++;
 
                     break;
                 }
