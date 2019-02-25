@@ -39,6 +39,9 @@ public:
     void ProfilePicture(winrt::ImageSource const& value);
     winrt::ImageSource ProfilePicture();
 
+    void TemplateSettings(winrt::PersonPictureTemplateSettings const& value);
+    winrt::PersonPictureTemplateSettings TemplateSettings();
+
     static winrt::DependencyProperty BadgeGlyphProperty() { return s_BadgeGlyphProperty; }
     static winrt::DependencyProperty BadgeImageSourceProperty() { return s_BadgeImageSourceProperty; }
     static winrt::DependencyProperty BadgeNumberProperty() { return s_BadgeNumberProperty; }
@@ -49,6 +52,7 @@ public:
     static winrt::DependencyProperty IsGroupProperty() { return s_IsGroupProperty; }
     static winrt::DependencyProperty PreferSmallImageProperty() { return s_PreferSmallImageProperty; }
     static winrt::DependencyProperty ProfilePictureProperty() { return s_ProfilePictureProperty; }
+    static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
 
     static GlobalDependencyProperty s_BadgeGlyphProperty;
     static GlobalDependencyProperty s_BadgeImageSourceProperty;
@@ -60,6 +64,7 @@ public:
     static GlobalDependencyProperty s_IsGroupProperty;
     static GlobalDependencyProperty s_PreferSmallImageProperty;
     static GlobalDependencyProperty s_ProfilePictureProperty;
+    static GlobalDependencyProperty s_TemplateSettingsProperty;
 
     static void EnsureProperties();
     static void ClearProperties();

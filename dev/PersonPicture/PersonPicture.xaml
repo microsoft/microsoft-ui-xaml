@@ -21,7 +21,7 @@
                                 <!-- Visual State when a Photo is available for display -->
                                 <VisualState x:Name="Photo">
                                     <VisualState.Setters>
-                                        <Setter Target="PersonPictureEllipse.Fill" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ImageBrush}"/>
+                                        <Setter Target="PersonPictureEllipse.Fill" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EffectiveImageBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <!-- Visual State when no Photo is available (but there are initials).-->
@@ -29,14 +29,14 @@
                                 <VisualState x:Name="NoPhotoOrInitials">
                                     <VisualState.Setters>
                                         <Setter Target="InitialsTextBlock.FontFamily" Value="Segoe MDL2 Assets"/>
-                                        <Setter Target="InitialsTextBlock.Text" Value="\xE77B"/>
+                                        <Setter Target="InitialsTextBlock.Text" Value="&#xE77B;"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <!-- Visual State when in Group mode -->
                                 <VisualState x:Name="Group">
                                     <VisualState.Setters>
                                         <Setter Target="InitialsTextBlock.FontFamily" Value="Segoe MDL2 Assets"/>
-                                        <Setter Target="InitialsTextBlock.Text" Value="\xE716"/>
+                                        <Setter Target="InitialsTextBlock.Text" Value="&#xE716;"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -50,7 +50,7 @@
                                 <VisualState x:Name="BadgeWithImageSource">
                                     <VisualState.Setters>
                                         <Setter Target="BadgeGrid.Visibility" Value="Visible" />
-                                        <Setter Target="BadgingEllipse.Opacity" Value ="{ThemeResource PersonPictureEllipseBadgeImageSourceStrokeOpacity}" />
+                                        <Setter Target="BadgingEllipse.Opacity" Value="{ThemeResource PersonPictureEllipseBadgeImageSourceStrokeOpacity}" />
                                         <Setter Target="BadgingEllipse.Fill">
                                             <Setter.Value>
                                                 <ImageBrush x:Name="BadgeImageBrush" Stretch="UniformToFill" />
@@ -78,7 +78,8 @@
                             TextLineBounds="Tight"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Center"
-                            IsTextScaleFactorEnabled="False" />
+                            IsTextScaleFactorEnabled="False"
+                            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EffectiveInitials}" />
 
                         <Ellipse
                             x:Name="PersonPictureEllipse"
