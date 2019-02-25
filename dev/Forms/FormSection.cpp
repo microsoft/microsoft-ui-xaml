@@ -21,12 +21,24 @@ winrt::Size FormSection::MeasureOverride(winrt::Size const& availableSize)
 
     auto children = Children();
     float height = 0.0;
-    float rowWidth = Columns() >= 2 ? 350.0f : 500.0f; // ### magic
+
+    int columns = Columns();
+    if (350 * 2 + 24 > availableSize.Width)
+    {
+        columns = 1;
+    }
+
+    float rowWidth = columns >= 2 ? 350.0f : 500.0f; // ### magic
+    if (rowWidth > availableSize.Width)
+    {
+        rowWidth = availableSize.Width;
+    }
+
     float maxHeight = 0.0;
 
     for (unsigned i = 0u; i < children.Size(); ++i)
     {
-        int column = i % Columns();
+        int column = i % columns;
 
         auto child = children.GetAt(i);
         child.Measure({rowWidth, availableSize.Height});
@@ -36,7 +48,7 @@ winrt::Size FormSection::MeasureOverride(winrt::Size const& availableSize)
             maxHeight = child.DesiredSize().Height;
         }
 
-        if (column == Columns() - 1 || i == children.Size() - 1)
+        if (column == columns - 1 || i == children.Size() - 1)
         {
             height += maxHeight + (float)itemPadding.Top + (float)itemPadding.Bottom;
             maxHeight = 0.0;
@@ -44,7 +56,7 @@ winrt::Size FormSection::MeasureOverride(winrt::Size const& availableSize)
     }
 
     // ### for now
-    return winrt::Size(rowWidth * (float)Columns(), height);
+    return winrt::Size(rowWidth * (float)columns, height);
 }
 
 winrt::Size FormSection::ArrangeOverride(winrt::Size const& finalSize)
@@ -61,7 +73,18 @@ winrt::Size FormSection::ArrangeOverride(winrt::Size const& finalSize)
     auto children = Children();
     float y = 0.0;
     float maxHeight = 0.0;
-    float rowWidth = Columns() >= 2 ? 350.0f : 500.0f; // ### magic
+
+    int columns = Columns();
+    if (350 * 2 + 24 > finalSize.Width)
+    {
+        columns = 1;
+    }
+
+    float rowWidth = columns >= 2 ? 350.0f : 500.0f; // ### magic
+    if (rowWidth > finalSize.Width)
+    {
+        rowWidth = finalSize.Width;
+    }
 
     for (unsigned i = 0u; i < children.Size(); ++i)
     {
@@ -69,16 +92,16 @@ winrt::Size FormSection::ArrangeOverride(winrt::Size const& finalSize)
         float width = child.DesiredSize().Width;
         float height = child.DesiredSize().Height;
 
-        int column = i % Columns();
+        int column = i % columns;
 
-        child.Arrange(winrt::Rect(column * rowWidth + (float)itemPadding.Left + column * 24, y + (float)itemPadding.Top, rowWidth, height));
+        child.Arrange(winrt::Rect(column * (rowWidth + 24), y + (float)itemPadding.Top, rowWidth, height));
 
         if (height > maxHeight)
         {
             maxHeight = height;
         }
 
-        if (column == Columns() - 1 || i == children.Size() - 1)
+        if (column == columns - 1 || i == children.Size() - 1)
         {
             y += maxHeight + (float)itemPadding.Top + (float)itemPadding.Bottom;
             maxHeight = 0.0;
