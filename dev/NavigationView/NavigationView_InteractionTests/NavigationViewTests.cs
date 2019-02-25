@@ -3775,7 +3775,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 getNavViewActiveVisualStatesButton.Invoke();
                 Wait.ForIdle();
 
-                var visualStateName = "MinimalWithBackButton";
+                const string visualStateName = "MinimalWithBackButton";
                 var result = new TextBlock(FindElement.ByName("NavViewActiveVisualStatesResult"));
                 Verify.IsFalse(result.GetText().Contains(visualStateName), "Active VisualStates should not include " + visualStateName);
 
@@ -3785,7 +3785,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Get NavView Active VisualStates");
                 getNavViewActiveVisualStatesButton.Invoke();
-                visualStateName = "MinimalWithBackButton";
+                Wait.ForIdle();
                 Verify.IsTrue(result.GetText().Contains(visualStateName), "Active VisualStates should include " + visualStateName);
             }
         }
