@@ -24,4 +24,6 @@
     <!-- DateTimeFlyoutBorderPadding is defined since RS5. set it here to ensure it's always defined. -->
     <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
 
+    <x:Double x:Key="ControlContentThemeFontSize">14</x:Double>
+    <x:Double x:Key="ContentControlFontSize">14</x:Double>
 </ResourceDictionary>
