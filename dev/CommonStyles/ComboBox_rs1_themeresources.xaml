@@ -1,6 +1,10 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary 
-  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+  xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
+  xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5)"
+  xmlns:contract5NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,5)"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -10,7 +14,6 @@
             <x:Double x:Key="ComboBoxPopupThemeTouchMinWidth">240</x:Double>
             <Thickness x:Key="ComboBoxBorderThemeThickness">2</Thickness>
             <Thickness x:Key="ComboBoxDropdownBorderThickness">1</Thickness>
-            <Thickness x:Key="ComboBoxDropdownContentMargin">0,7,0,7</Thickness>
             <Thickness x:Key="ComboBoxHeaderThemeMargin">0,0,0,4</Thickness>
             <Thickness x:Key="ComboBoxPopupBorderThemeThickness">2</Thickness>
             <Thickness x:Key="ComboBoxItemThemePadding">11,5,11,7</Thickness>
@@ -107,6 +110,14 @@
             <SolidColorBrush x:Key="ComboBoxPressedForegroundThemeBrush" Color="#FF000000" />
             <SolidColorBrush x:Key="ComboBoxSelectedBackgroundThemeBrush" Color="#FF4617B4" />
             <SolidColorBrush x:Key="ComboBoxSelectedPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
+
+            <Thickness x:Key="ComboBoxDropdownBorderPadding">0</Thickness>
+            <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
+            <StaticResource x:Key="ComboBoxDropDownBackgroundPointerOver" ResourceKey="SystemControlBackgroundListLowBrush" />
+            <StaticResource x:Key="ComboBoxDropDownBackgroundPointerPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />
+            <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerOver" ResourceKey="SystemControlBackgroundChromeBlackLowBrush" />
+            <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerPressed" ResourceKey="SystemControlBackgroundChromeBlackMediumLowBrush" />
+            <StaticResource x:Key="ComboBoxEditableDropDownGlyphForeground" ResourceKey="SystemControlForegroundAltMediumHighBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="ComboBoxItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -169,7 +180,6 @@
             <x:Double x:Key="ComboBoxPopupThemeTouchMinWidth">240</x:Double>
             <Thickness x:Key="ComboBoxBorderThemeThickness">2</Thickness>
             <Thickness x:Key="ComboBoxDropdownBorderThickness">1</Thickness>
-            <Thickness x:Key="ComboBoxDropdownContentMargin">0,7,0,7</Thickness>
             <Thickness x:Key="ComboBoxHeaderThemeMargin">0,0,0,4</Thickness>
             <Thickness x:Key="ComboBoxPopupBorderThemeThickness">2</Thickness>
             <Thickness x:Key="ComboBoxItemThemePadding">11,5,11,7</Thickness>
@@ -212,6 +222,14 @@
             <SolidColorBrush x:Key="ComboBoxPressedForegroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="ComboBoxSelectedBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="ComboBoxSelectedPointerOverBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+
+            <StaticResource x:Key="ComboBoxDropDownBackgroundPointerOver" ResourceKey="SystemControlPageBackgroundAltMediumBrush" />
+            <StaticResource x:Key="ComboBoxDropDownBackgroundPointerPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />
+            <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerOver" ResourceKey="SystemControlPageBackgroundAltMediumBrush" />
+            <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />
+            <StaticResource x:Key="ComboBoxEditableDropDownGlyphForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
+            <Thickness x:Key="ComboBoxDropdownBorderPadding">0</Thickness>
+            <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <x:Double x:Key="ComboBoxArrowThemeFontSize">21</x:Double>
@@ -220,7 +238,6 @@
             <x:Double x:Key="ComboBoxPopupThemeTouchMinWidth">240</x:Double>
             <Thickness x:Key="ComboBoxBorderThemeThickness">2</Thickness>
             <Thickness x:Key="ComboBoxDropdownBorderThickness">1</Thickness>
-            <Thickness x:Key="ComboBoxDropdownContentMargin">0,7,0,7</Thickness>
             <Thickness x:Key="ComboBoxHeaderThemeMargin">0,0,0,4</Thickness>
             <Thickness x:Key="ComboBoxPopupBorderThemeThickness">2</Thickness>
             <Thickness x:Key="ComboBoxItemThemePadding">11,5,11,7</Thickness>
@@ -317,6 +334,14 @@
             <SolidColorBrush x:Key="ComboBoxPressedForegroundThemeBrush" Color="#FF000000" />
             <SolidColorBrush x:Key="ComboBoxSelectedBackgroundThemeBrush" Color="#FF4617B4" />
             <SolidColorBrush x:Key="ComboBoxSelectedPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
+
+            <Thickness x:Key="ComboBoxDropdownBorderPadding">0</Thickness>
+            <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
+            <StaticResource x:Key="ComboBoxDropDownBackgroundPointerOver" ResourceKey="SystemControlBackgroundListLowBrush" />
+            <StaticResource x:Key="ComboBoxDropDownBackgroundPointerPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />
+            <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerOver" ResourceKey="SystemControlBackgroundChromeBlackLowBrush" />
+            <StaticResource x:Key="ComboBoxFocusedDropDownBackgroundPointerPressed" ResourceKey="SystemControlBackgroundChromeBlackMediumLowBrush" />
+            <StaticResource x:Key="ComboBoxEditableDropDownGlyphForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -326,12 +351,13 @@
 
     <Style TargetType="ComboBox">
         <Setter Property="Padding" Value="12,5,0,7" />
-        <Setter Property="MinWidth" Value="{ThemeResource ComboBoxThemeMinWidth}" />
+        <Setter Property="MaxDropDownHeight" Value="504" />
         <Setter Property="Foreground" Value="{ThemeResource ComboBoxForeground}" />
         <Setter Property="Background" Value="{ThemeResource ComboBoxBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ComboBoxBorderBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource ComboBoxBorderThemeThickness}" />
         <Setter Property="TabNavigation" Value="Once" />
+        <contract7Present:Setter Property="TextBoxStyle" Value="{StaticResource ComboBoxTextBoxStyle}" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
         <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
@@ -344,6 +370,7 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
         <Setter Property="ItemsPanel">
             <Setter.Value>
                 <ItemsPanelTemplate>
@@ -369,14 +396,6 @@
                                 </DoubleAnimationUsingKeyFrames>
                             </Storyboard>
                         </Grid.Resources>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="32" />
-                        </Grid.ColumnDefinitions>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -415,7 +434,8 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxForegroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextBlock" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxForegroundDisabled}" />
+                                            <contract5NotPresent:DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxForegroundDisabled}" />
+                                            <contract5Present:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource ComboBoxForegroundDisabled}}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DropDownGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxDropDownGlyphForegroundDisabled}" />
@@ -437,7 +457,8 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxForegroundFocused}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextBlock" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxForegroundFocused}" />
+                                            <contract5NotPresent:DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxForegroundFocused}" />
+                                            <contract5Present:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource ComboBoxForegroundFocused}}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DropDownGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxDropDownGlyphForegroundFocused}" />
@@ -454,7 +475,8 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxForegroundFocusedPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextBlock" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxPlaceHolderForegroundFocusedPressed}" />
+                                            <contract5NotPresent:DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxPlaceHolderForegroundFocusedPressed}" />
+                                            <contract5Present:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource ComboBoxPlaceHolderForegroundFocusedPressed}}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DropDownGlyph" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ComboBoxDropDownGlyphForegroundFocusedPressed}" />
@@ -493,37 +515,118 @@
                                     </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
+                            <contract7Present:VisualStateGroup x:Name="EditableModeStates">
+                                <VisualState x:Name="TextBoxFocused">
+                                    <VisualState.Setters>
+                                        <Setter Target="DropDownGlyph.Foreground" Value="{ThemeResource ComboBoxEditableDropDownGlyphForeground}" />
+                                        <Setter Target="DropDownOverlay.Margin" Value="0,3,2,2" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="TextBoxFocusedOverlayPointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="DropDownGlyph.Foreground" Value="{ThemeResource ComboBoxEditableDropDownGlyphForeground}" />
+                                        <Setter Target="DropDownOverlay.Background" Value="{ThemeResource ComboBoxFocusedDropDownBackgroundPointerOver}" />
+                                        <Setter Target="DropDownOverlay.Margin" Value="0,3,2,2" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="TextBoxFocusedOverlayPressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="DropDownGlyph.Foreground" Value="{ThemeResource ComboBoxEditableDropDownGlyphForeground}" />
+                                        <Setter Target="DropDownOverlay.Background" Value="{ThemeResource ComboBoxFocusedDropDownBackgroundPointerPressed}" />
+                                        <Setter Target="DropDownOverlay.Margin" Value="0,3,2,2" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="TextBoxOverlayPointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="DropDownOverlay.Background" Value="{ThemeResource ComboBoxDropDownBackgroundPointerOver}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="TextBoxOverlayPressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="DropDownOverlay.Background" Value="{ThemeResource ComboBoxDropDownBackgroundPointerPressed}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="TextBoxUnfocused" />
+                            </contract7Present:VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="32" />
+                        </Grid.ColumnDefinitions>
                         <ContentPresenter x:Name="HeaderContentPresenter"
-                            x:DeferLoadStrategy="Lazy"
-                            Margin="{ThemeResource ComboBoxTopHeaderMargin}"
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}"
                             FlowDirection="{TemplateBinding FlowDirection}"
                             FontWeight="{ThemeResource ComboBoxHeaderThemeFontWeight}"
+                            Margin="{ThemeResource ComboBoxTopHeaderMargin}"
+                            TextWrapping="Wrap"
+                            VerticalAlignment="Top"
                             Visibility="Collapsed"
-                            Content="{TemplateBinding Header}"
-                            ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                            x:DeferLoadStrategy="Lazy" />
                         <Border x:Name="Background"
                             Grid.Row="1"
+                            Grid.Column="0"
                             Grid.ColumnSpan="2"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}" />
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            Control.IsTemplateFocusTarget="True"
+                            MinWidth="{ThemeResource ComboBoxThemeMinWidth}" />
                         <Border x:Name="HighlightBackground"
                             Grid.Row="1"
+                            Grid.Column="0"
                             Grid.ColumnSpan="2"
                             Background="{ThemeResource ComboBoxBackgroundUnfocused}"
                             BorderBrush="{ThemeResource ComboBoxBackgroundBorderBrushUnfocused}"
                             BorderThickness="{TemplateBinding BorderThickness}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             Opacity="0" />
                         <ContentPresenter x:Name="ContentPresenter"
                             Grid.Row="1"
+                            Grid.Column="0"
                             Margin="{TemplateBinding Padding}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                             <TextBlock x:Name="PlaceholderTextBlock"
                                 Text="{TemplateBinding PlaceholderText}"
-                                Foreground="{ThemeResource ComboBoxPlaceHolderForeground}" />
+                                contract5NotPresent:Foreground="{ThemeResource ComboBoxPlaceHolderForeground}"
+                                contract5Present:Foreground="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource ComboBoxPlaceHolderForeground}}" />
                         </ContentPresenter>
+                        <contract7Present:TextBox x:Name="EditableText"
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Style="{StaticResource ComboBoxTextBoxStyle}"
+                            Margin="0,0,0,0"
+                            Padding="10,3,30,5"
+                            BorderBrush="Transparent"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            PlaceholderText="{TemplateBinding PlaceholderText}"
+                            Foreground="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource ComboBoxPlaceHolderForeground}}"
+                            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Visibility="Collapsed"
+                            Header="{TemplateBinding Header}"
+                            AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
+                            x:Load="False"/>
+                        <contract7Present:Border x:Name="DropDownOverlay"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Background="Transparent"
+                            Margin="0,2,2,2"
+                            Visibility="Collapsed"
+                            Width="30"
+                            HorizontalAlignment="Right"
+                            x:Load="False"/>
                         <FontIcon x:Name="DropDownGlyph"
                             Grid.Row="1"
                             Grid.Column="1"
@@ -536,12 +639,21 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             AutomationProperties.AccessibilityView="Raw" />
+                        <contract7Present:ContentPresenter x:Name="DescriptionPresenter"
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Foreground="{ThemeResource SystemControlDescriptionTextForegroundBrush}"
+                            Content="{TemplateBinding Description}"
+                            x:Load="False"/>
                         <Popup x:Name="Popup">
                             <Border x:Name="PopupBorder"
                                 Background="{ThemeResource ComboBoxDropDownBackground}"
+                                contract7Present:BackgroundSizing="OuterBorderEdge"
                                 BorderBrush="{ThemeResource ComboBoxDropDownBorderBrush}"
                                 BorderThickness="{ThemeResource ComboBoxDropdownBorderThickness}"
                                 Margin="0,-1,0,-1"
+                                Padding="{ThemeResource ComboBoxDropdownBorderPadding}"
                                 HorizontalAlignment="Stretch">
                                 <ScrollViewer x:Name="ScrollViewer"
                                     Foreground="{ThemeResource ComboBoxDropDownForeground}"
@@ -730,5 +842,73 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <contract7Present:Style TargetType="TextBox" x:Key="ComboBoxTextBoxStyle">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="BorderElement.Background" Value="{ThemeResource TextControlBackgroundDisabled}" />
+                                        <Setter Target="BorderElement.BorderBrush" Value="{ThemeResource TextControlBorderBrushDisabled}" />
+                                        <Setter Target="ContentElement.Foreground" Value="{ThemeResource TextControlForegroundDisabled}" />
+                                        <Setter Target="PlaceholderTextContentPresenter.Foreground" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundDisabled}}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="BorderElement.Background" Value="{ThemeResource TextControlBackgroundPointerOver}" />
+                                        <Setter Target="BorderElement.BorderBrush" Value="{ThemeResource TextControlBorderBrushPointerOver}" />
+                                        <Setter Target="ContentElement.Foreground" Value="{ThemeResource TextControlForegroundPointerOver}" />
+                                        <Setter Target="PlaceholderTextContentPresenter.Foreground" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundPointerOver}}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Focused">
+                                    <VisualState.Setters>
+                                        <Setter Target="BorderElement.Background" Value="{ThemeResource TextControlBackgroundFocused}" />
+                                        <Setter Target="BorderElement.BorderBrush" Value="{ThemeResource TextControlBorderBrushFocused}" />
+                                        <Setter Target="ContentElement.Foreground" Value="{ThemeResource TextControlForegroundFocused}" />
+                                        <Setter Target="ContentElement.RequestedTheme" Value="Light" />
+                                        <Setter Target="PlaceholderTextContentPresenter.Foreground" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundFocused}}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        
+                        <Border x:Name="BorderElement"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Control.IsTemplateFocusTarget="True" />
+                        <ScrollViewer x:Name="ContentElement"
+                            Margin="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                            VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                            IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                            IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                            IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                            IsTabStop="False"
+                            ZoomMode="Disabled" 
+                            AutomationProperties.AccessibilityView="Raw" />
+                        <TextBlock x:Name="PlaceholderTextContentPresenter"
+                            Foreground="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForeground}}"
+                            Margin="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            Text="{TemplateBinding PlaceholderText}"
+                            TextAlignment="{TemplateBinding TextAlignment}"
+                            TextWrapping="{TemplateBinding TextWrapping}"
+                            IsHitTestVisible="False" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </contract7Present:Style>
 
 </ResourceDictionary>

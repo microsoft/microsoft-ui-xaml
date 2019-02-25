@@ -1,5 +1,9 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+  xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
+  xmlns:contract6NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,6)"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <x:Double x:Key="ListViewItemContentOffsetX">-40.5</x:Double>
@@ -206,6 +210,8 @@
     <Style TargetType="ListViewItem" x:Key="ListViewItemExpanded">
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="BorderBrush" Value="{x:Null}" />
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
         <Setter Property="TabNavigation" Value="Local" />
@@ -216,37 +222,36 @@
         <Setter Property="MinWidth" Value="{ThemeResource ListViewItemMinWidth}" />
         <Setter Property="MinHeight" Value="{ThemeResource ListViewItemMinHeight}" />
         <Setter Property="AllowDrop" Value="False" />
-        <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <contract6NotPresent:Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="FocusVisualMargin" Value="0" />
-        <Setter Property="FocusVisualPrimaryBrush" Value="{ThemeResource SystemControlFocusVisualPrimaryBrush}" />
-        <Setter Property="FocusVisualPrimaryThickness" Value="2" />
-        <Setter Property="FocusVisualSecondaryBrush" Value="{ThemeResource SystemControlFocusVisualSecondaryBrush}" />
-        <Setter Property="FocusVisualSecondaryThickness" Value="1" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListViewItem">
                     <Grid x:Name="ContentBorder"
                         Control.IsTemplateFocusTarget="True"
                         FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
-                        FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}"
-                        FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}"
-                        FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}"
-                        FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                         RenderTransformOrigin="0.5,0.5">
+
                         <Grid.RenderTransform>
                             <ScaleTransform x:Name="ContentBorderScale" />
                         </Grid.RenderTransform>
+
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal">
+
                                     <Storyboard>
                                         <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="PointerOver">
+
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="BorderBackground"
                                             Storyboard.TargetProperty="Opacity"
@@ -267,7 +272,9 @@
                                         <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="Pressed">
+
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="BorderBackground"
                                             Storyboard.TargetProperty="Opacity"
@@ -288,7 +295,9 @@
                                         <PointerDownThemeAnimation TargetName="ContentPresenter" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="Selected">
+
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="MultiSelectCheck"
                                             Storyboard.TargetProperty="Opacity"
@@ -313,7 +322,9 @@
                                         <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="PointerOverSelected">
+
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="MultiSelectCheck"
                                             Storyboard.TargetProperty="Opacity"
@@ -338,7 +349,9 @@
                                         <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="PressedSelected">
+
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="MultiSelectCheck"
                                             Storyboard.TargetProperty="Opacity"
@@ -363,10 +376,14 @@
                                         <PointerDownThemeAnimation TargetName="ContentPresenter" />
                                     </Storyboard>
                                 </VisualState>
+
                             </VisualStateGroup>
+
                             <VisualStateGroup x:Name="DisabledStates">
                                 <VisualState x:Name="Enabled" />
+
                                 <VisualState x:Name="Disabled">
+
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="ContentBorder"
                                             Storyboard.TargetProperty="Opacity"
@@ -374,9 +391,12 @@
                                             To="{ThemeResource ListViewItemDisabledThemeOpacity}" />
                                     </Storyboard>
                                 </VisualState>
+
                             </VisualStateGroup>
+
                             <VisualStateGroup x:Name="MultiSelectStates">
                                 <VisualState x:Name="MultiSelectDisabled">
+
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectCheckBoxTransform" Storyboard.TargetProperty="X">
                                             <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0" />
@@ -396,7 +416,9 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="MultiSelectEnabled">
+
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MultiSelectCheckBoxTransform" Storyboard.TargetProperty="X">
                                             <EasingDoubleKeyFrame KeyTime="0:0:0" Value="-32" />
@@ -421,10 +443,14 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
+
                             </VisualStateGroup>
+
                             <VisualStateGroup x:Name="DataVirtualizationStates">
                                 <VisualState x:Name="DataAvailable" />
+
                                 <VisualState x:Name="DataPlaceholder">
+
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextBlock" Storyboard.TargetProperty="Visibility">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
@@ -434,36 +460,51 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
+
                             </VisualStateGroup>
+
                             <VisualStateGroup x:Name="ReorderHintStates">
                                 <VisualState x:Name="NoReorderHint" />
+
                                 <VisualState x:Name="BottomReorderHint">
+
                                     <Storyboard>
                                         <DragOverThemeAnimation TargetName="ContentBorder" ToOffset="{ThemeResource ListViewItemReorderHintThemeOffset}" Direction="Bottom" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="TopReorderHint">
+
                                     <Storyboard>
                                         <DragOverThemeAnimation TargetName="ContentBorder" ToOffset="{ThemeResource ListViewItemReorderHintThemeOffset}" Direction="Top" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="RightReorderHint">
+
                                     <Storyboard>
                                         <DragOverThemeAnimation TargetName="ContentBorder" ToOffset="{ThemeResource ListViewItemReorderHintThemeOffset}" Direction="Right" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="LeftReorderHint">
+
                                     <Storyboard>
                                         <DragOverThemeAnimation TargetName="ContentBorder" ToOffset="{ThemeResource ListViewItemReorderHintThemeOffset}" Direction="Left" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualStateGroup.Transitions>
                                     <VisualTransition To="NoReorderHint" GeneratedDuration="0:0:0.2" />
                                 </VisualStateGroup.Transitions>
+
                             </VisualStateGroup>
+
                             <VisualStateGroup x:Name="DragStates">
                                 <VisualState x:Name="NotDragging" />
+
                                 <VisualState x:Name="Dragging">
+
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="ContentBorder"
                                             Storyboard.TargetProperty="Opacity"
@@ -472,8 +513,11 @@
                                         <DragItemThemeAnimation TargetName="ContentBorder" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="DraggingTarget" />
+
                                 <VisualState x:Name="MultipleDraggingPrimary">
+
                                     <Storyboard>
                                         <!-- These two Opacity animations are required - the FadeInThemeAnimations
                                              on the same elements animate an internal Opacity. -->
@@ -502,9 +546,13 @@
                                         <DragItemThemeAnimation TargetName="ContentBorder" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="MultipleDraggingSecondary" />
+
                                 <VisualState x:Name="DraggedPlaceholder" />
+
                                 <VisualState x:Name="Reordering">
+
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="ContentBorder"
                                             Storyboard.TargetProperty="Opacity"
@@ -512,7 +560,9 @@
                                             To="{ThemeResource ListViewItemReorderThemeOpacity}" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="ReorderingTarget">
+
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="ContentBorder"
                                             Storyboard.TargetProperty="Opacity"
@@ -528,7 +578,9 @@
                                             To="{ThemeResource ListViewItemReorderTargetThemeScale}" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="MultipleReorderingPrimary">
+
                                     <Storyboard>
                                         <!-- These two Opacity animations are required - the FadeInThemeAnimations
                                              on the same elements animate an internal Opacity. -->
@@ -556,20 +608,27 @@
                                         <FadeInThemeAnimation TargetName="MultiArrangeOverlayTextBorder" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="ReorderedPlaceholder">
+
                                     <Storyboard>
                                         <FadeOutThemeAnimation TargetName="ContentBorder" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="DragOver">
+
                                     <Storyboard>
                                         <DropTargetItemThemeAnimation TargetName="ContentBorder" />
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualStateGroup.Transitions>
                                     <VisualTransition To="NotDragging" GeneratedDuration="0:0:0.2" />
                                 </VisualStateGroup.Transitions>
+
                             </VisualStateGroup>
+
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle x:Name="BorderBackground"
                             IsHitTestVisible="False"
@@ -587,6 +646,7 @@
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                 Margin="{TemplateBinding Padding}" />
+
                         </Grid>
                         <!-- The 'Xg' text simulates the amount of space one line of text will occupy.
                              In the DataPlaceholder state, the Content is not loaded yet so we
@@ -646,7 +706,9 @@
                                 HorizontalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw" />
                         </Border>
+
                     </Grid>
+
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

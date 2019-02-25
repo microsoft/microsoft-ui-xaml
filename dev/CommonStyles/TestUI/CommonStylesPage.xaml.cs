@@ -119,7 +119,7 @@ namespace MUXControlsTestApp
             var contentPresenter = (ContentPresenter)root.FindName("HeaderContentPresenter");
             simpleVerify.IsTrue(contentPresenter != null, "HeaderContentPresenter can't be found");
 
-            string expectedHeaderMargin = "0,0,0,4";
+            string expectedHeaderMargin = "0,0,0,0";
             string expectToggleSwitchPreContentMargin = "6";
             string expectToggleSwitchPostContentMargin = "6";
 
@@ -164,7 +164,8 @@ namespace MUXControlsTestApp
             simpleVerify.IsTrue(contentPresenter != null, "HeaderContentPresenter can't be found");
 
             string expectedHeaderMargin = "0,0,0,4";
-            string expectDatePickerFlyoutPresenterItemPadding = "0,3,0,5";
+            string expectDatePickerFlyoutPresenterItemPadding = "0,3,0,6";
+            string expectDatePickerFlyoutPresenterMonthPadding = "9,3,0,6";
 
             if (contentPresenter != null)
             {
@@ -178,7 +179,7 @@ namespace MUXControlsTestApp
                 simpleVerify.IsEqual(textBlock.Padding.ToString(), expectDatePickerFlyoutPresenterItemPadding, "DayTextBlock.Padding");
 
                 textBlock = (TextBlock)root.FindName("MonthTextBlock");
-                simpleVerify.IsEqual(textBlock.Padding.ToString(), expectDatePickerFlyoutPresenterItemPadding, "MonthTextBlock.Padding");
+                simpleVerify.IsEqual(textBlock.Padding.ToString(), expectDatePickerFlyoutPresenterMonthPadding, "MonthTextBlock.Padding");
 
                 textBlock = (TextBlock)root.FindName("YearTextBlock");
                 simpleVerify.IsEqual(textBlock.Padding.ToString(), expectDatePickerFlyoutPresenterItemPadding, "YearTextBlock.Padding");
@@ -194,7 +195,7 @@ namespace MUXControlsTestApp
             simpleVerify.IsTrue(contentPresenter != null, "HeaderContentPresenter can't be found");
 
             string expectedHeaderMargin = "0,0,0,4";
-            string expectTimePickerFlyoutPresenterItemPadding = "0,3,0,5";
+            string expectTimePickerFlyoutPresenterItemPadding = "0,3,0,6";
 
             if (contentPresenter != null)
             {
