@@ -19,9 +19,26 @@
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <!-- Visual State when a Photo is available for display -->
-                                <VisualState x:Name="Photo" />
-                                <!-- Visual State when no Photo is available (even if no initials are available).-->
+                                <VisualState x:Name="Photo">
+                                    <VisualState.Setters>
+                                        <Setter Target="PersonPictureEllipse.Fill" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ImageBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <!-- Visual State when no Photo is available (but there are initials).-->
                                 <VisualState x:Name="Initials" />
+                                <VisualState x:Name="NoPhotoOrInitials">
+                                    <VisualState.Setters>
+                                        <Setter Target="InitialsTextBlock.FontFamily" Value="Segoe MDL2 Assets"/>
+                                        <Setter Target="InitialsTextBlock.Text" Value="\xE77B"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <!-- Visual State when in Group mode -->
+                                <VisualState x:Name="Group">
+                                    <VisualState.Setters>
+                                        <Setter Target="InitialsTextBlock.FontFamily" Value="Segoe MDL2 Assets"/>
+                                        <Setter Target="InitialsTextBlock.Text" Value="\xE716"/>
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="BadgeStates">
                                 <VisualState x:Name="NoBadge" />

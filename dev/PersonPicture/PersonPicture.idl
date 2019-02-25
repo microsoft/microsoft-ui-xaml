@@ -1,4 +1,4 @@
-[WUXC_VERSION_RS3]
+﻿[WUXC_VERSION_RS3]
 [webhosthidden]
 [WUXC_INTERFACE_NAME("IPersonPicture", 6c230b6d-0d75-4059-91bc-7b174d1d7315)]
 [WUXC_STATIC_NAME("IPersonPictureStatics", dbec0982-3c10-4639-9614-aa5b7cdc32ca)]
@@ -19,6 +19,9 @@ unsealed runtimeclass PersonPicture : Windows.UI.Xaml.Controls.Control
     Boolean PreferSmallImage { get; set; };
     Windows.UI.Xaml.Media.ImageSource ProfilePicture { get; set; };
 
+    [MUX_PROPERTY_NEEDS_DP_FIELD]
+    PersonPictureTemplateSettings TemplateSettings { get; };
+
     static Windows.UI.Xaml.DependencyProperty BadgeNumberProperty { get; };
     static Windows.UI.Xaml.DependencyProperty BadgeGlyphProperty { get; };
     static Windows.UI.Xaml.DependencyProperty BadgeImageSourceProperty { get; };
@@ -29,4 +32,13 @@ unsealed runtimeclass PersonPicture : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty InitialsProperty { get; };
     static Windows.UI.Xaml.DependencyProperty PreferSmallImageProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ProfilePictureProperty { get; };
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+[MUX_PROPERTY_NEEDS_DP_FIELD]
+runtimeclass PersonPictureTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    String EffectiveInitials { get; };
+    Windows.UI.Xaml.Media.ImageBrush EffectiveImageBrush { get; };
 }
