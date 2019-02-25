@@ -277,7 +277,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             Control.IsTemplateFocusTarget="True"
                             MinWidth="{ThemeResource TextControlThemeMinWidth}"
                             MinHeight="{ThemeResource TextControlThemeMinHeight}" />
