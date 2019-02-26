@@ -626,6 +626,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("NavViewTestSuite", "A")]
+        public void VerifyNavigationViewItemIsSelectedWorks()
+        {
+            using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
+                            page2 = new TestSetupHelper("NavigationView Init Test"))
+            {
+                Log.Comment("Verify the 1st NavItem.IsSelected=true works");
+                UIObject item1 = FindElement.ByName("Albums");
+                Verify.IsNotNull(item1);
+                Verify.IsTrue(Convert.ToBoolean(item1.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+
+                Log.Comment("Verify the 2nd NavItem.IsSelected=true is ignored");
+                UIObject item2 = FindElement.ByName("People");
+                Verify.IsNotNull(item2);
+                Verify.IsFalse(Convert.ToBoolean(item2.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "A")]
         public void ItemSourceTest()
         {
             using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
