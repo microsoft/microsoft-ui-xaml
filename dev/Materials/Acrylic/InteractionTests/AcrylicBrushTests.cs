@@ -251,7 +251,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (var page1 = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
+            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 {
                     ChooseFromComboBox("TestNameComboBox", "AcrylicAlwaysUseFallback");
@@ -282,7 +282,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (var page1 = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
+            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 {
                     ChooseFromComboBox("TestNameComboBox", "AcrylicCreatedInFallbackMode");

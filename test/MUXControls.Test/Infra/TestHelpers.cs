@@ -39,7 +39,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         private bool AttemptRestartOnDispose { get; set; }
 
         public TestSetupHelper(string testName, string languageOverride = "", bool attemptRestartOnDispose = true)
-            :this(new string[] { testName }, languageOverride, attemptRestartOnDispose)
+            :this(new[] { testName }, languageOverride, attemptRestartOnDispose)
         {}
 
         // The value of 'testName' should match that which was used when
@@ -99,37 +99,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     ElementCache.Clear();
                     Wait.ForIdle();
 
+                    // Before we navigate to the test page, we need to make sure that we've set the language to what was requested.
+                    var languageChooser = TryFindElement.ById("LanguageChooser");
+
+                    // Sometimes TestSetupHelper is used to navigate off of a page other than the main page.  In those circumstances,
+                    // we won't have a pseudo-loc check box on the page, which is fine - we can just skip this step when that's the case,
+                    // as we'll have already gone into whatever language we wanted previously.
+                    if (languageChooser != null)
+                    {
+                        ComboBox languageChooserComboBox = new ComboBox(languageChooser);
+
+                        if (!String.IsNullOrEmpty(languageOverride))
+                        {
+                            languageChooserComboBox.SelectItemById(languageOverride);
+                        }
+                    }
+
+                    // We were hitting an issue in the lab where sometimes the very first click would fail to go through resulting in 
+                    // test instability. We work around this by clicking on element when the app launches. 
+                    var currentPageTextBlock = FindElement.ById("__CurrentPage");
+                    if (currentPageTextBlock == null)
+                    {
+                        string errorMessage = "Cannot find __CurrentPage textblock";
+                        Log.Error(errorMessage);
+                        DumpHelper.DumpFullContext();
+                        throw new InvalidOperationException(errorMessage);
+                    }
+                    InputHelper.LeftClick(currentPageTextBlock);
+
                     foreach (string testName in testNames)
                     {
                         Log.Comment(testName + " initializing TestSetupHelper");
-
-                        // Before we navigate to the test page, we need to make sure that we've set the language to what was requested.
-                        var languageChooser = TryFindElement.ById("LanguageChooser");
-
-                        // Sometimes TestSetupHelper is used to navigate off of a page other than the main page.  In those circumstances,
-                        // we won't have a pseudo-loc check box on the page, which is fine - we can just skip this step when that's the case,
-                        // as we'll have already gone into whatever language we wanted previously.
-                        if (languageChooser != null)
-                        {
-                            ComboBox languageChooserComboBox = new ComboBox(languageChooser);
-
-                            if (!String.IsNullOrEmpty(languageOverride))
-                            {
-                                languageChooserComboBox.SelectItemById(languageOverride);
-                            }
-                        }
-
-                        // We were hitting an issue in the lab where sometimes the very first click would fail to go through resulting in 
-                        // test instability. We work around this by clicking on element when the app launches. 
-                        var currentPageTextBlock = FindElement.ById("__CurrentPage");
-                        if (currentPageTextBlock == null)
-                        {
-                            string errorMessage = "Cannot find __CurrentPage textblock";
-                            Log.Error(errorMessage);
-                            DumpHelper.DumpFullContext();
-                            throw new InvalidOperationException(errorMessage);
-                        }
-                        InputHelper.LeftClick(currentPageTextBlock);
 
                         var uiObject = FindElement.ByNameAndClassName(testName, "Button");
                         if (uiObject == null)
