@@ -258,7 +258,12 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="OuterContentRoot">
+                        <Grid x:Name="OuterContentRoot"
+                            VerticalAlignment="Top"
+                            Margin="{TemplateBinding Padding}"
+                            Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
+                            Height="{TemplateBinding Height}"
+                            Background="{TemplateBinding Background}">
                             <Grid.Clip>
                                 <RectangleGeometry x:Name="OuterContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ContentClipRect}">
                                     <RectangleGeometry.Transform>
@@ -266,13 +271,7 @@
                                     </RectangleGeometry.Transform>
                                 </RectangleGeometry>
                             </Grid.Clip>
-                            <Grid x:Name="ContentRoot"
-                                VerticalAlignment="Top"
-                                Margin="{TemplateBinding Padding}"
-                                Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
-                                Height="{TemplateBinding Height}"
-                                Background="{TemplateBinding Background}"
-                                contract4Present:XYFocusKeyboardNavigation="Enabled">
+                            <Grid x:Name="ContentRoot">
                                 <Grid.Clip>
                                     <RectangleGeometry x:Name="ContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ContentClipRect}">
                                         <RectangleGeometry.Transform>
@@ -291,27 +290,24 @@
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <Grid MaxWidth="400"
-                                        Grid.Column="0">
-                                        <ItemsControl x:Name="PrimaryItemsControl"
-                                            Height="40"
-                                            IsTabStop="False">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                    </Grid>
+                                    <ItemsControl x:Name="PrimaryItemsControl"
+                                        Grid.Column="0"
+                                        Height="40"
+                                        IsTabStop="False"
+                                        HorizontalAlignment="Left">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
                                     <Button x:Name="MoreButton"
                                         Foreground="{TemplateBinding Foreground}"
                                         Style="{StaticResource CommandBarFlyoutEllipsisButtonStyle}"
-                                        Grid.Column="2"
-                                        contract4Present:Control.IsTemplateKeyTipTarget="True"
+                                        Grid.Column="1"
                                         IsAccessKeyScope="True"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}">
                                         <Button.RenderTransform>
