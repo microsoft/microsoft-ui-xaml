@@ -170,9 +170,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
                         Log.Comment("__TestContentLoadedCheckBox checkbox checked, page has loaded");
 
-                        TestCleanupHelper.TestSetupHelperPendingDisposals++;
+                        TestCleanupHelper.TestPagePendingDisposals++;
                     }
 
+                    TestCleanupHelper.TestSetupHelperPendingDisposals++;
                     break;
                 }
                 catch
@@ -226,7 +227,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             TestEnvironment.LogVerbose("TestSetupHelper.Dispose()");
             TestCleanupHelper.TestSetupHelperPendingDisposals--;
-            GoBack();
+
+            for(int i = 0; i < TestCleanupHelper.TestPagePendingDisposals; i++)
+            {
+                GoBack();
+            }
+            TestCleanupHelper.TestPagePendingDisposals = 0;
 
             if (TestCleanupHelper.TestSetupHelperPendingDisposals == 0 && AttemptRestartOnDispose)
             {
@@ -238,6 +244,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
     public class TestCleanupHelper
     {
         public static int TestSetupHelperPendingDisposals { get; set; }
+        public static int TestPagePendingDisposals { get; set; }
 
         public static void Cleanup()
         {
