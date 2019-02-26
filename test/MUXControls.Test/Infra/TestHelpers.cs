@@ -46,6 +46,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         // registering the test in TestInventory.cs in the test app project.
         public TestSetupHelper(ICollection<string> testNames, string languageOverride = "", bool attemptRestartOnDispose = true)
         {
+            // Only allow one TestSetupHelper instance to run in the process, since nested TestSetupHelpers causes problems during retry.
+            if(TestEnvironment.IsTestSetupHelperInUse)
+            {
+                throw new Exception("Don't nest TestSetupHelpers, use new TestSetupHelper(new[] { \"PageA\", \"PageB\" }) for multi page tests");
+            }
+            TestEnvironment.IsTestSetupHelperInUse = true;
+
             // If a test crashes, it can take a little bit of time before we can 
             // restart the app again especially if watson is collecting dumps. Adding a 
             // delayed retry can help avoid the case where we might otherwise fail a slew of
@@ -227,6 +234,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             TestEnvironment.LogVerbose("TestSetupHelper.Dispose()");
             TestCleanupHelper.TestSetupHelperPendingDisposals--;
+            TestEnvironment.IsTestSetupHelperInUse = false;
 
             for(int i = 0; i < TestCleanupHelper.TestPagePendingDisposals; i++)
             {
