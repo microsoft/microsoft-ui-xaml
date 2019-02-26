@@ -294,8 +294,8 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <ItemsControl x:Name="PrimaryItemsControl"
-                                        Grid.Column="0"
                                         Height="40"
+                                        Grid.Column="0"
                                         IsTabStop="False"
                                         HorizontalAlignment="Left">
                                         <ItemsControl.ItemsPanel>
