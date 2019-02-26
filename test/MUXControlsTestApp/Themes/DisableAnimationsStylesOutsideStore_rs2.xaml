@@ -154,7 +154,6 @@
                                         Foreground="{TemplateBinding Foreground}"
                                         Style="{StaticResource CommandBarFlyoutEllipsisButtonStyle}"
                                         Grid.Column="1"
-                                        contract4Present:Control.IsTemplateKeyTipTarget="True"
                                         IsAccessKeyScope="True"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}">
                                         <Button.RenderTransform>
