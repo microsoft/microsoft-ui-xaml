@@ -113,6 +113,14 @@
                     <AppBarButton x:Name="SelectAllButton5" AutomationProperties.AutomationId="SelectAllButton5" Label="Select all" Click="OnElementClicked" />
                 </muxc:CommandBarFlyout.SecondaryCommands>
             </muxc:CommandBarFlyout>
+            <muxc:CommandBarFlyout Placement="Right" x:Name="Flyout6" AutomationProperties.AutomationId="Flyout6" Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
+                <muxc:CommandBarFlyout.SecondaryCommands>
+                    <AppBarButton x:Name="UndoButton6" AutomationProperties.AutomationId="UndoButton6" Label="Undo" Icon="Undo" Click="OnElementClicked" />
+                    <AppBarButton x:Name="RedoButton6" AutomationProperties.AutomationId="RedoButton6" Label="Redo" Icon="Redo" Click="OnElementClicked" />
+                    <AppBarButton x:Name="SelectAllButton6" AutomationProperties.AutomationId="SelectAllButton6" Label="Select all" Click="OnElementClicked" />
+                    <AppBarToggleButton x:Name="FavoriteToggleButton6" AutomationProperties.AutomationId="FavoriteToggleButton6" Label="Favorite" Icon="Favorite" Checked="OnElementChecked" Unchecked="OnElementUnchecked" />
+                </muxc:CommandBarFlyout.SecondaryCommands>
+            </muxc:CommandBarFlyout>
         </Grid.Resources>
         <ScrollViewer>
             <StackPanel>
@@ -121,6 +129,7 @@
                 <Button x:Name="FlyoutTarget3" Content="Show tall CommandBarFlyout" Margin="10" Click="OnFlyoutTarget3Click" />
                 <Button x:Name="FlyoutTarget4" Content="Show max-width CommandBarFlyout" Margin="10" Click="OnFlyoutTarget4Click" />
                 <Button x:Name="FlyoutTarget5" Content="Show CommandBarFlyout with sub-menu" Margin="10" Click="OnFlyoutTarget5Click" />
+                <Button x:Name="FlyoutTarget6" Content="Show CommandBarFlyout with no primary commands" Margin="10" Click="OnFlyoutTarget6Click" />
             </StackPanel>
         </ScrollViewer>
         <StackPanel Grid.Row="1">

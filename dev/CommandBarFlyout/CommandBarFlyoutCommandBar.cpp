@@ -229,24 +229,22 @@ void CommandBarFlyoutCommandBar::UpdateFlowsFromAndFlowsTo()
                 primaryCommandAsControl.IsTabStop();
         };
 
-        // If we have a more button, then that's the last element in our primary items list.
-        // Otherwise, we'll find the last focusable element in the primary commands.
-        if (m_moreButton)
+        auto primaryCommands = PrimaryCommands();
+        for (int i = static_cast<int>(primaryCommands.Size() - 1); i >= 0; i--)
+        {
+            auto primaryCommand = primaryCommands.GetAt(i);
+            if (isElementFocusable(primaryCommand))
+            {
+                m_currentPrimaryItemsEndElement.set(primaryCommand.try_as<winrt::FrameworkElement>());
+                break;
+            }
+        }
+
+        // If we have a more button and at least one focusable primary item, then
+        // we'll use the more button as the last element in our primary items list.
+        if (m_moreButton && m_currentPrimaryItemsEndElement)
         {
             m_currentPrimaryItemsEndElement.set(m_moreButton.get());
-        }
-        else
-        {
-            auto primaryCommands = PrimaryCommands();
-            for (int i = static_cast<int>(primaryCommands.Size() - 1); i >= 0; i--)
-            {
-                auto primaryCommand = primaryCommands.GetAt(i);
-                if (isElementFocusable(primaryCommand))
-                {
-                    m_currentPrimaryItemsEndElement.set(primaryCommand.try_as<winrt::FrameworkElement>());
-                    break;
-                }
-            }
         }
 
         for (const auto& secondaryCommand : SecondaryCommands())
