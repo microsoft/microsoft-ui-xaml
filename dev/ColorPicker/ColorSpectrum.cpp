@@ -886,77 +886,80 @@ void ColorSpectrum::CreateBitmapsAndColorMap()
     shared_ptr<vector<::byte>> bgraMaxPixelData = make_shared<vector<::byte>>();
     shared_ptr<vector<Hsv>> newHsvValues = make_shared<vector<Hsv>>();
 
-    bgraMinPixelData->reserve(static_cast<size_t>(round(minDimension * minDimension * 4)));
+    size_t pixelCount = static_cast<size_t>(round(minDimension) * round(minDimension));
+    size_t pixelDataSize = pixelCount * 4;
+    bgraMinPixelData->reserve(pixelDataSize);
 
     // We'll only save pixel data for the middle bitmaps if our third dimension is hue.
     if (components == winrt::ColorSpectrumComponents::ValueSaturation ||
         components == winrt::ColorSpectrumComponents::SaturationValue)
     {
-        bgraMiddle1PixelData->reserve(static_cast<size_t>(round(minDimension * minDimension * 4)));
-        bgraMiddle2PixelData->reserve(static_cast<size_t>(round(minDimension * minDimension * 4)));
-        bgraMiddle3PixelData->reserve(static_cast<size_t>(round(minDimension * minDimension * 4)));
-        bgraMiddle4PixelData->reserve(static_cast<size_t>(round(minDimension * minDimension * 4)));
+        bgraMiddle1PixelData->reserve(pixelDataSize);
+        bgraMiddle2PixelData->reserve(pixelDataSize);
+        bgraMiddle3PixelData->reserve(pixelDataSize);
+        bgraMiddle4PixelData->reserve(pixelDataSize);
     }
 
-    bgraMaxPixelData->reserve(static_cast<size_t>(round(minDimension * minDimension * 4)));
-    newHsvValues->reserve(static_cast<size_t>(round(minDimension * minDimension)));
+    bgraMaxPixelData->reserve(pixelDataSize);
+    newHsvValues->reserve(pixelCount);
 
+    int minDimensionInt = static_cast<int>(round(minDimension));
     winrt::WorkItemHandler workItemHandler(
-        [minDimension, hsv, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue, shape, components,
+        [minDimensionInt, hsv, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue, shape, components,
         bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData, newHsvValues]
     (winrt::IAsyncAction workItem)
-    {
-        // As the user perceives it, every time the third dimension not represented in the ColorSpectrum changes,
-        // the ColorSpectrum will visually change to accommodate that value.  For example, if the ColorSpectrum handles hue and luminosity,
-        // and the saturation externally goes from 1.0 to 0.5, then the ColorSpectrum will visually change to look more washed out
-        // to represent that third dimension's new value.
-        // Internally, however, we don't want to regenerate the ColorSpectrum bitmap every single time this happens, since that's very expensive.
-        // In order to make it so that we don't have to, we implement an optimization where, rather than having only one bitmap,
-        // we instead have multiple that we blend together using opacity to create the effect that we want.
-        // In the case where the third dimension is saturation or luminosity, we only need two: one bitmap at the minimum value
-        // of the third dimension, and one bitmap at the maximum.  Then we set the second's opacity at whatever the value of
-        // the third dimension is - e.g., a saturation of 0.5 implies an opacity of 50%.
-        // In the case where the third dimension is hue, we need six: one bitmap corresponding to red, yellow, green, cyan, blue, and purple.
-        // We'll then blend between whichever colors our hue exists between - e.g., an orange color would use red and yellow with an opacity of 50%.
-        // This optimization does incur slightly more startup time initially since we have to generate multiple bitmaps at once instead of only one,
-        // but the running time savings after that are *huge* when we can just set an opacity instead of generating a brand new bitmap.
-        if (shape == winrt::ColorSpectrumShape::Box)
         {
-            for (double x = minDimension - 1; x >= 0; --x)
+            // As the user perceives it, every time the third dimension not represented in the ColorSpectrum changes,
+            // the ColorSpectrum will visually change to accommodate that value.  For example, if the ColorSpectrum handles hue and luminosity,
+            // and the saturation externally goes from 1.0 to 0.5, then the ColorSpectrum will visually change to look more washed out
+            // to represent that third dimension's new value.
+            // Internally, however, we don't want to regenerate the ColorSpectrum bitmap every single time this happens, since that's very expensive.
+            // In order to make it so that we don't have to, we implement an optimization where, rather than having only one bitmap,
+            // we instead have multiple that we blend together using opacity to create the effect that we want.
+            // In the case where the third dimension is saturation or luminosity, we only need two: one bitmap at the minimum value
+            // of the third dimension, and one bitmap at the maximum.  Then we set the second's opacity at whatever the value of
+            // the third dimension is - e.g., a saturation of 0.5 implies an opacity of 50%.
+            // In the case where the third dimension is hue, we need six: one bitmap corresponding to red, yellow, green, cyan, blue, and purple.
+            // We'll then blend between whichever colors our hue exists between - e.g., an orange color would use red and yellow with an opacity of 50%.
+            // This optimization does incur slightly more startup time initially since we have to generate multiple bitmaps at once instead of only one,
+            // but the running time savings after that are *huge* when we can just set an opacity instead of generating a brand new bitmap.
+            if (shape == winrt::ColorSpectrumShape::Box)
             {
-                for (double y = minDimension - 1; y >= 0; --y)
+                for (int x = minDimensionInt - 1; x >= 0; --x)
                 {
-                    if (workItem.Status() == winrt::AsyncStatus::Canceled)
+                    for (int y = minDimensionInt - 1; y >= 0; --y)
                     {
-                        break;
-                    }
+                        if (workItem.Status() == winrt::AsyncStatus::Canceled)
+                        {
+                            break;
+                        }
 
-                    ColorSpectrum::FillPixelForBox(
-                        x, y, hsv, minDimension, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
-                        bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData,
-                        newHsvValues);
+                        ColorSpectrum::FillPixelForBox(
+                            x, y, hsv, minDimensionInt, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
+                            bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData,
+                            newHsvValues);
+                    }
                 }
             }
-        }
-        else
-        {
-            for (double y = 0; y < minDimension; ++y)
+            else
             {
-                for (double x = 0; x < minDimension; ++x)
+                for (int y = 0; y < minDimensionInt; ++y)
                 {
-                    if (workItem.Status() == winrt::AsyncStatus::Canceled)
+                    for (int x = 0; x < minDimensionInt; ++x)
                     {
-                        break;
-                    }
+                        if (workItem.Status() == winrt::AsyncStatus::Canceled)
+                        {
+                            break;
+                        }
 
-                    ColorSpectrum::FillPixelForRing(
-                        x, y, minDimension / 2, hsv, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
-                        bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData,
-                        newHsvValues);
+                        ColorSpectrum::FillPixelForRing(
+                            x, y, minDimensionInt / 2.0, hsv, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
+                            bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData,
+                            newHsvValues);
+                    }
                 }
             }
-        }
-    });
+        });
 
     if (m_createImageBitmapAction)
     {
