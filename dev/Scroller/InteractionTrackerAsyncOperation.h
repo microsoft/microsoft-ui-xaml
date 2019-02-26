@@ -36,6 +36,8 @@ const int c_maxNonAnimatedOperationTicks = 10;
 
 // Number of UI thread ticks elapsed before a queued operation gets processed to allow any pending size
 // changes to be propagated to the InteractionTracker.
+// Starting with RS5, for the operations TryUpdatePosition and TryUpdatePositionBy, this number is reduced
+// to the minimum value 1 because of the use of the new InteractionTrackerClampingOption::Disabled value.
 const int c_queuedOperationTicks = 3;
 
 class InteractionTrackerAsyncOperation
@@ -201,12 +203,12 @@ private:
     int m_postProcessingTicksCountdown{ 0 };
 
     // Number of UI thread ticks remaining before this queued operation gets processed.
-    // Positive between the time the operation is queued in Scroller::ChangeOffsets, Scroller::ChangeZoomFactor or
+    // Positive between the time the operation is queued in Scroller::ScrollTo/By/From, Scroller::ZoomTo/By/From or
     // Scroller::OnCompositionTargetRendering and the time it is processed in Scroller::ProcessOffsetsChange or Scroller::ProcessZoomFactorChange.
-    int m_preProcessingTicksCountdown{ c_queuedOperationTicks };
+    int m_preProcessingTicksCountdown{ 0 };
 
     // Initial value of m_preProcessingTicksCountdown when this operation is queued up.
-    int m_queuedOperationTicks{ c_queuedOperationTicks };
+    int m_queuedOperationTicks{ 0 };
 
     // InteractionTracker RequestId associated with this operation.
     int m_requestId{ -1 };

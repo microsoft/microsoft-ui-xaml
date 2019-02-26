@@ -5171,9 +5171,9 @@ void Scroller::ChangeOffsetsPrivate(
 
     if (offsetsChangeWithAnimationInterrupted)
     {
-        // Adding an extra tick to the default countdown to allow the InteractionTracker to reach and remain in the Idle state
+        // Adding an extra tick to the default pre-RS5 countdown to allow the InteractionTracker to reach and remain in the Idle state
         // long enough to avoid its RS5 bug 18827625.
-        interactionTrackerAsyncOperation->SetTicksCountdown(interactionTrackerAsyncOperation->GetTicksCountdown() + 1);
+        interactionTrackerAsyncOperation->SetTicksCountdown(c_queuedOperationTicks + 1);
     }
     else if (operationTrigger != InteractionTrackerAsyncOperationTrigger::DirectViewChange)
     {
@@ -5598,8 +5598,19 @@ void Scroller::ProcessOffsetsChange(
                     L"TryUpdatePositionBy",
                     TypeLogging::Float2ToString(winrt::float2(static_cast<float>(zoomedHorizontalOffset), static_cast<float>(zoomedVerticalOffset))).c_str());
 
-                m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdatePositionBy(
-                    winrt::float3(static_cast<float>(zoomedHorizontalOffset), static_cast<float>(zoomedVerticalOffset), 0.0f));
+                if (SharedHelpers::IsRS5OrHigher())
+                {
+                    // Starting with RS5, position clamping is turned off and the request is handed off to the InteractionTracker
+                    // after a single UI thread tick for an improved response time.
+                    m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdatePositionBy(
+                        winrt::float3(static_cast<float>(zoomedHorizontalOffset), static_cast<float>(zoomedVerticalOffset), 0.0f),
+                        winrt::InteractionTrackerClampingOption::Disabled);
+                }
+                else
+                {
+                    m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdatePositionBy(
+                        winrt::float3(static_cast<float>(zoomedHorizontalOffset), static_cast<float>(zoomedVerticalOffset), 0.0f));
+                }
                 m_lastInteractionTrackerAsyncOperationType = InteractionTrackerAsyncOperationType::TryUpdatePositionBy;
             }
             else
@@ -5609,8 +5620,19 @@ void Scroller::ProcessOffsetsChange(
                 SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_STR, METH_NAME, this,
                     L"TryUpdatePosition", TypeLogging::Float2ToString(targetPosition).c_str());
 
-                m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdatePosition(
-                    winrt::float3(targetPosition, 0.0f));
+                if (SharedHelpers::IsRS5OrHigher())
+                {
+                    // Starting with RS5, position clamping is turned off and the request is handed off to the InteractionTracker
+                    // after a single UI thread tick for an improved response time.
+                    m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdatePosition(
+                        winrt::float3(targetPosition, 0.0f),
+                        winrt::InteractionTrackerClampingOption::Disabled);
+                }
+                else
+                {
+                    m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdatePosition(
+                        winrt::float3(targetPosition, 0.0f));
+                }
                 m_lastInteractionTrackerAsyncOperationType = InteractionTrackerAsyncOperationType::TryUpdatePosition;
             }
 
@@ -5835,7 +5857,7 @@ bool Scroller::InterruptViewChangeWithAnimation(InteractionTrackerAsyncOperation
     {
         MUX_ASSERT(m_interactionTracker);
 
-        int interruptionId = 0;
+        int32_t interruptionId = 0;
 
         if (interactionTrackerAsyncOperationType == InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation)
         {

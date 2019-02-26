@@ -20,6 +20,22 @@ InteractionTrackerAsyncOperation::InteractionTrackerAsyncOperation(
         METH_NAME, this, TypeLogging::InteractionTrackerAsyncOperationTypeToString(operationType).c_str(),
         TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str(), isDelayed, viewChangeBase);
 
+    if ((operationType == InteractionTrackerAsyncOperationType::TryUpdatePosition ||
+         operationType == InteractionTrackerAsyncOperationType::TryUpdatePositionBy) &&
+        SharedHelpers::IsRS5OrHigher())
+    {
+        // Starting with RS5, the number of UI thread ticks elapsed before a queued operation gets processed for TryUpdatePosition
+        // or TryUpdatePositionBy is reduced to the minimum value 1 because of the use of the InteractionTrackerClampingOption::Disabled value.
+        // This maintains the asynchronous aspect of the view change requests for behavior and API compatibility reasons.
+        m_preProcessingTicksCountdown = m_queuedOperationTicks = 1;
+    }
+    else
+    {
+        // Number of UI thread ticks elapsed before a queued operation gets processed to allow any pending size
+        // changes to be propagated to the InteractionTracker.
+        m_preProcessingTicksCountdown = m_queuedOperationTicks = c_queuedOperationTicks;
+    }
+
     if (!IsAnimated())
     {
         m_postProcessingTicksCountdown = c_maxNonAnimatedOperationTicks;
