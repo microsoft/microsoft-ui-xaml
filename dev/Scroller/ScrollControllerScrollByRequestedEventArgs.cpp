@@ -30,14 +30,14 @@ winrt::ScrollOptions ScrollControllerScrollByRequestedEventArgs::Options() const
     return m_options;
 }
 
-winrt::ScrollInfo ScrollControllerScrollByRequestedEventArgs::ScrollInfo() const
+winrt::ScrollInfo ScrollControllerScrollByRequestedEventArgs::Info() const
 {
-    return m_scrollInfo;
+    return m_info;
 }
 
-void ScrollControllerScrollByRequestedEventArgs::ScrollInfo(winrt::ScrollInfo scrollInfo)
+void ScrollControllerScrollByRequestedEventArgs::Info(winrt::ScrollInfo info)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, scrollInfo.OffsetsChangeId);
+    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info.OffsetsChangeId);
 
-    m_scrollInfo = scrollInfo;
+    m_info = info;
 }

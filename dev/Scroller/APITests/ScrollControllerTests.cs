@@ -189,7 +189,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             CompositionScrollController horizontalScrollController = null;
             CompositionScrollController verticalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
-            AutoResetEvent viewChangeCompletedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollCompletedEvent = new AutoResetEvent(false);
             int hOffsetChangeId = -1;
             int vOffsetChangeId = -1;
 
@@ -224,15 +224,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 horizontalScrollController.OffsetChangeCompleted += (CompositionScrollController sender, CompositionScrollControllerOffsetChangeCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffset completed (horizontal). OffsetChangeId=" + args.OffsetChangeId + ", Result=" + args.Result);
+                    Log.Comment("ChangeOffset completed (horizontal). OffsetChangeId=" + args.OffsetChangeId);
 
                     Log.Comment("Setting completion event");
-                    viewChangeCompletedEvent.Set();
+                    scrollCompletedEvent.Set();
                 };
 
                 verticalScrollController.OffsetChangeCompleted += (CompositionScrollController sender, CompositionScrollControllerOffsetChangeCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffset completed (vertical). OffsetChangeId=" + args.OffsetChangeId + ", Result=" + args.Result);
+                    Log.Comment("ChangeOffset completed (vertical). OffsetChangeId=" + args.OffsetChangeId);
                 };
             });
 
@@ -268,7 +268,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -287,10 +287,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
 
-                viewChangeCompletedEvent.Reset();
+                scrollCompletedEvent.Reset();
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -314,7 +314,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             CompositionScrollController horizontalScrollController = null;
             CompositionScrollController verticalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
-            AutoResetEvent viewChangeCompletedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollCompletedEvent = new AutoResetEvent(false);
             int hOffsetChangeId = -1;
             int vOffsetChangeId = -1;
 
@@ -349,10 +349,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 horizontalScrollController.OffsetChangeCompleted += (CompositionScrollController sender, CompositionScrollControllerOffsetChangeCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffset completed. OffsetChangeId=" + args.OffsetChangeId + ", Result=" + args.Result);
+                    Log.Comment("ChangeOffset completed. OffsetChangeId=" + args.OffsetChangeId);
 
                     Log.Comment("Setting completion event");
-                    viewChangeCompletedEvent.Set();
+                    scrollCompletedEvent.Set();
                 };
             });
 
@@ -386,7 +386,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -406,10 +406,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
 
-                viewChangeCompletedEvent.Reset();
+                scrollCompletedEvent.Reset();
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -429,10 +429,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
 
-                viewChangeCompletedEvent.Reset();
+                scrollCompletedEvent.Reset();
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -546,7 +546,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             Rectangle rectangleScrollerContent = null;
             BiDirectionalScrollController biDirectionalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
-            AutoResetEvent viewChangeCompletedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollCompletedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
@@ -568,12 +568,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     biDirectionalScrollController,
                     loadedEvent);
 
-                biDirectionalScrollController.ViewChangeCompleted += (BiDirectionalScrollController sender, BiDirectionalScrollControllerViewChangeCompletedEventArgs args) =>
+                biDirectionalScrollController.ScrollCompleted += (BiDirectionalScrollController sender, BiDirectionalScrollControllerScrollCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffset completed. ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
+                    Log.Comment("ChangeOffset completed. OffsetsChangeId=" + args.OffsetsChangeId);
 
                     Log.Comment("Setting completion event");
-                    viewChangeCompletedEvent.Set();
+                    scrollCompletedEvent.Set();
                 };
             });
 
@@ -602,7 +602,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     AnimationMode.Disabled);
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -615,10 +615,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     (c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 2.0,
                     AnimationMode.Enabled);
 
-                viewChangeCompletedEvent.Reset();
+                scrollCompletedEvent.Reset();
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -641,7 +641,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             Rectangle rectangleScrollerContent = null;
             BiDirectionalScrollController biDirectionalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
-            AutoResetEvent viewChangeCompletedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollCompletedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
@@ -663,12 +663,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     biDirectionalScrollController,
                     loadedEvent);
 
-                biDirectionalScrollController.ViewChangeCompleted += (BiDirectionalScrollController sender, BiDirectionalScrollControllerViewChangeCompletedEventArgs args) =>
+                biDirectionalScrollController.ScrollCompleted += (BiDirectionalScrollController sender, BiDirectionalScrollControllerScrollCompletedEventArgs args) =>
                 {
-                    Log.Comment("ScrollFrom completed. ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
+                    Log.Comment("ScrollFrom completed. OffsetsChangeId=" + args.OffsetsChangeId);
 
                     Log.Comment("Setting completion event");
-                    viewChangeCompletedEvent.Set();
+                    scrollCompletedEvent.Set();
                 };
             });
 
@@ -695,7 +695,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     new Vector2(100.0f) /*offsetsVelocity*/, null /*inertiaDecayRate*/);
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -709,10 +709,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 biDirectionalScrollController.ScrollFrom(
                     new Vector2(-50.0f) /*offsetsVelocity*/, new Vector2(0.9f) /*inertiaDecayRate*/);
 
-                viewChangeCompletedEvent.Reset();
+                scrollCompletedEvent.Reset();
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -726,10 +726,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 biDirectionalScrollController.ScrollFrom(
                     new Vector2(200.0f) /*offsetsVelocity*/, new Vector2(0.0f) /*inertiaDecayRate*/);
 
-                viewChangeCompletedEvent.Reset();
+                scrollCompletedEvent.Reset();
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {

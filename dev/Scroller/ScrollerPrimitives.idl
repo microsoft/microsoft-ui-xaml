@@ -24,9 +24,9 @@ unsealed runtimeclass ScrollerSnapPointBase
     // All composable classes must derrive from a Windows base class to pass WACK.
     : Windows.UI.Xaml.DependencyObject
 {
-    ScrollerSnapPointAlignment Alignment{ get; set; };
-    Double SpecifiedApplicableRange{ get; };
-    ScrollerSnapPointApplicableRangeType ApplicableRangeType{ get; };
+    ScrollerSnapPointAlignment Alignment { get; set; };
+    Double SpecifiedApplicableRange { get; };
+    ScrollerSnapPointApplicableRangeType ApplicableRangeType { get; };
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -37,7 +37,7 @@ unsealed runtimeclass ScrollerSnapPointIrregular : ScrollerSnapPointBase
 {
     ScrollerSnapPointIrregular(Double snapPointValue, ScrollerSnapPointAlignment alignment);
     ScrollerSnapPointIrregular(Double snapPointValue, Double applicableRange, ScrollerSnapPointAlignment alignment);
-    Double Value{ get; }; 
+    Double Value { get; }; 
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -48,10 +48,10 @@ unsealed runtimeclass ScrollerSnapPointRegular : ScrollerSnapPointBase
 {
     ScrollerSnapPointRegular(Double offset, Double interval, Double start, Double end, ScrollerSnapPointAlignment alignment);
     ScrollerSnapPointRegular(Double offset, Double interval, Double start, Double end, Double applicableRange, ScrollerSnapPointAlignment alignment);
-    Double Offset{ get; };
-    Double Interval{ get; };
-    Double Start{ get; };
-    Double End{ get; }; 
+    Double Offset { get; };
+    Double Interval { get; };
+    Double Start { get; };
+    Double End { get; }; 
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -61,8 +61,8 @@ runtimeclass ScrollControllerScrollToRequestedEventArgs
     ScrollControllerScrollToRequestedEventArgs(Double offset, MU_XC_NAMESPACE.ScrollOptions options);
 
     Double Offset { get; };
-    MU_XC_NAMESPACE.ScrollOptions Options{ get; };
-    MU_XC_NAMESPACE.ScrollInfo ScrollInfo { get; set; };
+    MU_XC_NAMESPACE.ScrollOptions Options { get; };
+    MU_XC_NAMESPACE.ScrollInfo Info { get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -73,7 +73,7 @@ runtimeclass ScrollControllerScrollByRequestedEventArgs
 
     Double OffsetDelta { get; };
     MU_XC_NAMESPACE.ScrollOptions Options { get; };
-    MU_XC_NAMESPACE.ScrollInfo ScrollInfo { get; set; };
+    MU_XC_NAMESPACE.ScrollInfo Info { get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -84,7 +84,7 @@ runtimeclass ScrollControllerScrollFromRequestedEventArgs
 
     Single OffsetVelocity { get; };
     Windows.Foundation.IReference<Single> InertiaDecayRate { get; };
-    MU_XC_NAMESPACE.ScrollInfo ScrollInfo { get; set; };
+    MU_XC_NAMESPACE.ScrollInfo Info { get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -101,7 +101,7 @@ runtimeclass ScrollControllerInteractionRequestedEventArgs
 [webhosthidden]
 interface IScrollController
 {
-    Boolean AreInteractionsAllowed{ get; };
+    Boolean AreInteractionsAllowed { get; };
     Boolean AreScrollerInteractionsAllowed { get; };
     Boolean IsInteracting { get; };
     Boolean IsInteractionVisualRailEnabled { get; };
@@ -110,8 +110,8 @@ interface IScrollController
     void SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet propertySet, String minOffsetPropertyName, String maxOffsetPropertyName, String offsetPropertyName, String multiplierPropertyName);
     void SetScrollMode(MU_XC_NAMESPACE.ScrollMode scrollMode);
     void SetValues(Double minOffset, Double maxOffset, Double offset, Double viewport);
-    Windows.UI.Composition.CompositionAnimation GetScrollAnimation(Int32 offsetChangeId, Windows.Foundation.Numerics.Vector2 currentPosition, Windows.UI.Composition.CompositionAnimation defaultAnimation);
-    void OnScrollCompleted(Int32 offsetChangeId, MU_XC_NAMESPACE.ScrollerViewChangeResult result);
+    Windows.UI.Composition.CompositionAnimation GetScrollAnimation(MU_XC_NAMESPACE.ScrollInfo info, Windows.Foundation.Numerics.Vector2 currentPosition, Windows.UI.Composition.CompositionAnimation defaultAnimation);
+    void OnScrollCompleted(MU_XC_NAMESPACE.ScrollInfo info);
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollFromRequestedEventArgs> ScrollFromRequested;
@@ -133,12 +133,12 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     Double HorizontalOffset { get; };
     Double VerticalOffset { get; };
     Single ZoomFactor { get; };
-    Double ExtentWidth{ get; };
-    Double ExtentHeight{ get; };
-    Double ViewportWidth{ get; };
-    Double ViewportHeight{ get; };
-    Double ScrollableWidth{ get; };
-    Double ScrollableHeight{ get; };
+    Double ExtentWidth { get; };
+    Double ExtentHeight { get; };
+    Double ViewportWidth { get; };
+    Double ViewportHeight { get; };
+    Double ScrollableWidth { get; };
+    Double ScrollableHeight { get; };
     [MUX_DEFAULT_VALUE("Scroller::s_defaultContentOrientation")]
     MU_XC_NAMESPACE.ContentOrientation ContentOrientation { get; set; };
     [MUX_DEFAULT_VALUE("Scroller::s_defaultHorizontalScrollChainingMode")]
@@ -180,9 +180,9 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     [MUX_DEFAULT_VALUE("Scroller::s_defaultAnchorRatio")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateAnchorRatio")]
     Double VerticalAnchorRatio { get; set; };
-    Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> HorizontalSnapPoints{ get; };
-    Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> VerticalSnapPoints{ get; };
-    Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> ZoomSnapPoints{ get; };
+    Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> HorizontalSnapPoints { get; };
+    Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> VerticalSnapPoints { get; };
+    Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> ZoomSnapPoints { get; };
     [method_name("ScrollTo")]
     MU_XC_NAMESPACE.ScrollInfo ScrollTo(
         Double horizontalOffset,
@@ -230,9 +230,10 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     event Windows.Foundation.TypedEventHandler<Scroller, Object> ExtentChanged;
     event Windows.Foundation.TypedEventHandler<Scroller, Object> StateChanged;
     event Windows.Foundation.TypedEventHandler<Scroller, Object> ViewChanged;
-    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollerChangingOffsetsEventArgs> ChangingOffsets;
-    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollerChangingZoomFactorEventArgs> ChangingZoomFactor;
-    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollerViewChangeCompletedEventArgs> ViewChangeCompleted;
+    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollAnimationStartingEventArgs> ScrollAnimationStarting;
+    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ZoomAnimationStartingEventArgs> ZoomAnimationStarting;
+    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollCompletedEventArgs> ScrollCompleted;
+    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ZoomCompletedEventArgs> ZoomCompleted;
     event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollerBringingIntoViewEventArgs> BringingIntoView;
     event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollerAnchorRequestedEventArgs> AnchorRequested;
 

@@ -48,13 +48,12 @@ public:
         double viewport);
 
     winrt::CompositionAnimation GetScrollAnimation(
-        INT32 offsetChangeId,
+        winrt::ScrollInfo info,
         winrt::float2 const& currentPosition,
         winrt::CompositionAnimation const& defaultAnimation);
 
     void OnScrollCompleted(
-        INT32 offsetChangeId,
-        winrt::ScrollerViewChangeResult const& result);
+        winrt::ScrollInfo info);
 
     winrt::event_token ScrollToRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs> const& value);
     void ScrollToRequested(winrt::event_token const& token);
@@ -114,8 +113,8 @@ private:
 
     winrt::ScrollBar m_scrollBar;
     winrt::ScrollMode m_scrollMode{ winrt::ScrollMode::Disabled };
-    int32_t m_lastViewChangeIdForScrollTo{ -1 };
-    int32_t m_lastViewChangeIdForScrollFrom{ -1 };
+    int32_t m_lastOffsetChangeIdForScrollTo{ -1 };
+    int32_t m_lastOffsetChangeIdForScrollFrom{ -1 };
     int m_operationsCount{ 0 };
     double m_lastScrollBarValue{ 0.0 };
     double m_lastOffset{ 0.0 };

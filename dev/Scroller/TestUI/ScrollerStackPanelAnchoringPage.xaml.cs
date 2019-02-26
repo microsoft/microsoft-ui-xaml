@@ -20,12 +20,14 @@ using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ScrollerAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs;
-using ScrollerChangingOffsetsEventArgs = Microsoft.UI.Xaml.Controls.ScrollerChangingOffsetsEventArgs;
-using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
+using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
+using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
+
+using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
+using ScrollerTestHooksAnchorEvaluatedEventArgs = Microsoft.UI.Private.Controls.ScrollerTestHooksAnchorEvaluatedEventArgs;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
-using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
-using ScrollerTestHooksAnchorEvaluatedEventArgs = Microsoft.UI.Private.Controls.ScrollerTestHooksAnchorEvaluatedEventArgs;
 #endif
 
 namespace MUXControlsTestApp
@@ -91,8 +93,8 @@ namespace MUXControlsTestApp
                 }
                 scroller.AnchorRequested += Scroller_AnchorRequested;
                 scroller.ViewChanged += Scroller_ViewChanged;
-                scroller.ViewChangeCompleted += Scroller_ViewChangeCompleted;
-                scroller.ChangingOffsets += Scroller_ChangingOffsets;
+                scroller.ScrollCompleted += Scroller_ScrollCompleted;
+                scroller.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
             }
             catch (Exception ex)
             {
@@ -557,11 +559,13 @@ namespace MUXControlsTestApp
             lastScrollerOffset = newScrollerOffset;
         }
 
-        private void Scroller_ViewChangeCompleted(Scroller sender, ScrollerViewChangeCompletedEventArgs args)
+        private void Scroller_ScrollCompleted(Scroller sender, ScrollCompletedEventArgs args)
         {
             if (chkLogScrollerEvents.IsChecked == true)
             {
-                AppendAsyncEventMessage("ViewChangeCompleted ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
+                ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+
+                AppendAsyncEventMessage("ScrollCompleted OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
             }
         }
 
@@ -782,11 +786,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void Scroller_ChangingOffsets(Scroller sender, ScrollerChangingOffsetsEventArgs args)
+        private void Scroller_ScrollAnimationStarting(Scroller sender, ScrollAnimationStartingEventArgs args)
         {
             try
             {
-                AppendAsyncEventMessage("ChangingOffsets ViewChangeId=" + args.ViewChangeId);
+                AppendAsyncEventMessage("ScrollAnimationStarting OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId);
 
                 Vector3KeyFrameAnimation stockKeyFrameAnimation = args.Animation as Vector3KeyFrameAnimation;
 

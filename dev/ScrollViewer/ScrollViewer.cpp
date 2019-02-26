@@ -860,31 +860,31 @@ void ScrollViewer::OnScrollerStateChanged(
     }
 }
 
-void ScrollViewer::OnScrollerChangingOffsets(
+void ScrollViewer::OnScrollAnimationStarting(
     const winrt::IInspectable& /*sender*/,
-    const winrt::ScrollerChangingOffsetsEventArgs& args)
+    const winrt::ScrollAnimationStartingEventArgs& args)
 {
-    if (m_changingOffsetsEventSource)
+    if (m_scrollAnimationStartingEventSource)
     {
         SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-        m_changingOffsetsEventSource(*this, args);
+        m_scrollAnimationStartingEventSource(*this, args);
     }
 }
 
-void ScrollViewer::OnScrollerChangingZoomFactor(
+void ScrollViewer::OnZoomAnimationStarting(
     const winrt::IInspectable& /*sender*/,
-    const winrt::ScrollerChangingZoomFactorEventArgs& args)
+    const winrt::ZoomAnimationStartingEventArgs& args)
 {
-    if (m_changingZoomFactorEventSource)
+    if (m_zoomAnimationStartingEventSource)
     {
         SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-        m_changingZoomFactorEventSource(*this, args);
+        m_zoomAnimationStartingEventSource(*this, args);
     }
 }
 
-void ScrollViewer::OnScrollViewerChanged(
+void ScrollViewer::OnScrollerViewChanged(
     const winrt::IInspectable& /*sender*/,
     const winrt::IInspectable& args)
 {
@@ -903,24 +903,36 @@ void ScrollViewer::OnScrollViewerChanged(
     }
 }
 
-void ScrollViewer::OnScrollViewerChangeCompleted(
+void ScrollViewer::OnScrollerScrollCompleted(
     const winrt::IInspectable& /*sender*/,
-    const winrt::ScrollerViewChangeCompletedEventArgs& args)
+    const winrt::ScrollCompletedEventArgs& args)
 {
-    if (args.ViewChangeId() == m_horizontalScrollWithKeyboardViewChangeId)
+    if (args.ScrollInfo().OffsetsChangeId == m_horizontalScrollWithKeyboardOffsetChangeId)
     {
-        m_horizontalScrollWithKeyboardViewChangeId = -1;
+        m_horizontalScrollWithKeyboardOffsetChangeId = -1;
     }
-    else if (args.ViewChangeId() == m_verticalScrollWithKeyboardViewChangeId)
+    else if (args.ScrollInfo().OffsetsChangeId == m_verticalScrollWithKeyboardOffsetChangeId)
     {
-        m_verticalScrollWithKeyboardViewChangeId = -1;
+        m_verticalScrollWithKeyboardOffsetChangeId = -1;
     }
 
-    if (m_viewChangeCompletedEventSource)
+    if (m_scrollCompletedEventSource)
     {
         SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-        m_viewChangeCompletedEventSource(*this, args);
+        m_scrollCompletedEventSource(*this, args);
+    }
+}
+
+void ScrollViewer::OnScrollerZoomCompleted(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::ZoomCompletedEventArgs& args)
+{
+    if (m_zoomCompletedEventSource)
+    {
+        SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
+        m_zoomCompletedEventSource(*this, args);
     }
 }
 
@@ -1074,10 +1086,11 @@ void ScrollViewer::HookScrollerEvents()
 
     MUX_ASSERT(m_scrollerExtentChangedToken.value == 0);
     MUX_ASSERT(m_scrollerStateChangedToken.value == 0);
-    MUX_ASSERT(m_scrollerChangingOffsetsToken.value == 0);
-    MUX_ASSERT(m_scrollerChangingZoomFactorToken.value == 0);
-    MUX_ASSERT(m_scrollViewerChangedToken.value == 0);
-    MUX_ASSERT(m_scrollViewerChangeCompletedToken.value == 0);
+    MUX_ASSERT(m_scrollerScrollAnimationStartingToken.value == 0);
+    MUX_ASSERT(m_scrollerZoomAnimationStartingToken.value == 0);
+    MUX_ASSERT(m_scrollerViewChangedToken.value == 0);
+    MUX_ASSERT(m_scrollerScrollCompletedToken.value == 0);
+    MUX_ASSERT(m_scrollerZoomCompletedToken.value == 0);
     MUX_ASSERT(m_scrollerBringingIntoViewToken.value == 0);
     MUX_ASSERT(m_scrollerAnchorRequestedToken.value == 0);
 #ifdef USE_SCROLLMODE_AUTO
@@ -1089,10 +1102,11 @@ void ScrollViewer::HookScrollerEvents()
     {
         m_scrollerExtentChangedToken = scroller.ExtentChanged({ this, &ScrollViewer::OnScrollerExtentChanged });
         m_scrollerStateChangedToken = scroller.StateChanged({ this, &ScrollViewer::OnScrollerStateChanged });
-        m_scrollerChangingOffsetsToken = scroller.ChangingOffsets({ this, &ScrollViewer::OnScrollerChangingOffsets });
-        m_scrollerChangingZoomFactorToken = scroller.ChangingZoomFactor({ this, &ScrollViewer::OnScrollerChangingZoomFactor });
-        m_scrollViewerChangedToken = scroller.ViewChanged({ this, &ScrollViewer::OnScrollViewerChanged });
-        m_scrollViewerChangeCompletedToken = scroller.ViewChangeCompleted({ this, &ScrollViewer::OnScrollViewerChangeCompleted });
+        m_scrollerScrollAnimationStartingToken = scroller.ScrollAnimationStarting({ this, &ScrollViewer::OnScrollAnimationStarting });
+        m_scrollerZoomAnimationStartingToken = scroller.ZoomAnimationStarting({ this, &ScrollViewer::OnZoomAnimationStarting });
+        m_scrollerViewChangedToken = scroller.ViewChanged({ this, &ScrollViewer::OnScrollerViewChanged });
+        m_scrollerScrollCompletedToken = scroller.ScrollCompleted({ this, &ScrollViewer::OnScrollerScrollCompleted });
+        m_scrollerZoomCompletedToken = scroller.ZoomCompleted({ this, &ScrollViewer::OnScrollerZoomCompleted });
         m_scrollerBringingIntoViewToken = scroller.BringingIntoView({ this, &ScrollViewer::OnScrollerBringingIntoView });
         m_scrollerAnchorRequestedToken = scroller.AnchorRequested({ this, &ScrollViewer::OnScrollerAnchorRequested });
 
@@ -1133,28 +1147,34 @@ void ScrollViewer::UnhookScrollerEvents(bool isForDestructor)
             m_scrollerStateChangedToken.value = 0;
         }
 
-        if (m_scrollerChangingOffsetsToken.value != 0)
+        if (m_scrollerScrollAnimationStartingToken.value != 0)
         {
-            scroller.ChangingOffsets(m_scrollerChangingOffsetsToken);
-            m_scrollerChangingOffsetsToken.value = 0;
+            scroller.ScrollAnimationStarting(m_scrollerScrollAnimationStartingToken);
+            m_scrollerScrollAnimationStartingToken.value = 0;
         }
 
-        if (m_scrollerChangingZoomFactorToken.value != 0)
+        if (m_scrollerZoomAnimationStartingToken.value != 0)
         {
-            scroller.ChangingZoomFactor(m_scrollerChangingZoomFactorToken);
-            m_scrollerChangingZoomFactorToken.value = 0;
+            scroller.ZoomAnimationStarting(m_scrollerZoomAnimationStartingToken);
+            m_scrollerZoomAnimationStartingToken.value = 0;
         }
 
-        if (m_scrollViewerChangedToken.value != 0)
+        if (m_scrollerViewChangedToken.value != 0)
         {
-            scroller.ViewChanged(m_scrollViewerChangedToken);
-            m_scrollViewerChangedToken.value = 0;
+            scroller.ViewChanged(m_scrollerViewChangedToken);
+            m_scrollerViewChangedToken.value = 0;
         }
 
-        if (m_scrollViewerChangeCompletedToken.value != 0)
+        if (m_scrollerScrollCompletedToken.value != 0)
         {
-            scroller.ViewChangeCompleted(m_scrollViewerChangeCompletedToken);
-            m_scrollViewerChangeCompletedToken.value = 0;
+            scroller.ScrollCompleted(m_scrollerScrollCompletedToken);
+            m_scrollerScrollCompletedToken.value = 0;
+        }
+
+        if (m_scrollerZoomCompletedToken.value != 0)
+        {
+            scroller.ZoomCompleted(m_scrollerZoomCompletedToken);
+            m_scrollerZoomCompletedToken.value = 0;
         }
 
         if (m_scrollerBringingIntoViewToken.value != 0)
@@ -1896,7 +1916,7 @@ void ScrollViewer::DoScroll(double offset, winrt::Orientation orientation)
 
         // If there is already a scroll animation running for a previous key press, we want to take that into account
         // for calculating the baseline velocity. 
-        auto previousScrollViewChangeId = isVertical ? m_verticalScrollWithKeyboardViewChangeId : m_horizontalScrollWithKeyboardViewChangeId;
+        auto previousScrollViewChangeId = isVertical ? m_verticalScrollWithKeyboardOffsetChangeId : m_horizontalScrollWithKeyboardOffsetChangeId;
         if (previousScrollViewChangeId != -1)
         {
             auto directionOfPreviousScrollOperation = isVertical ? m_verticalScrollWithKeyboardDirection : m_horizontalScrollWithKeyboardDirection;
@@ -1915,13 +1935,13 @@ void ScrollViewer::DoScroll(double offset, winrt::Orientation orientation)
         if (isVertical)
         {
             winrt::float2 offsetsVelocity(0.0f, velocity);
-            m_verticalScrollWithKeyboardViewChangeId = scroller.ScrollFrom(offsetsVelocity, inertiaDecayRate).OffsetsChangeId;
+            m_verticalScrollWithKeyboardOffsetChangeId = scroller.ScrollFrom(offsetsVelocity, inertiaDecayRate).OffsetsChangeId;
             m_verticalScrollWithKeyboardDirection = scrollDir;
         }
         else
         {
             winrt::float2 offsetsVelocity(velocity, 0.0f);
-            m_horizontalScrollWithKeyboardViewChangeId = scroller.ScrollFrom(offsetsVelocity, inertiaDecayRate).OffsetsChangeId;
+            m_horizontalScrollWithKeyboardOffsetChangeId = scroller.ScrollFrom(offsetsVelocity, inertiaDecayRate).OffsetsChangeId;
             m_horizontalScrollWithKeyboardDirection = scrollDir;
         }
     }

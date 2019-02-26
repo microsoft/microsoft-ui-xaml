@@ -4,31 +4,30 @@
 #pragma once
 
 #include "ScrollerTrace.h"
+#include "ScrollAnimationStartingEventArgs.g.h"
 
-#include "ScrollerChangingOffsetsEventArgs.g.h"
-
-class ScrollerChangingOffsetsEventArgs :
-    public winrt::implementation::ScrollerChangingOffsetsEventArgsT<ScrollerChangingOffsetsEventArgs>
+class ScrollAnimationStartingEventArgs :
+    public winrt::implementation::ScrollAnimationStartingEventArgsT<ScrollAnimationStartingEventArgs>
 {
 public:
-    ScrollerChangingOffsetsEventArgs()
+    ScrollAnimationStartingEventArgs()
     {
         SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ~ScrollerChangingOffsetsEventArgs()
+    ~ScrollAnimationStartingEventArgs()
     {
         SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    // IScrollerChangingOffsetsEventArgs overrides
+    // IScrollAnimationStartingEventArgs overrides
     winrt::CompositionAnimation Animation();
     void Animation(winrt::CompositionAnimation const& value);
-    int32_t ViewChangeId();
+    winrt::ScrollInfo ScrollInfo();
     winrt::float2 StartPosition();
     winrt::float2 EndPosition();
 
-    void SetViewChangeId(int32_t viewChangeId);
+    void SetOffsetsChangeId(int32_t offsetsChangeId);
     winrt::CompositionAnimation GetAnimation() const;
     void SetAnimation(const winrt::CompositionAnimation& animation);
     void SetStartPosition(const winrt::float2& startPosition);
@@ -36,9 +35,7 @@ public:
 
 private:
     winrt::CompositionAnimation m_animation{ nullptr };
-    int32_t m_viewChangeId{ -1 };
+    int32_t m_offsetsChangeId{ -1 };
     winrt::float2 m_startPosition{ 0.0f, 0.0f };
     winrt::float2 m_endPosition{ 0.0f, 0.0f };
 };
-
-//CppWinRTActivatableClassWithBasicFactory(ScrollerChangingOffsetsEventArgs)

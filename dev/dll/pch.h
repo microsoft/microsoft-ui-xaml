@@ -197,7 +197,6 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::InputKind>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::RailingMode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ScrollMode>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ScrollerViewChangeResult>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ZoomMode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::SwipeBehaviorOnInvoked>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::SwipeMode>>();
@@ -247,9 +246,10 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller,struct winrt::Microsoft::UI::Private::Controls::ScrollerTestHooksInteractionSourcesChangedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller,struct winrt::Microsoft::UI::Xaml::Controls::ScrollerAnchorRequestedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller,struct winrt::Microsoft::UI::Xaml::Controls::ScrollerBringingIntoViewEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller,struct winrt::Microsoft::UI::Xaml::Controls::ScrollerChangingOffsetsEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller,struct winrt::Microsoft::UI::Xaml::Controls::ScrollerChangingZoomFactorEventArgs>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller,struct winrt::Microsoft::UI::Xaml::Controls::ScrollerViewChangeCompletedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller,struct winrt::Microsoft::UI::Xaml::Controls::ScrollAnimationStartingEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller,struct winrt::Microsoft::UI::Xaml::Controls::ZoomAnimationStartingEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller, struct winrt::Microsoft::UI::Xaml::Controls::ScrollCompletedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller, struct winrt::Microsoft::UI::Xaml::Controls::ZoomCompletedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::Scroller,struct winrt::Windows::Foundation::IInspectable>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::RefreshVisualizer,struct winrt::Microsoft::UI::Xaml::Controls::RefreshRequestedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::SwipeControl,struct winrt::Windows::Foundation::IInspectable>>();

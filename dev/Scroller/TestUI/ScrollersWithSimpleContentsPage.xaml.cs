@@ -12,7 +12,11 @@ using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
-using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
+using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
+using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
+
+using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 #endif
@@ -38,11 +42,16 @@ namespace MUXControlsTestApp
             this.scroller31.ViewChanged += Scroller_ViewChanged;
             this.scroller41.ViewChanged += Scroller_ViewChanged;
             this.scroller51.ViewChanged += Scroller_ViewChanged;
-            this.scroller11.ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            this.scroller21.ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            this.scroller31.ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            this.scroller41.ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            this.scroller51.ViewChangeCompleted += Scroller_ViewChangeCompleted;
+            this.scroller11.ScrollCompleted += Scroller_ScrollCompleted;
+            this.scroller21.ScrollCompleted += Scroller_ScrollCompleted;
+            this.scroller31.ScrollCompleted += Scroller_ScrollCompleted;
+            this.scroller41.ScrollCompleted += Scroller_ScrollCompleted;
+            this.scroller51.ScrollCompleted += Scroller_ScrollCompleted;
+            this.scroller11.ZoomCompleted += Scroller_ZoomCompleted;
+            this.scroller21.ZoomCompleted += Scroller_ZoomCompleted;
+            this.scroller31.ZoomCompleted += Scroller_ZoomCompleted;
+            this.scroller41.ZoomCompleted += Scroller_ZoomCompleted;
+            this.scroller51.ZoomCompleted += Scroller_ZoomCompleted;
 
             this.scroller12.StateChanged += Scroller_StateChanged;
             this.scroller22.StateChanged += Scroller_StateChanged;
@@ -54,11 +63,16 @@ namespace MUXControlsTestApp
             this.scroller32.ViewChanged += Scroller_ViewChanged;
             this.scroller42.ViewChanged += Scroller_ViewChanged;
             this.scroller52.ViewChanged += Scroller_ViewChanged;
-            this.scroller12.ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            this.scroller22.ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            this.scroller32.ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            this.scroller42.ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            this.scroller52.ViewChangeCompleted += Scroller_ViewChangeCompleted;
+            this.scroller12.ScrollCompleted += Scroller_ScrollCompleted;
+            this.scroller22.ScrollCompleted += Scroller_ScrollCompleted;
+            this.scroller32.ScrollCompleted += Scroller_ScrollCompleted;
+            this.scroller42.ScrollCompleted += Scroller_ScrollCompleted;
+            this.scroller52.ScrollCompleted += Scroller_ScrollCompleted;
+            this.scroller11.ZoomCompleted += Scroller_ZoomCompleted;
+            this.scroller21.ZoomCompleted += Scroller_ZoomCompleted;
+            this.scroller31.ZoomCompleted += Scroller_ZoomCompleted;
+            this.scroller41.ZoomCompleted += Scroller_ZoomCompleted;
+            this.scroller51.ZoomCompleted += Scroller_ZoomCompleted;
         }
 
         private void Scroller_StateChanged(Scroller sender, object args)
@@ -75,11 +89,20 @@ namespace MUXControlsTestApp
             this.fullLogs.Add(sender.Name + " ViewChanged H=" + this.txtScrollerHorizontalOffset.Text + ", V=" + this.txtScrollerVerticalOffset.Text + ", S=" + this.txtScrollerZoomFactor.Text);
         }
 
-        private void Scroller_ViewChangeCompleted(Scroller sender, ScrollerViewChangeCompletedEventArgs args)
+        private void Scroller_ScrollCompleted(Scroller sender, ScrollCompletedEventArgs args)
         {
-            this.fullLogs.Add(sender.Name + " ViewChangeCompleted ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
+            ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
 
-            if (this.scroller52ZoomFactorChangeId == args.ViewChangeId)
+            this.fullLogs.Add(sender.Name + " ScrollCompleted OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+        }
+
+        private void Scroller_ZoomCompleted(Scroller sender, ZoomCompletedEventArgs args)
+        {
+            ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+
+            this.fullLogs.Add(sender.Name + " ZoomCompleted ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+
+            if (this.scroller52ZoomFactorChangeId == args.ZoomInfo.ZoomFactorChangeId)
             {
                 this.txtResetStatus.Text = "Views reset";
             }

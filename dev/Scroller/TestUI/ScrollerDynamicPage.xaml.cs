@@ -31,10 +31,13 @@ using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
 using ScrollerSnapPointIrregular = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointIrregular;
 using ScrollerSnapPointAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment;
-using ScrollerChangingOffsetsEventArgs = Microsoft.UI.Xaml.Controls.ScrollerChangingOffsetsEventArgs;
-using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
-using ScrollerChangingZoomFactorEventArgs = Microsoft.UI.Xaml.Controls.ScrollerChangingZoomFactorEventArgs;
+using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
+using ZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs;
+using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
+using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
+
 using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 #endif
@@ -119,9 +122,25 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage("ViewChanged H=" + sender.HorizontalOffset.ToString() + ", V=" + sender.VerticalOffset + ", ZF=" + sender.ZoomFactor);
         }
 
-        private void Scroller_ViewChangeCompleted(Scroller sender, ScrollerViewChangeCompletedEventArgs args)
+        private void Scroller_ScrollCompleted(Scroller sender, ScrollCompletedEventArgs args)
         {
-            AppendAsyncEventMessage("ViewChangeCompleted ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
+            ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+
+            AppendAsyncEventMessage("ScrollCompleted OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+        }
+
+        private void Scroller_ZoomCompleted(Scroller sender, ZoomCompletedEventArgs args)
+        {
+            ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+
+            AppendAsyncEventMessage("ZoomCompleted ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+        }
+
+        private void ZoomCompleted(Scroller sender, ZoomCompletedEventArgs args)
+        {
+            ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+
+            AppendAsyncEventMessage("ZoomCompleted ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
         }
 
         private void CreateChildren()
@@ -208,9 +227,10 @@ namespace MUXControlsTestApp
             scroller.ExtentChanged += Scroller_ExtentChanged;
             scroller.StateChanged += Scroller_StateChanged;
             scroller.ViewChanged += Scroller_ViewChanged;
-            scroller.ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            scroller.ChangingOffsets += Scroller_ChangingOffsets;
-            scroller.ChangingZoomFactor += Scroller_ChangingZoomFactor;
+            scroller.ScrollCompleted += Scroller_ScrollCompleted;
+            scroller.ZoomCompleted += Scroller_ZoomCompleted;
+            scroller.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
+            scroller.ZoomAnimationStarting += Scroller_ZoomAnimationStarting;
         }
 
         private void ChkLogScrollerEvents_Unchecked(object sender, RoutedEventArgs e)
@@ -218,9 +238,10 @@ namespace MUXControlsTestApp
             scroller.ExtentChanged -= Scroller_ExtentChanged;
             scroller.StateChanged -= Scroller_StateChanged;
             scroller.ViewChanged -= Scroller_ViewChanged;
-            scroller.ViewChangeCompleted -= Scroller_ViewChangeCompleted;
-            scroller.ChangingOffsets -= Scroller_ChangingOffsets;
-            scroller.ChangingZoomFactor -= Scroller_ChangingZoomFactor;
+            scroller.ScrollCompleted -= Scroller_ScrollCompleted;
+            scroller.ZoomCompleted -= Scroller_ZoomCompleted;
+            scroller.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
+            scroller.ZoomAnimationStarting -= Scroller_ZoomAnimationStarting;
         }
 
         private void ChkLogContentEffectiveViewportChangedEvent_Checked(object sender, RoutedEventArgs e)
@@ -1380,11 +1401,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void Scroller_ChangingOffsets(Scroller sender, ScrollerChangingOffsetsEventArgs args)
+        private void Scroller_ScrollAnimationStarting(Scroller sender, ScrollAnimationStartingEventArgs args)
         {
             try
             {
-                AppendAsyncEventMessage("ChangingOffsets ViewChangeId=" + args.ViewChangeId + " SP=(" + args.StartPosition.X + "," + args.StartPosition.Y + ") EP=(" + args.EndPosition.X + "," + args.EndPosition.Y + ")");
+                AppendAsyncEventMessage("ScrollAnimationStarting OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + " SP=(" + args.StartPosition.X + "," + args.StartPosition.Y + ") EP=(" + args.EndPosition.X + "," + args.EndPosition.Y + ")");
 
                 Vector3KeyFrameAnimation stockKeyFrameAnimation = args.Animation as Vector3KeyFrameAnimation;
 
@@ -1394,7 +1415,7 @@ namespace MUXControlsTestApp
 
                     if (cmbOverriddenOffsetsChangeAnimation.SelectedIndex != 0)
                     {
-                        bool isRelativeChange = relativeChangeIds.Contains(args.ViewChangeId);
+                        bool isRelativeChange = relativeChangeIds.Contains(args.ScrollInfo.OffsetsChangeId);
 
                         double targetHorizontalOffset = Convert.ToDouble(txtCOAHO.Text);
                         if (isRelativeChange)
@@ -1670,11 +1691,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void Scroller_ChangingZoomFactor(Scroller sender, ScrollerChangingZoomFactorEventArgs args)
+        private void Scroller_ZoomAnimationStarting(Scroller sender, ZoomAnimationStartingEventArgs args)
         {
             try
             {
-                AppendAsyncEventMessage("ChangingZoomFactor ViewChangeId=" + args.ViewChangeId + ", CenterPoint=" + args.CenterPoint + ", SZF=" + args.StartZoomFactor + ", EZF=" + args.EndZoomFactor);
+                AppendAsyncEventMessage("ZoomAnimationStarting ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", CenterPoint=" + args.CenterPoint + ", SZF=" + args.StartZoomFactor + ", EZF=" + args.EndZoomFactor);
                 
                 ScalarKeyFrameAnimation stockKeyFrameAnimation = args.Animation as ScalarKeyFrameAnimation;
 
@@ -1685,7 +1706,7 @@ namespace MUXControlsTestApp
                     if (cmbOverriddenZoomFactorChangeAnimation.SelectedIndex != 0)
                     {
                         float targetZoomFactor = Convert.ToSingle(txtCZFAZF.Text);
-                        if (relativeChangeIds.Contains(args.ViewChangeId))
+                        if (relativeChangeIds.Contains(args.ZoomInfo.ZoomFactorChangeId))
                         {
                             targetZoomFactor += scroller.ZoomFactor;
                         }
@@ -2102,9 +2123,10 @@ namespace MUXControlsTestApp
                         scroller.ExtentChanged -= Scroller_ExtentChanged;
                         scroller.StateChanged -= Scroller_StateChanged;
                         scroller.ViewChanged -= Scroller_ViewChanged;
-                        scroller.ViewChangeCompleted -= Scroller_ViewChangeCompleted;
-                        scroller.ChangingOffsets -= Scroller_ChangingOffsets;
-                        scroller.ChangingZoomFactor -= Scroller_ChangingZoomFactor;
+                        scroller.ScrollCompleted -= Scroller_ScrollCompleted;
+                        scroller.ZoomCompleted -= Scroller_ZoomCompleted;
+                        scroller.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
+                        scroller.ZoomAnimationStarting -= Scroller_ZoomAnimationStarting;
                     }
 
                     if (chkLogScrollerEvents.IsChecked == true)
@@ -2150,9 +2172,10 @@ namespace MUXControlsTestApp
                         scroller.ExtentChanged += Scroller_ExtentChanged;
                         scroller.StateChanged += Scroller_StateChanged;
                         scroller.ViewChanged += Scroller_ViewChanged;
-                        scroller.ViewChangeCompleted += Scroller_ViewChangeCompleted;
-                        scroller.ChangingOffsets += Scroller_ChangingOffsets;
-                        scroller.ChangingZoomFactor += Scroller_ChangingZoomFactor;
+                        scroller.ScrollCompleted += Scroller_ScrollCompleted;
+                        scroller.ZoomCompleted += Scroller_ZoomCompleted;
+                        scroller.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
+                        scroller.ZoomAnimationStarting += Scroller_ZoomAnimationStarting;
                     }
 
                     if (chkLogScrollerEvents.IsChecked == true)

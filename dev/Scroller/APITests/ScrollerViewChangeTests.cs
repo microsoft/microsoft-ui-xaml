@@ -28,10 +28,13 @@ using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
-using ScrollerChangingOffsetsEventArgs = Microsoft.UI.Xaml.Controls.ScrollerChangingOffsetsEventArgs;
-using ScrollerChangingZoomFactorEventArgs = Microsoft.UI.Xaml.Controls.ScrollerChangingZoomFactorEventArgs;
-using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
-using ScrollerViewChangeResult = Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult;
+using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
+using ZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs;
+using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
+using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
+
+using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
@@ -273,8 +276,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description", "Checks to make sure the exposed startPosition, endPosition, StartZoomFactor, and EndZoomFactor " +
-            "on ScrollerChangingOffsetsEventArgs and ScrollerChangingZoomFactorEventArgs respectively are accurate.")]
-        public void ValidateChangingOffsetsAndZoomFactorEventArgsHaveValidStartAndEndPositions()
+            "on ScrollAnimationStartingEventArgs and ZoomAnimationStartingEventArgs respectively are accurate.")]
+        public void ValidateScrollAnimationStartingAndZoomFactorEventArgsHaveValidStartAndEndPositions()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
             {
@@ -304,11 +307,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("Attach to ChangingOffsets");
+                Log.Comment("Attach to ScrollAnimationStarting");
 
-                scroller.ChangingZoomFactor += (Scroller sender, ScrollerChangingZoomFactorEventArgs e) =>
+                scroller.ZoomAnimationStarting += (Scroller sender, ZoomAnimationStartingEventArgs e) =>
                 {
-                    Log.Comment("Scroller.ChangingZoomFactor event handler");
+                    Log.Comment("Scroller.ZoomAnimationStarting event handler");
                     if (numZoomFactorChanges == 0)
                     {
                         Verify.AreEqual(2.0f, e.EndZoomFactor);
@@ -322,9 +325,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 };
 
-                scroller.ChangingOffsets += (Scroller sender, ScrollerChangingOffsetsEventArgs e) =>
+                scroller.ScrollAnimationStarting += (Scroller sender, ScrollAnimationStartingEventArgs e) =>
                 {
-                    Log.Comment("Scroller.ChangingOffsets event handler");
+                    Log.Comment("Scroller.ScrollAnimationStarting event handler");
                     if (numOffsetChanges == 0)
                     {
                         Verify.AreEqual(100.0f, e.EndPosition.X);
@@ -398,9 +401,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         viewChangedCount++;
                     };
 
-                    scroller.ChangingOffsets += (sender, args) =>
+                    scroller.ScrollAnimationStarting += (sender, args) =>
                     {
-                        Log.Comment("ChangingOffsets - ViewChangeId={0}", args.ViewChangeId);
+                        Log.Comment("ScrollAnimationStarting - OffsetsChangeId={0}", args.ScrollInfo.OffsetsChangeId);
                         Verify.IsNotNull(args.Animation);
                         Vector3KeyFrameAnimation stockKeyFrameAnimation = args.Animation as Vector3KeyFrameAnimation;
                         Verify.IsNotNull(stockKeyFrameAnimation);
@@ -475,9 +478,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         viewChangedCount++;
                     };
 
-                    scroller.ChangingZoomFactor += (sender, args) =>
+                    scroller.ZoomAnimationStarting += (sender, args) =>
                     {
-                        Log.Comment("ChangingZoomFactor - ViewChangeId={0}", args.ViewChangeId);
+                        Log.Comment("ZoomAnimationStarting - ZoomFactorChangeId={0}", args.ZoomInfo.ZoomFactorChangeId);
                         Verify.IsNotNull(args.Animation);
                         ScalarKeyFrameAnimation stockKeyFrameAnimation = args.Animation as ScalarKeyFrameAnimation;
                         Verify.IsNotNull(stockKeyFrameAnimation);
@@ -1249,12 +1252,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scroller.ViewChangeCompleted += (Scroller sender, ScrollerViewChangeCompletedEventArgs args) =>
+                scroller.ScrollCompleted += (Scroller sender, ScrollCompletedEventArgs args) =>
                 {
-                    if (args.ViewChangeId == operation.Id)
+                    if (args.ScrollInfo.OffsetsChangeId == operation.Id)
                     {
-                        Log.Comment("ViewChangeCompleted: ScrollTo ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
-                        operation.Result = args.Result;
+                        ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+
+                        Log.Comment("ScrollCompleted: ScrollTo OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+                        operation.Result = result;
 
                         Log.Comment("Setting completion event");
                         scrollerViewChangeOperationEvent.Set();
@@ -1289,12 +1294,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scroller.ViewChangeCompleted += (Scroller sender, ScrollerViewChangeCompletedEventArgs args) =>
+                scroller.ScrollCompleted += (Scroller sender, ScrollCompletedEventArgs args) =>
                 {
-                    if (args.ViewChangeId == operation.Id)
+                    if (args.ScrollInfo.OffsetsChangeId == operation.Id)
                     {
-                        Log.Comment("ViewChangeCompleted: ScrollBy ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
-                        operation.Result = args.Result;
+                        ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+
+                        Log.Comment("ScrollCompleted: ScrollBy OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+                        operation.Result = result;
 
                         Log.Comment("Setting completion event");
                         scrollerViewChangeOperationEvent.Set();
@@ -1335,12 +1342,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scroller.ViewChangeCompleted += (Scroller sender, ScrollerViewChangeCompletedEventArgs args) =>
+                scroller.ScrollCompleted += (Scroller sender, ScrollCompletedEventArgs args) =>
                 {
-                    if (args.ViewChangeId == operation.Id)
+                    if (args.ScrollInfo.OffsetsChangeId == operation.Id)
                     {
-                        Log.Comment("ViewChangeCompleted: ScrollFrom ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
-                        operation.Result = args.Result;
+                        ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+
+                        Log.Comment("ScrollCompleted: ScrollFrom OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+                        operation.Result = result;
 
                         Log.Comment("Setting completion event");
                         scrollerViewChangeOperationEvent.Set();
@@ -1520,12 +1529,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scroller.ViewChangeCompleted += (Scroller sender, ScrollerViewChangeCompletedEventArgs args) =>
+                scroller.ZoomCompleted += (Scroller sender, ZoomCompletedEventArgs args) =>
                 {
-                    if (args.ViewChangeId == operation.Id)
+                    if (args.ZoomInfo.ZoomFactorChangeId == operation.Id)
                     {
-                        Log.Comment("ViewChangeCompleted: ZoomTo ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
-                        operation.Result = args.Result;
+                        ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+
+                        Log.Comment("ZoomCompleted: ZoomTo ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+                        operation.Result = result;
 
                         Log.Comment("Setting completion event");
                         scrollerViewChangeOperationEvent.Set();
@@ -1561,12 +1572,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scroller.ViewChangeCompleted += (Scroller sender, ScrollerViewChangeCompletedEventArgs args) =>
+                scroller.ZoomCompleted += (Scroller sender, ZoomCompletedEventArgs args) =>
                 {
-                    if (args.ViewChangeId == operation.Id)
+                    if (args.ZoomInfo.ZoomFactorChangeId == operation.Id)
                     {
-                        Log.Comment("ViewChangeCompleted: ZoomBy ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
-                        operation.Result = args.Result;
+                        ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+
+                        Log.Comment("ZoomCompleted: ZoomBy ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+                        operation.Result = result;
 
                         Log.Comment("Setting completion event");
                         scrollerViewChangeOperationEvent.Set();
@@ -1599,12 +1612,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scroller.ViewChangeCompleted += (Scroller sender, ScrollerViewChangeCompletedEventArgs args) =>
+                scroller.ZoomCompleted += (Scroller sender, ZoomCompletedEventArgs args) =>
                 {
-                    if (args.ViewChangeId == operation.Id)
+                    if (args.ZoomInfo.ZoomFactorChangeId == operation.Id)
                     {
-                        Log.Comment("ViewChangeCompleted: ZoomFrom ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
-                        operation.Result = args.Result;
+                        ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+
+                        Log.Comment("ZoomCompleted: ZoomFrom ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+                        operation.Result = result;
 
                         Log.Comment("Setting completion event");
                         scrollerViewChangeOperationEvent.Set();

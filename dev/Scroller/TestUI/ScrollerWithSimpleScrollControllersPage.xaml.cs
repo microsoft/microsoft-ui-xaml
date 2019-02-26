@@ -18,13 +18,13 @@ using Windows.UI.Xaml.Media;
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollInfo = Microsoft.UI.Xaml.Controls.ScrollInfo;
 using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerScrollToRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs;
 using ScrollControllerScrollByRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs;
 using ScrollControllerScrollFromRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-using ScrollerViewChangeResult = Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult;
 #endif
 
 namespace MUXControlsTestApp
@@ -576,7 +576,8 @@ namespace MUXControlsTestApp
         private int operationsCount = 0;
         private Object asyncEventReportingLock = new Object();
         private List<string> lstAsyncEventMessage = new List<string>();
-        private List<int> lstOffsetChangeIds = new List<int>();
+        private List<int> lstScrollToIds = new List<int>();
+        private List<int> lstScrollByIds = new List<int>();
         private List<int> lstScrollFromIds = new List<int>();
 
         public event TypedEventHandler<IScrollController, ScrollControllerInteractionRequestedEventArgs> InteractionRequested;
@@ -724,27 +725,33 @@ namespace MUXControlsTestApp
         }
 
         public CompositionAnimation GetScrollAnimation(
-            Int32 offsetChangeId,
+            ScrollInfo info,
             Vector2 currentPosition,
             CompositionAnimation defaultAnimation)
         {
             LogMessage(
                 "ScrollBarController: GetScrollAnimation for Orientation=" + Orientation +
-                " with offsetChangeId=" + offsetChangeId + ", currentPosition=" + currentPosition);
+                " with offsetChangeId=" + info.OffsetsChangeId + ", currentPosition=" + currentPosition);
             return null;
         }
 
         public void OnScrollCompleted(
-            Int32 offsetChangeId,
-            ScrollerViewChangeResult result)
+            ScrollInfo info)
         {
+            int offsetChangeId = info.OffsetsChangeId;
+
             LogMessage(
                 "ScrollBarController: OnScrollCompleted for Orientation=" + Orientation +
-                " with offsetChangeId=" + offsetChangeId + ", result=" + result);
+                " with offsetChangeId=" + offsetChangeId);
 
-            if (lstOffsetChangeIds.Contains(offsetChangeId))
+            if (lstScrollToIds.Contains(offsetChangeId))
             {
-                lstOffsetChangeIds.Remove(offsetChangeId);
+                lstScrollToIds.Remove(offsetChangeId);
+                operationsCount--;
+            }
+            else if (lstScrollByIds.Contains(offsetChangeId))
+            {
+                lstScrollByIds.Remove(offsetChangeId);
                 operationsCount--;
             }
             else if (lstScrollFromIds.Contains(offsetChangeId))
@@ -817,12 +824,12 @@ namespace MUXControlsTestApp
                         offset,
                         new ScrollOptions(animationMode, SnapPointsMode.Ignore));
                 ScrollToRequested(this, e);
-                if (e.ScrollInfo.OffsetsChangeId != -1 && !lstOffsetChangeIds.Contains(e.ScrollInfo.OffsetsChangeId))
+                if (e.Info.OffsetsChangeId != -1 && !lstScrollToIds.Contains(e.Info.OffsetsChangeId))
                 {
                     operationsCount++;
-                    lstOffsetChangeIds.Add(e.ScrollInfo.OffsetsChangeId);
+                    lstScrollToIds.Add(e.Info.OffsetsChangeId);
                 }
-                return e.ScrollInfo.OffsetsChangeId;
+                return e.Info.OffsetsChangeId;
             }
             return -1;
         }
@@ -839,12 +846,12 @@ namespace MUXControlsTestApp
                         offsetDelta,
                         new ScrollOptions(animationMode, SnapPointsMode.Ignore));
                 ScrollByRequested(this, e);
-                if (e.ScrollInfo.OffsetsChangeId != -1 && !lstOffsetChangeIds.Contains(e.ScrollInfo.OffsetsChangeId))
+                if (e.Info.OffsetsChangeId != -1 && !lstScrollByIds.Contains(e.Info.OffsetsChangeId))
                 {
                     operationsCount++;
-                    lstOffsetChangeIds.Add(e.ScrollInfo.OffsetsChangeId);
+                    lstScrollByIds.Add(e.Info.OffsetsChangeId);
                 }
-                return e.ScrollInfo.OffsetsChangeId;
+                return e.Info.OffsetsChangeId;
             }
             return -1;
         }
@@ -860,12 +867,12 @@ namespace MUXControlsTestApp
                         offsetVelocity,
                         inertiaDecayRate);
                 ScrollFromRequested(this, e);
-                if (e.ScrollInfo.OffsetsChangeId != -1 && !lstScrollFromIds.Contains(e.ScrollInfo.OffsetsChangeId))
+                if (e.Info.OffsetsChangeId != -1 && !lstScrollFromIds.Contains(e.Info.OffsetsChangeId))
                 {
                     operationsCount++;
-                    lstScrollFromIds.Add(e.ScrollInfo.OffsetsChangeId);
+                    lstScrollFromIds.Add(e.Info.OffsetsChangeId);
                 }
-                return e.ScrollInfo.OffsetsChangeId;
+                return e.Info.OffsetsChangeId;
             }
             return -1;
         }

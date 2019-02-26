@@ -25,8 +25,11 @@ using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
+using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
 using ScrollerBringingIntoViewEventArgs = Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs;
+
+using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
@@ -769,18 +772,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollerViewChangedEvent.Set();
                 };
 
-                scroller.ViewChangeCompleted += delegate (Scroller sender, ScrollerViewChangeCompletedEventArgs args)
+                scroller.ScrollCompleted += delegate (Scroller sender, ScrollCompletedEventArgs args)
                 {
-                    Log.Comment("Scroller bring-into-view ViewChangeId={0} completed with Result={1}", args.ViewChangeId, args.Result);
-                    if (bringIntoViewChangeId == args.ViewChangeId)
+                    ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+                    Log.Comment("Scroller bring-into-view OffsetsChangeId={0} completed with Result={1}", args.ScrollInfo.OffsetsChangeId, result);
+                    if (bringIntoViewChangeId == args.ScrollInfo.OffsetsChangeId)
                         bringIntoViewCompletedEvent.Set();
                 };
 
                 scroller.BringingIntoView += (Scroller sender, ScrollerBringingIntoViewEventArgs args) =>
                 {
-                    Log.Comment("Scroller.BringingIntoView Scroller={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, ViewChangeId={3}",
-                        sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ViewChangeId);
-                    bringIntoViewChangeId = args.ViewChangeId;
+                    Log.Comment("Scroller.BringingIntoView Scroller={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}",
+                        sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId);
+                    bringIntoViewChangeId = args.ScrollInfo.OffsetsChangeId;
 
                     if (applyOptionsInBringingIntoViewHandler && options != null)
                     {
@@ -897,18 +901,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     innerScrollerViewChangedEvent.Set();
                 };
 
-                innerScroller.ViewChangeCompleted += delegate (Scroller sender, ScrollerViewChangeCompletedEventArgs args)
+                innerScroller.ScrollCompleted += delegate (Scroller sender, ScrollCompletedEventArgs args)
                 {
-                    Log.Comment("Inner Scroller bring-into-view ViewChangeId={0} completed with Result={1}", args.ViewChangeId, args.Result);
-                    if (innerBringIntoViewChangeId == args.ViewChangeId)
+                    ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+
+                    Log.Comment("Inner Scroller bring-into-view OffsetsChangeId={0} completed with Result={1}", args.ScrollInfo.OffsetsChangeId, result);
+                    if (innerBringIntoViewChangeId == args.ScrollInfo.OffsetsChangeId)
                         innerBringIntoViewCompletedEvent.Set();
                 };
 
                 innerScroller.BringingIntoView += (Scroller sender, ScrollerBringingIntoViewEventArgs args) =>
                 {
-                    Log.Comment("Inner Scroller.BringingIntoView Scroller={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, ViewChangeId={3}",
-                        sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ViewChangeId);
-                    innerBringIntoViewChangeId = args.ViewChangeId;
+                    Log.Comment("Inner Scroller.BringingIntoView Scroller={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}",
+                        sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId);
+                    innerBringIntoViewChangeId = args.ScrollInfo.OffsetsChangeId;
                 };
 
                 outerScroller.ViewChanged += delegate (Scroller sender, object args)
@@ -918,18 +924,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     outerScrollerViewChangedEvent.Set();
                 };
 
-                outerScroller.ViewChangeCompleted += delegate (Scroller sender, ScrollerViewChangeCompletedEventArgs args)
+                outerScroller.ScrollCompleted += delegate (Scroller sender, ScrollCompletedEventArgs args)
                 {
-                    Log.Comment("Outer Scroller bring-into-view ViewChangeId={0} completed with Result={1}", args.ViewChangeId, args.Result);
-                    if (outerBringIntoViewChangeId == args.ViewChangeId)
+                    ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+                    Log.Comment("Outer Scroller bring-into-view OffsetsChangeId={0} completed with Result={1}", args.ScrollInfo.OffsetsChangeId, result);
+                    if (outerBringIntoViewChangeId == args.ScrollInfo.OffsetsChangeId)
                         outerBringIntoViewCompletedEvent.Set();
                 };
 
                 outerScroller.BringingIntoView += (Scroller sender, ScrollerBringingIntoViewEventArgs args) =>
                 {
-                    Log.Comment("Outer Scroller.BringingIntoView Scroller={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, ViewChangeId={3}",
-                        sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ViewChangeId);
-                    outerBringIntoViewChangeId = args.ViewChangeId;
+                    Log.Comment("Outer Scroller.BringingIntoView Scroller={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}",
+                        sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId);
+                    outerBringIntoViewChangeId = args.ScrollInfo.OffsetsChangeId;
                 };
 
                 UIElement targetElement = ((innerScroller.Content as Border).Child as StackPanel).Children[12];
@@ -1097,8 +1104,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             scroller.BringingIntoView += (Scroller sender, ScrollerBringingIntoViewEventArgs args) =>
             {
-                Log.Comment("Scroller.BringingIntoView Scroller={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, ViewChangeId={3}",
-                    sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ViewChangeId);
+                Log.Comment("Scroller.BringingIntoView Scroller={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}",
+                    sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId);
                 Log.Comment("RequestEventArgs - AnimationDesired={0}, Handled={1}, HorizontalAlignmentRatio={2}, VerticalAlignmentRatio={3}", 
                     args.RequestEventArgs.AnimationDesired,
                     args.RequestEventArgs.Handled,
@@ -1240,8 +1247,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             outerScroller.BringingIntoView += (Scroller sender, ScrollerBringingIntoViewEventArgs args) =>
             {
-                Log.Comment("Outer Scroller.BringingIntoView Scroller={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, ViewChangeId={3}",
-                    sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ViewChangeId);
+                Log.Comment("Outer Scroller.BringingIntoView Scroller={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}",
+                    sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId);
                 Log.Comment("RequestEventArgs - AnimationDesired={0}, Handled={1}, HorizontalAlignmentRatio={2}, VerticalAlignmentRatio={3}",
                     args.RequestEventArgs.AnimationDesired,
                     args.RequestEventArgs.Handled,

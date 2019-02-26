@@ -5,9 +5,10 @@
 
 #include "FloatUtil.h"
 #include "InteractionTrackerAsyncOperation.h"
-#include "ScrollerChangingOffsetsEventArgs.h"
-#include "ScrollerChangingZoomFactorEventArgs.h"
-#include "ScrollerViewChangeCompletedEventArgs.h"
+#include "ScrollAnimationStartingEventArgs.h"
+#include "ZoomAnimationStartingEventArgs.h"
+#include "ScrollCompletedEventArgs.h"
+#include "ZoomCompletedEventArgs.h"
 #include "ScrollerBringingIntoViewEventArgs.h"
 #include "ScrollerAnchorRequestedEventArgs.h"
 #include "ScrollerSnapPoint.h"
@@ -389,7 +390,7 @@ private:
     void ProcessOffsetsChange(
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         std::shared_ptr<OffsetsChange> offsetsChange,
-        int32_t viewChangeId,
+        int32_t offsetsChangeId,
         bool isForAsyncOperation);
     void ProcessOffsetsChange(
         std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity);
@@ -397,7 +398,7 @@ private:
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
     void ProcessZoomFactorChange(
         std::shared_ptr<ZoomFactorChange> zoomFactorChange,
-        int32_t viewChangeId);
+        int32_t zoomFactorChangeId);
     void ProcessZoomFactorChange(
         std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity);
     void PostProcessZoomFactorChange(
@@ -405,12 +406,12 @@ private:
     bool InterruptViewChangeWithAnimation(InteractionTrackerAsyncOperationType interactionTrackerAsyncOperationType);
     void CompleteViewChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation,
-        const winrt::ScrollerViewChangeResult& result);
+        ScrollerViewChangeResult result);
     void CompleteInteractionTrackerOperations(
         int requestId,
-        const winrt::ScrollerViewChangeResult& operationResult,
-        const winrt::ScrollerViewChangeResult& priorNonAnimatedOperationsResult,
-        const winrt::ScrollerViewChangeResult& priorAnimatedOperationsResult,
+        ScrollerViewChangeResult operationResult,
+        ScrollerViewChangeResult priorNonAnimatedOperationsResult,
+        ScrollerViewChangeResult priorAnimatedOperationsResult,
         bool completeOperation,
         bool completePriorNonAnimatedOperations,
         bool completePriorAnimatedOperations);
@@ -465,11 +466,11 @@ private:
         double zoomedHorizontalOffset,
         double zoomedVerticalOffset,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
-        int32_t viewChangeId);
+        int32_t offsetsChangeId);
     winrt::CompositionAnimation GetZoomFactorAnimation(
         float zoomFactor,
         const winrt::float2& centerPoint,
-        int32_t viewChangeId);
+        int32_t zoomFactorChangeId);
     int GetNextViewChangeId();
 
     bool IsLoaded();
@@ -507,24 +508,25 @@ private:
     void RaiseExtentChanged();
     void RaiseStateChanged();
     void RaiseViewChanged();
-    winrt::CompositionAnimation RaiseChangingOffsets(
+    winrt::CompositionAnimation RaiseScrollAnimationStarting(
         const winrt::Vector3KeyFrameAnimation& positionAnimation,
         const winrt::float2& currentPosition,
         const winrt::float2& endPosition,
-        int32_t viewChangeId);
-    winrt::CompositionAnimation RaiseChangingZoomFactor(
+        int32_t offsetsChangeId);
+    winrt::CompositionAnimation RaiseZoomAnimationStarting(
         const winrt::ScalarKeyFrameAnimation& zoomFactorAnimation,
         const float endZoomFactor,
         const winrt::float2& centerPoint,
-        int32_t viewChangeId);
+        int32_t zoomFactorChangeId);
     void RaiseViewChangeCompleted(
-        const winrt::ScrollerViewChangeResult& result,
+        bool isForScroll,
+        ScrollerViewChangeResult result,
         int32_t viewChangeId);
     bool RaiseBringingIntoView(
         double targetZoomedHorizontalOffset,
         double targetZoomedVerticalOffset,
         const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
-        int32_t viewChangeId);
+        int32_t offsetsChangeId);
 
     // Event handlers
     void OnCompositionTargetRendering(

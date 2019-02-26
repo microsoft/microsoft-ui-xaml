@@ -124,9 +124,10 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<ScrollViewer, Object> ExtentChanged;
     event Windows.Foundation.TypedEventHandler<ScrollViewer, Object> StateChanged;
     event Windows.Foundation.TypedEventHandler<ScrollViewer, Object> ViewChanged;
-    event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollerChangingOffsetsEventArgs> ChangingOffsets;
-    event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollerChangingZoomFactorEventArgs> ChangingZoomFactor;
-    event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollerViewChangeCompletedEventArgs> ViewChangeCompleted;
+    event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollAnimationStartingEventArgs> ScrollAnimationStarting;
+    event Windows.Foundation.TypedEventHandler<ScrollViewer, ZoomAnimationStartingEventArgs> ZoomAnimationStarting;
+    event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollCompletedEventArgs> ScrollCompleted;
+    event Windows.Foundation.TypedEventHandler<ScrollViewer, ZoomCompletedEventArgs> ZoomCompleted;
     event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollerBringingIntoViewEventArgs> BringingIntoView;
     event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollerAnchorRequestedEventArgs> AnchorRequested;
 

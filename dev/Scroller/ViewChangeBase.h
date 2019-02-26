@@ -3,10 +3,14 @@
 
 #pragma once
 
+enum class ScrollerViewChangeResult
+{
+    Completed = 0,
+    Interrupted = 1,
+    Ignored = 2,
+};
+
 class ViewChangeBase
 {
-public:
-    ViewChangeBase() {};
-    ~ViewChangeBase() {};
 };
 

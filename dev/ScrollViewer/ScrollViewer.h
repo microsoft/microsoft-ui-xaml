@@ -163,13 +163,13 @@ private:
     void OnScrollerStateChanged(
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);
-    void OnScrollerChangingOffsets(
+    void OnScrollAnimationStarting(
         const winrt::IInspectable& sender,
-        const winrt::ScrollerChangingOffsetsEventArgs& args);
-    void OnScrollerChangingZoomFactor(
+        const winrt::ScrollAnimationStartingEventArgs& args);
+    void OnZoomAnimationStarting(
         const winrt::IInspectable& sender,
-        const winrt::ScrollerChangingZoomFactorEventArgs& args);
-    void OnScrollViewerChanged(
+        const winrt::ZoomAnimationStartingEventArgs& args);
+    void OnScrollerViewChanged(
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);
 #ifdef USE_SCROLLMODE_AUTO
@@ -177,9 +177,12 @@ private:
         const winrt::DependencyObject& sender,
         const winrt::DependencyProperty& args);
 #endif
-    void OnScrollViewerChangeCompleted(
+    void OnScrollerScrollCompleted(
         const winrt::IInspectable& sender,
-        const winrt::ScrollerViewChangeCompletedEventArgs& args);
+        const winrt::ScrollCompletedEventArgs& args);
+    void OnScrollerZoomCompleted(
+        const winrt::IInspectable& sender,
+        const winrt::ZoomCompletedEventArgs& args);
     void OnScrollerBringingIntoView(
         const winrt::IInspectable& sender,
         const winrt::ScrollerBringingIntoViewEventArgs& args);
@@ -261,10 +264,11 @@ private:
 
     winrt::event_token m_scrollerExtentChangedToken{};
     winrt::event_token m_scrollerStateChangedToken{};
-    winrt::event_token m_scrollerChangingOffsetsToken{};
-    winrt::event_token m_scrollerChangingZoomFactorToken{};
-    winrt::event_token m_scrollViewerChangedToken{};
-    winrt::event_token m_scrollViewerChangeCompletedToken{};
+    winrt::event_token m_scrollerScrollAnimationStartingToken{};
+    winrt::event_token m_scrollerZoomAnimationStartingToken{};
+    winrt::event_token m_scrollerViewChangedToken{};
+    winrt::event_token m_scrollerScrollCompletedToken{};
+    winrt::event_token m_scrollerZoomCompletedToken{};
     winrt::event_token m_scrollerBringingIntoViewToken{};
     winrt::event_token m_scrollerAnchorRequestedToken{};
 #ifdef USE_SCROLLMODE_AUTO
@@ -318,8 +322,8 @@ private:
     static constexpr std::wstring_view s_mouseIndicatorFullStateName{ L"MouseIndicatorFull"sv };
 
     int m_verticalScrollWithKeyboardDirection = 0;
-    int m_verticalScrollWithKeyboardViewChangeId = -1;
+    int m_verticalScrollWithKeyboardOffsetChangeId = -1;
 
     int m_horizontalScrollWithKeyboardDirection = 0;
-    int m_horizontalScrollWithKeyboardViewChangeId = -1;
+    int m_horizontalScrollWithKeyboardOffsetChangeId = -1;
 };

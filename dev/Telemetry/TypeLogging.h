@@ -38,7 +38,7 @@ static winrt::hstring ScrollBarVisibilityToString(const winrt::ScrollBarVisibili
     static winrt::hstring AnimationModeToString(const winrt::AnimationMode& animationMode);
     static winrt::hstring SnapPointsModeToString(const winrt::SnapPointsMode& snapPointsMode);
     static winrt::hstring ScrollerViewKindToString(ScrollerViewKind viewKind);
-    static winrt::hstring ScrollerViewChangeResultToString(const winrt::ScrollerViewChangeResult& result);
+    static winrt::hstring ScrollerViewChangeResultToString(ScrollerViewChangeResult result);
     static winrt::hstring ScrollAmountToString(const winrt::ScrollAmount& scrollAmount);
     static winrt::hstring ScrollOptionsToString(const winrt::ScrollOptions& options);
     static winrt::hstring ZoomOptionsToString(const winrt::ZoomOptions& options);

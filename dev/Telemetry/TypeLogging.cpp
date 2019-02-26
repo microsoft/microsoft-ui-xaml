@@ -263,15 +263,15 @@ winrt::hstring TypeLogging::ScrollerViewKindToString(ScrollerViewKind viewKind)
     }
 }
 
-winrt::hstring TypeLogging::ScrollerViewChangeResultToString(const winrt::ScrollerViewChangeResult& result)
+winrt::hstring TypeLogging::ScrollerViewChangeResultToString(ScrollerViewChangeResult result)
 {
     switch (result)
     {
-    case winrt::ScrollerViewChangeResult::Completed:
+    case ScrollerViewChangeResult::Completed:
         return L"Completed";
-    case winrt::ScrollerViewChangeResult::Ignored:
+    case ScrollerViewChangeResult::Ignored:
         return L"Ignored";
-    case winrt::ScrollerViewChangeResult::Interrupted:
+    case ScrollerViewChangeResult::Interrupted:
         return L"Interrupted";
     default:
         MUX_ASSERT(false);

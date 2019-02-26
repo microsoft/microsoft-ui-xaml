@@ -10,11 +10,15 @@ using Windows.UI.Xaml.Media;
 using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
-using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
+using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
+using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
 using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+
+using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
 using ScrollViewerTestHooks = Microsoft.UI.Private.Controls.ScrollViewerTestHooks;
 
 namespace MUXControlsTestApp
@@ -45,11 +49,16 @@ namespace MUXControlsTestApp
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer31).ViewChanged += Scroller_ViewChanged;
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer41).ViewChanged += Scroller_ViewChanged;
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer51).ViewChanged += Scroller_ViewChanged;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer11).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer21).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer31).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer41).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer51).ViewChangeCompleted += Scroller_ViewChangeCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer11).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer21).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer31).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer41).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer51).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer11).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer21).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer31).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer41).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer51).ZoomCompleted += Scroller_ZoomCompleted;
 
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer12).StateChanged += Scroller_StateChanged;
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer22).StateChanged += Scroller_StateChanged;
@@ -61,11 +70,16 @@ namespace MUXControlsTestApp
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer32).ViewChanged += Scroller_ViewChanged;
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer42).ViewChanged += Scroller_ViewChanged;
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer52).ViewChanged += Scroller_ViewChanged;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer12).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer22).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer32).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer42).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer52).ViewChangeCompleted += Scroller_ViewChangeCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer12).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer22).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer32).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer42).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer52).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer12).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer22).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer32).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer42).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer52).ZoomCompleted += Scroller_ZoomCompleted;
         }
 
         private void Scroller_StateChanged(Scroller sender, object args)
@@ -99,7 +113,7 @@ namespace MUXControlsTestApp
             this.fullLogs.Add(senderId + " ViewChanged H=" + this.txtScrollerHorizontalOffset.Text + ", V=" + this.txtScrollerVerticalOffset.Text + ", ZF=" + this.txtScrollerZoomFactor.Text);
         }
 
-        private void Scroller_ViewChangeCompleted(Scroller sender, ScrollerViewChangeCompletedEventArgs args)
+        private void Scroller_ScrollCompleted(Scroller sender, ScrollCompletedEventArgs args)
         {
             string senderId = "." + sender.Name;
             FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
@@ -108,9 +122,25 @@ namespace MUXControlsTestApp
                 senderId = parent.Name + senderId;
             }
 
-            this.fullLogs.Add(senderId + " View change completed. ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
+            ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
 
-            if (args.ViewChangeId == scrollViewer52ZoomFactorChangeId)
+            this.fullLogs.Add(senderId + " ScrollCompleted. OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+        }
+
+        private void Scroller_ZoomCompleted(Scroller sender, ZoomCompletedEventArgs args)
+        {
+            string senderId = "." + sender.Name;
+            FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
+            if (parent != null)
+            {
+                senderId = parent.Name + senderId;
+            }
+
+            ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+
+            this.fullLogs.Add(senderId + " ZoomCompleted. ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+
+            if (args.ZoomInfo.ZoomFactorChangeId == scrollViewer52ZoomFactorChangeId)
             {
                 this.txtResetStatus.Text = "Views reset";
                 scrollViewer52ZoomFactorChangeId = -1;
