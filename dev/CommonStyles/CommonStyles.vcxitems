@@ -17,6 +17,7 @@
     <Page Include="$(MSBuildThisFileDirectory)AppBarButton_rs5_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
      <Page Include="$(MSBuildThisFileDirectory)AppBarToggleButton_rs5_themeresources.xaml">
       <Version>RS1</Version>
