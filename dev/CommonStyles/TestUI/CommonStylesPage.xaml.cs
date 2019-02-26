@@ -291,7 +291,7 @@ namespace MUXControlsTestApp
             // Bug 19741281: Density: AppBarButton/AppBarToggleButton Reveal style height is 60 other than 56 on RS1
             // Bug 19767717: AppBarToggleButtonDensityTest fail on RS4 
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2)
-                && !PlatformConfiguration.IsOsVersion(OSVersion.Redstone4))
+                && PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
             {
                 FrameworkElement[] iconVisibleElements = { AppBarToggleButton2, AppBarToggleButton4 };
                 VerifyHeight(iconVisibleElements, simpleVerify, 56);
