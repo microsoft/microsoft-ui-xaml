@@ -101,7 +101,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
+            using (var setup = new TestSetupHelper(new[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 ChooseFromComboBox("TestNameComboBox", "BasicAcrylicOnRectangle");
 
@@ -123,7 +123,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
+            using (var setup = new TestSetupHelper(new[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 ChooseFromComboBox("TestNameComboBox", "AcrylicPropertyChanges");
 
@@ -155,69 +155,67 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
+            using (var setup = new TestSetupHelper(new[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
+                ChooseFromComboBox("TestNameComboBox", "HideAndShowWindow");
+
+                if (PlatformConfiguration.IsDevice(DeviceType.Phone))
                 {
-                    ChooseFromComboBox("TestNameComboBox", "HideAndShowWindow");
+                    Log.Warning("Test is disabled on phone.");
+                    return;
+                }
 
-                    if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-                    {
-                        Log.Warning("Test is disabled on phone.");
-                        return;
-                    }
+                Button runTestButton;
+                var result = new Edit(FindElement.ById("TestResult"));
+                using (var waiter = new ValueChangedEventWaiter(result))
+                {
+                    runTestButton = new Button(FindElement.ById("RunTestButton"));
+                    runTestButton.Invoke();
+                    LogBrushSate();
+                    waiter.Wait();
+                }
 
-                    Button runTestButton;
-                    var result = new Edit(FindElement.ById("TestResult"));
+                if (result.Value.Equals("HideAndShowWindow: Skipped"))
+                {
+                    Log.Error("Error: FallbackBrush in use - expecting effect brush");
+                    return;
+                }
+                else if (TestEnvironment.Application.ApplicationFrameWindow == null)
+                {
+                    Log.Comment("Skipping test: No ApplicationFrameWindow (likely unsupported platform)");
+                    return;
+                }
+                else
+                {
+                    Thread waiterThread = new Thread(HideAndShowWindow_WaiterThreadProc);
+                    waiterThread.Name = " HideAndShowWindow_WaiterThread";
+                    waiterThread.Start();
+
+                    Window window = new Window(TestEnvironment.Application.ApplicationFrameWindow);
+                    WindowVisualState initialVisualState = window.WindowVisualState;
+                    Verify.AreNotEqual(initialVisualState, WindowVisualState.Minimized);
+
+                    // Minimize the app, which will also trigger it to supsend. Wait for Suspending event from app.
+                    Log.Comment("Minimizing the window...");
+                    window.SetWindowVisualState(WindowVisualState.Minimized);
+                    HideAndShowWindow_GotWindowHiddenEvent.WaitOne();
+
+                    // Restore the app. Wait for VisibilityChanged -> Visible event from app.
+                    Log.Comment("Restoring the window...");
+                    window.SetWindowVisualState(initialVisualState);
+                    HideAndShowWindow_GotWindowVisibleEvent.WaitOne();
+
+                    // Trigger test to validate that noise has been recreated (see Bug 11144540)
                     using (var waiter = new ValueChangedEventWaiter(result))
                     {
-                        runTestButton = new Button(FindElement.ById("RunTestButton"));
                         runTestButton.Invoke();
-                        LogBrushSate();
                         waiter.Wait();
                     }
 
-                    if (result.Value.Equals("HideAndShowWindow: Skipped"))
-                    {
-                        Log.Error("Error: FallbackBrush in use - expecting effect brush");
-                        return;
-                    }
-                    else if (TestEnvironment.Application.ApplicationFrameWindow == null)
-                    {
-                        Log.Comment("Skipping test: No ApplicationFrameWindow (likely unsupported platform)");
-                        return;
-                    }
-                    else
-                    {
-                        Thread waiterThread = new Thread(HideAndShowWindow_WaiterThreadProc);
-                        waiterThread.Name = " HideAndShowWindow_WaiterThread";
-                        waiterThread.Start();
+                    // Read off validation result and complete the test
+                    Verify.AreEqual(result.Value, "HideAndShowWindow: Passed");
 
-                        Window window = new Window(TestEnvironment.Application.ApplicationFrameWindow);
-                        WindowVisualState initialVisualState = window.WindowVisualState;
-                        Verify.AreNotEqual(initialVisualState, WindowVisualState.Minimized);
-
-                        // Minimize the app, which will also trigger it to supsend. Wait for Suspending event from app.
-                        Log.Comment("Minimizing the window...");
-                        window.SetWindowVisualState(WindowVisualState.Minimized);
-                        HideAndShowWindow_GotWindowHiddenEvent.WaitOne();
-
-                        // Restore the app. Wait for VisibilityChanged -> Visible event from app.
-                        Log.Comment("Restoring the window...");
-                        window.SetWindowVisualState(initialVisualState);
-                        HideAndShowWindow_GotWindowVisibleEvent.WaitOne();
-
-                        // Trigger test to validate that noise has been recreated (see Bug 11144540)
-                        using (var waiter = new ValueChangedEventWaiter(result))
-                        {
-                            runTestButton.Invoke();
-                            waiter.Wait();
-                        }
-
-                        // Read off validation result and complete the test
-                        Verify.AreEqual(result.Value, "HideAndShowWindow: Passed");
-
-                        Wait.ForIdle();
-                    }
+                    Wait.ForIdle();
                 }
             }
         }
@@ -251,29 +249,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
+            using (var setup = new TestSetupHelper(new[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
+                ChooseFromComboBox("TestNameComboBox", "AcrylicAlwaysUseFallback");
+
+                var result = new Edit(FindElement.ById("TestResult"));
+                using (var waiter = new ValueChangedEventWaiter(result))
                 {
-                    ChooseFromComboBox("TestNameComboBox", "AcrylicAlwaysUseFallback");
+                    Button runTestButton = new Button(FindElement.ById("RunTestButton"));
+                    runTestButton.Invoke();
+                    LogBrushSate();
 
-                    var result = new Edit(FindElement.ById("TestResult"));
-                    using (var waiter = new ValueChangedEventWaiter(result))
-                    {
-                        Button runTestButton = new Button(FindElement.ById("RunTestButton"));
-                        runTestButton.Invoke();
-                        LogBrushSate();
-
-                        waiter.Wait();
-                    }
-
-                    if (result.Value.Equals("AcrylicAlwaysUseFallback: Skipped"))
-                    {
-                        Log.Error("Error: FallbackBrush in use - expecting effect brush");
-                        return;
-                    }
-
-                    Verify.AreEqual(result.Value, "AcrylicAlwaysUseFallback: Passed");
+                    waiter.Wait();
                 }
+
+                if (result.Value.Equals("AcrylicAlwaysUseFallback: Skipped"))
+                {
+                    Log.Error("Error: FallbackBrush in use - expecting effect brush");
+                    return;
+                }
+
+                Verify.AreEqual(result.Value, "AcrylicAlwaysUseFallback: Passed");
             }
         }
 
@@ -282,22 +278,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
+            using (var setup = new TestSetupHelper(new[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
+                ChooseFromComboBox("TestNameComboBox", "AcrylicCreatedInFallbackMode");
+
+                var result = new Edit(FindElement.ById("TestResult"));
+                using (var waiter = new ValueChangedEventWaiter(result))
                 {
-                    ChooseFromComboBox("TestNameComboBox", "AcrylicCreatedInFallbackMode");
-
-                    var result = new Edit(FindElement.ById("TestResult"));
-                    using (var waiter = new ValueChangedEventWaiter(result))
-                    {
-                        Button runTestButton = new Button(FindElement.ById("RunTestButton"));
-                        runTestButton.Invoke();
-                        LogBrushSate();
-                        waiter.Wait();
-                    }
-
-                    Verify.AreEqual(result.Value, "AcrylicCreatedInFallbackMode: Passed");
+                    Button runTestButton = new Button(FindElement.ById("RunTestButton"));
+                    runTestButton.Invoke();
+                    LogBrushSate();
+                    waiter.Wait();
                 }
+
+                Verify.AreEqual(result.Value, "AcrylicCreatedInFallbackMode: Passed");
             }
         }
 
@@ -306,29 +300,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
+            using (var setup = new TestSetupHelper(new[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
+                ChooseFromComboBox("TestNameComboBox", "VerifyDisconnectedState");
+
+                var result = new Edit(FindElement.ById("TestResult"));
+                using (var waiter = new ValueChangedEventWaiter(result))
                 {
-                    ChooseFromComboBox("TestNameComboBox", "VerifyDisconnectedState");
+                    Button runTestButton = new Button(FindElement.ById("RunTestButton"));
+                    runTestButton.Invoke();
+                    LogBrushSate();
 
-                    var result = new Edit(FindElement.ById("TestResult"));
-                    using (var waiter = new ValueChangedEventWaiter(result))
+                    if (result.Value.Equals("VerifyDisconnectedState: Skipped"))
                     {
-                        Button runTestButton = new Button(FindElement.ById("RunTestButton"));
-                        runTestButton.Invoke();
-                        LogBrushSate();
-
-                        if (result.Value.Equals("VerifyDisconnectedState: Skipped"))
-                        {
-                            Log.Error("Error: FallbackBrush in use - expecting effect brush");
-                            return;
-                        }
-
-                        waiter.Wait();
+                        Log.Error("Error: FallbackBrush in use - expecting effect brush");
+                        return;
                     }
 
-                    Verify.AreEqual(result.Value, "VerifyDisconnectedState: Passed");
+                    waiter.Wait();
                 }
+
+                Verify.AreEqual(result.Value, "VerifyDisconnectedState: Passed");
             }
         }
 
@@ -337,34 +329,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (var setup = new TestSetupHelper(new string[]{ "Acrylic Tests", "navigateToMarkupAcrylic" }))
+            using (var setup = new TestSetupHelper(new[] { "Acrylic Tests", "navigateToMarkupAcrylic" }))
             {
+                var result = new Edit(FindElement.ById("TestResult"));
+                using (var waiter = new ValueChangedEventWaiter(result))
                 {
-                    var result = new Edit(FindElement.ById("TestResult"));
-                    using (var waiter = new ValueChangedEventWaiter(result))
+                    Button runTestButton = new Button(FindElement.ById("RunTestButton"));
+                    runTestButton.Invoke();
+                    LogBrushSate();
+
+                    if (result.Value.Equals("AcrylicFromMarkup: Skipped"))
                     {
-                        Button runTestButton = new Button(FindElement.ById("RunTestButton"));
-                        runTestButton.Invoke();
-                        LogBrushSate();
-
-                        if (result.Value.Equals("AcrylicFromMarkup: Skipped"))
-                        {
-                            Log.Error("Error: FallbackBrush in use - expecting effect brush");
-                            return;
-                        }
-
-                        waiter.Wait();
+                        Log.Error("Error: FallbackBrush in use - expecting effect brush");
+                        return;
                     }
 
-                    if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-                    {
-                        // On Phone, HostBackdrop validation will fail since Comp will just render black
-                        Verify.AreEqual(result.Value, "AcrylicFromMarkup: Failed (True,False,True)");
-                    }
-                    else
-                    {
-                        Verify.AreEqual(result.Value, "AcrylicFromMarkup: Passed");
-                    }
+                    waiter.Wait();
+                }
+
+                if (PlatformConfiguration.IsDevice(DeviceType.Phone))
+                {
+                    // On Phone, HostBackdrop validation will fail since Comp will just render black
+                    Verify.AreEqual(result.Value, "AcrylicFromMarkup: Failed (True,False,True)");
+                }
+                else
+                {
+                    Verify.AreEqual(result.Value, "AcrylicFromMarkup: Passed");
                 }
             }
         }
@@ -380,20 +370,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToRenderingAcrylic" }))
+            using (var setup = new TestSetupHelper(new[] { "Acrylic Tests", "navigateToRenderingAcrylic" }))
             {
+                var result = new Edit(FindElement.ById("TestResult"));
+                using (var waiter = new ValueChangedEventWaiter(result))
                 {
-                    var result = new Edit(FindElement.ById("TestResult"));
-                    using (var waiter = new ValueChangedEventWaiter(result))
-                    {
-                        Button runTestButton = new Button(FindElement.ById("RunTestButton"));
-                        runTestButton.Invoke();
+                    Button runTestButton = new Button(FindElement.ById("RunTestButton"));
+                    runTestButton.Invoke();
 
-                        waiter.Wait();
-                    }
-
-                    Verify.AreEqual(result.Value, "AcrylicRendering: Passed");
+                    waiter.Wait();
                 }
+
+                Verify.AreEqual(result.Value, "AcrylicRendering: Passed");
             }
         }
 
@@ -405,29 +393,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             // Opaque Tint Optimization removed with Luminosity-based Acrylic recipe added in 19H1
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.NineteenH1)) { return; }
 
-            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
+            using (var setup = new TestSetupHelper(new[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
+                ChooseFromComboBox("TestNameComboBox", "VerifyOpaqueTintOptimization");
+
+                var result = new Edit(FindElement.ById("TestResult"));
+                using (var waiter = new ValueChangedEventWaiter(result))
                 {
-                    ChooseFromComboBox("TestNameComboBox", "VerifyOpaqueTintOptimization");
+                    Button runTestButton = new Button(FindElement.ById("RunTestButton"));
+                    runTestButton.Invoke();
+                    LogBrushSate();
 
-                    var result = new Edit(FindElement.ById("TestResult"));
-                    using (var waiter = new ValueChangedEventWaiter(result))
+                    if (result.Value.Equals("VerifyOpaqueTintOptimization: Skipped"))
                     {
-                        Button runTestButton = new Button(FindElement.ById("RunTestButton"));
-                        runTestButton.Invoke();
-                        LogBrushSate();
-
-                        if (result.Value.Equals("VerifyOpaqueTintOptimization: Skipped"))
-                        {
-                            Log.Error("Error: FallbackBrush in use - expecting effect brush");
-                            return;
-                        }
-
-                        waiter.Wait();
+                        Log.Error("Error: FallbackBrush in use - expecting effect brush");
+                        return;
                     }
 
-                    Verify.AreEqual(result.Value, "VerifyOpaqueTintOptimization: Passed");
+                    waiter.Wait();
                 }
+
+                Verify.AreEqual(result.Value, "VerifyOpaqueTintOptimization: Passed");
             }
         }
 
@@ -436,7 +422,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
+            using (var setup = new TestSetupHelper(new[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 ChooseFromComboBox("TestNameComboBox", "TintTransitionDuration");
 
@@ -461,7 +447,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
+            using (var setup = new TestSetupHelper(new[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 ChooseFromComboBox("TestNameComboBox", "AcrylicNoiseCache");
 
@@ -483,7 +469,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
+            using (var setup = new TestSetupHelper(new[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 ChooseFromComboBox("TestNameComboBox", "VerifyAcrylicBrushEffect");
 
@@ -504,7 +490,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!OnRS2OrGreater()) { return; }
 
-            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
+            using (var setup = new TestSetupHelper(new[] { "Acrylic Tests", "navigateToBasicAcrylic" }))
             {
                 // Just click the button to show acrylic and then hide it to make sure that the API works.
                 // There's not much we can validate beyond that because we can't peer into the effect brush.
@@ -528,29 +514,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (var setup = new TestSetupHelper(new string[] { "Acrylic Tests", "navigateToRenderingAcrylic" }))
+            using (var setup = new TestSetupHelper(new[] { "Acrylic Tests", "navigateToRenderingAcrylic" }))
             {
+                var result = new Edit(FindElement.ById("TestResult"));
+
+                using (var waiter = new ValueChangedEventWaiter(result))
                 {
-                    var result = new Edit(FindElement.ById("TestResult"));
+                    Button setLuminosityBlendButton = new Button(FindElement.ById("SetLuminosityButton"));
+                    setLuminosityBlendButton.Invoke();
 
-                    using (var waiter = new ValueChangedEventWaiter(result))
-                    {
-                        Button setLuminosityBlendButton = new Button(FindElement.ById("SetLuminosityButton"));
-                        setLuminosityBlendButton.Invoke();
-
-                        waiter.Wait();
-                    }
-                    LogResult(result, "SetLuminosityBlend");
-
-                    using (var waiter = new ValueChangedEventWaiter(result))
-                    {
-                        Button unsetLuminosityBlendButton = new Button(FindElement.ById("UnsetLuminosityButton"));
-                        unsetLuminosityBlendButton.Invoke();
-
-                        waiter.Wait();
-                    }
-                    LogResult(result, "ClearLuminosityBlend");
+                    waiter.Wait();
                 }
+                LogResult(result, "SetLuminosityBlend");
+
+                using (var waiter = new ValueChangedEventWaiter(result))
+                {
+                    Button unsetLuminosityBlendButton = new Button(FindElement.ById("UnsetLuminosityButton"));
+                    unsetLuminosityBlendButton.Invoke();
+
+                    waiter.Wait();
+                }
+                LogResult(result, "ClearLuminosityBlend");
             }
         }
 
