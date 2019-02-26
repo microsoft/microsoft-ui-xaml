@@ -20,19 +20,19 @@
             <StaticResource x:Key="AppBarButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="AppBarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="AppBarButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <contract6Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightListAccentLowBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonBorderBrushSubMenuOpened" ResourceKey="SystemControlTransparentBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightListAccentLowBrush" />
+            <StaticResource x:Key="AppBarButtonForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrushSubMenuOpened" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SystemControlTransparentBrush" />
@@ -43,27 +43,23 @@
             <StaticResource x:Key="AppBarButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="AppBarButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="AppBarButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <contract7NotPresent:StaticResource x:Key="AppBarButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
-            <contract7NotPresent:StaticResource x:Key="AppBarButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
-            <contract7NotPresent:StaticResource x:Key="AppBarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
-            <contract7NotPresent:StaticResource x:Key="AppBarButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
-            <contract6Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightListAccentLowBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonBorderBrushSubMenuOpened" ResourceKey="SystemControlTransparentBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightListAccentLowBrush" />
+            <StaticResource x:Key="AppBarButtonForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrushSubMenuOpened" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SystemControlTransparentBrush" />
@@ -78,19 +74,19 @@
             <StaticResource x:Key="AppBarButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="AppBarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="AppBarButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <contract6Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightListAccentLowBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonBorderBrushSubMenuOpened" ResourceKey="SystemControlTransparentBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <contract7Present:StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightListAccentLowBrush" />
+            <StaticResource x:Key="AppBarButtonForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrushSubMenuOpened" ResourceKey="SystemControlTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -102,6 +98,7 @@
     <Thickness x:Key="AppBarButtonTextLabelMargin">2,0,2,8</Thickness>
     <Thickness x:Key="AppBarButtonTextLabelOnRightMargin">8,11,12,13</Thickness>
 
+    <!-- LabelOnRightStyle is retired since RS3, We still need it for RS2 or RS3 -->
     <Style TargetType="AppBarButton">
         <Setter Property="Background" Value="{ThemeResource AppBarButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource AppBarButtonForeground}" />
@@ -285,7 +282,7 @@
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundPointerOver}" />
-                                        <contract7Present:Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundPointerOver}" />
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundPointerOver}" />
                                     </VisualState.Setters>
 
                                     <Storyboard>
@@ -301,14 +298,14 @@
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundPressed}" />
-                                        <contract7Present:Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundPressed}" />
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundPressed}" />
                                     </VisualState.Setters>
 
                                     <Storyboard>
                                         <PointerDownThemeAnimation Storyboard.TargetName="ContentRoot" />
                                     </Storyboard>
                                 </VisualState>
-                                <contract7Present:VisualState x:Name="OverflowSubMenuOpened">
+                                <VisualState x:Name="OverflowSubMenuOpened">
                                     <VisualState.Setters>
                                         <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundSubMenuOpened}" />
                                         <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushSubMenuOpened}" />
@@ -317,13 +314,13 @@
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundSubMenuOpened}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundSubMenuOpened}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened}" />
-                                        <contract7Present:Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundSubMenuOpened}" />
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundSubMenuOpened}" />
                                     </VisualState.Setters>
 
                                     <Storyboard>
                                         <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
                                     </Storyboard>
-                                </contract7Present:VisualState>
+                                </VisualState>
 
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="InputModeStates">
@@ -349,15 +346,14 @@
                                 </VisualState>
 
                             </contract6Present:VisualStateGroup>
-                            <contract7Present:VisualStateGroup x:Name="FlyoutStates">
+                            <VisualStateGroup x:Name="FlyoutStates">
                                 <VisualState x:Name="NoFlyout" />
                                 <VisualState x:Name="HasFlyout">
                                     <VisualState.Setters>
                                         <Setter Target="SubItemChevron.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
-
-                            </contract7Present:VisualStateGroup>
+                            </VisualStateGroup>
 
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle x:Name="AppBarButtonInnerBorder" StrokeThickness="1" Stroke="{TemplateBinding BorderBrush}"/>
@@ -417,7 +413,7 @@
                                 VerticalAlignment="Center"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
-                            <contract7Present:FontIcon x:Name="SubItemChevron"
+                            <FontIcon x:Name="SubItemChevron"
                                 Grid.Column="2"
                                 Glyph="&#xE0E3;"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"

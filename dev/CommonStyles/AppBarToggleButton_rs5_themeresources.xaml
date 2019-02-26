@@ -60,14 +60,14 @@
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedPressedBorderThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedPressedForegroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="AppBarToggleButtonPointerOverBackgroundThemeBrush" Color="#21FFFFFF" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundChecked" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundChecked" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="AppBarToggleButtonBackground" ResourceKey="SystemControlTransparentBrush" />
@@ -123,14 +123,14 @@
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedPressedBorderThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedPressedForegroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="AppBarToggleButtonPointerOverBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundChecked" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundChecked" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="AppBarToggleButtonBackground" ResourceKey="SystemControlTransparentBrush" />
@@ -186,14 +186,14 @@
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedPressedForegroundThemeBrush" Color="#FF000000" />
             <SolidColorBrush x:Key="AppBarToggleButtonCheckedForegroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="AppBarToggleButtonPointerOverBackgroundThemeBrush" Color="#3D000000" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundChecked" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <contract6Present:StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundChecked" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
+            <StaticResource x:Key="AppBarToggleButtonKeyboardAcceleratorTextForegroundCheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -204,6 +204,7 @@
     <Thickness x:Key="AppBarToggleButtonTextLabelOnRightMargin">8,11,12,13</Thickness>
     <Thickness x:Key="AppBarToggleButtonOverflowTextLabelPadding">0,5,0,8</Thickness>
 
+    <!-- LabelOnRightStyle is retired since RS3, We still need it for RS2 or RS3 -->
     <Style TargetType="AppBarToggleButton">
         <Setter Property="Background" Value="{ThemeResource AppBarToggleButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource AppBarToggleButtonForeground}" />
