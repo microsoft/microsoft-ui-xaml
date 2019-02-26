@@ -163,5 +163,56 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             sizeChangedEvent.WaitOne();
             IdleSynchronizer.Wait();
         }
+
+        [TestMethod]
+        public void VerifyVSMStatesForPhotosAndInitials()
+        {
+            PersonPicture personPicture = null;
+            TextBlock initialsTextBlock = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                personPicture = new PersonPicture();
+                MUXControlsTestApp.App.TestContentRoot = personPicture;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                initialsTextBlock = (TextBlock)VisualTreeUtils.FindVisualChildByName(personPicture, "InitialsTextBlock");
+                personPicture.IsGroup = true;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(initialsTextBlock.FontFamily.Source, "Segoe MDL2 Assets");
+                Verify.AreEqual(initialsTextBlock.Text, "\xE716");
+
+                personPicture.IsGroup = false;
+                personPicture.Initials = "JS";
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(initialsTextBlock.FontFamily.Source, "Segoe UI");
+                Verify.AreEqual(initialsTextBlock.Text, "JS");
+
+                personPicture.Initials = "";
+            });
+
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(initialsTextBlock.FontFamily.Source, "Segoe MDL2 Assets");
+                Verify.AreEqual(initialsTextBlock.Text, "\xE77B");
+            });
+        }
     }
 }
