@@ -583,7 +583,7 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
 
     SetDisplayMode(displayMode, forceSetDisplayMode);
 
-    if (displayMode == winrt::NavigationViewDisplayMode::Expanded)
+    if (displayMode == winrt::NavigationViewDisplayMode::Expanded && IsPaneVisible())
     {
         if (!m_wasForceClosed)
         {
@@ -2641,12 +2641,14 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         UpdatePaneVisibility();
         UpdateVisualStateForDisplayModeGroup(DisplayMode());
 
-        if (auto splitView = m_rootSplitView.get())
+        if (!IsPaneVisible() && IsPaneOpen())
         {
-            if (!IsPaneVisible() && splitView.IsPaneOpen())
-            {
-                splitView.IsPaneOpen(false);
-            }
+            IsPaneOpen(false);
+        }
+
+        if (IsPaneVisible() && DisplayMode() == winrt::NavigationViewDisplayMode::Expanded && !IsPaneOpen())
+        {
+            IsPaneOpen(true);
         }
     }
     else if (property == s_OverflowLabelModeProperty)
