@@ -49,7 +49,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             // Only allow one TestSetupHelper instance to run in the process, since nested TestSetupHelpers causes problems during retry.
             if(TestEnvironment.IsTestSetupHelperInUse)
             {
-                throw new Exception("Don't nest TestSetupHelpers, use new TestSetupHelper(new[] { \"PageA\", \"PageB\" }) for multi page tests");
+                throw new Exception("Don't nest TestSetupHelpers, use TestSetupHelper(new[] { \"PageA\", \"PageB\" }) for multi page tests");
             }
             TestEnvironment.IsTestSetupHelperInUse = true;
 
