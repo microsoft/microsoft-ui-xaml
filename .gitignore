@@ -25,7 +25,7 @@ bld/
 .vs/
 
 # Visual Studio Code cache/options directory
-.vscode/.BROWSE*
+.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
