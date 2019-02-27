@@ -770,6 +770,10 @@ void TeachingTip::OnIconSourceChanged()
     else
     {
         winrt::VisualStateManager::GoToState(*this, L"NoIcon"sv, false);
+        if (m_iconBorder)
+        {
+            m_iconBorder.get().Child(nullptr);
+        }
     }
 }
 

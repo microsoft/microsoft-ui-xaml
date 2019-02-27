@@ -113,7 +113,6 @@
                                 <VisualState x:Name="NoIcon">
                                     <VisualState.Setters>
                                         <Setter Target="IconBorder.Margin" Value="{StaticResource TeachingTipIconPresenterMarginWithoutIcon}"/>
-                                        <Setter Target="IconBorder.Child" Value=""/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
