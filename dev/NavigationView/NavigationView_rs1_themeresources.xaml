@@ -193,10 +193,12 @@
     <x:Double x:Key="NavigationViewCompactPaneLength">48</x:Double>
     <x:Double x:Key="NavigationViewTopPaneHeight">44</x:Double>
     
+    <x:Double x:Key="NavigationViewItemOnLeftMinHeight">40</x:Double>
+
     <Thickness x:Key="NavigationViewToggleBorderThickness">1</Thickness>
     <Thickness x:Key="NavigationViewItemBorderThickness">2,1,2,1</Thickness>
-    <Thickness x:Key="NavigationViewItemIconBoxMargin">16,12</Thickness>
-    <Thickness x:Key="NavigationViewItemInnerHeaderMargin">16,0,0,0</Thickness>
+    <Thickness x:Key="NavigationViewItemIconBoxMargin">10,12,16,12</Thickness>
+    <Thickness x:Key="NavigationViewItemInnerHeaderMargin">10,0,0,0</Thickness>
     <Thickness x:Key="NavigationViewAutoSuggestBoxMargin">16,0,16,0</Thickness>
 
     <Style x:Key="PaneToggleButtonStyle" TargetType="Button">
@@ -464,7 +466,7 @@
                 <ControlTemplate TargetType="primitives:NavigationViewItemPresenter">
                     <Grid
                         x:Name="LayoutRoot"
-                        Height="40"
+                        MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"
                         Background="{TemplateBinding Background}"
                         Control.IsTemplateFocusTarget="True">
 
@@ -537,7 +539,9 @@
                                 Opacity="0.0"/>
                         </Grid>
 
-                        <Grid Height="40" HorizontalAlignment="Left" x:Name="ContentGrid">
+                        <Grid HorizontalAlignment="Left" 
+                            x:Name="ContentGrid"
+                            MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition x:Name="IconColumn" Width="48" />
                                 <ColumnDefinition Width="*" />
@@ -579,7 +583,7 @@
                 <ControlTemplate TargetType="primitives:NavigationViewItemPresenter">
                     <Grid
                         x:Name="LayoutRoot"
-                        Height="40"
+                        MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"
                         Background="{TemplateBinding Background}"
                         Control.IsTemplateFocusTarget="True">
 
@@ -630,7 +634,7 @@
 
                         <Grid 
                             x:Name="ContentGrid"
-                            Height="40" 
+                            MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"
                             HorizontalAlignment="Left">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition x:Name="IconColumn" Width="48" />

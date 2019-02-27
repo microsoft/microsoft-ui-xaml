@@ -118,7 +118,7 @@
                 <ControlTemplate TargetType="primitives:NavigationViewItemPresenter">
                     <Grid
                         x:Name="LayoutRoot"
-                        Height="40"
+                        MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"
                         Background="{TemplateBinding Background}"
                         Control.IsTemplateFocusTarget="True">
 
@@ -206,7 +206,9 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}" />
 
-                        <Grid Height="40" HorizontalAlignment="Left" x:Name="ContentGrid">
+                        <Grid HorizontalAlignment="Left" 
+                            x:Name="ContentGrid"
+                            MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition x:Name="IconColumn" Width="48" />
                                 <ColumnDefinition Width="*" />
