@@ -205,13 +205,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 personPicture.Initials = "";
             });
 
-
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(initialsTextBlock.FontFamily.Source, "Segoe MDL2 Assets");
                 Verify.AreEqual(initialsTextBlock.Text, "\xE77B");
+
+                // Make sure that custom FontFamily takes effect after the control is created
+                // and also goes back to the MDL2 font after setting IsGroup = true.
+                personPicture.FontFamily = new FontFamily("Segoe UI Emoji");
+                personPicture.Initials = "👍";
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(initialsTextBlock.FontFamily.Source, "Segoe UI Emoji");
+                Verify.AreEqual(initialsTextBlock.Text, "👍");
+
+                personPicture.IsGroup = true;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(initialsTextBlock.FontFamily.Source, "Segoe MDL2 Assets");
+                Verify.AreEqual(initialsTextBlock.Text, "\xE716");
             });
         }
     }
