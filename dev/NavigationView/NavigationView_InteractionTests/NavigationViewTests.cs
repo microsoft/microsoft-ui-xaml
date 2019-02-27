@@ -3669,6 +3669,47 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "D")]
+        public void EnsureDisplayModeGroupUpdatesWhenBackButtonVisibilityChanged()
+        {
+            using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
+                             page2 = new TestSetupHelper("NavigationView Test"))
+            {
+                Log.Comment("Setup test page to be in the minimal display mode with the backbutton hidden...");
+                Log.Comment("Hide backbutton");
+                var backButtonCheckBox = new CheckBox(FindElement.ByName("BackButtonVisibilityCheckbox"));
+                backButtonCheckBox.Uncheck();
+                Wait.ForIdle();
+
+                Log.Comment("Change display mode to left minimal");
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
+                Wait.ForIdle();
+
+                TextBlock displayModeTextBox = new TextBlock(FindElement.ByName("DisplayModeTextBox"));
+                Verify.AreEqual(minimal, displayModeTextBox.DocumentText);
+
+                Log.Comment("Get NavView Active VisualStates");
+                var getNavViewActiveVisualStatesButton = new Button(FindElement.ByName("GetNavViewActiveVisualStates"));
+                getNavViewActiveVisualStatesButton.Invoke();
+                Wait.ForIdle();
+
+                const string visualStateName = "MinimalWithBackButton";
+                var result = new TextBlock(FindElement.ByName("NavViewActiveVisualStatesResult"));
+                Verify.IsFalse(result.GetText().Contains(visualStateName), "Active VisualStates should not include " + visualStateName);
+
+                Log.Comment("Show backbutton");
+                backButtonCheckBox.Check();
+                Wait.ForIdle();
+
+                Log.Comment("Get NavView Active VisualStates");
+                getNavViewActiveVisualStatesButton.Invoke();
+                Wait.ForIdle();
+                Verify.IsTrue(result.GetText().Contains(visualStateName), "Active VisualStates should include " + visualStateName);
+            }
+        }
+
         private void EnsurePaneHeaderCanBeModifiedHelper(RegressionTestType navviewMode)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))

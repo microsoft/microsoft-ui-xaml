@@ -263,13 +263,12 @@
                                     <Button 
                                         x:Name="TopNavOverflowButton"
                                         Grid.Column="4"
-
                                         Content="More"
                                         Style="{StaticResource NavigationViewOverflowButtonStyleWhenPaneOnTop}"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.OverflowButtonVisibility}">
 
                                         <Button.Flyout>
-                                            <Flyout Placement="Bottom">
+                                            <Flyout Placement="Bottom" ElementSoundMode="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ElementSoundMode}">
                                                 <Flyout.FlyoutPresenterStyle>
                                                     <Style TargetType="FlyoutPresenter">
                                                         <Setter Property="Padding" Value="0,8" />
@@ -284,7 +283,8 @@
                                                     ItemContainerStyle="{TemplateBinding MenuItemContainerStyle}"
                                                     ItemContainerStyleSelector="{TemplateBinding MenuItemContainerStyleSelector}"
                                                     SingleSelectionFollowsFocus="False"
-                                                    IsItemClickEnabled="True">
+                                                    IsItemClickEnabled="True"
+                                                    ElementSoundMode="{TemplateBinding ElementSoundMode}">
                                                     <ListView.ItemContainerTransitions>
                                                         <TransitionCollection />
                                                     </ListView.ItemContainerTransitions>

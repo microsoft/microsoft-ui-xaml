@@ -255,7 +255,7 @@ public:
         }
     }
 
-    auto get() const
+    const T& get() const
     {
 #if _DEBUG
         // Do some debug validation to make sure that m_valueNoRef and the GetTrackerValue result don't
