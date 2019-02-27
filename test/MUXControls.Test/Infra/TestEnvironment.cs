@@ -77,8 +77,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         public static bool ShouldRestartApplication { get; set; }
 
-        public static bool IsTestSetupHelperInUse { get; set; }
-
         public static void LogVerbose(string format, params object[] args)
         {
             if (IsLogVerbose)

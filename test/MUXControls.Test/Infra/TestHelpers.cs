@@ -37,6 +37,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
     public class TestSetupHelper : IDisposable
     {
         private bool AttemptRestartOnDispose { get; set; }
+        private int TestPagePendingDisposals = 0;
+        private static bool IsTestSetupHelperInUse = false;
 
         public TestSetupHelper(string testName, string languageOverride = "", bool attemptRestartOnDispose = true)
             :this(new[] { testName }, languageOverride, attemptRestartOnDispose)
@@ -47,11 +49,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         public TestSetupHelper(ICollection<string> testNames, string languageOverride = "", bool attemptRestartOnDispose = true)
         {
             // Only allow one TestSetupHelper instance to run in the process, since nested TestSetupHelpers causes problems during retry.
-            if(TestEnvironment.IsTestSetupHelperInUse)
+            if(IsTestSetupHelperInUse)
             {
                 throw new Exception("Don't nest TestSetupHelpers, use TestSetupHelper(new[] { \"PageA\", \"PageB\" }) for multi page tests");
             }
-            TestEnvironment.IsTestSetupHelperInUse = true;
+            IsTestSetupHelperInUse = true;
 
             // If a test crashes, it can take a little bit of time before we can 
             // restart the app again especially if watson is collecting dumps. Adding a 
@@ -177,7 +179,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
                         Log.Comment("__TestContentLoadedCheckBox checkbox checked, page has loaded");
 
-                        TestCleanupHelper.TestPagePendingDisposals++;
+                        TestPagePendingDisposals++;
                     }
 
                     TestCleanupHelper.TestSetupHelperPendingDisposals++;
@@ -234,13 +236,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             TestEnvironment.LogVerbose("TestSetupHelper.Dispose()");
             TestCleanupHelper.TestSetupHelperPendingDisposals--;
-            TestEnvironment.IsTestSetupHelperInUse = false;
+            IsTestSetupHelperInUse = false;
 
-            for(int i = 0; i < TestCleanupHelper.TestPagePendingDisposals; i++)
+            while(TestPagePendingDisposals > 0)
             {
                 GoBack();
+                TestPagePendingDisposals--;
             }
-            TestCleanupHelper.TestPagePendingDisposals = 0;
 
             if (TestCleanupHelper.TestSetupHelperPendingDisposals == 0 && AttemptRestartOnDispose)
             {
@@ -252,7 +254,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
     public class TestCleanupHelper
     {
         public static int TestSetupHelperPendingDisposals { get; set; }
-        public static int TestPagePendingDisposals { get; set; }
 
         public static void Cleanup()
         {
