@@ -142,10 +142,15 @@ void PersonPicture::UpdateIfReady()
     templateSettings->EffectiveInitials(initials);
     if (imageSrc)
     {
-        winrt::ImageBrush imageBrush;
-        imageBrush.Stretch(winrt::Stretch::UniformToFill);
+        auto imageBrush = templateSettings->EffectiveImageBrush();
+        if (!imageBrush)
+        {
+            imageBrush = winrt::ImageBrush{};
+            imageBrush.Stretch(winrt::Stretch::UniformToFill);
+            templateSettings->EffectiveImageBrush(imageBrush);
+        }
+
         imageBrush.ImageSource(imageSrc);
-        templateSettings->EffectiveImageBrush(imageBrush);
     }
     else
     {
