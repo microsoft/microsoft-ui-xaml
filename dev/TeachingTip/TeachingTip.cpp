@@ -759,21 +759,16 @@ void TeachingTip::OnIsOpenChanged()
 
 void TeachingTip::OnIconSourceChanged()
 {
+    auto templateSettings = winrt::get_self<::TeachingTipTemplateSettings>(TemplateSettings());
     if (auto source = IconSource())
     {
+        templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
         winrt::VisualStateManager::GoToState(*this, L"Icon"sv, false);
-        if (m_iconBorder)
-        {
-            m_iconBorder.get().Child(SharedHelpers::MakeIconElementFrom(source));
-        }
     }
     else
     {
+        templateSettings->IconElement(nullptr);
         winrt::VisualStateManager::GoToState(*this, L"NoIcon"sv, false);
-        if (m_iconBorder)
-        {
-            m_iconBorder.get().Child(nullptr);
-        }
     }
 }
 
