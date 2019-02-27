@@ -37,7 +37,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
     public class TestSetupHelper : IDisposable
     {
         private bool AttemptRestartOnDispose { get; set; }
-        private int TestPagePendingDisposals = 0;
+        private int OpenedTestPages = 0;
         private static bool IsTestSetupHelperInUse = false;
 
         public TestSetupHelper(string testName, string languageOverride = "", bool attemptRestartOnDispose = true)
@@ -179,7 +179,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
                         Log.Comment("__TestContentLoadedCheckBox checkbox checked, page has loaded");
 
-                        TestPagePendingDisposals++;
+                        OpenedTestPages++;
                     }
 
                     TestCleanupHelper.TestSetupHelperPendingDisposals++;
@@ -238,10 +238,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             TestCleanupHelper.TestSetupHelperPendingDisposals--;
             IsTestSetupHelperInUse = false;
 
-            while(TestPagePendingDisposals > 0)
+            while(OpenedTestPages > 0)
             {
                 GoBack();
-                TestPagePendingDisposals--;
+                OpenedTestPages--;
             }
 
             if (TestCleanupHelper.TestSetupHelperPendingDisposals == 0 && AttemptRestartOnDispose)
