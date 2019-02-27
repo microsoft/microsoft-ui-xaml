@@ -2640,6 +2640,14 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         UpdatePaneVisibility();
         UpdateVisualStateForDisplayModeGroup(DisplayMode());
+
+        if (auto splitView = m_rootSplitView.get())
+        {
+            if (!IsPaneVisible() && splitView.IsPaneOpen())
+            {
+                splitView.IsPaneOpen(false);
+            }
+        }
     }
     else if (property == s_OverflowLabelModeProperty)
     {
