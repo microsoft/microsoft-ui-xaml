@@ -29,6 +29,7 @@
                                 <VisualState x:Name="NoPhotoOrInitials">
                                     <VisualState.Setters>
                                         <Setter Target="InitialsTextBlock.FontFamily" Value="Segoe MDL2 Assets"/>
+                                        <!-- Placeholder symbol for 'Contact' (https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font) -->
                                         <Setter Target="InitialsTextBlock.Text" Value="&#xE77B;"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -36,6 +37,7 @@
                                 <VisualState x:Name="Group">
                                     <VisualState.Setters>
                                         <Setter Target="InitialsTextBlock.FontFamily" Value="Segoe MDL2 Assets"/>
+                                        <!-- Placeholder symbol for 'People' (https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font) -->
                                         <Setter Target="InitialsTextBlock.Text" Value="&#xE716;"/>
                                     </VisualState.Setters>
                                 </VisualState>
