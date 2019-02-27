@@ -26,6 +26,10 @@ bld/
 
 # Visual Studio Code cache/options directory
 .vscode/.BROWSE*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
