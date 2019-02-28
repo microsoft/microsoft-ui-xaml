@@ -1061,7 +1061,7 @@ void TeachingTip::StartExpandToOpen()
         if (m_contentRootGrid)
         {
             m_contentRootGrid.get().StartAnimation(m_expandElevationAnimation.get());
-            m_isContractAnimationPlaying = true;
+            m_isExpandAnimationPlaying = true;
         }
         if (m_beakEdgeBorder)
         {
@@ -1382,7 +1382,7 @@ void TeachingTip::EstablishShadows()
 #ifdef USE_INSIDER_SDK
 #ifdef BEAK_SHADOW
 #ifdef _DEBUG
-    if (winrt::IUIElement10 beakPolygon_uiElement10 = m_contentRootGrid)
+    if (winrt::IUIElement10 beakPolygon_uiElement10 = m_contentRootGrid.get())
     {
         if (m_tipShadow)
         {
