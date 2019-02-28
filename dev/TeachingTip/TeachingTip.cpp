@@ -806,7 +806,7 @@ void TeachingTip::OnIsLightDismissEnabledChanged()
     if (IsLightDismissEnabled())
     {
         winrt::VisualStateManager::GoToState(*this, L"LightDismiss"sv, false);
-        if (auto lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
+        if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
         {
             lightDismissIndicatorPopup.IsLightDismissEnabled(true);
             m_lightDismissIndicatorPopupClosedRevoker = lightDismissIndicatorPopup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnLightDismissIndicatorPopupClosed });
@@ -815,14 +815,11 @@ void TeachingTip::OnIsLightDismissEnabledChanged()
     else
     {
         winrt::VisualStateManager::GoToState(*this, L"NormalDismiss"sv, false);
-        if (auto lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
+        if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
         {
             lightDismissIndicatorPopup.IsLightDismissEnabled(false);
         }
-        if (m_lightDismissIndicatorPopupClosedRevoker)
-        {
-            m_lightDismissIndicatorPopupClosedRevoker.revoke();
-        }
+        m_lightDismissIndicatorPopupClosedRevoker.revoke();
     }
 }
 
@@ -945,11 +942,11 @@ void TeachingTip::ClosePopupWithAnimationIfAvailable()
 
 void TeachingTip::ClosePopup()
 {
-    if (m_popup)
+    if (auto&& popup = m_popup.get())
     {
-        m_popup.get().IsOpen(false);
+        popup.IsOpen(false);
     }
-    if (auto lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
+    if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
     {
         lightDismissIndicatorPopup.IsOpen(false);
     }
@@ -1168,7 +1165,7 @@ void TeachingTip::StartContractToClose()
 winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
 {
     auto placement = Placement();
-    if(placement != winrt::TeachingTipPlacementMode::Auto)
+    if (placement != winrt::TeachingTipPlacementMode::Auto)
     {
         return placement;
     }
