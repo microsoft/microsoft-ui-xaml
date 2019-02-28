@@ -2641,14 +2641,16 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         UpdatePaneVisibility();
         UpdateVisualStateForDisplayModeGroup(DisplayMode());
 
+        // When NavView is in expaneded mode with fixed window size, setting IsPaneVisible to false doesn't closes the pane
+        // We manually close/open it for this case
         if (!IsPaneVisible() && IsPaneOpen())
         {
-            IsPaneOpen(false);
+            ClosePane();
         }
 
         if (IsPaneVisible() && DisplayMode() == winrt::NavigationViewDisplayMode::Expanded && !IsPaneOpen())
         {
-            IsPaneOpen(true);
+            OpenPane();
         }
     }
     else if (property == s_OverflowLabelModeProperty)
