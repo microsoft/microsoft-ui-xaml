@@ -333,7 +333,7 @@
       <RS4StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS4' And '%(Type)' == 'DefaultStyle'" />
       <RS5StylePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS5' And '%(Type)' == 'DefaultStyle'" />
       <NineteenH1StylePage Include="@(PageToTest)" Condition="'%(Version)' == '19H1' And '%(Type)' == 'DefaultStyle'" />
-      <RS1ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS1' And '%(Type)' == 'ThemeResources'" />
+      <RS1ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS1' And '%(Type)' == 'ThemeResources' And '%(PageToTest.UseNonstandardCondtionalXAML)' == ''" />
       <RS2ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS2' And '%(Type)' == 'ThemeResources'" />
       <RS3ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS3' And '%(Type)' == 'ThemeResources'" />
       <RS4ThemeResourcePage Include="@(PageToTest)" Condition="'%(Version)' == 'RS4' And '%(Type)' == 'ThemeResources'" />

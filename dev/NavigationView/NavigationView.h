@@ -158,6 +158,7 @@ private:
     void UpdateTopNavListViewItemSource(const winrt::IInspectable& items);
     void UpdateListViewItemsSource(const winrt::ListView& listView, const winrt::IInspectable& itemsSource);
     void UpdateListViewItemSource();
+    void UpdateSelectionForMenuItems();
 
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
