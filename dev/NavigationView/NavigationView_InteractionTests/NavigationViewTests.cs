@@ -920,7 +920,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("NavViewTestSuite", "B")]
         public void NavigationViewDensityChange()
         {
-            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" })
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
             {
                 int height = FindElement.ById("AppsItem").BoundingRectangle.Height;
                 Verify.AreEqual(height, 40);
