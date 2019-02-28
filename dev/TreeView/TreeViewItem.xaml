@@ -323,7 +323,7 @@
                                                                 </VisualState>
                                                             </VisualStateGroup>
                                                         </VisualStateManager.VisualStateGroups>
-                                                        <Grid VerticalAlignment="Stretch" Height="{ThemeResource TreeViewItemMinHeight}">
+                                                        <Grid VerticalAlignment="Stretch">
                                                             <Rectangle x:Name="NormalRectangle"
                                                                 VerticalAlignment="Center" HorizontalAlignment="Center"
                                                                 Fill="{ThemeResource CheckBoxCheckBackgroundFillUnchecked}"

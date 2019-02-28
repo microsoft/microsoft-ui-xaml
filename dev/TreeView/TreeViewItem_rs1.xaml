@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:media="using:Microsoft.UI.Xaml.Media"
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
+
     <Style TargetType="local:TreeViewItem" 
            BasedOn="{StaticResource ListViewItemRevealStyle}"
            x:Key="MUX_TreeViewItemStyle">
@@ -12,6 +13,8 @@
         <Setter Property="BorderBrush" Value="{ThemeResource TreeViewItemBorderBrush}"/>
         <Setter Property="BorderThickness" Value="{ThemeResource TreeViewItemBorderThemeThickness}"/>
         <Setter Property="GlyphBrush" Value="{ThemeResource TreeViewItemForeground}"/>
+        <Setter Property="MinHeight" Value="{ThemeResource TreeViewItemMinHeight}"/>
+
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TreeViewItem">
@@ -227,7 +230,7 @@
                                                             </VisualState>
                                                         </VisualStateGroup>
                                                     </VisualStateManager.VisualStateGroups>
-                                                    <Grid VerticalAlignment="Stretch" Height="{ThemeResource TreeViewItemMinHeight}">
+                                                    <Grid VerticalAlignment="Stretch">
                                                         <Rectangle x:Name="NormalRectangle" VerticalAlignment="Center" HorizontalAlignment="Center"
                                                         Fill="{ThemeResource CheckBoxCheckBackgroundFillUnchecked}"
                                                         Stroke="{ThemeResource CheckBoxCheckBackgroundStrokeUnchecked}"
