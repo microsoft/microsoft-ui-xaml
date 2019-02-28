@@ -58,16 +58,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         internal class CommandBarFlyoutTestSetupHelper : TestSetupHelper
         {
             public CommandBarFlyoutTestSetupHelper(string languageOverride = "", bool attemptRestartOnDispose = true)
-                : base("CommandBarFlyout Tests", languageOverride, attemptRestartOnDispose)
+                : base(new[] { "CommandBarFlyout Tests", "Base CommandBarFlyout Tests" }, languageOverride, attemptRestartOnDispose)
             {
-                innerPageSetupHelper = new TestSetupHelper("Base CommandBarFlyout Tests", languageOverride, attemptRestartOnDispose);
                 statusReportingTextBox = FindElement.ById<Edit>("StatusReportingTextBox");
-            }
-
-            public override void Dispose()
-            {
-                innerPageSetupHelper.Dispose();
-                base.Dispose();
             }
 
             public void ExecuteAndWaitForEvent(Action action, string eventText)
@@ -96,7 +89,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
 
-            private TestSetupHelper innerPageSetupHelper;
             private Edit statusReportingTextBox;
         }
 
