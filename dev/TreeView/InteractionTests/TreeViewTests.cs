@@ -516,8 +516,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewKeyDownRightToLeftTest();
         }
 
-        [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        //Test failures with keyboard/gamepad/mousewheel input #269
+        //[TestMethod]
+        //[TestProperty("TreeViewTestSuite", "A")]
         public void TreeViewKeyDownRightToLeftTest_ContentMode()
         {
             TreeViewKeyDownRightToLeftTest(isContentMode:true);
@@ -1712,8 +1713,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewMultiSelectGamepadTest();
         }
 
-        [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        //Test failures with keyboard/gamepad/mousewheel input #269
+        //[TestMethod]
+        //[TestProperty("TreeViewTestSuite", "B")]
         public void TreeViewMultiSelectGamepadTest_ContentMode()
         {
             TreeViewMultiSelectGamepadTest(isContentMode:true);
@@ -2541,6 +2543,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Wait.ForIdle();
                     UIObject node1 = FindElement.ByName("Root");
                     Verify.IsNotNull(node1, "Verify data binding");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("Platform", "Desktop")]
+        public void TreeViewNodeInMarkupTest()
+        {
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                Wait.ForIdle();
+                using (var nextPage = new TestSetupHelper("TreeViewNodeInMarkupTestPage"))
+                {
+                    UIObject root = FindElement.ByName("Root");
+                    Verify.IsNotNull(root, "Verify root node content");
                 }
             }
         }

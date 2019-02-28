@@ -2,5 +2,5 @@
 [webhosthidden]
 unsealed runtimeclass ScrollerAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {
-    ScrollerAutomationPeer(Scroller owner);
+    ScrollerAutomationPeer(MU_XCP_NAMESPACE.Scroller owner);
 }

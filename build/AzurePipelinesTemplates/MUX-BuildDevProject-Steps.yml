@@ -1,0 +1,16 @@
+steps:
+  - template: MUX-BuildProject-Steps.yml
+    parameters:
+      solutionPath: MUXControls.sln
+      nugetConfigPath: nuget.config
+      appxPackageDir: $(appxPackageDir)
+      buildOutputDir: $(buildOutputDir)
+      publishDir: $(publishDir)
+
+  - script: |
+      call %Build_SourcesDirectory%\tools\MakeAppxHelper.cmd %BUILDPLATFORM% %BUILDCONFIGURATION% -builddate_yymm %BUILDDATE_YYMM% -builddate_dd $BUILDDATE_DD% -subversion %BUILDREVISION%
+      if %ERRORLEVEL% NEQ 0 (
+          echo ##vso[task.logissue type=error;] Make AppxHelper failed with exit code %ERRORLEVEL%
+          goto END
+      )
+    displayName: 'Make FrameworkPackage'

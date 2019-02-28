@@ -46,13 +46,7 @@ jobs:
       branchVersion: true
       nugetVer: true
 
-  - template: AzurePipelinesTemplates\MUX-BuildProject-Steps.yml
-    parameters:
-      solutionPath: MUXControls.sln
-      nugetConfigPath: nuget.config
-      appxPackageDir: $(appxPackageDir)
-      buildOutputDir: $(buildOutputDir)
-      publishDir: $(publishDir)
+  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
 
   - task: PkgESCodeSign@10
     displayName: CodeSign
@@ -66,18 +60,7 @@ jobs:
     inputs:
       filename: '$(Build.SourcesDirectory)\tools\PublishSymbols\PublishSymbols.cmd'      
 
-  - task: powershell@2
-    displayName: 'Copy files to staging dir'
-    inputs:
-      targetType: filePath
-      filePath: build\CopyFilesToStagingDir.ps1
-      arguments: -BuildOutputDir '$(buildOutputDir)' -PublishDir '$(Build.ArtifactStagingDirectory)' -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish artifact: drop'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'drop'
+  - template: AzurePipelinesTemplates\MUX-PublishDevProject-Steps.yml
 
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
@@ -86,6 +69,7 @@ jobs:
     dependsOn: Build
     # This is the magic GUID from the pipeline visual designer for this feed: https://dev.azure.com/ms/microsoft-ui-xaml/_packaging?_a=feed&feed=MUX-CI
     # publishVstsFeed: 'd62f8eac-f05c-4c25-bccb-21f98b95c95f'
+    signConfig: '$(Build.SourcesDirectory)\build\NuGetSignConfig.xml'
  
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml

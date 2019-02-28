@@ -820,6 +820,11 @@ foreach ($xamlFile in $XamlFileList.Split(';'))
             # Remove the entire tag
             $xamlFileContent = $xamlFileContent -replace "<$prefixToRemove[^>]*/>",""
             $xamlFileContent = $xamlFileContent -replace "<$prefixToRemove[.\S\s]*?</$prefixToRemove\:[^>]*>","" 
+
+            #   <Rectangle x:Name="colorRectangle" Width="200" Height="200"
+            #      contract5NotPresent:Fill="{x:Bind ((SolidColorBrush)((FrameworkElement)colorComboBox.SelectedItem).Tag), Mode=OneWay}">
+            #
+            $xamlFileContent = $xamlFileContent -replace "(?m)\s$prefixToRemove\:\w+?=`"[^`"]+`"", ""
         }
         else
         {

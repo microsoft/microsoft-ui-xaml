@@ -1,15 +1,13 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: Build
+  # Skip the build job if we are reusing the output of a previous build.
+  # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
+  condition:
+    eq(variables['useBuildOutputFromBuildId'],'') 
   pool:
     vmImage: VS2017-Win2016
   timeoutInMinutes: 120
-  variables:
-  - group: DotNet-HelixApi-Access
-  - name: appxPackageDir
-    value: $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
-  - name: buildOutputDir
-    value: $(Build.SourcesDirectory)\BuildOutput
   strategy:
     maxParallel: 4
     matrix:
@@ -20,64 +18,27 @@ jobs:
         buildPlatform: 'x64'
         buildConfiguration: 'release'
 
+  variables:
+    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+    publishDir : $(Build.ArtifactStagingDirectory)
+
   steps:
-  - task: CmdLine@1
-    displayName: 'Display build machine environment variables'
-    inputs:
-      filename: 'set'
-
-  - task: powershell@2
-    displayName: 'Install Insider SDK (18323)'
-    inputs:
-      targetType: filePath
-      filePath: build\Install-WindowsSdkISO.ps1
-      arguments: 18323
-
-  - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.9.3'
-    inputs:
-      versionSpec: 4.9.3
-        
-  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-    displayName: 'NuGet restore MUXControls.sln'
-    inputs:
-      restoreSolution: MUXControls.sln
-      feedsToUse: config
-      nugetConfigPath: nuget.config
-
-  - task: VSBuild@1
-    displayName: 'Build solution MUXControls.sln'
-    inputs:
-      solution: MUXControls.sln
-      vsVersion: 15.0
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
-      msbuildArgs: '/p:AppxPackageDir="$(appxPackageDir)" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false'
-
-  - task: powershell@2
-    displayName: 'Copy files to staging dir'
-    inputs:
-      targetType: filePath
-      filePath: build\CopyFilesToStagingDir.ps1
-      arguments: -BuildOutputDir '$(buildOutputDir)' -PublishDir '$(Build.ArtifactStagingDirectory)' -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish artifact: drop'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'drop'
-
+  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+  - template: AzurePipelinesTemplates\MUX-PublishDevProject-Steps.yml
 
 
 - job: RunTests
   dependsOn:
     - Build
+  # Run this job even if the Build job was skipped
+  condition:
+    in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
   variables:
-  - name: artifactsDir
-    value: $(Build.SourcesDirectory)\Artifacts
+    artifactsDir : $(Build.SourcesDirectory)\Artifacts
   strategy:
     maxParallel: 4
     matrix:
@@ -106,7 +67,21 @@ jobs:
       restoreDirectory: packages
 
   - task: DownloadBuildArtifacts@0 
+    condition:
+      eq(variables['useBuildOutputFromBuildId'],'')
     inputs: 
+      artifactName: drop 
+      downloadPath: '$(artifactsDir)'
+
+  - task: DownloadBuildArtifacts@0 
+    condition:
+      ne(variables['useBuildOutputFromBuildId'],'')
+    inputs: 
+      buildType: specific
+      buildVersionToDownload: specific
+      project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
+      pipeline: 22
+      buildId: $(useBuildOutputFromBuildId)
       artifactName: drop 
       downloadPath: '$(artifactsDir)'
 

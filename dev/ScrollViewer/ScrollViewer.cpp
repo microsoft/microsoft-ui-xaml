@@ -143,11 +143,11 @@ winrt::InteractionState ScrollViewer::State()
     return winrt::InteractionState::Idle;
 }
 
-winrt::InputKind ScrollViewer::InputKind()
+winrt::InputKind ScrollViewer::IgnoredInputKind()
 {
     // Workaround for Bug 17377013: XamlCompiler codegen for Enum CreateFromString always returns boxed int which is wrong for [flags] enums (should be uint)
-    // Check if the boxed InputKind is an IReference<int> first in which case we unbox as int.
-    auto boxedKind = GetValue(s_InputKindProperty);
+    // Check if the boxed IgnoredInputKind is an IReference<int> first in which case we unbox as int.
+    auto boxedKind = GetValue(s_IgnoredInputKindProperty);
     if (auto boxedInt = boxedKind.try_as<winrt::IReference<int32_t>>())
     {
         return winrt::InputKind{ static_cast<uint32_t>(unbox_value<int32_t>(boxedInt)) };
@@ -156,10 +156,42 @@ winrt::InputKind ScrollViewer::InputKind()
     return auto_unbox(boxedKind);
 }
 
-void ScrollViewer::InputKind(winrt::InputKind const& value)
+void ScrollViewer::IgnoredInputKind(winrt::InputKind const& value)
 {
     SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::InputKindToString(value).c_str());
-    SetValue(s_InputKindProperty, box_value(value));
+    SetValue(s_IgnoredInputKindProperty, box_value(value));
+}
+
+void ScrollViewer::RegisterAnchorCandidate(winrt::UIElement const& element)
+{
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
+
+    if (auto scroller = m_scroller.get())
+    {
+        if (const auto scrollerAsAnchorProvider = scroller.try_as<winrt::Controls::IScrollAnchorProvider>())
+        {
+            scrollerAsAnchorProvider.RegisterAnchorCandidate(element);
+            return;
+        }
+        throw winrt::hresult_error(E_INVALID_OPERATION, s_iScrollAnchorProviderNotImpl);
+    }
+    throw winrt::hresult_error(E_INVALID_OPERATION, s_noScrollerPart);
+}
+
+void ScrollViewer::UnregisterAnchorCandidate(winrt::UIElement const& element)
+{
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
+
+    if (auto scroller = m_scroller.get())
+    {
+        if (const auto scrollerAsAnchorProvider = scroller.try_as<winrt::Controls::IScrollAnchorProvider>())
+        {
+            scrollerAsAnchorProvider.UnregisterAnchorCandidate(element);
+            return;
+        }
+        throw winrt::hresult_error(E_INVALID_OPERATION, s_iScrollAnchorProviderNotImpl);
+    }
+    throw winrt::hresult_error(E_INVALID_OPERATION, s_noScrollerPart);
 }
 
 int32_t ScrollViewer::ChangeOffsets(
@@ -1316,6 +1348,11 @@ bool ScrollViewer::IsLoaded()
     return winrt::VisualTreeHelper::GetParent(*this) != nullptr;
 }
 
+bool ScrollViewer::IsInputKindIgnored(winrt::InputKind const& inputKind)
+{
+    return (IgnoredInputKind() & inputKind) == inputKind;
+}
+
 bool ScrollViewer::AreAllScrollControllersCollapsed()
 {
     return (!m_horizontalScrollControllerElement || m_horizontalScrollControllerElement.get().Visibility() == winrt::Visibility::Collapsed) &&
@@ -1421,10 +1458,24 @@ void ScrollViewer::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
         winrt::KeyRoutedEventArgs eventArgs = e.as<winrt::KeyRoutedEventArgs>();
         if (!eventArgs.Handled())
         {
-            auto scroller = m_scroller.get().as<winrt::Scroller>();
             auto originalKey = eventArgs.OriginalKey();
-
             bool isGamepadKey = FocusHelper::IsGamepadNavigationDirection(originalKey) || FocusHelper::IsGamepadPageNavigationDirection(originalKey);
+
+            if (isGamepadKey)
+            {
+                if (IsInputKindIgnored(winrt::InputKind::Gamepad))
+                {
+                    return;
+                }
+            }
+            else
+            {
+                if (IsInputKindIgnored(winrt::InputKind::Keyboard))
+                {
+                    return;
+                }
+            }
+
             bool isXYFocusEnabledForKeyboard = XYFocusKeyboardNavigation() == winrt::XYFocusKeyboardNavigationMode::Enabled;
             bool doXYFocusScrolling = isGamepadKey || isXYFocusEnabledForKeyboard;
 
@@ -2000,9 +2051,9 @@ winrt::hstring ScrollViewer::DependencyPropertyToString(const winrt::IDependency
     {
         return L"ZoomMode";
     }
-    else if (dependencyProperty == s_InputKindProperty)
+    else if (dependencyProperty == s_IgnoredInputKindProperty)
     {
-        return L"InputKind";
+        return L"IgnoredInputKind";
     }
     else if (dependencyProperty == s_MinZoomFactorProperty)
     {
@@ -2011,14 +2062,6 @@ winrt::hstring ScrollViewer::DependencyPropertyToString(const winrt::IDependency
     else if (dependencyProperty == s_MaxZoomFactorProperty)
     {
         return L"MaxZoomFactor";
-    }
-    else if (dependencyProperty == s_IsAnchoredAtHorizontalExtentProperty)
-    {
-        return L"IsAnchoredAtHorizontalExtent";
-    }
-    else if (dependencyProperty == s_IsAnchoredAtVerticalExtentProperty)
-    {
-        return L"IsAnchoredAtVerticalExtent";
     }
     else if (dependencyProperty == s_HorizontalAnchorRatioProperty)
     {

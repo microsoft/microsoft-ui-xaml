@@ -229,9 +229,6 @@ namespace winrt
     using IPasswordBox5 = ::winrt::Windows::UI::Xaml::Controls::IPasswordBox5;
     using IRichEditBox6 = ::winrt::Windows::UI::Xaml::Controls::IRichEditBox6;
     using IRichEditBox8 = ::winrt::Windows::UI::Xaml::Controls::IRichEditBox8;
-#ifdef BUILD_WINDOWS
-    using IRichEditBoxFeature_RichEditBoxCutCopyPasteAPIs = ::winrt::Windows::UI::Xaml::Controls::IRichEditBoxFeature_RichEditBoxCutCopyPasteAPIs;
-#endif
     using IRichTextBlock6 = ::winrt::Windows::UI::Xaml::Controls::IRichTextBlock6;
     using ITextBlock7 = ::winrt::Windows::UI::Xaml::Controls::ITextBlock7;
     using ITextBox8 = ::winrt::Windows::UI::Xaml::Controls::ITextBox8;
