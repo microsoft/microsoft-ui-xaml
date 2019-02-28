@@ -56,7 +56,9 @@ private:
     winrt::FrameworkElement::EffectiveViewportChanged_revoker m_targetEffectiveViewportChangedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_targetLayoutUpdatedRevoker{};
     winrt::Popup::Closed_revoker m_popupClosedRevoker{};
+    winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
     winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
+    void CreateLightDismissIndicatorPopup();
     void UpdateBeak();
     void PositionPopup();
     void PositionTargetedPopup();
@@ -83,6 +85,7 @@ private:
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&);
 
     void RaiseClosingEvent();
     void ClosePopupWithAnimationIfAvailable();
@@ -103,6 +106,7 @@ private:
     void EstablishShadows();
 
     tracker_ref<winrt::Popup> m_popup{ this };
+    tracker_ref<winrt::Popup> m_lightDismissIndicatorPopup{ this };
 
     tracker_ref<winrt::Grid> m_beakOcclusionGrid{ this };
     tracker_ref<winrt::Grid> m_contentRootGrid{ this };
