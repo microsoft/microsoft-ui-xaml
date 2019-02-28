@@ -3691,8 +3691,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("NavViewTestSuite", "D")]
         public void EnsurePaneCanBeHiddenWithFixedWindowSize()
         {
-            using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
-                             page2 = new TestSetupHelper("NavigationView Test"))
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
             {
                 var paneRoot = FindElement.ById("PaneRoot");
                 Verify.IsFalse(paneRoot.IsOffscreen);
