@@ -148,7 +148,7 @@ unsealed runtimeclass TreeView : Windows.UI.Xaml.Controls.Control
         static Windows.UI.Xaml.DependencyProperty ItemsSourceProperty{ get; };
     }
 
-    [WUXC_VERSION_MUXONLY]
+    [WUXC_VERSION_PREVIEW]
     {
         TreeViewNode SelectedNode{ get; set; };
         Object SelectedItem{ get; set; };
