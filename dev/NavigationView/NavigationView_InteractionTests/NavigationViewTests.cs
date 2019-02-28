@@ -616,8 +616,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("NavViewTestSuite", "A")]
         public void VerifyNavigationViewItemIsSelectedWorks()
         {
-            using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
-                            page2 = new TestSetupHelper("NavigationView Init Test"))
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
             {
                 Log.Comment("Verify the 1st NavItem.IsSelected=true works");
                 UIObject item1 = FindElement.ByName("Albums");
