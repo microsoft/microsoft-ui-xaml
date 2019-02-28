@@ -190,12 +190,12 @@ public:
         const winrt::UIElement& element);
 
     // Invoked by ScrollerTestHooks
-    float GetContentLayoutOffsetX()
+    float GetContentLayoutOffsetX() const
     {
         return m_contentLayoutOffsetX;
     }
 
-    float GetContentLayoutOffsetY()
+    float GetContentLayoutOffsetY() const
     {
         return m_contentLayoutOffsetY;
     }

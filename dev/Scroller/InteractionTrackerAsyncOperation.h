@@ -201,7 +201,7 @@ private:
     int m_postProcessingTicksCountdown{ 0 };
 
     // Number of UI thread ticks remaining before this queued operation gets processed.
-    // Positive between the time the operation is queued in Scroller::ChangeOffsets, Scroller::ChangeZoomFactor or
+    // Positive between the time the operation is queued in Scroller::ScrollTo/By/From, Scroller::ZoomTo/By/From or
     // Scroller::OnCompositionTargetRendering and the time it is processed in Scroller::ProcessOffsetsChange or Scroller::ProcessZoomFactorChange.
     int m_preProcessingTicksCountdown{ c_queuedOperationTicks };
 
