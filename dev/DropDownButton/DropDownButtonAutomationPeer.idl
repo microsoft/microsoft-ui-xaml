@@ -3,5 +3,5 @@
 unsealed runtimeclass DropDownButtonAutomationPeer : Windows.UI.Xaml.Automation.Peers.ButtonAutomationPeer,
 Windows.UI.Xaml.Automation.Provider.IExpandCollapseProvider
 {
-    DropDownButtonAutomationPeer(DropDownButton owner);
+    DropDownButtonAutomationPeer(MU_XC_NAMESPACE.DropDownButton owner);
 }

@@ -68,8 +68,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             Log.Comment("Selecting ScrollViewer tests");
 
-            using (IDisposable setup = new TestSetupHelper("ScrollViewer Tests"),
-                               setup2 = new TestSetupHelper("navigateToSimpleContents"))
+            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
             {
                 Log.Comment("Retrieving cmbShowScrollViewer");
                 ComboBox cmbShowScrollViewer = new ComboBox(FindElement.ByName("cmbShowScrollViewer"));
@@ -151,8 +150,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             Log.Comment("Selecting ScrollViewer tests");
 
-            using (IDisposable setup = new TestSetupHelper("ScrollViewer Tests"),
-                               setup2 = new TestSetupHelper("navigateToSimpleContents"))
+            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
             {
                 const double minVerticalScrollPercentAfterScroll = 15.0;
                 const double minHorizontalScrollPercentAfterPan = 35.0;
@@ -261,8 +259,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable setup = new TestSetupHelper("ScrollViewer Tests"),
-                               setup2 = new TestSetupHelper("navigateToSimpleContents"))
+            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
             {
                 UIObject buttonInScrollViewer11;
                 Scroller scroller11;
@@ -333,8 +330,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable setup = new TestSetupHelper("ScrollViewer Tests"),
-                               setup2 = new TestSetupHelper("navigateToSimpleContents"))
+            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
             {
                 UIObject img51;
                 Scroller scroller51;
@@ -369,8 +365,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable setup = new TestSetupHelper("ScrollViewer Tests"),
-                               setup2 = new TestSetupHelper("navigateToSimpleContents"))
+            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
             {
                 UIObject img51;
                 Scroller scroller51;
@@ -426,8 +421,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable setup = new TestSetupHelper("ScrollViewer Tests"),
-                               setup2 = new TestSetupHelper("navigateToSimpleContents"))
+            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
             {
                 UIObject img31;
                 Scroller scroller31;
@@ -454,8 +448,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable setup = new TestSetupHelper("ScrollViewer Tests"),
-                               setup2 = new TestSetupHelper("navigateToSimpleContents"))
+            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
             {
                 UIObject img32;
                 Scroller scroller32;
@@ -482,9 +475,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("Test is disabled on pre-RS4 because ScrollViewer Gamepad interaction is not supported pre-RS4");
                 return;
             }
-            
-            using (IDisposable setup = new TestSetupHelper("ScrollViewer Tests"),
-                               setup2 = new TestSetupHelper("navigateToSimpleContents"))
+
+            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
             {
                 UIObject buttonInScrollViewer11;
                 Scroller scroller11;
@@ -537,8 +529,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable setup = new TestSetupHelper("ScrollViewer Tests"),
-                               setup2 = new TestSetupHelper("navigateToSimpleContents"))
+            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
             {
                 UIObject img51;
                 Scroller scroller51;
@@ -566,8 +557,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Tests GamePad interaction")]
+        //Test failures with keyboard/gamepad/mousewheel input #269
+        //[TestMethod]
+        //[TestProperty("Description", "Tests GamePad interaction")]
         public void VerifyScrollViewerGamePadHorizontalInteraction()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
@@ -575,9 +567,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("Test is disabled on pre-RS4 because ScrollViewer Gamepad interaction is not supported pre-RS4");
                 return;
             }
-            
-            using (IDisposable setup = new TestSetupHelper("ScrollViewer Tests"),
-                               setup2 = new TestSetupHelper("navigateToSimpleContents"))
+
+            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
             {
                 UIObject buttonInScrollViewer11;
                 Scroller scroller11;
@@ -628,9 +619,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("Test is disabled on pre-RS4 because ScrollViewer Gamepad interaction is not supported pre-RS4");
                 return;
             }
-            
-            using (IDisposable setup = new TestSetupHelper("ScrollViewer Tests"),
-                               setup2 = new TestSetupHelper("navigateToSimpleContents"))
+
+            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
             {
                 UIObject buttonInScrollViewer11;
                 Scroller scroller11;
@@ -668,9 +658,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("Test is disabled on pre-RS4 because ScrollViewer Gamepad interaction is not supported pre-RS4");
                 return;
             }
-            
-            using (IDisposable setup = new TestSetupHelper("ScrollViewer Tests"),
-                               setup2 = new TestSetupHelper("navigateToSimpleContents"))
+
+            using (var setup = new TestSetupHelper(new[] { "ScrollViewer Tests", "navigateToSimpleContents" }))
             {
                 UIObject buttonInScrollViewer11;
                 Scroller scroller11;

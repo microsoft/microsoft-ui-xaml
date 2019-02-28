@@ -254,8 +254,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 colorSpectrum = new ColorSpectrum();
-                colorSpectrum.Width = 300.75;
-                colorSpectrum.Height = 300.75;
+
+                // 332.75 is the fractional value that caused a crash in Settings when DPI was set to 200%
+                // and text scaling was set to >160%.  It ensures that we exercise all of the round() fixes
+                // that we made in ColorSpectrum to ensure we always round fractional values instead of
+                // truncating them.
+                colorSpectrum.Width = 332.75;
+                colorSpectrum.Height = 332.75;
             });
 
             SetAsRootAndWaitForColorSpectrumFill(colorSpectrum);

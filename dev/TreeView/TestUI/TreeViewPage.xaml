@@ -62,6 +62,7 @@
                 <Button x:Name="AddExtraNodes" AutomationProperties.Name="AddExtraNodes" Content="AddExtraNodes" Click="AddExtraNodes_Click"/>
                 <Button x:Name="TreeViewLateDataInitTestPage" AutomationProperties.Name="TreeViewLateDataInitTestPage" Content="TreeViewLateDataInitTestPage" Click="TreeViewLateDataInitTestPage_Click"/>
                 <Button x:Name="ToggleRoot0Selection" AutomationProperties.Name="ToggleRoot0Selection" Content="ToggleRoot0Selection" Click="ToggleRoot0Selection_Click"/>
+                <Button x:Name="TreeViewNodeInMarkupTestPage" AutomationProperties.Name="TreeViewNodeInMarkupTestPage" Content="TreeViewNodeInMarkupTestPage" Click="TreeViewNodeInMarkupTestPage_Click"/>
             </StackPanel>
         </ScrollViewer>
         <ScrollViewer Grid.Column="1">

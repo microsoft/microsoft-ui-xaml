@@ -845,5 +845,9 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void TreeViewNodeInMarkupTestPage_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.NavigateWithoutAnimation(typeof(TreeViewNodeInMarkupTestPage));
+        }
     }
 }
