@@ -10,6 +10,10 @@
     <Import_RootNamespace>AnimatedVisualPlayer_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayerLeakTestPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayerPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -17,9 +21,13 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayerLeakTestPage.xaml.cs">
+      <DependentUpon>AnimatedVisualPlayerLeakTestPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayerPage.xaml.cs">
       <DependentUpon>AnimatedVisualPlayerPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)LeakTestObjects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LottieLogo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\inc\Constants.cs" />
   </ItemGroup>

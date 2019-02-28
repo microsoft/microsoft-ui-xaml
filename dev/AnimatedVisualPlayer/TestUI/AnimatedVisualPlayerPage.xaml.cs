@@ -24,6 +24,17 @@ namespace MUXControlsTestApp
         public AnimatedVisualPlayerPage()
         {
             this.InitializeComponent();
+
+            ToLeakTestPageButton.Click += delegate {
+                AnimatedVisualPlayer_TestUI.LeakTestObjects.PlayerWeakRef = new WeakReference<AnimatedVisualPlayer>(Player);
+                this.Frame.NavigateWithoutAnimation(typeof(AnimatedVisualPlayerLeakTestPage), null);
+            };
+
+            for (var i = 0; i < 3; i++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }            
         }
 
         private async void PlayButton_Click(object sender, RoutedEventArgs e)
@@ -109,7 +120,16 @@ namespace MUXControlsTestApp
         {
             HittestingTextBox.Text = Constants.PointerMovedText;
         }
-        
+
+        private void LeakTestCheckButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            object target = AnimatedVisualPlayer_TestUI.LeakTestObjects.PlayerWeakRef;
+            if (target != null)
+            {
+                LeakTestCheckTextBox.Text = Constants.NoLeakText;
+            }
+        }
+
         private async Task GetIsPlayingAsync()
         {
             //

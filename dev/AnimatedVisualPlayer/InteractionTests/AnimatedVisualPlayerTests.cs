@@ -102,6 +102,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ReverseNegativePlaybackRateAnimationAccessibilityTest();
                 ReversePositivePlaybackRateAnimationAccessibilityTest();
                 HittestingAccessibilityTest();
+                LeakTest(); // Always put LeakTest() at the end of all other tests.
             }
         }
 
@@ -227,6 +228,57 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("HittestingAccessibilityTest: Value of textBox: \"{0}\".", textBox.Value);
                 Verify.AreEqual(Constants.PointerMovedText, textBox.Value);
             }
+        }
+
+        private void LeakTest()
+        {
+            NavigateToLeakTestPage();
+            NavigateToAnimatedVisualPlayerPage();
+
+            var textBox = FindElement.ByName<Edit>("LeakTestCheckTextBox");
+            var checkButton = FindElement.ByName<Button>("LeakTestCheckButton");
+
+            if (textBox != null && checkButton != null)
+            {
+                using (var textBoxWaiter = new PropertyChangedEventWaiter(textBox, UIProperty.Get("Value.Value")))
+                {
+                    checkButton.Click();
+
+                    Log.Comment("LeakTest: textBoxWaiter: Waiting until leak object checking completes.");
+                    textBoxWaiter.Wait();
+                    Log.Comment("LeakTest: EventWaiter of textBox is raised.");
+
+                    Log.Comment("LeakTest: Value of textBox: \"{0}\".", textBox.Value);
+                    Log.Comment("Checking if player object has been collected");
+                    Verify.AreEqual(Constants.NoLeakText, textBox.Value);
+                }
+            }
+            else
+            {
+                Verify.Fail("LeakTest: LeakTestCheckTextBox or any other UIElement is not found.");
+            }
+        }
+
+        private void NavigateToLeakTestPage()
+        {
+            Log.Comment("Navigating to AnimatedVisualPlayerLeakTestPage");
+            UIObject navigateObject = FindElement.ByName("ToLeakTestPageButton");
+            Verify.IsNotNull(navigateObject, "Verifying that navigateToLeakTestPage Button was found");
+
+            Button navigateButton = new Button(navigateObject);
+            navigateButton.Invoke();
+            Wait.ForIdle();
+        }
+
+        private void NavigateToAnimatedVisualPlayerPage()
+        {
+            Log.Comment("Navigating to AnimatedVisualPlayerPage");
+            UIObject navigateObject = FindElement.ByName("ToAnimatedVisualPlayerPageButton");
+            Verify.IsNotNull(navigateObject, "Verifying that navigateToAnimatedVisualPlayerPage Button was found");
+
+            Button navigateButton = new Button(navigateObject);
+            navigateButton.Invoke();
+            Wait.ForIdle();
         }
 
         private bool IsRS5OrHigher()

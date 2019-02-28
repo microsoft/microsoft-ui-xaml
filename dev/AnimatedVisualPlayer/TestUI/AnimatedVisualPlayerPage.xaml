@@ -73,6 +73,18 @@
                 AutomationProperties.Name="HittestingTextBox"
                 Text="None"
                 RelativePanel.Below="ReversePositivePlaybackRateAnimationTextBox"/>
+            <Button x:Name="ToLeakTestPageButton"
+                AutomationProperties.Name="ToLeakTestPageButton"
+                RelativePanel.Below="HittestingTextBox"/>
+            <TextBox x:Name="LeakTestCheckTextBox"
+                IsEnabled="False"
+                AutomationProperties.Name="LeakTestCheckTextBox"
+                Text="None"
+                RelativePanel.Below="ToLeakTestPageButton"/>
+            <Button x:Name="LeakTestCheckButton"
+                AutomationProperties.Name="LeakTestCheckButton"
+                Click="LeakTestCheckButton_Click"
+                RelativePanel.Below="LeakTestCheckTextBox"/>
             <controls:AnimatedVisualPlayer
                 x:Name="Player"
                 AutomationProperties.Name="Player"
