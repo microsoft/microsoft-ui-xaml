@@ -1395,12 +1395,13 @@ winrt::float2 Scroller::ComputeCenterPointerForMouseWheelZooming(const winrt::UI
 
 void Scroller::ComputeBringIntoViewTargetOffsets(
     const winrt::UIElement& content,
+    const winrt::SnapPointsMode& snapPointsMode,
     const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
     _Out_ double* targetZoomedHorizontalOffset,
     _Out_ double* targetZoomedVerticalOffset,
     _Out_ double* appliedOffsetX,
     _Out_ double* appliedOffsetY,
-    _Out_ winrt::Rect* targetRect) const
+    _Out_ winrt::Rect* targetRect)
 {
     *targetZoomedHorizontalOffset = 0.0;
     *targetZoomedVerticalOffset = 0.0;
@@ -1451,8 +1452,8 @@ void Scroller::ComputeBringIntoViewTargetOffsets(
         targetY * m_zoomFactor,
         (targetY + targetHeight) * m_zoomFactor);
 
-    const double scrollableWidth = std::max(0.0, m_unzoomedExtentWidth * m_zoomFactor - m_viewportWidth);
-    const double scrollableHeight = std::max(0.0, m_unzoomedExtentHeight * m_zoomFactor - m_viewportHeight);
+    const double scrollableWidth = ScrollableWidth();
+    const double scrollableHeight = ScrollableHeight();
 
     targetZoomedHorizontalOffsetTmp = std::max(0.0, targetZoomedHorizontalOffsetTmp);
     targetZoomedVerticalOffsetTmp = std::max(0.0, targetZoomedVerticalOffsetTmp);
@@ -1501,6 +1502,24 @@ void Scroller::ComputeBringIntoViewTargetOffsets(
     MUX_ASSERT(targetZoomedVerticalOffsetTmp >= 0.0);
     MUX_ASSERT(targetZoomedHorizontalOffsetTmp <= scrollableWidth);
     MUX_ASSERT(targetZoomedVerticalOffsetTmp <= scrollableHeight);
+
+    if (snapPointsMode == winrt::SnapPointsMode::Default)
+    {
+        // Finally adjust the target offsets based on snap points
+        targetZoomedHorizontalOffsetTmp = ComputeValueAfterSnapPoints(targetZoomedHorizontalOffsetTmp, m_sortedConsolidatedHorizontalSnapPoints);
+        targetZoomedHorizontalOffsetTmp = ComputeValueAfterSnapPoints(targetZoomedHorizontalOffsetTmp, m_sortedConsolidatedVerticalSnapPoints);
+
+        // Make sure the target offsets are within the scrollable boundaries
+        targetZoomedHorizontalOffsetTmp = std::max(0.0, targetZoomedHorizontalOffsetTmp);
+        targetZoomedVerticalOffsetTmp = std::max(0.0, targetZoomedVerticalOffsetTmp);
+        targetZoomedHorizontalOffsetTmp = std::min(scrollableWidth, targetZoomedHorizontalOffsetTmp);
+        targetZoomedVerticalOffsetTmp = std::min(scrollableHeight, targetZoomedVerticalOffsetTmp);
+
+        MUX_ASSERT(targetZoomedHorizontalOffsetTmp >= 0.0);
+        MUX_ASSERT(targetZoomedVerticalOffsetTmp >= 0.0);
+        MUX_ASSERT(targetZoomedHorizontalOffsetTmp <= scrollableWidth);
+        MUX_ASSERT(targetZoomedVerticalOffsetTmp <= scrollableHeight);
+    }
 
     *targetZoomedHorizontalOffset = targetZoomedHorizontalOffsetTmp;
     *targetZoomedVerticalOffset = targetZoomedVerticalOffsetTmp;
@@ -3830,10 +3849,12 @@ void Scroller::OnBringIntoViewRequestedHandler(
     double targetZoomedVerticalOffset = 0.0;
     double appliedOffsetX = 0.0;
     double appliedOffsetY = 0.0;
+    winrt::SnapPointsMode snapPointsMode = winrt::SnapPointsMode::Ignore;
 
     // Compute the target offsets based on the provided BringIntoViewRequestedEventArgs.
     ComputeBringIntoViewTargetOffsets(
         content,
+        snapPointsMode,
         args,
         &targetZoomedHorizontalOffset,
         &targetZoomedVerticalOffset,
@@ -3851,7 +3872,8 @@ void Scroller::OnBringIntoViewRequestedHandler(
             targetZoomedHorizontalOffset,
             targetZoomedVerticalOffset,
             args,
-            offsetsChangeId))
+            offsetsChangeId,
+            &snapPointsMode))
         {
             // A listener canceled the operation in the Scroller.BringingIntoView event handler before any scrolling was attempted.
             RaiseViewChangeCompleted(true /*isForScroll*/, ScrollerViewChangeResult::Completed, offsetsChangeId);
@@ -3875,8 +3897,10 @@ void Scroller::OnBringIntoViewRequestedHandler(
         }
 
         // Re-evaluate the target offsets based on the potentially modified BringIntoViewRequestedEventArgs.
+        // Take into account potential SnapPointsMode == Default so that parents contribute accordingly.
         ComputeBringIntoViewTargetOffsets(
             content,
+            snapPointsMode,
             args,
             &targetZoomedHorizontalOffset,
             &targetZoomedVerticalOffset,
@@ -3906,7 +3930,7 @@ void Scroller::OnBringIntoViewRequestedHandler(
         com_ptr<ScrollOptions> options =
             winrt::make_self<ScrollOptions>(
                 args.AnimationDesired() ? winrt::AnimationMode::Enabled : winrt::AnimationMode::Disabled,
-                winrt::SnapPointsMode::Ignore);
+                snapPointsMode);
 
         ChangeOffsetsPrivate(
             targetZoomedHorizontalOffset /*zoomedHorizontalOffset*/,
@@ -6726,7 +6750,8 @@ bool Scroller::RaiseBringingIntoView(
     double targetZoomedHorizontalOffset,
     double targetZoomedVerticalOffset,
     const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
-    int32_t offsetsChangeId)
+    int32_t offsetsChangeId,
+    _Inout_ winrt::SnapPointsMode* snapPointsMode)
 {
     if (m_bringingIntoViewEventSource)
     {
@@ -6734,11 +6759,13 @@ bool Scroller::RaiseBringingIntoView(
 
         auto bringingIntoViewEventArgs = winrt::make_self<ScrollerBringingIntoViewEventArgs>();
 
+        bringingIntoViewEventArgs->SnapPointsMode(*snapPointsMode);
         bringingIntoViewEventArgs->OffsetsChangeId(offsetsChangeId);
         bringingIntoViewEventArgs->RequestEventArgs(requestEventArgs);
         bringingIntoViewEventArgs->TargetOffsets(targetZoomedHorizontalOffset, targetZoomedVerticalOffset);
 
         m_bringingIntoViewEventSource(*this, *bringingIntoViewEventArgs);
+        *snapPointsMode = bringingIntoViewEventArgs->SnapPointsMode();
         return !bringingIntoViewEventArgs->Cancel();
     }
     return true;
