@@ -1257,8 +1257,13 @@ void NavigationView::ToggleIsExpandedFromItem(const winrt::IInspectable& item)
     auto container = NavigationViewItemOrSettingsContentFromData(item);
     if (container)
     {
-        winrt::get_self<NavigationViewItem>(container)->ToggleIsExpanded();
+        ToggleIsExpandedFromContainer(container);
     }
+}
+
+void NavigationView::ToggleIsExpandedFromContainer(winrt::NavigationViewItem const& container)
+{
+    winrt::get_self<NavigationViewItem>(container)->ToggleIsExpanded();
 }
  
 // SelectedItem change can be invoked by API or user's action like clicking. if it's not from API, m_shouldRaiseInvokeItemInSelectionChange would be true
@@ -3573,12 +3578,18 @@ void NavigationView::UpdatePaneShadow()
 
 void NavigationView::Expand(winrt::NavigationViewItem const& value)
 {
-
+    if (!value.IsExpanded())
+    {
+        ToggleIsExpandedFromContainer(value);
+    }
 }
 
 void NavigationView::Collapse(winrt::NavigationViewItem const& value)
 {
-
+    if (value.IsExpanded())
+    {
+        ToggleIsExpandedFromContainer(value);
+    }
 }
 
 //TODO: Update to work with Overflow Popup

@@ -472,5 +472,57 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(navView.SelectedItem, menuItem2);
             });
         }
+
+        [TestMethod]
+        public void VerifyCanExpandCollapseUsingAPI()
+        {
+            NavigationViewItem menuItem1 = null;
+            NavigationViewItem menuItem2 = null;
+            NavigationViewItem menuItem1_1 = null;
+            NavigationView navView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                MUXControlsTestApp.App.TestContentRoot = navView;
+
+                menuItem1 = new NavigationViewItem();
+                menuItem2 = new NavigationViewItem();
+                menuItem1_1 = new NavigationViewItem();
+                menuItem1.Content = "Item 1";
+                menuItem2.Content = "Item 2";
+                menuItem1_1.Content = "Item 1_1";
+
+                menuItem1.MenuItems.Add(menuItem1_1);
+                navView.MenuItems.Add(menuItem1);
+                navView.MenuItems.Add(menuItem2);
+                navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(menuItem1.IsExpanded);
+
+                navView.Expand(menuItem1);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(menuItem1.IsExpanded);
+
+                navView.Collapse(menuItem1);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(menuItem1.IsExpanded);
+            });
+        }
     }
 }

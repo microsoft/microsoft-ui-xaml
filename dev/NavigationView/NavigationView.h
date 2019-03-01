@@ -275,6 +275,7 @@ private:
 
     void SyncRootNodesWithItemsSource(winrt::IInspectable const& items);
     void ToggleIsExpandedFromItem(const winrt::IInspectable& item);
+    void ToggleIsExpandedFromContainer(winrt::NavigationViewItem const& container);
     void UpdateIsChildSelected(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
 
     winrt::NavigationViewList GetActiveListView();
