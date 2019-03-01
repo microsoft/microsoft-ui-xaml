@@ -1,11 +1,20 @@
 ﻿[WUXC_VERSION_INTERNAL]
 [webhosthidden]
+enum ScrollerViewChangeResult
+{
+    Completed = 0,
+    Interrupted = 1,
+    Ignored = 2,
+};
+
+[WUXC_VERSION_INTERNAL]
+[webhosthidden]
 enum ScrollerSnapPointDimension
 {
     Vertical = 0,
     Horizontal = 1,
     Zoom = 2,
-}; 
+};
 
 [WUXC_VERSION_INTERNAL]
 [webhosthidden]
@@ -41,6 +50,8 @@ runtimeclass ScrollerTestHooks
     static void SetContentLayoutOffsetX(MU_XCP_NAMESPACE.Scroller scroller, Single contentLayoutOffsetX);
     static void GetContentLayoutOffsetY(MU_XCP_NAMESPACE.Scroller scroller, out Single contentLayoutOffsetY);
     static void SetContentLayoutOffsetY(MU_XCP_NAMESPACE.Scroller scroller, Single contentLayoutOffsetY);
+    static ScrollerViewChangeResult GetScrollCompletedResult(MU_XC_NAMESPACE.ScrollCompletedEventArgs scrollCompletedEventArgs);
+    static ScrollerViewChangeResult GetZoomCompletedResult(MU_XC_NAMESPACE.ZoomCompletedEventArgs zoomCompletedEventArgs);
     static Windows.Foundation.Collections.IVector<MU_XCP_NAMESPACE.ScrollerSnapPointBase> GetConsolidatedSnapPoints(MU_XCP_NAMESPACE.Scroller scroller, ScrollerSnapPointDimension dimension);
     static Windows.Foundation.Numerics.Vector2 GetSnapPointActualApplicableZone(MU_XCP_NAMESPACE.ScrollerSnapPointBase snapPoint);
     static Int32 GetSnapPointCombinationCount(MU_XCP_NAMESPACE.ScrollerSnapPointBase snapPoint);

@@ -10,8 +10,9 @@
 IScrollControllerProperties::IScrollControllerProperties()
     : m_interactionInfoChangedEventSource{static_cast<IScrollController*>(this)}
     , m_interactionRequestedEventSource{static_cast<IScrollController*>(this)}
-    , m_offsetChangeRequestedEventSource{static_cast<IScrollController*>(this)}
-    , m_offsetChangeWithAdditionalVelocityRequestedEventSource{static_cast<IScrollController*>(this)}
+    , m_scrollByRequestedEventSource{static_cast<IScrollController*>(this)}
+    , m_scrollFromRequestedEventSource{static_cast<IScrollController*>(this)}
+    , m_scrollToRequestedEventSource{static_cast<IScrollController*>(this)}
 {
 }
 
@@ -43,22 +44,32 @@ void IScrollControllerProperties::InteractionRequested(winrt::event_token const&
     m_interactionRequestedEventSource.remove(token);
 }
 
-winrt::event_token IScrollControllerProperties::OffsetChangeRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerOffsetChangeRequestedEventArgs> const& value)
+winrt::event_token IScrollControllerProperties::ScrollByRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollByRequestedEventArgs> const& value)
 {
-    return m_offsetChangeRequestedEventSource.add(value);
+    return m_scrollByRequestedEventSource.add(value);
 }
 
-void IScrollControllerProperties::OffsetChangeRequested(winrt::event_token const& token)
+void IScrollControllerProperties::ScrollByRequested(winrt::event_token const& token)
 {
-    m_offsetChangeRequestedEventSource.remove(token);
+    m_scrollByRequestedEventSource.remove(token);
 }
 
-winrt::event_token IScrollControllerProperties::OffsetChangeWithAdditionalVelocityRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs> const& value)
+winrt::event_token IScrollControllerProperties::ScrollFromRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollFromRequestedEventArgs> const& value)
 {
-    return m_offsetChangeWithAdditionalVelocityRequestedEventSource.add(value);
+    return m_scrollFromRequestedEventSource.add(value);
 }
 
-void IScrollControllerProperties::OffsetChangeWithAdditionalVelocityRequested(winrt::event_token const& token)
+void IScrollControllerProperties::ScrollFromRequested(winrt::event_token const& token)
 {
-    m_offsetChangeWithAdditionalVelocityRequestedEventSource.remove(token);
+    m_scrollFromRequestedEventSource.remove(token);
+}
+
+winrt::event_token IScrollControllerProperties::ScrollToRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs> const& value)
+{
+    return m_scrollToRequestedEventSource.add(value);
+}
+
+void IScrollControllerProperties::ScrollToRequested(winrt::event_token const& token)
+{
+    m_scrollToRequestedEventSource.remove(token);
 }

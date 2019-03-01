@@ -5,13 +5,19 @@
 
 #include "FloatUtil.h"
 #include "InteractionTrackerAsyncOperation.h"
-#include "ScrollerChangingOffsetsEventArgs.h"
-#include "ScrollerChangingZoomFactorEventArgs.h"
-#include "ScrollerViewChangeCompletedEventArgs.h"
+#include "ScrollAnimationStartingEventArgs.h"
+#include "ZoomAnimationStartingEventArgs.h"
+#include "ScrollCompletedEventArgs.h"
+#include "ZoomCompletedEventArgs.h"
 #include "ScrollerBringingIntoViewEventArgs.h"
 #include "ScrollerAnchorRequestedEventArgs.h"
 #include "ScrollerSnapPoint.h"
 #include "ScrollerTrace.h"
+#include "ViewChange.h"
+#include "OffsetsChange.h"
+#include "OffsetsChangeWithAdditionalVelocity.h"
+#include "ZoomFactorChange.h"
+#include "ZoomFactorChangeWithAdditionalVelocity.h"
 
 #include "Scroller.g.h"
 #include "Scroller.properties.h"
@@ -77,6 +83,9 @@ public:
     static constexpr float s_mouseWheelInertiaDecayRateRS1 = 0.997361f;
     // 0.999972 closely matches the built-in InteractionTracker zooming behavior introduced in RS5.
     static constexpr float s_mouseWheelInertiaDecayRate = 0.999972f;
+
+    static const winrt::ScrollInfo s_noOpScrollInfo;
+    static const winrt::ZoomInfo s_noOpZoomInfo;
 
 #pragma region IScrollAnchorProvider
     void RegisterAnchorCandidate(winrt::UIElement const& element);
@@ -156,10 +165,16 @@ public:
 
     winrt::IVector<winrt::ScrollerSnapPointBase> ZoomSnapPoints();
 
-    int32_t ChangeOffsets(winrt::ScrollerChangeOffsetsOptions const& options);
-    int32_t ChangeOffsetsWithAdditionalVelocity(winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions const& options);
-    int32_t ChangeZoomFactor(winrt::ScrollerChangeZoomFactorOptions const& options);
-    int32_t ChangeZoomFactorWithAdditionalVelocity(winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions const& options);
+    winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset);
+    winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options);
+    winrt::ScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
+    winrt::ScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollOptions const& options);
+    winrt::ScrollInfo ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
+    winrt::ZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
+    winrt::ZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
+    winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
+    winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
+    winrt::ZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 
 #pragma endregion
 
@@ -175,12 +190,12 @@ public:
         const winrt::UIElement& element);
 
     // Invoked by ScrollerTestHooks
-    float GetContentLayoutOffsetX()
+    float GetContentLayoutOffsetX() const
     {
         return m_contentLayoutOffsetX;
     }
 
-    float GetContentLayoutOffsetY()
+    float GetContentLayoutOffsetY() const
     {
         return m_contentLayoutOffsetY;
     }
@@ -344,48 +359,59 @@ private:
     void OnContentLayoutOffsetChanged(ScrollerDimension dimension);
 
     void ChangeOffsetsPrivate(
+        double zoomedHorizontalOffset,
+        double zoomedVerticalOffset,
+        ScrollerViewKind offsetsKind,
+        winrt::ScrollOptions const& options,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
-        const winrt::ScrollerChangeOffsetsOptions& options,
         int32_t existingViewChangeId,
         _Out_opt_ int32_t* viewChangeId);
     void ChangeOffsetsWithAdditionalVelocityPrivate(
+        winrt::float2 offsetsVelocity,
+        winrt::IReference<winrt::float2> inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
-        const winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions& options,
         _Out_opt_ int32_t* viewChangeId);
+
     void ChangeZoomFactorPrivate(
-        const winrt::ScrollerChangeZoomFactorOptions& options,
+        float zoomFactor,
+        winrt::IReference<winrt::float2> centerPoint,
+        ScrollerViewKind zoomFactorKind,
+        winrt::ZoomOptions const& options,
         _Out_opt_ int32_t* viewChangeId);
     void ChangeZoomFactorWithAdditionalVelocityPrivate(
+        float zoomFactorVelocity,
+        winrt::IReference<winrt::float2> centerPoint,
+        winrt::IReference<float> inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
-        const winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions& options,
         _Out_opt_ int32_t* viewChangeId);
+
     void ProcessDequeuedViewChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
     void ProcessOffsetsChange(
         InteractionTrackerAsyncOperationTrigger operationTrigger,
-        const winrt::ScrollerChangeOffsetsOptions& options,
-        int32_t viewChangeId,
+        std::shared_ptr<OffsetsChange> offsetsChange,
+        int32_t offsetsChangeId,
         bool isForAsyncOperation);
     void ProcessOffsetsChange(
-        const winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions& options);
+        std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity);
     void PostProcessOffsetsChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
     void ProcessZoomFactorChange(
-        const winrt::ScrollerChangeZoomFactorOptions& options,
-        int32_t viewChangeId);
+        std::shared_ptr<ZoomFactorChange> zoomFactorChange,
+        int32_t zoomFactorChangeId);
     void ProcessZoomFactorChange(
-        const winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions& options);
+        std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity);
     void PostProcessZoomFactorChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
     bool InterruptViewChangeWithAnimation(InteractionTrackerAsyncOperationType interactionTrackerAsyncOperationType);
     void CompleteViewChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation,
-        const winrt::ScrollerViewChangeResult& result);
+        ScrollerViewChangeResult result);
     void CompleteInteractionTrackerOperations(
         int requestId,
-        const winrt::ScrollerViewChangeResult& operationResult,
-        const winrt::ScrollerViewChangeResult& priorNonAnimatedOperationsResult,
-        const winrt::ScrollerViewChangeResult& priorAnimatedOperationsResult,
+        ScrollerViewChangeResult operationResult,
+        ScrollerViewChangeResult priorNonAnimatedOperationsResult,
+        ScrollerViewChangeResult priorAnimatedOperationsResult,
         bool completeOperation,
         bool completePriorNonAnimatedOperations,
         bool completePriorAnimatedOperations);
@@ -397,11 +423,11 @@ private:
         bool includeNonAnimatedOperations) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromRequestId(
         int requestId) const;
-    std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromKinds(
+    std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTrackerOperationFromKinds(
         bool isOperationTypeForOffsetsChange,
-        InteractionTrackerAsyncOperationTrigger trigger,
-        const winrt::ScrollerViewKind& viewKind,
-        const winrt::ScrollerViewChangeKind& viewChangeKind) const;
+        InteractionTrackerAsyncOperationTrigger operationTrigger,
+        ScrollerViewKind const& viewKind,
+        winrt::ScrollOptions const& options) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationWithAdditionalVelocity(
         bool isOperationTypeForOffsetsChange,
         InteractionTrackerAsyncOperationTrigger operationTrigger) const;
@@ -440,11 +466,11 @@ private:
         double zoomedHorizontalOffset,
         double zoomedVerticalOffset,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
-        int32_t viewChangeId);
+        int32_t offsetsChangeId);
     winrt::CompositionAnimation GetZoomFactorAnimation(
         float zoomFactor,
         const winrt::float2& centerPoint,
-        int32_t viewChangeId);
+        int32_t zoomFactorChangeId);
     int GetNextViewChangeId();
 
     bool IsLoaded();
@@ -482,24 +508,25 @@ private:
     void RaiseExtentChanged();
     void RaiseStateChanged();
     void RaiseViewChanged();
-    winrt::CompositionAnimation RaiseChangingOffsets(
+    winrt::CompositionAnimation RaiseScrollAnimationStarting(
         const winrt::Vector3KeyFrameAnimation& positionAnimation,
         const winrt::float2& currentPosition,
         const winrt::float2& endPosition,
-        int32_t viewChangeId);
-    winrt::CompositionAnimation RaiseChangingZoomFactor(
+        int32_t offsetsChangeId);
+    winrt::CompositionAnimation RaiseZoomAnimationStarting(
         const winrt::ScalarKeyFrameAnimation& zoomFactorAnimation,
         const float endZoomFactor,
         const winrt::float2& centerPoint,
-        int32_t viewChangeId);
+        int32_t zoomFactorChangeId);
     void RaiseViewChangeCompleted(
-        const winrt::ScrollerViewChangeResult& result,
+        bool isForScroll,
+        ScrollerViewChangeResult result,
         int32_t viewChangeId);
     bool RaiseBringingIntoView(
         double targetZoomedHorizontalOffset,
         double targetZoomedVerticalOffset,
         const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
-        int32_t viewChangeId);
+        int32_t offsetsChangeId);
 
     // Event handlers
     void OnCompositionTargetRendering(
@@ -537,12 +564,15 @@ private:
     void OnScrollControllerInteractionInfoChanged(
         const winrt::IScrollController& sender,
         const winrt::IInspectable& args);
-    void OnScrollControllerOffsetChangeRequested(
+    void OnScrollControllerScrollToRequested(
         const winrt::IScrollController& sender,
-        const winrt::ScrollControllerOffsetChangeRequestedEventArgs& args);
-    void OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
+        const winrt::ScrollControllerScrollToRequestedEventArgs& args);
+    void OnScrollControllerScrollByRequested(
         const winrt::IScrollController& sender,
-        const winrt::ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs& args);
+        const winrt::ScrollControllerScrollByRequestedEventArgs& args);
+    void OnScrollControllerScrollFromRequested(
+        const winrt::IScrollController& sender,
+        const winrt::ScrollControllerScrollFromRequestedEventArgs& args);
 
     void OnHorizontalSnapPointsVectorChanged(
         const winrt::IObservableVector<winrt::ScrollerSnapPointBase>& sender,
@@ -722,13 +752,15 @@ private:
     winrt::event_token m_contentHorizontalAlignmentChangedToken{};
     winrt::event_token m_contentVerticalAlignmentChangedToken{};
 
-    winrt::event_token m_horizontalScrollControllerOffsetChangeRequestedToken{};
-    winrt::event_token m_horizontalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken{};
+    winrt::event_token m_horizontalScrollControllerScrollToRequestedToken{};
+    winrt::event_token m_horizontalScrollControllerScrollByRequestedToken{};
+    winrt::event_token m_horizontalScrollControllerScrollFromRequestedToken{};
     winrt::event_token m_horizontalScrollControllerInteractionRequestedToken{};
     winrt::event_token m_horizontalScrollControllerInteractionInfoChangedToken{};
 
-    winrt::event_token m_verticalScrollControllerOffsetChangeRequestedToken{};
-    winrt::event_token m_verticalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken{};
+    winrt::event_token m_verticalScrollControllerScrollToRequestedToken{};
+    winrt::event_token m_verticalScrollControllerScrollByRequestedToken{};
+    winrt::event_token m_verticalScrollControllerScrollFromRequestedToken{};
     winrt::event_token m_verticalScrollControllerInteractionRequestedToken{};
     winrt::event_token m_verticalScrollControllerInteractionInfoChangedToken{};
 

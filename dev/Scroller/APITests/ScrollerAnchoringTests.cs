@@ -28,10 +28,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
-using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 using ScrollerAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
@@ -166,7 +165,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
-                ChangeZoomFactor(scroller, 2.0f, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+                ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -185,7 +184,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ChangeOffsets(scroller, horizontalOffset, verticalOffset, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
+                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -276,7 +275,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
-                ChangeZoomFactor(scroller, 2.0f, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+                ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -295,7 +294,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ChangeOffsets(scroller, horizontalOffset, verticalOffset, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
+                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -373,7 +372,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 double horizontalOffset = orientation == Orientation.Vertical ? 0.0 : 1.0;
                 double verticalOffset = orientation == Orientation.Vertical ? 1.0 : 0.0;
 
-                ChangeOffsets(scroller, horizontalOffset, verticalOffset, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints);
+                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -436,7 +435,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
-                ChangeZoomFactor(scroller, 2.0f, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+                ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -455,7 +454,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ChangeOffsets(scroller, horizontalOffset, verticalOffset, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
+                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -511,7 +510,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
-                ChangeZoomFactor(scroller, 2.0f, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+                ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -530,7 +529,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ChangeOffsets(scroller, horizontalOffset, verticalOffset, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
+                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -756,7 +755,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 WaitForEvent("Waiting for Scroller.Loaded event", scrollerLoadedEvent);
                 IdleSynchronizer.Wait();
 
-                ChangeOffsets(scroller, 0.0, 600.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints);
+                ScrollTo(scroller, 0.0, 600.0, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -807,8 +806,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
-                    ChangeZoomFactor(scroller, 2.0f, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation);
-                    ChangeOffsets(scroller, 0.0, 250.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
+                    ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Enabled, SnapPointsMode.Ignore);
+                    ScrollTo(scroller, 0.0, 250.0, AnimationMode.Enabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                     ItemsRepeater repeater = null;
                     TestDataSource dataSource = null;
