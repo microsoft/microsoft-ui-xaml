@@ -24,7 +24,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class RevealTests
     {
-        //Bug 19007647: ApiTests.RevealTests.ValidateAppBarButtonRevealStyles failing in master
         [TestMethod]
         public void ValidateAppBarButtonRevealStyles()
         {
