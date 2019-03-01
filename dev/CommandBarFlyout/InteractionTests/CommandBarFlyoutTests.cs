@@ -58,16 +58,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         internal class CommandBarFlyoutTestSetupHelper : TestSetupHelper
         {
             public CommandBarFlyoutTestSetupHelper(string languageOverride = "", bool attemptRestartOnDispose = true)
-                : base("CommandBarFlyout Tests", languageOverride, attemptRestartOnDispose)
+                : base(new[] { "CommandBarFlyout Tests", "Base CommandBarFlyout Tests" }, languageOverride, attemptRestartOnDispose)
             {
-                innerPageSetupHelper = new TestSetupHelper("Base CommandBarFlyout Tests", languageOverride, attemptRestartOnDispose);
                 statusReportingTextBox = FindElement.ById<Edit>("StatusReportingTextBox");
-            }
-
-            public override void Dispose()
-            {
-                innerPageSetupHelper.Dispose();
-                base.Dispose();
             }
 
             public void ExecuteAndWaitForEvent(Action action, string eventText)
@@ -96,7 +89,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
 
-            private TestSetupHelper innerPageSetupHelper;
             private Edit statusReportingTextBox;
         }
 
@@ -247,6 +239,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.AreEqual(1, flowsFromCollection.Count);
                 Verify.AreEqual(moreButtonElement, flowsFromCollection[0]);
+
+                Log.Comment("Tapping on a button to hide the CommandBarFlyout.");
+                InputHelper.Tap(showCommandBarFlyoutButton);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyFlowsToAndFromIsNotSetWithoutPrimaryCommands()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
+            {
+                Log.Warning("Test is disabled pre-RS2 because CommandBarFlyout is not supported pre-RS2");
+                return;
+            }
+
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with no primary commands");
+                ToggleButton isFlyoutOpenCheckBox = FindElement.ById<ToggleButton>("IsFlyoutOpenCheckBox");
+
+                Log.Comment("Tapping on a button to show the CommandBarFlyout.");
+                InputHelper.Tap(showCommandBarFlyoutButton);
+
+                Log.Comment("Retrieving the undo button's automation element object.");
+                FindElement.ById("UndoButton6").SetFocus();
+                Wait.ForIdle();
+                var undoButtonElement = AutomationElement.FocusedElement;
+
+                Log.Comment("Verifying that the undo button does not point at the more button using FlowsFrom.");
+                var flowsFromCollection = (AutomationElementCollection)undoButtonElement.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_FlowsFromPropertyId));
+                Verify.AreEqual(0, flowsFromCollection.Count);
 
                 Log.Comment("Tapping on a button to hide the CommandBarFlyout.");
                 InputHelper.Tap(showCommandBarFlyoutButton);

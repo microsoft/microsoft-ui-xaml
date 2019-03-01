@@ -3825,7 +3825,7 @@ void Scroller::OnBringIntoViewRequestedHandler(
     }
 
     winrt::Rect targetRect{};
-    int32_t viewChangeId = -1;
+    int32_t offsetsChangeId = -1;
     double targetZoomedHorizontalOffset = 0.0;
     double targetZoomedVerticalOffset = 0.0;
     double appliedOffsetX = 0.0;
@@ -3845,16 +3845,16 @@ void Scroller::OnBringIntoViewRequestedHandler(
     {
         // Raise the Scroller.BringingIntoView event to give the listeners a chance to adjust the operation.
 
-        viewChangeId = m_latestViewChangeId = GetNextViewChangeId();
+        offsetsChangeId = m_latestViewChangeId = GetNextViewChangeId();
 
         if (!RaiseBringingIntoView(
             targetZoomedHorizontalOffset,
             targetZoomedVerticalOffset,
             args,
-            viewChangeId))
+            offsetsChangeId))
         {
             // A listener canceled the operation in the Scroller.BringingIntoView event handler before any scrolling was attempted.
-            RaiseViewChangeCompleted(true /*isForScroll*/, ScrollerViewChangeResult::Completed, viewChangeId);
+            RaiseViewChangeCompleted(true /*isForScroll*/, ScrollerViewChangeResult::Completed, offsetsChangeId);
             return;
         }
 
@@ -3914,13 +3914,13 @@ void Scroller::OnBringIntoViewRequestedHandler(
             ScrollerViewKind::Absolute,
             *options,
             InteractionTrackerAsyncOperationTrigger::DirectViewChange,
-            viewChangeId /*existingViewChangeId*/,
+            offsetsChangeId /*existingViewChangeId*/,
             nullptr /*viewChangeId*/);
     }
     else
     {
         // No offset change was triggered because the target offsets are the same as the current ones. Mark the operation as completed immediately.
-        RaiseViewChangeCompleted(true /*isForScroll*/, ScrollerViewChangeResult::Completed, viewChangeId);
+        RaiseViewChangeCompleted(true /*isForScroll*/, ScrollerViewChangeResult::Completed, offsetsChangeId);
     }
 
     if (SharedHelpers::DoRectsIntersect(nextTargetRect, viewportRect))
