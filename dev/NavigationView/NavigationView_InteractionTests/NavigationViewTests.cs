@@ -3859,15 +3859,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
         }
 
+        private bool IsLowerThanRS5()
+        {
+            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
+            {
+                return false;
+            }
+
+            Log.Warning("Binding for Hierarchical Nav only works for RS5 and up");
+            return true;
+        }
+
         [TestMethod]
         [TestProperty("NavViewTestSuite", "D")]
         public void ImplicityDeselectHiddenChildMenuItemTest()
         {
             var testScenarios = RegressionTestScenario.BuildHNavRegressionTestScenarios();
+            if (IsLowerThanRS5())
+            {
+                testScenarios = RegressionTestScenario.BuildHNavMarkupRegressionTestScenarios();
+            }
+
             foreach (var testScenario in testScenarios)
             {
-                using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
-                 page2 = new TestSetupHelper(testScenario.TestPageName))
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
                     ExpandFirstMenuItemBranch();
 
@@ -3897,10 +3912,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public void CollapseSelectableParentWithChildSelected()
         {
             var testScenarios = RegressionTestScenario.BuildHNavRegressionTestScenarios();
+            if (IsLowerThanRS5())
+            {
+                testScenarios = RegressionTestScenario.BuildHNavMarkupRegressionTestScenarios();
+            }
+
             foreach (var testScenario in testScenarios)
             {
-                using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
-                 page2 = new TestSetupHelper(testScenario.TestPageName))
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
                     Log.Comment("Expand Menu Item 5");
 
@@ -4025,6 +4044,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public static List<RegressionTestScenario> BuildHNavRegressionTestScenarios()
         {
             return BuildTestScenarios(RegressionTestType.LeftHNavMarkup | RegressionTestType.LeftHNavDatabinding);
+        }
+        public static List<RegressionTestScenario> BuildHNavMarkupRegressionTestScenarios()
+        {
+            return BuildTestScenarios(RegressionTestType.LeftHNavMarkup);
         }
         private static List<RegressionTestScenario> BuildTestScenarios(RegressionTestType types)
         {
