@@ -30,4 +30,5 @@
        to non-public types.  So for now we'll just exclude these from the OS repo. -->
   <Import Project="..\..\dev\Interactions\ButtonInteraction\InteractionTests\ButtonInteraction_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true'" />
   <Import Project="..\..\dev\Interactions\SliderInteraction\InteractionTests\SliderInteraction_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadialGradientBrush\InteractionTests\RadialGradientBrush_InteractionTests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
 </Project>

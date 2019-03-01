@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -32,6 +32,7 @@ namespace MUXControlsTestApp
             Tests.Add(new TestDeclaration("CommonStyles Tests", typeof(CommonStylesPage)));
             Tests.Add(new TestDeclaration("RadioButtons Tests", typeof(RadioButtonsPage)));
             Tests.Add(new TestDeclaration("RadioMenuFlyoutItem Tests", typeof(RadioMenuFlyoutItemPage)));
+            Tests.Add(new TestDeclaration("RadialGradientBrush Tests", typeof(RadialGradientBrushPage)));
 #endif
 
             // These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
@@ -58,4 +59,5 @@ namespace MUXControlsTestApp
         public static List<TestDeclaration> Tests { get; private set; }
     }
 }
+
 

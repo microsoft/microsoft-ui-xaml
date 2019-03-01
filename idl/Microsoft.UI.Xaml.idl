@@ -1,4 +1,4 @@
-﻿#define WUXC_VERSION_RS3_CONTRACT  5
+#define WUXC_VERSION_RS3_CONTRACT  5
 #define WUXC_VERSION_RS4_CONTRACT  6
 #define WUXC_VERSION_RS5_CONTRACT  7
 #define WUXC_VERSION_19H1_CONTRACT 8
@@ -251,6 +251,7 @@ namespace MU_XC_NAMESPACE
 #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
 #ifndef BUILD_WINDOWS
 #include <AnimatedVisualPlayer\AnimatedVisualPlayer.idl>
+#include <RadialGradientBrush\RadialGradientBrush.idl>
 #endif
 #include <ColorPicker\Common.idl>
 #include <ColorPicker\ColorPicker.idl>
@@ -369,3 +370,4 @@ namespace MU_PRIVATE_MEDIA_NAMESPACE
 #include <Materials\Reveal\RevealBrushTestApi.idl>
 #include <Materials\Acrylic\AcrylicTestApi.idl>
 }
+

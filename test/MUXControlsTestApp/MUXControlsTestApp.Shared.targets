@@ -19,7 +19,7 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PullToRefresh\RefreshContainer\TestUI\RefreshContainer_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\TestUI\ScrollViewerAdapter_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PullToRefresh\TestUI\PTR_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadioMenuFlyoutItem\TestUI\RadioMenuFlyoutItem_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />  
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadioMenuFlyoutItem\TestUI\RadioMenuFlyoutItem_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RatingControl\TestUI\RatingControl_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Repeater\TestUI\Repeater_TestUI.projitems" Label="Shared" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Scroller\TestUI\Scroller_TestUI.projitems" Label="Shared" />
@@ -58,4 +58,5 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\SliderInteraction\TestUI\SliderInteraction_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true' And $(UseInternalSDK) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\ButtonInteraction\APITests\ButtonInteraction_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true' And $(UseInternalSDK) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\SliderInteraction\APITests\SliderInteraction_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true' And $(UseInternalSDK) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadialGradientBrush\TestUI\RadialGradientBrush_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
 </Project>
