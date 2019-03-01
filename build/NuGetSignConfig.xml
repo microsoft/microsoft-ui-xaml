@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <SignConfigXML>
-  <job platform="" configuration="" dest="__OUTPATHROOT__" jobname="dep.controls" approvers="">
-    <file src="__INPATHROOT__\PostBuild\Microsoft.UI.Xaml*.nupkg" signType="Nuget" />
+  <job platform="" configuration="" dest="__INPATHROOT__" jobname="dep.controls" approvers="">
+    <file src="__INPATHROOT__\Microsoft.UI.Xaml*.nupkg" signType="Nuget" />
   </job>
-  <job platform="" configuration="" dest="__OUTPATHROOT__\FrameworkPackage" jobname="dep.controls" approvers="">
-    <file src="__INPATHROOT__\PostBuild\FrameworkPackage\Microsoft.UI.Xaml*.nupkg" signType="Nuget" />
+  <job platform="" configuration="" dest="__INPATHROOT__\FrameworkPackage" jobname="dep.controls" approvers="">
+    <file src="__INPATHROOT__\FrameworkPackage\Microsoft.UI.Xaml*.nupkg" signType="Nuget" />
   </job>
 </SignConfigXML>

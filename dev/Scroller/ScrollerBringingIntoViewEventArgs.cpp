@@ -21,9 +21,9 @@ double ScrollerBringingIntoViewEventArgs::TargetVerticalOffset()
     return m_targetVerticalOffset;
 }
 
-int32_t ScrollerBringingIntoViewEventArgs::ViewChangeId()
+winrt::ScrollInfo ScrollerBringingIntoViewEventArgs::ScrollInfo()
 {
-    return m_viewChangeId;
+    return winrt::ScrollInfo{ m_offsetsChangeId };
 }
 
 bool ScrollerBringingIntoViewEventArgs::Cancel()
@@ -36,9 +36,9 @@ void ScrollerBringingIntoViewEventArgs::Cancel(bool value)
     m_cancel = value;
 }
 
-void ScrollerBringingIntoViewEventArgs::ViewChangeId(int32_t viewChangeId)
+void ScrollerBringingIntoViewEventArgs::OffsetsChangeId(int32_t offsetsChangeId)
 {
-    m_viewChangeId = viewChangeId;
+    m_offsetsChangeId = offsetsChangeId;
 }
 
 void ScrollerBringingIntoViewEventArgs::RequestEventArgs(const winrt::BringIntoViewRequestedEventArgs& requestEventArgs)

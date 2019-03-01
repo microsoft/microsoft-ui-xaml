@@ -203,6 +203,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox tipFollowsTargetCheckBox;
 
+        public ComboBox GetIconComboBox()
+        {
+            return GetElement(ref iconComboBox, "IconComboBox");
+        }
+        private ComboBox iconComboBox;
+
+        public Button GetSetIconButton()
+        {
+            return GetElement(ref setIconButton, "SetIconButton");
+        }
+        private Button setIconButton;
+
         public UIObject GetTeachingTip()
         {
             return GetElement(ref teachingTip, "TeachingTip");
@@ -243,6 +255,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             BlueSquare,
             Image,
             NoContent
+        }
+
+        public enum IconOptions
+        {
+            People,
+            NoIcon
         }
     }
 }

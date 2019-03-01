@@ -30,7 +30,7 @@ using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using ElementFactory = Microsoft.UI.Xaml.Controls.ElementFactory;
 using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext;
-using RepeaterAutomationPeer = Microsoft.UI.Xaml.Controls.RepeaterAutomationPeer;
+using RepeaterAutomationPeer = Microsoft.UI.Xaml.Automation.Peers.RepeaterAutomationPeer;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests

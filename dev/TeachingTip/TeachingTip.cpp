@@ -146,6 +146,24 @@ void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const 
     }
 }
 
+// Playing a closing animation when the Teaching Tip is closed via light dismiss requires this work around.
+// This is because there is no event that occurs when a popup is closing due to light dismiss so we have no way to intercept
+// the close and play our animation first. To work around this we've created a second popup which has no content and sits
+// underneath the teaching tip and is put into light dismiss mode instead of the primary popup. Then when this popup closes
+// due to light dismiss we know we are supposed to close the primary popup as well. To ensure that this popup does not block
+// interaction to the primary popup we need to make sure that the LightDismissIndicatorPopup is always opened first, so that
+// it is Z ordered underneath the primary popup.
+void TeachingTip::CreateLightDismissIndicatorPopup()
+{
+    if (!m_lightDismissIndicatorPopup)
+    {
+        m_lightDismissIndicatorPopup.set(winrt::Popup());
+        // A Popup needs contents to open, so set a child that doesn't do anything.
+        auto grid = winrt::Grid();
+        m_lightDismissIndicatorPopup.get().Child(grid);
+    }
+}
+
 void TeachingTip::UpdateBeak()
 {
     float height = static_cast<float>(m_beakOcclusionGrid.get().ActualHeight());
@@ -676,15 +694,16 @@ void TeachingTip::OnIsOpenChanged()
                 static_cast<float>(m_target.get().as<winrt::FrameworkElement>().ActualHeight())
                 });
         }
+        if (!m_lightDismissIndicatorPopup)
+        {
+            CreateLightDismissIndicatorPopup();
+        }
         if (!m_popup)
         {
             m_popup.set(winrt::Popup());
             m_popupClosedRevoker = m_popup.get().Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
-            if (IsLightDismissEnabled())
-            {
-                m_popup.get().IsLightDismissEnabled(true);
-            }
         }
+        OnIsLightDismissEnabledChanged();
         if (!m_contractAnimation)
         {
             CreateContractAnimation();
@@ -706,6 +725,7 @@ void TeachingTip::OnIsOpenChanged()
                 m_isIdle = false;
                 TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
             }
+            m_lightDismissIndicatorPopup.get().IsOpen(true);
             m_popup.get().IsOpen(true);
             if (m_beakOcclusionGrid)
             {
@@ -759,16 +779,15 @@ void TeachingTip::OnIsOpenChanged()
 
 void TeachingTip::OnIconSourceChanged()
 {
+    auto templateSettings = winrt::get_self<::TeachingTipTemplateSettings>(TemplateSettings());
     if (auto source = IconSource())
     {
+        templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
         winrt::VisualStateManager::GoToState(*this, L"Icon"sv, false);
-        if (m_iconBorder)
-        {
-            m_iconBorder.get().Child(SharedHelpers::MakeIconElementFrom(source));
-        }
     }
     else
     {
+        templateSettings->IconElement(nullptr);
         winrt::VisualStateManager::GoToState(*this, L"NoIcon"sv, false);
     }
 }
@@ -783,18 +802,23 @@ void TeachingTip::OnTargetOffsetChanged()
 
 void TeachingTip::OnIsLightDismissEnabledChanged()
 {
-    if (m_popup)
-    {
-        m_popup.get().IsLightDismissEnabled(IsLightDismissEnabled());
-    }
-
     if (IsLightDismissEnabled())
     {
         winrt::VisualStateManager::GoToState(*this, L"LightDismiss"sv, false);
+        if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
+        {
+            lightDismissIndicatorPopup.IsLightDismissEnabled(true);
+            m_lightDismissIndicatorPopupClosedRevoker = lightDismissIndicatorPopup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnLightDismissIndicatorPopupClosed });
+        }
     }
     else
     {
         winrt::VisualStateManager::GoToState(*this, L"NormalDismiss"sv, false);
+        if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
+        {
+            lightDismissIndicatorPopup.IsLightDismissEnabled(false);
+        }
+        m_lightDismissIndicatorPopupClosedRevoker.revoke();
     }
 }
 
@@ -848,14 +872,19 @@ void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt:
 void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     m_popup.get().Child(nullptr);
+    m_lightDismissIndicatorPopup.get().IsOpen(false);
     auto myArgs = winrt::make_self<TeachingTipClosedEventArgs>();
+    myArgs->Reason(m_lastCloseReason);
+    m_closedEventSource(*this, *myArgs);
+}
+
+void TeachingTip::OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
+{
     if (IsOpen())
     {
         m_lastCloseReason = winrt::TeachingTipCloseReason::LightDismiss;
-        IsOpen(false);
     }
-    myArgs->Reason(m_lastCloseReason);
-    m_closedEventSource(*this, *myArgs);
+    IsOpen(false);
 }
 
 void TeachingTip::RaiseClosingEvent()
@@ -912,9 +941,13 @@ void TeachingTip::ClosePopupWithAnimationIfAvailable()
 
 void TeachingTip::ClosePopup()
 {
-    if (m_popup)
+    if (auto&& popup = m_popup.get())
     {
-        m_popup.get().IsOpen(false);
+        popup.IsOpen(false);
+    }
+    if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
+    {
+        lightDismissIndicatorPopup.IsOpen(false);
     }
     if (SharedHelpers::IsRS5OrHigher() && m_beakOcclusionGrid)
     {
@@ -1131,7 +1164,7 @@ void TeachingTip::StartContractToClose()
 winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
 {
     auto placement = Placement();
-    if(placement != winrt::TeachingTipPlacementMode::Auto)
+    if (placement != winrt::TeachingTipPlacementMode::Auto)
     {
         return placement;
     }

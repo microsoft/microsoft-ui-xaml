@@ -23,7 +23,7 @@ public:
     winrt::BringIntoViewRequestedEventArgs RequestEventArgs();
     double TargetHorizontalOffset();
     double TargetVerticalOffset();
-    int32_t ViewChangeId();
+    winrt::ScrollInfo ScrollInfo();
     bool Cancel();
     void Cancel(bool value); 
 
@@ -42,7 +42,7 @@ public:
         return m_cancel;
     }
 
-    void ViewChangeId(int32_t viewChangeId);
+    void OffsetsChangeId(int32_t offsetsChangeId);
     void RequestEventArgs(const winrt::BringIntoViewRequestedEventArgs& requestEventArgs);
     void TargetOffsets(double targetHorizontalOffset, double targetVerticalOffset);
 
@@ -51,6 +51,6 @@ private:
     double m_targetHorizontalOffset{ 0.0 };
     double m_targetVerticalOffset{ 0.0 };
     bool m_cancel{ false };
-    int32_t m_viewChangeId{ -1 };
+    int32_t m_offsetsChangeId{ -1 };
 };
 

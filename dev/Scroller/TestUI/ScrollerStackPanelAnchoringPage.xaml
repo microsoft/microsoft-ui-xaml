@@ -102,7 +102,7 @@
 
             <Button x:Name="btnInvalidateArrange" Content="InvalidateArrange" Margin="1" Grid.Row="8" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnInvalidateArrange_Click"/>
 
-            <TextBlock Text="ScrollerChangeOffsetsOptions" Grid.Row="9" Grid.ColumnSpan="4" Margin="0,4,0,0"/>
+            <TextBlock Text="ScrollTo Options" Grid.Row="9" Grid.ColumnSpan="4" Margin="0,4,0,0"/>
             <TextBlock Text="Offset:" Grid.Column="0" Grid.Row="10" VerticalAlignment="Center"/>
             <TextBox x:Name="txtCOAO" Text="0" Grid.Column="1" Grid.Row="10" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="1"/>
             <TextBlock Text="Duration override (msec):" Grid.Column="0" Grid.Row="11" VerticalAlignment="Center"/>
@@ -110,14 +110,14 @@
                 <TextBox x:Name="txtStockOffsetsChangeDuration" IsReadOnly="True" Margin="1"/>
                 <TextBox x:Name="txtOverriddenOffsetsChangeDuration" Margin="1"/>
             </StackPanel>
-            <Button x:Name="btnChangeOffsets" Content="ChangeOffsets" Grid.ColumnSpan="4" Grid.Row="12" Margin="1" HorizontalAlignment="Stretch" Click="BtnChangeOffsets_Click"/>
+            <Button x:Name="btnScrollTo" Content="ScrollTo" Grid.ColumnSpan="4" Grid.Row="12" Margin="1" HorizontalAlignment="Stretch" Click="BtnScrollTo_Click"/>
 
-            <TextBlock Text="ScrollerChangeOffsetsWithAdditionalVelocityOptions" Grid.Row="13" Grid.ColumnSpan="4" Margin="0,4,0,0"/>
+            <TextBlock Text="ScrollFrom Options" Grid.Row="13" Grid.ColumnSpan="4" Margin="0,4,0,0"/>
             <TextBlock Text="Velocity:" Grid.Column="0" Grid.Row="14" VerticalAlignment="Center"/>
             <TextBox x:Name="txtCOWAVAV" Text="0" Grid.Column="1" Grid.Row="14" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="1"/>
             <TextBlock Text="InertiaDecayRate:" Grid.Column="0" Grid.Row="15" VerticalAlignment="Center"/>
             <TextBox x:Name="txtCOWAVAIDR" Text="null" Grid.Column="1" Grid.Row="15" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="1"/>
-            <Button x:Name="btnChangeOffsetsWithAdditionalVelocity" Content="ChangeOffsets" Grid.ColumnSpan="4" Grid.Row="16" Margin="1" HorizontalAlignment="Stretch" Click="BtnChangeOffsetsWithAdditionalVelocity_Click"/>
+            <Button x:Name="btnScrollFrom" Content="ScrollFrom" Grid.ColumnSpan="4" Grid.Row="16" Margin="1" HorizontalAlignment="Stretch" Click="BtnScrollFrom_Click"/>
         </Grid>
 
         <Grid Grid.Row="1" Grid.Column="2" Margin="1">
