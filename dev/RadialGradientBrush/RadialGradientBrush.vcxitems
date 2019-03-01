@@ -20,16 +20,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\RadialGradientBrush.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RadialGradientBrush.cpp" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
-    <Page Include="$(MSBuildThisFileDirectory)RadialGradientBrush.xaml">
-      <Version>RS1</Version>
-      <Type>DefaultStyle</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RadialGradientBrush_themeresources.xaml">
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-    </Page>
-  </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)RadialGradientBrush.idl" />
   </ItemGroup>
