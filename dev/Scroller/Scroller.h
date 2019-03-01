@@ -674,6 +674,7 @@ private:
         const winrt::Rect& descendantRect);
 
     static bool IsInteractionTrackerMouseWheelZoomingEnabled();
+    static bool IsInteractionTrackerClampingOptionEnabled();
     static bool IsVisualTranslationPropertyAvailable();
     static wstring_view GetVisualTargetedPropertyName(ScrollerDimension dimension);
 

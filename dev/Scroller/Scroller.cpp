@@ -3218,6 +3218,22 @@ bool Scroller::IsInteractionTrackerMouseWheelZoomingEnabled()
     return isInteractionTrackerMouseWheelZoomingEnabled;
 }
 
+// Returns False prior to RS5 where the InteractionTracker does not support the InteractionTrackerClampingOption enum.
+// Starting with RS5, returns True unless a test hook is set to disable the use of the InteractionTracker's enum.
+bool Scroller::IsInteractionTrackerClampingOptionEnabled()
+{
+    bool isInteractionTrackerClampingOptionEnabled = SharedHelpers::IsRS5OrHigher();
+
+    if (isInteractionTrackerClampingOptionEnabled)
+    {
+        com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
+
+        isInteractionTrackerClampingOptionEnabled = !globalTestHooks || globalTestHooks->IsInteractionTrackerClampingOptionEnabled();
+    }
+
+    return isInteractionTrackerClampingOptionEnabled;
+}
+
 // Returns True on RedStone 2 and later versions, where the ElementCompositionPreview::SetIsTranslationEnabled method is available.
 bool Scroller::IsVisualTranslationPropertyAvailable()
 {
@@ -5598,7 +5614,7 @@ void Scroller::ProcessOffsetsChange(
                     L"TryUpdatePositionBy",
                     TypeLogging::Float2ToString(winrt::float2(static_cast<float>(zoomedHorizontalOffset), static_cast<float>(zoomedVerticalOffset))).c_str());
 
-                if (SharedHelpers::IsRS5OrHigher())
+                if (Scroller::IsInteractionTrackerClampingOptionEnabled())
                 {
                     // Starting with RS5, position clamping is turned off and the request is handed off to the InteractionTracker
                     // after a single UI thread tick for an improved response time.
@@ -5620,7 +5636,7 @@ void Scroller::ProcessOffsetsChange(
                 SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_STR, METH_NAME, this,
                     L"TryUpdatePosition", TypeLogging::Float2ToString(targetPosition).c_str());
 
-                if (SharedHelpers::IsRS5OrHigher())
+                if (Scroller::IsInteractionTrackerClampingOptionEnabled())
                 {
                     // Starting with RS5, position clamping is turned off and the request is handed off to the InteractionTracker
                     // after a single UI thread tick for an improved response time.

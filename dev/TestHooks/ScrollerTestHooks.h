@@ -28,6 +28,8 @@ public:
     static void AreInteractionSourcesNotificationsRaised(bool areInteractionSourcesNotificationsRaised);
     static bool IsInteractionTrackerMouseWheelZoomingEnabled();
     static void IsInteractionTrackerMouseWheelZoomingEnabled(bool isInteractionTrackerMouseWheelZoomingEnabled);
+    static bool IsInteractionTrackerClampingOptionEnabled();
+    static void IsInteractionTrackerClampingOptionEnabled(bool isInteractionTrackerClampingOptionEnabled);
     static int MouseWheelDeltaForVelocityUnit();
     static void MouseWheelDeltaForVelocityUnit(int mouseWheelDeltaForVelocityUnit);
     static float MouseWheelInertiaDecayRate();
@@ -75,6 +77,7 @@ private:
     bool m_areAnchorNotificationsRaised{ false };
     bool m_areInteractionSourcesNotificationsRaised{ false };
     bool m_isInteractionTrackerMouseWheelZoomingEnabled{ true };
+    bool m_isInteractionTrackerClampingOptionEnabled{ true };
     int m_offsetsChangeMsPerUnit{ 0 };
     int m_offsetsChangeMinMs{ 0 };
     int m_offsetsChangeMaxMs{ 0 };

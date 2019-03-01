@@ -93,6 +93,7 @@ namespace MUXControlsTestApp
                 txtMouseWheelInertiaDecayRate.Text = ScrollerTestHooks.MouseWheelInertiaDecayRate.ToString();
 
                 chkIsInteractionTrackerMouseWheelZoomingEnabled.IsChecked = (bool)ScrollerTestHooks.IsInteractionTrackerMouseWheelZoomingEnabled;
+                chkIsInteractionTrackerClampingOptionEnabled.IsChecked = (bool)ScrollerTestHooks.IsInteractionTrackerClampingOptionEnabled;
             }
             catch
             {
@@ -159,6 +160,16 @@ namespace MUXControlsTestApp
         private void ChkIsInteractionTrackerMouseWheelZoomingEnabled_Unchecked(object sender, RoutedEventArgs e)
         {
             ScrollerTestHooks.IsInteractionTrackerMouseWheelZoomingEnabled = false;
+        }
+
+        private void ChkIsInteractionTrackerClampingOptionEnabled_Checked(object sender, RoutedEventArgs e)
+        {
+            ScrollerTestHooks.IsInteractionTrackerClampingOptionEnabled = true;
+        }
+
+        private void ChkIsInteractionTrackerClampingOptionEnabled_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ScrollerTestHooks.IsInteractionTrackerClampingOptionEnabled = false;
         }
     }
 }

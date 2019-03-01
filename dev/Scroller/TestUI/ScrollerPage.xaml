@@ -42,6 +42,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <TextBlock Text="Scroller OutputDebugString Level:" VerticalAlignment="Center" Margin="2"/>
@@ -64,6 +65,7 @@
                 <TextBox x:Name="txtMouseWheelInertiaDecayRate" AutomationProperties.Name="txtMouseWheelInertiaDecayRate" Margin="2" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="2" TextChanged="TxtMouseWheelDeltaForVelocityUnit_TextChanged"/>
 
                 <CheckBox x:Name="chkIsInteractionTrackerMouseWheelZoomingEnabled" Margin="2" Grid.ColumnSpan="2" Grid.Row="3" Content="IsInteractionTrackerMouseWheelZoomingEnabled?" Checked="ChkIsInteractionTrackerMouseWheelZoomingEnabled_Checked" Unchecked="ChkIsInteractionTrackerMouseWheelZoomingEnabled_Unchecked"/>
+                <CheckBox x:Name="chkIsInteractionTrackerClampingOptionEnabled" Margin="2" Grid.ColumnSpan="2" Grid.Row="4" Content="IsInteractionTrackerClampingOptionEnabled?" Checked="ChkIsInteractionTrackerClampingOptionEnabled_Checked" Unchecked="ChkIsInteractionTrackerClampingOptionEnabled_Unchecked"/>
             </Grid>
         
             <TextBlock Text="Offsets change velocity parameters" Foreground="Red" Margin="0, 4, 0, 1"/>

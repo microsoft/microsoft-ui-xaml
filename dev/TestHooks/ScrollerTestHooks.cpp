@@ -67,6 +67,18 @@ void ScrollerTestHooks::IsInteractionTrackerMouseWheelZoomingEnabled(bool isInte
     hooks->m_isInteractionTrackerMouseWheelZoomingEnabled = isInteractionTrackerMouseWheelZoomingEnabled;
 }
 
+bool ScrollerTestHooks::IsInteractionTrackerClampingOptionEnabled()
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_isInteractionTrackerClampingOptionEnabled;
+}
+
+void ScrollerTestHooks::IsInteractionTrackerClampingOptionEnabled(bool isInteractionTrackerClampingOptionEnabled)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_isInteractionTrackerClampingOptionEnabled = isInteractionTrackerClampingOptionEnabled;
+}
+
 int ScrollerTestHooks::MouseWheelDeltaForVelocityUnit()
 {
     auto hooks = EnsureGlobalTestHooks();
