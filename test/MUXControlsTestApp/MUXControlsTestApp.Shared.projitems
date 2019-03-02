@@ -156,6 +156,7 @@
     <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)VisualTreeTestHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
       <DependentUpon>LeakTestPage.xaml</DependentUpon>
     </Compile>
@@ -227,6 +228,7 @@
     <Content Include="$(MSBuildThisFileDirectory)\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\StoreLogo.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\master\*.xml" />
   </ItemGroup>
   <ItemGroup>
     <AppContent Include="@(Content)" />

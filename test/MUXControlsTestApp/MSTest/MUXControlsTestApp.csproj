@@ -38,6 +38,9 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="DiffPlex">
+      <Version>1.2.1</Version>
+    </PackageReference>
     <PackageReference Include="Win2D.uwp">
       <Version>1.22.0</Version>
     </PackageReference>

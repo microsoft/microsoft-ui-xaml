@@ -22,7 +22,8 @@ param(
     [string]$LogFile = "TestResults.out",
     [String]$OutputPath = "$PSScriptRoot\CodeCoverageOutput",
     [String]$TestTimeout,
-    [String]$MagellanInstallPath = "$env:USERPROFILE\.nuget\packages\microsoft.internal.magellan\5.4.170227001-pkges"
+    [String]$MagellanInstallPath = "$env:USERPROFILE\.nuget\packages\microsoft.internal.magellan\5.4.170227001-pkges",
+    [switch]$LogMasterFile
 )
 
 #
@@ -267,6 +268,11 @@ if (!$NoRun)
         $teCmd += " /p:WaitForAppDebugger";
     }
     
+    if ($LogMasterFile)
+    {
+        $teCmd += " /p:LogMasterFile=True";
+    }
+
     if ($TestTimeout)
     {
         $teCmd += " /testtimeout:$TestTimeout";
