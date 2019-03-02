@@ -108,14 +108,14 @@ runtimeclass NavigationViewBackRequestedEventArgs
 {
 }
 
-[WUXC_VERSION_MUXONLY]
+[WUXC_VERSION_PREVIEW]
 [webhosthidden]
 runtimeclass NavigationViewExpandingEventArgs
 {
     NavigationViewItemBase ExpandingItemContainer { get; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[WUXC_VERSION_PREVIEW]
 [webhosthidden]
 runtimeclass NavigationViewCollapsedEventArgs
 {
@@ -151,7 +151,7 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
     static Windows.UI.Xaml.DependencyProperty SingleSelectionFollowsFocusProperty { get; };
 }
 
-[WUXC_VERSION_MUXONLY]
+[WUXC_VERSION_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass NavigationViewItemBaseTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
@@ -287,7 +287,7 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
         static Windows.UI.Xaml.DependencyProperty OverflowLabelModeProperty { get; };
     }
 
-    [WUXC_VERSION_MUXONLY]
+    [WUXC_VERSION_PREVIEW]
     {
         event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewExpandingEventArgs> Expanding;
         event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewCollapsedEventArgs> Collapsed;
@@ -317,7 +317,7 @@ unsealed runtimeclass NavigationViewList : Windows.UI.Xaml.Controls.ListView
 [default_interface]
 unsealed runtimeclass NavigationViewItemBase : Windows.UI.Xaml.Controls.ListViewItem
 {
-    [WUXC_VERSION_MUXONLY]
+    [WUXC_VERSION_PREVIEW]
     {
         NavigationViewItemBaseTemplateSettings NavigationViewItemBaseTemplateSettings { get; };
         static Windows.UI.Xaml.DependencyProperty NavigationViewItemBaseTemplateSettingsProperty { get; };
@@ -349,7 +349,7 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
         static Windows.UI.Xaml.DependencyProperty SelectsOnInvokedProperty { get; };
     }
 
-    [WUXC_VERSION_MUXONLY]
+    [WUXC_VERSION_PREVIEW]
     {
         [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         [MUX_DEFAULT_VALUE("false")]

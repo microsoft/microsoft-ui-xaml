@@ -1,4 +1,4 @@
-﻿[WUXC_VERSION_MUXONLY]
+﻿[WUXC_VERSION_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass NavigationViewItemPresenterTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
@@ -15,8 +15,11 @@ unsealed runtimeclass NavigationViewItemPresenter : Windows.UI.Xaml.Controls.Con
     NavigationViewItemPresenter();
 
     Windows.UI.Xaml.Controls.IconElement Icon { get; set; };
-    NavigationViewItemPresenterTemplateSettings TemplateSettings{ get; };
-
-    static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IconProperty { get; };
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        NavigationViewItemPresenterTemplateSettings TemplateSettings{ get; };
+        static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
+    }
 }
