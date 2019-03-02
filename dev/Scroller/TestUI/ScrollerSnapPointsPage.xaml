@@ -58,6 +58,7 @@
                 Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="2"/>
         </Grid>
 
+        <!--
         <Grid Grid.Column="1" Grid.Row="1" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -82,7 +83,8 @@
             <Button x:Name="btnOIAddSnapPoint" AutomationProperties.Name="btnOIAddSnapPoint" Content="Add Snap Point" Click="BtnOIAddSnapPoint_Click"
                 Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="2"/>
         </Grid>
-
+        -->
+        
         <Grid Grid.Column="2" Grid.Row="0" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -118,6 +120,7 @@
                 Grid.Row="5" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="2"/>
         </Grid>
 
+        <!--
         <Grid Grid.Column="2" Grid.Row="1" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -157,7 +160,8 @@
             <Button x:Name="btnORAddSnapPoint" AutomationProperties.Name="btnORAddSnapPoint" Content="Add Snap Point" Click="BtnORAddSnapPoint_Click"
                 Grid.Row="6" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="2"/>
         </Grid>
-
+        -->
+        
         <Grid Margin="2" Grid.Row="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
