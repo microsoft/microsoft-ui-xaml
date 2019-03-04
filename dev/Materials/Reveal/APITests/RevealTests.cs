@@ -24,8 +24,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class RevealTests
     {
-        //Bug 19007647: ApiTests.RevealTests.ValidateAppBarButtonRevealStyles failing in master
-        //[TestMethod]
+        [TestMethod]
         public void ValidateAppBarButtonRevealStyles()
         {
             AppBarButton buttonLabelsOnRight = null;
@@ -40,8 +39,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         <CommandBar xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
                             DefaultLabelPosition='Right'
                             IsOpen='True'>
-                            <AppBarButton Label='button' Icon='Accept' Style='{StaticResource AppBarButtonRevealLabelsOnRightStyle}'/>
-                            <AppBarToggleButton Label='button' Icon='Accept' Style='{StaticResource AppBarToggleButtonRevealLabelsOnRightStyle}'/>
+                            <AppBarButton Label='button' Icon='Accept'/>
+                            <AppBarToggleButton Label='button' Icon='Accept'/>
                             <CommandBar.SecondaryCommands>
                                 <AppBarButton Label='Supercalifragilisticexpialidocious' Style='{StaticResource AppBarButtonRevealOverflowStyle}'/>
                                 <AppBarToggleButton Label='Supercalifragilisticexpialidocious' Style='{StaticResource AppBarToggleButtonRevealOverflowStyle}'/>
@@ -60,7 +59,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                const double expectedLabelsOnRightWidth = 88;
+                const double expectedLabelsOnRightWidth = 84;
                 const double expectedOverflowWidth = 264;
 
                 Verify.AreEqual(expectedLabelsOnRightWidth, buttonLabelsOnRight.ActualWidth);

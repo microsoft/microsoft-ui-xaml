@@ -23,12 +23,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 #if !BUILD_WINDOWS
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
-using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
-using ScrollerChangeOffsetsWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions;
-using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
@@ -135,47 +132,45 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
 
             Log.Comment("Jump to offsets");
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 2.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 true /*hookViewChanged*/,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 2.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0);
 
             Log.Comment("Animate to offsets");
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 4.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.AllowAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Enabled,
+                SnapPointsMode.Ignore,
                 false /*hookViewChanged*/,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 4.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0);
 
             Log.Comment("Jump to zoomFactor 2.0");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 2.0f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 false /*hookViewChanged*/);
 
             Log.Comment("Animate to zoomFactor 1.5");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 1.5f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.AllowAnimation,
+                AnimationMode.Enabled,
+                SnapPointsMode.Ignore,
                 false /*hookViewChanged*/);
         }
 
@@ -194,7 +189,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             CompositionScrollController horizontalScrollController = null;
             CompositionScrollController verticalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
-            AutoResetEvent viewChangeCompletedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollCompletedEvent = new AutoResetEvent(false);
             int hOffsetChangeId = -1;
             int vOffsetChangeId = -1;
 
@@ -229,15 +224,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 horizontalScrollController.OffsetChangeCompleted += (CompositionScrollController sender, CompositionScrollControllerOffsetChangeCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffset completed (horizontal). OffsetChangeId=" + args.OffsetChangeId + ", Result=" + args.Result);
+                    Log.Comment("ChangeOffset completed (horizontal). OffsetChangeId=" + args.OffsetChangeId);
 
                     Log.Comment("Setting completion event");
-                    viewChangeCompletedEvent.Set();
+                    scrollCompletedEvent.Set();
                 };
 
                 verticalScrollController.OffsetChangeCompleted += (CompositionScrollController sender, CompositionScrollControllerOffsetChangeCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffset completed (vertical). OffsetChangeId=" + args.OffsetChangeId + ", Result=" + args.Result);
+                    Log.Comment("ChangeOffset completed (vertical). OffsetChangeId=" + args.OffsetChangeId);
                 };
             });
 
@@ -250,32 +245,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             Log.Comment("Jump to zoomFactor 0.75");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 0.75f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation);
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Jumping to horizontal offset");
-                hOffsetChangeId = horizontalScrollController.ChangeOffset(
+                hOffsetChangeId = horizontalScrollController.ScrollTo(
                     (c_defaultUIScrollerContentWidth * 0.75 - c_defaultUIScrollerWidth) / 4.0,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.DisableAnimation);
+                    AnimationMode.Disabled);
 
                 Log.Comment("Jumping to vertical offset");
-                vOffsetChangeId = verticalScrollController.ChangeOffset(
+                vOffsetChangeId = verticalScrollController.ScrollTo(
                     (c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 4.0,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.DisableAnimation);
+                    AnimationMode.Disabled);
 
                 Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -283,23 +276,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scroller.VerticalOffset, (c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 4.0);
 
                 Log.Comment("Animating to horizontal offset");
-                hOffsetChangeId = horizontalScrollController.ChangeOffset(
+                hOffsetChangeId = horizontalScrollController.ScrollTo(
                     (c_defaultUIScrollerContentWidth * 0.75 - c_defaultUIScrollerWidth) / 2.0,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.AllowAnimation);
+                    AnimationMode.Enabled);
 
                 Log.Comment("Animating to vertical offset");
-                vOffsetChangeId = verticalScrollController.ChangeOffset(
+                vOffsetChangeId = verticalScrollController.ScrollTo(
                     (c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 2.0,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.AllowAnimation);
+                    AnimationMode.Enabled);
 
                 Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
 
-                viewChangeCompletedEvent.Reset();
+                scrollCompletedEvent.Reset();
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -323,7 +314,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             CompositionScrollController horizontalScrollController = null;
             CompositionScrollController verticalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
-            AutoResetEvent viewChangeCompletedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollCompletedEvent = new AutoResetEvent(false);
             int hOffsetChangeId = -1;
             int vOffsetChangeId = -1;
 
@@ -358,10 +349,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 horizontalScrollController.OffsetChangeCompleted += (CompositionScrollController sender, CompositionScrollControllerOffsetChangeCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffset completed. OffsetChangeId=" + args.OffsetChangeId + ", Result=" + args.Result);
+                    Log.Comment("ChangeOffset completed. OffsetChangeId=" + args.OffsetChangeId);
 
                     Log.Comment("Setting completion event");
-                    viewChangeCompletedEvent.Set();
+                    scrollCompletedEvent.Set();
                 };
             });
 
@@ -374,28 +365,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             Log.Comment("Jump to zoomFactor 0.75");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 0.75f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation);
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Adding velocity to horizontal offset, with default inertia decay rate");
-                hOffsetChangeId = horizontalScrollController.ChangeOffset(
-                    100.0f /*additionalVelocity*/, null /*inertiaDecayRate*/);
+                hOffsetChangeId = horizontalScrollController.ScrollFrom(
+                    100.0f /*offsetVelocity*/, null /*inertiaDecayRate*/);
 
                 Log.Comment("Adding velocity to vertical offset, with default inertia decay rate");
-                vOffsetChangeId = verticalScrollController.ChangeOffset(
-                    100.0f /*additionalVelocity*/, null /*inertiaDecayRate*/);
+                vOffsetChangeId = verticalScrollController.ScrollFrom(
+                    100.0f /*offsetVelocity*/, null /*inertiaDecayRate*/);
 
                 Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -406,19 +397,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(scroller.VerticalOffset > 20.0);
 
                 Log.Comment("Adding negative velocity to horizontal offset, with custom inertia decay rate");
-                hOffsetChangeId = horizontalScrollController.ChangeOffset(
-                    -50.0f /*additionalVelocity*/, 0.9f /*inertiaDecayRate*/);
+                hOffsetChangeId = horizontalScrollController.ScrollFrom(
+                    -50.0f /*offsetVelocity*/, 0.9f /*inertiaDecayRate*/);
 
                 Log.Comment("Adding negative velocity to vertical offset, with custom inertia decay rate");
-                vOffsetChangeId = verticalScrollController.ChangeOffset(
-                    -50.0f /*additionalVelocity*/, 0.9f /*inertiaDecayRate*/);
+                vOffsetChangeId = verticalScrollController.ScrollFrom(
+                    -50.0f /*offsetVelocity*/, 0.9f /*inertiaDecayRate*/);
 
                 Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
 
-                viewChangeCompletedEvent.Reset();
+                scrollCompletedEvent.Reset();
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -429,19 +420,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(scroller.VerticalOffset < 20.0);
 
                 Log.Comment("Adding velocity to horizontal offset, with no inertia decay rate");
-                hOffsetChangeId = horizontalScrollController.ChangeOffset(
-                    200.0f /*additionalVelocity*/, 0.0f /*inertiaDecayRate*/);
+                hOffsetChangeId = horizontalScrollController.ScrollFrom(
+                    200.0f /*offsetVelocity*/, 0.0f /*inertiaDecayRate*/);
 
                 Log.Comment("Adding velocity to vertical offset, with no inertia decay rate");
-                vOffsetChangeId = verticalScrollController.ChangeOffset(
-                    200.0f /*additionalVelocity*/, 0.0f /*inertiaDecayRate*/);
+                vOffsetChangeId = verticalScrollController.ScrollFrom(
+                    200.0f /*offsetVelocity*/, 0.0f /*inertiaDecayRate*/);
 
                 Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
 
-                viewChangeCompletedEvent.Reset();
+                scrollCompletedEvent.Reset();
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -499,47 +490,45 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
 
             Log.Comment("Jump to offsets");
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 2.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 true /*hookViewChanged*/,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 2.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0);
 
             Log.Comment("Animate to offsets");
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 4.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.AllowAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Enabled,
+                SnapPointsMode.Ignore,
                 false /*hookViewChanged*/,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 4.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0);
 
             Log.Comment("Jump to zoomFactor 2.0");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 2.0f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 false /*hookViewChanged*/);
 
             Log.Comment("Animate to zoomFactor 1.5");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 1.5f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.AllowAnimation,
+                AnimationMode.Enabled,
+                SnapPointsMode.Ignore,
                 false /*hookViewChanged*/);
         }
 
@@ -557,7 +546,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             Rectangle rectangleScrollerContent = null;
             BiDirectionalScrollController biDirectionalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
-            AutoResetEvent viewChangeCompletedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollCompletedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
@@ -579,12 +568,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     biDirectionalScrollController,
                     loadedEvent);
 
-                biDirectionalScrollController.ViewChangeCompleted += (BiDirectionalScrollController sender, BiDirectionalScrollControllerViewChangeCompletedEventArgs args) =>
+                biDirectionalScrollController.ScrollCompleted += (BiDirectionalScrollController sender, BiDirectionalScrollControllerScrollCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffset completed. ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
+                    Log.Comment("ChangeOffset completed. OffsetsChangeId=" + args.OffsetsChangeId);
 
                     Log.Comment("Setting completion event");
-                    viewChangeCompletedEvent.Set();
+                    scrollCompletedEvent.Set();
                 };
             });
 
@@ -596,27 +585,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             Log.Comment("Jump to zoomFactor 0.75");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 0.75f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation);
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Jumping to offsets");
-                biDirectionalScrollController.ChangeOffsets(
-                    new ScrollerChangeOffsetsOptions(
+                biDirectionalScrollController.ScrollTo(
                     (c_defaultUIScrollerContentWidth * 0.75 - c_defaultUIScrollerWidth) / 4.0,
                     (c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 4.0,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.DisableAnimation,
-                    ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
+                    AnimationMode.Disabled);
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -624,18 +610,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scroller.VerticalOffset, (c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 4.0);
 
                 Log.Comment("Animating to offsets");
-                biDirectionalScrollController.ChangeOffsets(
-                    new ScrollerChangeOffsetsOptions(
+                biDirectionalScrollController.ScrollTo(
                     (c_defaultUIScrollerContentWidth * 0.75 - c_defaultUIScrollerWidth) / 2.0,
                     (c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 2.0,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.AllowAnimation, 
-                    ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
+                    AnimationMode.Enabled);
 
-                viewChangeCompletedEvent.Reset();
+                scrollCompletedEvent.Reset();
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -658,7 +641,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             Rectangle rectangleScrollerContent = null;
             BiDirectionalScrollController biDirectionalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
-            AutoResetEvent viewChangeCompletedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollCompletedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
@@ -680,12 +663,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     biDirectionalScrollController,
                     loadedEvent);
 
-                biDirectionalScrollController.ViewChangeCompleted += (BiDirectionalScrollController sender, BiDirectionalScrollControllerViewChangeCompletedEventArgs args) =>
+                biDirectionalScrollController.ScrollCompleted += (BiDirectionalScrollController sender, BiDirectionalScrollControllerScrollCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffsetsWithAdditionalVelocity completed. ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
+                    Log.Comment("ScrollFrom completed. OffsetsChangeId=" + args.OffsetsChangeId);
 
                     Log.Comment("Setting completion event");
-                    viewChangeCompletedEvent.Set();
+                    scrollCompletedEvent.Set();
                 };
             });
 
@@ -697,22 +680,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             Log.Comment("Jump to zoomFactor 0.75");
-            ChangeZoomFactor(
+            ZoomTo(
                 scroller,
                 0.75f,
                 0.0f,
                 0.0f,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation);
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Adding velocity to offsets, with default inertia decay rates");
-                biDirectionalScrollController.ChangeOffsetsWithAdditionalVelocity(
-                    new ScrollerChangeOffsetsWithAdditionalVelocityOptions(new Vector2(100.0f) /*additionalVelocity*/, null /*inertiaDecayRate*/));
+                biDirectionalScrollController.ScrollFrom(
+                    new Vector2(100.0f) /*offsetsVelocity*/, null /*inertiaDecayRate*/);
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -723,13 +706,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(scroller.VerticalOffset > 20.0);
 
                 Log.Comment("Adding negative velocity to offsets, with custom inertia decay rates");
-                biDirectionalScrollController.ChangeOffsetsWithAdditionalVelocity(
-                    new ScrollerChangeOffsetsWithAdditionalVelocityOptions(new Vector2(-50.0f) /*additionalVelocity*/, new Vector2(0.9f) /*inertiaDecayRate*/));
+                biDirectionalScrollController.ScrollFrom(
+                    new Vector2(-50.0f) /*offsetsVelocity*/, new Vector2(0.9f) /*inertiaDecayRate*/);
 
-                viewChangeCompletedEvent.Reset();
+                scrollCompletedEvent.Reset();
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -740,13 +723,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(scroller.VerticalOffset < 20.0);
 
                 Log.Comment("Adding velocity to offsets, with no inertia decay rates");
-                biDirectionalScrollController.ChangeOffsetsWithAdditionalVelocity(
-                    new ScrollerChangeOffsetsWithAdditionalVelocityOptions(new Vector2(200.0f) /*additionalVelocity*/, new Vector2(0.0f) /*inertiaDecayRate*/));
+                biDirectionalScrollController.ScrollFrom(
+                    new Vector2(200.0f) /*offsetsVelocity*/, new Vector2(0.0f) /*inertiaDecayRate*/);
 
-                viewChangeCompletedEvent.Reset();
+                scrollCompletedEvent.Reset();
             });
 
-            WaitForEvent("Waiting for operation completion", viewChangeCompletedEvent);
+            WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
 
             RunOnUIThread.Execute(() =>
             {

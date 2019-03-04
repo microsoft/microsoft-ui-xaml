@@ -14,12 +14,14 @@ using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 
 #if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
-using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
+using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
 using ScrollerBringingIntoViewEventArgs = Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs;
-using ScrollerChangingOffsetsEventArgs = Microsoft.UI.Xaml.Controls.ScrollerChangingOffsetsEventArgs;
+using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
-using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using ItemsRepeaterElementPreparedEventArgs = Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs;
+
+using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 #endif
@@ -126,7 +128,7 @@ namespace MUXControlsTestApp
         {
             string asyncEventMessage = "BringingIntoView Scroller=" + sender.Name;
             asyncEventMessage += ", TargetHorizontalOffset=" + args.TargetHorizontalOffset + ", TargetVerticalOffset=" + args.TargetVerticalOffset;
-            asyncEventMessage += ", ViewChangeId=" + args.ViewChangeId;
+            asyncEventMessage += ", OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId;
             asyncEventMessage += ", RequestEventArgs.AnimationDesired=" + args.RequestEventArgs.AnimationDesired + ", RequestEventArgs.Handled=" + args.RequestEventArgs.Handled;
             asyncEventMessage += ", RequestEventArgs.HorizontalAlignmentRatio=" + args.RequestEventArgs.HorizontalAlignmentRatio + ", RequestEventArgs.VerticalAlignmentRatio=" + args.RequestEventArgs.VerticalAlignmentRatio;
             asyncEventMessage += ", RequestEventArgs.HorizontalOffset=" + args.RequestEventArgs.HorizontalOffset + ", RequestEventArgs.VerticalOffset=" + args.RequestEventArgs.VerticalOffset;
@@ -144,13 +146,13 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void Scroller_ChangingOffsets(Scroller sender, ScrollerChangingOffsetsEventArgs args)
+        private void Scroller_ScrollAnimationStarting(Scroller sender, ScrollAnimationStartingEventArgs args)
         {
             try
             {
                 if (chkLogBringIntoViewRequestedEvents.IsChecked == true)
                 {
-                    AppendAsyncEventMessage("ChangingOffsets Scroller=" + sender.Name + ", ViewChangeId=" + args.ViewChangeId);
+                    AppendAsyncEventMessage("ScrollAnimationStarting Scroller=" + sender.Name + ", OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId);
                 }
 
                 Vector3KeyFrameAnimation stockKeyFrameAnimation = args.Animation as Vector3KeyFrameAnimation;
@@ -217,9 +219,11 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage("ViewChanged Scroller=" + sender.Name + ", H=" + sender.HorizontalOffset.ToString() + ", V=" + sender.VerticalOffset.ToString() + ", ZF=" + sender.ZoomFactor.ToString());
         }
 
-        private void Scroller_ViewChangeCompleted(Scroller sender, ScrollerViewChangeCompletedEventArgs args)
+        private void Scroller_ScrollCompleted(Scroller sender, ScrollCompletedEventArgs args)
         {
-            AppendAsyncEventMessage("ViewChangeCompleted Scroller=" + sender.Name + ", ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
+            ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+
+            AppendAsyncEventMessage("ScrollCompleted Scroller=" + sender.Name + ", OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
         }
 
         private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
@@ -346,10 +350,10 @@ namespace MUXControlsTestApp
                 outerScroller.BringingIntoView += Scroller_BringingIntoView;
                 outerScroller2.BringingIntoView += Scroller_BringingIntoView;
 
-                innerScroller.ChangingOffsets += Scroller_ChangingOffsets;
-                innerScroller2.ChangingOffsets += Scroller_ChangingOffsets;
-                outerScroller.ChangingOffsets += Scroller_ChangingOffsets;
-                outerScroller2.ChangingOffsets += Scroller_ChangingOffsets;
+                innerScroller.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
+                innerScroller2.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
+                outerScroller.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
+                outerScroller2.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
 
                 innerScroller.BringIntoViewRequested += FrameworkElement_BringIntoViewRequested;
                 innerScroller2.BringIntoViewRequested += FrameworkElement_BringIntoViewRequested;
@@ -370,10 +374,10 @@ namespace MUXControlsTestApp
                 outerScroller.BringingIntoView -= Scroller_BringingIntoView;
                 outerScroller2.BringingIntoView -= Scroller_BringingIntoView;
 
-                innerScroller.ChangingOffsets -= Scroller_ChangingOffsets;
-                innerScroller2.ChangingOffsets -= Scroller_ChangingOffsets;
-                outerScroller.ChangingOffsets -= Scroller_ChangingOffsets;
-                outerScroller2.ChangingOffsets -= Scroller_ChangingOffsets;
+                innerScroller.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
+                innerScroller2.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
+                outerScroller.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
+                outerScroller2.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
 
                 innerScroller.BringIntoViewRequested -= FrameworkElement_BringIntoViewRequested;
                 innerScroller2.BringIntoViewRequested -= FrameworkElement_BringIntoViewRequested;
@@ -410,7 +414,7 @@ namespace MUXControlsTestApp
             scroller.ExtentChanged += Scroller_ExtentChanged;
             scroller.StateChanged += Scroller_StateChanged;
             scroller.ViewChanged += Scroller_ViewChanged;
-            scroller.ViewChangeCompleted += Scroller_ViewChangeCompleted;
+            scroller.ScrollCompleted += Scroller_ScrollCompleted;
         }
 
         private void UnhookScrollerEvents(Scroller scroller)
@@ -418,7 +422,7 @@ namespace MUXControlsTestApp
             scroller.ExtentChanged -= Scroller_ExtentChanged;
             scroller.StateChanged -= Scroller_StateChanged;
             scroller.ViewChanged -= Scroller_ViewChanged;
-            scroller.ViewChangeCompleted -= Scroller_ViewChangeCompleted;
+            scroller.ScrollCompleted -= Scroller_ScrollCompleted;
         }
 
         private void HookScrollViewerEvents(ScrollViewer scrollViewer)

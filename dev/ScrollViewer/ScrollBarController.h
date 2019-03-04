@@ -48,19 +48,21 @@ public:
         double viewport);
 
     winrt::CompositionAnimation GetScrollAnimation(
-        INT32 offsetChangeId,
+        winrt::ScrollInfo info,
         winrt::float2 const& currentPosition,
         winrt::CompositionAnimation const& defaultAnimation);
 
     void OnScrollCompleted(
-        INT32 offsetChangeId,
-        winrt::ScrollerViewChangeResult const& result);
+        winrt::ScrollInfo info);
 
-    winrt::event_token OffsetChangeRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerOffsetChangeRequestedEventArgs> const& value);
-    void OffsetChangeRequested(winrt::event_token const& token);
+    winrt::event_token ScrollToRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs> const& value);
+    void ScrollToRequested(winrt::event_token const& token);
 
-    winrt::event_token OffsetChangeWithAdditionalVelocityRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs> const& value);
-    void OffsetChangeWithAdditionalVelocityRequested(winrt::event_token const& token);
+    winrt::event_token ScrollByRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollByRequestedEventArgs> const& value);
+    void ScrollByRequested(winrt::event_token const& token);
+
+    winrt::event_token ScrollFromRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollFromRequestedEventArgs> const& value);
+    void ScrollFromRequested(winrt::event_token const& token);
 
     winrt::event_token InteractionRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerInteractionRequestedEventArgs> const& value);
     void InteractionRequested(winrt::event_token const& token);
@@ -84,9 +86,9 @@ private:
         const winrt::IInspectable& sender,
         const winrt::ScrollEventArgs& args);
 
-    bool RaiseOffsetChangeRequested(
+    bool RaiseScrollToRequested(
         double offset);
-    bool RaiseOffsetChangeWithAdditionalVelocityRequested(
+    bool RaiseScrollFromRequested(
         double offsetChange);
     void RaiseInteractionInfoChanged();
 
@@ -111,8 +113,8 @@ private:
 
     winrt::ScrollBar m_scrollBar;
     winrt::ScrollMode m_scrollMode{ winrt::ScrollMode::Disabled };
-    int32_t m_lastViewChangeIdForOffsetChange{ -1 };
-    int32_t m_lastViewChangeIdForOffsetChangeWithAdditionalVelocity{ -1 };
+    int32_t m_lastOffsetChangeIdForScrollTo{ -1 };
+    int32_t m_lastOffsetChangeIdForScrollFrom{ -1 };
     int m_operationsCount{ 0 };
     double m_lastScrollBarValue{ 0.0 };
     double m_lastOffset{ 0.0 };
@@ -121,8 +123,8 @@ private:
     bool m_areInteractionsAllowed{ false };
 
     // Event Sources
-    event<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerOffsetChangeRequestedEventArgs>> m_offsetChangeRequested{ };
-    event<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs>> m_offsetChangeWithAdditionalVelocityRequested{ };
+    event<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs>> m_scrollToRequested { };
+    event<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollFromRequestedEventArgs>> m_scrollFromRequested { };
     event<winrt::TypedEventHandler<winrt::IScrollController, winrt::IInspectable>> m_interactionInfoChanged{ };
 
     // Event Tokens

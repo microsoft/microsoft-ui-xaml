@@ -36,11 +36,10 @@ using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
 using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
 using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
-using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
@@ -709,7 +708,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             Log.Comment("Jumping to absolute zoomFactor");
-            ChangeZoomFactor(scroller, 2.0f, 100.0f, 200.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+            ZoomTo(scroller, 2.0f, 100.0f, 200.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);            
 
             Log.Comment("Waiting for spied properties to be captured");
             CompositionPropertySpy.SynchronouslyTickUIThread(10);
@@ -870,13 +869,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 horizontalOffset: 250,
                 verticalOffset: 150,
-                viewKind: ScrollerViewKind.Absolute,
-                snapPointRespect: ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
-                viewChangeKind: ScrollerViewChangeKind.AllowAnimation,
+                animationMode: AnimationMode.Enabled,
+                snapPointsMode: SnapPointsMode.Ignore,
                 hookViewChanged: false);
 
             RunOnUIThread.Execute(() =>

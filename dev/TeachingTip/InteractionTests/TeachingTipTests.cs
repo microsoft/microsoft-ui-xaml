@@ -303,6 +303,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void NoIconDoesNotCrash()
+        {
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+
+                ScrollTargetIntoView();
+                ScrollBy(10);
+
+                SetIcon(IconOptions.NoIcon);
+                OpenTeachingTip();
+                CloseTeachingTipProgrammatically();
+                SetIcon(IconOptions.People);
+                OpenTeachingTip();
+                SetIcon(IconOptions.NoIcon);
+            }
+        }
+
         private void ScrollTargetIntoView()
         {
             elements.GetBringTargetIntoViewButton().Invoke();
@@ -440,6 +459,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     break;
             }
             elements.GetSetBleedingContentButton().Invoke();
+        }
+
+        private void SetIcon(IconOptions icon)
+        {
+            switch(icon)
+            {
+                case IconOptions.People:
+                    elements.GetIconComboBox().SelectItemByName("People Icon");
+                    break;
+                default:
+                    elements.GetIconComboBox().SelectItemByName("No Icon");
+                    break;
+            }
+            elements.GetSetIconButton().Invoke();
         }
 
         private double GetTipVerticalOffset()

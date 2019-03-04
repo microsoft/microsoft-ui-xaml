@@ -69,8 +69,11 @@ unsealed runtimeclass TeachingTipTemplateSettings : Windows.UI.Xaml.DependencyOb
     Windows.UI.Xaml.Thickness TopRightHighlightMargin;
     Windows.UI.Xaml.Thickness TopLeftHighlightMargin;
 
+    Windows.UI.Xaml.Controls.IconElement IconElement;
+
     static Windows.UI.Xaml.DependencyProperty TopRightHighlightMarginProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TopLeftHighlightMarginProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IconElementProperty{ get; };
 }
 
 [WUXC_VERSION_PREVIEW]

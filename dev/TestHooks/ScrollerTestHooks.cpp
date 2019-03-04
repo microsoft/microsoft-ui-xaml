@@ -163,6 +163,26 @@ void ScrollerTestHooks::SetContentLayoutOffsetY(const winrt::Scroller& scroller,
     }
 }
 
+winrt::ScrollerViewChangeResult ScrollerTestHooks::GetScrollCompletedResult(const winrt::ScrollCompletedEventArgs& scrollCompletedEventArgs)
+{
+    if (scrollCompletedEventArgs)
+    {
+        ScrollerViewChangeResult result = winrt::get_self<ScrollCompletedEventArgs>(scrollCompletedEventArgs)->Result();
+        return TestHooksViewChangeResult(result);
+    }
+    return winrt::ScrollerViewChangeResult::Completed;
+}
+
+winrt::ScrollerViewChangeResult ScrollerTestHooks::GetZoomCompletedResult(const winrt::ZoomCompletedEventArgs& zoomCompletedEventArgs)
+{
+    if (zoomCompletedEventArgs)
+    {
+        ScrollerViewChangeResult result = winrt::get_self<ZoomCompletedEventArgs>(zoomCompletedEventArgs)->Result();
+        return TestHooksViewChangeResult(result);
+    }
+    return winrt::ScrollerViewChangeResult::Completed;
+}
+
 void ScrollerTestHooks::NotifyAnchorEvaluated(
     const winrt::Scroller& sender,
     const winrt::UIElement& anchorElement,
@@ -317,4 +337,17 @@ void ScrollerTestHooks::SetSnapPointVisualizationColor(const winrt::ScrollerSnap
         winrt::get_self<ScrollerSnapPointBase>(snapPoint)->VisualizationColor(color);
     }
 #endif // _DEBUG
+}
+
+winrt::ScrollerViewChangeResult ScrollerTestHooks::TestHooksViewChangeResult(ScrollerViewChangeResult result)
+{
+    switch (result)
+    {
+    case ScrollerViewChangeResult::Ignored:
+        return winrt::ScrollerViewChangeResult::Ignored;
+    case ScrollerViewChangeResult::Interrupted:
+        return winrt::ScrollerViewChangeResult::Interrupted;
+    default:
+        return winrt::ScrollerViewChangeResult::Completed;
+    }
 }
