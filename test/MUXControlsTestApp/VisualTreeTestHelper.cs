@@ -197,6 +197,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     {
         private StorageFolder _storage;
         public string StorageLocation { get; private set; }
+
+        /*
+          master file searching rule: If running os is RS5, the api version = 7, then first file to check is if {masterFileNamePrefix}-7.xml exists, 
+          if not, try {masterFileNamePrefix}-6.xml... {masterFileNamePrefix}-2.xml, and finally {masterFileNamePrefix}.xml. If all files doesn't exist, return null.
+          ExpectedMasterFileName: masterFileNamePrefix+running os API version, eg: {masterFileNamePrefix}-7.xml
+          BestMatchedMasterFileName: the master file name matched by the searching rule.
+        */
         public string ExpectedMasterFileName { get; private set; }
         public string BestMatchedMasterFileName { get; private set; }
         public MasterFileStorage(bool useLocalStorage, string masterFileNamePrefix)
