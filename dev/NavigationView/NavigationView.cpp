@@ -3282,7 +3282,6 @@ void NavigationView::UpdateListViewItemSource()
     if (!dataSource)
     {
         dataSource = MenuItems();
-        UpdateSelectionForMenuItems();
     }
 
     // Always unset the data source first from old ListView, then set data source for new ListView.
@@ -3314,38 +3313,6 @@ void NavigationView::SyncRootNodesWithItemsSource(winrt::IInspectable const& ite
     // All TreeViewNode should be set to 'IsContentMode = true' as we dont want to pass node objects to the list view
     winrt::get_self<TreeViewNode>(m_rootNode.get())->IsContentMode(true);
     winrt::get_self<TreeViewNode>(m_rootNode.get())->ItemsSource(items);
-}
-
-void NavigationView::UpdateSelectionForMenuItems()
-{
-    // Allow customer to set selection by NavigationViewItem.IsSelected.
-    // If there are more than two items are set IsSelected=true, the first one is actually selected.
-    // If SelectedItem is set, IsSelected is ignored.
-    //         <NavigationView.MenuItems>
-    //              <NavigationViewItem Content = "Collection" IsSelected = "True" / >
-    //         </NavigationView.MenuItems>
-    if (!SelectedItem() && !m_shouldIgnoreNextSelectionChange)
-    {
-        if (auto menuItems = MenuItems().try_as<winrt::IVector<winrt::IInspectable>>())
-        {
-            for (int i = 0; i < static_cast<int>(menuItems.Size()); i++)
-            {
-                if (auto item = menuItems.GetAt(i).try_as<winrt::NavigationViewItem>())
-                {
-                    if (item.IsSelected())
-                    {
-                        auto scopeGuard = gsl::finally([this]()
-                        {
-                            m_shouldIgnoreNextSelectionChange = false;
-                        });
-                        m_shouldIgnoreNextSelectionChange = true;
-                        SelectedItem(item);
-                        break;
-                    }
-                }
-            }
-        }
-    }
 }
 
 void NavigationView::UpdateListViewItemsSource(const winrt::ListView& listView, 

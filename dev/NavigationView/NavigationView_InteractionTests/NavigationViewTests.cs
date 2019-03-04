@@ -618,15 +618,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
             {
-                Log.Comment("Verify the 1st NavItem.IsSelected=true works");
+                Log.Comment("Verify the 1st NavItem.IsSelected=true is ignored");
                 UIObject item1 = FindElement.ByName("Albums");
                 Verify.IsNotNull(item1);
-                Verify.IsTrue(Convert.ToBoolean(item1.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+                Verify.IsFalse(Convert.ToBoolean(item1.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
 
-                Log.Comment("Verify the 2nd NavItem.IsSelected=true is ignored");
+                Log.Comment("Verify the 2nd NavItem.IsSelected=true works");
                 UIObject item2 = FindElement.ByName("People");
                 Verify.IsNotNull(item2);
-                Verify.IsFalse(Convert.ToBoolean(item2.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+                Verify.IsTrue(Convert.ToBoolean(item2.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
             }
         }
 
