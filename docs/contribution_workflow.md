@@ -76,6 +76,10 @@ Each pull request to `master` must pass the following checks.
 Pull requests into a fork will not trigger all of these checks, but you can manually request them 
 individually from the pipeline definition page.
 
+In order to have your change automatically merge once all checks have passed (including optional 
+checks), apply the [auto merge](https://github.com/Microsoft/microsoft-ui-xaml/labels/auto%20merge) 
+label.
+
 #### [WinUI-Public-Tests](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=22)
 
 This pipeline builds your change and runs automated tests. These tests should match what you're 
