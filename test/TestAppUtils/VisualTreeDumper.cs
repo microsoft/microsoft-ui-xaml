@@ -138,7 +138,7 @@ namespace MUXControls.TestAppUtils
             }
         }
 
-        public static readonly string NULL = "[NULL]";
+        public static readonly string ValueNULL = "[NULL]";
         public class DefaultFilter : IFilter
         {
             private static readonly string[] _propertyNamePostfixWhiteList = new string[] {"Brush", "Thickness"};
@@ -164,7 +164,7 @@ namespace MUXControls.TestAppUtils
             public virtual string PropertyValueToString(string propertyName, object value)
             {
                 if (value == null)
-                    return NULL;
+                    return ValueNULL;
 
                 var brush = value as SolidColorBrush;
                 if (brush != null)
@@ -199,7 +199,7 @@ namespace MUXControls.TestAppUtils
             private StringBuilder _sb = new StringBuilder();
             private void AppendLogger(int indent, string s)
             {
-                _sb.Append(s.PadLeft(2*indent + s.Length));
+                _sb.AppendLine(s.PadLeft(2*indent + s.Length));
             }
         }
     }

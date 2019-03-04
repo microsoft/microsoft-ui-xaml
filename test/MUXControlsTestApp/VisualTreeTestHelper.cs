@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Windows.UI.Xaml.Markup;
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
+using static MUXControls.TestAppUtils.VisualTreeDumper;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -31,35 +32,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     {
         Dark,
         Light,
-        All
+        All,
+        None
+    }
+    class VisualTreeLog
+    {
+        public static void LogInfo(string info)
+        {
+            Log.Comment(info);
+        }
+        public static void LogDebugInfo(string debugInfo) {}
     }
 
-    /// <summary>
-    /// TestBaseClass helps to compare visualtree.
-    /// Don't add <c>[TestInitialize]</c> in your test case, instead, just override <see cref="OnTestInitialized"/>
-    ///  <see cref="VerifyVisualTree"/> helps to compare the visualtree with a 'master' file.
-    /// Master filename for testcase would [testclass]_[testname]_[theme].xml or [testclass]_[testname]_[theme]-[apiversion].xml
-    /// </summary>
-    public class VisualTreeTestBase
+    public class VisualTreeTestHelper
     {
-        public const string LogMasterFileRuntimeParameterName = "LogMasterFile";
-
-        public VisualTreeDumper.IFilter VisualTreeDumpFilter { get; set; }
-        public VisualTreeDumper.IPropertyValueTranslator PropertyValueTranslator { get; set; }
-
-        public TestContext TestContext { get; set; }
-
-        public bool ShouldLogMasterFile { get; set; }
-
-        public string TestCaseName { get; private set; }
-
-        // To avoid filename conflict for master file, we use the format of [testclass]_[testname] as prefix by default.
-        // For example, Windows.UI.Xaml.Tests.MUXControls.ApiTests.NavigationViewVisualTreeTests.VerifyVisualTreeForNavView
-        // The prefix is NavigationViewVisualTreeTests_VerifyVisualTreeForNavView
-        public string MasterFileNamePrefix { get; set; }
-
-        public UIElement SetupVisualTree(string xaml)
+        public static void ChangeRequestedTheme(UIElement root, ElementTheme theme)
         {
+            FrameworkElement element = root as FrameworkElement;
+
+            VisualTreeLog.LogDebugInfo("Request Theme: " + theme.ToString());
+            RunOnUIThread.Execute(() =>
+            {
+                element.RequestedTheme = theme;
+            });
+        }
+
+        public static UIElement SetupVisualTree(string xaml)
+        {
+            VisualTreeLog.LogDebugInfo("SetupVisualTree " + xaml);
+
             UIElement root = null;
             RunOnUIThread.Execute(() =>
             {
@@ -71,166 +72,123 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return root;
         }
 
-        public void VerifyVisualTree(string xaml)
+        public static string DumpVisualTree(DependencyObject root, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
+        {
+            VisualTreeLog.LogDebugInfo("DumpVisualTree");
+
+            string content = "";
+            RunOnUIThread.Execute(() =>
+                {
+                    content = VisualTreeDumper.DumpToXML(root, translator, filter, logger);
+                });
+            return content;
+        }
+
+        public static void VerifyVisualTree(string xaml, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null, bool shouldLogMasterFile = false)
         {
             var root = SetupVisualTree(xaml);
-            VerifyVisualTree(root, Theme.All);
+            VerifyVisualTree(root, masterFilePrefix, theme, translator, filter, logger, shouldLogMasterFile);
         }
 
-        public void VerifyVisualTree(UIElement root, Theme theme)
+        public static void VerifyVisualTree(UIElement root, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null, bool shouldLogMasterFile = false)
         {
-            var element = root as FrameworkElement;
-            CheckTrue(element != null, "Expect FrameworkElement");
+            VisualTreeLog.LogInfo("VerifyVisualTree for theme " + theme.ToString());
+            TestExecution helper = new TestExecution(translator, filter, logger, shouldLogMasterFile);
 
-            bool hasError = false;
-
-            List<ElementTheme> themes = new List<ElementTheme>();
-            if (theme == Theme.Dark)
+            if (theme == Theme.None)
             {
-                themes.Add(ElementTheme.Dark);
-            }
-            else if (theme == Theme.Light)
-            {
-                themes.Add(ElementTheme.Light);
-            }
-            else if (theme == Theme.All)
-            {
-                themes = new List<ElementTheme>() { ElementTheme.Dark, ElementTheme.Light };
-            }
-
-            foreach (var requestedTheme in themes)
-            {
-                Log.Comment("Request Theme: " + requestedTheme.ToString());
-                RunOnUIThread.Execute(() =>
-                {
-                    element.RequestedTheme = requestedTheme;
-                });
-
-                try
-                {
-                    Log.Comment("VerifyVisualTree for " + requestedTheme.ToString());
-                    VerifyVisualTree(root, requestedTheme.ToString());
-                }
-                catch (Exception e)
-                {
-                    hasError = true;
-                    Log.Comment(e.Message);
-                }
-            }
-            Verify.IsFalse(hasError, "VerifyVisualTree should not have error");
-        }
-
-        public void VerifyVisualTree(UIElement root, String customName)
-        {
-            VisualTreeCompare(root, MasterFileNamePrefix, customName);
-        }
-
-        private void VerifyVisualTree(UIElement root)
-        {
-            VisualTreeCompare(root, MasterFileNamePrefix, "");
-        }
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            CheckTrue(TestContext != null, "Expect framework populate the TestContext");
-            CheckTrue(!String.IsNullOrEmpty(TestContext.TestName), "TestName should not be empty");
-
-            // based on the testframework, TestName may be Windows.UI.Xaml.Tests.MUXControls.ApiTests.NavigationViewVisualTreeTests.VerifyVisualTreeForNavView
-            // or TestName=VerifyVisualTreeForNavView and FullyQualifiedTestClassName=Windows.UI.Xaml.Tests.MUXControls.ApiTests.NavigationViewVisualTreeTests
-            var testCaseFullName = TestContext.TestName;
-            if (!TestContext.TestName.Contains("."))
-            {
-                CheckTrue(!String.IsNullOrEmpty(TestContext.FullyQualifiedTestClassName), "TestContext.FullyQualifiedTestClassName should not be empty");
-                testCaseFullName = TestContext.FullyQualifiedTestClassName + "." + TestContext.TestName;
-            }
-
-            String[] elements = testCaseFullName.Split('.');
-            TestCaseName = elements[elements.Length - 1];
-            MasterFileNamePrefix = elements[elements.Length - 2] + "_" + TestCaseName;
-            VisualTreeDumpFilter = null;
-            PropertyValueTranslator = null;
-            LogTestContext();
-            ShouldLogMasterFile = TestContextContainsKey(LogMasterFileRuntimeParameterName);
-
-            OnTestInitialized();
-        }
-        protected virtual void OnTestInitialized() { }
-
-        private void LogTestContext()
-        {
-#if DEBUG
-            Log.Comment("FullyQualifiedTestClassName: " + TestContext.FullyQualifiedTestClassName);
-            Log.Comment("TestName: " + TestContext.TestName);
-#endif
-            Log.Comment("MasterFileNamePrefix: " + MasterFileNamePrefix);
-
-            if (TestContextContainsKey(LogMasterFileRuntimeParameterName))
-            {
-                Log.Comment(LogMasterFileRuntimeParameterName + ": True");
+                helper.DumpAndVerifyVisualTree(root, masterFilePrefix);
             }
             else
             {
-                Log.Comment(LogMasterFileRuntimeParameterName + ": False");
+                List<ElementTheme> themes = new List<ElementTheme>();
+                if (theme == Theme.Dark)
+                {
+                    themes.Add(ElementTheme.Dark);
+                }
+                else if (theme == Theme.Light)
+                {
+                    themes.Add(ElementTheme.Light);
+                }
+                else if (theme == Theme.All)
+                {
+                    themes = new List<ElementTheme>() { ElementTheme.Dark, ElementTheme.Light };
+                }
+
+                foreach (var requestedTheme in themes)
+                {
+                    string themeName = requestedTheme.ToString();
+                    VisualTreeLog.LogInfo("Change RequestedTheme to " + themeName);
+                    ChangeRequestedTheme(root, requestedTheme);
+
+                    helper.DumpAndVerifyVisualTree(root, masterFilePrefix + "_" + themeName, "DumpAndVerifyVisualTree for " + themeName);
+                }
+            }
+            if (helper.HasError())
+            {
+                Verify.Fail(helper.GetTestResult(), "Test Failed");
             }
         }
 
-
-        private void VisualTreeCompare(UIElement root, string masterFilePrefix, string theme)
+        private class TestExecution
         {
-            string content = "";
-            string expectedContent = "";
+            private IPropertyValueTranslator _translator;
+            private IFilter _filter;
+            private IVisualTreeLogger _logger;
+            private StringBuilder _testResult;
+            private bool _shouldLogMasterFile;
 
-            RunOnUIThread.Execute(() =>
+            public TestExecution(IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null, bool shouldLogMasterFile = true)
             {
-                content = VisualTreeDumper.DumpToXML(root, PropertyValueTranslator, VisualTreeDumpFilter, null);
-            });
-
-            MasterFileStorage storage = new MasterFileStorage(!ShouldLogMasterFile, masterFilePrefix, theme);
-            string bestMatchedMasterFileName = storage.BestMatchedMasterFileName;
-            string expectedMasterFileName = storage.ExpectedMasterFileName;
-
-            Log.Comment("Target master file: " + expectedMasterFileName);
-            Log.Comment("Best matched master file: " + bestMatchedMasterFileName);
-
-            VisualTreeOutputCompare result = new VisualTreeOutputCompare("", "");
-            if (String.IsNullOrEmpty(bestMatchedMasterFileName))
-            {
-                result.AddError("Can't find master file for " + TestCaseName);
-            }
-            else
-            {
-                expectedContent = MasterFileStorage.GetMasterFileContent(bestMatchedMasterFileName);
-                result = new VisualTreeOutputCompare(content, expectedContent);
+                _translator = translator;
+                _filter = filter;
+                _logger = logger;
+                _shouldLogMasterFile = shouldLogMasterFile;
+                _testResult = new StringBuilder();
             }
 
-            if (result.HasError())
+            public bool HasError()
             {
-                storage.LogMasterFile(expectedMasterFileName, content);
-                storage.LogMasterFile(expectedMasterFileName + ".orig", expectedContent);
-
-                Log.Comment(result.ToString());
-                string error = String.Format("Compare failed, but {0} is put into {1}", expectedMasterFileName, storage.StorageLocation);
-                Verify.Fail(error);
+                return (_testResult.Length != 0);
             }
-        }
 
-        // Avoid too much logs, and only log message when !flag.
-        private void CheckTrue(bool flag, string message)
-        {
-            if (!flag)
+            public string GetTestResult()
             {
-                Verify.Fail(message);
+                return _testResult.ToString();
             }
-        }
+            public void DumpAndVerifyVisualTree(UIElement root, string masterFilePrefix, string messageOnError = null)
+            {
+                VisualTreeLog.LogDebugInfo("DumpVisualTreeAndCompareWithMaster with masterFilePrefix " + masterFilePrefix);
 
-        private bool TestContextContainsKey(string key)
-        {
-#if USING_TAEF
-           return TestContext.Properties.Contains(key);
-#else
-            return TestContext.Properties.ContainsKey(key);
-#endif
+                string expectedContent = "";
+                string content = DumpVisualTree(root, _translator, _filter, _logger);
+
+                MasterFileStorage storage = new MasterFileStorage(!_shouldLogMasterFile, masterFilePrefix);
+                string bestMatchedMasterFileName = storage.BestMatchedMasterFileName;
+                string expectedMasterFileName = storage.ExpectedMasterFileName;
+
+                VisualTreeLog.LogDebugInfo("Target master file: " + expectedMasterFileName);
+                VisualTreeLog.LogDebugInfo("Best matched master file: " + bestMatchedMasterFileName);
+
+                if (!string.IsNullOrEmpty(bestMatchedMasterFileName))
+                {
+                    expectedContent = MasterFileStorage.GetMasterFileContent(bestMatchedMasterFileName);
+                }
+
+                string result = new VisualTreeOutputCompare(content, expectedContent).ToString();
+                if (!string.IsNullOrEmpty(result))
+                {
+                    storage.LogMasterFile(expectedMasterFileName, content);
+                    storage.LogMasterFile(expectedMasterFileName + ".orig", expectedContent);
+
+                    if (!string.IsNullOrEmpty(messageOnError))
+                    {
+                        _testResult.AppendLine(messageOnError);
+                        _testResult.AppendLine(string.Format("{0}.xml and {0}.orig.xaml is logged", expectedMasterFileName));
+                    }
+                    _testResult.AppendLine(result);
+                }
+            }
         }
     }
 
@@ -240,12 +198,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public string StorageLocation { get; private set; }
         public string ExpectedMasterFileName { get; private set; }
         public string BestMatchedMasterFileName { get; private set; }
-        public MasterFileStorage(bool useLocalStorage, string masterFileNamePrefix, string theme)
+        public MasterFileStorage(bool useLocalStorage, string masterFileNamePrefix)
         {
             _storage = useLocalStorage ? ApplicationData.Current.LocalFolder : KnownFolders.MusicLibrary;
-            string prefix = String.IsNullOrEmpty(theme) ? masterFileNamePrefix : masterFileNamePrefix + "-" + theme;
-            ExpectedMasterFileName = GetExpectedMasterFileName(prefix);
-            BestMatchedMasterFileName = SearchBestMatchedMasterFileName(prefix);
+            ExpectedMasterFileName = GetExpectedMasterFileName(masterFileNamePrefix);
+            BestMatchedMasterFileName = SearchBestMatchedMasterFileName(masterFileNamePrefix);
             StorageLocation = useLocalStorage ? ApplicationData.Current.LocalFolder.Path : "MusicLibrary";
         }
 
@@ -256,14 +213,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private string GetExpectedMasterFileName(string fileNamePrefix)
         {
-            return String.Format("{0}-{1}.xml", fileNamePrefix, PlatformConfiguration.GetCurrentAPIVersion());
+            return string.Format("{0}-{1}.xml", fileNamePrefix, PlatformConfiguration.GetCurrentAPIVersion());
         }
 
         private string SearchBestMatchedMasterFileName(string fileNamePrefix)
         {
             for (ushort version = PlatformConfiguration.GetCurrentAPIVersion(); version >= 2; version--)
             {
-                string fileName = String.Format("{0}-{1}.xml", fileNamePrefix, version);
+                string fileName = string.Format("{0}-{1}.xml", fileNamePrefix, version);
                 if (MasterFileStorage.IsMasterFilePresent(fileName))
                 {
                     return fileName;
@@ -324,20 +281,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
     class VisualTreeOutputCompare
     {
-        public VisualTreeOutputCompare(string xml1, string xml2)
+        public VisualTreeOutputCompare(string a, string b)
         {
             var diffBuilder = new InlineDiffBuilder(new DiffPlex.Differ());
-            var diff = diffBuilder.BuildDiffModel(xml1, xml2);
+            var diff = diffBuilder.BuildDiffModel(a, b);
 
             foreach (var line in diff.Lines)
             {
                 switch (line.Type)
                 {
                     case ChangeType.Inserted:
-                        AddError("+ " + line.Text);
+                        _sb.AppendLine("+ " + line.Text);
                         break;
                     case ChangeType.Deleted:
-                        AddError("- " + line.Text);
+                        _sb.AppendLine("- " + line.Text);
                         break;
                     default:
                         break;
@@ -345,16 +302,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
         private StringBuilder _sb = new StringBuilder();
-
-        public bool HasError()
-        {
-            return _sb.Length != 0;
-        }
-        public void AddError(String message)
-        {
-            _sb.AppendLine(message);
-        }
-
         public override string ToString()
         {
             return _sb.ToString();
