@@ -73,6 +73,15 @@
                 AutomationProperties.Name="HittestingTextBox"
                 Text="None"
                 RelativePanel.Below="ReversePositivePlaybackRateAnimationTextBox"/>
+            <Button x:Name="FallenBackButton"
+                AutomationProperties.Name="FallenBackButton"
+                Click="FallenBackButton_Click"
+                RelativePanel.Below="HittestingTextBox"/>
+            <TextBox x:Name="FallenBackTextBox"
+                IsEnabled="False"
+                AutomationProperties.Name="FallenBackTextBox"
+                Text="None"
+                RelativePanel.Below="FallenBackButton"/>
             <controls:AnimatedVisualPlayer
                 x:Name="Player"
                 AutomationProperties.Name="Player"
@@ -81,6 +90,11 @@
                 AutoPlay="False"
                 PointerMoved="Player_PointerMoved">
                 <lotties:LottieLogo/>
+                <controls:AnimatedVisualPlayer.FallbackContent>
+                    <DataTemplate>
+                        <Rectangle Width="100" Height="100" Fill="Red"/>
+                    </DataTemplate>
+                </controls:AnimatedVisualPlayer.FallbackContent>
             </controls:AnimatedVisualPlayer>
         </RelativePanel>
     </Grid>

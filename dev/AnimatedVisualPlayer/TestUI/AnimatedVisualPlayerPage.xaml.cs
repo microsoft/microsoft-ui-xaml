@@ -2,16 +2,20 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
-using Windows.UI.Composition;
 using AnimatedVisualPlayerTests;
+using Microsoft.Graphics.Canvas;
 using Windows.Foundation.Metadata;
+using Windows.Graphics;
+using Windows.Graphics.Capture;
+using Windows.Graphics.DirectX;
+using Windows.UI;
+using Windows.UI.Composition;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Hosting;
 
 
 #if !BUILD_WINDOWS
-using AnimatedVisualPlayer = Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer;
 #endif
 
 namespace MUXControlsTestApp
@@ -21,9 +25,20 @@ namespace MUXControlsTestApp
     /// </summary>
     public sealed partial class AnimatedVisualPlayerPage : TestPage
     {
+        // Capture API objects.
+        private SizeInt32 _lastSize;
+        private GraphicsCaptureItem _item;
+        private Direct3D11CaptureFramePool _framePool;
+        private GraphicsCaptureSession _session;
+
+        // Non-API related members.
+        private Visual _visual;
+        private CanvasDevice _canvasDevice;
+
         public AnimatedVisualPlayerPage()
         {
             this.InitializeComponent();
+            Setup();
         }
 
         private async void PlayButton_Click(object sender, RoutedEventArgs e)
@@ -156,9 +171,169 @@ namespace MUXControlsTestApp
             Player.Resume();
         }
 
+        private void FallenBackButton_Click(Object sender, RoutedEventArgs e)
+        {
+            // Because API method GraphicsCaptureItem.CreateFromVisual is only available since RS5.
+            // We only test FallenBackContent RS5 onward for simplicity.
+            if (IsRS5OrHigher())
+            {
+                Player.Source = new AnimatedVisuals.nullsource();
+                StartCapture();
+            }
+            else
+            {
+                FallenBackTextBox.Text = Constants.TrueText;
+            }
+        }
+
         private bool IsRS5OrHigher()
         {
             return ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 7);
         }
+
+        private void Setup()
+        {
+            _canvasDevice = new CanvasDevice();
+            _visual = ElementCompositionPreview.GetElementVisual(Player);
+        }
+
+        public void StartCapture()
+        {
+            // GraphicsCaptureItem is RS4(1803) API. CreateFromVisual is RS5(1809) API method.
+            var item = GraphicsCaptureItem.CreateFromVisual(_visual);
+            if (item != null)
+            {
+                StartCaptureInternal(item);
+            }
+        }
+
+        private void StartCaptureInternal(GraphicsCaptureItem item)
+        {
+            // Stop the previous capture if we had one.
+            StopCapture();
+
+            _item = item;
+            _lastSize = _item.Size;
+
+            _framePool = Direct3D11CaptureFramePool.Create(
+               _canvasDevice, // D3D device 
+               DirectXPixelFormat.B8G8R8A8UIntNormalized, // Pixel format 
+               2, // Number of frames 
+               _item.Size); // Size of the buffers 
+
+            _framePool.FrameArrived += (s, a) =>
+            {
+                // The FrameArrived event is raised for every frame on the thread
+                // that created the Direct3D11CaptureFramePool. This means we 
+                // don't have to do a null-check here, as we know we're the only 
+                // one dequeueing frames in our application.  
+
+                // NOTE: Disposing the frame retires it and returns  
+                // the buffer to the pool.
+
+                using (var frame = _framePool.TryGetNextFrame())
+                {
+                    ProcessFrame(frame);
+                }
+            };
+
+            _item.Closed += (s, a) =>
+            {
+                StopCapture();
+            };
+
+            _session = _framePool.CreateCaptureSession(_item);
+            _session.StartCapture();
+        }
+
+        public void StopCapture()
+        {
+            _session?.Dispose();
+            _framePool?.Dispose();
+            _item = null;
+            _session = null;
+            _framePool = null;
+        }
+
+        private void ProcessFrame(Direct3D11CaptureFrame frame)
+        {
+            // Resize and device-lost leverage the same function on the
+            // Direct3D11CaptureFramePool. Refactoring it this way avoids 
+            // throwing in the catch block below (device creation could always 
+            // fail) along with ensuring that resize completes successfully and 
+            // isn’t vulnerable to device-lost.   
+            bool needsReset = false;
+            bool recreateDevice = false;
+
+            if ((frame.ContentSize.Width != _lastSize.Width) ||
+                (frame.ContentSize.Height != _lastSize.Height))
+            {
+                needsReset = true;
+                _lastSize = frame.ContentSize;
+            }
+
+            try
+            {
+                // Take the D3D11 surface and draw it into a  
+                // Composition surface.
+
+                // Convert our D3D11 surface into a Win2D object.
+                var canvasBitmap = CanvasBitmap.CreateFromDirect3D11Surface(
+                    _canvasDevice,
+                    frame.Surface);
+
+                Color[] colors = canvasBitmap.GetPixelColors(0, 0, 1, 1);
+
+                if (colors.Length > 0 && colors[0].Equals(Colors.Red/*FallenBackContent Color*/))
+                {
+                    FallenBackTextBox.Text = Constants.TrueText;
+                }
+                else
+                {
+                    FallenBackTextBox.Text = Constants.FalseText;
+                }
+            }
+
+            // This is the device-lost convention for Win2D.
+            catch (Exception e) when (_canvasDevice.IsDeviceLost(e.HResult))
+            {
+                // We lost our graphics device. Recreate it and reset 
+                // our Direct3D11CaptureFramePool.  
+                needsReset = true;
+                recreateDevice = true;
+            }
+
+            if (needsReset)
+            {
+                ResetFramePool(frame.ContentSize, recreateDevice);
+            }
+        }
+
+        private void ResetFramePool(SizeInt32 size, bool recreateDevice)
+        {
+            do
+            {
+                try
+                {
+                    if (recreateDevice)
+                    {
+                        _canvasDevice = new CanvasDevice();
+                    }
+
+                    _framePool.Recreate(
+                        _canvasDevice,
+                        DirectXPixelFormat.B8G8R8A8UIntNormalized,
+                        2,
+                        size);
+                }
+                // This is the device-lost convention for Win2D.
+                catch (Exception e) when (_canvasDevice.IsDeviceLost(e.HResult))
+                {
+                    _canvasDevice = null;
+                    recreateDevice = true;
+                }
+            } while (_canvasDevice == null);
+        }
+
     }
 }
