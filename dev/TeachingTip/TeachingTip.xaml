@@ -13,23 +13,10 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TeachingTip">
-                    <Grid HorizontalAlignment="Left"
+                    <Grid x:Name="Root"
+                          HorizontalAlignment="Left"
                           VerticalAlignment="Top"
                           Background="Transparent">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
-                            <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>
-                            <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="{StaticResource TeachingTipBeakShortSideLength}"/>
-                            <RowDefinition Height="{StaticResource TeachingTipBeakMargin}"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="{StaticResource TeachingTipBeakMargin}"/>
-                            <RowDefinition Height="{StaticResource TeachingTipBeakShortSideLength}"/>
-                        </Grid.RowDefinitions>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="LightDismissStates">
                                 <VisualState x:Name="LightDismiss">
@@ -419,135 +406,153 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <!-- Because we do not have support for shadows on the beak we can't use the shadows that we get for free from flyout. Instead we need the BeakOcclusionGrid
-                             to cast the shadow. But in order for the BeakOcclusionGrid to cast a shadow we need to specify which elements are to receive that shadow. Since we
-                             can't know this from the tip's code we need to instead have an element within the template we can target. This is that element. -->
-                        <Grid x:Name="ShadowTarget" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" Margin="-100" Grid.ColumnSpan="5" Grid.RowSpan="5"/>
-                        <!-- This BeakEdgeBorder needs to be z ordered underneath the BeakPolygon while the BeakOcclusionGrid needs to be over it, hence declaring these parts
-                             in this order. This is to achieve the desired occlusion of the beaks content edge border. The beak edge border is a low opacity highlight,
-                             which means we need to have the background color present underneath the highlight, hence the double grid here. -->
-                        <Grid x:Name="BeakEdgeBorder" Background="{TemplateBinding Background}">
-                            <Grid Background="{ThemeResource TeachingTipBorderBrush}"/>
-                        </Grid>
-                        <Polygon x:Name="BeakPolygon"
-                                 Fill="{TemplateBinding Background}"
-                                 HorizontalAlignment="Left"
-                                 VerticalAlignment="Top"
-                                 Stroke="{ThemeResource TeachingTipBorderBrush}"
-                                 StrokeThickness="{StaticResource TeachingTipBorderThickness}"/>
-                        <Grid x:Name="BeakOcclusionGrid" 
-                              HorizontalAlignment="Left" 
-                              VerticalAlignment="Top" 
-                              MinHeight="{ThemeResource TeachingTipMinHeight}" 
-                              MinWidth="{ThemeResource TeachingTipMinWidth}"
-                              MaxHeight="{ThemeResource TeachingTipMaxHeight}"
-                              MaxWidth="{ThemeResource TeachingTipMaxWidth}"
-                              Grid.ColumnSpan="5"
-                              Grid.RowSpan="5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
-                                <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>
-                                <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="{StaticResource TeachingTipBeakShortSideLength}"/>
-                                <RowDefinition Height="{StaticResource TeachingTipBeakMargin}"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="{StaticResource TeachingTipBeakMargin}"/>
-                                <RowDefinition Height="{StaticResource TeachingTipBeakShortSideLength}"/>
-                            </Grid.RowDefinitions>
-                            <Polygon x:Name="TopBeakPolygonHighlight"
-                                     Grid.Row="0"
-                                     Grid.Column="2"
-                                     Margin="{StaticResource TeachingTipTopHighlightOffsetForBorder}"
-                                     VerticalAlignment="Top"
-                                     Fill="{TemplateBinding Background}"
-                                     Stroke="{ThemeResource TeachingTipTopHighlightBrush}"
-                                     StrokeThickness="{StaticResource TeachingTipTopHighlightHeight}"
-                                     Points="0,10 10,0 20,10"/>
-                            <Grid x:Name="ContentRootGrid"
-                                  Background="{TemplateBinding Background}"
-                                  BorderBrush="{ThemeResource TeachingTipBorderBrush}"
-                                  Grid.Row="1"
-                                  Grid.Column="1"
-                                  Grid.ColumnSpan="3"
-                                  Grid.RowSpan="3">
+                        <Popup x:Name="Popup">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
+                                    <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>
+                                    <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
+                                </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="{StaticResource TeachingTipBeakShortSideLength}"/>
+                                    <RowDefinition Height="{StaticResource TeachingTipBeakMargin}"/>
                                     <RowDefinition Height="*"/>
-                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="{StaticResource TeachingTipBeakMargin}"/>
+                                    <RowDefinition Height="{StaticResource TeachingTipBeakShortSideLength}"/>
                                 </Grid.RowDefinitions>
-                                <Border x:Name="BleedingImageBorder" Grid.Row="0" Child="{TemplateBinding BleedingImageContent}" Background="{TemplateBinding Background}"/>
-                                <Grid x:Name="NonBleedingContentRootGrid" Grid.Row="1">
-                                    <ScrollViewer>
-                                        <StackPanel Margin="{StaticResource TeachingTipContentMargin}">
-                                            <Grid Grid.Row="0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
+                                <!-- Because we do not have support for shadows on the beak we can't use the shadows that we get for free from flyout. Instead we need the BeakOcclusionGrid
+                                 to cast the shadow. But in order for the BeakOcclusionGrid to cast a shadow we need to specify which elements are to receive that shadow. Since we
+                                 can't know this from the tip's code we need to instead have an element within the template we can target. This is that element. -->
+                                <Grid x:Name="ShadowTarget" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" Margin="-100" Grid.ColumnSpan="5" Grid.RowSpan="5"/>
+                                <!-- This BeakEdgeBorder needs to be z ordered underneath the BeakPolygon while the BeakOcclusionGrid needs to be over it, hence declaring these parts
+                                 in this order. This is to achieve the desired occlusion of the beaks content edge border. The beak edge border is a low opacity highlight,
+                                 which means we need to have the background color present underneath the highlight, hence the double grid here. -->
+                                <Grid x:Name="BeakEdgeBorder" Background="{TemplateBinding Background}">
+                                    <Grid Background="{ThemeResource TeachingTipBorderBrush}"/>
+                                </Grid>
+                                <Polygon x:Name="BeakPolygon"
+                                     Fill="{TemplateBinding Background}"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Top"
+                                     Stroke="{ThemeResource TeachingTipBorderBrush}"
+                                     StrokeThickness="{StaticResource TeachingTipBorderThickness}"/>
+                                <Grid x:Name="BeakOcclusionGrid" 
+                                  HorizontalAlignment="Left" 
+                                  VerticalAlignment="Top" 
+                                  MinHeight="{ThemeResource TeachingTipMinHeight}" 
+                                  MinWidth="{ThemeResource TeachingTipMinWidth}"
+                                  MaxHeight="{ThemeResource TeachingTipMaxHeight}"
+                                  MaxWidth="{ThemeResource TeachingTipMaxWidth}"
+                                  Grid.ColumnSpan="5"
+                                  Grid.RowSpan="5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
+                                        <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>
+                                        <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="{StaticResource TeachingTipBeakShortSideLength}"/>
+                                        <RowDefinition Height="{StaticResource TeachingTipBeakMargin}"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="{StaticResource TeachingTipBeakMargin}"/>
+                                        <RowDefinition Height="{StaticResource TeachingTipBeakShortSideLength}"/>
+                                    </Grid.RowDefinitions>
+                                    <Polygon x:Name="TopBeakPolygonHighlight"
+                                         Grid.Row="0"
+                                         Grid.Column="2"
+                                         Margin="{StaticResource TeachingTipTopHighlightOffsetForBorder}"
+                                         VerticalAlignment="Top"
+                                         Fill="{TemplateBinding Background}"
+                                         Stroke="{ThemeResource TeachingTipTopHighlightBrush}"
+                                         StrokeThickness="{StaticResource TeachingTipTopHighlightHeight}"
+                                         Points="0,10 10,0 20,10"/>
+                                    <Grid x:Name="ContentRootGrid"
+                                      Background="{TemplateBinding Background}"
+                                      BorderBrush="{ThemeResource TeachingTipBorderBrush}"
+                                      Grid.Row="1"
+                                      Grid.Column="1"
+                                      Grid.ColumnSpan="3"
+                                      Grid.RowSpan="3">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Border x:Name="BleedingImageBorder" Grid.Row="0" Child="{TemplateBinding BleedingImageContent}" Background="{TemplateBinding Background}"/>
+                                        <Grid x:Name="NonBleedingContentRootGrid" Grid.Row="1">
+                                            <ScrollViewer>
+                                                <StackPanel Margin="{StaticResource TeachingTipContentMargin}">
+                                                    <Grid Grid.Row="0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
 
-                                                <Border x:Name="IconBorder" Grid.Column="0" Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}"/>
-                                                <StackPanel x:Name="TitlesStackPanel" Grid.Column="1">
-                                                    <TextBlock x:Name="TitleTextBlock" Grid.Column="0" Text="{TemplateBinding Title}" TextWrapping="WrapWholeWords" FontWeight="SemiBold"/>
-                                                    <TextBlock x:Name="SubtextTextBlock" Grid.Row="1" Text="{TemplateBinding Subtext}" TextWrapping="WrapWholeWords"/>
+                                                        <Border x:Name="IconBorder" Grid.Column="0" Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}"/>
+                                                        <StackPanel x:Name="TitlesStackPanel" Grid.Column="1">
+                                                            <TextBlock x:Name="TitleTextBlock" Grid.Column="0" Text="{TemplateBinding Title}" TextWrapping="WrapWholeWords" FontWeight="SemiBold"/>
+                                                            <TextBlock x:Name="SubtextTextBlock" Grid.Row="1" Text="{TemplateBinding Subtext}" TextWrapping="WrapWholeWords"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                    <ContentPresenter x:Name="MainContentPresenter" Grid.Row="1" Content="{TemplateBinding Content}"/>
+                                                    <Grid Grid.Row="2">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Button x:Name="ActionButton"
+                                                            Content="{TemplateBinding ActionButtonText}"
+                                                            Style="{TemplateBinding ActionButtonStyle}" 
+                                                            Command="{TemplateBinding ActionButtonCommand}"
+                                                            CommandParameter="{TemplateBinding ActionButtonCommandParameter}"/>
+                                                        <Button x:Name="CloseButton"
+                                                            Content="{TemplateBinding CloseButtonText}"
+                                                            Style="{TemplateBinding CloseButtonStyle}"
+                                                            Command="{TemplateBinding CloseButtonCommand}"
+                                                            CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
+                                                            Grid.Column="1"/>
+                                                    </Grid>
                                                 </StackPanel>
-                                            </Grid>
-                                            <ContentPresenter x:Name="MainContentPresenter" Grid.Row="1" Content="{TemplateBinding Content}"/>
-                                            <Grid Grid.Row="2">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Button x:Name="ActionButton"
-                                                        Content="{TemplateBinding ActionButtonText}"
-                                                        Style="{TemplateBinding ActionButtonStyle}" 
-                                                        Command="{TemplateBinding ActionButtonCommand}"
-                                                        CommandParameter="{TemplateBinding ActionButtonCommandParameter}"/>
-                                                <Button x:Name="CloseButton"
-                                                        Content="{TemplateBinding CloseButtonText}"
-                                                        Style="{TemplateBinding CloseButtonStyle}"
-                                                        Command="{TemplateBinding CloseButtonCommand}"
-                                                        CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
-                                                        Grid.Column="1"/>
-                                            </Grid>
-                                        </StackPanel>
-                                    </ScrollViewer>
-                                    <Button x:Name="AlternateCloseButton"
-                                            Width="{StaticResource TeachingTipAlternateCloseButtonSize}"
-                                            Height="{StaticResource TeachingTipAlternateCloseButtonSize}"
-                                            Background="Transparent"
-                                            VerticalAlignment="Top"
-                                            HorizontalAlignment="Right"
-                                            BorderThickness="{StaticResource TeachingTipAlternateCloseButtonBorderThickness}">
-                                        <Viewbox Width="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}"
-                                                 Height="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}">
-                                            <SymbolIcon Symbol="Cancel"/>
-                                        </Viewbox>
-                                    </Button>
+                                            </ScrollViewer>
+                                            <Button x:Name="AlternateCloseButton"
+                                                Width="{StaticResource TeachingTipAlternateCloseButtonSize}"
+                                                Height="{StaticResource TeachingTipAlternateCloseButtonSize}"
+                                                Background="Transparent"
+                                                VerticalAlignment="Top"
+                                                HorizontalAlignment="Right"
+                                                BorderThickness="{StaticResource TeachingTipAlternateCloseButtonBorderThickness}">
+                                                <Viewbox Width="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}"
+                                                     Height="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}">
+                                                    <SymbolIcon Symbol="Cancel"/>
+                                                </Viewbox>
+                                            </Button>
+                                        </Grid>
+                                    </Grid>
+                                    <Grid x:Name="TopHighlightLeft"
+                                      Grid.Row="1"
+                                      Grid.Column="1"
+                                      Grid.ColumnSpan="3"
+                                      Height="{StaticResource TeachingTipTopHighlightHeight}"
+                                      VerticalAlignment="Top"
+                                      HorizontalAlignment="Stretch" 
+                                      Background="{ThemeResource TeachingTipTopHighlightBrush}"
+                                      Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopLeftHighlightMargin}"/>
+                                    <Grid x:Name="TopHighlightRight"
+                                      Grid.Row="1"
+                                      Grid.Column="1"
+                                      Grid.ColumnSpan="3"
+                                      Height="{StaticResource TeachingTipTopHighlightHeight}"
+                                      VerticalAlignment="Top"
+                                      HorizontalAlignment="Stretch"
+                                      Background="{ThemeResource TeachingTipTopHighlightBrush}"
+                                      Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopRightHighlightMargin}"/>
                                 </Grid>
                             </Grid>
-                            <Grid x:Name="TopHighlightLeft"
-                                  Grid.Row="1"
-                                  Grid.Column="1"
-                                  Grid.ColumnSpan="3"
-                                  Height="{StaticResource TeachingTipTopHighlightHeight}"
-                                  VerticalAlignment="Top"
-                                  HorizontalAlignment="Stretch" 
-                                  Background="{ThemeResource TeachingTipTopHighlightBrush}"
-                                  Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopLeftHighlightMargin}"/>
-                            <Grid x:Name="TopHighlightRight"
-                                  Grid.Row="1"
-                                  Grid.Column="1"
-                                  Grid.ColumnSpan="3"
-                                  Height="{StaticResource TeachingTipTopHighlightHeight}"
-                                  VerticalAlignment="Top"
-                                  HorizontalAlignment="Stretch"
-                                  Background="{ThemeResource TeachingTipTopHighlightBrush}"
-                                  Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopRightHighlightMargin}"/>
-                        </Grid>
+                        </Popup>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

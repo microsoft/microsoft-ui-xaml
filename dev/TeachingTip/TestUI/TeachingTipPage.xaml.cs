@@ -477,6 +477,7 @@ namespace MUXControlsTestApp
 
         public void OnShowButtonClicked(object sender, RoutedEventArgs args)
         {
+            TeachingTip.SetAttach(this.targetButton, TeachingTip3);
             this.TeachingTip.IsOpen = true;
         }
 

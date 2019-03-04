@@ -21,10 +21,30 @@
             <ScrollViewer x:Name="ContentScrollViewer">
                 <StackPanel>
                     <Grid Background="Green" Width="100" Height="1000"/>
+                    <muxc:TeachingTip x:Name="TeachingTip" 
+                                          AutomationProperties.Name="TeachingTip"
+                                          Title="We've Added Auto Saving!" 
+                                          Subtext="Documents will now automatically save to OneDrive." 
+                                          Closed="OnTeachingTipClosed" 
+                                          Closing="OnTeachingTipClosing"
+                                          ActionButtonClick="OnTeachingTipActionButtonClicked"
+                                          CloseButtonClick="OnTeachingTipCloseButtonClicked">
+                        <muxc:TeachingTip.IconSource>
+                            <muxc:SymbolIconSource Symbol="People"/>
+                        </muxc:TeachingTip.IconSource>
+                        <muxc:TeachingTip.BleedingImageContent>
+                            <Grid MinHeight="200" MinWidth="200" Background="red"/>
+                        </muxc:TeachingTip.BleedingImageContent>
+                        <muxc:TeachingTip.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
+                            </StackPanel>
+                        </muxc:TeachingTip.Content>
+                    </muxc:TeachingTip>
                     <Button x:Name="targetButton" HorizontalAlignment="Center" VerticalAlignment="Center" Click="OnShowButtonClicked" Height="300">Enable AutoSave
                         <muxc:TeachingTip.Attach>
-                            <muxc:TeachingTip x:Name="TeachingTip" 
-                                          AutomationProperties.Name="TeachingTip"
+                            <muxc:TeachingTip x:Name="TeachingTip3" 
+                                          AutomationProperties.Name="TeachingTip3"
                                           Title="We've Added Auto Saving!" 
                                           Subtext="Documents will now automatically save to OneDrive." 
                                           Closed="OnTeachingTipClosed" 
@@ -45,6 +65,28 @@
                                 </muxc:TeachingTip.Content>
                             </muxc:TeachingTip>
                         </muxc:TeachingTip.Attach>
+                        <Button.Resources>
+                            <muxc:TeachingTip x:Name="TeachingTip2" 
+                                          AutomationProperties.Name="TeachingTip2"
+                                          Title="We've Added Auto Saving!" 
+                                          Subtext="Documents will now automatically save to OneDrive." 
+                                          Closed="OnTeachingTipClosed" 
+                                          Closing="OnTeachingTipClosing"
+                                          ActionButtonClick="OnTeachingTipActionButtonClicked"
+                                          CloseButtonClick="OnTeachingTipCloseButtonClicked">
+                                <muxc:TeachingTip.IconSource>
+                                    <muxc:SymbolIconSource Symbol="People"/>
+                                </muxc:TeachingTip.IconSource>
+                                <muxc:TeachingTip.BleedingImageContent>
+                                    <Grid MinHeight="200" MinWidth="200" Background="red"/>
+                                </muxc:TeachingTip.BleedingImageContent>
+                                <muxc:TeachingTip.Content>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
+                                    </StackPanel>
+                                </muxc:TeachingTip.Content>
+                            </muxc:TeachingTip>
+                        </Button.Resources>
                     </Button>
                     <Grid Background="Green" Width="100" Height="10000"/>
                 </StackPanel>
