@@ -46,6 +46,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
     public class VisualTreeTestHelper
     {
+        public static bool AlwaysLogMasterFile = false;
         public static void ChangeRequestedTheme(UIElement root, ElementTheme theme)
         {
             FrameworkElement element = root as FrameworkElement;
@@ -84,16 +85,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return content;
         }
 
-        public static void VerifyVisualTree(string xaml, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null, bool shouldLogMasterFile = false)
+        public static void VerifyVisualTree(string xaml, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
         {
             var root = SetupVisualTree(xaml);
-            VerifyVisualTree(root, masterFilePrefix, theme, translator, filter, logger, shouldLogMasterFile);
+            VerifyVisualTree(root, masterFilePrefix, theme, translator, filter, logger);
         }
 
-        public static void VerifyVisualTree(UIElement root, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null, bool shouldLogMasterFile = false)
+        public static void VerifyVisualTree(UIElement root, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
         {
             VisualTreeLog.LogInfo("VerifyVisualTree for theme " + theme.ToString());
-            TestExecution helper = new TestExecution(translator, filter, logger, shouldLogMasterFile);
+            TestExecution helper = new TestExecution(translator, filter, logger, AlwaysLogMasterFile);
 
             if (theme == Theme.None)
             {

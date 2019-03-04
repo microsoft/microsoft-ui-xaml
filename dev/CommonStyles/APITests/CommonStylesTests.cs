@@ -31,12 +31,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class CommonStylesVisualTreeTests
+    public class CommonStylesVisualTreeTestSamples
     {
         [TestMethod]
         public void VerifyVisualTreeForAppBarAndAppBarToggleButton()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            if (!PlatformConfiguration.IsOsVersion(OSVersion.Redstone5))
             {
                 return;
             }
@@ -54,7 +54,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyVisualTreeExampleLoadAndVerifyForAllThemes()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            if (!PlatformConfiguration.IsOsVersion(OSVersion.Redstone5))
             {
                 return;
             }
@@ -69,7 +69,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyVisualTreeExampleLoadAndVerifyForDarkThemeWithCustomName()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            if (!PlatformConfiguration.IsOsVersion(OSVersion.Redstone5))
             {
                 return;
             }
@@ -88,7 +88,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyVisualTreeExampleForLightTheme()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            if (!PlatformConfiguration.IsOsVersion(OSVersion.Redstone5))
             {
                 return;
             }
@@ -104,7 +104,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyVisualTreeExampleWithCustomerFilter()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            if (!PlatformConfiguration.IsOsVersion(OSVersion.Redstone5))
             {
                 return;
             }
@@ -121,7 +121,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyVisualTreeExampleWithCustomerPropertyValueTranslator()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            if (!PlatformConfiguration.IsOsVersion(OSVersion.Redstone5))
             {
                 return;
             }
@@ -132,7 +132,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             VisualTreeTestHelper.VerifyVisualTree(xaml: xaml,
                 masterFilePrefix: "VerifyVisualTreeExampleWithCustomerPropertyValueTranslator",
-                translator: new CustomizedTranslate());
+                translator: new CustomizedTranslator());
         }
 
         class CustomizedFilter : VisualTreeDumper.IFilter
@@ -217,7 +217,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             public virtual bool ShouldLogPropertyValuePair(string propertyName, string value)
             {
                 string v = _knownPropertyValueDict.ContainsKey(propertyName) ? _knownPropertyValueDict[propertyName] : VisualTreeDumper.ValueNULL;
-                return v.Equals(value);
+                return !(v.Equals(value) || "Exception".Equals(value));
             }
 
             public virtual bool ShouldLogElement(string elementName)
@@ -232,7 +232,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        class CustomizedTranslate : VisualTreeDumper.DefaultPropertyValueTranslator // Add prefix MyValue to all Value
+        class CustomizedTranslator : VisualTreeDumper.DefaultPropertyValueTranslator // Add prefix MyValue to all Value
         {
             public override string PropertyValueToString(string propertyName, object value)
             {

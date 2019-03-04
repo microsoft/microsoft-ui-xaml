@@ -1,13 +1,13 @@
 [Windows.UI.Xaml.Controls.Grid]
     Padding=0,0,0,0
     BorderThickness=0,0,0,0
-    BorderBrush=
-    Background=
+    BorderBrush=[NULL]
+    Background=[NULL]
     Name=
     Margin=0,0,0,0
     FocusVisualSecondaryThickness=1,1,1,1
-    FocusVisualSecondaryBrush=Windows.UI.Xaml.Media.SolidColorBrush
+    FocusVisualSecondaryBrush=#99FFFFFF
     FocusVisualPrimaryThickness=2,2,2,2
-    FocusVisualPrimaryBrush=Windows.UI.Xaml.Media.SolidColorBrush
+    FocusVisualPrimaryBrush=#FF000000
     Visibility=Visible
     RenderSize=400,400

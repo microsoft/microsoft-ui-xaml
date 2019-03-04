@@ -80,9 +80,9 @@ namespace MUXControls.TestAppUtils
             public void VisitProperty(string propertyName, object value)
             {
                 var v = _translator.PropertyValueToString(propertyName, value);
-                if (!_filter.ShouldLogPropertyValuePair(propertyName, v))
+                if (_filter.ShouldLogPropertyValuePair(propertyName, v))
                 {
-                    _logger.LogProperty(_indent+1, propertyName, value);
+                    _logger.LogProperty(_indent+1, propertyName, v);
                 }
             }
         }
@@ -111,7 +111,7 @@ namespace MUXControls.TestAppUtils
 
                         try
                         {
-                            value = property.GetValue(node, null);
+                            value = property.GetValue(obj: node, index: null);
                         }
                         catch (Exception)
                         {
@@ -145,7 +145,7 @@ namespace MUXControls.TestAppUtils
             private static readonly string[] _propertyNameWhiteList = new string[] {"Background", "Foreground", "Padding", "Margin", "RenderSize", "Visibility", "Name"};
             public virtual bool ShouldLogPropertyValuePair(string propertyName, string value)
             {
-                return false;
+                return true;
             }
 
             public virtual bool ShouldLogElement(string elementName)
@@ -164,7 +164,9 @@ namespace MUXControls.TestAppUtils
             public virtual string PropertyValueToString(string propertyName, object value)
             {
                 if (value == null)
+                {
                     return ValueNULL;
+                }
 
                 var brush = value as SolidColorBrush;
                 if (brush != null)
@@ -193,13 +195,13 @@ namespace MUXControls.TestAppUtils
 
             public override string ToString()
             {
-                return _sb.ToString();
+                return _logger.ToString();
             }
 
-            private StringBuilder _sb = new StringBuilder();
+            private StringBuilder _logger = new StringBuilder();
             private void AppendLogger(int indent, string s)
             {
-                _sb.AppendLine(s.PadLeft(2*indent + s.Length));
+                _logger.AppendLine(s.PadLeft(2*indent + s.Length));
             }
         }
     }
