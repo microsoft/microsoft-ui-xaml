@@ -21,7 +21,6 @@ class ItemsRepeater :
 {
 public:
     ItemsRepeater();
-    ~ItemsRepeater();
 
     static winrt::Point ClearedElementsArrangePosition;
     // A convention we use in the ItemsRepeater codebase for an invalid Rect value.
@@ -163,10 +162,6 @@ private:
     winrt::event_token m_dataSourceChanged{};
     winrt::event_token m_measureInvalidated{};
     winrt::event_token m_arrangeInvalidated{};
-
-    event_source<winrt::TypedEventHandler<winrt::ItemsRepeater, winrt::ItemsRepeaterElementPreparedEventArgs>> m_elementPreparedEventSource{ this };
-    event_source<winrt::TypedEventHandler<winrt::ItemsRepeater, winrt::ItemsRepeaterElementClearingEventArgs>> m_elementClearingEventSource{ this };
-    event_source<winrt::TypedEventHandler<winrt::ItemsRepeater, winrt::ItemsRepeaterElementIndexChangedEventArgs>> m_elementIndexChangedEventSource{ this };
 
     // Cached Event args to avoid creation cost every time
     tracker_ref<winrt::ItemsRepeaterElementPreparedEventArgs> m_elementPreparedArgs{ this };

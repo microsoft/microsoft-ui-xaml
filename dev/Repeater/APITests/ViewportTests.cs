@@ -1269,7 +1269,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 {
                     Name = "ItemsRepeater #" + i,
                     ItemsSource = data[i],
-                    ItemTemplate = (Microsoft.UI.Xaml.Controls.IElementFactoryShim)MockElementFactory.CreateElementFactory(itemElements[i]),
+                    ItemTemplate = MockElementFactory.CreateElementFactory(itemElements[i]),
                     Layout = new TestGridLayout { Orientation = Orientation.Horizontal, MinItemWidth = 50, MinItemHeight = 50, MinRowSpacing = 10, MinColumnSpacing = 10 }
                 }).ToList();
                 var groupElement = Enumerable.Range(0, groupCount).Select(i =>
@@ -1285,7 +1285,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 {
                     Name = "Root ItemsRepeater",
                     ItemsSource = data,
-                    ItemTemplate = (Microsoft.UI.Xaml.Controls.IElementFactoryShim)MockElementFactory.CreateElementFactory(groupElement),
+                    ItemTemplate = MockElementFactory.CreateElementFactory(groupElement),
                     Layout = new TestStackLayout { Orientation = Orientation.Vertical }
                 };
 

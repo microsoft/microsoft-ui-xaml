@@ -48,21 +48,6 @@ ItemsRepeater::ItemsRepeater()
     OnLayoutChanged(nullptr, layout);
 }
 
-ItemsRepeater::~ItemsRepeater()
-{
-    if (auto layout = Layout())
-    {
-        if (m_measureInvalidated)
-        {
-            layout.MeasureInvalidated(m_measureInvalidated);
-        }
-
-        if (m_arrangeInvalidated)
-        {
-            layout.ArrangeInvalidated(m_arrangeInvalidated);
-        }
-    }
-}
 
 #pragma region IUIElementOverrides
 
