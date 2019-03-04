@@ -55,10 +55,10 @@ static constexpr auto c_paneHeaderOnTopPane = L"PaneHeaderOnTopPane"sv;
 static constexpr auto c_paneCustomContentOnTopPane = L"PaneCustomContentOnTopPane"sv;
 static constexpr auto c_paneFooterOnTopPane = L"PaneFooterOnTopPane"sv;
 
-static constexpr int c_backButtonHeight = 44;
-static constexpr int c_backButtonWidth = 48;
+static constexpr int c_backButtonHeight = 40;
+static constexpr int c_backButtonWidth = 40;
 static constexpr int c_backButtonPaneButtonMargin = 8;
-static constexpr int c_paneToggleButtonWidth = 48;
+static constexpr int c_paneToggleButtonWidth = 40;
 static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior = 56;
 static constexpr int c_backButtonRowDefinition = 1;
 static constexpr float c_paneElevationTranslationZ = 32;
