@@ -215,6 +215,9 @@ namespace MUXControlsTestApp.Utilities
                     rowIndex++;
                 }
 
+#if ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found                    
+                throw new NotImplementedException();
+#else
                 foreach (PropertyInfo propertyInfo in typeEntity.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
                 {
                     bool skipUIAutoGeneration = !string.IsNullOrWhiteSpace(this.Filter) && !propertyInfo.Name.ToLower().Contains(this.Filter.ToLower());
@@ -373,6 +376,7 @@ namespace MUXControlsTestApp.Utilities
                         }
                     }
                 }
+#endif
 
                 typeEntity = typeEntity.GetTypeInfo().BaseType;
             }
@@ -421,16 +425,24 @@ namespace MUXControlsTestApp.Utilities
             comboBox.HorizontalAlignment = HorizontalAlignment.Stretch;
             comboBox.Margin = new Thickness(1);
             comboBox.Items.Add("Null");
+
+#if ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found                    
+            throw new NotImplementedException();
+#else
             foreach (PropertyInfo colorPropertyInfo in typeof(Colors).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
             {
                 comboBox.Items.Add(colorPropertyInfo.Name);
             }
+#endif
             SolidColorBrush currentBrush = propertyInfo.GetValue(_entity) as SolidColorBrush;
             if (currentBrush != null)
             {
                 Color currentColor = currentBrush.Color;
                 bool isKnownColor = false;
 
+#if ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found                    
+                throw new NotImplementedException();
+#else
                 foreach (PropertyInfo colorPropertyInfo in typeof(Colors).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
                 {
                     if (colorPropertyInfo.GetValue(null).ToString() == currentColor.ToString())
@@ -439,6 +451,7 @@ namespace MUXControlsTestApp.Utilities
                         break;
                     }
                 }
+#endif
 
                 if (!isKnownColor)
                 {
@@ -501,10 +514,14 @@ namespace MUXControlsTestApp.Utilities
             {
                 comboBox.Items.Add("Null");
             }
+#if ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found                    
+            throw new NotImplementedException();
+#else
             foreach (FieldInfo fieldInfo in type.GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 comboBox.Items.Add(fieldInfo.Name);
             }
+#endif
             comboBox.IsEnabled = propertyInfo.CanWrite && propertyInfo.SetMethod.IsPublic;
             binding.Source = _entity;
             binding.Path = new PropertyPath(propertyInfo.Name);
