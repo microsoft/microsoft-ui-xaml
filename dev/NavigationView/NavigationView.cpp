@@ -1382,19 +1382,13 @@ void NavigationView::UpdateIsChildSelected(winrt::IInspectable const& prevItem, 
 
         if (viewModel && prevItem && !IsSettingsItem(prevItem))
         {
-            winrt::TreeViewNode prevItemNode{ nullptr };
-
-            prevItemNode = lvImpl->NodeFromItem(prevItem);
-            if (!prevItemNode)
-            {
-                prevItemNode = NodeFromPreviouslySelectedItem(prevItem);
-            }
-
+            auto prevItemNode = m_previouslySelectedNode.get();
             if (prevItemNode && prevItemNode.Parent())
             {
                 auto nodeParent = prevItemNode.Parent();
                 viewModel->UpdateSelection(nodeParent, TreeNodeSelectionState::UnSelected);
                 viewModel->NotifyContainerOfSelectionChange(nodeParent, TreeNodeSelectionState::UnSelected);
+                m_previouslySelectedNode = nullptr;
             }
         }
 
@@ -1406,39 +1400,11 @@ void NavigationView::UpdateIsChildSelected(winrt::IInspectable const& prevItem, 
                 auto nodeParent = nextItemNode.Parent();
                 viewModel->UpdateSelection(nodeParent, TreeNodeSelectionState::PartialSelected);
                 viewModel->NotifyContainerOfSelectionChange(nodeParent, TreeNodeSelectionState::PartialSelected);
+                m_previouslySelectedNode = winrt::make_weak(nextItemNode);
             }
         }
     }
 }
-
-// This search function is utilizing the assumption that the item we are searching for in the node tree is in the process of being unselected.
-// This means that it's ancestors are still in the TreeNodeSelectionState::PartialSelected state.
-winrt::TreeViewNode NavigationView::NodeFromPreviouslySelectedItem(winrt::IInspectable const& item)
-{
-    auto nodeList = RootNodes();
-
-    bool updatedNodeList = true;
-    while (updatedNodeList && nodeList && nodeList.Size() > 0)
-    {
-        updatedNodeList = false;
-        for (auto const& node : nodeList)
-        {
-            if (winrt::get_self<TreeViewNode>(node)->Content() == item)
-            {
-                return node;
-            }
-
-            if (winrt::get_self<TreeViewNode>(node)->SelectionState() == TreeNodeSelectionState::PartialSelected)
-            {
-                nodeList = winrt::get_self<TreeViewNode>(node)->Children();
-                updatedNodeList = true;
-                break;
-            }
-        }
-    }
-    return nullptr;
-}
-
 
 void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const winrt::ItemClickEventArgs& args)
 {

@@ -280,7 +280,6 @@ private:
 
     winrt::NavigationViewList GetActiveListView();
     winrt::IVector<winrt::TreeViewNode> RootNodes();
-    winrt::TreeViewNode NodeFromPreviouslySelectedItem(winrt::IInspectable const& item);
 
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };
@@ -356,6 +355,7 @@ private:
     TopNavigationViewDataProvider m_topDataProvider{ this };
 
     tracker_ref<winrt::TreeViewNode> m_rootNode{ this };
+    weak_ref<winrt::TreeViewNode> m_previouslySelectedNode{ nullptr };
 
     bool m_appliedTemplate{ false };
 
