@@ -227,7 +227,9 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["ItemsRepeater.Layout"] = true;
             NeedsPropChangedCallbackMetadata["ItemsRepeater.VerticalCacheLength"] = true;
             // ItemsRepeater -- DefaultValueMetadata
+            DefaultValueMetadata["ItemsRepeater.HorizontalCacheLength"] = @"2.0";
             DefaultValueMetadata["ItemsRepeater.Layout"] = @"winrt::StackLayout()";
+            DefaultValueMetadata["ItemsRepeater.VerticalCacheLength"] = @"2.0";
 
             IncludedTypesMetadata["Layout"] = true;
             // Layout -- NeedsPropChangedCallbackMetadata

@@ -134,8 +134,10 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     }
     
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("2.0")]
     Double HorizontalCacheLength { get; set; };
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("2.0")]
     Double VerticalCacheLength { get; set; };
 
     Windows.UI.Xaml.Media.Brush Background{ get; set; };

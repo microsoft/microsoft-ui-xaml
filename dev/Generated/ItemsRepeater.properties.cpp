@@ -56,7 +56,7 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
+                ValueHelper<double>::BoxValueIfNecessary(2.0),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_ItemsSourceProperty)
@@ -100,7 +100,7 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
+                ValueHelper<double>::BoxValueIfNecessary(2.0),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
 }
