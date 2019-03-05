@@ -383,9 +383,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private bool CompareObjects(object value, object mergedValue, int indentation)
         {
-#if ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found                    
-            throw new NotImplementedException();
-#else
             // We'll first test equality.  Failure doesn't necessarily mean that the objects aren't the same,
             // since we may be dealing with a reference type, but success means we can immediately quit.
             if (value == mergedValue)
@@ -436,9 +433,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         propertyInfoList = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
                     }
 
-            // If we've got a dependency object that we're checking, then we'll consider all of its dependency properties.
-            // We'll ignore any that aren't set.
-            foreach (PropertyInfo propertyInfo in propertyInfoList)
+                    // If we've got a dependency object that we're checking, then we'll consider all of its dependency properties.
+                    // We'll ignore any that aren't set.
+                    foreach (PropertyInfo propertyInfo in propertyInfoList)
                     {
                         if (ignoredProperties.Contains(propertyInfo.Name))
                         {
@@ -531,7 +528,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             return true;
-#endif
         }
 
             #endregion

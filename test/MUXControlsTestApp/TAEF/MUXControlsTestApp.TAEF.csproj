@@ -20,11 +20,8 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.3</Version>
     </PackageReference>
-    <PackageReference Include="MSTest.TestAdapter">
-      <Version>1.3.2</Version>
-    </PackageReference>
-    <PackageReference Include="MSTest.TestFramework">
-      <Version>1.3.2</Version>
+    <PackageReference Include="TAEF.Redist.Wlk">
+      <Version>10.31.180822002</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
