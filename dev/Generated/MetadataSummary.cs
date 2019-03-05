@@ -44,10 +44,10 @@ namespace CustomTasks
             PropValidationCallbackMetadata["AcrylicBrush.TintOpacity"] = "CoerceToZeroOneRange";
             NeedsPropChangedCallbackMetadata["AcrylicBrush.TintTransitionDuration"] = true;
             // AcrylicBrush -- DefaultValueMetadata
-            DefaultValueMetadata["AcrylicBrush.BackgroundSource"] = "winrt::AcrylicBackgroundSource::Backdrop";
-            DefaultValueMetadata["AcrylicBrush.TintColor"] = "AcrylicBrush::sc_defaultTintColor";
-            DefaultValueMetadata["AcrylicBrush.TintOpacity"] = "AcrylicBrush::sc_defaultTintOpacity";
-            DefaultValueMetadata["AcrylicBrush.TintTransitionDuration"] = "AcrylicBrush::sc_defaultTintTransitionDuration";
+            DefaultValueMetadata["AcrylicBrush.BackgroundSource"] = @"winrt::AcrylicBackgroundSource::Backdrop";
+            DefaultValueMetadata["AcrylicBrush.TintColor"] = @"AcrylicBrush::sc_defaultTintColor";
+            DefaultValueMetadata["AcrylicBrush.TintOpacity"] = @"AcrylicBrush::sc_defaultTintOpacity";
+            DefaultValueMetadata["AcrylicBrush.TintTransitionDuration"] = @"AcrylicBrush::sc_defaultTintTransitionDuration";
 
             IncludedTypesMetadata["AnimatedVisualPlayer"] = true;
             // AnimatedVisualPlayer -- NeedsPropChangedCallbackMetadata
@@ -62,14 +62,14 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.Stretch"] = true;
             PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.Stretch"] = "OnStretchPropertyChanged";
             // AnimatedVisualPlayer -- DefaultValueMetadata
-            DefaultValueMetadata["AnimatedVisualPlayer.AutoPlay"] = "true";
-            DefaultValueMetadata["AnimatedVisualPlayer.PlaybackRate"] = "1";
-            DefaultValueMetadata["AnimatedVisualPlayer.Stretch"] = "winrt::Stretch::Uniform";
+            DefaultValueMetadata["AnimatedVisualPlayer.AutoPlay"] = @"true";
+            DefaultValueMetadata["AnimatedVisualPlayer.PlaybackRate"] = @"1";
+            DefaultValueMetadata["AnimatedVisualPlayer.Stretch"] = @"winrt::Stretch::Uniform";
 
             IncludedTypesMetadata["BitmapIconSource"] = true;
             // BitmapIconSource -- NeedsPropChangedCallbackMetadata
             // BitmapIconSource -- DefaultValueMetadata
-            DefaultValueMetadata["BitmapIconSource.ShowAsMonochrome"] = "true";
+            DefaultValueMetadata["BitmapIconSource.ShowAsMonochrome"] = @"true";
 
             IncludedTypesMetadata["ButtonInteraction"] = true;
             // ButtonInteraction -- NeedsPropChangedCallbackMetadata
@@ -97,27 +97,27 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["ColorPicker.MinValue"] = true;
             NeedsPropChangedCallbackMetadata["ColorPicker.PreviousColor"] = true;
             // ColorPicker -- DefaultValueMetadata
-            DefaultValueMetadata["ColorPicker.Color"] = "{ 255, 255, 255, 255 }";
-            DefaultValueMetadata["ColorPicker.ColorSpectrumComponents"] = "winrt::ColorSpectrumComponents::HueSaturation";
-            DefaultValueMetadata["ColorPicker.ColorSpectrumShape"] = "winrt::ColorSpectrumShape::Box";
-            DefaultValueMetadata["ColorPicker.IsAlphaSliderVisible"] = "true";
-            DefaultValueMetadata["ColorPicker.IsAlphaTextInputVisible"] = "true";
-            DefaultValueMetadata["ColorPicker.IsColorChannelTextInputVisible"] = "true";
-            DefaultValueMetadata["ColorPicker.IsColorPreviewVisible"] = "true";
-            DefaultValueMetadata["ColorPicker.IsColorSliderVisible"] = "true";
-            DefaultValueMetadata["ColorPicker.IsColorSpectrumVisible"] = "true";
-            DefaultValueMetadata["ColorPicker.IsHexInputVisible"] = "true";
-            DefaultValueMetadata["ColorPicker.MaxHue"] = "359";
-            DefaultValueMetadata["ColorPicker.MaxSaturation"] = "100";
-            DefaultValueMetadata["ColorPicker.MaxValue"] = "100";
-            DefaultValueMetadata["ColorPicker.MinHue"] = "0";
-            DefaultValueMetadata["ColorPicker.MinSaturation"] = "0";
-            DefaultValueMetadata["ColorPicker.MinValue"] = "0";
+            DefaultValueMetadata["ColorPicker.Color"] = @"{ 255, 255, 255, 255 }";
+            DefaultValueMetadata["ColorPicker.ColorSpectrumComponents"] = @"winrt::ColorSpectrumComponents::HueSaturation";
+            DefaultValueMetadata["ColorPicker.ColorSpectrumShape"] = @"winrt::ColorSpectrumShape::Box";
+            DefaultValueMetadata["ColorPicker.IsAlphaSliderVisible"] = @"true";
+            DefaultValueMetadata["ColorPicker.IsAlphaTextInputVisible"] = @"true";
+            DefaultValueMetadata["ColorPicker.IsColorChannelTextInputVisible"] = @"true";
+            DefaultValueMetadata["ColorPicker.IsColorPreviewVisible"] = @"true";
+            DefaultValueMetadata["ColorPicker.IsColorSliderVisible"] = @"true";
+            DefaultValueMetadata["ColorPicker.IsColorSpectrumVisible"] = @"true";
+            DefaultValueMetadata["ColorPicker.IsHexInputVisible"] = @"true";
+            DefaultValueMetadata["ColorPicker.MaxHue"] = @"359";
+            DefaultValueMetadata["ColorPicker.MaxSaturation"] = @"100";
+            DefaultValueMetadata["ColorPicker.MaxValue"] = @"100";
+            DefaultValueMetadata["ColorPicker.MinHue"] = @"0";
+            DefaultValueMetadata["ColorPicker.MinSaturation"] = @"0";
+            DefaultValueMetadata["ColorPicker.MinValue"] = @"0";
 
             IncludedTypesMetadata["ColorPickerSlider"] = true;
             // ColorPickerSlider -- NeedsPropChangedCallbackMetadata
             // ColorPickerSlider -- DefaultValueMetadata
-            DefaultValueMetadata["ColorPickerSlider.ColorChannel"] = "winrt::ColorPickerHsvChannel::Value";
+            DefaultValueMetadata["ColorPickerSlider.ColorChannel"] = @"winrt::ColorPickerHsvChannel::Value";
 
             IncludedTypesMetadata["ColorSpectrum"] = true;
             // ColorSpectrum -- NeedsPropChangedCallbackMetadata
@@ -132,16 +132,16 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["ColorSpectrum.MinValue"] = true;
             NeedsPropChangedCallbackMetadata["ColorSpectrum.Shape"] = true;
             // ColorSpectrum -- DefaultValueMetadata
-            DefaultValueMetadata["ColorSpectrum.Color"] = "{ 255, 255, 255, 255 }";
-            DefaultValueMetadata["ColorSpectrum.Components"] = "winrt::ColorSpectrumComponents::HueSaturation";
-            DefaultValueMetadata["ColorSpectrum.HsvColor"] = "{ 0, 0, 1, 1 }";
-            DefaultValueMetadata["ColorSpectrum.MaxHue"] = "359";
-            DefaultValueMetadata["ColorSpectrum.MaxSaturation"] = "100";
-            DefaultValueMetadata["ColorSpectrum.MaxValue"] = "100";
-            DefaultValueMetadata["ColorSpectrum.MinHue"] = "0";
-            DefaultValueMetadata["ColorSpectrum.MinSaturation"] = "0";
-            DefaultValueMetadata["ColorSpectrum.MinValue"] = "0";
-            DefaultValueMetadata["ColorSpectrum.Shape"] = "winrt::ColorSpectrumShape::Box";
+            DefaultValueMetadata["ColorSpectrum.Color"] = @"{ 255, 255, 255, 255 }";
+            DefaultValueMetadata["ColorSpectrum.Components"] = @"winrt::ColorSpectrumComponents::HueSaturation";
+            DefaultValueMetadata["ColorSpectrum.HsvColor"] = @"{ 0, 0, 1, 1 }";
+            DefaultValueMetadata["ColorSpectrum.MaxHue"] = @"359";
+            DefaultValueMetadata["ColorSpectrum.MaxSaturation"] = @"100";
+            DefaultValueMetadata["ColorSpectrum.MaxValue"] = @"100";
+            DefaultValueMetadata["ColorSpectrum.MinHue"] = @"0";
+            DefaultValueMetadata["ColorSpectrum.MinSaturation"] = @"0";
+            DefaultValueMetadata["ColorSpectrum.MinValue"] = @"0";
+            DefaultValueMetadata["ColorSpectrum.Shape"] = @"winrt::ColorSpectrumShape::Box";
 
             IncludedTypesMetadata["CommandBarFlyoutCommandBar"] = true;
             // CommandBarFlyoutCommandBar -- NeedsPropChangedCallbackMetadata
@@ -184,19 +184,19 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["FlowLayout.MinRowSpacing"] = true;
             NeedsPropChangedCallbackMetadata["FlowLayout.Orientation"] = true;
             // FlowLayout -- DefaultValueMetadata
-            DefaultValueMetadata["FlowLayout.LineAlignment"] = "winrt::FlowLayoutLineAlignment::Start";
-            DefaultValueMetadata["FlowLayout.MinColumnSpacing"] = "0.0";
-            DefaultValueMetadata["FlowLayout.MinRowSpacing"] = "0.0";
-            DefaultValueMetadata["FlowLayout.Orientation"] = "winrt::Orientation::Horizontal";
+            DefaultValueMetadata["FlowLayout.LineAlignment"] = @"winrt::FlowLayoutLineAlignment::Start";
+            DefaultValueMetadata["FlowLayout.MinColumnSpacing"] = @"0.0";
+            DefaultValueMetadata["FlowLayout.MinRowSpacing"] = @"0.0";
+            DefaultValueMetadata["FlowLayout.Orientation"] = @"winrt::Orientation::Horizontal";
 
             IncludedTypesMetadata["FontIconSource"] = true;
             // FontIconSource -- NeedsPropChangedCallbackMetadata
             // FontIconSource -- DefaultValueMetadata
-            DefaultValueMetadata["FontIconSource.FontFamily"] = "{ c_fontIconSourceDefaultFontFamily }";
-            DefaultValueMetadata["FontIconSource.FontSize"] = "20.0";
-            DefaultValueMetadata["FontIconSource.FontStyle"] = "winrt::FontStyle::Normal";
-            DefaultValueMetadata["FontIconSource.FontWeight"] = "{ 400 }";
-            DefaultValueMetadata["FontIconSource.IsTextScaleFactorEnabled"] = "true";
+            DefaultValueMetadata["FontIconSource.FontFamily"] = @"{ c_fontIconSourceDefaultFontFamily }";
+            DefaultValueMetadata["FontIconSource.FontSize"] = @"20.0";
+            DefaultValueMetadata["FontIconSource.FontStyle"] = @"winrt::FontStyle::Normal";
+            DefaultValueMetadata["FontIconSource.FontWeight"] = @"{ 400 }";
+            DefaultValueMetadata["FontIconSource.IsTextScaleFactorEnabled"] = @"true";
 
             IncludedTypesMetadata["IconSource"] = true;
             // IconSource -- NeedsPropChangedCallbackMetadata
@@ -227,9 +227,9 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["ItemsRepeater.Layout"] = true;
             NeedsPropChangedCallbackMetadata["ItemsRepeater.VerticalCacheLength"] = true;
             // ItemsRepeater -- DefaultValueMetadata
-            DefaultValueMetadata["ItemsRepeater.HorizontalCacheLength"] = "2.0";
-            DefaultValueMetadata["ItemsRepeater.Layout"] = "winrt::StackLayout()";
-            DefaultValueMetadata["ItemsRepeater.VerticalCacheLength"] = "2.0";
+            DefaultValueMetadata["ItemsRepeater.HorizontalCacheLength"] = @"2.0";
+            DefaultValueMetadata["ItemsRepeater.Layout"] = @"winrt::StackLayout()";
+            DefaultValueMetadata["ItemsRepeater.VerticalCacheLength"] = @"2.0";
 
             IncludedTypesMetadata["Layout"] = true;
             // Layout -- NeedsPropChangedCallbackMetadata
@@ -288,28 +288,28 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["NavigationView.SettingsItem"] = true;
             NeedsPropChangedCallbackMetadata["NavigationView.ShoulderNavigationEnabled"] = true;
             // NavigationView -- DefaultValueMetadata
-            DefaultValueMetadata["NavigationView.AlwaysShowHeader"] = "true";
-            DefaultValueMetadata["NavigationView.CompactModeThresholdWidth"] = "641.0";
-            DefaultValueMetadata["NavigationView.CompactPaneLength"] = "48.0";
-            DefaultValueMetadata["NavigationView.DisplayMode"] = "winrt::NavigationViewDisplayMode::Minimal";
-            DefaultValueMetadata["NavigationView.ExpandedModeThresholdWidth"] = "1008.0";
-            DefaultValueMetadata["NavigationView.IsBackButtonVisible"] = "winrt::NavigationViewBackButtonVisible::Auto";
-            DefaultValueMetadata["NavigationView.IsPaneOpen"] = "true";
-            DefaultValueMetadata["NavigationView.IsPaneToggleButtonVisible"] = "true";
-            DefaultValueMetadata["NavigationView.IsPaneVisible"] = "true";
-            DefaultValueMetadata["NavigationView.IsSettingsVisible"] = "true";
-            DefaultValueMetadata["NavigationView.OpenPaneLength"] = "320.0";
-            DefaultValueMetadata["NavigationView.OverflowLabelMode"] = "winrt::NavigationViewOverflowLabelMode::MoreLabel";
-            DefaultValueMetadata["NavigationView.PaneDisplayMode"] = "winrt::NavigationViewPaneDisplayMode::Auto";
-            DefaultValueMetadata["NavigationView.SelectionFollowsFocus"] = "winrt::NavigationViewSelectionFollowsFocus::Disabled";
-            DefaultValueMetadata["NavigationView.ShoulderNavigationEnabled"] = "winrt::NavigationViewShoulderNavigationEnabled::Never";
+            DefaultValueMetadata["NavigationView.AlwaysShowHeader"] = @"true";
+            DefaultValueMetadata["NavigationView.CompactModeThresholdWidth"] = @"641.0";
+            DefaultValueMetadata["NavigationView.CompactPaneLength"] = @"48.0";
+            DefaultValueMetadata["NavigationView.DisplayMode"] = @"winrt::NavigationViewDisplayMode::Minimal";
+            DefaultValueMetadata["NavigationView.ExpandedModeThresholdWidth"] = @"1008.0";
+            DefaultValueMetadata["NavigationView.IsBackButtonVisible"] = @"winrt::NavigationViewBackButtonVisible::Auto";
+            DefaultValueMetadata["NavigationView.IsPaneOpen"] = @"true";
+            DefaultValueMetadata["NavigationView.IsPaneToggleButtonVisible"] = @"true";
+            DefaultValueMetadata["NavigationView.IsPaneVisible"] = @"true";
+            DefaultValueMetadata["NavigationView.IsSettingsVisible"] = @"true";
+            DefaultValueMetadata["NavigationView.OpenPaneLength"] = @"320.0";
+            DefaultValueMetadata["NavigationView.OverflowLabelMode"] = @"winrt::NavigationViewOverflowLabelMode::MoreLabel";
+            DefaultValueMetadata["NavigationView.PaneDisplayMode"] = @"winrt::NavigationViewPaneDisplayMode::Auto";
+            DefaultValueMetadata["NavigationView.SelectionFollowsFocus"] = @"winrt::NavigationViewSelectionFollowsFocus::Disabled";
+            DefaultValueMetadata["NavigationView.ShoulderNavigationEnabled"] = @"winrt::NavigationViewShoulderNavigationEnabled::Never";
 
             IncludedTypesMetadata["NavigationViewItem"] = true;
             // NavigationViewItem -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["NavigationViewItem.Icon"] = true;
             // NavigationViewItem -- DefaultValueMetadata
-            DefaultValueMetadata["NavigationViewItem.CompactPaneLength"] = "48.0";
-            DefaultValueMetadata["NavigationViewItem.SelectsOnInvoked"] = "true";
+            DefaultValueMetadata["NavigationViewItem.CompactPaneLength"] = @"48.0";
+            DefaultValueMetadata["NavigationViewItem.SelectsOnInvoked"] = @"true";
 
             IncludedTypesMetadata["NavigationViewItemPresenter"] = true;
             // NavigationViewItemPresenter -- NeedsPropChangedCallbackMetadata
@@ -318,12 +318,12 @@ namespace CustomTasks
             IncludedTypesMetadata["NavigationViewTemplateSettings"] = true;
             // NavigationViewTemplateSettings -- NeedsPropChangedCallbackMetadata
             // NavigationViewTemplateSettings -- DefaultValueMetadata
-            DefaultValueMetadata["NavigationViewTemplateSettings.BackButtonVisibility"] = "winrt::Visibility::Collapsed";
-            DefaultValueMetadata["NavigationViewTemplateSettings.LeftPaneVisibility"] = "winrt::Visibility::Visible";
-            DefaultValueMetadata["NavigationViewTemplateSettings.OverflowButtonVisibility"] = "winrt::Visibility::Collapsed";
-            DefaultValueMetadata["NavigationViewTemplateSettings.PaneToggleButtonVisibility"] = "winrt::Visibility::Visible";
-            DefaultValueMetadata["NavigationViewTemplateSettings.TopPadding"] = "0.0";
-            DefaultValueMetadata["NavigationViewTemplateSettings.TopPaneVisibility"] = "winrt::Visibility::Collapsed";
+            DefaultValueMetadata["NavigationViewTemplateSettings.BackButtonVisibility"] = @"winrt::Visibility::Collapsed";
+            DefaultValueMetadata["NavigationViewTemplateSettings.LeftPaneVisibility"] = @"winrt::Visibility::Visible";
+            DefaultValueMetadata["NavigationViewTemplateSettings.OverflowButtonVisibility"] = @"winrt::Visibility::Collapsed";
+            DefaultValueMetadata["NavigationViewTemplateSettings.PaneToggleButtonVisibility"] = @"winrt::Visibility::Visible";
+            DefaultValueMetadata["NavigationViewTemplateSettings.TopPadding"] = @"0.0";
+            DefaultValueMetadata["NavigationViewTemplateSettings.TopPaneVisibility"] = @"winrt::Visibility::Collapsed";
 
             IncludedTypesMetadata["ParallaxView"] = true;
             // ParallaxView -- NeedsPropChangedCallbackMetadata
@@ -342,12 +342,12 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["ParallaxView.VerticalSourceOffsetKind"] = true;
             NeedsPropChangedCallbackMetadata["ParallaxView.VerticalSourceStartOffset"] = true;
             // ParallaxView -- DefaultValueMetadata
-            DefaultValueMetadata["ParallaxView.HorizontalSourceOffsetKind"] = "winrt::ParallaxSourceOffsetKind::Relative";
-            DefaultValueMetadata["ParallaxView.IsHorizontalShiftClamped"] = "true";
-            DefaultValueMetadata["ParallaxView.IsVerticalShiftClamped"] = "true";
-            DefaultValueMetadata["ParallaxView.MaxHorizontalShiftRatio"] = "1.0";
-            DefaultValueMetadata["ParallaxView.MaxVerticalShiftRatio"] = "1.0";
-            DefaultValueMetadata["ParallaxView.VerticalSourceOffsetKind"] = "winrt::ParallaxSourceOffsetKind::Relative";
+            DefaultValueMetadata["ParallaxView.HorizontalSourceOffsetKind"] = @"winrt::ParallaxSourceOffsetKind::Relative";
+            DefaultValueMetadata["ParallaxView.IsHorizontalShiftClamped"] = @"true";
+            DefaultValueMetadata["ParallaxView.IsVerticalShiftClamped"] = @"true";
+            DefaultValueMetadata["ParallaxView.MaxHorizontalShiftRatio"] = @"1.0";
+            DefaultValueMetadata["ParallaxView.MaxVerticalShiftRatio"] = @"1.0";
+            DefaultValueMetadata["ParallaxView.VerticalSourceOffsetKind"] = @"winrt::ParallaxSourceOffsetKind::Relative";
 
             IncludedTypesMetadata["PathIconSource"] = true;
             // PathIconSource -- NeedsPropChangedCallbackMetadata
@@ -377,8 +377,8 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["RadioButtons.SelectedIndex"] = true;
             NeedsPropChangedCallbackMetadata["RadioButtons.SelectedItem"] = true;
             // RadioButtons -- DefaultValueMetadata
-            DefaultValueMetadata["RadioButtons.MaximumColumns"] = "1";
-            DefaultValueMetadata["RadioButtons.SelectedIndex"] = "-1";
+            DefaultValueMetadata["RadioButtons.MaximumColumns"] = @"1";
+            DefaultValueMetadata["RadioButtons.SelectedIndex"] = @"-1";
 
             IncludedTypesMetadata["RadioMenuFlyoutItem"] = true;
             // RadioMenuFlyoutItem -- NeedsPropChangedCallbackMetadata
@@ -397,11 +397,11 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["RatingControl.PlaceholderValue"] = true;
             NeedsPropChangedCallbackMetadata["RatingControl.Value"] = true;
             // RatingControl -- DefaultValueMetadata
-            DefaultValueMetadata["RatingControl.InitialSetValue"] = "1";
-            DefaultValueMetadata["RatingControl.IsClearEnabled"] = "true";
-            DefaultValueMetadata["RatingControl.MaxRating"] = "5";
-            DefaultValueMetadata["RatingControl.PlaceholderValue"] = "-1";
-            DefaultValueMetadata["RatingControl.Value"] = "-1";
+            DefaultValueMetadata["RatingControl.InitialSetValue"] = @"1";
+            DefaultValueMetadata["RatingControl.IsClearEnabled"] = @"true";
+            DefaultValueMetadata["RatingControl.MaxRating"] = @"5";
+            DefaultValueMetadata["RatingControl.PlaceholderValue"] = @"-1";
+            DefaultValueMetadata["RatingControl.Value"] = @"-1";
 
             IncludedTypesMetadata["RatingItemFontInfo"] = true;
             // RatingItemFontInfo -- NeedsPropChangedCallbackMetadata
@@ -424,7 +424,7 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["RefreshContainer.PullDirection"] = true;
             NeedsPropChangedCallbackMetadata["RefreshContainer.Visualizer"] = true;
             // RefreshContainer -- DefaultValueMetadata
-            DefaultValueMetadata["RefreshContainer.PullDirection"] = "winrt::RefreshPullDirection::TopToBottom";
+            DefaultValueMetadata["RefreshContainer.PullDirection"] = @"winrt::RefreshPullDirection::TopToBottom";
 
             IncludedTypesMetadata["RefreshVisualizer"] = true;
             // RefreshVisualizer -- NeedsPropChangedCallbackMetadata
@@ -434,8 +434,8 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["RefreshVisualizer.Orientation"] = true;
             NeedsPropChangedCallbackMetadata["RefreshVisualizer.State"] = true;
             // RefreshVisualizer -- DefaultValueMetadata
-            DefaultValueMetadata["RefreshVisualizer.Orientation"] = "winrt::RefreshVisualizerOrientation::Auto";
-            DefaultValueMetadata["RefreshVisualizer.State"] = "winrt::RefreshVisualizerState::Idle";
+            DefaultValueMetadata["RefreshVisualizer.Orientation"] = @"winrt::RefreshVisualizerOrientation::Auto";
+            DefaultValueMetadata["RefreshVisualizer.State"] = @"winrt::RefreshVisualizerState::Idle";
 
             IncludedTypesMetadata["RepeaterTestHooks"] = true;
             // RepeaterTestHooks -- NeedsPropChangedCallbackMetadata
@@ -449,9 +449,9 @@ namespace CustomTasks
             PropChangedCallbackMethodNameMetadata["RevealBrush.State"] = "OnStatePropertyChanged";
             NeedsPropChangedCallbackMetadata["RevealBrush.TargetTheme"] = true;
             // RevealBrush -- DefaultValueMetadata
-            DefaultValueMetadata["RevealBrush.Color"] = "RevealBrush::sc_defaultColor";
-            DefaultValueMetadata["RevealBrush.State"] = "winrt::RevealBrushState::Normal";
-            DefaultValueMetadata["RevealBrush.TargetTheme"] = "winrt::ApplicationTheme::Light";
+            DefaultValueMetadata["RevealBrush.Color"] = @"RevealBrush::sc_defaultColor";
+            DefaultValueMetadata["RevealBrush.State"] = @"winrt::RevealBrushState::Normal";
+            DefaultValueMetadata["RevealBrush.TargetTheme"] = @"winrt::ApplicationTheme::Light";
 
             IncludedTypesMetadata["Scroller"] = true;
             // Scroller -- NeedsPropChangedCallbackMetadata
@@ -476,20 +476,20 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["Scroller.ZoomChainingMode"] = true;
             NeedsPropChangedCallbackMetadata["Scroller.ZoomMode"] = true;
             // Scroller -- DefaultValueMetadata
-            DefaultValueMetadata["Scroller.ContentOrientation"] = "Scroller::s_defaultContentOrientation";
-            DefaultValueMetadata["Scroller.HorizontalAnchorRatio"] = "Scroller::s_defaultAnchorRatio";
-            DefaultValueMetadata["Scroller.HorizontalScrollChainingMode"] = "Scroller::s_defaultHorizontalScrollChainingMode";
-            DefaultValueMetadata["Scroller.HorizontalScrollMode"] = "Scroller::s_defaultHorizontalScrollMode";
-            DefaultValueMetadata["Scroller.HorizontalScrollRailingMode"] = "Scroller::s_defaultHorizontalScrollRailingMode";
-            DefaultValueMetadata["Scroller.IgnoredInputKind"] = "Scroller::s_defaultIgnoredInputKind";
-            DefaultValueMetadata["Scroller.MaxZoomFactor"] = "Scroller::s_defaultMaxZoomFactor";
-            DefaultValueMetadata["Scroller.MinZoomFactor"] = "Scroller::s_defaultMinZoomFactor";
-            DefaultValueMetadata["Scroller.VerticalAnchorRatio"] = "Scroller::s_defaultAnchorRatio";
-            DefaultValueMetadata["Scroller.VerticalScrollChainingMode"] = "Scroller::s_defaultVerticalScrollChainingMode";
-            DefaultValueMetadata["Scroller.VerticalScrollMode"] = "Scroller::s_defaultVerticalScrollMode";
-            DefaultValueMetadata["Scroller.VerticalScrollRailingMode"] = "Scroller::s_defaultVerticalScrollRailingMode";
-            DefaultValueMetadata["Scroller.ZoomChainingMode"] = "Scroller::s_defaultZoomChainingMode";
-            DefaultValueMetadata["Scroller.ZoomMode"] = "Scroller::s_defaultZoomMode";
+            DefaultValueMetadata["Scroller.ContentOrientation"] = @"Scroller::s_defaultContentOrientation";
+            DefaultValueMetadata["Scroller.HorizontalAnchorRatio"] = @"Scroller::s_defaultAnchorRatio";
+            DefaultValueMetadata["Scroller.HorizontalScrollChainingMode"] = @"Scroller::s_defaultHorizontalScrollChainingMode";
+            DefaultValueMetadata["Scroller.HorizontalScrollMode"] = @"Scroller::s_defaultHorizontalScrollMode";
+            DefaultValueMetadata["Scroller.HorizontalScrollRailingMode"] = @"Scroller::s_defaultHorizontalScrollRailingMode";
+            DefaultValueMetadata["Scroller.IgnoredInputKind"] = @"Scroller::s_defaultIgnoredInputKind";
+            DefaultValueMetadata["Scroller.MaxZoomFactor"] = @"Scroller::s_defaultMaxZoomFactor";
+            DefaultValueMetadata["Scroller.MinZoomFactor"] = @"Scroller::s_defaultMinZoomFactor";
+            DefaultValueMetadata["Scroller.VerticalAnchorRatio"] = @"Scroller::s_defaultAnchorRatio";
+            DefaultValueMetadata["Scroller.VerticalScrollChainingMode"] = @"Scroller::s_defaultVerticalScrollChainingMode";
+            DefaultValueMetadata["Scroller.VerticalScrollMode"] = @"Scroller::s_defaultVerticalScrollMode";
+            DefaultValueMetadata["Scroller.VerticalScrollRailingMode"] = @"Scroller::s_defaultVerticalScrollRailingMode";
+            DefaultValueMetadata["Scroller.ZoomChainingMode"] = @"Scroller::s_defaultZoomChainingMode";
+            DefaultValueMetadata["Scroller.ZoomMode"] = @"Scroller::s_defaultZoomMode";
 
             IncludedTypesMetadata["ScrollerTestHooks"] = true;
             // ScrollerTestHooks -- NeedsPropChangedCallbackMetadata
@@ -525,24 +525,24 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["ScrollViewer.ZoomChainingMode"] = true;
             NeedsPropChangedCallbackMetadata["ScrollViewer.ZoomMode"] = true;
             // ScrollViewer -- DefaultValueMetadata
-            DefaultValueMetadata["ScrollViewer.ComputedHorizontalScrollBarVisibility"] = "ScrollViewer::s_defaultComputedHorizontalScrollBarVisibility";
-            DefaultValueMetadata["ScrollViewer.ComputedVerticalScrollBarVisibility"] = "ScrollViewer::s_defaultComputedVerticalScrollBarVisibility";
-            DefaultValueMetadata["ScrollViewer.ContentOrientation"] = "ScrollViewer::s_defaultContentOrientation";
-            DefaultValueMetadata["ScrollViewer.HorizontalAnchorRatio"] = "ScrollViewer::s_defaultAnchorRatio";
-            DefaultValueMetadata["ScrollViewer.HorizontalScrollBarVisibility"] = "ScrollViewer::s_defaultHorizontalScrollBarVisibility";
-            DefaultValueMetadata["ScrollViewer.HorizontalScrollChainingMode"] = "ScrollViewer::s_defaultHorizontalScrollChainingMode";
-            DefaultValueMetadata["ScrollViewer.HorizontalScrollMode"] = "ScrollViewer::s_defaultHorizontalScrollMode";
-            DefaultValueMetadata["ScrollViewer.HorizontalScrollRailingMode"] = "ScrollViewer::s_defaultHorizontalScrollRailingMode";
-            DefaultValueMetadata["ScrollViewer.IgnoredInputKind"] = "ScrollViewer::s_defaultIgnoredInputKind";
-            DefaultValueMetadata["ScrollViewer.MaxZoomFactor"] = "ScrollViewer::s_defaultMaxZoomFactor";
-            DefaultValueMetadata["ScrollViewer.MinZoomFactor"] = "ScrollViewer::s_defaultMinZoomFactor";
-            DefaultValueMetadata["ScrollViewer.VerticalAnchorRatio"] = "ScrollViewer::s_defaultAnchorRatio";
-            DefaultValueMetadata["ScrollViewer.VerticalScrollBarVisibility"] = "ScrollViewer::s_defaultVerticalScrollBarVisibility";
-            DefaultValueMetadata["ScrollViewer.VerticalScrollChainingMode"] = "ScrollViewer::s_defaultVerticalScrollChainingMode";
-            DefaultValueMetadata["ScrollViewer.VerticalScrollMode"] = "ScrollViewer::s_defaultVerticalScrollMode";
-            DefaultValueMetadata["ScrollViewer.VerticalScrollRailingMode"] = "ScrollViewer::s_defaultVerticalScrollRailingMode";
-            DefaultValueMetadata["ScrollViewer.ZoomChainingMode"] = "ScrollViewer::s_defaultZoomChainingMode";
-            DefaultValueMetadata["ScrollViewer.ZoomMode"] = "ScrollViewer::s_defaultZoomMode";
+            DefaultValueMetadata["ScrollViewer.ComputedHorizontalScrollBarVisibility"] = @"ScrollViewer::s_defaultComputedHorizontalScrollBarVisibility";
+            DefaultValueMetadata["ScrollViewer.ComputedVerticalScrollBarVisibility"] = @"ScrollViewer::s_defaultComputedVerticalScrollBarVisibility";
+            DefaultValueMetadata["ScrollViewer.ContentOrientation"] = @"ScrollViewer::s_defaultContentOrientation";
+            DefaultValueMetadata["ScrollViewer.HorizontalAnchorRatio"] = @"ScrollViewer::s_defaultAnchorRatio";
+            DefaultValueMetadata["ScrollViewer.HorizontalScrollBarVisibility"] = @"ScrollViewer::s_defaultHorizontalScrollBarVisibility";
+            DefaultValueMetadata["ScrollViewer.HorizontalScrollChainingMode"] = @"ScrollViewer::s_defaultHorizontalScrollChainingMode";
+            DefaultValueMetadata["ScrollViewer.HorizontalScrollMode"] = @"ScrollViewer::s_defaultHorizontalScrollMode";
+            DefaultValueMetadata["ScrollViewer.HorizontalScrollRailingMode"] = @"ScrollViewer::s_defaultHorizontalScrollRailingMode";
+            DefaultValueMetadata["ScrollViewer.IgnoredInputKind"] = @"ScrollViewer::s_defaultIgnoredInputKind";
+            DefaultValueMetadata["ScrollViewer.MaxZoomFactor"] = @"ScrollViewer::s_defaultMaxZoomFactor";
+            DefaultValueMetadata["ScrollViewer.MinZoomFactor"] = @"ScrollViewer::s_defaultMinZoomFactor";
+            DefaultValueMetadata["ScrollViewer.VerticalAnchorRatio"] = @"ScrollViewer::s_defaultAnchorRatio";
+            DefaultValueMetadata["ScrollViewer.VerticalScrollBarVisibility"] = @"ScrollViewer::s_defaultVerticalScrollBarVisibility";
+            DefaultValueMetadata["ScrollViewer.VerticalScrollChainingMode"] = @"ScrollViewer::s_defaultVerticalScrollChainingMode";
+            DefaultValueMetadata["ScrollViewer.VerticalScrollMode"] = @"ScrollViewer::s_defaultVerticalScrollMode";
+            DefaultValueMetadata["ScrollViewer.VerticalScrollRailingMode"] = @"ScrollViewer::s_defaultVerticalScrollRailingMode";
+            DefaultValueMetadata["ScrollViewer.ZoomChainingMode"] = @"ScrollViewer::s_defaultZoomChainingMode";
+            DefaultValueMetadata["ScrollViewer.ZoomMode"] = @"ScrollViewer::s_defaultZoomMode";
 
             IncludedTypesMetadata["SelectionModel"] = true;
             // SelectionModel -- NeedsPropChangedCallbackMetadata
@@ -554,7 +554,7 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["SpectrumBrush.MaxSurfaceOpacity"] = true;
             NeedsPropChangedCallbackMetadata["SpectrumBrush.MinSurface"] = true;
             // SpectrumBrush -- DefaultValueMetadata
-            DefaultValueMetadata["SpectrumBrush.MaxSurfaceOpacity"] = "1.0";
+            DefaultValueMetadata["SpectrumBrush.MaxSurfaceOpacity"] = @"1.0";
 
             IncludedTypesMetadata["SplitButton"] = true;
             // SplitButton -- NeedsPropChangedCallbackMetadata
@@ -568,8 +568,8 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["StackLayout.Orientation"] = true;
             NeedsPropChangedCallbackMetadata["StackLayout.Spacing"] = true;
             // StackLayout -- DefaultValueMetadata
-            DefaultValueMetadata["StackLayout.Orientation"] = "winrt::Orientation::Vertical";
-            DefaultValueMetadata["StackLayout.Spacing"] = "0.0";
+            DefaultValueMetadata["StackLayout.Orientation"] = @"winrt::Orientation::Vertical";
+            DefaultValueMetadata["StackLayout.Spacing"] = @"0.0";
 
             IncludedTypesMetadata["SwipeControl"] = true;
             // SwipeControl -- NeedsPropChangedCallbackMetadata
@@ -589,13 +589,13 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["SwipeItem.IconSource"] = true;
             NeedsPropChangedCallbackMetadata["SwipeItem.Text"] = true;
             // SwipeItem -- DefaultValueMetadata
-            DefaultValueMetadata["SwipeItem.BehaviorOnInvoked"] = "winrt::SwipeBehaviorOnInvoked::Auto";
+            DefaultValueMetadata["SwipeItem.BehaviorOnInvoked"] = @"winrt::SwipeBehaviorOnInvoked::Auto";
 
             IncludedTypesMetadata["SwipeItems"] = true;
             // SwipeItems -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["SwipeItems.Mode"] = true;
             // SwipeItems -- DefaultValueMetadata
-            DefaultValueMetadata["SwipeItems.Mode"] = "winrt::SwipeMode::Reveal";
+            DefaultValueMetadata["SwipeItems.Mode"] = @"winrt::SwipeMode::Reveal";
 
             IncludedTypesMetadata["SwipeTestHooks"] = true;
             // SwipeTestHooks -- NeedsPropChangedCallbackMetadata
@@ -604,7 +604,7 @@ namespace CustomTasks
             IncludedTypesMetadata["SymbolIconSource"] = true;
             // SymbolIconSource -- NeedsPropChangedCallbackMetadata
             // SymbolIconSource -- DefaultValueMetadata
-            DefaultValueMetadata["SymbolIconSource.Symbol"] = "winrt::Symbol::Emoji";
+            DefaultValueMetadata["SymbolIconSource.Symbol"] = @"winrt::Symbol::Emoji";
 
             IncludedTypesMetadata["TeachingTip"] = true;
             // TeachingTip -- NeedsPropChangedCallbackMetadata
@@ -629,11 +629,11 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["TeachingTip.TemplateSettings"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.Title"] = true;
             // TeachingTip -- DefaultValueMetadata
-            DefaultValueMetadata["TeachingTip.BleedingImagePlacement"] = "winrt::TeachingTipBleedingImagePlacementMode::Auto";
-            DefaultValueMetadata["TeachingTip.CloseButtonKind"] = "winrt::TeachingTipCloseButtonKind::Auto";
-            DefaultValueMetadata["TeachingTip.IsLightDismissEnabled"] = "false";
-            DefaultValueMetadata["TeachingTip.IsOpen"] = "false";
-            DefaultValueMetadata["TeachingTip.Placement"] = "winrt::TeachingTipPlacementMode::Auto";
+            DefaultValueMetadata["TeachingTip.BleedingImagePlacement"] = @"winrt::TeachingTipBleedingImagePlacementMode::Auto";
+            DefaultValueMetadata["TeachingTip.CloseButtonKind"] = @"winrt::TeachingTipCloseButtonKind::Auto";
+            DefaultValueMetadata["TeachingTip.IsLightDismissEnabled"] = @"false";
+            DefaultValueMetadata["TeachingTip.IsOpen"] = @"false";
+            DefaultValueMetadata["TeachingTip.Placement"] = @"winrt::TeachingTipPlacementMode::Auto";
 
             IncludedTypesMetadata["TeachingTipTemplateSettings"] = true;
             // TeachingTipTemplateSettings -- NeedsPropChangedCallbackMetadata
@@ -654,9 +654,9 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["TreeView.ItemsSource"] = true;
             NeedsPropChangedCallbackMetadata["TreeView.SelectionMode"] = true;
             // TreeView -- DefaultValueMetadata
-            DefaultValueMetadata["TreeView.CanDragItems"] = "true";
-            DefaultValueMetadata["TreeView.CanReorderItems"] = "true";
-            DefaultValueMetadata["TreeView.SelectionMode"] = "winrt::TreeViewSelectionMode::Single";
+            DefaultValueMetadata["TreeView.CanDragItems"] = @"true";
+            DefaultValueMetadata["TreeView.CanReorderItems"] = @"true";
+            DefaultValueMetadata["TreeView.SelectionMode"] = @"winrt::TreeViewSelectionMode::Single";
 
             IncludedTypesMetadata["TreeViewItem"] = true;
             // TreeViewItem -- NeedsPropChangedCallbackMetadata
@@ -664,23 +664,23 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["TreeViewItem.IsExpanded"] = true;
             NeedsPropChangedCallbackMetadata["TreeViewItem.ItemsSource"] = true;
             // TreeViewItem -- DefaultValueMetadata
-            DefaultValueMetadata["TreeViewItem.CollapsedGlyph"] = "\uE76C";
-            DefaultValueMetadata["TreeViewItem.ExpandedGlyph"] = "\uE70D";
-            DefaultValueMetadata["TreeViewItem.GlyphOpacity"] = "1.0";
-            DefaultValueMetadata["TreeViewItem.GlyphSize"] = "12.0";
+            DefaultValueMetadata["TreeViewItem.CollapsedGlyph"] = @"\uE76C";
+            DefaultValueMetadata["TreeViewItem.ExpandedGlyph"] = @"\uE70D";
+            DefaultValueMetadata["TreeViewItem.GlyphOpacity"] = @"1.0";
+            DefaultValueMetadata["TreeViewItem.GlyphSize"] = @"12.0";
 
             IncludedTypesMetadata["TreeViewItemTemplateSettings"] = true;
             // TreeViewItemTemplateSettings -- NeedsPropChangedCallbackMetadata
             // TreeViewItemTemplateSettings -- DefaultValueMetadata
-            DefaultValueMetadata["TreeViewItemTemplateSettings.CollapsedGlyphVisibility"] = "winrt::Visibility::Collapsed";
-            DefaultValueMetadata["TreeViewItemTemplateSettings.ExpandedGlyphVisibility"] = "winrt::Visibility::Collapsed";
+            DefaultValueMetadata["TreeViewItemTemplateSettings.CollapsedGlyphVisibility"] = @"winrt::Visibility::Collapsed";
+            DefaultValueMetadata["TreeViewItemTemplateSettings.ExpandedGlyphVisibility"] = @"winrt::Visibility::Collapsed";
 
             IncludedTypesMetadata["TreeViewNode"] = true;
             // TreeViewNode -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["TreeViewNode.HasChildren"] = true;
             NeedsPropChangedCallbackMetadata["TreeViewNode.IsExpanded"] = true;
             // TreeViewNode -- DefaultValueMetadata
-            DefaultValueMetadata["TreeViewNode.Depth"] = "-1";
+            DefaultValueMetadata["TreeViewNode.Depth"] = @"-1";
 
             IncludedTypesMetadata["TwoPaneView"] = true;
             // TwoPaneView -- NeedsPropChangedCallbackMetadata
@@ -694,14 +694,14 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["TwoPaneView.TallModeConfiguration"] = true;
             NeedsPropChangedCallbackMetadata["TwoPaneView.WideModeConfiguration"] = true;
             // TwoPaneView -- DefaultValueMetadata
-            DefaultValueMetadata["TwoPaneView.MinTallModeHeight"] = "c_defaultMinTallModeHeight";
-            DefaultValueMetadata["TwoPaneView.MinWideModeWidth"] = "c_defaultMinWideModeWidth";
-            DefaultValueMetadata["TwoPaneView.Mode"] = "winrt::TwoPaneViewMode::SinglePane";
-            DefaultValueMetadata["TwoPaneView.Pane1Length"] = "c_pane1LengthDefault";
-            DefaultValueMetadata["TwoPaneView.Pane2Length"] = "c_pane2LengthDefault";
-            DefaultValueMetadata["TwoPaneView.PanePriority"] = "winrt::TwoPaneViewPriority::Pane1";
-            DefaultValueMetadata["TwoPaneView.TallModeConfiguration"] = "winrt::TwoPaneViewTallModeConfiguration::TopBottom";
-            DefaultValueMetadata["TwoPaneView.WideModeConfiguration"] = "winrt::TwoPaneViewWideModeConfiguration::LeftRight";
+            DefaultValueMetadata["TwoPaneView.MinTallModeHeight"] = @"c_defaultMinTallModeHeight";
+            DefaultValueMetadata["TwoPaneView.MinWideModeWidth"] = @"c_defaultMinWideModeWidth";
+            DefaultValueMetadata["TwoPaneView.Mode"] = @"winrt::TwoPaneViewMode::SinglePane";
+            DefaultValueMetadata["TwoPaneView.Pane1Length"] = @"c_pane1LengthDefault";
+            DefaultValueMetadata["TwoPaneView.Pane2Length"] = @"c_pane2LengthDefault";
+            DefaultValueMetadata["TwoPaneView.PanePriority"] = @"winrt::TwoPaneViewPriority::Pane1";
+            DefaultValueMetadata["TwoPaneView.TallModeConfiguration"] = @"winrt::TwoPaneViewTallModeConfiguration::TopBottom";
+            DefaultValueMetadata["TwoPaneView.WideModeConfiguration"] = @"winrt::TwoPaneViewWideModeConfiguration::LeftRight";
 
             IncludedTypesMetadata["UniformGridLayout"] = true;
             // UniformGridLayout -- NeedsPropChangedCallbackMetadata
@@ -713,20 +713,20 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["UniformGridLayout.MinRowSpacing"] = true;
             NeedsPropChangedCallbackMetadata["UniformGridLayout.Orientation"] = true;
             // UniformGridLayout -- DefaultValueMetadata
-            DefaultValueMetadata["UniformGridLayout.ItemsJustification"] = "winrt::UniformGridLayoutItemsJustification::Start";
-            DefaultValueMetadata["UniformGridLayout.ItemsStretch"] = "winrt::UniformGridLayoutItemsStretch::None";
-            DefaultValueMetadata["UniformGridLayout.MinColumnSpacing"] = "0.0";
-            DefaultValueMetadata["UniformGridLayout.MinItemHeight"] = "0.0";
-            DefaultValueMetadata["UniformGridLayout.MinItemWidth"] = "0.0";
-            DefaultValueMetadata["UniformGridLayout.MinRowSpacing"] = "0.0";
-            DefaultValueMetadata["UniformGridLayout.Orientation"] = "winrt::Orientation::Horizontal";
+            DefaultValueMetadata["UniformGridLayout.ItemsJustification"] = @"winrt::UniformGridLayoutItemsJustification::Start";
+            DefaultValueMetadata["UniformGridLayout.ItemsStretch"] = @"winrt::UniformGridLayoutItemsStretch::None";
+            DefaultValueMetadata["UniformGridLayout.MinColumnSpacing"] = @"0.0";
+            DefaultValueMetadata["UniformGridLayout.MinItemHeight"] = @"0.0";
+            DefaultValueMetadata["UniformGridLayout.MinItemWidth"] = @"0.0";
+            DefaultValueMetadata["UniformGridLayout.MinRowSpacing"] = @"0.0";
+            DefaultValueMetadata["UniformGridLayout.Orientation"] = @"winrt::Orientation::Horizontal";
 
             IncludedTypesMetadata["XamlAmbientLight"] = true;
             // XamlAmbientLight -- NeedsPropChangedCallbackMetadata
             PropChangedCallbackMethodNameMetadata["XamlAmbientLight.Color"] = "OnPropertyChanged";
             PropChangedCallbackMethodNameMetadata["XamlAmbientLight.IsTarget"] = "OnPropertyChanged";
             // XamlAmbientLight -- DefaultValueMetadata
-            DefaultValueMetadata["XamlAmbientLight.Color"] = "{ 255, 255, 255, 255 }";
+            DefaultValueMetadata["XamlAmbientLight.Color"] = @"{ 255, 255, 255, 255 }";
 
 
         }

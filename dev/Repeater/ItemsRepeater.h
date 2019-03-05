@@ -128,7 +128,7 @@ private:
     void OnLayoutChanged(const winrt::Layout& oldValue, const winrt::Layout& newValue);
     void OnAnimatorChanged(const winrt::ElementAnimator& oldValue, const winrt::ElementAnimator& newValue);
 
-    void OnDataSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
+    void OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
     void InvalidateMeasureForLayout(winrt::Layout const& sender, winrt::IInspectable const& args);
     void InvalidateArrangeForLayout(winrt::Layout const& sender, winrt::IInspectable const& args);
 
@@ -141,7 +141,7 @@ private:
     ::ViewManager m_viewManager{ this };
     std::shared_ptr<::ViewportManager> m_viewportManager{ nullptr };
 
-    tracker_ref<winrt::ItemsSourceView> m_dataSource{ this };
+    tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{ this };
 
 #ifndef BUILD_WINDOWS
     winrt::Microsoft::UI::Xaml::Controls::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
@@ -158,10 +158,10 @@ private:
     // when it gets measured. It should not be used outside of measure.
     winrt::Point m_layoutOrigin{};
 
-    // Event tokens
-    winrt::event_token m_dataSourceChanged{};
-    winrt::event_token m_measureInvalidated{};
-    winrt::event_token m_arrangeInvalidated{};
+    // Event revokers
+    winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceViewChanged{};
+    winrt::Layout::MeasureInvalidated_revoker m_measureInvalidated{};
+    winrt::Layout::ArrangeInvalidated_revoker m_arrangeInvalidated{};
 
     // Cached Event args to avoid creation cost every time
     tracker_ref<winrt::ItemsRepeaterElementPreparedEventArgs> m_elementPreparedArgs{ this };

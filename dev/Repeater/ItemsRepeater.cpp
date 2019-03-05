@@ -203,7 +203,7 @@ winrt::Size ItemsRepeater::ArrangeOverride(winrt::Size const& finalSize)
 
 winrt::ItemsSourceView ItemsRepeater::ItemsSourceView()
 {
-    return m_dataSource.get();
+    return m_itemsSourceView.get();
 }
 
 int32_t ItemsRepeater::GetElementIndex(winrt::UIElement const& element)
@@ -352,7 +352,7 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
             newDataSource = winrt::ItemsSourceView(newValue);
         }
 
-        OnDataSourcePropertyChanged(m_dataSource.get(), newDataSource);
+        OnDataSourcePropertyChanged(m_itemsSourceView.get(), newDataSource);
     }
     else if (property == s_ItemTemplateProperty)
     {
@@ -457,16 +457,16 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
         throw winrt::hresult_error(E_FAIL, L"Cannot set ItemsSourceView during layout.");
     }
 
-    m_dataSource.set(newValue);
+    m_itemsSourceView.set(newValue);
 
     if (oldValue)
     {
-        oldValue.CollectionChanged(m_dataSourceChanged);
+        m_itemsSourceViewChanged.revoke();
     }
 
     if (newValue)
     {
-        m_dataSourceChanged = newValue.CollectionChanged({ this, &ItemsRepeater::OnDataSourceChanged });
+        m_itemsSourceViewChanged = newValue.CollectionChanged(winrt::auto_revoke, { this, &ItemsRepeater::OnItemsSourceViewChanged });
     }
 
     if (auto layout = Layout())
@@ -530,9 +530,9 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
     if (oldValue)
     {
         oldValue.UninitializeForContext(GetLayoutContext());
-        oldValue.MeasureInvalidated(m_measureInvalidated);
-        oldValue.ArrangeInvalidated(m_arrangeInvalidated);
-
+        m_measureInvalidated.revoke();
+        m_arrangeInvalidated.revoke();
+        
         // Walk through all the elements and make sure they are cleared
         auto children = Children();
         for (unsigned i = 0u; i < children.Size(); ++i)
@@ -550,8 +550,8 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
     if (newValue)
     {
         newValue.InitializeForContext(GetLayoutContext());
-        m_measureInvalidated = newValue.MeasureInvalidated({ this, &ItemsRepeater::InvalidateMeasureForLayout });
-        m_arrangeInvalidated = newValue.ArrangeInvalidated({ this, &ItemsRepeater::InvalidateArrangeForLayout });
+        m_measureInvalidated = newValue.MeasureInvalidated(winrt::auto_revoke, { this, &ItemsRepeater::InvalidateMeasureForLayout });
+        m_arrangeInvalidated = newValue.ArrangeInvalidated(winrt::auto_revoke, { this, &ItemsRepeater::InvalidateArrangeForLayout });
     }
 
     m_viewportManager->OnLayoutChanged();
@@ -563,7 +563,7 @@ void ItemsRepeater::OnAnimatorChanged(const winrt::ElementAnimator& /* oldValue 
     m_animationManager.OnAnimatorChanged(newValue);
 }
 
-void ItemsRepeater::OnDataSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args)
+void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args)
 {
     if (m_isLayoutInProgress)
     {
