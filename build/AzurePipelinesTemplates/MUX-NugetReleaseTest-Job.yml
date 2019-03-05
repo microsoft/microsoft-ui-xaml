@@ -88,4 +88,12 @@ jobs:
     parameters:
       solutionPath: $(solutionPath)
       nugetConfigPath: $(nugetConfigPath)
-
+      
+- job: RunTests
+  steps:
+  - task: powershell@2
+    displayName: 'PrepareHelixPayload.ps1'
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\PrepareHelixPayload.ps1
+      arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
