@@ -137,106 +137,154 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         //[TestMethod] TODO: Re-enable after fixing bug 17186090.
         public void VerifyRS1DefaultStyleDictionariesWereMergedCorrectly()
         {
+#if ARM64
+            throw new NotImplementedException();
+#else
             VerifyDictionariesWereMergedCorrectly(GetRS1DefaultStyleDictionaries(), "Microsoft.UI.Xaml/Themes/Generic.xaml");
+#endif
         }
 
         [TestMethod]
         public void VerifyRS2DefaultStyleDictionariesWereMergedCorrectly()
         {
+#if ARM64
+            throw new NotImplementedException();
+#else
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone1))
             {
                 VerifyDictionariesWereMergedCorrectly(GetRS2DefaultStyleDictionaries(), "Microsoft.UI.Xaml/Themes/rs2_generic.xaml");
             }
+#endif
         }
 
         [TestMethod]
         public void VerifyRS3DefaultStyleDictionariesWereMergedCorrectly()
         {
+#if ARM64
+            throw new NotImplementedException();
+#else
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone2))
             {
                 VerifyDictionariesWereMergedCorrectly(GetRS3DefaultStyleDictionaries(), "Microsoft.UI.Xaml/Themes/rs3_generic.xaml");
             }
+#endif
         }
 
         [TestMethod]
         public void VerifyRS4DefaultStyleDictionariesWereMergedCorrectly()
         {
+#if ARM64
+            throw new NotImplementedException();
+#else
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
                 VerifyDictionariesWereMergedCorrectly(GetRS4DefaultStyleDictionaries(), "Microsoft.UI.Xaml/Themes/rs4_generic.xaml");
             }
+#endif
         }
 
         [TestMethod]
         public void VerifyRS5DefaultStyleDictionariesWereMergedCorrectly()
         {
+#if ARM64
+            throw new NotImplementedException();
+#else
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
             {
                 VerifyDictionariesWereMergedCorrectly(GetRS5DefaultStyleDictionaries(), "Microsoft.UI.Xaml/Themes/rs5_generic.xaml");
             }
+#endif
         }
 
         [TestMethod]
         public void Verify19H1DefaultStyleDictionariesWereMergedCorrectly()
         {
+#if ARM64
+            throw new NotImplementedException();
+#else
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5))
             {
                 VerifyDictionariesWereMergedCorrectly(Get19H1DefaultStyleDictionaries(), "Microsoft.UI.Xaml/Themes/19h1_generic.xaml");
             }
+#endif
         }
 
         [TestMethod]
         public void VerifyRS1ThemeResourceDictionariesWereMergedCorrectly()
         {
+#if ARM64
+            throw new NotImplementedException();
+#else
             VerifyDictionariesWereMergedCorrectly(GetRS1ThemeResourceDictionaries(), "Microsoft.UI.Xaml/Themes/rs1_themeresources.xaml");
+#endif
         }
 
         [TestMethod]
         public void VerifyRS2ThemeResourceDictionariesWereMergedCorrectly()
         {
+#if ARM64
+            throw new NotImplementedException();
+#else
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone1))
             {
                 VerifyDictionariesWereMergedCorrectly(GetRS2ThemeResourceDictionaries(), "Microsoft.UI.Xaml/Themes/rs2_themeresources.xaml");
             }
+#endif
         }
 
         [TestMethod]
         public void VerifyRS3ThemeResourceDictionariesWereMergedCorrectly()
         {
+#if ARM64
+            throw new NotImplementedException();
+#else
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone2))
             {
                 VerifyDictionariesWereMergedCorrectly(GetRS3ThemeResourceDictionaries(), "Microsoft.UI.Xaml/Themes/rs3_themeresources.xaml");
             }
+#endif
         }
 
         [TestMethod]
         public void VerifyRS4ThemeResourceDictionariesWereMergedCorrectly()
         {
+#if ARM64
+            throw new NotImplementedException();
+#else
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
                 VerifyDictionariesWereMergedCorrectly(GetRS4ThemeResourceDictionaries(), "Microsoft.UI.Xaml/Themes/rs4_themeresources.xaml");
             }
+#endif
         }
 
         [TestMethod]
         public void VerifyRS5ThemeResourceDictionariesWereMergedCorrectly()
         {
+#if ARM64
+            throw new NotImplementedException();
+#else
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
             {
                 VerifyDictionariesWereMergedCorrectly(GetRS5ThemeResourceDictionaries(), "Microsoft.UI.Xaml/Themes/rs5_themeresources.xaml");
             }
+#endif
         }
 
         [TestMethod]
         public void Verify19H1ThemeResourceDictionariesWereMergedCorrectly()
         {
+#if ARM64
+            throw new NotImplementedException();
+#else
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5))
             {
                 VerifyDictionariesWereMergedCorrectly(Get19H1ThemeResourceDictionaries(), "Microsoft.UI.Xaml/Themes/19h1_themeresources.xaml");
             }
+#endif
         }
 
-        #region Dictionary verification
+            #region Dictionary verification
 
         List<string> keysWithDifferentValues = new List<string>();
 
@@ -383,6 +431,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private bool CompareObjects(object value, object mergedValue, int indentation)
         {
+#if ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found                    
+            throw new NotImplementedException();
+#else
             // We'll first test equality.  Failure doesn't necessarily mean that the objects aren't the same,
             // since we may be dealing with a reference type, but success means we can immediately quit.
             if (value == mergedValue)
@@ -423,9 +474,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     PropertyInfo[] propertyInfoList = null;
 
-#if ARM64 // CS7069: Reference to type 'BindingFlags' claims it is defined in 'System.Reflection', but it could not be found                    
-                    throw new NotImplementedException();
-#else
+
                     if (valueObject != null && mergedValueObject != null)
                     {
                         propertyInfoList = type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).Where((pi) => pi.PropertyType == typeof(DependencyProperty)).ToArray();
@@ -434,11 +483,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         propertyInfoList = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
                     }
-#endif
 
-                    // If we've got a dependency object that we're checking, then we'll consider all of its dependency properties.
-                    // We'll ignore any that aren't set.
-                    foreach (PropertyInfo propertyInfo in propertyInfoList)
+            // If we've got a dependency object that we're checking, then we'll consider all of its dependency properties.
+            // We'll ignore any that aren't set.
+            foreach (PropertyInfo propertyInfo in propertyInfoList)
                     {
                         if (ignoredProperties.Contains(propertyInfo.Name))
                         {
@@ -531,9 +579,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             return true;
+#endif
         }
 
-        #endregion
+            #endregion
 #endif
+        }
     }
-}
