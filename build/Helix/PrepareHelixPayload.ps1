@@ -35,6 +35,11 @@ Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\M
 Copy-Item -Force "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\*" $payloadDir
 Copy-Item -Force "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\Dependencies\$Platform\*" $payloadDir
 
+Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test\*" $payloadDir
+Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test\Dependencies\$Platform\*" $payloadDir
+Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\*" $payloadDir
+Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\Dependencies\$Platform\*" $payloadDir
+
 # Copy files from the repo
 Copy-Item "build\helix\runtests.cmd" $payloadDir
 New-Item -ItemType Directory -Force -Path "$payloadDir\scripts"
