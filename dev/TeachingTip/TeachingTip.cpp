@@ -44,10 +44,6 @@ void TeachingTip::OnApplyTemplate()
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
     m_beakEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_beakEdgeBorderName, controlProtected));
     m_beakPolygon.set(GetTemplateChildT<winrt::Polygon>(s_beakPolygonName, controlProtected));
-    if (SharedHelpers::IsThemeShadowAvailable())
-    {
-        m_shadowTarget.set(GetTemplateChildT<winrt::Grid>(s_shadowTargetName, controlProtected));
-    }
 
     if (auto && container = m_container.get())
     {
@@ -1112,7 +1108,7 @@ void TeachingTip::CreateExpandAnimation()
     auto expandElevationAnimation = compositor.CreateVector3KeyFrameAnimation();
     expandElevationAnimation.InsertExpressionKeyFrame(1.0f, L"Vector3(this.Target.Translation.X, this.Target.Translation.Y, contentElevation)", expandEasingFunction);
     expandElevationAnimation.SetScalarParameter(L"contentElevation", m_contentElevation);
-    expandElevationAnimation.Duration(s_expandAnimationDuration);
+    expandElevationAnimation.Duration(m_expandAnimationDuration);
     expandElevationAnimation.Target(s_translationTargetName);
     m_expandElevationAnimation.set(expandElevationAnimation);
 }
@@ -1140,13 +1136,13 @@ void TeachingTip::CreateContractAnimation()
     auto&& contractEasingFunction = m_contractEasingFunction.get();
     contractAnimation.InsertKeyFrame(0.0f, { 1.0f, 1.0f, 1.0f });
     contractAnimation.InsertExpressionKeyFrame(1.0f, L"Vector3(20.0 / Width, 20.0 / Height, 1.0)", contractEasingFunction);
-    contractAnimation.Duration(s_contractAnimationDuration);
+	contractAnimation.Duration(m_contractAnimationDuration);
     contractAnimation.Target(s_scaleTargetName);
     m_contractAnimation.set(contractAnimation);
 
     auto contractElevationAnimation = compositor.CreateVector3KeyFrameAnimation();
-    contractElevationAnimation.InsertExpressionKeyFrame(1.0f, L"Vector3(this.Target.Translation.X, this.Target.Translation.Y, 0.0f)", contractEasingFunction);
-    contractElevationAnimation.Duration(s_contractAnimationDuration);
+	contractElevationAnimation.InsertExpressionKeyFrame(1.0f, L"Vector3(this.Target.Translation.X, this.Target.Translation.Y, 0.0f)", contractEasingFunction);
+    contractElevationAnimation.Duration(m_contractAnimationDuration);
     contractElevationAnimation.Target(s_translationTargetName);
     m_contractElevationAnimation.set(contractElevationAnimation);
 }
@@ -1164,8 +1160,12 @@ void TeachingTip::StartExpandToOpen()
         auto&& expandAnimation = m_expandAnimation.get();
         if (auto&& beakOcclusionGrid = m_beakOcclusionGrid.get())
         {
-            beakOcclusionGrid.StartAnimation(expandAnimation);
-            beakOcclusionGrid.StartAnimation(m_expandElevationAnimation.get());
+			beakOcclusionGrid.StartAnimation(expandAnimation);
+            m_isExpandAnimationPlaying = true;
+        }
+        if (auto&& contentRootGrid = m_contentRootGrid)
+        {
+			contentRootGrid.StartAnimation(m_expandElevationAnimation.get());
             m_isExpandAnimationPlaying = true;
         }
         if (auto&& beakEdgeBorder = m_beakEdgeBorder.get())
@@ -1210,7 +1210,11 @@ void TeachingTip::StartContractToClose()
         if (auto&& beakOcclusionGrid = m_beakOcclusionGrid.get())
         {
             beakOcclusionGrid.StartAnimation(contractAnimation);
-            beakOcclusionGrid.StartAnimation(m_contractElevationAnimation.get());
+            m_isContractAnimationPlaying = true;
+        }
+        if (auto&& contentRootGrid = m_contentRootGrid.get())
+        {
+			contentRootGrid.StartAnimation(m_contractElevationAnimation.get());
             m_isContractAnimationPlaying = true;
         }
         if (auto&& beakEdgeBorder = m_beakEdgeBorder.get())
@@ -1482,20 +1486,45 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
 
 void TeachingTip::EstablishShadows()
 {
-#ifdef USE_INTERNAL_SDK
-    if (SharedHelpers::IsThemeShadowAvailable())
-    {
+#ifdef USE_INSIDER_SDK
+#ifdef BEAK_SHADOW
 #ifdef _DEBUG
-        // This facilitates an experiment around faking a proper beak shadow, shadows are expensive though so we don't want it present for release builds.
-        auto beakShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
-        beakShadow.Receivers().Append(m_target.get());
-        m_beakPolygon.get().Shadow(beakShadow);
-        m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
+    if (winrt::IUIElement10 beakPolygon_uiElement10 = m_contentRootGrid.get())
+    {
+        if (m_tipShadow)
+        {
+            if (!beakPolygon_uiElement10.Shadow())
+            {
+                // This facilitates an experiment around faking a proper beak shadow, shadows are expensive though so we don't want it present for release builds.
+                auto beakShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
+                beakShadow.Receivers().Append(m_target.get());
+                beakPolygon_uiElement10.Shadow(beakShadow);
+                m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
+            }
+        }
+        else
+        {
+            beakPolygon_uiElement10.Shadow(nullptr);
+        }
+    }
 #endif
-        auto contentShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
-        contentShadow.Receivers().Append(m_shadowTarget.get());
-        m_beakOcclusionGrid.get().Shadow(contentShadow);
-        m_beakOcclusionGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
+#endif
+    if (winrt::IUIElement10 m_contentRootGrid_uiElement10 = m_contentRootGrid.get())
+    {
+        if (m_tipShouldHaveShadow)
+        {
+            if (!m_contentRootGrid_uiElement10.Shadow())
+            {
+                m_contentRootGrid_uiElement10.Shadow(winrt::ThemeShadow{});
+                auto contentRootGrid = m_contentRootGrid.get();
+                auto contentRootGridTranslation = contentRootGrid.Translation();
+                contentRootGrid.Translation({ contentRootGridTranslation.x, contentRootGridTranslation.y, m_contentElevation });
+            }
+        }
+        else
+        {
+            m_contentRootGrid_uiElement10.Shadow(nullptr);
+        }
     }
 #endif
 }
@@ -1557,6 +1586,15 @@ void TeachingTip::SetContractEasingFunction(const winrt::CompositionEasingFuncti
     CreateContractAnimation();
 }
 
+void TeachingTip::SetTipShouldHaveShadow(bool tipShouldHaveShadow)
+{
+    if (m_tipShouldHaveShadow != tipShouldHaveShadow)
+    {
+        m_tipShouldHaveShadow = tipShouldHaveShadow;
+        EstablishShadows();
+    }
+}
+
 void TeachingTip::SetContentElevation(float elevation)
 {
     m_contentElevation = elevation;
@@ -1564,7 +1602,7 @@ void TeachingTip::SetContentElevation(float elevation)
     {
         if (m_beakOcclusionGrid)
         {
-            m_beakOcclusionGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
+            m_contentRootGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
         }
         if (m_expandElevationAnimation)
         {
@@ -1580,30 +1618,6 @@ void TeachingTip::SetBeakElevation(float elevation)
     {
         m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
     }
-}
-
-void TeachingTip::SetBeakShadowTargetsShadowTarget(const bool targetsShadowTarget)
-{
-#ifdef USE_INTERNAL_SDK
-    m_beakShadowTargetsShadowTarget = targetsShadowTarget;
-    if (SharedHelpers::IsThemeShadowAvailable() && m_beakPolygon)
-    {
-        if (auto shadow = m_beakPolygon.get().Shadow())
-        {
-            if (auto themeShadow = m_beakPolygon.get().Shadow().as<winrt::Windows::UI::Xaml::Media::ThemeShadow>())
-            {
-                if (targetsShadowTarget)
-                {
-                    themeShadow.Receivers().Append(m_shadowTarget.get());
-                }
-                else
-                {
-                    themeShadow.Receivers().RemoveAtEnd();
-                }
-            }
-        }
-    }
-#endif
 }
 
 void TeachingTip::SetUseTestWindowBounds(bool useTestWindowBounds)
@@ -1629,6 +1643,32 @@ void TeachingTip::SetTipFollowsTarget(bool tipFollowsTarget)
         {
             RevokeViewportChangedEvent();
         }
+    }
+}
+
+void TeachingTip::SetExpandAnimationDuration(const winrt::TimeSpan& expandAnimationDuration)
+{
+    m_expandAnimationDuration = expandAnimationDuration;
+    if (m_expandAnimation)
+    {
+        m_expandAnimation.get().Duration(m_expandAnimationDuration);
+    }
+    if (m_expandElevationAnimation)
+    {
+        m_expandElevationAnimation.get().Duration(m_expandAnimationDuration);
+    }
+}
+
+void TeachingTip::SetContractAnimationDuration(const winrt::TimeSpan& contractAnimationDuration)
+{
+    m_contractAnimationDuration = contractAnimationDuration;
+    if (m_contractAnimation)
+    {
+        m_contractAnimation.get().Duration(m_contractAnimationDuration);
+    }
+    if (m_contractElevationAnimation)
+    {
+        m_contractElevationAnimation.get().Duration(m_contractAnimationDuration);
     }
 }
 

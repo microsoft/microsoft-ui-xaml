@@ -603,6 +603,14 @@ namespace MUXControlsTestApp
             TeachingTipTestHooks.SetContractEasingFunction(tip, contractEasing);
         }
 
+        public void OnSetAnimationDurationsButtonClicked(object sender, RoutedEventArgs args)
+        {
+            var expandDuration = new TimeSpan(0, 0, 0, 0, int.Parse(ExpandAnimationDuration.Text));
+            var contractDuration = new TimeSpan(0, 0, 0, 0, int.Parse(ContractAnimationDuration.Text));
+            TeachingTipTestHooks.SetExpandAnimationDuration(this.TeachingTip, expandDuration);
+            TeachingTipTestHooks.SetContractAnimationDuration(this.TeachingTip, contractDuration);
+        }
+
         public void ContentElevationSliderChanged(object sender, RangeBaseValueChangedEventArgs args)
         {
             TeachingTipTestHooks.SetContentElevation(getTeachingTip(), (float)args.NewValue);
@@ -613,14 +621,14 @@ namespace MUXControlsTestApp
             TeachingTipTestHooks.SetBeakElevation(getTeachingTip(), (float)args.NewValue);
         }
 
-        public void OnBeakShadowTargetChecked(object sender, RoutedEventArgs args)
+        public void OnTipShadowChecked(object sender, RoutedEventArgs args)
         {
-            TeachingTipTestHooks.SetBeakShadowTargetsShadowTarget(getTeachingTip(), true);
+            TeachingTipTestHooks.SetTipShouldHaveShadow(getTeachingTip(), true);
         }
 
-        public void OnBeakShadowTargetUnchecked(object sender, RoutedEventArgs args)
+        public void OnTipShadowUnchecked(object sender, RoutedEventArgs args)
         {
-            TeachingTipTestHooks.SetBeakShadowTargetsShadowTarget(getTeachingTip(), false);
+            TeachingTipTestHooks.SetTipShouldHaveShadow(getTeachingTip(), false);
         }
 
         public void OnTeachingTipClosed(object sender, TeachingTipClosedEventArgs args)

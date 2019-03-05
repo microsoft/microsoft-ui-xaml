@@ -34,9 +34,9 @@ public:
     // TestHooks
     void SetExpandEasingFunction(const winrt::CompositionEasingFunction& easingFunction);
     void SetContractEasingFunction(const winrt::CompositionEasingFunction& easingFunction);
+    void SetTipShouldHaveShadow(bool tipShadow);
     void SetContentElevation(float elevation);
     void SetBeakElevation(float elevation);
-    void SetBeakShadowTargetsShadowTarget(bool targetsShadowTarget);
     bool GetIsIdle();
     winrt::TeachingTipPlacementMode GetEffectivePlacement();
     winrt::TeachingTipBleedingImagePlacementMode GetEffectiveBleedingPlacement();
@@ -45,6 +45,8 @@ public:
     void SetUseTestWindowBounds(bool useTestWindowBounds);
     void SetTestWindowBounds(const winrt::Rect& testWindowBounds);
     void SetTipFollowsTarget(bool tipFollowsTarget);
+    void SetExpandAnimationDuration(const winrt::TimeSpan& expandAnimationDuration);
+    void SetContractAnimationDuration(const winrt::TimeSpan& contractAnimationDuration);
 
 private:
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
@@ -117,7 +119,6 @@ private:
     tracker_ref<winrt::Grid> m_beakOcclusionGrid{ this };
     tracker_ref<winrt::Grid> m_contentRootGrid{ this };
     tracker_ref<winrt::Grid> m_nonBleedingContentRootGrid{ this };
-    tracker_ref<winrt::Grid> m_shadowTarget{ this };
     tracker_ref<winrt::Border> m_bleedingImageContentBorder{ this };
     tracker_ref<winrt::Border> m_iconBorder{ this };
     tracker_ref<winrt::Button> m_actionButton{ this };
@@ -147,6 +148,8 @@ private:
     bool m_useTestWindowBounds{ false };
     winrt::Rect m_testWindowBounds{ 0,0,0,0 };
 
+    bool m_tipShouldHaveShadow{ true };
+
     bool m_tipFollowsTarget{ false };
 
     float m_contentElevation{ 32.0f };
@@ -154,6 +157,9 @@ private:
     bool m_beakShadowTargetsShadowTarget{ false };
 
     bool m_isIdle{ true };
+
+    winrt::TimeSpan m_expandAnimationDuration{ 300ms };
+    winrt::TimeSpan m_contractAnimationDuration{ 200ms };
 
     winrt::TeachingTipCloseReason m_lastCloseReason{ winrt::TeachingTipCloseReason::Programmatic };
 
@@ -174,9 +180,6 @@ private:
     static inline double UntargetedTipFarPlacementOffset(float windowSize, double tipSize, double offset) { return windowSize - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
     static inline double UntargetedTipCenterPlacementOffset(float windowSize, double tipSize, double nearOffset, double farOffset) { return (windowSize / 2) - (tipSize / 2) + nearOffset - farOffset; }
     static inline double UntargetedTipNearPlacementOffset(double offset) { return s_untargetedTipWindowEdgeMargin + offset; }
-
-    static constexpr winrt::TimeSpan s_expandAnimationDuration{ 300ms };
-    static constexpr winrt::TimeSpan s_contractAnimationDuration{ 200ms };
 
     static constexpr wstring_view s_scaleTargetName{ L"Scale"sv };
     static constexpr wstring_view s_translationTargetName{ L"Translation"sv };
