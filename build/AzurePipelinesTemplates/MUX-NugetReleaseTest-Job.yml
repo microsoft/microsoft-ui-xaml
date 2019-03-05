@@ -90,6 +90,8 @@ jobs:
       nugetConfigPath: $(nugetConfigPath)
       
 - job: RunTests
+  dependsOn:
+  - BuildNugetTests
   steps:
   - task: powershell@2
     displayName: 'PrepareHelixPayload.ps1'
