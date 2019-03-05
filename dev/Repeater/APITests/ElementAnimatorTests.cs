@@ -170,6 +170,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 Index = index;
                 Context = context;
+                OldBounds = NewBounds = Rect.Empty;
             }
 
             public CallInfo(int index, AnimationContext context, Rect oldBounds, Rect newBounds)

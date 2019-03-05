@@ -7,6 +7,29 @@
     <IsTaefTestProject Condition="'$(IsTDPConfiguration)' == 'true'">true</IsTaefTestProject>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+  <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MUXCustomBuildTasks">
+      <Version>1.0.38</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Net.Native.Compiler">
+      <Version>2.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
+      <Version>6.2.3</Version>
+    </PackageReference>
+    <PackageReference Include="MSTest.TestAdapter">
+      <Version>1.3.2</Version>
+    </PackageReference>
+    <PackageReference Include="MSTest.TestFramework">
+      <Version>1.3.2</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <SDKReference Include="TestPlatform.Universal, Version=$(UnitTestPlatformVersion)" />
+  </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.VS.appxmanifest" Condition="$(BuildingWithBuildExe) != 'true'">
       <SubType>Designer</SubType>

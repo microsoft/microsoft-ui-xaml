@@ -1006,7 +1006,7 @@ namespace MUXControlsTestApp.Utilities
         {
             if (Thumb != null)
             {
-                Size parentSize;
+                Size parentSize = new Size();
                 FrameworkElement parent = Thumb.Parent as FrameworkElement;
 
                 if (parent != null)
@@ -1014,7 +1014,7 @@ namespace MUXControlsTestApp.Utilities
                     parentSize = new Size(parent.ActualWidth, parent.ActualHeight);
                 }
 
-                Size newSize;
+                Size newSize = new Size();
                 if (horizontalScrollController.Viewport == 0.0)
                 {
                     newSize.Width = 40.0;
@@ -1065,7 +1065,7 @@ namespace MUXControlsTestApp.Utilities
 
             if (Thumb != null)
             {
-                Size parentSize;
+                Size parentSize = new Size();
                 Size thumbSize = new Size(Thumb.ActualWidth, Thumb.ActualHeight);
                 FrameworkElement parent = Thumb.Parent as FrameworkElement;
                 if (parent != null)
@@ -1089,7 +1089,7 @@ namespace MUXControlsTestApp.Utilities
 
             if (Thumb != null)
             {
-                Size parentSize;
+                Size parentSize = new Size();
                 Size thumbSize = new Size(Thumb.ActualWidth, Thumb.ActualHeight);
                 FrameworkElement parent = Thumb.Parent as FrameworkElement;
                 if (parent != null)
