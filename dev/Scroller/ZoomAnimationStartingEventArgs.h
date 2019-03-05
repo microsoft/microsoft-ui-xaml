@@ -3,31 +3,31 @@
 
 #pragma once
 
-#include "ScrollerChangingZoomFactorEventArgs.g.h"
+#include "ZoomAnimationStartingEventArgs.g.h"
 
-class ScrollerChangingZoomFactorEventArgs :
-    public winrt::implementation::ScrollerChangingZoomFactorEventArgsT<ScrollerChangingZoomFactorEventArgs>
+class ZoomAnimationStartingEventArgs :
+    public winrt::implementation::ZoomAnimationStartingEventArgsT<ZoomAnimationStartingEventArgs>
 {
 public:
-    ScrollerChangingZoomFactorEventArgs()
+    ZoomAnimationStartingEventArgs()
     {
         SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ~ScrollerChangingZoomFactorEventArgs()
+    ~ZoomAnimationStartingEventArgs()
     {
         SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    // IScrollerChangingZoomFactorEventArgs overrides
+    // IZoomAnimationStartingEventArgs overrides
     winrt::float2 CenterPoint();
     float StartZoomFactor();
     float EndZoomFactor();
     winrt::CompositionAnimation Animation();
     void Animation(winrt::CompositionAnimation const& value);
-    int32_t ViewChangeId();
+    winrt::ZoomInfo ZoomInfo();
 
-    void SetViewChangeId(int32_t viewChangeId);
+    void SetZoomFactorChangeId(int32_t zoomFactorChangeId);
     winrt::CompositionAnimation GetAnimation() const;
     void SetAnimation(const winrt::CompositionAnimation& animation);
     void SetCenterPoint(const winrt::float2& centerPoint);
@@ -39,5 +39,5 @@ private:
     winrt::float2 m_centerPoint{ };
     float m_startZoomFactor{ 1.0f };
     float m_endZoomFactor{ 1.0f };
-    int32_t m_viewChangeId{ -1 };
+    int32_t m_zoomFactorChangeId{ -1 };
 };

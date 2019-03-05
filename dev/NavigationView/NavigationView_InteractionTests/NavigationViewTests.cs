@@ -616,8 +616,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("NavViewTestSuite", "A")]
         public void VerifyNavigationViewItemIsSelectedWorks()
         {
-            using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
-                            page2 = new TestSetupHelper("NavigationView Init Test"))
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
             {
                 Log.Comment("Verify the 1st NavItem.IsSelected=true works");
                 UIObject item1 = FindElement.ByName("Albums");
@@ -3671,8 +3670,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        //Bug 19342138: Text of navigation menu items text is lost when shrinking the width of the UWP application
+        //[TestMethod]
+        //[TestProperty("NavViewTestSuite", "D")]
         public void EnsurePaneCanBeHidden()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -3685,6 +3685,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 Verify.IsTrue(paneRoot.IsOffscreen);
+            }
+        }
+
+        //Bug 19342138: Text of navigation menu items text is lost when shrinking the width of the UWP application
+        //[TestMethod]
+        //[TestProperty("NavViewTestSuite", "D")]
+        public void EnsurePaneCanBeHiddenWithFixedWindowSize()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var paneRoot = FindElement.ById("PaneRoot");
+                Verify.IsFalse(paneRoot.IsOffscreen);
+
+                SetNavViewWidth(ControlWidth.Wide);
+
+                var paneVisibleCheckBox = new CheckBox(FindElement.ByName("IsPaneVisibleCheckBox"));
+
+                paneVisibleCheckBox.Uncheck();
+                Wait.ForIdle();
+                Verify.IsTrue(paneRoot.IsOffscreen);
+
+                paneVisibleCheckBox.Check();
+                Wait.ForIdle();
+                Verify.IsFalse(paneRoot.IsOffscreen);
             }
         }
 

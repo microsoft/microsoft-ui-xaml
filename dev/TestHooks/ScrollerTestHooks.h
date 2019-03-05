@@ -40,6 +40,8 @@ public:
     static void SetContentLayoutOffsetX(const winrt::Scroller& scroller, float contentLayoutOffsetX);
     static void GetContentLayoutOffsetY(const winrt::Scroller& scroller, _Out_ float& contentLayoutOffsetY);
     static void SetContentLayoutOffsetY(const winrt::Scroller& scroller, float contentLayoutOffsetY);
+    static winrt::ScrollerViewChangeResult GetScrollCompletedResult(const winrt::ScrollCompletedEventArgs& scrollCompletedEventArgs);
+    static winrt::ScrollerViewChangeResult GetZoomCompletedResult(const winrt::ZoomCompletedEventArgs& zoomCompletedEventArgs);
 
     static void NotifyAnchorEvaluated(const winrt::Scroller& sender, const winrt::UIElement& anchorElement, double viewportAnchorPointHorizontalOffset, double viewportAnchorPointVerticalOffset);
     static winrt::event_token AnchorEvaluated(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksAnchorEvaluatedEventArgs> const& value);
@@ -61,7 +63,10 @@ public:
     static int GetSnapPointCombinationCount(const winrt::ScrollerSnapPointBase& snapPoint);
     static winrt::Color GetSnapPointVisualizationColor(const winrt::ScrollerSnapPointBase& snapPoint);
     static void SetSnapPointVisualizationColor(const winrt::ScrollerSnapPointBase& snapPoint, const winrt::Color& color);
+
 private:
+    static winrt::ScrollerViewChangeResult TestHooksViewChangeResult(ScrollerViewChangeResult result);
+
     static com_ptr<ScrollerTestHooks> s_testHooks;
     winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksAnchorEvaluatedEventArgs>> m_anchorEvaluatedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksInteractionSourcesChangedEventArgs>> m_interactionSourcesChangedEventSource;
