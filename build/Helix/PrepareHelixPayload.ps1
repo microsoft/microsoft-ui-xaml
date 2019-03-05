@@ -29,7 +29,11 @@ Copy-Item "$nugetPackagesDir\MUXCustomBuildTasks.1.0.38\tools\$platform\WttLog.d
 
 
 # Copy files from the 'drop' artifact dir
-Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\Test\MUXControls.Test.dll" $payloadDir
+$MUXDllPath = "$repoDirectory\Artifacts\drop\$Configuration\$Platform\Test\MUXControls.Test.dll"
+if(Test-Path $MUXDllPath)
+{
+    Copy-Item "$MUXDllPath" $payloadDir
+}
 
 $MUXControlsTestAppPath = "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test"
 if(Test-Path $MUXControlsTestAppPath)
