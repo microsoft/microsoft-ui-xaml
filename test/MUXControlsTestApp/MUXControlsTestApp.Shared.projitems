@@ -41,7 +41,6 @@
     <LangVersion>$(CSLangVersion)</LangVersion>
     <!-- Supress xaml warnings of type foo is defined under contract 'Windows.Foundation.UniversalApiContract' version '4.0.0.0', but the contract version for the targeted min version is '3.0.0.0'! -->
     <SuppressXamlWarnings>0151</SuppressXamlWarnings>
-    <DefineConstants Condition="'$(Platform)' == 'arm64'">$(DefineConstants);ARM64</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="$(BuildingWithBuildExe) == 'true'">
     <TargetDestination>NTTEST\WINDOWSTEST\dxaml\controls\test\MUXControlsTestApp</TargetDestination>
