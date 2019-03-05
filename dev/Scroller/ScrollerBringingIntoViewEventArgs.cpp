@@ -6,6 +6,16 @@
 #include "ScrollerTrace.h"
 #include "ScrollerBringingIntoViewEventArgs.h"
 
+winrt::SnapPointsMode ScrollerBringingIntoViewEventArgs::SnapPointsMode()
+{
+    return m_snapPointsMode;
+}
+
+void ScrollerBringingIntoViewEventArgs::SnapPointsMode(winrt::SnapPointsMode snapPointsMode)
+{
+    m_snapPointsMode = snapPointsMode;
+}
+
 winrt::BringIntoViewRequestedEventArgs ScrollerBringingIntoViewEventArgs::RequestEventArgs()
 {
     return m_requestEventArgs;

@@ -20,6 +20,8 @@ public:
     }
 
     // IScrollerBringingIntoViewEventArgs overrides
+    winrt::SnapPointsMode SnapPointsMode();
+    void SnapPointsMode(winrt::SnapPointsMode snapPointsMode);
     winrt::BringIntoViewRequestedEventArgs RequestEventArgs();
     double TargetHorizontalOffset();
     double TargetVerticalOffset();
@@ -47,6 +49,7 @@ public:
     void TargetOffsets(double targetHorizontalOffset, double targetVerticalOffset);
 
 private:
+    winrt::SnapPointsMode m_snapPointsMode{ winrt::SnapPointsMode::Ignore };
     winrt::BringIntoViewRequestedEventArgs m_requestEventArgs{ nullptr };
     double m_targetHorizontalOffset{ 0.0 };
     double m_targetVerticalOffset{ 0.0 };

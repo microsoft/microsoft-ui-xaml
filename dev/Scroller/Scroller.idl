@@ -166,6 +166,7 @@ runtimeclass ZoomCompletedEventArgs
 [webhosthidden]
 runtimeclass ScrollerBringingIntoViewEventArgs
 {
+    SnapPointsMode SnapPointsMode { get; set; };
     Windows.UI.Xaml.BringIntoViewRequestedEventArgs RequestEventArgs { get; };
     Double TargetHorizontalOffset { get; };
     Double TargetVerticalOffset { get; };
