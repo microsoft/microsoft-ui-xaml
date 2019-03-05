@@ -749,7 +749,6 @@ void TeachingTip::OnIsOpenChanged()
         if (!m_popup)
         {
             auto popup = winrt::Popup();
-            popup.Child(m_rootGrid.get());
             m_popupOpenedRevoker = popup.Opened(winrt::auto_revoke, { this, &TeachingTip::OnPopupOpened });
             m_popupClosedRevoker = popup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
             m_popup.set(popup);
@@ -1046,6 +1045,7 @@ void TeachingTip::SetViewportChangedEvent()
 void TeachingTip::RevokeViewportChangedEvent()
 {
     m_targetEffectiveViewportChangedRevoker.revoke();
+    m_effectiveViewportChangedRevoker.revoke();
     m_targetLayoutUpdatedRevoker.revoke();
 }
 
@@ -1101,7 +1101,7 @@ void TeachingTip::CreateExpandAnimation()
     auto&& expandEasingFunction = m_expandEasingFunction.get();
     expandAnimation.InsertExpressionKeyFrame(0.0f, L"Vector3(Min(0.01, 20.0 / Width), Min(0.01, 20.0 / Height), 1.0)");
     expandAnimation.InsertKeyFrame(1.0f, { 1.0f, 1.0f, 1.0f }, expandEasingFunction);
-    expandAnimation.Duration(s_expandAnimationDuration);
+    expandAnimation.Duration(m_expandAnimationDuration);
     expandAnimation.Target(s_scaleTargetName);
     m_expandAnimation.set(expandAnimation);
 
@@ -1163,7 +1163,7 @@ void TeachingTip::StartExpandToOpen()
 			beakOcclusionGrid.StartAnimation(expandAnimation);
             m_isExpandAnimationPlaying = true;
         }
-        if (auto&& contentRootGrid = m_contentRootGrid)
+        if (auto&& contentRootGrid = m_contentRootGrid.get())
         {
 			contentRootGrid.StartAnimation(m_expandElevationAnimation.get());
             m_isExpandAnimationPlaying = true;
@@ -1499,7 +1499,9 @@ void TeachingTip::EstablishShadows()
                 auto beakShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
                 beakShadow.Receivers().Append(m_target.get());
                 beakPolygon_uiElement10.Shadow(beakShadow);
-                m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
+                auto&& beakPolygon = m_beakPolygon.get();
+                auto&& beakPolygonTranslation = beakPolygon.Translation();
+                beakPolygon.Translation({ beakPolygonTranslation.x, beakPolygonTranslation.y, m_beakElevation });
             }
         }
         else
@@ -1600,9 +1602,10 @@ void TeachingTip::SetContentElevation(float elevation)
     m_contentElevation = elevation;
     if (SharedHelpers::IsRS5OrHigher())
     {
-        if (m_beakOcclusionGrid)
+        if (auto&& beakOcclusionGrid = m_beakOcclusionGrid.get())
         {
-            m_contentRootGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
+            auto beakOcclusionGridTranslation = beakOcclusionGrid.Translation();
+            m_contentRootGrid.get().Translation({ beakOcclusionGridTranslation.x, beakOcclusionGridTranslation.y, m_contentElevation });
         }
         if (m_expandElevationAnimation)
         {
@@ -1616,7 +1619,11 @@ void TeachingTip::SetBeakElevation(float elevation)
     m_beakElevation = elevation;
     if (SharedHelpers::IsRS5OrHigher() && m_beakPolygon)
     {
-        m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
+        if (auto && beakPolygon = m_beakPolygon.get())
+        {
+            auto beakPolygonTranslation = beakPolygon.Translation();
+            beakPolygon.Translation({ beakPolygonTranslation.x, beakPolygonTranslation.y, m_beakElevation });
+        }
     }
 }
 
@@ -1649,26 +1656,26 @@ void TeachingTip::SetTipFollowsTarget(bool tipFollowsTarget)
 void TeachingTip::SetExpandAnimationDuration(const winrt::TimeSpan& expandAnimationDuration)
 {
     m_expandAnimationDuration = expandAnimationDuration;
-    if (m_expandAnimation)
+    if (auto&& expandAnimation = m_expandAnimation.get())
     {
-        m_expandAnimation.get().Duration(m_expandAnimationDuration);
+        expandAnimation.Duration(m_expandAnimationDuration);
     }
-    if (m_expandElevationAnimation)
+    if (auto&& expandElevationAnimation = m_expandElevationAnimation.get())
     {
-        m_expandElevationAnimation.get().Duration(m_expandAnimationDuration);
+        expandElevationAnimation.Duration(m_expandAnimationDuration);
     }
 }
 
 void TeachingTip::SetContractAnimationDuration(const winrt::TimeSpan& contractAnimationDuration)
 {
     m_contractAnimationDuration = contractAnimationDuration;
-    if (m_contractAnimation)
+    if (auto&& contractAnimation = m_contractAnimation.get())
     {
-        m_contractAnimation.get().Duration(m_contractAnimationDuration);
+        contractAnimation.Duration(m_contractAnimationDuration);
     }
-    if (m_contractElevationAnimation)
+    if (auto&& contractElevationAnimation = m_contractElevationAnimation.get())
     {
-        m_contractElevationAnimation.get().Duration(m_contractAnimationDuration);
+        contractElevationAnimation.Duration(m_contractAnimationDuration);
     }
 }
 
@@ -1689,18 +1696,18 @@ winrt::TeachingTipBleedingImagePlacementMode TeachingTip::GetEffectiveBleedingPl
 
 double TeachingTip::GetHorizontalOffset()
 {
-    if (m_popup)
+    if (auto&& popup = m_popup.get())
     {
-        return m_popup.get().HorizontalOffset();
+        return popup.HorizontalOffset();
     }
     return 0.0;
 }
 
 double TeachingTip::GetVerticalOffset()
 {
-    if (m_popup)
+    if (auto&& popup = m_popup.get())
     {
-        return m_popup.get().VerticalOffset();
+        return popup.VerticalOffset();
     }
     return 0.0;
 }

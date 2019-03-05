@@ -607,8 +607,8 @@ namespace MUXControlsTestApp
         {
             var expandDuration = new TimeSpan(0, 0, 0, 0, int.Parse(ExpandAnimationDuration.Text));
             var contractDuration = new TimeSpan(0, 0, 0, 0, int.Parse(ContractAnimationDuration.Text));
-            TeachingTipTestHooks.SetExpandAnimationDuration(this.TeachingTip, expandDuration);
-            TeachingTipTestHooks.SetContractAnimationDuration(this.TeachingTip, contractDuration);
+            TeachingTipTestHooks.SetExpandAnimationDuration(getTeachingTip(), expandDuration);
+            TeachingTipTestHooks.SetContractAnimationDuration(getTeachingTip(), contractDuration);
         }
 
         public void ContentElevationSliderChanged(object sender, RangeBaseValueChangedEventArgs args)
