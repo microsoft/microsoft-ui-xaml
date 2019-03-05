@@ -276,6 +276,10 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -372,14 +376,25 @@
             </StackPanel>
             <Button Click="OnSetAnimationParametersButtonClicked" Grid.Row="24">Set</Button>
 
+            <TextBlock Grid.Row="25" Text="Animation Durations:" Foreground="Red"/>
+            <StackPanel Orientation="Horizontal" Grid.Row="26">
+                <TextBlock Text="Expand: "  Margin="2"/>
+                <TextBox x:Name="ExpandAnimationDuration" Margin="2" Text="300"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="26" Grid.Column="1">
+                <TextBlock Text="Contract: " Margin="2" />
+                <TextBox x:Name="ContractAnimationDuration" Margin="2" Text="200"/>
+            </StackPanel>
+            <Button Click="OnSetAnimationDurationsButtonClicked" Grid.Row="27">Set</Button>
 
-            <TextBlock Grid.Row="25" Grid.ColumnSpan="2" Text="-----------------------------------------------------" Foreground="Red"/>
-            <TextBlock Grid.Row="26" Foreground="Red" Text="Content Elevation" VerticalAlignment="Center"/>
-            <Slider Grid.Row="27" Grid.ColumnSpan="2" Minimum="0" Maximum="50" ValueChanged="ContentElevationSliderChanged" Value="32"/>
-            <TextBlock Grid.Row="28" Foreground="Red" Text="Beak Elevation" VerticalAlignment="Center"/>
-            <Slider Grid.Row="29" Grid.ColumnSpan="2" Minimum="0" Maximum="100" ValueChanged="BeakElevationSliderChanged" Value="0"/>
-            <TextBlock Grid.Row="30" Foreground="Red" Text="Beak Shadow Targets Shadow Target:" VerticalAlignment="Center"/>
-            <CheckBox Grid.Row="30" Grid.Column="1" Checked="OnBeakShadowTargetChecked" Unchecked="OnBeakShadowTargetUnchecked" IsChecked="False"/>
+
+            <TextBlock Grid.Row="28" Grid.ColumnSpan="2" Text="-----------------------------------------------------" Foreground="Red"/>
+            <TextBlock Grid.Row="29" Foreground="Red" Text="Content Elevation" VerticalAlignment="Center"/>
+            <Slider Grid.Row="30" Grid.ColumnSpan="2" Minimum="0" Maximum="50" ValueChanged="ContentElevationSliderChanged" Value="32"/>
+            <TextBlock Grid.Row="31" Foreground="Red" Text="Has Shadow: " VerticalAlignment="Center"/>
+            <CheckBox Grid.Row="31" Grid.Column="1" Checked="OnTipShadowChecked" Unchecked="OnTipShadowUnchecked" IsChecked="True"/>
+            <TextBlock Grid.Row="32" Foreground="Red" Text="Beak Elevation" VerticalAlignment="Center"/>
+            <Slider Grid.Row="33" Grid.ColumnSpan="2" Minimum="0" Maximum="100" ValueChanged="BeakElevationSliderChanged" Value="0"/>
         </Grid>
 
         <!-- Logging Output -->
