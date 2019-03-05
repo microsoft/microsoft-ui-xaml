@@ -6,10 +6,6 @@
 
     <Style TargetType="local:TeachingTip">
         <Setter Property="Background" Value="{ThemeResource TeachingTipStaticBackgroundBrush}"/>
-        <Setter Property="MinHeight" Value="{StaticResource TeachingTipMinHeight}"/>
-        <Setter Property="MinWidth" Value="{StaticResource TeachingTipMinWidth}"/>
-        <Setter Property="MaxHeight" Value="{StaticResource TeachingTipMaxHeight}"/>
-        <Setter Property="MaxWidth" Value="{StaticResource TeachingTipMaxWidth}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TeachingTip">
@@ -407,7 +403,10 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Popup x:Name="Popup">
-                            <Grid>
+                            <Grid MinHeight="{ThemeResource TeachingTipMinHeight}" 
+                                  MinWidth="{ThemeResource TeachingTipMinWidth}"
+                                  MaxHeight="{ThemeResource TeachingTipMaxHeight}"
+                                  MaxWidth="{ThemeResource TeachingTipMaxWidth}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
                                     <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>

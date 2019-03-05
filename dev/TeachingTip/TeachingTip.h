@@ -52,7 +52,6 @@ private:
     winrt::Button::Click_revoker m_actionButtonClickedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_contentSizeChangedRevoker{};
     winrt::FrameworkElement::EffectiveViewportChanged_revoker m_effectiveViewportChangedRevoker{};
-    winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker{};
     winrt::FrameworkElement::EffectiveViewportChanged_revoker m_targetEffectiveViewportChangedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_targetLayoutUpdatedRevoker{};
     winrt::Popup::Opened_revoker m_popupOpenedRevoker{};
@@ -99,7 +98,6 @@ private:
     void SetViewportChangedEvent();
     void RevokeViewportChangedEvent();
     void TargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&);
-    void OnEffectiveViewportChanged(const winrt::IInspectable&, const winrt::IEffectiveViewportChangedEventArgs& args);
 
     void CreateExpandAnimation();
     void CreateContractAnimation();
@@ -171,9 +169,9 @@ private:
     static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 0, 0 }; }
     static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 0, 1, 1, 0 }; }
 
-    static inline double UntargetedTipFarPlacementOffset(float windowSize, double tipSize, double offset) { return windowSize - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
-    static inline double UntargetedTipCenterPlacementOffset(float windowSize, double tipSize, double nearOffset, double farOffset) { return (windowSize / 2) - (tipSize / 2) + nearOffset - farOffset; }
-    static inline double UntargetedTipNearPlacementOffset(double offset) { return s_untargetedTipWindowEdgeMargin + offset; }
+    static inline double UntargetedTipFarPlacementOffset(float windowSize, float tipParentPosition, double tipSize, double offset) { return windowSize - (tipParentPosition + tipSize + s_untargetedTipWindowEdgeMargin + offset); }
+    static inline double UntargetedTipCenterPlacementOffset(float windowSize, float tipParentPosition, double tipSize, double nearOffset, double farOffset) { return (windowSize / 2) - (tipSize / 2) - tipParentPosition + nearOffset - farOffset; }
+    static inline double UntargetedTipNearPlacementOffset(float tipParentPosition, double offset) { return s_untargetedTipWindowEdgeMargin - tipParentPosition + offset; }
 
     static constexpr winrt::TimeSpan s_expandAnimationDuration{ 300ms };
     static constexpr winrt::TimeSpan s_contractAnimationDuration{ 200ms };

@@ -21,8 +21,8 @@
             <ScrollViewer x:Name="ContentScrollViewer">
                 <StackPanel>
                     <Grid Background="Green" Width="100" Height="1000"/>
-                    <muxc:TeachingTip x:Name="TeachingTip" 
-                                          AutomationProperties.Name="TeachingTip"
+                    <muxc:TeachingTip x:Name="TeachingTipInVisualTree" 
+                                          AutomationProperties.Name="TeachingTipInVisualTree"
                                           Title="We've Added Auto Saving!" 
                                           Subtext="Documents will now automatically save to OneDrive." 
                                           Closed="OnTeachingTipClosed" 
@@ -38,13 +38,14 @@
                         <muxc:TeachingTip.Content>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
+                                <CheckBox x:Name="CancelClosesCheckBoxInVisualTree" IsChecked="False" VerticalAlignment="Center"/>
                             </StackPanel>
                         </muxc:TeachingTip.Content>
                     </muxc:TeachingTip>
                     <Button x:Name="targetButton" HorizontalAlignment="Center" VerticalAlignment="Center" Click="OnShowButtonClicked" Height="300">Enable AutoSave
                         <muxc:TeachingTip.Attach>
-                            <muxc:TeachingTip x:Name="TeachingTip3" 
-                                          AutomationProperties.Name="TeachingTip3"
+                            <muxc:TeachingTip x:Name="TeachingTipInSetAttach" 
+                                          AutomationProperties.Name="TeachingTipInSetAttach"
                                           Title="We've Added Auto Saving!" 
                                           Subtext="Documents will now automatically save to OneDrive." 
                                           Closed="OnTeachingTipClosed" 
@@ -60,14 +61,14 @@
                                 <muxc:TeachingTip.Content>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
-                                        <CheckBox x:Name="CancelClosesCheckBox" IsChecked="False" VerticalAlignment="Center"/>
+                                        <CheckBox x:Name="CancelClosesCheckBoxInSetAttach" IsChecked="False" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </muxc:TeachingTip.Content>
                             </muxc:TeachingTip>
                         </muxc:TeachingTip.Attach>
                         <Button.Resources>
-                            <muxc:TeachingTip x:Name="TeachingTip2" 
-                                          AutomationProperties.Name="TeachingTip2"
+                            <muxc:TeachingTip x:Name="TeachingTipInResources" 
+                                          AutomationProperties.Name="TeachingTipInResources"
                                           Title="We've Added Auto Saving!" 
                                           Subtext="Documents will now automatically save to OneDrive." 
                                           Closed="OnTeachingTipClosed" 
@@ -83,6 +84,7 @@
                                 <muxc:TeachingTip.Content>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
+                                        <CheckBox x:Name="CancelClosesCheckBoxInResources" IsChecked="False" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </muxc:TeachingTip.Content>
                             </muxc:TeachingTip>
@@ -135,47 +137,57 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Row="0" Text="Bleeding Content:" Foreground="Red"/>
-                <ComboBox x:Name="BleedingContentComboBox" AutomationProperties.Name="BleedingContentComboBox" SelectedIndex="0" Grid.Row ="1">
+                <TextBlock Grid.Row="0" Text="Tip Location:" Foreground="Red"/>
+                <ComboBox x:Name="TipLocationComboBox" AutomationProperties.Name="TipLocationComboBox" SelectedIndex="0" Grid.Row="1">
+                    <ComboBoxItem x:Name="TipInSetAttach">SetAttach</ComboBoxItem>
+                    <ComboBoxItem x:Name="TipInVisualTree">VisualTree</ComboBoxItem>
+                    <ComboBoxItem x:Name="TipInResources">Resources</ComboBoxItem>
+                </ComboBox>
+                <Button AutomationProperties.Name="SetTipLocationButton" Click="OnSetTipLocationButton" Grid.Row="1" Grid.Column="1">Set</Button>
+                
+                <TextBlock Grid.Row="2" Text="Bleeding Content:" Foreground="Red"/>
+                <ComboBox x:Name="BleedingContentComboBox" AutomationProperties.Name="BleedingContentComboBox" SelectedIndex="0" Grid.Row="3">
                     <ComboBoxItem x:Name="BleedingRedSquare">Red Square</ComboBoxItem>
                     <ComboBoxItem x:Name="BleedingBlueSquare">Blue Square</ComboBoxItem>
                     <ComboBoxItem x:Name="BleedingImage">Image</ComboBoxItem>
                     <ComboBoxItem x:Name="BleedingAutoSave">AutoSaveImage</ComboBoxItem>
                     <ComboBoxItem x:Name="BleedingNoContent">No Content</ComboBoxItem>
                 </ComboBox>
-                <Button AutomationProperties.Name="SetBleedingContentButton" Click="OnSetBleedingContentButtonClicked" Grid.Row ="1" Grid.Column="1">Set</Button>
+                <Button AutomationProperties.Name="SetBleedingContentButton" Click="OnSetBleedingContentButtonClicked" Grid.Row ="3" Grid.Column="1">Set</Button>
 
-                <TextBlock Grid.Row="2" Text="Icon:" Foreground="Red"/>
-                <ComboBox x:Name="IconComboBox" AutomationProperties.Name="IconComboBox" SelectedIndex="0" Grid.Row ="3">
+                <TextBlock Grid.Row="4" Text="Icon:" Foreground="Red"/>
+                <ComboBox x:Name="IconComboBox" AutomationProperties.Name="IconComboBox" SelectedIndex="0" Grid.Row="5">
                     <ComboBoxItem x:Name="IconPeople">People Icon</ComboBoxItem>
                     <ComboBoxItem x:Name="IconNo">No Icon</ComboBoxItem>
                 </ComboBox>
-                <Button AutomationProperties.Name="SetIconButton" Click="OnSetIconButtonClicked" Grid.Column="1" Grid.Row ="3">Set</Button>
+                <Button AutomationProperties.Name="SetIconButton" Click="OnSetIconButtonClicked" Grid.Column="1" Grid.Row="5">Set</Button>
 
-                <TextBlock Grid.Row="4" Text="Title:" Foreground="Red"/>
-                <ComboBox x:Name="TitleComboBox" Grid.Row ="5">
+                <TextBlock Grid.Row="6" Text="Title:" Foreground="Red"/>
+                <ComboBox x:Name="TitleComboBox" Grid.Row="7">
                     <ComboBoxItem x:Name="TitleNo">No title</ComboBoxItem>
                     <ComboBoxItem x:Name="TitleSmall">Small text</ComboBoxItem>
                     <ComboBoxItem x:Name="TitleLong">Long text</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetTitleButtonClicked" Grid.Column="1" Grid.Row ="5">Set</Button>
+                <Button Click="OnSetTitleButtonClicked" Grid.Column="1" Grid.Row="7">Set</Button>
 
-                <TextBlock Grid.Row="6" Text="Subtext:" Foreground="Red"/>
-                <ComboBox x:Name="SubtextComboBox" Grid.Row ="7">
+                <TextBlock Grid.Row="8" Text="Subtext:" Foreground="Red"/>
+                <ComboBox x:Name="SubtextComboBox" Grid.Row="9">
                     <ComboBoxItem x:Name="SubtextNo">No subtext</ComboBoxItem>
                     <ComboBoxItem x:Name="SubtextSmall">Small text</ComboBoxItem>
                     <ComboBoxItem x:Name="SubtextLong">Long text</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetSubtextButtonClicked" Grid.Row ="7" Grid.Column="1">Set</Button>
+                <Button Click="OnSetSubtextButtonClicked" Grid.Row="9" Grid.Column="1">Set</Button>
 
-                <TextBlock Grid.Row="8" Text="Content:" Foreground="Red"/>
-                <ComboBox x:Name="ContentComboBox" Grid.Row ="9">
+                <TextBlock Grid.Row="10" Text="Content:" Foreground="Red"/>
+                <ComboBox x:Name="ContentComboBox" Grid.Row="11">
                     <ComboBoxItem x:Name="ContentRedSquare">Red Square</ComboBoxItem>
                     <ComboBoxItem x:Name="ContentBlueSquare">Blue Square</ComboBoxItem>
                     <ComboBoxItem x:Name="ContentImage">Image</ComboBoxItem>
@@ -184,103 +196,103 @@
                     <ComboBoxItem x:Name="ContentAutoSave">AutoSaveImage</ComboBoxItem>
                     <ComboBoxItem x:Name="ContentNo">No Content</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetContentButtonClicked" Grid.Row ="9" Grid.Column="1">Set</Button>
+                <Button Click="OnSetContentButtonClicked" Grid.Row="11" Grid.Column="1">Set</Button>
 
-                <TextBlock Grid.Row="10" Text="ActionButtonText:" Foreground="Red"/>
-                <ComboBox x:Name="ActionButtonTextComboBox" SelectedIndex="0" Grid.Row ="11">
+                <TextBlock Grid.Row="12" Text="ActionButtonText:" Foreground="Red"/>
+                <ComboBox x:Name="ActionButtonTextComboBox" SelectedIndex="0" Grid.Row="13">
                     <ComboBoxItem x:Name="ActionButtonTextNo">No text</ComboBoxItem>
                     <ComboBoxItem x:Name="ActionButtonTextSmall">Small text</ComboBoxItem>
                     <ComboBoxItem x:Name="ActionButtonTextLong">Long text</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetActionButtonTextButtonClicked" Grid.Row ="11" Grid.Column="1">Set</Button>
+                <Button Click="OnSetActionButtonTextButtonClicked" Grid.Row="13" Grid.Column="1">Set</Button>
 
-                <TextBlock Grid.Row="12" Text="CloseButtonText:" Foreground="Red"/>
-                <ComboBox x:Name="CloseButtonTextComboBox" SelectedIndex="0" Grid.Row ="13">
+                <TextBlock Grid.Row="14" Text="CloseButtonText:" Foreground="Red"/>
+                <ComboBox x:Name="CloseButtonTextComboBox" SelectedIndex="0" Grid.Row="15">
                     <ComboBoxItem x:Name="CloseButtonTextNo">No text</ComboBoxItem>
                     <ComboBoxItem x:Name="CloseButtonTextSmall">Small text</ComboBoxItem>
                     <ComboBoxItem x:Name="CloseButtonTextLong">Long text</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetCloseButtonTextButtonClicked" Grid.Row ="13" Grid.Column="1">Set</Button>
+                <Button Click="OnSetCloseButtonTextButtonClicked" Grid.Row="15" Grid.Column="1">Set</Button>
 
-                <TextBlock Grid.Row="14" Text="BleedingImagePlacement:" Foreground="Red"/>
-                <ComboBox x:Name="BleedingImagePlacementComboBox" SelectedIndex="0" Grid.Row ="15">
+                <TextBlock Grid.Row="16" Text="BleedingImagePlacement:" Foreground="Red"/>
+                <ComboBox x:Name="BleedingImagePlacementComboBox" SelectedIndex="0" Grid.Row="17">
                     <ComboBoxItem x:Name="BleedingPlacementAuto">Auto</ComboBoxItem>
                     <ComboBoxItem x:Name="BleedingPlacementTop">Top</ComboBoxItem>
                     <ComboBoxItem x:Name="BleedingPlacementBottom">Bottom</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetBleeingImagePlacementButtonClicked" Grid.Row ="15" Grid.Column="1">Set</Button>
-                <TextBlock Grid.Row="16" Text="--------------------------------------" Foreground="Red" Grid.ColumnSpan="2"/>
-                <TextBlock Grid.Row="17" Text="IsOpen:" Foreground="Red" VerticalAlignment="Center"/>
-                <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Grid.Row="17" Grid.Column="1" IsChecked="False" IsEnabled="False"/>
-                <TextBlock Grid.Row="18" Text="IsIdle:" Foreground="Red" VerticalAlignment="Center"/>
-                <CheckBox x:Name="IsIdleCheckBox" AutomationProperties.Name="IsIdleCheckBox" Grid.Row="18" Grid.Column="1" IsChecked="True" IsEnabled="False"/>
-                <TextBlock Grid.Row="19" Text="TargetBounds:" Foreground="Red"/>
-                <Button AutomationProperties.Name="GetTargetBoundsButton" Grid.Row="19" Grid.Column="1" Click="OnGetTargetBoundsButtonClicked">Get</Button>
-                <StackPanel Orientation="Horizontal" Grid.Row="20">
+                <Button Click="OnSetBleeingImagePlacementButtonClicked" Grid.Row="17" Grid.Column="1">Set</Button>
+                <TextBlock Grid.Row="18" Text="--------------------------------------" Foreground="Red" Grid.ColumnSpan="2"/>
+                <TextBlock Grid.Row="19" Text="IsOpen:" Foreground="Red" VerticalAlignment="Center"/>
+                <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Grid.Row="19" Grid.Column="1" IsChecked="False" IsEnabled="False"/>
+                <TextBlock Grid.Row="20" Text="IsIdle:" Foreground="Red" VerticalAlignment="Center"/>
+                <CheckBox x:Name="IsIdleCheckBox" AutomationProperties.Name="IsIdleCheckBox" Grid.Row="20" Grid.Column="1" IsChecked="True" IsEnabled="False"/>
+                <TextBlock Grid.Row="21" Text="TargetBounds:" Foreground="Red"/>
+                <Button AutomationProperties.Name="GetTargetBoundsButton" Grid.Row="21" Grid.Column="1" Click="OnGetTargetBoundsButtonClicked">Get</Button>
+                <StackPanel Orientation="Horizontal" Grid.Row="22">
                     <TextBlock Text="X: "/>
                     <TextBlock x:Name="TargetXOffsetTextBlock" AutomationProperties.Name="TargetXOffsetTextBlock"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="20" Grid.Column="1">
+                <StackPanel Orientation="Horizontal" Grid.Row="22" Grid.Column="1">
                     <TextBlock Text="Y: "/>
                     <TextBlock x:Name="TargetYOffsetTextBlock" AutomationProperties.Name="TargetYOffsetTextBlock"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="22">
+                <StackPanel Orientation="Horizontal" Grid.Row="23">
                     <TextBlock Text="Width: "/>
                     <TextBlock x:Name="TargetWidthTextBlock" AutomationProperties.Name="TargetWidthTextBlock"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="22" Grid.Column="1">
+                <StackPanel Orientation="Horizontal" Grid.Row="23" Grid.Column="1">
                     <TextBlock Text="Height: "/>
                     <TextBlock x:Name="TargetHeightTextBlock" AutomationProperties.Name="TargetHeightTextBlock"/>
                 </StackPanel>
-                <TextBlock Grid.Row="23" Text="Popup Offset:" Foreground="Red"/>
-                <StackPanel Orientation="Horizontal" Grid.Row="24">
+                <TextBlock Grid.Row="24" Text="Popup Offset:" Foreground="Red"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="25">
                     <TextBlock Text="Vert: "/>
                     <TextBlock x:Name="PopupVerticalOffsetTextBlock" AutomationProperties.Name="PopupVerticalOffsetTextBlock"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="24" Grid.Column="1">
+                <StackPanel Orientation="Horizontal" Grid.Row="26" Grid.Column="1">
                     <TextBlock Text="Hor: "/>
                     <TextBlock x:Name="PopupHorizontalOffsetTextBlock" AutomationProperties.Name="PopupHorizontalOffsetTextBlock"/>
                 </StackPanel>
-                <TextBlock Grid.Row="25" Text="Teaching Tip Size:" Foreground="Red"/>
-                <StackPanel Orientation="Horizontal" Grid.Row="26">
+                <TextBlock Grid.Row="27" Text="Teaching Tip Size:" Foreground="Red"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="28">
                     <TextBlock Text="Height: "/>
                     <TextBlock x:Name="TipHeightTextBlock" AutomationProperties.Name="TipHeightTextBlock"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="26" Grid.Column="1">
+                <StackPanel Orientation="Horizontal" Grid.Row="28" Grid.Column="1">
                     <TextBlock Text="Width: "/>
                     <TextBlock x:Name="TipWidthTextBlock" AutomationProperties.Name="TipWidthTextBlock"/>
                 </StackPanel>
-                <TextBlock Grid.Row="27" Text="Effective Placement:"/>
-                <TextBlock x:Name="EffectivePlacementTextBlock" AutomationProperties.Name="EffectivePlacementTextBlock" Grid.Row="27" Grid.Column="1" />
-                <TextBlock Grid.Row="28" Text="Bleeding Placement:"/>
-                <TextBlock x:Name="EffectiveBleedingPlacementTextBlock" AutomationProperties.Name="EffectiveBleedingPlacementTextBlock" Grid.Row="28" Grid.Column="1" />
-                <TextBlock Grid.Row="29" Text="--------------------------------------" Foreground="Red" Grid.ColumnSpan="2"/>
-                <TextBlock Grid.Row="30" Text="ScrollViewerState" Foreground="Red"/>
-                <TextBlock Grid.Row="30" Grid.Column="1" x:Name="ScrollViewerStateTextBox" AutomationProperties.Name="ScrollViewerStateTextBox" Text="Idle"/>
-                <TextBlock Grid.Row="31" Text="ScrollViewerOffset:" Foreground="Red"/>
-                <TextBox x:Name="ScrollViewerOffsetTextBox" AutomationProperties.Name="ScrollViewerOffsetTextBox" Grid.Row="32" Text="750"/>
-                <Button AutomationProperties.Name="ScrollViewerOffsetButton" Grid.Row="32" Grid.Column="1" Click="OnSetScrollViewerOffsetButtonClicked" Margin="0,0,0,1">Set</Button>
-                <Button AutomationProperties.Name="BringTargetIntoViewButton" Grid.Row="33" Click="OnBringTargetIntoViewButtonClicked">BringIntoView</Button>
-                <TextBlock Text="UseTestWindowBounds:" Grid.Row="34" Foreground="Red"/>
-                <CheckBox x:Name="UseTestWindowBoundsCheckBox" AutomationProperties.Name="UseTestWindowBoundsCheckbox" Grid.Row="34" Grid.Column="1" Checked="OnUseTestWindowBoundsCheckBoxChecked" Unchecked="OnUseTestWindowBoundsCheckBoxUnchecked"/>
-                <StackPanel Orientation="Horizontal" Grid.Row="35">
+                <TextBlock Grid.Row="29" Text="Effective Placement:"/>
+                <TextBlock x:Name="EffectivePlacementTextBlock" AutomationProperties.Name="EffectivePlacementTextBlock" Grid.Row="29" Grid.Column="1" />
+                <TextBlock Grid.Row="30" Text="Bleeding Placement:"/>
+                <TextBlock x:Name="EffectiveBleedingPlacementTextBlock" AutomationProperties.Name="EffectiveBleedingPlacementTextBlock" Grid.Row="30" Grid.Column="1" />
+                <TextBlock Grid.Row="31" Text="--------------------------------------" Foreground="Red" Grid.ColumnSpan="2"/>
+                <TextBlock Grid.Row="32" Text="ScrollViewerState" Foreground="Red"/>
+                <TextBlock Grid.Row="32" Grid.Column="1" x:Name="ScrollViewerStateTextBox" AutomationProperties.Name="ScrollViewerStateTextBox" Text="Idle"/>
+                <TextBlock Grid.Row="33" Text="ScrollViewerOffset:" Foreground="Red"/>
+                <TextBox x:Name="ScrollViewerOffsetTextBox" AutomationProperties.Name="ScrollViewerOffsetTextBox" Grid.Row="34" Text="750"/>
+                <Button AutomationProperties.Name="ScrollViewerOffsetButton" Grid.Row="34" Grid.Column="1" Click="OnSetScrollViewerOffsetButtonClicked" Margin="0,0,0,1">Set</Button>
+                <Button AutomationProperties.Name="BringTargetIntoViewButton" Grid.Row="35" Click="OnBringTargetIntoViewButtonClicked">BringIntoView</Button>
+                <TextBlock Text="UseTestWindowBounds:" Grid.Row="36" Foreground="Red"/>
+                <CheckBox x:Name="UseTestWindowBoundsCheckBox" AutomationProperties.Name="UseTestWindowBoundsCheckbox" Grid.Row="36" Grid.Column="1" Checked="OnUseTestWindowBoundsCheckBoxChecked" Unchecked="OnUseTestWindowBoundsCheckBoxUnchecked"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="37">
                     <TextBlock Text="X        :" VerticalAlignment="Center"/>
                     <TextBox x:Name="TestWindowBoundsXTextBox" AutomationProperties.Name="TestWindowBoundsXTextBox" Text="0"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="35" Grid.Column="1">
+                <StackPanel Orientation="Horizontal" Grid.Row="37" Grid.Column="1">
                     <TextBlock Text="Y         :" VerticalAlignment="Center"/>
                     <TextBox x:Name="TestWindowBoundsYTextBox" AutomationProperties.Name="TestWindowBoundsYTextBox" Text="0"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="36">
+                <StackPanel Orientation="Horizontal" Grid.Row="38">
                     <TextBlock Text="Width:"/>
                     <TextBox x:Name="TestWindowBoundsWidthTextBox" AutomationProperties.Name="TestWindowBoundsWidthTextBox" Text="0"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="36" Grid.Column="1">
+                <StackPanel Orientation="Horizontal" Grid.Row="38" Grid.Column="1">
                     <TextBlock Text="Height:"/>
                     <TextBox x:Name="TestWindowBoundsHeightTextBox" AutomationProperties.Name="TestWindowBoundsHeightTextBox" Text="0"/>
                 </StackPanel>
-                <TextBlock Text="TipFollowsTarget:" Grid.Row="37" Foreground="Red"/>
-                <CheckBox x:Name="TipFollowsTargetCheckBox" AutomationProperties.Name="TipFollowsTargetCheckBox" Grid.Row="37" Grid.Column="1" Checked="OnTipFollowsTargetCheckBoxChecked" Unchecked="OnTipFollowsTargetCheckBoxUnchecked"/>
+                <TextBlock Text="TipFollowsTarget:" Grid.Row="39" Foreground="Red"/>
+                <CheckBox x:Name="TipFollowsTargetCheckBox" AutomationProperties.Name="TipFollowsTargetCheckBox" Grid.Row="39" Grid.Column="1" Checked="OnTipFollowsTargetCheckBoxChecked" Unchecked="OnTipFollowsTargetCheckBoxUnchecked"/>
             </Grid>
         </ScrollViewer>
 
