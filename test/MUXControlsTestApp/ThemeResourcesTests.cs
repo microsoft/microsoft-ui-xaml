@@ -236,7 +236,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-            #region Dictionary verification
+        #region Dictionary verification
 
         List<string> keysWithDifferentValues = new List<string>();
 
@@ -423,7 +423,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     PropertyInfo[] propertyInfoList = null;
 
-
                     if (valueObject != null && mergedValueObject != null)
                     {
                         propertyInfoList = type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).Where((pi) => pi.PropertyType == typeof(DependencyProperty)).ToArray();
@@ -530,7 +529,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return true;
         }
 
-            #endregion
+        #endregion
 #endif
-        }
     }
+}
