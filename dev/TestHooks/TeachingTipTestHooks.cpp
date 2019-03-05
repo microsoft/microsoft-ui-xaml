@@ -34,6 +34,14 @@ void TeachingTipTestHooks::SetContractEasingFunction(const winrt::TeachingTip& t
     }
 }
 
+void TeachingTipTestHooks::SetTipShouldHaveShadow(const winrt::TeachingTip& teachingTip, bool tipShouldHaveShadow)
+{
+    if (teachingTip)
+    {
+        winrt::get_self<TeachingTip>(teachingTip)->SetTipShouldHaveShadow(tipShouldHaveShadow);
+    }
+}
+
 void TeachingTipTestHooks::SetContentElevation(const winrt::TeachingTip& teachingTip, float elevation)
 {
     if (teachingTip)
@@ -47,14 +55,6 @@ void TeachingTipTestHooks::SetBeakElevation(const winrt::TeachingTip& teachingTi
     if (teachingTip)
     {
         winrt::get_self<TeachingTip>(teachingTip)->SetBeakElevation(elevation);
-    }
-}
-
-void TeachingTipTestHooks::SetBeakShadowTargetsShadowTarget(const winrt::TeachingTip& teachingTip, bool targetsShadowTarget)
-{
-    if (teachingTip)
-    {
-        winrt::get_self<TeachingTip>(teachingTip)->SetBeakShadowTargetsShadowTarget(targetsShadowTarget);
     }
 }
 
@@ -79,6 +79,22 @@ void TeachingTipTestHooks::SetTipFollowsTarget(const winrt::TeachingTip& teachin
     if (teachingTip)
     {
         winrt::get_self<TeachingTip>(teachingTip)->SetTipFollowsTarget(tipFollowsTarget);
+    }
+}
+
+void TeachingTipTestHooks::SetExpandAnimationDuration(const winrt::TeachingTip& teachingTip, const winrt::TimeSpan& expandAnimationDuration)
+{
+    if (teachingTip)
+    {
+        winrt::get_self<TeachingTip>(teachingTip)->SetExpandAnimationDuration(expandAnimationDuration);
+    }
+}
+
+void TeachingTipTestHooks::SetContractAnimationDuration(const winrt::TeachingTip& teachingTip, const winrt::TimeSpan& contractAnimationDuration)
+{
+    if (teachingTip)
+    {
+        winrt::get_self<TeachingTip>(teachingTip)->SetContractAnimationDuration(contractAnimationDuration);
     }
 }
 

@@ -55,10 +55,10 @@ static constexpr auto c_paneHeaderOnTopPane = L"PaneHeaderOnTopPane"sv;
 static constexpr auto c_paneCustomContentOnTopPane = L"PaneCustomContentOnTopPane"sv;
 static constexpr auto c_paneFooterOnTopPane = L"PaneFooterOnTopPane"sv;
 
-static constexpr int c_backButtonHeight = 44;
-static constexpr int c_backButtonWidth = 48;
+static constexpr int c_backButtonHeight = 40;
+static constexpr int c_backButtonWidth = 40;
 static constexpr int c_backButtonPaneButtonMargin = 8;
-static constexpr int c_paneToggleButtonWidth = 48;
+static constexpr int c_paneToggleButtonWidth = 40;
 static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior = 56;
 static constexpr int c_backButtonRowDefinition = 1;
 static constexpr float c_paneElevationTranslationZ = 32;
@@ -583,7 +583,7 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
 
     SetDisplayMode(displayMode, forceSetDisplayMode);
 
-    if (displayMode == winrt::NavigationViewDisplayMode::Expanded)
+    if (displayMode == winrt::NavigationViewDisplayMode::Expanded && IsPaneVisible())
     {
         if (!m_wasForceClosed)
         {
@@ -2640,6 +2640,18 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         UpdatePaneVisibility();
         UpdateVisualStateForDisplayModeGroup(DisplayMode());
+
+        // When NavView is in expaneded mode with fixed window size, setting IsPaneVisible to false doesn't closes the pane
+        // We manually close/open it for this case
+        if (!IsPaneVisible() && IsPaneOpen())
+        {
+            ClosePane();
+        }
+
+        if (IsPaneVisible() && DisplayMode() == winrt::NavigationViewDisplayMode::Expanded && !IsPaneOpen())
+        {
+            OpenPane();
+        }
     }
     else if (property == s_OverflowLabelModeProperty)
     {

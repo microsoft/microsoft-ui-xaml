@@ -76,6 +76,11 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(PinterestLayoutSamplePage));
             };
 
+            flowLayoutDemo.Click += delegate 
+            {
+                Frame.NavigateWithoutAnimation(typeof(FlowLayoutDemoPage));
+            };
+
             activityFeedLayoutDemo.Click += delegate
             {
                 Frame.NavigateWithoutAnimation(typeof(ActivityFeedSamplePage));

@@ -12,22 +12,32 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.Resources>
-            <controls:RecyclePool x:Key="recyclePool"/>
-            <controls:RecyclingElementFactory x:Name="repeater1ElementFactory" RecyclePool="{StaticResource recyclePool}">
+            <controls:RecyclePool x:Key="recyclePool1"/>
+            <controls:RecyclePool x:Key="recyclePool2"/>
+            <controls:RecyclePool x:Key="recyclePool3"/>
+            <controls:RecyclePool x:Key="recyclePool4"/>
+            <controls:RecyclingElementFactory x:Name="repeater1ElementFactory" RecyclePool="{StaticResource recyclePool1}">
                 <DataTemplate x:Key="Item" x:DataType="x:String">
                     <Border BorderThickness="3" BorderBrush="Chartreuse" Width="100" Height="100" Margin="3" Background="BlanchedAlmond">
                         <TextBox Text="{x:Bind}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </DataTemplate>
             </controls:RecyclingElementFactory>
-            <controls:RecyclingElementFactory x:Name="repeater2ElementFactory" RecyclePool="{StaticResource recyclePool}">
+            <controls:RecyclingElementFactory x:Name="repeater2ElementFactory" RecyclePool="{StaticResource recyclePool2}">
                 <DataTemplate x:Key="Item" x:DataType="x:String">
                     <Border BorderThickness="3" BorderBrush="Chartreuse" Width="100" Height="100" Margin="3" Background="BlanchedAlmond">
                         <TextBox Text="{x:Bind}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </DataTemplate>
             </controls:RecyclingElementFactory>
-            <controls:RecyclingElementFactory x:Name="repeater3ElementFactory" RecyclePool="{StaticResource recyclePool}">
+            <controls:RecyclingElementFactory x:Name="repeater3ElementFactory" RecyclePool="{StaticResource recyclePool3}">
+                <DataTemplate x:Key="Item" x:DataType="x:String">
+                    <Border BorderThickness="3" BorderBrush="Chartreuse" Width="100" Height="100" Margin="3" Background="BlanchedAlmond">
+                        <TextBox Text="{x:Bind}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </DataTemplate>
+            </controls:RecyclingElementFactory>
+            <controls:RecyclingElementFactory x:Name="repeater4ElementFactory" RecyclePool="{StaticResource recyclePool4}">
                 <DataTemplate x:Key="Item" x:DataType="x:String">
                     <Border BorderThickness="3" BorderBrush="Chartreuse" Width="100" Height="100" Margin="3" Background="BlanchedAlmond">
                         <TextBox Text="{x:Bind}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -50,9 +60,11 @@
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Nesting combination:" Margin="1" VerticalAlignment="Center"/>
                 <ComboBox x:Name="cmbNestingCombination" Margin="1" SelectedIndex="0" SelectionChanged="CmbNestingCombination_SelectionChanged">
-                    <ComboBoxItem>Scroller in Scroller</ComboBoxItem>
-                    <ComboBoxItem>Scroller in ScrollViewer</ComboBoxItem>
-                    <ComboBoxItem>ScrollViewer in Scroller</ComboBoxItem>
+                    <ComboBoxItem>Scroller in Scroller (1)</ComboBoxItem>
+                    <ComboBoxItem>Scroller in Scroller (2)</ComboBoxItem>
+                    <ComboBoxItem>Scroller in WUX ScrollViewer</ComboBoxItem>
+                    <ComboBoxItem>WUX ScrollViewer in Scroller</ComboBoxItem>
+                    <ComboBoxItem>WUX ScrollViewer in WUX ScrollViewer</ComboBoxItem>
                 </ComboBox>
             </StackPanel>
             <controlsPrimitives:Scroller x:Name="outerScroller" Width="400" Height="400" Margin="1" Background="ForestGreen" VerticalAlignment="Bottom" ZoomMode="Enabled">
@@ -121,6 +133,119 @@
                     </Border>
                     <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
                         <TextBox x:Name="TextBox140A" Text="TextBox140" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </StackPanel>
+            </controlsPrimitives:Scroller>
+            <controlsPrimitives:Scroller x:Name="outerScroller3" Width="400" Height="400" Margin="1" Background="ForestGreen"
+                VerticalAlignment="Bottom" ZoomMode="Enabled" Visibility="Collapsed">
+                <StackPanel Width="400">
+                    <StackPanel Orientation="Horizontal">
+                        <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                            <TextBox x:Name="TextBox00E" Text="TextBox00" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="3" Background="LightSteelBlue">
+                            <TextBox x:Name="TextBox01E" Text="TextBox01" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                            <TextBox x:Name="TextBox10E" Text="TextBox10" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="3" Background="LightSteelBlue">
+                            <TextBox x:Name="TextBox11E" Text="TextBox11" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                            <TextBox x:Name="TextBox20E" Text="TextBox20" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="3" Background="LightSteelBlue">
+                            <TextBox x:Name="TextBox21E" Text="TextBox21" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                            <TextBox x:Name="TextBox30E" Text="TextBox30" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="3" Background="LightSteelBlue">
+                            <TextBox x:Name="TextBox31E" Text="TextBox31" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                            <TextBox x:Name="TextBox40E" Text="TextBox40" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="3" Background="LightSteelBlue">
+                            <TextBox x:Name="TextBox41E" Text="TextBox41" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <controlsPrimitives:Scroller x:Name="innerScroller3" Width="400" Height="300" Background="AliceBlue"
+                        HorizontalAlignment="Left" VerticalAlignment="Top" ContentOrientation="Vertical" ZoomMode="Enabled" VerticalScrollChainingMode="Always">
+                        <StackPanel Width="400">
+                            <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="9" Background="LightGoldenrodYellow">
+                                <TextBox x:Name="TextBox00F" Text="TextBox00" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="9" Background="LightSeaGreen">
+                                <TextBox x:Name="TextBox01F" Text="TextBox01" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="9" Background="LightGoldenrodYellow">
+                                <TextBox x:Name="TextBox10F" Text="TextBox10" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="9" Background="LightSeaGreen">
+                                <TextBox x:Name="TextBox11F" Text="TextBox11" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="9" Background="LightGoldenrodYellow">
+                                <TextBox x:Name="TextBox20F" Text="TextBox20" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="9" Background="LightSeaGreen">
+                                <TextBox x:Name="TextBox21F" Text="TextBox21" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="9" Background="LightGoldenrodYellow">
+                                <TextBox x:Name="TextBox30F" Text="TextBox30" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="9" Background="LightSeaGreen">
+                                <TextBox x:Name="TextBox31F" Text="TextBox31" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="9" Background="LightGoldenrodYellow">
+                                <TextBox x:Name="TextBox40F" Text="TextBox40" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="9" Background="LightSeaGreen">
+                                <TextBox x:Name="TextBox41F" Text="TextBox41" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="9" Background="LightGoldenrodYellow">
+                                <TextBox x:Name="TextBox50F" Text="TextBox50" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="9" Background="LightSeaGreen">
+                                <TextBox x:Name="TextBox61F" Text="TextBox61" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="9" Background="LightGoldenrodYellow">
+                                <TextBox x:Name="TextBox70F" Text="TextBox70" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="9" Background="LightSeaGreen">
+                                <TextBox x:Name="TextBox71F" Text="TextBox71" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="9" Background="LightGoldenrodYellow">
+                                <TextBox x:Name="TextBox80F" Text="TextBox80" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="9" Background="LightSeaGreen">
+                                <TextBox x:Name="TextBox81F" Text="TextBox81" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                    </controlsPrimitives:Scroller>
+                    <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                        <TextBox x:Name="TextBox100E" Text="TextBox100" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                        <TextBox x:Name="TextBox110E" Text="TextBox110" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                        <TextBox x:Name="TextBox120E" Text="TextBox120" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                        <TextBox x:Name="TextBox130E" Text="TextBox130" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                        <TextBox x:Name="TextBox140E" Text="TextBox140" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </StackPanel>
             </controlsPrimitives:Scroller>
@@ -264,10 +389,81 @@
                     </Border>
                 </StackPanel>
             </controlsPrimitives:Scroller>
+            <ScrollViewer x:Name="outerScrollViewer2" Width="400" Height="400" Margin="1" Background="ForestGreen" VerticalAlignment="Bottom"
+                ZoomMode="Enabled" Visibility="Collapsed">
+                <StackPanel Width="400">
+                    <StackPanel Orientation="Horizontal">
+                        <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                            <TextBox x:Name="TextBox00D" Text="TextBox00" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="3" Background="LightSteelBlue">
+                            <TextBox x:Name="TextBox01D" Text="TextBox01" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                            <TextBox x:Name="TextBox10D" Text="TextBox10" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="3" Background="LightSteelBlue">
+                            <TextBox x:Name="TextBox11D" Text="TextBox11" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                            <TextBox x:Name="TextBox20D" Text="TextBox20" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="3" Background="LightSteelBlue">
+                            <TextBox x:Name="TextBox21D" Text="TextBox21" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                            <TextBox x:Name="TextBox30D" Text="TextBox30" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="3" Background="LightSteelBlue">
+                            <TextBox x:Name="TextBox31D" Text="TextBox31" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                            <TextBox x:Name="TextBox40D" Text="TextBox40" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border BorderThickness="3" BorderBrush="Tomato" Width="300" Height="100" Margin="3" Background="LightSteelBlue">
+                            <TextBox x:Name="TextBox41D" Text="TextBox41" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <ScrollViewer x:Name="innerScrollViewer2" Width="400" Height="300" Background="AliceBlue"
+                        HorizontalAlignment="Left" VerticalAlignment="Top" ZoomMode="Enabled">
+                        <Border x:Name="border4" BorderThickness="3" BorderBrush="Chartreuse" Margin="15" Background="Beige">
+                            <controls:ItemsRepeater x:Name="repeater4" Margin="30">
+                                <controls:ItemsRepeater.Layout>
+                                    <controls:UniformGridLayout MinItemWidth="125" MinItemHeight="125" MinRowSpacing="10" MinColumnSpacing="10"/>
+                                </controls:ItemsRepeater.Layout>
+                            </controls:ItemsRepeater>
+                        </Border>
+                    </ScrollViewer>
+                    <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                        <TextBox x:Name="TextBox100D" Text="TextBox100" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                        <TextBox x:Name="TextBox110D" Text="TextBox110" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                        <TextBox x:Name="TextBox120D" Text="TextBox120" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                        <TextBox x:Name="TextBox130D" Text="TextBox130" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <Border BorderThickness="3" BorderBrush="LawnGreen" Width="300" Height="100" Margin="3" Background="LightGreen">
+                        <TextBox x:Name="TextBox140D" Text="TextBox140" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
         </StackPanel>
 
         <Grid Grid.Column="1" Margin="1">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -322,9 +518,10 @@
             </StackPanel>
 
             <CheckBox x:Name="chkCancelOperationInBringingIntoView" Content="Cancel Operation in BringingIntoView?" Grid.Row="10" Grid.ColumnSpan="2"/>
+            <CheckBox x:Name="chkIgnoreSnapPoints" Content="Ignore Snap Points?" IsChecked="True" Grid.Row="11" Grid.ColumnSpan="2"/>
 
             <Button x:Name="btnStartBringIntoView" Content="StartBringIntoView" Margin="1,4,1,1" 
-                Grid.Row="11" Grid.ColumnSpan="2" Click="BtnStartBringIntoView_Click" HorizontalAlignment="Stretch"/>
+                Grid.Row="12" Grid.ColumnSpan="2" Click="BtnStartBringIntoView_Click" HorizontalAlignment="Stretch"/>
         </Grid>
 
         <Grid Grid.Column="2" Margin="1" Background="LightYellow">

@@ -270,12 +270,13 @@ private:
     winrt::float2 ComputeCenterPointerForMouseWheelZooming(const winrt::UIElement& content, const winrt::Point& pointerPosition) const;
     void ComputeBringIntoViewTargetOffsets(
         const winrt::UIElement& content,
+        const winrt::SnapPointsMode& snapPointsMode,
         const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
         _Out_ double* targetZoomedHorizontalOffset,
         _Out_ double* targetZoomedVerticalOffset,
         _Out_ double* appliedOffsetX,
         _Out_ double* appliedOffsetY,
-        _Out_ winrt::Rect* targetRect) const;
+        _Out_ winrt::Rect* targetRect);
 
     void EnsureExpressionAnimationSources();
     void EnsureInteractionTracker();
@@ -550,7 +551,8 @@ private:
         double targetZoomedHorizontalOffset,
         double targetZoomedVerticalOffset,
         const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
-        int32_t offsetsChangeId);
+        int32_t offsetsChangeId,
+        _Inout_ winrt::SnapPointsMode* snapPointsMode);
 
     // Event handlers
     void OnCompositionTargetRendering(
