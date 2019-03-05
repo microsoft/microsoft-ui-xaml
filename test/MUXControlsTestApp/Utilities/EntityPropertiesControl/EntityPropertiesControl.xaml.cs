@@ -421,14 +421,10 @@ namespace MUXControlsTestApp.Utilities
             comboBox.HorizontalAlignment = HorizontalAlignment.Stretch;
             comboBox.Margin = new Thickness(1);
             comboBox.Items.Add("Null");
-
-
-            
             foreach (PropertyInfo colorPropertyInfo in typeof(Colors).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
             {
                 comboBox.Items.Add(colorPropertyInfo.Name);
             }
-
             SolidColorBrush currentBrush = propertyInfo.GetValue(_entity) as SolidColorBrush;
             if (currentBrush != null)
             {
@@ -505,12 +501,10 @@ namespace MUXControlsTestApp.Utilities
             {
                 comboBox.Items.Add("Null");
             }
-
             foreach (FieldInfo fieldInfo in type.GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 comboBox.Items.Add(fieldInfo.Name);
             }
-
             comboBox.IsEnabled = propertyInfo.CanWrite && propertyInfo.SetMethod.IsPublic;
             binding.Source = _entity;
             binding.Path = new PropertyPath(propertyInfo.Name);
