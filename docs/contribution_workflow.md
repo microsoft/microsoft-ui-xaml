@@ -78,7 +78,7 @@ individually from the pipeline definition page.
 
 In order to have your change automatically merge once all checks have passed (including optional 
 checks), apply the [auto merge](https://github.com/Microsoft/microsoft-ui-xaml/labels/auto%20merge) 
-label.
+label. It will take effect after an 8 hour delay, [more info here](https://microsoft.sharepoint.com/teams/FabricBot/SitePages/AutoMerge,-Bot-Templates-and.aspx).
 
 #### [WinUI-Public-Tests](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=22)
 
