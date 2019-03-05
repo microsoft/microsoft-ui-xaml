@@ -115,7 +115,7 @@ namespace MUXControls.TestAppUtils
                         }
                         catch (Exception)
                         {
-                            value = "Exception";
+                            value = "Exception when read " + property.Name;
                         }
                         visitor.VisitProperty(property.Name, value);
                     }

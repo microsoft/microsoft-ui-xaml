@@ -214,18 +214,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {"TransformMatrix","{ {M11:1 M12:0 M13:0 M14:0} {M21:0 M22:1 M23:0 M24:0} {M31:0 M32:0 M33:1 M34:0} {M41:0 M42:0 M43:0 M44:1} }"},
             };
 
-            public virtual bool ShouldLogPropertyValuePair(string propertyName, string value)
+            public bool ShouldLogPropertyValuePair(string propertyName, string value)
             {
                 string v = _knownPropertyValueDict.ContainsKey(propertyName) ? _knownPropertyValueDict[propertyName] : VisualTreeDumper.ValueNULL;
-                return !(v.Equals(value) || "Exception".Equals(value));
+                return !(v.Equals(value) || (string.IsNullOrEmpty(value ) && value.StartsWith("Exception")));
             }
 
-            public virtual bool ShouldLogElement(string elementName)
+            public bool ShouldLogElement(string elementName)
             {
                 return true;
             }
 
-            public virtual bool ShouldLogProperty(string propertyName)
+            public bool ShouldLogProperty(string propertyName)
             {
                 return (_propertyNamePostfixBlackList.Where(item => propertyName.EndsWith(item)).Count()) == 0 &&
                     !_propertyNameBlackList.Contains(propertyName);
