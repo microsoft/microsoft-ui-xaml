@@ -89,11 +89,9 @@ jobs:
       solutionPath: $(solutionPath)
       nugetConfigPath: $(nugetConfigPath)
       
-- job: RunTests
+- job: RunNuGetTests
   dependsOn:
   - BuildNugetTests
-  condition:
-    in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
