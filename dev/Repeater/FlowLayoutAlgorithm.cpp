@@ -276,6 +276,11 @@ void FlowLayoutAlgorithm::Generate(
 
         int previousIndex = anchorIndex;
         int currentIndex = anchorIndex + step;
+        auto anchorBounds = m_elementManager.GetLayoutBoundsForDataIndex(anchorIndex);
+        float lineOffset = anchorBounds.*MajorStart();
+        float lineMajorSize = anchorBounds.*MajorSize();
+        int countInLine = 1;
+        bool lineNeedsReposition = false;
 
         while (m_elementManager.IsIndexValidInData(currentIndex) &&
             ShouldContinueFillingUpSpace(previousIndex, direction))
@@ -288,10 +293,7 @@ void FlowLayoutAlgorithm::Generate(
             // Lay it out.
             auto previousElement = m_elementManager.GetRealizedElement(previousIndex);
             winrt::Rect currentBounds = winrt::Rect{ 0, 0, desiredSize.Width, desiredSize.Height };
-
-            // TODO: Support varying MajorSize items
             auto previousElementBounds = m_elementManager.GetLayoutBoundsForDataIndex(previousIndex);
-            auto previousLineMajorSize = previousElementBounds.*MajorSize();
 
             if (direction == GenerateDirection::Forward)
             {
@@ -300,13 +302,34 @@ void FlowLayoutAlgorithm::Generate(
                 {
                     // No more space in this row. wrap to next row.
                     currentBounds.*MinorStart() = 0;
-                    currentBounds.*MajorStart() = previousElementBounds.*MajorStart() + previousLineMajorSize + static_cast<float>(lineSpacing);
+                    currentBounds.*MajorStart() = previousElementBounds.*MajorStart() + lineMajorSize + static_cast<float>(lineSpacing);
+
+                    if (lineNeedsReposition)
+                    {
+                        // reposition the previous line (countInLine items)
+                        for (int i = 0; i < countInLine; i++)
+                        {
+                            auto dataIndex = currentIndex - 1 - i;
+                            auto bounds = m_elementManager.GetLayoutBoundsForDataIndex(dataIndex);
+                            bounds.*MajorSize() = lineMajorSize;
+                            m_elementManager.SetLayoutBoundsForDataIndex(dataIndex, bounds);
+                        }
+                    }
+
+                    // Setup for next line.
+                    lineMajorSize = currentBounds.*MajorSize();
+                    lineOffset = currentBounds.*MajorStart();
+                    lineNeedsReposition = false;
+                    countInLine = 1;
                 }
                 else
                 {
                     // More space is available in this row.
                     currentBounds.*MinorStart() = previousElementBounds.*MinorStart() + previousElementBounds.*MinorSize() + static_cast<float>(minItemSpacing);
-                    currentBounds.*MajorStart() = previousElementBounds.*MajorStart();
+                    currentBounds.*MajorStart() = lineOffset;
+                    lineMajorSize = std::max(lineMajorSize, currentBounds.*MajorSize());
+                    lineNeedsReposition = previousElementBounds.*MajorSize() != currentBounds.*MajorSize();
+                    countInLine++;
                 }
             }
             else
@@ -317,17 +340,44 @@ void FlowLayoutAlgorithm::Generate(
                 {
                     // Does not fit, wrap to the previous row
                     const auto availableSizeMinor = availableSize.*Minor();
-                    currentBounds.*MinorStart() =
-                        std::isfinite(availableSizeMinor) ?
-                        availableSizeMinor - desiredSize.*Minor() :
-                        0.0f;
-                    currentBounds.*MajorStart() = previousElementBounds.*MajorStart() - desiredSize.*Major() - static_cast<float>(lineSpacing);
+                    currentBounds.*MinorStart() = std::isfinite(availableSizeMinor) ? availableSizeMinor - desiredSize.*Minor() : 0.0f;
+                    currentBounds.*MajorStart() = lineOffset - desiredSize.*Major() - static_cast<float>(lineSpacing);
+
+                    if (lineNeedsReposition)
+                    {
+                        auto previousLineOffset = m_elementManager.GetLayoutBoundsForDataIndex(currentIndex + countInLine + 1).*MajorStart();
+                        // reposition the previous line (countInLine items)
+                        for (int i = 0; i < countInLine; i++)
+                        {
+                            auto dataIndex = currentIndex + 1 + i;
+                            if (dataIndex != anchorIndex)
+                            {
+                                auto bounds = m_elementManager.GetLayoutBoundsForDataIndex(dataIndex);
+                                bounds.*MajorStart() = previousLineOffset - lineMajorSize - static_cast<float>(lineSpacing);
+                                bounds.*MajorSize() = lineMajorSize;
+                                m_elementManager.SetLayoutBoundsForDataIndex(dataIndex, bounds);
+                                REPEATER_TRACE_INFO(L"%ls: \t Corrected Layout bounds of element %d are (%.0f,%.0f,%.0f,%.0f). \n",
+                                    layoutId.data(),
+                                    dataIndex,
+                                    bounds.X, bounds.Y, bounds.Width, bounds.Height);
+                            }
+                        }
+                    }
+
+                    // Setup for next line.
+                    lineMajorSize = currentBounds.*MajorSize();
+                    lineOffset = currentBounds.*MajorStart();
+                    lineNeedsReposition = false;
+                    countInLine = 1;
                 }
                 else
                 {
                     // Fits in this row. put it in the previous position
                     currentBounds.*MinorStart() = previousElementBounds.*MinorStart() - desiredSize.*Minor() - static_cast<float>(minItemSpacing);
-                    currentBounds.*MajorStart() = previousElementBounds.*MajorStart();
+                    currentBounds.*MajorStart() = lineOffset;
+                    lineMajorSize = std::max(lineMajorSize, currentBounds.*MajorSize());
+                    lineNeedsReposition = previousElementBounds.*MajorSize() != currentBounds.*MajorSize();
+                    countInLine++;
                 }
             }
 

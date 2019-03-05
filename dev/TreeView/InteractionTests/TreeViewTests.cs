@@ -876,6 +876,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
+        public void TreeViewDensityChange()
+        {
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                UIObject root = LabelFirstItem();
+                int height = root.BoundingRectangle.Height;
+                Verify.AreEqual(height, 32);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TreeViewTestSuite", "A")]
         public void TreeViewDragAndDropBetweenNodes_ContentMode()
         {
             TreeViewDragAndDropBetweenNodes(isContentMode:true);

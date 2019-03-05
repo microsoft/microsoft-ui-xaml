@@ -915,6 +915,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "B")]
+        public void NavigationViewDensityChange()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                int height = FindElement.ById("AppsItem").BoundingRectangle.Height;
+                Verify.AreEqual(height, 40);
+            }
+        }
+
         //[TestMethod]
         [TestProperty("NavViewTestSuite", "B")]
         // Disabled due to: Bug 18650478: Test instability: NavigationViewTests.TitleBarTest
