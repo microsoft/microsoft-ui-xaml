@@ -1455,10 +1455,8 @@ void Scroller::ComputeBringIntoViewTargetOffsets(
     const double scrollableWidth = ScrollableWidth();
     const double scrollableHeight = ScrollableHeight();
 
-    targetZoomedHorizontalOffsetTmp = std::max(0.0, targetZoomedHorizontalOffsetTmp);
-    targetZoomedVerticalOffsetTmp = std::max(0.0, targetZoomedVerticalOffsetTmp);
-    targetZoomedHorizontalOffsetTmp = std::min(scrollableWidth, targetZoomedHorizontalOffsetTmp);
-    targetZoomedVerticalOffsetTmp = std::min(scrollableHeight, targetZoomedVerticalOffsetTmp);
+    targetZoomedHorizontalOffsetTmp = std::clamp(targetZoomedHorizontalOffsetTmp, 0.0, scrollableWidth);
+    targetZoomedVerticalOffsetTmp = std::clamp(targetZoomedVerticalOffsetTmp, 0.0, scrollableHeight);
 
     const double offsetX = requestEventArgs.HorizontalOffset();
     const double offsetY = requestEventArgs.VerticalOffset();
@@ -1510,10 +1508,8 @@ void Scroller::ComputeBringIntoViewTargetOffsets(
         targetZoomedHorizontalOffsetTmp = ComputeValueAfterSnapPoints(targetZoomedHorizontalOffsetTmp, m_sortedConsolidatedVerticalSnapPoints);
 
         // Make sure the target offsets are within the scrollable boundaries
-        targetZoomedHorizontalOffsetTmp = std::max(0.0, targetZoomedHorizontalOffsetTmp);
-        targetZoomedVerticalOffsetTmp = std::max(0.0, targetZoomedVerticalOffsetTmp);
-        targetZoomedHorizontalOffsetTmp = std::min(scrollableWidth, targetZoomedHorizontalOffsetTmp);
-        targetZoomedVerticalOffsetTmp = std::min(scrollableHeight, targetZoomedVerticalOffsetTmp);
+        targetZoomedHorizontalOffsetTmp = std::clamp(targetZoomedHorizontalOffsetTmp, 0.0, scrollableWidth);
+        targetZoomedVerticalOffsetTmp = std::clamp(targetZoomedVerticalOffsetTmp, 0.0, scrollableHeight);
 
         MUX_ASSERT(targetZoomedHorizontalOffsetTmp >= 0.0);
         MUX_ASSERT(targetZoomedVerticalOffsetTmp >= 0.0);
