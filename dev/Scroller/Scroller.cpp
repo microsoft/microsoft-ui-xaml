@@ -1771,8 +1771,10 @@ void Scroller::SetupSnapPoints(
     MUX_ASSERT(!(scrollSnapPointsSet && zoomSnapPointsSet));
 
 #pragma warning(push)
-#pragma warning(disable: 6011) //
-#pragma warning(disable: 6387) // 
+#pragma warning(disable: 6011) // Avoid warning C6011 - either scrollSnapPointsSet or zoomSnapPointsSet
+                               // is a non-null set.
+#pragma warning(disable: 6387) // Avoid warning C6387 - all calls to FixScrollSnapPointRanges and
+                               // FixZoomSnapPointRanges are made with a non-null snap points set.
 
     if (scrollSnapPointsSet)
     {
@@ -4583,7 +4585,8 @@ void Scroller::SnapPointsVectorChangedHelper(
     MUX_ASSERT(!(scrollSnapPoints && zoomSnapPoints));
 
 #pragma warning(push)
-#pragma warning(disable: 6387)
+#pragma warning(disable: 6387) // Avoid warning C6387 - all calls to ScrollSnapPointsVectorItemInsertedHelper and
+                               // ZoomSnapPointsVectorItemInsertedHelper are made with a non-null snap points set.
 
     switch (args.CollectionChange())
     {
@@ -6482,7 +6485,7 @@ void Scroller::UnhookSnapPointsVectorChangedEvents()
 
     if (m_zoomSnapPointsVectorChangedToken.value != 0)
     {
-        auto observableVector = HorizontalSnapPoints().try_as<winrt::IObservableVector<winrt::ZoomSnapPointBase>>();
+        auto observableVector = ZoomSnapPoints().try_as<winrt::IObservableVector<winrt::ZoomSnapPointBase>>();
         observableVector.VectorChanged(m_zoomSnapPointsVectorChangedToken);
         m_zoomSnapPointsVectorChangedToken.value = 0;
     }

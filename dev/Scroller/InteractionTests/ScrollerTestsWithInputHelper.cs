@@ -1152,6 +1152,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.IsTrue(PanUntilInputWorks(elements.scrollerOffset, elements.scrollerUIObject), "Pan inputs are moving the scroller!");
 
+                elements.txtMISnapPointValueUIObject.SetValue("0");
+                elements.btnAddMISnapPointUIObject.Invoke();
                 elements.txtMISnapPointValueUIObject.SetValue("600");
                 elements.btnAddMISnapPointUIObject.Invoke();
                 elements.txtMISnapPointValueUIObject.SetValue("1200");
@@ -1160,11 +1162,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(elements.scrollerUIObject);
 
                 warningCount = 0;
-                InputHelper.Pan(elements.scrollerUIObject, 25, Direction.North);
+                InputHelper.Pan(elements.scrollerUIObject, 75, Direction.North);
                 warningCount += WaitForOffsetUpdated(elements.scrollerOffset, 600.0, double.PositiveInfinity, 1200.0, 1200.0);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
-
-                InputHelper.Pan(elements.scrollerUIObject, 75, Direction.North);
+                InputHelper.Pan(elements.scrollerUIObject, 95, Direction.North);
                 warningCount += WaitForOffsetUpdated(elements.scrollerOffset, 600.0, double.PositiveInfinity, 1200.0, 1200.0);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
@@ -2997,6 +2998,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private SnapPointsTestPageElements GatherSnapPointsTestPageElements()
         {
+            Log.Comment("GatherSnapPointsTestPageElements - entry");
             var elements = new SnapPointsTestPageElements();
             
             elements.btnAddMISnapPointUIObject = new Button(FindElement.ByName("btnMIAddSnapPoint"));
@@ -3032,6 +3034,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             elements.scrollerOffset.SetValue("0");
 
+            Log.Comment("GatherSnapPointsTestPageElements - exit");
             return elements;
         }
 

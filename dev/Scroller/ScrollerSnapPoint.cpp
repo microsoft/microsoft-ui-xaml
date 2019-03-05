@@ -709,33 +709,24 @@ double ZoomSnapPoint::Value()
     return m_specifiedValue;
 }
 
-// TODO - for zoom snap points scale == L"1.0". So simplify code.
+// For zoom snap points scale == L"1.0".
 winrt::ExpressionAnimation ZoomSnapPoint::CreateRestingPointExpression(
     winrt::Compositor compositor, winrt::hstring, winrt::hstring scale)
 {
-    winrt::hstring expression = StringUtil::FormatString(L"snapPointValue * %1!s!", scale.data());
-    winrt::ExpressionAnimation restingPointExpressionAnimation = compositor.CreateExpressionAnimation(expression);
+    winrt::ExpressionAnimation restingPointExpressionAnimation = compositor.CreateExpressionAnimation(L"snapPointValue");
 
     restingPointExpressionAnimation.SetScalarParameter(L"snapPointValue", static_cast<float>(m_actualValue));
     return restingPointExpressionAnimation;
 }
 
-// TODO - zoom snap points scale == L"1.0". So simplify code.
+// For zoom snap points scale == L"1.0".
 winrt::ExpressionAnimation ZoomSnapPoint::CreateConditionalExpression(
     winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale)
 {
     winrt::hstring targetExpression = GetTargetExpression(target);
-    winrt::hstring scaledMinApplicableRange = StringUtil::FormatString(
-        L"(minApplicableValue * %1!s!)",
-        scale.data());
-    winrt::hstring scaledMaxApplicableRange = StringUtil::FormatString(
-        L"(maxApplicableValue * %1!s!)",
-        scale.data());
     winrt::hstring expression = StringUtil::FormatString(
-        L"%1!s! >= %2!s! && %1!s! <= %3!s!",
-        targetExpression.data(),
-        scaledMinApplicableRange.data(),
-        scaledMaxApplicableRange.data());
+        L"%1!s! >= minApplicableValue && %1!s! <= maxApplicableValue",
+        targetExpression.data());
     winrt::ExpressionAnimation conditionExpressionAnimation = compositor.CreateExpressionAnimation(expression);
 
     conditionExpressionAnimation.SetScalarParameter(L"minApplicableValue", static_cast<float>(std::get<0>(m_actualApplicableZone)));
@@ -965,40 +956,28 @@ double RepeatedZoomSnapPoint::End()
     return m_specifiedEnd;
 }
 
-// TODO - for zoom snap points scale == L"1.0". So simplify code.
+// For zoom snap points scale == L"1.0".
 winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateRestingPointExpression(winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale)
 {
     /*
-    ((Abs(target -                                         //The absolute value of the natural resting point minus
-    ((Floor((target - scaledFirst) / scaledInterval)       //How many intervals the natural resting point has passed
-     * scaledInterval) + scaledFirst)                      //The location of the regular snap point just before the natural resting point
-    ) >= Abs(target -                                      //If it's greater than the absolute value of the natural resting point minus
-    ((Ceil((target - scaledFirst) / scaledInterval)
-     * scaledInterval) + scaledFirst)                      //The location of the regular snap point just after the natural resting point
-    )) && (((Ceil((target - scaledFirst) / scaledInterval)
-     * scaledInterval) + scaledFirst) <= scaledEnd)        //And the location of the regular snap point just after the natural resting point is before the end value
-    ) ? ((Ceil((target - scaledFirst) / scaledInterval)    //Then return the location of the regular snap point just after the natural resting point
-     * scaledInterval) + scaledFirst)
-     : ((Floor((target - scaledFirst) / scaledInterval)    //Otherwise return the location of the regular snap point just before the natural resting point
-     * scaledInterval) + scaledFirst)
+    ((Abs(target -                             //The absolute value of the natural resting point minus
+    ((Floor((target - first) / interval)       //How many intervals the natural resting point has passed
+     * interval) + first)                      //The location of the regular snap point just before the natural resting point
+    ) >= Abs(target -                          //If it's greater than the absolute value of the natural resting point minus
+    ((Ceil((target - first) / interval)
+     * interval) + first)                      //The location of the regular snap point just after the natural resting point
+    )) && (((Ceil((target - first) / interval)
+     * interval) + first) <= end)              //And the location of the regular snap point just after the natural resting point is before the end value
+    ) ? ((Ceil((target - first) / interval)    //Then return the location of the regular snap point just after the natural resting point
+     * interval) + first)
+     : ((Floor((target - first) / interval)    //Otherwise return the location of the regular snap point just before the natural resting point
+     * interval) + first)
     */
 
     winrt::hstring targetExpression = GetTargetExpression(target);
-    winrt::hstring scaledInterval = StringUtil::FormatString(
-        L"(itv * %1!s!)",
-        scale.data());
-    winrt::hstring scaledEnd = StringUtil::FormatString(
-        L"(end * %1!s!)",
-        scale.data());
-    winrt::hstring scaledFirst = StringUtil::FormatString(
-        L"(first * %1!s!)",
-        scale.data());
     winrt::hstring expression = StringUtil::FormatString(
-        L"((Abs(%1!s! - ((Floor((%1!s! - %4!s!) / %2!s!) * %2!s!) + %4!s!)) >= Abs(%1!s! - ((Ceil((%1!s! - %4!s!) / %2!s!) * %2!s!) + %4!s!))) && (((Ceil((%1!s! - %4!s!) / %2!s!) * %2!s!) + %4!s!) <= %3!s!)) ? ((Ceil((%1!s! - %4!s!) / %2!s!) * %2!s!) + %4!s!) : ((Floor((%1!s! - %4!s!) / %2!s!) * %2!s!) + %4!s!)",
-        targetExpression.data(),
-        scaledInterval.data(),
-        scaledEnd.data(),
-        scaledFirst.data());
+        L"((Abs(%1!s! - ((Floor((%1!s! - first) / itv) * itv) +first)) >= Abs(%1!s! - ((Ceil((%1!s! - first) / itv) * itv) + first))) && (((Ceil((%1!s! - first) / itv) * itv) + first) <= end)) ? ((Ceil((%1!s! - first) / itv) * itv) + first) : ((Floor((%1!s! - first) / itv) * itv) + first)",
+        targetExpression.data());
     winrt::ExpressionAnimation restingPointExpressionAnimation = compositor.CreateExpressionAnimation(expression);
 
     restingPointExpressionAnimation.SetScalarParameter(L"itv", static_cast<float>(m_interval));
@@ -1007,46 +986,26 @@ winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateRestingPointExpression(w
     return restingPointExpressionAnimation;
 }
 
-// TODO - for zoom snap points scale == L"1.0". So simplify code.
+// For zoom snap points scale == L"1.0".
 winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateConditionalExpression(winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale)
 {
     /*
-    target >= scaledStart &&
-    target <= scaledEnd &&                                  //If we are within the start and end and...
-    (((((Floor((target - scaledFirst) / scaledInterval)     //How many intervals the natural resting point has passed
-     * scaledInterval) + scaledFirst)                       //The location of the regular snap point just before the natural resting point
-     + scaledApplicableRange) >= target) || (               //Plus the applicable range is greater than the natural resting point or...
-    ((((Ceil((target - scaledFirst) / scaledInterval)
-     * scaledInterval) + scaledFirst)                       //The location of the regular snap point just after the natural resting point
-     - scaledApplicableRange) <= target)                    //Minus the applicable range is less than the natural resting point.
-     && (((Ceil((target - scaledFirst) / scaledInterval)    //And the snap point after the natural resting point is less than or equal to the end value
-     * scaledInterval) + scaledFirst) <= scaledEnd)))
+    target >= start &&
+    target <= end &&                            //If we are within the start and end and...
+    (((((Floor((target - first) / interval)     //How many intervals the natural resting point has passed
+     * interval) + first)                       //The location of the regular snap point just before the natural resting point
+     + applicableRange) >= target) || (         //Plus the applicable range is greater than the natural resting point or...
+    ((((Ceil((target - first) / interval)
+     * interval) + first)                       //The location of the regular snap point just after the natural resting point
+     - applicableRange) <= target)              //Minus the applicable range is less than the natural resting point.
+     && (((Ceil((target - first) / interval)    //And the snap point after the natural resting point is less than or equal to the end value
+     * interval) + first) <= end)))
     */
 
     winrt::hstring targetExpression = GetTargetExpression(target);
-    winrt::hstring scaledInterval = StringUtil::FormatString(
-        L"(itv * %1!s!)",
-        scale.data());
-    winrt::hstring scaledStart = StringUtil::FormatString(
-        L"(start * %1!s!)",
-        scale.data());
-    winrt::hstring scaledEnd = StringUtil::FormatString(
-        L"(end * %1!s!)",
-        scale.data());
-    winrt::hstring scaledApplicableRange = StringUtil::FormatString(
-        L"(applicableRange * %1!s!)",
-        scale.data());
-    winrt::hstring scaledFirst = StringUtil::FormatString(
-        L"(first * %1!s!)",
-        scale.data());
     winrt::hstring expression = StringUtil::FormatString(
-        L"%1!s! >= %3!s! && %1!s! <= %4!s! && (((((Floor((%1!s! - %6!s!) / %2!s!) * %2!s!) + %6!s!) + %5!s!) >= %1!s!) || (((((Ceil((%1!s! - %6!s!) / %2!s!) * %2!s!) + %6!s!) - %5!s!) <= %1!s!) && (((Ceil((%1!s! - %6!s!) / %2!s!) * %2!s!) + %6!s!) <= %4!s!)))",
-        targetExpression.data(),
-        scaledInterval.data(),
-        scaledStart.data(),
-        scaledEnd.data(),
-        scaledApplicableRange.data(),
-        scaledFirst.data());
+        L"%1!s! >= start && %1!s! <= end && (((((Floor((%1!s! - first) / itv) * itv) + first) + applicableRange) >= %1!s!) || (((((Ceil((%1!s! - first) / itv) * itv) + first) - applicableRange) <= %1!s!) && (((Ceil((%1!s! - first) / itv) * itv) + first) <= end)))",
+        targetExpression.data());
     winrt::ExpressionAnimation conditionExpressionAnimation = compositor.CreateExpressionAnimation(expression);
 
     conditionExpressionAnimation.SetScalarParameter(L"itv", static_cast<float>(m_interval));
