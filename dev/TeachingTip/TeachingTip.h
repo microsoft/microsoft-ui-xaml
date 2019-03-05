@@ -108,10 +108,12 @@ private:
     winrt::TeachingTipPlacementMode DetermineEffectivePlacement();
     void EstablishShadows();
 
-    tracker_ref<winrt::Grid> m_root{ this };
+    tracker_ref<winrt::Border> m_container{ this };
+
     tracker_ref<winrt::Popup> m_popup{ this };
     tracker_ref<winrt::Popup> m_lightDismissIndicatorPopup{ this };
 
+    tracker_ref<winrt::Grid> m_rootGrid{ this };
     tracker_ref<winrt::Grid> m_beakOcclusionGrid{ this };
     tracker_ref<winrt::Grid> m_contentRootGrid{ this };
     tracker_ref<winrt::Grid> m_nonBleedingContentRootGrid{ this };
@@ -169,9 +171,9 @@ private:
     static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 0, 0 }; }
     static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 0, 1, 1, 0 }; }
 
-    static inline double UntargetedTipFarPlacementOffset(float windowSize, float tipParentPosition, double tipSize, double offset) { return windowSize - (tipParentPosition + tipSize + s_untargetedTipWindowEdgeMargin + offset); }
-    static inline double UntargetedTipCenterPlacementOffset(float windowSize, float tipParentPosition, double tipSize, double nearOffset, double farOffset) { return (windowSize / 2) - (tipSize / 2) - tipParentPosition + nearOffset - farOffset; }
-    static inline double UntargetedTipNearPlacementOffset(float tipParentPosition, double offset) { return s_untargetedTipWindowEdgeMargin - tipParentPosition + offset; }
+    static inline double UntargetedTipFarPlacementOffset(float windowSize, double tipSize, double offset) { return windowSize - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
+    static inline double UntargetedTipCenterPlacementOffset(float windowSize, double tipSize, double nearOffset, double farOffset) { return (windowSize / 2) - (tipSize / 2) + nearOffset - farOffset; }
+    static inline double UntargetedTipNearPlacementOffset(double offset) { return s_untargetedTipWindowEdgeMargin + offset; }
 
     static constexpr winrt::TimeSpan s_expandAnimationDuration{ 300ms };
     static constexpr winrt::TimeSpan s_contractAnimationDuration{ 200ms };
@@ -179,7 +181,8 @@ private:
     static constexpr wstring_view s_scaleTargetName{ L"Scale"sv };
     static constexpr wstring_view s_translationTargetName{ L"Translation"sv };
 
-    static constexpr wstring_view s_rootName{ L"Root"sv };  
+    static constexpr wstring_view s_containerName{ L"Container"sv };
+    static constexpr wstring_view s_rootName{ L"Root"sv };
     static constexpr wstring_view s_popupName{ L"Popup"sv };
     static constexpr wstring_view s_beakOcclusionGridName{ L"BeakOcclusionGrid"sv };
     static constexpr wstring_view s_contentRootGridName{ L"ContentRootGrid"sv };
