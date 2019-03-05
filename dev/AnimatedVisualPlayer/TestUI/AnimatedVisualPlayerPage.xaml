@@ -92,7 +92,7 @@
                 <lotties:LottieLogo/>
                 <controls:AnimatedVisualPlayer.FallbackContent>
                     <DataTemplate>
-                        <Rectangle Width="100" Height="100" Fill="Red"/>
+                        <local:FallbackGrid/>
                     </DataTemplate>
                 </controls:AnimatedVisualPlayer.FallbackContent>
             </controls:AnimatedVisualPlayer>

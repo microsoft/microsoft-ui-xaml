@@ -13,6 +13,7 @@ using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Hosting;
+using Windows.UI.Xaml.Media;
 
 
 #if !BUILD_WINDOWS
@@ -20,6 +21,24 @@ using Windows.UI.Xaml.Hosting;
 
 namespace MUXControlsTestApp
 {
+    public class FallbackGrid : Windows.UI.Xaml.Controls.Grid
+    {
+        public FallbackGrid()
+        {
+            isInstantiated = true;
+
+            Windows.UI.Xaml.Shapes.Rectangle rect = new Windows.UI.Xaml.Shapes.Rectangle();
+            rect.MinWidth = 100;
+            rect.MinHeight = 100;
+            rect.MaxWidth = 100;
+            rect.MaxHeight = 100;
+            rect.Fill = new SolidColorBrush(Colors.Red);
+            Children.Add(rect);
+        }
+
+        static public bool isInstantiated = false;
+    }
+
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
@@ -182,7 +201,14 @@ namespace MUXControlsTestApp
             }
             else
             {
-                FallenBackTextBox.Text = Constants.TrueText;
+                if (FallbackGrid.isInstantiated == true)
+                {
+                    FallenBackTextBox.Text = Constants.TrueText;
+                }
+                else
+                {
+                    FallenBackTextBox.Text = Constants.FalseText;
+                }
             }
         }
 
