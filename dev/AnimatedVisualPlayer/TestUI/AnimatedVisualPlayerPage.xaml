@@ -75,7 +75,7 @@
                 RelativePanel.Below="ReversePositivePlaybackRateAnimationTextBox"/>
             <Button x:Name="FallenBackButton"
                 AutomationProperties.Name="FallenBackButton"
-                Click="FallenBackButton_Click"
+                Click="FallenBackButton_ClickAsync"
                 RelativePanel.Below="HittestingTextBox"/>
             <TextBox x:Name="FallenBackTextBox"
                 IsEnabled="False"

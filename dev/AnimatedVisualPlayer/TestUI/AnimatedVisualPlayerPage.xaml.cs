@@ -15,17 +15,13 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Media;
 
-
-#if !BUILD_WINDOWS
-#endif
-
 namespace MUXControlsTestApp
 {
     public class FallbackGrid : Windows.UI.Xaml.Controls.Grid
     {
         public FallbackGrid()
         {
-            isInstantiated = true;
+            _fallbackGrid = this;
 
             Windows.UI.Xaml.Shapes.Rectangle rect = new Windows.UI.Xaml.Shapes.Rectangle();
             rect.MinWidth = 100;
@@ -36,7 +32,7 @@ namespace MUXControlsTestApp
             Children.Add(rect);
         }
 
-        static public bool isInstantiated = false;
+        static public FallbackGrid _fallbackGrid = null;
     }
 
     /// <summary>
@@ -44,20 +40,13 @@ namespace MUXControlsTestApp
     /// </summary>
     public sealed partial class AnimatedVisualPlayerPage : TestPage
     {
-        // Capture API objects.
-        private SizeInt32 _lastSize;
-        private GraphicsCaptureItem _item;
-        private Direct3D11CaptureFramePool _framePool;
-        private GraphicsCaptureSession _session;
-
-        // Non-API related members.
         private Visual _visual;
-        private CanvasDevice _canvasDevice;
 
         public AnimatedVisualPlayerPage()
         {
             this.InitializeComponent();
-            Setup();
+
+            _visual = ElementCompositionPreview.GetElementVisual(Player);
         }
 
         private async void PlayButton_Click(object sender, RoutedEventArgs e)
@@ -190,126 +179,16 @@ namespace MUXControlsTestApp
             Player.Resume();
         }
 
-        private void FallenBackButton_Click(Object sender, RoutedEventArgs e)
+        private async void FallenBackButton_ClickAsync(Object sender, RoutedEventArgs e)
         {
-            // Because API method GraphicsCaptureItem.CreateFromVisual is only available since RS5.
-            // We only test FallenBackContent RS5 onward for simplicity.
+            // VisualCapture helper functionality is only available since RS5. Because API
+            // method GraphicsCaptureItem.CreateFromVisual is a RS5 feature.
             if (IsRS5OrHigher())
             {
                 Player.Source = new AnimatedVisuals.nullsource();
-                StartCapture();
-            }
-            else
-            {
-                if (FallbackGrid.isInstantiated == true)
-                {
-                    FallenBackTextBox.Text = Constants.TrueText;
-                }
-                else
-                {
-                    FallenBackTextBox.Text = Constants.FalseText;
-                }
-            }
-        }
-
-        private bool IsRS5OrHigher()
-        {
-            return ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 7);
-        }
-
-        private void Setup()
-        {
-            _canvasDevice = new CanvasDevice();
-            _visual = ElementCompositionPreview.GetElementVisual(Player);
-        }
-
-        public void StartCapture()
-        {
-            // GraphicsCaptureItem is RS4(1803) API. CreateFromVisual is RS5(1809) API method.
-            var item = GraphicsCaptureItem.CreateFromVisual(_visual);
-            if (item != null)
-            {
-                StartCaptureInternal(item);
-            }
-        }
-
-        private void StartCaptureInternal(GraphicsCaptureItem item)
-        {
-            // Stop the previous capture if we had one.
-            StopCapture();
-
-            _item = item;
-            _lastSize = _item.Size;
-
-            _framePool = Direct3D11CaptureFramePool.Create(
-               _canvasDevice, // D3D device 
-               DirectXPixelFormat.B8G8R8A8UIntNormalized, // Pixel format 
-               2, // Number of frames 
-               _item.Size); // Size of the buffers 
-
-            _framePool.FrameArrived += (s, a) =>
-            {
-                // The FrameArrived event is raised for every frame on the thread
-                // that created the Direct3D11CaptureFramePool. This means we 
-                // don't have to do a null-check here, as we know we're the only 
-                // one dequeueing frames in our application.  
-
-                // NOTE: Disposing the frame retires it and returns  
-                // the buffer to the pool.
-
-                using (var frame = _framePool.TryGetNextFrame())
-                {
-                    ProcessFrame(frame);
-                }
-            };
-
-            _item.Closed += (s, a) =>
-            {
-                StopCapture();
-            };
-
-            _session = _framePool.CreateCaptureSession(_item);
-            _session.StartCapture();
-        }
-
-        public void StopCapture()
-        {
-            _session?.Dispose();
-            _framePool?.Dispose();
-            _item = null;
-            _session = null;
-            _framePool = null;
-        }
-
-        private void ProcessFrame(Direct3D11CaptureFrame frame)
-        {
-            // Resize and device-lost leverage the same function on the
-            // Direct3D11CaptureFramePool. Refactoring it this way avoids 
-            // throwing in the catch block below (device creation could always 
-            // fail) along with ensuring that resize completes successfully and 
-            // isn’t vulnerable to device-lost.   
-            bool needsReset = false;
-            bool recreateDevice = false;
-
-            if ((frame.ContentSize.Width != _lastSize.Width) ||
-                (frame.ContentSize.Height != _lastSize.Height))
-            {
-                needsReset = true;
-                _lastSize = frame.ContentSize;
-            }
-
-            try
-            {
-                // Take the D3D11 surface and draw it into a  
-                // Composition surface.
-
-                // Convert our D3D11 surface into a Win2D object.
-                var canvasBitmap = CanvasBitmap.CreateFromDirect3D11Surface(
-                    _canvasDevice,
-                    frame.Surface);
+                CanvasBitmap canvasBitmap = await RenderVisualToBitmapAsync(_visual);
 
                 Color[] colors = canvasBitmap.GetPixelColors(0, 0, 1, 1);
-
                 if (colors.Length > 0 && colors[0].Equals(Colors.Red/*FallenBackContent Color*/))
                 {
                     FallenBackTextBox.Text = Constants.TrueText;
@@ -319,47 +198,79 @@ namespace MUXControlsTestApp
                     FallenBackTextBox.Text = Constants.FalseText;
                 }
             }
-
-            // This is the device-lost convention for Win2D.
-            catch (Exception e) when (_canvasDevice.IsDeviceLost(e.HResult))
+            else
             {
-                // We lost our graphics device. Recreate it and reset 
-                // our Direct3D11CaptureFramePool.  
-                needsReset = true;
-                recreateDevice = true;
-            }
-
-            if (needsReset)
-            {
-                ResetFramePool(frame.ContentSize, recreateDevice);
+                var parent = FallbackGrid._fallbackGrid != null ? FallbackGrid._fallbackGrid.Parent : null;
+                if (parent == Player)
+                {
+                    FallenBackTextBox.Text = Constants.TrueText;
+                }
+                else
+                {
+                    FallenBackTextBox.Text = Constants.FalseText;
+                }
             }
         }
 
-        private void ResetFramePool(SizeInt32 size, bool recreateDevice)
+        //
+        // Renders a the given <see cref="Visual"/> to a <see cref="CanvasBitmap"/>. If <paramref name="size"/> is not
+        // specified, uses the size of <paramref name="visual"/>.
+        //
+        static async Task<CanvasBitmap> RenderVisualToBitmapAsync(Visual visual, SizeInt32? size = null)
         {
-            do
-            {
-                try
-                {
-                    if (recreateDevice)
-                    {
-                        _canvasDevice = new CanvasDevice();
-                    }
+            // Get an object that enables capture from a visual.
+            var graphicsItem = GraphicsCaptureItem.CreateFromVisual(visual);
 
-                    _framePool.Recreate(
-                        _canvasDevice,
-                        DirectXPixelFormat.B8G8R8A8UIntNormalized,
-                        2,
-                        size);
-                }
-                // This is the device-lost convention for Win2D.
-                catch (Exception e) when (_canvasDevice.IsDeviceLost(e.HResult))
+            var canvasDevice = CanvasDevice.GetSharedDevice();
+
+            var tcs = new TaskCompletionSource<CanvasBitmap>();
+
+            // Create a frame pool with room for only 1 frame because we're getting a single frame, not a video.
+            const int numberOfBuffers = 1;
+            using (var framePool = Direct3D11CaptureFramePool.Create(
+                                canvasDevice,
+                                DirectXPixelFormat.B8G8R8A8UIntNormalized,
+                                numberOfBuffers,
+                                size ?? graphicsItem.Size))
+            {
+                void OnFrameArrived(Direct3D11CaptureFramePool sender, object args)
                 {
-                    _canvasDevice = null;
-                    recreateDevice = true;
+                    using (var frame = sender.TryGetNextFrame())
+                    {
+                        tcs.SetResult(frame != null
+                            ? CanvasBitmap.CreateFromDirect3D11Surface(canvasDevice, frame.Surface)
+                            : null);
+                    }
                 }
-            } while (_canvasDevice == null);
+
+                using (var session = framePool.CreateCaptureSession(graphicsItem))
+                {
+                    framePool.FrameArrived += OnFrameArrived;
+
+                    // Start capturing. The FrameArrived event will occur shortly.
+                    session.StartCapture();
+
+                    // Wait for the frame to arrive.
+                    var result = await tcs.Task;
+
+                    // !!!!!!!! NOTE !!!!!!!!
+                    // This thread is now running inside the OnFrameArrived callback method.
+
+                    // Unsubscribe now that we have captured the frame.
+                    framePool.FrameArrived -= OnFrameArrived;
+
+                    // Yield to allow the OnFrameArrived callback to unwind so that it is safe to
+                    // Dispose the session and framepool.
+                    await Task.Yield();
+                }
+            }
+
+            return await tcs.Task;
         }
 
+        private bool IsRS5OrHigher()
+        {
+            return ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 7);
+        }
     }
 }
