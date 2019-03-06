@@ -88,8 +88,13 @@ jobs:
     parameters:
       solutionPath: $(solutionPath)
       nugetConfigPath: $(nugetConfigPath)
+
+  - template: AzurePipelinesTemplates\MUX-PublishDevProject-Steps.yml
+    parameters:
+      buildOutputDir: $(Build.SourcesDirectory)\BuildOutput
+      publishDir: $(Build.SourcesDirectory)\Artifacts
       
-- job: RunNuGetTests
+- job: RunNugetTests
   dependsOn:
   - BuildNugetTests
   pool:
