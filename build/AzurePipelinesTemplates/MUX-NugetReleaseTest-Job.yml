@@ -90,9 +90,6 @@ jobs:
       nugetConfigPath: $(nugetConfigPath)
 
   - template: MUX-PublishDevProject-Steps.yml
-    parameters:
-      buildOutputDir: $(Build.SourcesDirectory)\BuildOutput
-      publishDir: $(Build.SourcesDirectory)\Artifacts
       
 - job: RunNugetTests
   dependsOn:
