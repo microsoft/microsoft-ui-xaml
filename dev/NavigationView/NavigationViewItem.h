@@ -57,6 +57,7 @@ public:
     winrt::TreeViewNode TreeNode();
 
     void ToggleIsExpanded();
+    bool HasChildren();
 
 private:
     void UpdateNavigationViewItemToolTip();
@@ -99,11 +100,10 @@ private:
     bool m_hasKeyboardFocus{ false };
     bool m_isContentChangeHandlingDelayedForTopNav{ false };
 
-    void UpdateIsExpanded(winrt::TreeViewNode node);
+    void UpdateIsExpandedForNode(winrt::TreeViewNode node);
     void UpdateSelectionIndicatorVisiblity();
     void PropagateDepth();
 
     void OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
-    bool HasChildren();
     void RaiseExpandCollapseAutomationEvent(bool isExpanded);
 };

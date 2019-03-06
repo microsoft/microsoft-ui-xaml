@@ -332,11 +332,7 @@ winrt::ExpandCollapseState NavigationViewItemAutomationPeer::ExpandCollapseState
 {
     if (auto item = Owner().try_as<winrt::NavigationViewItem>())
     {
-        bool hasChildren = (item.MenuItems().Size() > 0 ||
-            item.MenuItemsSource() ||
-            item.HasUnrealizedChildren());
-
-        if (hasChildren)
+        if (winrt::get_self<NavigationViewItem>(item)->HasChildren())
         {
             if (item.IsExpanded())
             {
@@ -367,7 +363,10 @@ void NavigationViewItemAutomationPeer::UpdateIsExpandedTo(bool isExpanded)
     {
         if (auto navigationView = GetParentNavigationView())
         {
-            winrt::get_self<NavigationView>(navigationView)->UpdateNavigationViewItemExpandedProperty(item, isExpanded);
+            if (item.IsExpanded() != isExpanded)
+            {
+                winrt::get_self<NavigationView>(navigationView)->ToggleIsExpandedFromContainer(item);
+            }
         }
     }
 }

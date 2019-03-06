@@ -176,7 +176,7 @@ void NavigationViewItem::OnPropertyChanged(const winrt::DependencyPropertyChange
     {
         if (property == s_IsExpandedProperty)
         {
-            UpdateIsExpanded(node);
+            UpdateIsExpandedForNode(node);
             UpdateSelectionIndicatorVisiblity();
         }
         else if (property == s_MenuItemsSourceProperty)
@@ -420,7 +420,7 @@ void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
     }
 }
 
-void NavigationViewItem::UpdateIsExpanded(winrt::TreeViewNode node)
+void NavigationViewItem::UpdateIsExpandedForNode(winrt::TreeViewNode node)
 {
     if (node.IsExpanded() != IsExpanded())
     {

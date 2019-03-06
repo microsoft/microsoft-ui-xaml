@@ -86,8 +86,8 @@ public:
     void RaiseIsExpanding(winrt::NavigationViewItemBase const& item);
     void RaiseCollapsed(winrt::NavigationViewItemBase const& item);
 
-    void UpdateNavigationViewItemExpandedProperty(winrt::NavigationViewItem const& item, bool isExpanded);
     winrt::NavigationViewItem GetLastExpandedItem();
+    void ToggleIsExpandedFromContainer(winrt::NavigationViewItem const& container);
 
 private:
     bool ShouldIgnoreMeasureOverride();
@@ -276,7 +276,6 @@ private:
 
     void SyncRootNodesWithItemsSource(winrt::IInspectable const& items);
     void ToggleIsExpandedFromItem(const winrt::IInspectable& item);
-    void ToggleIsExpandedFromContainer(winrt::NavigationViewItem const& container);
     void UpdateIsChildSelected(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
 
     winrt::NavigationViewList GetActiveListView();

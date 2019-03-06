@@ -1252,21 +1252,6 @@ void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextI
     m_selectionChangedEventSource(*this, *eventArgs);
 }
 
-void NavigationView::UpdateNavigationViewItemExpandedProperty(winrt::NavigationViewItem const& item, bool isExpanded)
-{
-    if (isExpanded)
-    {
-        RaiseIsExpanding(item);
-    }
-
-    item.IsExpanded(isExpanded);
-
-    if (!isExpanded)
-    {
-        RaiseCollapsed(item);
-    }
-}
-
 void NavigationView::ToggleIsExpandedFromItem(const winrt::IInspectable& item)
 {
     auto container = NavigationViewItemOrSettingsContentFromData(item);
