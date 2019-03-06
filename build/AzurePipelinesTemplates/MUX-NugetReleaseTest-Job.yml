@@ -135,7 +135,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\PrepareHelixPayload.ps1
-      arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
+      arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)' -ReleaseTests
 
   - task: DotNetCoreCLI@2
     displayName: 'Run tests in Helix'

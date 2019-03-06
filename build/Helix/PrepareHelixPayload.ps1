@@ -1,7 +1,8 @@
 [CmdLetBinding()]
 Param(
     [string]$Platform,
-    [string]$Configuration
+    [string]$Configuration,
+    [switch]$ReleaseTests
 )
 
 $payloadDir = "HelixPayload\$Configuration\$Platform"
@@ -27,31 +28,35 @@ Copy-Item "$nugetPackagesDir\runtime.win-$Platform.microsoft.netcore.app.2.1.0\r
 Copy-Item "$nugetPackagesDir\runtime.win-$Platform.microsoft.netcore.app.2.1.0\runtimes\win-$Platform\native\*" "$payloadDir\.NETCoreApp2.1\"
 Copy-Item "$nugetPackagesDir\MUXCustomBuildTasks.1.0.38\tools\$platform\WttLog.dll" $payloadDir
 
-function Copy-If-Exist
+# Copy files from the 'drop' artifact dir
+if(!$ReleaseTests)
 {
-    Param($source, $destinationDir)
+    Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\Test\MUXControls.Test.dll" $payloadDir
+    Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\*" $payloadDir
+    Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\Dependencies\$Platform\*" $payloadDir
+    Copy-Item -Force "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\*" $payloadDir
+    Copy-Item -Force "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\Dependencies\$Platform\*" $payloadDir
 
-    if (Test-Path $source)
-    {
-        Copy-Item -Force $source $destinationDir
-    }
+}
+else
+{
+    Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test\*" $payloadDir
+    Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test\Dependencies\$Platform\*" $payloadDir
+    Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\*" $payloadDir
+    Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\Dependencies\$Platform\*" $payloadDir
 }
 
-# Copy files from the 'drop' artifact dir
-Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\Test\MUXControls.Test.dll" $payloadDir
-Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\*" $payloadDir
-Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\Dependencies\$Platform\*" $payloadDir
-Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\*" $payloadDir
-Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\Dependencies\$Platform\*" $payloadDir
-# NuGet tests
-Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test\*" $payloadDir
-Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test\Dependencies\$Platform\*" $payloadDir
-Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\*" $payloadDir
-Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\Dependencies\$Platform\*" $payloadDir
-
 # Copy files from the repo
-Copy-Item "build\helix\runtests.cmd" $payloadDir
 New-Item -ItemType Directory -Force -Path "$payloadDir\scripts"
 Copy-Item "build\helix\ConvertWttLogToXUnit.ps1" "$payloadDir\scripts"
 Copy-Item "build\helix\ConvertWttLogToXUnit.cs" "$payloadDir\scripts"
-Copy-Item "build\helix\InstallTestAppDependencies.ps1" "$payloadDir\scripts"
+if(!$ReleaseTests)
+{
+    Copy-Item "build\helix\runtests.cmd" $payloadDir
+    Copy-Item "build\helix\InstallTestAppDependencies.ps1" "$payloadDir\scripts"
+}
+else
+{
+    Copy-Item "build\helix\RunReleaseTests.cmd" $payloadDir
+    Copy-Item "build\helix\InstallReleaseTestAppDependencies.ps1" "$payloadDir\scripts"
+}
