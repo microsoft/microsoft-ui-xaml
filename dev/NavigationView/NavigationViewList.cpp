@@ -7,10 +7,12 @@
 #include "Utils.h"
 #include "NavigationViewList.h"
 #include "NavigationViewItem.h"
+#include "NavigationView.h"
 
 CppWinRTActivatableClassWithBasicFactory(NavigationViewList);
 
-NavigationViewList::NavigationViewList()
+NavigationViewList::NavigationViewList():
+    MultiLevelListViewBase(this, this->try_as<winrt::ListView>())
 {
 }
 
@@ -49,21 +51,39 @@ void NavigationViewList::ClearContainerForItemOverride(winrt::DependencyObject c
 {
     if (auto itemContainer = element.try_as<winrt::NavigationViewItem>())
     {
-        winrt::get_self<NavigationViewItem>(itemContainer)->ClearIsContentChangeHandlingDelayedForTopNavFlag();
+        auto itemContainerImplementation = winrt::get_self<NavigationViewItem>(itemContainer);
+        itemContainerImplementation->ClearIsContentChangeHandlingDelayedForTopNavFlag();
+        itemContainerImplementation->SetDepth(0);
     }
     __super::PrepareContainerForItemOverride(element, item);
 }
 
 void NavigationViewList::PrepareContainerForItemOverride(winrt::DependencyObject const& element, winrt::IInspectable const& item)
 {
+    auto nvNode = winrt::get_self<TreeViewNode>(NodeFromContainer(element));
     if (auto itemContainer = element.try_as<winrt::NavigationViewItemBase>())
     {
         winrt::get_self<NavigationViewItemBase>(itemContainer)->Position(m_navigationViewListPosition);
+
+        if (nvNode)
+        {
+            winrt::get_self<NavigationViewItemBase>(itemContainer)->SetDepth(nvNode->Depth());
+        }
     }
     if (auto itemContainer = element.try_as<winrt::NavigationViewItem>())
     {
         itemContainer.UseSystemFocusVisuals(m_showFocusVisual);
         winrt::get_self<NavigationViewItem>(itemContainer)->ClearIsContentChangeHandlingDelayedForTopNavFlag();
+
+        if (nvNode)
+        {
+            auto nviImpl = winrt::get_self<NavigationViewItem>(itemContainer);
+
+            bool isChildSelected = nvNode->SelectionState() == TreeNodeSelectionState::PartialSelected ? true : false;
+            nviImpl->IsChildSelected(isChildSelected);
+            nviImpl->IsExpanded(nvNode->IsExpanded());
+            nviImpl->HasUnrealizedChildren(nvNode->HasUnrealizedChildren());
+        }
     }
 
     __super::PrepareContainerForItemOverride(element, item);

@@ -236,6 +236,7 @@ namespace CustomTasks
 
             IncludedTypesMetadata["NavigationView"] = true;
             // NavigationView -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["NavigationView.AllowMultipleExpandedItemGroups"] = true;
             NeedsPropChangedCallbackMetadata["NavigationView.AlwaysShowHeader"] = true;
             NeedsPropChangedCallbackMetadata["NavigationView.AutoSuggestBox"] = true;
             NeedsPropChangedCallbackMetadata["NavigationView.CompactModeThresholdWidth"] = true;
@@ -289,14 +290,33 @@ namespace CustomTasks
 
             IncludedTypesMetadata["NavigationViewItem"] = true;
             // NavigationViewItem -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["NavigationViewItem.HasUnrealizedChildren"] = true;
             NeedsPropChangedCallbackMetadata["NavigationViewItem.Icon"] = true;
+            NeedsPropChangedCallbackMetadata["NavigationViewItem.IsChildSelected"] = true;
+            NeedsPropChangedCallbackMetadata["NavigationViewItem.IsExpanded"] = true;
+            NeedsPropChangedCallbackMetadata["NavigationViewItem.MenuItemsSource"] = true;
             // NavigationViewItem -- DefaultValueMetadata
             DefaultValueMetadata["NavigationViewItem.CompactPaneLength"] = @"48.0";
+            DefaultValueMetadata["NavigationViewItem.HasUnrealizedChildren"] = @"false";
+            DefaultValueMetadata["NavigationViewItem.IsChildSelected"] = @"false";
+            DefaultValueMetadata["NavigationViewItem.IsExpanded"] = @"false";
             DefaultValueMetadata["NavigationViewItem.SelectsOnInvoked"] = @"true";
+
+            IncludedTypesMetadata["NavigationViewItemBase"] = true;
+            // NavigationViewItemBase -- NeedsPropChangedCallbackMetadata
+            // NavigationViewItemBase -- DefaultValueMetadata
+
+            IncludedTypesMetadata["NavigationViewItemBaseTemplateSettings"] = true;
+            // NavigationViewItemBaseTemplateSettings -- NeedsPropChangedCallbackMetadata
+            // NavigationViewItemBaseTemplateSettings -- DefaultValueMetadata
 
             IncludedTypesMetadata["NavigationViewItemPresenter"] = true;
             // NavigationViewItemPresenter -- NeedsPropChangedCallbackMetadata
             // NavigationViewItemPresenter -- DefaultValueMetadata
+
+            IncludedTypesMetadata["NavigationViewItemPresenterTemplateSettings"] = true;
+            // NavigationViewItemPresenterTemplateSettings -- NeedsPropChangedCallbackMetadata
+            // NavigationViewItemPresenterTemplateSettings -- DefaultValueMetadata
 
             IncludedTypesMetadata["NavigationViewTemplateSettings"] = true;
             // NavigationViewTemplateSettings -- NeedsPropChangedCallbackMetadata

@@ -4,12 +4,22 @@
 #include "pch.h"
 #include "common.h"
 #include "NavigationViewItemPresenter.h"
+#include "NavigationViewItemPresenterTemplateSettings.h"
 #include "NavigationViewItem.h"
 #include "SharedHelpers.h"
 
+static constexpr int s_indentation = 16;
+
 NavigationViewItemPresenter::NavigationViewItemPresenter()
 {
+    SetValue(s_TemplateSettingsProperty, winrt::make<NavigationViewItemPresenterTemplateSettings>());
     SetDefaultStyleKey(this);
+}
+
+void NavigationViewItemPresenter::SetDepth(int depth)
+{
+    m_depth = depth;
+    UpdateIndentations();
 }
 
 void NavigationViewItemPresenter::OnApplyTemplate()
@@ -20,6 +30,7 @@ void NavigationViewItemPresenter::OnApplyTemplate()
     {
         navigationViewItem->UpdateVisualStateNoTransition();
     }
+    UpdateIndentations();
 }
 
 winrt::UIElement NavigationViewItemPresenter::GetSelectionIndicator()
@@ -54,4 +65,11 @@ NavigationViewItem* NavigationViewItemPresenter::GetNavigationViewItem()
         navigationViewItem = winrt::get_self<NavigationViewItem>(item);
     }
     return navigationViewItem;
+}
+
+void NavigationViewItemPresenter::UpdateIndentations()
+{
+    auto leftIndentation = s_indentation * m_depth;
+    auto thickness = winrt::ThicknessHelper::FromLengths(leftIndentation, 0, 0, 0);
+    winrt::get_self<NavigationViewItemPresenterTemplateSettings>(TemplateSettings())->Indentation(thickness);
 }

@@ -12,9 +12,14 @@ public:
     void Icon(winrt::IconElement const& value);
     winrt::IconElement Icon();
 
+    void TemplateSettings(winrt::NavigationViewItemPresenterTemplateSettings const& value);
+    winrt::NavigationViewItemPresenterTemplateSettings TemplateSettings();
+
     static winrt::DependencyProperty IconProperty() { return s_IconProperty; }
+    static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
 
     static GlobalDependencyProperty s_IconProperty;
+    static GlobalDependencyProperty s_TemplateSettingsProperty;
 
     static void EnsureProperties();
     static void ClearProperties();

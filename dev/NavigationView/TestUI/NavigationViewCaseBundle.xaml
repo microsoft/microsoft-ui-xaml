@@ -24,6 +24,8 @@
             <Button x:Name="NavigateToTopNavPage" AutomationProperties.Name="Top Nav Test" Margin="2" HorizontalAlignment="Stretch">Top Nav Test</Button>
             <Button x:Name="NavigateToAnimationPage" AutomationProperties.Name="Navigation Animation Test" Margin="2" HorizontalAlignment="Stretch">Navigation Animation Test</Button>
             <Button x:Name="NavigateToIsPaneOpenPage" AutomationProperties.Name="Navigation IsPaneOpen Test" Margin="2" HorizontalAlignment="Stretch">Navigation IsPaneOpen Test</Button>
+            <Button x:Name="NavigateToHierarchicalNavigationViewMarkupPage" AutomationProperties.Name="HierarchicalNavigationView Markup Test" Margin="2" HorizontalAlignment="Stretch">Hierarchical NavigationView Markup Test</Button>
+            <Button x:Name="NavigateToHierarchicalNavigationViewDataBindingPage" AutomationProperties.Name="HierarchicalNavigationView DataBinding Test" Margin="2" HorizontalAlignment="Stretch">Hierarchical NavigationView DataBinding Test</Button>
         </StackPanel>
     </Grid>
 </local:TestPage>

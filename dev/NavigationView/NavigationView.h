@@ -13,6 +13,8 @@ struct bringintoview_event_revoker;
 #include "TopNavigationViewDataProvider.h"
 #include "NavigationViewHelper.h"
 #include "NavigationView.properties.h"
+#include "TreeViewNode.h"
+#include "ViewModel.h"
 
 enum class TopNavigationViewLayoutState
 {
@@ -78,6 +80,13 @@ public:
     void TopNavigationViewItemContentChanged();
 
     void CoerceToGreaterThanZero(double& value);
+
+    void Expand(winrt::NavigationViewItem const& value);
+    void Collapse(winrt::NavigationViewItem const& value);
+
+    winrt::NavigationViewItem GetLastExpandedItem();
+    void RaiseIsExpanding(winrt::NavigationViewItemBase const& item);
+    void RaiseCollapsed(winrt::NavigationViewItemBase const& item);
 
 private:
     bool ShouldIgnoreMeasureOverride();
@@ -264,6 +273,14 @@ private:
     bool ShouldPreserveNavigationViewRS4Behavior();
     bool ShouldPreserveNavigationViewRS3Behavior();
 
+    void SyncRootNodesWithItemsSource(winrt::IInspectable const& items);
+    void ToggleIsExpandedFromItem(const winrt::IInspectable& item);
+    void ToggleIsExpandedFromContainer(winrt::NavigationViewItem const& container);
+    void UpdateIsChildSelected(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
+
+    winrt::NavigationViewList GetActiveListView();
+    winrt::IVector<winrt::TreeViewNode> RootNodes();
+
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };
     tracker_ref<winrt::SplitView> m_rootSplitView{ this };
@@ -336,6 +353,9 @@ private:
     bool m_initialListSizeStateSet{ false };
 
     TopNavigationViewDataProvider m_topDataProvider{ this };
+
+    tracker_ref<winrt::TreeViewNode> m_rootNode{ this };
+    weak_ref<winrt::TreeViewNode> m_previouslySelectedNode{ nullptr };
 
     bool m_appliedTemplate{ false };
 

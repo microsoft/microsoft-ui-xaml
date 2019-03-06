@@ -74,6 +74,7 @@
 #include "ScrollerTestHooksFactory.h"
 #include "NavigationViewTemplateSettings.h"
 #include "NavigationViewItemPresenter.h"
+#include "NavigationViewItemPresenterTemplateSettings.h"
 #include "LayoutPanel.h"
 
 #ifndef BUILD_WINDOWS

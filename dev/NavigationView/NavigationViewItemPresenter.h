@@ -23,8 +23,13 @@ public:
 
     winrt::UIElement GetSelectionIndicator();
 
+    void SetDepth(int depth);
 private:
     NavigationViewItem * GetNavigationViewItem();
 
     NavigationViewItemHelper<NavigationViewItemPresenter> m_helper{ this };
+
+    int m_depth{ 0 };
+
+    void UpdateIndentations();
 };

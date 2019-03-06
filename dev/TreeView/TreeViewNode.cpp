@@ -224,6 +224,11 @@ void TreeViewNode::SyncChildrenNodesWithItemsSource()
             auto node = winrt::make_self<TreeViewNode>();
             node->Content(item);
             node->IsContentMode(true);
+            // Required to create the whole tree when used in NavigationView Markup
+            if (auto nvi = item.try_as<winrt::NavigationViewItem>())
+            {
+                node->ItemsSource(nvi.MenuItems());
+            }
             children->AppendCore(*node);
         }
     }

@@ -618,15 +618,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
             {
-                Log.Comment("Verify the 1st NavItem.IsSelected=true works");
+                Log.Comment("Verify the 1st NavItem.IsSelected=true is ignored");
                 UIObject item1 = FindElement.ByName("Albums");
                 Verify.IsNotNull(item1);
-                Verify.IsTrue(Convert.ToBoolean(item1.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+                Verify.IsFalse(Convert.ToBoolean(item1.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
 
-                Log.Comment("Verify the 2nd NavItem.IsSelected=true is ignored");
+                Log.Comment("Verify the 2nd NavItem.IsSelected=true works");
                 UIObject item2 = FindElement.ByName("People");
                 Verify.IsNotNull(item2);
-                Verify.IsFalse(Convert.ToBoolean(item2.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+                Verify.IsTrue(Convert.ToBoolean(item2.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
             }
         }
 
@@ -3883,6 +3883,155 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForSeconds(1);
             Wait.ForIdle();
         }
+
+        private bool IsLowerThanRS5()
+        {
+            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
+            {
+                return false;
+            }
+
+            Log.Warning("Binding for Hierarchical Nav only works for RS5 and up");
+            return true;
+        }
+
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "D")]
+        public void ImplicityDeselectHiddenChildMenuItemTest()
+        {
+            var testScenarios = RegressionTestScenario.BuildHNavRegressionTestScenarios();
+            if (IsLowerThanRS5())
+            {
+                testScenarios = RegressionTestScenario.BuildHNavMarkupRegressionTestScenarios();
+            }
+
+            foreach (var testScenario in testScenarios)
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
+                {
+                    ExpandFirstMenuItemBranch();
+
+                    Log.Comment("Select Menu Item 3");
+
+                    UIObject menuItem3 = FindElement.ByName("Menu Item 3");
+                    Verify.IsNotNull(menuItem3);
+                    InputHelper.LeftClick(menuItem3);
+                    Wait.ForIdle();
+
+                    CollapseFirstMenuItemBranch();
+                    Verify.AreEqual(GetSelectedItemName(), "Menu Item 3");
+
+                    Log.Comment("Select Menu Item 9");
+
+                    UIObject menuItem9 = FindElement.ByName("Menu Item 9");
+                    Verify.IsNotNull(menuItem9);
+                    InputHelper.LeftClick(menuItem9);
+                    Wait.ForIdle();
+                    Verify.AreEqual(GetSelectedItemName(), "Menu Item 9");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "D")]
+        public void CollapseSelectableParentWithChildSelected()
+        {
+            var testScenarios = RegressionTestScenario.BuildHNavRegressionTestScenarios();
+            if (IsLowerThanRS5())
+            {
+                testScenarios = RegressionTestScenario.BuildHNavMarkupRegressionTestScenarios();
+            }
+
+            foreach (var testScenario in testScenarios)
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
+                {
+                    Log.Comment("Expand Menu Item 5");
+
+                    UIObject menuItem5 = FindElement.ByName("Menu Item 5");
+                    Verify.IsNotNull(menuItem5);
+                    InputHelper.LeftClick(menuItem5);
+                    Wait.ForIdle();
+
+                    Log.Comment("Expand Menu Item 6");
+
+                    UIObject menuItem6 = FindElement.ByName("Menu Item 6");
+                    Verify.IsNotNull(menuItem6);
+                    InputHelper.LeftClick(menuItem6);
+                    Wait.ForIdle();
+
+                    Log.Comment("Select Menu Item 7");
+
+                    UIObject menuItem7 = FindElement.ByName("Menu Item 7");
+                    Verify.IsNotNull(menuItem7);
+
+                    InputHelper.LeftClick(menuItem7);
+                    Wait.ForIdle();
+
+                    Log.Comment("Collapse Menu Item 6");
+
+                    InputHelper.LeftClick(menuItem6);
+                    Wait.ForIdle();
+
+                    Log.Comment("Verify that Menu Item 7 is selected");
+
+                    Verify.AreEqual(GetSelectedItemName(), "Menu Item 7");
+
+                    Log.Comment("Collapse Menu Item 5");
+
+                    InputHelper.LeftClick(menuItem5);
+                    Wait.ForIdle();
+
+                    Log.Comment("Verify that Menu Item 5 is selected");
+
+                    Wait.ForIdle();
+                    Verify.AreEqual(GetSelectedItemName(), "Menu Item 5");
+                }
+            }
+        }
+
+        private void ExpandFirstMenuItemBranch()
+        {
+            Log.Comment("Expand Menu Item 1");
+
+            UIObject menuItem = FindElement.ByName("Menu Item 1");
+            Verify.IsNotNull(menuItem);
+            InputHelper.LeftClick(menuItem);
+            Wait.ForIdle();
+
+            Log.Comment("Expand Menu Item 2");
+
+            UIObject menuItem2 = FindElement.ByName("Menu Item 2");
+            Verify.IsNotNull(menuItem2);
+            InputHelper.LeftClick(menuItem2);
+            Wait.ForIdle();
+        }
+
+        private void CollapseFirstMenuItemBranch()
+        {
+            UIObject menuItem = FindElement.ByName("Menu Item 1");
+            Verify.IsNotNull(menuItem);
+
+            UIObject menuItem2 = FindElement.ByName("Menu Item 2");
+            Verify.IsNotNull(menuItem2);
+
+            Log.Comment("Collapse Menu Item 2");
+            InputHelper.LeftClick(menuItem2);
+            Wait.ForIdle();
+
+            Log.Comment("Collapse Menu Item 1");
+            InputHelper.LeftClick(menuItem);
+            Wait.ForIdle();
+        }
+
+        private string GetSelectedItemName()
+        {
+            UIObject printSelectedItemButton = FindElement.ByName("GetSelectedItemLabelButton");
+            InputHelper.LeftClick(printSelectedItemButton);
+            Wait.ForIdle();
+            var result = new TextBlock(TryFindElement.ById("SelectedItemLabel"));
+            return result.GetText();
+        }
     }
 
     [Flags]
@@ -3890,7 +4039,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
     {
         LeftNav = 1,
         TopNav = 2,
-        LeftNavRS4 = 4
+        LeftNavRS4 = 4,
+        LeftHNavMarkup = 8,
+        LeftHNavDatabinding = 16
     }
     class RegressionTestScenario
     {
@@ -3915,6 +4066,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             return BuildTestScenarios(RegressionTestType.LeftNav | RegressionTestType.TopNav);
         }
+        public static List<RegressionTestScenario> BuildHNavRegressionTestScenarios()
+        {
+            return BuildTestScenarios(RegressionTestType.LeftHNavMarkup | RegressionTestType.LeftHNavDatabinding);
+        }
+        public static List<RegressionTestScenario> BuildHNavMarkupRegressionTestScenarios()
+        {
+            return BuildTestScenarios(RegressionTestType.LeftHNavMarkup);
+        }
         private static List<RegressionTestScenario> BuildTestScenarios(RegressionTestType types)
         {
             Dictionary<RegressionTestType, RegressionTestScenario> map =
@@ -3923,6 +4082,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     { RegressionTestType.LeftNav, new RegressionTestScenario("NavigationView Test", isLeftnavTest: true, isUsingRS4Style: false)},
                     { RegressionTestType.LeftNavRS4, new RegressionTestScenario("NavigationView Regression Test", isLeftnavTest: true, isUsingRS4Style: true)},
                     { RegressionTestType.TopNav, new RegressionTestScenario("NavigationView TopNav Test", isLeftnavTest: false, isUsingRS4Style: false)},
+                    { RegressionTestType.LeftHNavDatabinding, new RegressionTestScenario("HierarchicalNavigationView DataBinding Test", isLeftnavTest: true, isUsingRS4Style: false)},
+                    { RegressionTestType.LeftHNavMarkup, new RegressionTestScenario("HierarchicalNavigationView Markup Test", isLeftnavTest: true, isUsingRS4Style: false)}
             };
 
             List<RegressionTestScenario> scenarios = new List<RegressionTestScenario>();

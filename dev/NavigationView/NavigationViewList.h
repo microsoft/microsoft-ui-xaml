@@ -4,9 +4,11 @@
 #pragma once
 #include "NavigationViewHelper.h"
 #include "NavigationViewList.g.h"
+#include "ViewModel.h"
+#include "MultiLevelListViewBase.h"
 
 class NavigationViewList :
-    public ReferenceTracker<NavigationViewList, winrt::implementation::NavigationViewListT>
+    public ReferenceTracker<NavigationViewList, winrt::implementation::NavigationViewListT>, public MultiLevelListViewBase
 {
 public:
     NavigationViewList();

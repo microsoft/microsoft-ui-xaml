@@ -11,23 +11,14 @@
 
 CppWinRTActivatableClassWithBasicFactory(TreeViewList);
 
-TreeViewList::TreeViewList()
+TreeViewList::TreeViewList():
+    MultiLevelListViewBase(this, this->try_as<winrt::ListView>())
 {
     ListViewModel(winrt::make_self<ViewModel>());
 
     DragItemsStarting({ this, &TreeViewList::OnDragItemsStarting });
     DragItemsCompleted({ this, &TreeViewList::OnDragItemsCompleted });
     ContainerContentChanging({ this, &TreeViewList::OnContainerContentChanging });
-}
-
-com_ptr<ViewModel> TreeViewList::ListViewModel() const
-{
-    return m_viewModel.get();
-}
-
-void TreeViewList::ListViewModel(com_ptr<ViewModel> viewModel)
-{
-    m_viewModel.set(viewModel);
 }
 
 winrt::TreeViewNode TreeViewList::DraggedTreeViewNode()
@@ -649,11 +640,6 @@ unsigned int TreeViewList::IndexInParent(const winrt::TreeViewNode& node)
     return indexInParent;
 }
 
-winrt::TreeViewNode TreeViewList::NodeAtFlatIndex(int index) const
-{
-    return ListViewModel()->GetNodeAt(index);
-}
-
 winrt::TreeViewNode TreeViewList::GetRootOfSelection(const winrt::TreeViewNode& node) const
 {
     winrt::TreeViewNode current = node;
@@ -663,16 +649,6 @@ winrt::TreeViewNode TreeViewList::GetRootOfSelection(const winrt::TreeViewNode& 
     }
 
     return current;
-}
-
-winrt::TreeViewNode TreeViewList::NodeFromContainer(winrt::DependencyObject const& container)
-{
-    int index = IndexFromContainer(container);
-    if (index >= 0 && index < static_cast<int32_t>(ListViewModel()->Size()))
-    {
-        return NodeAtFlatIndex(index);
-    }
-    return nullptr;
 }
 
 winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode const& node)
