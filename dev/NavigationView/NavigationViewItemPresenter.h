@@ -24,6 +24,8 @@ public:
     winrt::UIElement GetSelectionIndicator();
 
     void SetDepth(int depth);
+
+    void AnimateSelectionIndicator(bool show, bool originTop);
 private:
     NavigationViewItem * GetNavigationViewItem();
 
@@ -32,4 +34,7 @@ private:
     int m_depth{ 0 };
 
     void UpdateIndentations();
+
+    tracker_ref<winrt::Storyboard> m_selectionIndicatorHideStoryboard{ this };
+    tracker_ref<winrt::Storyboard> m_selectionIndicatorShowStoryboard{ this };
 };

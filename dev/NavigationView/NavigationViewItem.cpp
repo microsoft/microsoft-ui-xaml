@@ -456,3 +456,8 @@ void NavigationViewItem::OnIsSelectedChanged(const winrt::DependencyObject& /*se
 {
     UpdateSelectionIndicatorVisiblity();
 }
+
+void NavigationViewItem::AnimateSelectionIndicator(bool show, bool originTop)
+{
+    winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get())->AnimateSelectionIndicator(show, originTop);
+}

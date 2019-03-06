@@ -121,6 +121,20 @@
                         Height="40"
                         Background="{TemplateBinding Background}"
                         Control.IsTemplateFocusTarget="True">
+                        <Grid.Resources>
+                            <Storyboard x:Name="SelectionIndicatorHideStoryboard">
+                                <DoubleAnimation
+                                    Storyboard.TargetName="SelectionIndicatorScaleTransform"
+                                    Storyboard.TargetProperty="ScaleTransform.ScaleY"
+                                    From="1.0" To="0.0" Duration="0:0:0.1"/>
+                            </Storyboard>
+                            <Storyboard x:Name="SelectionIndicatorShowStoryboard">
+                                <DoubleAnimation
+                                    Storyboard.TargetName="SelectionIndicatorScaleTransform"
+                                    Storyboard.TargetProperty="ScaleTransform.ScaleY"
+                                    From="0.0" To="1.0" Duration="0:0:0.1"/>
+                            </Storyboard>
+                        </Grid.Resources>
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="PointerStates">
@@ -185,6 +199,15 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="SelectionIndicatorOriginStates">
+                                <VisualState x:Name="OriginTop" />
+                                <VisualState x:Name="OriginBottom">
+                                    <VisualState.Setters>
+                                        <Setter Target="SelectionIndicator.RenderTransformOrigin" Value="1,1" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <!-- Wrap SelectionIndicator in a grid so that its offset is 0,0 - this enables the offset animation. -->
@@ -199,7 +222,11 @@
                                 Width="2"
                                 Height="24"
                                 Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
-                                Opacity="0.0"/>
+                                Opacity="0.0">
+                                <Rectangle.RenderTransform>
+                                    <ScaleTransform x:Name="SelectionIndicatorScaleTransform"/>
+                                </Rectangle.RenderTransform>
+                            </Rectangle>
                         </Grid>
 
                         <Border

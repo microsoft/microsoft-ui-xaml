@@ -956,28 +956,38 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& prevItem
             auto nextContainer = NavigationViewItemOrSettingsContentFromData(nextItem);
             auto prevItemDepth = winrt::get_self<NavigationViewItem>(prevContainer)->GetDepth();
             auto nextItemDepth = winrt::get_self<NavigationViewItem>(nextContainer)->GetDepth();
+            auto prevItemIndex = 0;
+            auto nextItemIndex = 0;
+
+            if (auto lv = GetActiveListView())
+            {
+                prevItemIndex = lv.IndexFromContainer(prevContainer);
+                nextItemIndex = lv.IndexFromContainer(nextContainer);
+            }
+
+            // Make sure both indicators are visible and in their original locations
+            ResetElementAnimationProperties(prevIndicator, 1.0f);
+            ResetElementAnimationProperties(nextIndicator, 1.0f);
 
             if (prevItemDepth != nextItemDepth)
             {
-                // Make sure both indicators are visible and in their original locations
-                ResetElementAnimationProperties(prevIndicator, 1.0f);
-                ResetElementAnimationProperties(nextIndicator, 1.0f);
+                bool prevIndicatorOriginTop = false;
+                bool nextIndicatorOriginTop = true;
+                if (nextItemIndex < prevItemIndex)
+                {
+                    prevIndicatorOriginTop = true;
+                    nextIndicatorOriginTop = false;
+                }
+
+                bool showPrevIndicator = false;
+                bool showNextIndicator = true;
+                winrt::get_self<NavigationViewItem>(prevContainer)->AnimateSelectionIndicator(showPrevIndicator, prevIndicatorOriginTop);
+                winrt::get_self<NavigationViewItem>(nextContainer)->AnimateSelectionIndicator(showNextIndicator, nextIndicatorOriginTop);
+
+                m_prevIndicator.set(prevIndicator);
+                m_nextIndicator.set(nextIndicator);
             }
-
-
-            //if (prevItemDepth != nextItemDepth)
-            //{
-            //    //AnimateSelectionChangedToNewDepth(prevIndicator, nextIndicator);
-            //    if (auto rectIndicator = prevIndicator.try_as<winrt::Rectangle>())
-            //    {
-
-            //    }
-            //    if (auto rectIndicator = nextIndicator.try_as<winrt::Rectangle>())
-            //    {
-
-            //    }
-            //}
-            //else
+            else
             {
                 // get the item positions in the pane
                 winrt::Point point = winrt::Point(0, 0);
@@ -1003,18 +1013,9 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& prevItem
                 winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
                 winrt::CompositionScopedBatch scopedBatch = visual.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
 
-                if (prevItemDepth != nextItemDepth)
-                {
-                    // Play the animation on both the previous and next indicators
-                    AnimateSelectionChangedToNewDepth(prevIndicator, false);
-                    AnimateSelectionChangedToNewDepth(nextIndicator, true);
-                }
-                else
-                {
-                    // Play the animation on both the previous and next indicators
-                    PlayIndicatorAnimations(prevIndicator, 0, nextPos - prevPos, prevSize, nextSize, true);
-                    PlayIndicatorAnimations(nextIndicator, prevPos - nextPos, 0, prevSize, nextSize, false);
-                }
+                // Play the animation on both the previous and next indicators
+                PlayIndicatorAnimations(prevIndicator, 0, nextPos - prevPos, prevSize, nextSize, true);
+                PlayIndicatorAnimations(nextIndicator, prevPos - nextPos, 0, prevSize, nextSize, false);
 
                 scopedBatch.End();
                 m_prevIndicator.set(prevIndicator);

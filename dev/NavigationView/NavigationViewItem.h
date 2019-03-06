@@ -56,6 +56,8 @@ public:
 
     winrt::TreeViewNode TreeNode();
 
+    void AnimateSelectionIndicator(bool show, bool originTop);
+
 private:
     void UpdateNavigationViewItemToolTip();
     void SuggestedToolTipChanged(winrt::IInspectable const& newContent);

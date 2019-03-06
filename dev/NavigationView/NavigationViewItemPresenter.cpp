@@ -32,6 +32,9 @@ void NavigationViewItemPresenter::OnApplyTemplate()
         navigationViewItem->UpdateVisualStateNoTransition();
     }
     UpdateIndentations();
+
+    m_selectionIndicatorHideStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"SelectionIndicatorHideStoryboard", *this));
+    m_selectionIndicatorShowStoryboard.set(GetTemplateChildT<winrt::Storyboard>(L"SelectionIndicatorShowStoryboard", *this));
 }
 
 winrt::UIElement NavigationViewItemPresenter::GetSelectionIndicator()
@@ -85,5 +88,26 @@ void NavigationViewItemPresenter::UpdateIndentations()
         auto leftIndentation = s_indentation * m_depth + s_selectionIndicatorIndentationOffset;
         auto thickness = winrt::ThicknessHelper::FromLengths(leftIndentation, 0, 0, 0);
         selectionIndicatorWrapper.Margin(thickness);
+    }
+}
+
+void NavigationViewItemPresenter::AnimateSelectionIndicator(bool show, bool originTop)
+{
+    if (originTop)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"OriginTop", false /*useTransitions*/);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, L"OriginBottom", false /*useTransitions*/);
+    }
+
+    if (show)
+    {
+        m_selectionIndicatorShowStoryboard.get().Begin();
+    }
+    else
+    {
+        m_selectionIndicatorHideStoryboard.get().Begin();
     }
 }
