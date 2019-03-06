@@ -26,6 +26,7 @@ jobs:
     packageSaveDirectory: $(Build.SourcesDirectory)\packages\muxreleasetest
     artifactDownloadPath: $(Build.SourcesDirectory)\Artifacts
     currentPackageVersion: 2.1.181217001-prerelease
+    buildOutputDir: $(Build.SourcesDirectory)\BuildOutput
 
   steps:
   # When using the nupkg from artifacts we need to make a new nuget.config that points the MUXReleaseTest
