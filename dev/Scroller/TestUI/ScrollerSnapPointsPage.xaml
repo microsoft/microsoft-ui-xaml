@@ -58,7 +58,7 @@
                 Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="2"/>
         </Grid>
 
-        <!--
+        <!-- Dependent on ApplicableRangeType
         <Grid Grid.Column="1" Grid.Row="1" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -120,7 +120,7 @@
                 Grid.Row="5" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="2"/>
         </Grid>
 
-        <!--
+        <!-- Dependent on ApplicableRangeType
         <Grid Grid.Column="2" Grid.Row="1" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

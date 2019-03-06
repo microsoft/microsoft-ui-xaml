@@ -15,9 +15,9 @@ using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 
 #if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
-using ScrollerSnapPointIrregular = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointIrregular;
+using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-using ScrollerSnapPointAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment;
+using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
 using ScrollerBringingIntoViewEventArgs = Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs;
 using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
@@ -586,7 +586,7 @@ namespace MUXControlsTestApp
             {
                 AppendAsyncEventMessage("Populating snap points for " + scroller.Name + ":");
 
-                ScrollerSnapPointIrregular sspi;
+                ScrollSnapPoint scrollSnapPoint;
                 GeneralTransform gt = stackPanel.TransformToVisual(scroller.Content);
                 Point stackPanelOriginPoint = new Point();
                 stackPanelOriginPoint = gt.TransformPoint(stackPanelOriginPoint);
@@ -595,17 +595,17 @@ namespace MUXControlsTestApp
                 {
                     scroller.HorizontalSnapPoints.Clear();
 
-                    sspi = new ScrollerSnapPointIrregular(stackPanelOriginPoint.X, ScrollerSnapPointAlignment.Near);
+                    scrollSnapPoint = new ScrollSnapPoint(stackPanelOriginPoint.X, ScrollSnapPointsAlignment.Near);
                     AppendAsyncEventMessage("Adding horizontal snap point to " + scroller.Name + " at value " + stackPanelOriginPoint.X);
-                    scroller.HorizontalSnapPoints.Add(sspi);
+                    scroller.HorizontalSnapPoints.Add(scrollSnapPoint);
                 }
                 else
                 {
                     scroller.VerticalSnapPoints.Clear();
 
-                    sspi = new ScrollerSnapPointIrregular(stackPanelOriginPoint.Y, ScrollerSnapPointAlignment.Near);
+                    scrollSnapPoint = new ScrollSnapPoint(stackPanelOriginPoint.Y, ScrollSnapPointsAlignment.Near);
                     AppendAsyncEventMessage("Adding vertical snap point to " + scroller.Name + " at value " + stackPanelOriginPoint.Y);
-                    scroller.VerticalSnapPoints.Add(sspi);
+                    scroller.VerticalSnapPoints.Add(scrollSnapPoint);
                 }
 
                 foreach (UIElement child in stackPanel.Children)
@@ -626,9 +626,9 @@ namespace MUXControlsTestApp
                             snapPointValue = margin.Right + childAsFE.ActualWidth + childOriginPoint.X;
                             if (snapPointValue <= scroller.ScrollableWidth)
                             {
-                                sspi = new ScrollerSnapPointIrregular(snapPointValue, ScrollerSnapPointAlignment.Near);
+                                scrollSnapPoint = new ScrollSnapPoint(snapPointValue, ScrollSnapPointsAlignment.Near);
                                 AppendAsyncEventMessage("Adding horizontal snap point to " + scroller.Name + " at value " + snapPointValue);
-                                scroller.HorizontalSnapPoints.Add(sspi);
+                                scroller.HorizontalSnapPoints.Add(scrollSnapPoint);
                             }
                             else
                             {
@@ -640,9 +640,9 @@ namespace MUXControlsTestApp
                             snapPointValue = margin.Bottom + childAsFE.ActualHeight + childOriginPoint.Y;
                             if (snapPointValue <= scroller.ScrollableHeight)
                             {
-                                sspi = new ScrollerSnapPointIrregular(snapPointValue, ScrollerSnapPointAlignment.Near);
+                                scrollSnapPoint = new ScrollSnapPoint(snapPointValue, ScrollSnapPointsAlignment.Near);
                                 AppendAsyncEventMessage("Adding vertical snap point to " + scroller.Name + " at value " + snapPointValue);
-                                scroller.VerticalSnapPoints.Add(sspi);
+                                scroller.VerticalSnapPoints.Add(scrollSnapPoint);
                             }
                             else
                             {

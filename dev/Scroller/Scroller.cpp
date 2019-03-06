@@ -1523,8 +1523,8 @@ void Scroller::ComputeBringIntoViewTargetOffsets(
     if (snapPointsMode == winrt::SnapPointsMode::Default)
     {
         // Finally adjust the target offsets based on snap points
-        targetZoomedHorizontalOffsetTmp = ComputeValueAfterSnapPoints(targetZoomedHorizontalOffsetTmp, m_sortedConsolidatedHorizontalSnapPoints);
-        targetZoomedHorizontalOffsetTmp = ComputeValueAfterSnapPoints(targetZoomedHorizontalOffsetTmp, m_sortedConsolidatedVerticalSnapPoints);
+        targetZoomedHorizontalOffsetTmp = ComputeValueAfterScrollSnapPoints(targetZoomedHorizontalOffsetTmp, m_sortedConsolidatedHorizontalSnapPoints);
+        targetZoomedHorizontalOffsetTmp = ComputeValueAfterScrollSnapPoints(targetZoomedHorizontalOffsetTmp, m_sortedConsolidatedVerticalSnapPoints);
 
         // Make sure the target offsets are within the scrollable boundaries
         targetZoomedHorizontalOffsetTmp = std::clamp(targetZoomedHorizontalOffsetTmp, 0.0, scrollableWidth);
