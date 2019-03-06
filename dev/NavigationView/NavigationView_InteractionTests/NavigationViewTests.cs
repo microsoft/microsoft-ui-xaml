@@ -4047,33 +4047,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private void ExpandFirstMenuItemBranchUsingAE()
         {
             Log.Comment("Expand Menu Item 1");
-
             UIObject menuItem = FindElement.ByName("Menu Item 1");
             Verify.IsNotNull(menuItem);
-
             menuItem.SetFocus();
             AutomationElement firstItemAE = AutomationElement.FocusedElement;
             ExpandCollapsePattern firstItemECP = firstItemAE.GetCurrentPattern(ExpandCollapsePattern.Pattern) as ExpandCollapsePattern;
-            Verify.AreEqual(ExpandCollapseState.Collapsed, firstItemECP.Current.ExpandCollapseState);
 
+            Verify.AreEqual(ExpandCollapseState.Collapsed, firstItemECP.Current.ExpandCollapseState);
             firstItemECP.Expand();
             Wait.ForIdle();
-
             Verify.AreEqual(ExpandCollapseState.Expanded, firstItemECP.Current.ExpandCollapseState);
 
             Log.Comment("Expand Menu Item 2");
-
             UIObject menuItem2 = FindElement.ByName("Menu Item 2");
             Verify.IsNotNull(menuItem2);
-
             menuItem2.SetFocus();
             AutomationElement secondItemAE = AutomationElement.FocusedElement;
             ExpandCollapsePattern secondItemECP = secondItemAE.GetCurrentPattern(ExpandCollapsePattern.Pattern) as ExpandCollapsePattern;
-            Verify.AreEqual(ExpandCollapseState.Collapsed, secondItemECP.Current.ExpandCollapseState);
 
+            Verify.AreEqual(ExpandCollapseState.Collapsed, secondItemECP.Current.ExpandCollapseState);
             secondItemECP.Expand();
             Wait.ForIdle();
-
             Verify.AreEqual(ExpandCollapseState.Expanded, secondItemECP.Current.ExpandCollapseState);
         }
 
