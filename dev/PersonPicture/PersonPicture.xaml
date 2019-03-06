@@ -21,7 +21,7 @@
                                 <!-- Visual State when a Photo is available for display -->
                                 <VisualState x:Name="Photo">
                                     <VisualState.Setters>
-                                        <Setter Target="PersonPictureEllipse.Fill" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EffectiveImageBrush}"/>
+                                        <Setter Target="PersonPictureEllipse.Fill" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ActualImageBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <!-- Visual State when no Photo is available (but there are initials).-->
@@ -81,7 +81,7 @@
                             VerticalAlignment="Center"
                             HorizontalAlignment="Center"
                             IsTextScaleFactorEnabled="False"
-                            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EffectiveInitials}" />
+                            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ActualInitials}" />
 
                         <Ellipse
                             x:Name="PersonPictureEllipse"

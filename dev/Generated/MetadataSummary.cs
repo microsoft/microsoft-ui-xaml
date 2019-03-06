@@ -354,9 +354,9 @@ namespace CustomTasks
 
             IncludedTypesMetadata["PersonPictureTemplateSettings"] = true;
             // PersonPictureTemplateSettings -- NeedsPropChangedCallbackMetadata
+            NeedsDependencyPropertyFieldMetadata["PersonPictureTemplateSettings.ActualImageBrush"] = true;
+            NeedsDependencyPropertyFieldMetadata["PersonPictureTemplateSettings.ActualInitials"] = true;
             NeedsDependencyPropertyFieldMetadata["PersonPictureTemplateSettings.Dispatcher"] = true;
-            NeedsDependencyPropertyFieldMetadata["PersonPictureTemplateSettings.EffectiveImageBrush"] = true;
-            NeedsDependencyPropertyFieldMetadata["PersonPictureTemplateSettings.EffectiveInitials"] = true;
             // PersonPictureTemplateSettings -- DefaultValueMetadata
 
             IncludedTypesMetadata["RadioButtons"] = true;

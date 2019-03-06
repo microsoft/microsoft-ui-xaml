@@ -9,22 +9,22 @@ class PersonPictureTemplateSettingsProperties
 public:
     PersonPictureTemplateSettingsProperties();
 
+    void ActualImageBrush(winrt::ImageBrush const& value);
+    winrt::ImageBrush ActualImageBrush();
+
+    void ActualInitials(winrt::hstring const& value);
+    winrt::hstring ActualInitials();
+
     void Dispatcher(winrt::CoreDispatcher const& value);
     winrt::CoreDispatcher Dispatcher();
 
-    void EffectiveImageBrush(winrt::ImageBrush const& value);
-    winrt::ImageBrush EffectiveImageBrush();
-
-    void EffectiveInitials(winrt::hstring const& value);
-    winrt::hstring EffectiveInitials();
-
+    static winrt::DependencyProperty ActualImageBrushProperty() { return s_ActualImageBrushProperty; }
+    static winrt::DependencyProperty ActualInitialsProperty() { return s_ActualInitialsProperty; }
     static winrt::DependencyProperty DispatcherProperty() { return s_DispatcherProperty; }
-    static winrt::DependencyProperty EffectiveImageBrushProperty() { return s_EffectiveImageBrushProperty; }
-    static winrt::DependencyProperty EffectiveInitialsProperty() { return s_EffectiveInitialsProperty; }
 
+    static GlobalDependencyProperty s_ActualImageBrushProperty;
+    static GlobalDependencyProperty s_ActualInitialsProperty;
     static GlobalDependencyProperty s_DispatcherProperty;
-    static GlobalDependencyProperty s_EffectiveImageBrushProperty;
-    static GlobalDependencyProperty s_EffectiveInitialsProperty;
 
     static void EnsureProperties();
     static void ClearProperties();

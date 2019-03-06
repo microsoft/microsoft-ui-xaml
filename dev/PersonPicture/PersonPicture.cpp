@@ -139,22 +139,22 @@ void PersonPicture::UpdateIfReady()
     winrt::ImageSource imageSrc = GetImageSource();
 
     auto templateSettings = winrt::get_self<PersonPictureTemplateSettings>(TemplateSettings());
-    templateSettings->EffectiveInitials(initials);
+    templateSettings->ActualInitials(initials);
     if (imageSrc)
     {
-        auto imageBrush = templateSettings->EffectiveImageBrush();
+        auto imageBrush = templateSettings->ActualImageBrush();
         if (!imageBrush)
         {
             imageBrush = winrt::ImageBrush{};
             imageBrush.Stretch(winrt::Stretch::UniformToFill);
-            templateSettings->EffectiveImageBrush(imageBrush);
+            templateSettings->ActualImageBrush(imageBrush);
         }
 
         imageBrush.ImageSource(imageSrc);
     }
     else
     {
-        templateSettings->EffectiveImageBrush(nullptr);
+        templateSettings->ActualImageBrush(nullptr);
     }
 
     // If the control is converted to 'Group-mode', we'll clear individual-specific information.

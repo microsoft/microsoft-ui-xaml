@@ -39,6 +39,6 @@ unsealed runtimeclass PersonPicture : Windows.UI.Xaml.Controls.Control
 [MUX_PROPERTY_NEEDS_DP_FIELD]
 runtimeclass PersonPictureTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
-    String EffectiveInitials { get; };
-    Windows.UI.Xaml.Media.ImageBrush EffectiveImageBrush { get; };
+    String ActualInitials { get; };
+    Windows.UI.Xaml.Media.ImageBrush ActualImageBrush { get; };
 }

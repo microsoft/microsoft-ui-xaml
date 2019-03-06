@@ -6,9 +6,9 @@
 #include "common.h"
 #include "PersonPictureTemplateSettings.h"
 
+GlobalDependencyProperty PersonPictureTemplateSettingsProperties::s_ActualImageBrushProperty{ nullptr };
+GlobalDependencyProperty PersonPictureTemplateSettingsProperties::s_ActualInitialsProperty{ nullptr };
 GlobalDependencyProperty PersonPictureTemplateSettingsProperties::s_DispatcherProperty{ nullptr };
-GlobalDependencyProperty PersonPictureTemplateSettingsProperties::s_EffectiveImageBrushProperty{ nullptr };
-GlobalDependencyProperty PersonPictureTemplateSettingsProperties::s_EffectiveInitialsProperty{ nullptr };
 
 PersonPictureTemplateSettingsProperties::PersonPictureTemplateSettingsProperties()
 {
@@ -17,6 +17,28 @@ PersonPictureTemplateSettingsProperties::PersonPictureTemplateSettingsProperties
 
 void PersonPictureTemplateSettingsProperties::EnsureProperties()
 {
+    if (!s_ActualImageBrushProperty)
+    {
+        s_ActualImageBrushProperty =
+            InitializeDependencyProperty(
+                L"ActualImageBrush",
+                winrt::name_of<winrt::ImageBrush>(),
+                winrt::name_of<winrt::PersonPictureTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<winrt::ImageBrush>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_ActualInitialsProperty)
+    {
+        s_ActualInitialsProperty =
+            InitializeDependencyProperty(
+                L"ActualInitials",
+                winrt::name_of<winrt::hstring>(),
+                winrt::name_of<winrt::PersonPictureTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<winrt::hstring>::BoxedDefaultValue(),
+                nullptr);
+    }
     if (!s_DispatcherProperty)
     {
         s_DispatcherProperty =
@@ -28,35 +50,33 @@ void PersonPictureTemplateSettingsProperties::EnsureProperties()
                 ValueHelper<winrt::CoreDispatcher>::BoxedDefaultValue(),
                 nullptr);
     }
-    if (!s_EffectiveImageBrushProperty)
-    {
-        s_EffectiveImageBrushProperty =
-            InitializeDependencyProperty(
-                L"EffectiveImageBrush",
-                winrt::name_of<winrt::ImageBrush>(),
-                winrt::name_of<winrt::PersonPictureTemplateSettings>(),
-                false /* isAttached */,
-                ValueHelper<winrt::ImageBrush>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_EffectiveInitialsProperty)
-    {
-        s_EffectiveInitialsProperty =
-            InitializeDependencyProperty(
-                L"EffectiveInitials",
-                winrt::name_of<winrt::hstring>(),
-                winrt::name_of<winrt::PersonPictureTemplateSettings>(),
-                false /* isAttached */,
-                ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                nullptr);
-    }
 }
 
 void PersonPictureTemplateSettingsProperties::ClearProperties()
 {
+    s_ActualImageBrushProperty = nullptr;
+    s_ActualInitialsProperty = nullptr;
     s_DispatcherProperty = nullptr;
-    s_EffectiveImageBrushProperty = nullptr;
-    s_EffectiveInitialsProperty = nullptr;
+}
+
+void PersonPictureTemplateSettingsProperties::ActualImageBrush(winrt::ImageBrush const& value)
+{
+    static_cast<PersonPictureTemplateSettings*>(this)->SetValue(s_ActualImageBrushProperty, ValueHelper<winrt::ImageBrush>::BoxValueIfNecessary(value));
+}
+
+winrt::ImageBrush PersonPictureTemplateSettingsProperties::ActualImageBrush()
+{
+    return ValueHelper<winrt::ImageBrush>::CastOrUnbox(static_cast<PersonPictureTemplateSettings*>(this)->GetValue(s_ActualImageBrushProperty));
+}
+
+void PersonPictureTemplateSettingsProperties::ActualInitials(winrt::hstring const& value)
+{
+    static_cast<PersonPictureTemplateSettings*>(this)->SetValue(s_ActualInitialsProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+}
+
+winrt::hstring PersonPictureTemplateSettingsProperties::ActualInitials()
+{
+    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<PersonPictureTemplateSettings*>(this)->GetValue(s_ActualInitialsProperty));
 }
 
 void PersonPictureTemplateSettingsProperties::Dispatcher(winrt::CoreDispatcher const& value)
@@ -67,24 +87,4 @@ void PersonPictureTemplateSettingsProperties::Dispatcher(winrt::CoreDispatcher c
 winrt::CoreDispatcher PersonPictureTemplateSettingsProperties::Dispatcher()
 {
     return ValueHelper<winrt::CoreDispatcher>::CastOrUnbox(static_cast<PersonPictureTemplateSettings*>(this)->GetValue(s_DispatcherProperty));
-}
-
-void PersonPictureTemplateSettingsProperties::EffectiveImageBrush(winrt::ImageBrush const& value)
-{
-    static_cast<PersonPictureTemplateSettings*>(this)->SetValue(s_EffectiveImageBrushProperty, ValueHelper<winrt::ImageBrush>::BoxValueIfNecessary(value));
-}
-
-winrt::ImageBrush PersonPictureTemplateSettingsProperties::EffectiveImageBrush()
-{
-    return ValueHelper<winrt::ImageBrush>::CastOrUnbox(static_cast<PersonPictureTemplateSettings*>(this)->GetValue(s_EffectiveImageBrushProperty));
-}
-
-void PersonPictureTemplateSettingsProperties::EffectiveInitials(winrt::hstring const& value)
-{
-    static_cast<PersonPictureTemplateSettings*>(this)->SetValue(s_EffectiveInitialsProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
-}
-
-winrt::hstring PersonPictureTemplateSettingsProperties::EffectiveInitials()
-{
-    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<PersonPictureTemplateSettings*>(this)->GetValue(s_EffectiveInitialsProperty));
 }
