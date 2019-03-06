@@ -27,7 +27,7 @@
     <TargetPlatformMinVersion Condition="'$(Platform)' != 'arm64'">10.0.14393.0</TargetPlatformMinVersion>
     <!-- arm64 build is supported only after 16299 -->
     <TargetPlatformMinVersion Condition="'$(Platform)' == 'arm64'">$(MuxSdkVersion)</TargetPlatformMinVersion>
-    <TargetFrameworks Condition="'$(Platform)' == 'arm64'">UAP,Version=v$(MuxSdkVersion)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(Platform)' == 'arm64'">UAP,Version=v10.0.18323</TargetFrameworks>
     <RuntimeIdentifier Condition="'$(Platform)' == 'arm64'">win10-arm</RuntimeIdentifier>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
