@@ -89,7 +89,7 @@ jobs:
       solutionPath: $(solutionPath)
       nugetConfigPath: $(nugetConfigPath)
 
-  - template: AzurePipelinesTemplates\MUX-PublishDevProject-Steps.yml
+  - template: MUX-PublishDevProject-Steps.yml
     parameters:
       buildOutputDir: $(Build.SourcesDirectory)\BuildOutput
       publishDir: $(Build.SourcesDirectory)\Artifacts
