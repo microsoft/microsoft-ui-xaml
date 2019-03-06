@@ -1,7 +1,7 @@
-[WUXC_VERSION_RS5]
+﻿[WUXC_VERSION_RS5]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-unsealed runtimeclass RadialGradientBrush : Windows.UI.Xaml.Controls.Control
+unsealed runtimeclass RadialGradientBrush : Windows.UI.Xaml.Media.XamlCompositionBrushBase
 {
     RadialGradientBrush();
 

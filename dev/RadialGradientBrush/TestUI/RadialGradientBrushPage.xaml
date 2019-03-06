@@ -1,4 +1,4 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
     x:Class="MUXControlsTestApp.RadialGradientBrushPage"
     x:Name="RadialGradientBrushTestPage"
@@ -12,7 +12,13 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <StackPanel Orientation="Vertical">
-            <controls:RadialGradientBrush />
+            <Rectangle Width="300" Height="300" Stroke="Black" StrokeThickness="2">
+                <Rectangle.Fill>
+                    <controls:RadialGradientBrush />
+                </Rectangle.Fill>
+                
+            </Rectangle>
+            <Button x:Name="RadialGradientBrushPrototype" AutomationProperties.Name="radialGradientBrushPrototype" Margin="2" HorizontalAlignment="Stretch">Change Settings</Button>
         </StackPanel>
     </Grid>
 </local:TestPage>

@@ -350,6 +350,11 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["PersonPicture.ProfilePicture"] = true;
             // PersonPicture -- DefaultValueMetadata
 
+            IncludedTypesMetadata["RadialGradientBrush"] = true;
+            // RadialGradientBrush -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["RadialGradientBrush.Placeholder"] = true;
+            // RadialGradientBrush -- DefaultValueMetadata
+
             IncludedTypesMetadata["RadioButtons"] = true;
             // RadioButtons -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["RadioButtons.Header"] = true;
