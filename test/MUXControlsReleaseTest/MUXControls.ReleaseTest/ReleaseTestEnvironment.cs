@@ -13,7 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-namespace MuxControls.ReleaseTest
+namespace MUXControls.ReleaseTest
 {
     // This is marked as a test class to make sure our AssemblyInitialize and AssemblyCleanup
     // fixtures get executed.  It won't actually host any tests.
