@@ -18,7 +18,7 @@
                 </Rectangle.Fill>
                 
             </Rectangle>
-            <Button x:Name="RadialGradientBrushPrototype" AutomationProperties.Name="radialGradientBrushPrototype" Margin="2" HorizontalAlignment="Stretch">Change Settings</Button>
+            <Button x:Name="RadialGradientBrushPrototype" Margin="2" HorizontalAlignment="Stretch">Change Settings</Button>
         </StackPanel>
     </Grid>
 </local:TestPage>

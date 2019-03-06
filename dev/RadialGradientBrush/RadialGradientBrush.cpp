@@ -17,8 +17,8 @@ RadialGradientBrush::RadialGradientBrush() : m_brushCreated(false)
 void RadialGradientBrush::SetPropertyToDefaultValues()
 {
     setEllipseCenter(0.5f, 0.5f);
-    setEllipseRadius(0.5f, 0.5f);
-    setGradientOriginOffset(0.5f, 0.5f);
+    setEllipseRadius(1.0f, 1.0f);
+    setGradientOriginOffset(0.2f, 0.2f);
     AddColorGradientStop(winrt::Color{ 255, 255, 128, 0 }, 0.25f);//Orange
     AddColorGradientStop(winrt::Color{ 255, 90, 200, 90 }, 0.5f);//Green
     AddColorGradientStop(winrt::Color{ 255, 255, 128, 0 }, 0.75f);//Orange
