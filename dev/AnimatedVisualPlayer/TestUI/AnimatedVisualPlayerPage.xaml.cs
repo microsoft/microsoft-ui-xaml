@@ -2,28 +2,51 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
-using Windows.UI.Composition;
 using AnimatedVisualPlayerTests;
+using Microsoft.Graphics.Canvas;
 using Windows.Foundation.Metadata;
+using Windows.Graphics;
+using Windows.Graphics.Capture;
+using Windows.Graphics.DirectX;
+using Windows.UI;
+using Windows.UI.Composition;
 using Windows.UI.Xaml;
-
-
-#if !BUILD_WINDOWS
-using AnimatedVisualPlayer = Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer;
-#endif
+using Windows.UI.Xaml.Hosting;
+using Windows.UI.Xaml.Media;
 
 namespace MUXControlsTestApp
 {
+    public class FallbackGrid : Windows.UI.Xaml.Controls.Grid
+    {
+        public FallbackGrid()
+        {
+            _fallbackGrid = this;
+
+            Windows.UI.Xaml.Shapes.Rectangle rect = new Windows.UI.Xaml.Shapes.Rectangle();
+            rect.MinWidth = 100;
+            rect.MinHeight = 100;
+            rect.MaxWidth = 100;
+            rect.MaxHeight = 100;
+            rect.Fill = new SolidColorBrush(Colors.Red);
+            Children.Add(rect);
+        }
+
+        static public FallbackGrid _fallbackGrid = null;
+    }
+
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
     public sealed partial class AnimatedVisualPlayerPage : TestPage
     {
+        private Visual _visual;
+
         public AnimatedVisualPlayerPage()
         {
             this.InitializeComponent();
+
+            _visual = ElementCompositionPreview.GetElementVisual(Player);
         }
 
         private async void PlayButton_Click(object sender, RoutedEventArgs e)
@@ -154,6 +177,95 @@ namespace MUXControlsTestApp
             Player.Pause();
             Player.PlaybackRate = 0 - (double)(Int32.Parse(Constants.OneText));
             Player.Resume();
+        }
+
+        private async void FallenBackButton_ClickAsync(Object sender, RoutedEventArgs e)
+        {
+            // VisualCapture helper functionality is only available since RS5. Because API
+            // method GraphicsCaptureItem.CreateFromVisual is a RS5 feature.
+            if (IsRS5OrHigher())
+            {
+                Player.Source = new AnimatedVisuals.nullsource();
+                CanvasBitmap canvasBitmap = await RenderVisualToBitmapAsync(_visual);
+
+                Color[] colors = canvasBitmap.GetPixelColors(0, 0, 1, 1);
+                if (colors.Length > 0 && colors[0].Equals(Colors.Red/*FallenBackContent Color*/))
+                {
+                    FallenBackTextBox.Text = Constants.TrueText;
+                }
+                else
+                {
+                    FallenBackTextBox.Text = Constants.FalseText;
+                }
+            }
+            else
+            {
+                var parent = FallbackGrid._fallbackGrid != null ? FallbackGrid._fallbackGrid.Parent : null;
+                if (parent == Player)
+                {
+                    FallenBackTextBox.Text = Constants.TrueText;
+                }
+                else
+                {
+                    FallenBackTextBox.Text = Constants.FalseText;
+                }
+            }
+        }
+
+        //
+        // Renders a the given <see cref="Visual"/> to a <see cref="CanvasBitmap"/>. If <paramref name="size"/> is not
+        // specified, uses the size of <paramref name="visual"/>.
+        //
+        static async Task<CanvasBitmap> RenderVisualToBitmapAsync(Visual visual, SizeInt32? size = null)
+        {
+            // Get an object that enables capture from a visual.
+            var graphicsItem = GraphicsCaptureItem.CreateFromVisual(visual);
+
+            var canvasDevice = CanvasDevice.GetSharedDevice();
+
+            var tcs = new TaskCompletionSource<CanvasBitmap>();
+
+            // Create a frame pool with room for only 1 frame because we're getting a single frame, not a video.
+            const int numberOfBuffers = 1;
+            using (var framePool = Direct3D11CaptureFramePool.Create(
+                                canvasDevice,
+                                DirectXPixelFormat.B8G8R8A8UIntNormalized,
+                                numberOfBuffers,
+                                size ?? graphicsItem.Size))
+            {
+                void OnFrameArrived(Direct3D11CaptureFramePool sender, object args)
+                {
+                    using (var frame = sender.TryGetNextFrame())
+                    {
+                        tcs.SetResult(frame != null
+                            ? CanvasBitmap.CreateFromDirect3D11Surface(canvasDevice, frame.Surface)
+                            : null);
+                    }
+                }
+
+                using (var session = framePool.CreateCaptureSession(graphicsItem))
+                {
+                    framePool.FrameArrived += OnFrameArrived;
+
+                    // Start capturing. The FrameArrived event will occur shortly.
+                    session.StartCapture();
+
+                    // Wait for the frame to arrive.
+                    var result = await tcs.Task;
+
+                    // !!!!!!!! NOTE !!!!!!!!
+                    // This thread is now running inside the OnFrameArrived callback method.
+
+                    // Unsubscribe now that we have captured the frame.
+                    framePool.FrameArrived -= OnFrameArrived;
+
+                    // Yield to allow the OnFrameArrived callback to unwind so that it is safe to
+                    // Dispose the session and framepool.
+                    await Task.Yield();
+                }
+            }
+
+            return await tcs.Task;
         }
 
         private bool IsRS5OrHigher()

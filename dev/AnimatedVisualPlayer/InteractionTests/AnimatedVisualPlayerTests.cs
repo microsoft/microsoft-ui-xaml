@@ -102,6 +102,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ReverseNegativePlaybackRateAnimationAccessibilityTest();
                 ReversePositivePlaybackRateAnimationAccessibilityTest();
                 HittestingAccessibilityTest();
+                FallenBackTest();
             }
         }
 
@@ -226,6 +227,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("HittestingAccessibilityTest: Value of textBox: \"{0}\".", textBox.Value);
                 Verify.AreEqual(Constants.PointerMovedText, textBox.Value);
+            }
+        }
+
+        private void FallenBackTest()
+        {
+            var textBox = FindElement.ByName<Edit>("FallenBackTextBox");
+            var testButton = FindElement.ByName<Button>("FallenBackButton");
+
+            if (testButton != null && textBox != null)
+            {
+                using (var textBoxWaiter = new PropertyChangedEventWaiter(textBox, UIProperty.Get("Value.Value")))
+                {
+                    testButton.Click();
+
+                    Log.Comment("FallenBackTest: textBoxWaiter: Waiting until fallenback screencapture and results checking.");
+                    textBoxWaiter.Wait();
+                    Log.Comment("EventWaiter of FallenBackTextBox is raised.");
+
+                    Log.Comment("FallenBackTest: Value of textBox: \"{0}\".", textBox.Value);
+                    Verify.AreEqual(Constants.TrueText, textBox.Value);
+                }
+            }
+            else
+            {
+                Verify.Fail("FallenBackTest: FallenBackButton or any other UIElement is not found.");
             }
         }
 
