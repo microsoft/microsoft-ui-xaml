@@ -23,9 +23,16 @@ public:
     // IAutomationPeerOverrides3
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
+    int32_t GetLevelCore();
+    void RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState newState);
 
     // IInvokeProvider
     void Invoke();
+
+    // IExpandCollapseProvider
+    winrt::ExpandCollapseState ExpandCollapseState();
+    void Collapse();
+    void Expand();
 
 private:
 
@@ -44,4 +51,5 @@ private:
     int32_t GetNavigationViewItemCountInTopNav();
     int32_t GetPositionOrSetCountInLeftNavHelper(AutomationOutput automationOutput);
     int32_t GetPositionOrSetCountInTopNavHelper(winrt::IVector<winrt::IInspectable> navigationViewElements, AutomationOutput automationOutput);
+    void UpdateIsExpandedTo(bool isExpanded);
 };

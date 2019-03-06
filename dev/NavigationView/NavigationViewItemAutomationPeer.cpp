@@ -7,6 +7,7 @@
 #include "NavigationViewItemAutomationPeer.h"
 #include "NavigationView.h"
 #include "NavigationViewItemBase.h"
+#include "NavigationViewList.h"
 
 
 CppWinRTActivatableClassWithBasicFactory(NavigationViewItemAutomationPeer);
@@ -52,7 +53,7 @@ winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::Patt
 {
     winrt::IInspectable result = __super::GetPatternCore(pattern);
 
-    if (!result && pattern == winrt::PatternInterface::Invoke)
+    if (!result && (pattern == winrt::PatternInterface::Invoke || pattern == winrt::PatternInterface::ExpandCollapse))
     {
         // The settings item is outside the ListView, so we need to handle its invoke method ourselves.
         result = *this;
@@ -112,6 +113,16 @@ int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
     }
 
     return sizeOfSet;
+}
+
+int32_t NavigationViewItemAutomationPeer::GetLevelCore()
+{
+    auto navigationViewItem = Owner().try_as<winrt::NavigationViewItem>();
+    if (navigationViewItem)
+    {
+        return winrt::get_self<NavigationViewItem>(navigationViewItem)->GetDepth() + 1;
+    }
+    return -1;
 }
 
 void NavigationViewItemAutomationPeer::Invoke()
@@ -195,66 +206,70 @@ NavigationViewListPosition NavigationViewItemAutomationPeer::GetNavigationViewLi
 }
 
 // Get either the position or the size of the set for this particular item in the case of left nav. 
-// We go through all the items and then we determine if the listviewitem from the left listview can be a navigation view item header
+// We go through all the items of that depth level and then we determine if the listviewitem from the left listview can be a navigation view item header
 // or a navigation view item. If it's the former, we just reset the count. If it's the latter, we increment the counter.
 // In case of calculating the position, if this is the NavigationViewItemAutomationPeer we're iterating through we break the loop.
 int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(AutomationOutput automationOutput)
 {
     int returnValue = 0;
-    
+
     if (auto navview = GetParentNavigationView())
     {
-        if (auto listview = winrt::get_self<NavigationView>(navview)->LeftNavListView())
+        auto listView = winrt::get_self<NavigationView>(navview)->LeftNavListView();
+        auto navigationViewItem = Owner().try_as<winrt::NavigationViewItem>();
+        if (listView && navigationViewItem)
         {
-            if (auto parent = Navigate(winrt::AutomationNavigationDirection::Parent).try_as<winrt::AutomationPeer>())
+            if (auto navListView = listView.try_as<winrt::NavigationViewList>())
             {
-                if (auto children = parent.GetChildren())
+                auto targetNode = winrt::get_self<NavigationViewList>(navListView)->NodeFromContainer(navigationViewItem);
+                if (targetNode)
                 {
-                    int index = 0;
-                    bool itemFound = false;
-
-                    for (auto const& child : children)
+                    auto targetParentNode = targetNode.Parent();
+                    if (targetParentNode)
                     {
-                        if (auto dependencyObject = listview.ContainerFromIndex(index))
-                        {
-                            if (dependencyObject.try_as<winrt::NavigationViewItemHeader>())
-                            {
-                                if (automationOutput == AutomationOutput::Size && itemFound)
-                                {
-                                    break;
-                                }
-                                else
-                                {
-                                    returnValue = 0;
-                                }
-                            }
-                            else if (auto navviewItem = dependencyObject.try_as<winrt::NavigationViewItem>())
-                            {
-                                if (navviewItem.Visibility() == winrt::Visibility::Visible)
-                                {
-                                    returnValue++;
+                        bool itemFound = false;
 
-                                    if (child.try_as<winrt::NavigationViewItemAutomationPeer>() == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
+                        for (auto const& child : targetParentNode.Children())
+                        {
+                            if (auto dependencyObject = winrt::get_self<NavigationViewList>(navListView)->ContainerFromNode(child))
+                            {
+                                if (dependencyObject.try_as<winrt::NavigationViewItemHeader>())
+                                {
+                                    if (automationOutput == AutomationOutput::Size && itemFound)
                                     {
-                                        if (automationOutput == AutomationOutput::Position)
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        returnValue = 0;
+                                    }
+                                }
+                                else if (auto navviewItem = dependencyObject.try_as<winrt::NavigationViewItem>())
+                                {
+                                    if (navviewItem.Visibility() == winrt::Visibility::Visible)
+                                    {
+                                        returnValue++;
+
+                                        if (dependencyObject == navigationViewItem)
                                         {
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            itemFound = true;
+                                            if (automationOutput == AutomationOutput::Position)
+                                            {
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                itemFound = true;
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                        index++;
                     }
                 }
             }
         }
     }
-
     return returnValue;
 }
 
@@ -310,4 +325,68 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(wi
     }
 
     return returnValue;
+}
+
+// IExpandCollapseProvider 
+winrt::ExpandCollapseState NavigationViewItemAutomationPeer::ExpandCollapseState()
+{
+    if (auto item = Owner().try_as<winrt::NavigationViewItem>())
+    {
+        bool hasChildren = (item.MenuItems().Size() > 0 ||
+            item.MenuItemsSource() ||
+            item.HasUnrealizedChildren());
+
+        if (hasChildren)
+        {
+            if (item.IsExpanded())
+            {
+                return winrt::ExpandCollapseState::Expanded;
+            }
+            else
+            {
+                return winrt::ExpandCollapseState::Collapsed;
+            }
+        }
+    }
+    return winrt::ExpandCollapseState::LeafNode;
+}
+
+void NavigationViewItemAutomationPeer::Collapse()
+{
+    UpdateIsExpandedTo(false);
+}
+
+void NavigationViewItemAutomationPeer::Expand()
+{
+    UpdateIsExpandedTo(true);
+}
+
+void NavigationViewItemAutomationPeer::UpdateIsExpandedTo(bool isExpanded)
+{
+    if (auto item = Owner().try_as<winrt::NavigationViewItem>())
+    {
+        if (auto navigationView = GetParentNavigationView())
+        {
+            winrt::get_self<NavigationView>(navigationView)->UpdateNavigationViewItemExpandedProperty(item, isExpanded);
+        }
+    }
+}
+
+void NavigationViewItemAutomationPeer::RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState newState)
+{
+    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    {
+        winrt::ExpandCollapseState oldState;
+        auto expandCollapseStateProperty = winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty();
+
+        if (newState == winrt::ExpandCollapseState::Expanded)
+        {
+            oldState = winrt::ExpandCollapseState::Collapsed;
+        }
+        else
+        {
+            oldState = winrt::ExpandCollapseState::Expanded;
+        }
+        RaisePropertyChangedEvent(expandCollapseStateProperty, box_value(oldState), box_value(newState));
+    }
 }

@@ -426,6 +426,7 @@ void NavigationViewItem::UpdateIsExpanded(winrt::TreeViewNode node)
     {
         node.IsExpanded(IsExpanded());
     }
+    RaiseExpandCollapseAutomationEvent(IsExpanded());
 }
 
 void NavigationViewItem::UpdateSelectionIndicatorVisiblity()
@@ -482,4 +483,17 @@ bool NavigationViewItem::HasChildren()
     return (MenuItems().Size() > 0 ||
             MenuItemsSource() ||
             HasUnrealizedChildren());
+}
+
+void NavigationViewItem::RaiseExpandCollapseAutomationEvent(bool isExpanded)
+{
+    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    {
+        auto expandState = isExpanded ? winrt::ExpandCollapseState::Expanded : winrt::ExpandCollapseState::Collapsed;
+        if (auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+        {
+            auto navViewItemPeer = peer.as<winrt::NavigationViewItemAutomationPeer>();
+            winrt::get_self<NavigationViewItemAutomationPeer>(navViewItemPeer)->RaiseExpandCollapseAutomationEvent(expandState);
+        }
+    }
 }

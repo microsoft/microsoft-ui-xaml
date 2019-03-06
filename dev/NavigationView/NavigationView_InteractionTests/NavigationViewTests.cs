@@ -3990,6 +3990,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "D")]
+        public void MenuItemExpandCollapseTestAE()
+        {
+            var testScenarios = RegressionTestScenario.BuildHNavRegressionTestScenarios();
+            if (IsLowerThanRS5())
+            {
+                testScenarios = RegressionTestScenario.BuildHNavMarkupRegressionTestScenarios();
+            }
+
+            foreach (var testScenario in testScenarios)
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
+                {
+                    ExpandFirstMenuItemBranchUsingAE();
+                    CollapseFirstMenuItemBranchUsingAE();
+                }
+            }
+        }
+
         private void ExpandFirstMenuItemBranch()
         {
             Log.Comment("Expand Menu Item 1");
@@ -4022,6 +4042,64 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Log.Comment("Collapse Menu Item 1");
             InputHelper.LeftClick(menuItem);
             Wait.ForIdle();
+        }
+
+        private void ExpandFirstMenuItemBranchUsingAE()
+        {
+            Log.Comment("Expand Menu Item 1");
+
+            UIObject menuItem = FindElement.ByName("Menu Item 1");
+            Verify.IsNotNull(menuItem);
+
+            menuItem.SetFocus();
+            AutomationElement firstItemAE = AutomationElement.FocusedElement;
+            ExpandCollapsePattern firstItemECP = firstItemAE.GetCurrentPattern(ExpandCollapsePattern.Pattern) as ExpandCollapsePattern;
+            Verify.AreEqual(ExpandCollapseState.Collapsed, firstItemECP.Current.ExpandCollapseState);
+
+            firstItemECP.Expand();
+            Wait.ForIdle();
+
+            Verify.AreEqual(ExpandCollapseState.Expanded, firstItemECP.Current.ExpandCollapseState);
+
+            Log.Comment("Expand Menu Item 2");
+
+            UIObject menuItem2 = FindElement.ByName("Menu Item 2");
+            Verify.IsNotNull(menuItem2);
+
+            menuItem2.SetFocus();
+            AutomationElement secondItemAE = AutomationElement.FocusedElement;
+            ExpandCollapsePattern secondItemECP = secondItemAE.GetCurrentPattern(ExpandCollapsePattern.Pattern) as ExpandCollapsePattern;
+            Verify.AreEqual(ExpandCollapseState.Collapsed, secondItemECP.Current.ExpandCollapseState);
+
+            secondItemECP.Expand();
+            Wait.ForIdle();
+
+            Verify.AreEqual(ExpandCollapseState.Expanded, secondItemECP.Current.ExpandCollapseState);
+        }
+
+        private void CollapseFirstMenuItemBranchUsingAE()
+        {
+            UIObject menuItem = FindElement.ByName("Menu Item 1");
+            Verify.IsNotNull(menuItem);
+            menuItem.SetFocus();
+            AutomationElement firstItemAE = AutomationElement.FocusedElement;
+            ExpandCollapsePattern firstItemECP = firstItemAE.GetCurrentPattern(ExpandCollapsePattern.Pattern) as ExpandCollapsePattern;
+
+            UIObject menuItem2 = FindElement.ByName("Menu Item 2");
+            Verify.IsNotNull(menuItem2);
+            menuItem2.SetFocus();
+            AutomationElement secondItemAE = AutomationElement.FocusedElement;
+            ExpandCollapsePattern secondItemECP = secondItemAE.GetCurrentPattern(ExpandCollapsePattern.Pattern) as ExpandCollapsePattern;
+
+            Log.Comment("Collapse Menu Item 2");
+            secondItemECP.Collapse();
+            Wait.ForIdle();
+            Verify.AreEqual(ExpandCollapseState.Collapsed, secondItemECP.Current.ExpandCollapseState);
+
+            Log.Comment("Collapse Menu Item 1");
+            firstItemECP.Collapse();
+            Wait.ForIdle();
+            Verify.AreEqual(ExpandCollapseState.Collapsed, firstItemECP.Current.ExpandCollapseState);
         }
 
         private string GetSelectedItemName()

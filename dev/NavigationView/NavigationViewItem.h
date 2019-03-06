@@ -105,4 +105,5 @@ private:
 
     void OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
     bool HasChildren();
+    void RaiseExpandCollapseAutomationEvent(bool isExpanded);
 };
