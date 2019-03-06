@@ -27,41 +27,27 @@ Copy-Item "$nugetPackagesDir\runtime.win-$Platform.microsoft.netcore.app.2.1.0\r
 Copy-Item "$nugetPackagesDir\runtime.win-$Platform.microsoft.netcore.app.2.1.0\runtimes\win-$Platform\native\*" "$payloadDir\.NETCoreApp2.1\"
 Copy-Item "$nugetPackagesDir\MUXCustomBuildTasks.1.0.38\tools\$platform\WttLog.dll" $payloadDir
 
+function Copy-If-Exist
+{
+    Param($source, $destinationDir)
+
+    if (Test-Path $source)
+    {
+        Copy-Item -Force $source $destinationDir
+    }
+}
 
 # Copy files from the 'drop' artifact dir
-$MUXDllPath = "$repoDirectory\Artifacts\drop\$Configuration\$Platform\Test\MUXControls.Test.dll"
-if(Test-Path $MUXDllPath)
-{
-    Copy-Item "$MUXDllPath" $payloadDir
-}
-
-$MUXControlsTestAppPath = "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test"
-if(Test-Path $MUXControlsTestAppPath)
-{
-    Copy-Item "$MUXControlsTestAppPath\*" $payloadDir
-    Copy-Item "$MUXControlsTestAppPath\Dependencies\$Platform\*" $payloadDir
-}
-
-$IXMPTestAppPath = "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test"
-if(Test-Path $IXMPTestAppPath)
-{
-    Copy-Item -Force "$IXMPTestAppPath\*" $payloadDir
-    Copy-Item -Force "$IXMPTestAppPath\Dependencies\$Platform\*" $payloadDir
-}
-
-$NugetPackageTestAppPath = "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test"
-if(Test-Path $NugetPackageTestAppPath)
-{
-    Copy-Item "$NugetPackageTestAppPath\*" $payloadDir
-    Copy-Item "$NugetPackageTestAppPath\Dependencies\$Platform\*" $payloadDir
-}
-
-$NugetPackageTestAppCXPath = "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test"
-if(Test-Path $NugetPackageTestAppCXPath)
-{
-    Copy-Item "$NugetPackageTestAppCXPath\*" $payloadDir
-    Copy-Item "$NugetPackageTestAppCXPath\Dependencies\$Platform\*" $payloadDir
-}
+Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\Test\MUXControls.Test.dll" $payloadDir
+Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\*" $payloadDir
+Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\Dependencies\$Platform\*" $payloadDir
+Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\*" $payloadDir
+Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\Dependencies\$Platform\*" $payloadDir
+# NuGet tests
+Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test\*" $payloadDir
+Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test\Dependencies\$Platform\*" $payloadDir
+Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\*" $payloadDir
+Copy-If-Exist "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\Dependencies\$Platform\*" $payloadDir
 
 # Copy files from the repo
 Copy-Item "build\helix\runtests.cmd" $payloadDir
