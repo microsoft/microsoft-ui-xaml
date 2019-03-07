@@ -149,3 +149,10 @@ jobs:
       projects: build\Helix\RunReleaseTestsInHelix.proj
       custom: msbuild
       arguments: '/binaryLogger:$(Build.SourcesDirectory)/RunReleaseTestsInHelix.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues)'
+  
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish RunReleaseTestsInHelix binlog'
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)/RunReleaseTestsInHelix.$(buildPlatform).$(buildConfiguration).binlog
+      artifactName: 'drop'
