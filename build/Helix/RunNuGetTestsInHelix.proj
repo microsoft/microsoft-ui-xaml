@@ -13,11 +13,11 @@
     
     <HelixWorkItem Include="ReleaseTest.NugetTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\RunReleaseTests.cmd /name:MUXControls.ReleaseTest.NugetTests.*</Command>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\RunNuGetTests.cmd /name:MUXControls.ReleaseTest.NugetTests.*</Command>
     </HelixWorkItem>
     <HelixWorkItem Include="ReleaseTest.NugetTestsCX">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\RunReleaseTests.cmd /name:MUXControls.ReleaseTest.NugetTestsCX.*</Command>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\RunNuGetTests.cmd /name:MUXControls.ReleaseTest.NugetTestsCX.*</Command>
     </HelixWorkItem>
   </ItemGroup>
 </Project>

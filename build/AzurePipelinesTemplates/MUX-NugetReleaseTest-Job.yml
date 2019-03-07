@@ -138,10 +138,10 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\PrepareHelixPayload.ps1
-      arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)' -ReleaseTests
+      arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)' -NuGetTests
 
   - task: DotNetCoreCLI@2
-    displayName: 'Run release tests in Helix'
+    displayName: 'Run NuGet tests in Helix'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:

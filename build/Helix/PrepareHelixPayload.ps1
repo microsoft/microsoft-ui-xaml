@@ -2,7 +2,7 @@
 Param(
     [string]$Platform,
     [string]$Configuration,
-    [switch]$ReleaseTests
+    [switch]$NuGetTests
 )
 
 $payloadDir = "HelixPayload\$Configuration\$Platform"
@@ -29,7 +29,7 @@ Copy-Item "$nugetPackagesDir\runtime.win-$Platform.microsoft.netcore.app.2.1.0\r
 Copy-Item "$nugetPackagesDir\MUXCustomBuildTasks.1.0.38\tools\$platform\WttLog.dll" $payloadDir
 
 # Copy files from the 'drop' artifact dir
-if(!$ReleaseTests)
+if(!$NuGetTests)
 {
     Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\Test\MUXControls.Test.dll" $payloadDir
     Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\*" $payloadDir
@@ -50,13 +50,13 @@ else
 New-Item -ItemType Directory -Force -Path "$payloadDir\scripts"
 Copy-Item "build\helix\ConvertWttLogToXUnit.ps1" "$payloadDir\scripts"
 Copy-Item "build\helix\ConvertWttLogToXUnit.cs" "$payloadDir\scripts"
-if(!$ReleaseTests)
+if(!$NuGetTests)
 {
     Copy-Item "build\helix\runtests.cmd" $payloadDir
     Copy-Item "build\helix\InstallTestAppDependencies.ps1" "$payloadDir\scripts"
 }
 else
 {
-    Copy-Item "build\helix\RunReleaseTests.cmd" $payloadDir
-    Copy-Item "build\helix\InstallReleaseTestAppDependencies.ps1" "$payloadDir\scripts"
+    Copy-Item "build\helix\RunNuGetTests.cmd" $payloadDir
+    Copy-Item "build\helix\InstallNuGetTestAppDependencies.ps1" "$payloadDir\scripts"
 }
