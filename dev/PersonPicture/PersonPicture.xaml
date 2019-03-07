@@ -19,9 +19,28 @@
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <!-- Visual State when a Photo is available for display -->
-                                <VisualState x:Name="Photo" />
-                                <!-- Visual State when no Photo is available (even if no initials are available).-->
+                                <VisualState x:Name="Photo">
+                                    <VisualState.Setters>
+                                        <Setter Target="PersonPictureEllipse.Fill" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ActualImageBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <!-- Visual State when no Photo is available (but there are initials).-->
                                 <VisualState x:Name="Initials" />
+                                <VisualState x:Name="NoPhotoOrInitials">
+                                    <VisualState.Setters>
+                                        <Setter Target="InitialsTextBlock.FontFamily" Value="Segoe MDL2 Assets"/>
+                                        <!-- Placeholder symbol for 'Contact' (https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font) -->
+                                        <Setter Target="InitialsTextBlock.Text" Value="&#xE77B;"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <!-- Visual State when in Group mode -->
+                                <VisualState x:Name="Group">
+                                    <VisualState.Setters>
+                                        <Setter Target="InitialsTextBlock.FontFamily" Value="Segoe MDL2 Assets"/>
+                                        <!-- Placeholder symbol for 'People' (https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font) -->
+                                        <Setter Target="InitialsTextBlock.Text" Value="&#xE716;"/>
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="BadgeStates">
                                 <VisualState x:Name="NoBadge" />
@@ -33,7 +52,7 @@
                                 <VisualState x:Name="BadgeWithImageSource">
                                     <VisualState.Setters>
                                         <Setter Target="BadgeGrid.Visibility" Value="Visible" />
-                                        <Setter Target="BadgingEllipse.Opacity" Value ="{ThemeResource PersonPictureEllipseBadgeImageSourceStrokeOpacity}" />
+                                        <Setter Target="BadgingEllipse.Opacity" Value="{ThemeResource PersonPictureEllipseBadgeImageSourceStrokeOpacity}" />
                                         <Setter Target="BadgingEllipse.Fill">
                                             <Setter.Value>
                                                 <ImageBrush x:Name="BadgeImageBrush" Stretch="UniformToFill" />
@@ -61,7 +80,8 @@
                             TextLineBounds="Tight"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Center"
-                            IsTextScaleFactorEnabled="False" />
+                            IsTextScaleFactorEnabled="False"
+                            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ActualInitials}" />
 
                         <Ellipse
                             x:Name="PersonPictureEllipse"

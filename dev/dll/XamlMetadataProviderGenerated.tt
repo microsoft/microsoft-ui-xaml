@@ -22,6 +22,7 @@
 #include "CommandBarFlyoutCommandBarTemplateSettings.h"
 #include "SpectrumBrush.h"
 #include "PersonPicture.h"
+#include "PersonPictureTemplateSettings.h"
 #include "RatingControl.h"
 #include "RatingItemInfo.h"
 #include "RatingItemImageInfo.h"

@@ -348,7 +348,16 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["PersonPicture.IsGroup"] = true;
             NeedsPropChangedCallbackMetadata["PersonPicture.PreferSmallImage"] = true;
             NeedsPropChangedCallbackMetadata["PersonPicture.ProfilePicture"] = true;
+            NeedsPropChangedCallbackMetadata["PersonPicture.TemplateSettings"] = true;
+            NeedsDependencyPropertyFieldMetadata["PersonPicture.TemplateSettings"] = true;
             // PersonPicture -- DefaultValueMetadata
+
+            IncludedTypesMetadata["PersonPictureTemplateSettings"] = true;
+            // PersonPictureTemplateSettings -- NeedsPropChangedCallbackMetadata
+            NeedsDependencyPropertyFieldMetadata["PersonPictureTemplateSettings.ActualImageBrush"] = true;
+            NeedsDependencyPropertyFieldMetadata["PersonPictureTemplateSettings.ActualInitials"] = true;
+            NeedsDependencyPropertyFieldMetadata["PersonPictureTemplateSettings.Dispatcher"] = true;
+            // PersonPictureTemplateSettings -- DefaultValueMetadata
 
             IncludedTypesMetadata["RadioButtons"] = true;
             // RadioButtons -- NeedsPropChangedCallbackMetadata
