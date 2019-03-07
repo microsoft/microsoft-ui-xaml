@@ -55,10 +55,10 @@ static constexpr auto c_paneHeaderOnTopPane = L"PaneHeaderOnTopPane"sv;
 static constexpr auto c_paneCustomContentOnTopPane = L"PaneCustomContentOnTopPane"sv;
 static constexpr auto c_paneFooterOnTopPane = L"PaneFooterOnTopPane"sv;
 
-static constexpr int c_backButtonHeight = 44;
-static constexpr int c_backButtonWidth = 48;
+static constexpr int c_backButtonHeight = 40;
+static constexpr int c_backButtonWidth = 40;
 static constexpr int c_backButtonPaneButtonMargin = 8;
-static constexpr int c_paneToggleButtonWidth = 48;
+static constexpr int c_paneToggleButtonWidth = 40;
 static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior = 56;
 static constexpr int c_backButtonRowDefinition = 1;
 static constexpr float c_paneElevationTranslationZ = 32;
@@ -583,7 +583,7 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
 
     SetDisplayMode(displayMode, forceSetDisplayMode);
 
-    if (displayMode == winrt::NavigationViewDisplayMode::Expanded)
+    if (displayMode == winrt::NavigationViewDisplayMode::Expanded && IsPaneVisible())
     {
         if (!m_wasForceClosed)
         {
@@ -1387,10 +1387,13 @@ void NavigationView::RaiseItemInvoked(winrt::IInspectable const& item,
 // forceSetDisplayMode: On first call to SetDisplayMode, force setting to initial values
 void NavigationView::SetDisplayMode(const winrt::NavigationViewDisplayMode& displayMode, bool forceSetDisplayMode)
 {
+    // Need to keep the VisualStateGroup "DisplayModeGroup" updated even if the actual
+    // display mode is not changed. This is due to the fact that there can be a transition between
+    // 'Minimal' and 'MinimalWithBackButton'.
+    UpdateVisualStateForDisplayModeGroup(displayMode);
+
     if (forceSetDisplayMode || DisplayMode() != displayMode)
     {
-        UpdateVisualStateForDisplayModeGroup(displayMode);
-
         // Update header visibility based on what the new display mode will be
         UpdateHeaderVisibility(displayMode);
 
@@ -2637,6 +2640,18 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         UpdatePaneVisibility();
         UpdateVisualStateForDisplayModeGroup(DisplayMode());
+
+        // When NavView is in expaneded mode with fixed window size, setting IsPaneVisible to false doesn't closes the pane
+        // We manually close/open it for this case
+        if (!IsPaneVisible() && IsPaneOpen())
+        {
+            ClosePane();
+        }
+
+        if (IsPaneVisible() && DisplayMode() == winrt::NavigationViewDisplayMode::Expanded && !IsPaneOpen())
+        {
+            OpenPane();
+        }
     }
     else if (property == s_OverflowLabelModeProperty)
     {
@@ -3130,6 +3145,7 @@ void NavigationView::UpdateListViewItemSource()
     if (!dataSource)
     {
         dataSource = MenuItems();
+        UpdateSelectionForMenuItems();
     }
 
     // Always unset the data source first from old ListView, then set data source for new ListView.
@@ -3148,6 +3164,38 @@ void NavigationView::UpdateListViewItemSource()
     {
         InvalidateTopNavPrimaryLayout();
         UpdateSelectedItem();
+    }
+}
+
+void NavigationView::UpdateSelectionForMenuItems()
+{
+    // Allow customer to set selection by NavigationViewItem.IsSelected.
+    // If there are more than two items are set IsSelected=true, the first one is actually selected.
+    // If SelectedItem is set, IsSelected is ignored.
+    //         <NavigationView.MenuItems>
+    //              <NavigationViewItem Content = "Collection" IsSelected = "True" / >
+    //         </NavigationView.MenuItems>
+    if (!SelectedItem() && !m_shouldIgnoreNextSelectionChange)
+    {
+        if (auto menuItems = MenuItems().try_as<winrt::IVector<winrt::IInspectable>>())
+        {
+            for (int i = 0; i < static_cast<int>(menuItems.Size()); i++)
+            {
+                if (auto item = menuItems.GetAt(i).try_as<winrt::NavigationViewItem>())
+                {
+                    if (item.IsSelected())
+                    {
+                        auto scopeGuard = gsl::finally([this]()
+                            {
+                                m_shouldIgnoreNextSelectionChange = false;
+                            });
+                        m_shouldIgnoreNextSelectionChange = true;
+                        SelectedItem(item);
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -1,6 +1,10 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: Build
+  # Skip the build job if we are reusing the output of a previous build.
+  # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
+  condition:
+    eq(variables['useBuildOutputFromBuildId'],'') 
   pool:
     vmImage: VS2017-Win2016
   timeoutInMinutes: 120
@@ -27,6 +31,9 @@ jobs:
 - job: RunTests
   dependsOn:
     - Build
+  # Run this job even if the Build job was skipped
+  condition:
+    in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
@@ -60,7 +67,21 @@ jobs:
       restoreDirectory: packages
 
   - task: DownloadBuildArtifacts@0 
+    condition:
+      eq(variables['useBuildOutputFromBuildId'],'')
     inputs: 
+      artifactName: drop 
+      downloadPath: '$(artifactsDir)'
+
+  - task: DownloadBuildArtifacts@0 
+    condition:
+      ne(variables['useBuildOutputFromBuildId'],'')
+    inputs: 
+      buildType: specific
+      buildVersionToDownload: specific
+      project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
+      pipeline: 22
+      buildId: $(useBuildOutputFromBuildId)
       artifactName: drop 
       downloadPath: '$(artifactsDir)'
 

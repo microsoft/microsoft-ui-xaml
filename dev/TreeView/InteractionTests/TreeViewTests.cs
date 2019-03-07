@@ -876,6 +876,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
+        public void TreeViewDensityChange()
+        {
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                UIObject root = LabelFirstItem();
+                int height = root.BoundingRectangle.Height;
+                Verify.AreEqual(height, 32);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TreeViewTestSuite", "A")]
         public void TreeViewDragAndDropBetweenNodes_ContentMode()
         {
             TreeViewDragAndDropBetweenNodes(isContentMode:true);
@@ -2244,21 +2256,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TreeViewTestSuite", "B")]
         public void TreeViewItemTemplateSelectorTest()
         {
-            using (var setup = new TestSetupHelper("TreeView Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TreeView Tests", "ItemTemplateSelectorTestPage" }))
             {
-                Wait.ForIdle();
-                using (var nextPage = new TestSetupHelper("ItemTemplateSelectorTestPage"))
-                {
-                    Log.Comment("ItemTemplateSelector test page is ready");
-                    UIObject node1 = FindElement.ByName("Template1");
-                    Verify.IsNotNull(node1, "Verifying template 1 is set");
-                    UIObject node2 = FindElement.ByName("Template2");
-                    Verify.IsNotNull(node2, "Verifying template 2 is set");
+                Log.Comment("ItemTemplateSelector test page is ready");
+                UIObject node1 = FindElement.ByName("Template1");
+                Verify.IsNotNull(node1, "Verifying template 1 is set");
+                UIObject node2 = FindElement.ByName("Template2");
+                Verify.IsNotNull(node2, "Verifying template 2 is set");
 
-                    // Verify item container styles are set correctly by checking heights
-                    Verify.AreEqual(node1.BoundingRectangle.Height, 50);
-                    Verify.AreEqual(node2.BoundingRectangle.Height, 60);
-                }
+                // Verify item container styles are set correctly by checking heights
+                Verify.AreEqual(node1.BoundingRectangle.Height, 50);
+                Verify.AreEqual(node2.BoundingRectangle.Height, 60);
             }
         }
 
@@ -2534,16 +2542,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TreeViewTestSuite", "B")]
         public void TreeViewDataLateInitTest()
         {
-            using (var setup = new TestSetupHelper("TreeView Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TreeView Tests", "TreeViewLateDataInitTestPage" }))
             {
+                ClickButton("InitializeItemsSource");
                 Wait.ForIdle();
-                using (var nextPage = new TestSetupHelper("TreeViewLateDataInitTestPage"))
-                {
-                    ClickButton("InitializeItemsSource");
-                    Wait.ForIdle();
-                    UIObject node1 = FindElement.ByName("Root");
-                    Verify.IsNotNull(node1, "Verify data binding");
-                }
+                UIObject node1 = FindElement.ByName("Root");
+                Verify.IsNotNull(node1, "Verify data binding");
             }
         }
 
@@ -2552,14 +2556,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Platform", "Desktop")]
         public void TreeViewNodeInMarkupTest()
         {
-            using (var setup = new TestSetupHelper("TreeView Tests"))
+            using (var setup = new TestSetupHelper(new[] { "TreeView Tests", "TreeViewNodeInMarkupTestPage" }))
             {
-                Wait.ForIdle();
-                using (var nextPage = new TestSetupHelper("TreeViewNodeInMarkupTestPage"))
-                {
-                    UIObject root = FindElement.ByName("Root");
-                    Verify.IsNotNull(root, "Verify root node content");
-                }
+                UIObject root = FindElement.ByName("Root");
+                Verify.IsNotNull(root, "Verify root node content");
             }
         }
 

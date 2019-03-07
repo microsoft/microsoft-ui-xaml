@@ -17,12 +17,12 @@ ScrollControllerInteractionRequestedEventArgs::ScrollControllerInteractionReques
     m_pointerPoint = pointerPoint;
 }
 
-winrt::PointerPoint ScrollControllerInteractionRequestedEventArgs::PointerPoint()
+winrt::PointerPoint ScrollControllerInteractionRequestedEventArgs::PointerPoint() const
 {
     return m_pointerPoint;
 }
 
-bool ScrollControllerInteractionRequestedEventArgs::Handled()
+bool ScrollControllerInteractionRequestedEventArgs::Handled() const
 {
     return m_handled;
 }

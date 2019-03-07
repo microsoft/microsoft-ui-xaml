@@ -40,10 +40,6 @@ void TeachingTip::OnApplyTemplate()
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
     m_beakEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_beakEdgeBorderName, controlProtected));
     m_beakPolygon.set(GetTemplateChildT<winrt::Polygon>(s_beakPolygonName, controlProtected));
-    if (SharedHelpers::IsThemeShadowAvailable())
-    {
-        m_shadowTarget.set(GetTemplateChildT<winrt::Grid>(s_shadowTargetName, controlProtected));
-    }
 
     if (m_beakOcclusionGrid)
     {
@@ -143,6 +139,24 @@ void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const 
     else
     {
         winrt::VisualStateManager::GoToState(*this, L"NoContent"sv, false);
+    }
+}
+
+// Playing a closing animation when the Teaching Tip is closed via light dismiss requires this work around.
+// This is because there is no event that occurs when a popup is closing due to light dismiss so we have no way to intercept
+// the close and play our animation first. To work around this we've created a second popup which has no content and sits
+// underneath the teaching tip and is put into light dismiss mode instead of the primary popup. Then when this popup closes
+// due to light dismiss we know we are supposed to close the primary popup as well. To ensure that this popup does not block
+// interaction to the primary popup we need to make sure that the LightDismissIndicatorPopup is always opened first, so that
+// it is Z ordered underneath the primary popup.
+void TeachingTip::CreateLightDismissIndicatorPopup()
+{
+    if (!m_lightDismissIndicatorPopup)
+    {
+        m_lightDismissIndicatorPopup.set(winrt::Popup());
+        // A Popup needs contents to open, so set a child that doesn't do anything.
+        auto grid = winrt::Grid();
+        m_lightDismissIndicatorPopup.get().Child(grid);
     }
 }
 
@@ -676,15 +690,16 @@ void TeachingTip::OnIsOpenChanged()
                 static_cast<float>(m_target.get().as<winrt::FrameworkElement>().ActualHeight())
                 });
         }
+        if (!m_lightDismissIndicatorPopup)
+        {
+            CreateLightDismissIndicatorPopup();
+        }
         if (!m_popup)
         {
             m_popup.set(winrt::Popup());
             m_popupClosedRevoker = m_popup.get().Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
-            if (IsLightDismissEnabled())
-            {
-                m_popup.get().IsLightDismissEnabled(true);
-            }
         }
+        OnIsLightDismissEnabledChanged();
         if (!m_contractAnimation)
         {
             CreateContractAnimation();
@@ -706,6 +721,7 @@ void TeachingTip::OnIsOpenChanged()
                 m_isIdle = false;
                 TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
             }
+            m_lightDismissIndicatorPopup.get().IsOpen(true);
             m_popup.get().IsOpen(true);
             if (m_beakOcclusionGrid)
             {
@@ -759,16 +775,15 @@ void TeachingTip::OnIsOpenChanged()
 
 void TeachingTip::OnIconSourceChanged()
 {
+    auto templateSettings = winrt::get_self<::TeachingTipTemplateSettings>(TemplateSettings());
     if (auto source = IconSource())
     {
+        templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
         winrt::VisualStateManager::GoToState(*this, L"Icon"sv, false);
-        if (m_iconBorder)
-        {
-            m_iconBorder.get().Child(SharedHelpers::MakeIconElementFrom(source));
-        }
     }
     else
     {
+        templateSettings->IconElement(nullptr);
         winrt::VisualStateManager::GoToState(*this, L"NoIcon"sv, false);
     }
 }
@@ -783,18 +798,23 @@ void TeachingTip::OnTargetOffsetChanged()
 
 void TeachingTip::OnIsLightDismissEnabledChanged()
 {
-    if (m_popup)
-    {
-        m_popup.get().IsLightDismissEnabled(IsLightDismissEnabled());
-    }
-
     if (IsLightDismissEnabled())
     {
         winrt::VisualStateManager::GoToState(*this, L"LightDismiss"sv, false);
+        if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
+        {
+            lightDismissIndicatorPopup.IsLightDismissEnabled(true);
+            m_lightDismissIndicatorPopupClosedRevoker = lightDismissIndicatorPopup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnLightDismissIndicatorPopupClosed });
+        }
     }
     else
     {
         winrt::VisualStateManager::GoToState(*this, L"NormalDismiss"sv, false);
+        if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
+        {
+            lightDismissIndicatorPopup.IsLightDismissEnabled(false);
+        }
+        m_lightDismissIndicatorPopupClosedRevoker.revoke();
     }
 }
 
@@ -848,14 +868,19 @@ void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt:
 void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     m_popup.get().Child(nullptr);
+    m_lightDismissIndicatorPopup.get().IsOpen(false);
     auto myArgs = winrt::make_self<TeachingTipClosedEventArgs>();
+    myArgs->Reason(m_lastCloseReason);
+    m_closedEventSource(*this, *myArgs);
+}
+
+void TeachingTip::OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
+{
     if (IsOpen())
     {
         m_lastCloseReason = winrt::TeachingTipCloseReason::LightDismiss;
-        IsOpen(false);
     }
-    myArgs->Reason(m_lastCloseReason);
-    m_closedEventSource(*this, *myArgs);
+    IsOpen(false);
 }
 
 void TeachingTip::RaiseClosingEvent()
@@ -912,9 +937,13 @@ void TeachingTip::ClosePopupWithAnimationIfAvailable()
 
 void TeachingTip::ClosePopup()
 {
-    if (m_popup)
+    if (auto&& popup = m_popup.get())
     {
-        m_popup.get().IsOpen(false);
+        popup.IsOpen(false);
+    }
+    if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
+    {
+        lightDismissIndicatorPopup.IsOpen(false);
     }
     if (SharedHelpers::IsRS5OrHigher() && m_beakOcclusionGrid)
     {
@@ -1003,14 +1032,14 @@ void TeachingTip::CreateExpandAnimation()
     }
     expandAnimation.InsertExpressionKeyFrame(0.0f, L"Vector3(Min(0.01, 20.0 / Width), Min(0.01, 20.0 / Height), 1.0)");
     expandAnimation.InsertKeyFrame(1.0f, { 1.0f, 1.0f, 1.0f }, m_expandEasingFunction.get());
-    expandAnimation.Duration(s_expandAnimationDuration);
+    expandAnimation.Duration(m_expandAnimationDuration);
     expandAnimation.Target(s_scaleTargetName);
     m_expandAnimation.set(expandAnimation);
 
     auto expandElevationAnimation = compositor.CreateVector3KeyFrameAnimation();
     expandElevationAnimation.InsertExpressionKeyFrame(1.0f, L"Vector3(this.Target.Translation.X, this.Target.Translation.Y, contentElevation)", m_expandEasingFunction.get());
     expandElevationAnimation.SetScalarParameter(L"contentElevation", m_contentElevation);
-    expandElevationAnimation.Duration(s_expandAnimationDuration);
+    expandElevationAnimation.Duration(m_expandAnimationDuration);
     expandElevationAnimation.Target(s_translationTargetName);
     m_expandElevationAnimation.set(expandElevationAnimation);
 }
@@ -1036,13 +1065,13 @@ void TeachingTip::CreateContractAnimation()
     }
     contractAnimation.InsertKeyFrame(0.0f, { 1.0f, 1.0f, 1.0f });
     contractAnimation.InsertExpressionKeyFrame(1.0f, L"Vector3(20.0 / Width, 20.0 / Height, 1.0)", m_contractEasingFunction.get());
-    contractAnimation.Duration(s_contractAnimationDuration);
+    contractAnimation.Duration(m_contractAnimationDuration);
     contractAnimation.Target(s_scaleTargetName);
     m_contractAnimation.set(contractAnimation);
 
     auto contractElevationAnimation = compositor.CreateVector3KeyFrameAnimation();
     contractElevationAnimation.InsertExpressionKeyFrame(1.0f, L"Vector3(this.Target.Translation.X, this.Target.Translation.Y, 0.0f)", m_contractEasingFunction.get());
-    contractElevationAnimation.Duration(s_contractAnimationDuration);
+    contractElevationAnimation.Duration(m_contractAnimationDuration);
     contractElevationAnimation.Target(s_translationTargetName);
     m_contractElevationAnimation.set(contractElevationAnimation);
 }
@@ -1060,7 +1089,11 @@ void TeachingTip::StartExpandToOpen()
         if (m_beakOcclusionGrid)
         {
             m_beakOcclusionGrid.get().StartAnimation(m_expandAnimation.get());
-            m_beakOcclusionGrid.get().StartAnimation(m_expandElevationAnimation.get());
+            m_isExpandAnimationPlaying = true;
+        }
+        if (m_contentRootGrid)
+        {
+            m_contentRootGrid.get().StartAnimation(m_expandElevationAnimation.get());
             m_isExpandAnimationPlaying = true;
         }
         if (m_beakEdgeBorder)
@@ -1104,7 +1137,11 @@ void TeachingTip::StartContractToClose()
         if (m_beakOcclusionGrid)
         {
             m_beakOcclusionGrid.get().StartAnimation(m_contractAnimation.get());
-            m_beakOcclusionGrid.get().StartAnimation(m_contractElevationAnimation.get());
+            m_isContractAnimationPlaying = true;
+        }
+        if (m_contentRootGrid)
+        {
+            m_contentRootGrid.get().StartAnimation(m_contractElevationAnimation.get());
             m_isContractAnimationPlaying = true;
         }
         if (m_beakEdgeBorder)
@@ -1131,7 +1168,7 @@ void TeachingTip::StartContractToClose()
 winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
 {
     auto placement = Placement();
-    if(placement != winrt::TeachingTipPlacementMode::Auto)
+    if (placement != winrt::TeachingTipPlacementMode::Auto)
     {
         return placement;
     }
@@ -1375,20 +1412,45 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
 
 void TeachingTip::EstablishShadows()
 {
-#ifdef USE_INTERNAL_SDK
-    if (SharedHelpers::IsThemeShadowAvailable())
-    {
+#ifdef USE_INSIDER_SDK
+#ifdef BEAK_SHADOW
 #ifdef _DEBUG
-        // This facilitates an experiment around faking a proper beak shadow, shadows are expensive though so we don't want it present for release builds.
-        auto beakShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
-        beakShadow.Receivers().Append(m_target.get());
-        m_beakPolygon.get().Shadow(beakShadow);
-        m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
+    if (winrt::IUIElement10 beakPolygon_uiElement10 = m_contentRootGrid.get())
+    {
+        if (m_tipShadow)
+        {
+            if (!beakPolygon_uiElement10.Shadow())
+            {
+                // This facilitates an experiment around faking a proper beak shadow, shadows are expensive though so we don't want it present for release builds.
+                auto beakShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
+                beakShadow.Receivers().Append(m_target.get());
+                beakPolygon_uiElement10.Shadow(beakShadow);
+                m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
+            }
+        }
+        else
+        {
+            beakPolygon_uiElement10.Shadow(nullptr);
+        }
+    }
 #endif
-        auto contentShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
-        contentShadow.Receivers().Append(m_shadowTarget.get());
-        m_beakOcclusionGrid.get().Shadow(contentShadow);
-        m_beakOcclusionGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
+#endif
+    if (winrt::IUIElement10 m_contentRootGrid_uiElement10 = m_contentRootGrid.get())
+    {
+        if (m_tipShouldHaveShadow)
+        {
+            if (!m_contentRootGrid_uiElement10.Shadow())
+            {
+                m_contentRootGrid_uiElement10.Shadow(winrt::ThemeShadow{});
+                auto contentRootGrid = m_contentRootGrid.get();
+                auto contentRootGridTranslation = contentRootGrid.Translation();
+                contentRootGrid.Translation({ contentRootGridTranslation.x, contentRootGridTranslation.y, m_contentElevation });
+            }
+        }
+        else
+        {
+            m_contentRootGrid_uiElement10.Shadow(nullptr);
+        }
     }
 #endif
 }
@@ -1450,6 +1512,15 @@ void TeachingTip::SetContractEasingFunction(const winrt::CompositionEasingFuncti
     CreateContractAnimation();
 }
 
+void TeachingTip::SetTipShouldHaveShadow(bool tipShouldHaveShadow)
+{
+    if (m_tipShouldHaveShadow != tipShouldHaveShadow)
+    {
+        m_tipShouldHaveShadow = tipShouldHaveShadow;
+        EstablishShadows();
+    }
+}
+
 void TeachingTip::SetContentElevation(float elevation)
 {
     m_contentElevation = elevation;
@@ -1457,7 +1528,7 @@ void TeachingTip::SetContentElevation(float elevation)
     {
         if (m_beakOcclusionGrid)
         {
-            m_beakOcclusionGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
+            m_contentRootGrid.get().Translation({ m_beakOcclusionGrid.get().Translation().x, m_beakOcclusionGrid.get().Translation().y, m_contentElevation });
         }
         if (m_expandElevationAnimation)
         {
@@ -1473,30 +1544,6 @@ void TeachingTip::SetBeakElevation(float elevation)
     {
         m_beakPolygon.get().Translation({ m_beakPolygon.get().Translation().x, m_beakPolygon.get().Translation().y, m_beakElevation });
     }
-}
-
-void TeachingTip::SetBeakShadowTargetsShadowTarget(const bool targetsShadowTarget)
-{
-#ifdef USE_INTERNAL_SDK
-    m_beakShadowTargetsShadowTarget = targetsShadowTarget;
-    if (SharedHelpers::IsThemeShadowAvailable() && m_beakPolygon)
-    {
-        if (auto shadow = m_beakPolygon.get().Shadow())
-        {
-            if (auto themeShadow = m_beakPolygon.get().Shadow().as<winrt::Windows::UI::Xaml::Media::ThemeShadow>())
-            {
-                if (targetsShadowTarget)
-                {
-                    themeShadow.Receivers().Append(m_shadowTarget.get());
-                }
-                else
-                {
-                    themeShadow.Receivers().RemoveAtEnd();
-                }
-            }
-        }
-    }
-#endif
 }
 
 void TeachingTip::SetUseTestWindowBounds(bool useTestWindowBounds)
@@ -1522,6 +1569,32 @@ void TeachingTip::SetTipFollowsTarget(bool tipFollowsTarget)
         {
             RevokeViewportChangedEvent();
         }
+    }
+}
+
+void TeachingTip::SetExpandAnimationDuration(const winrt::TimeSpan& expandAnimationDuration)
+{
+    m_expandAnimationDuration = expandAnimationDuration;
+    if (m_expandAnimation)
+    {
+        m_expandAnimation.get().Duration(m_expandAnimationDuration);
+    }
+    if (m_expandElevationAnimation)
+    {
+        m_expandElevationAnimation.get().Duration(m_expandAnimationDuration);
+    }
+}
+
+void TeachingTip::SetContractAnimationDuration(const winrt::TimeSpan& contractAnimationDuration)
+{
+    m_contractAnimationDuration = contractAnimationDuration;
+    if (m_contractAnimation)
+    {
+        m_contractAnimation.get().Duration(m_contractAnimationDuration);
+    }
+    if (m_contractElevationAnimation)
+    {
+        m_contractElevationAnimation.get().Duration(m_contractAnimationDuration);
     }
 }
 

@@ -8,6 +8,7 @@
 
 CppWinRTActivatableClassWithDPFactory(TeachingTipTemplateSettings)
 
+GlobalDependencyProperty TeachingTipTemplateSettingsProperties::s_IconElementProperty{ nullptr };
 GlobalDependencyProperty TeachingTipTemplateSettingsProperties::s_TopLeftHighlightMarginProperty{ nullptr };
 GlobalDependencyProperty TeachingTipTemplateSettingsProperties::s_TopRightHighlightMarginProperty{ nullptr };
 
@@ -18,6 +19,17 @@ TeachingTipTemplateSettingsProperties::TeachingTipTemplateSettingsProperties()
 
 void TeachingTipTemplateSettingsProperties::EnsureProperties()
 {
+    if (!s_IconElementProperty)
+    {
+        s_IconElementProperty =
+            InitializeDependencyProperty(
+                L"IconElement",
+                winrt::name_of<winrt::IconElement>(),
+                winrt::name_of<winrt::TeachingTipTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IconElement>::BoxedDefaultValue(),
+                nullptr);
+    }
     if (!s_TopLeftHighlightMarginProperty)
     {
         s_TopLeftHighlightMarginProperty =
@@ -44,8 +56,19 @@ void TeachingTipTemplateSettingsProperties::EnsureProperties()
 
 void TeachingTipTemplateSettingsProperties::ClearProperties()
 {
+    s_IconElementProperty = nullptr;
     s_TopLeftHighlightMarginProperty = nullptr;
     s_TopRightHighlightMarginProperty = nullptr;
+}
+
+void TeachingTipTemplateSettingsProperties::IconElement(winrt::IconElement const& value)
+{
+    static_cast<TeachingTipTemplateSettings*>(this)->SetValue(s_IconElementProperty, ValueHelper<winrt::IconElement>::BoxValueIfNecessary(value));
+}
+
+winrt::IconElement TeachingTipTemplateSettingsProperties::IconElement()
+{
+    return ValueHelper<winrt::IconElement>::CastOrUnbox(static_cast<TeachingTipTemplateSettings*>(this)->GetValue(s_IconElementProperty));
 }
 
 void TeachingTipTemplateSettingsProperties::TopLeftHighlightMargin(winrt::Thickness const& value)

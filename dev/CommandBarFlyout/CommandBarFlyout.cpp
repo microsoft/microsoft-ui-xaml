@@ -160,10 +160,13 @@ CommandBarFlyout::CommandBarFlyout()
                         });
                     commandBar->IsOpen(false);
                 }
+
+#ifdef USE_INSIDER_SDK
                 //CommandBarFlyoutCommandBar.Closed will be called when
                 //clicking the more (...) button, we clear the translations
                 //here
                 commandBar->ClearShadow();
+#endif
             }
         }
     });

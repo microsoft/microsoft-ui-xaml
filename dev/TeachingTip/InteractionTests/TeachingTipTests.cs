@@ -63,26 +63,53 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 OpenTeachingTip();
                 CloseTeachingTipProgrammatically();
                 var message0 = GetTeachingTipDebugMessage(0);
+                var message1 = GetTeachingTipDebugMessage(1);
+                Verify.IsTrue(message0.ToString().Contains("Closing"));
                 Verify.IsTrue(message0.ToString().Contains("Programmatic"));
+                Verify.IsTrue(message1.ToString().Contains("Closed"));
+                Verify.IsTrue(message1.ToString().Contains("Programmatic"));
 
                 SetBleedingContent(BleedingContentOptions.NoContent);
                 OpenTeachingTip();
                 PressXCloseButton();
                 var message2 = GetTeachingTipDebugMessage(2);
+                var message3 = GetTeachingTipDebugMessage(3);
                 var message4 = GetTeachingTipDebugMessage(4);
                 Verify.IsTrue(message2.ToString().Contains("Close Button Clicked"));
+                Verify.IsTrue(message3.ToString().Contains("Closing"));
+                Verify.IsTrue(message3.ToString().Contains("CloseButton"));
+                Verify.IsTrue(message4.ToString().Contains("Closed"));
                 Verify.IsTrue(message4.ToString().Contains("CloseButton"));
 
                 EnableLightDismiss(true);
                 OpenTeachingTip();
                 CloseTeachingTipProgrammatically();
+                var message5 = GetTeachingTipDebugMessage(5);
                 var message6 = GetTeachingTipDebugMessage(6);
+                Verify.IsTrue(message5.ToString().Contains("Closing"));
+                Verify.IsTrue(message5.ToString().Contains("Programmatic"));
+                Verify.IsTrue(message6.ToString().Contains("Closed"));
                 Verify.IsTrue(message6.ToString().Contains("Programmatic"));
 
                 OpenTeachingTip();
-                message2.Tap();
+                CloseTeachingTipByLightDismiss();
                 var message7 = GetTeachingTipDebugMessage(7);
+                var message8 = GetTeachingTipDebugMessage(8);
+                Verify.IsTrue(message7.ToString().Contains("Closing"));
                 Verify.IsTrue(message7.ToString().Contains("LightDismiss"));
+                Verify.IsTrue(message8.ToString().Contains("Closed"));
+                Verify.IsTrue(message8.ToString().Contains("LightDismiss"));
+
+                OpenTeachingTip();
+                PressXCloseButton();
+                var message9 = GetTeachingTipDebugMessage(9);
+                var message10 = GetTeachingTipDebugMessage(10);
+                var message11 = GetTeachingTipDebugMessage(11);
+                Verify.IsTrue(message9.ToString().Contains("Close Button Clicked"));
+                Verify.IsTrue(message10.ToString().Contains("Closing"));
+                Verify.IsTrue(message10.ToString().Contains("CloseButton"));
+                Verify.IsTrue(message11.ToString().Contains("Closed"));
+                Verify.IsTrue(message11.ToString().Contains("CloseButton"));
             }
         }
 
@@ -276,6 +303,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void NoIconDoesNotCrash()
+        {
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+
+                ScrollTargetIntoView();
+                ScrollBy(10);
+
+                SetIcon(IconOptions.NoIcon);
+                OpenTeachingTip();
+                CloseTeachingTipProgrammatically();
+                SetIcon(IconOptions.People);
+                OpenTeachingTip();
+                SetIcon(IconOptions.NoIcon);
+            }
+        }
+
         private void ScrollTargetIntoView()
         {
             elements.GetBringTargetIntoViewButton().Invoke();
@@ -286,7 +332,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if(elements.GetIsOpenCheckBox().ToggleState != ToggleState.On)
             {
-                elements.GetShowButton().Invoke();
+                elements.GetShowButton().Tap();
                 if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
                 {
                     WaitForUnchecked(elements.GetIsIdleCheckBox());
@@ -310,9 +356,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        private void CloseTeachingTipByLightDismiss()
+        {
+            if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
+            {
+                elements.GetLstTeachingTipEvents().Tap();
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                {
+                    WaitForUnchecked(elements.GetIsIdleCheckBox());
+                }
+                WaitForUnchecked(elements.GetIsOpenCheckBox());
+                WaitForChecked(elements.GetIsIdleCheckBox());
+            }
+        }
+
         private void PressXCloseButton()
         {
-            InputHelper.Tap(elements.GetTeachingTip(), double.Parse(elements.GetTipWidthTextBlock().GetText()) + 90, 110);
+            InputHelper.Tap(elements.GetTeachingTip(), double.Parse(elements.GetTipWidthTextBlock().GetText()) - 10, 10);
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
                 WaitForUnchecked(elements.GetIsIdleCheckBox());
@@ -399,6 +459,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     break;
             }
             elements.GetSetBleedingContentButton().Invoke();
+        }
+
+        private void SetIcon(IconOptions icon)
+        {
+            switch(icon)
+            {
+                case IconOptions.People:
+                    elements.GetIconComboBox().SelectItemByName("People Icon");
+                    break;
+                default:
+                    elements.GetIconComboBox().SelectItemByName("No Icon");
+                    break;
+            }
+            elements.GetSetIconButton().Invoke();
         }
 
         private double GetTipVerticalOffset()

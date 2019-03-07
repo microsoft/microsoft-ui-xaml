@@ -19,12 +19,14 @@ public:
 
     static void SetExpandEasingFunction(const winrt::TeachingTip& teachingTip, const winrt::CompositionEasingFunction& easingFunction);
     static void SetContractEasingFunction(const winrt::TeachingTip& teachingTip, const winrt::CompositionEasingFunction& easingFunction);
+    static void SetTipShouldHaveShadow(const winrt::TeachingTip& teachingTip, bool tipShadow);
     static void SetContentElevation(const winrt::TeachingTip& teachingTip, float elevation);
     static void SetBeakElevation(const winrt::TeachingTip& teachingTip, float elevation);
-    static void SetBeakShadowTargetsShadowTarget(const winrt::TeachingTip& teachingTip, bool targetsShadowTarget);
     static void SetUseTestWindowBounds(const winrt::TeachingTip& teachingTip, bool useTestWindowBounds);
     static void SetTestWindowBounds(const winrt::TeachingTip& teachingTip, const winrt::Rect& testWindowBounds);
     static void SetTipFollowsTarget(const winrt::TeachingTip& teachingTIp, bool tipFollowsTarget);
+    static void SetExpandAnimationDuration(const winrt::TeachingTip& teachingTip, const winrt::TimeSpan& expandAnimationDuration);
+    static void SetContractAnimationDuration(const winrt::TeachingTip& teachingTip, const winrt::TimeSpan& contractAnimationDuration);
 
     static bool GetIsIdle(const winrt::TeachingTip& teachingTip);
     static winrt::TeachingTipPlacementMode GetEffectivePlacement(const winrt::TeachingTip& teachingTip);

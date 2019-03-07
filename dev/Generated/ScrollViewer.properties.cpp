@@ -34,12 +34,13 @@ GlobalDependencyProperty ScrollViewerProperties::s_ZoomModeProperty{ nullptr };
 ScrollViewerProperties::ScrollViewerProperties()
     : m_anchorRequestedEventSource{static_cast<ScrollViewer*>(this)}
     , m_bringingIntoViewEventSource{static_cast<ScrollViewer*>(this)}
-    , m_changingOffsetsEventSource{static_cast<ScrollViewer*>(this)}
-    , m_changingZoomFactorEventSource{static_cast<ScrollViewer*>(this)}
     , m_extentChangedEventSource{static_cast<ScrollViewer*>(this)}
+    , m_scrollAnimationStartingEventSource{static_cast<ScrollViewer*>(this)}
+    , m_scrollCompletedEventSource{static_cast<ScrollViewer*>(this)}
     , m_stateChangedEventSource{static_cast<ScrollViewer*>(this)}
-    , m_viewChangeCompletedEventSource{static_cast<ScrollViewer*>(this)}
     , m_viewChangedEventSource{static_cast<ScrollViewer*>(this)}
+    , m_zoomAnimationStartingEventSource{static_cast<ScrollViewer*>(this)}
+    , m_zoomCompletedEventSource{static_cast<ScrollViewer*>(this)}
 {
     EnsureProperties();
 }
@@ -592,26 +593,6 @@ void ScrollViewerProperties::BringingIntoView(winrt::event_token const& token)
     m_bringingIntoViewEventSource.remove(token);
 }
 
-winrt::event_token ScrollViewerProperties::ChangingOffsets(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollerChangingOffsetsEventArgs> const& value)
-{
-    return m_changingOffsetsEventSource.add(value);
-}
-
-void ScrollViewerProperties::ChangingOffsets(winrt::event_token const& token)
-{
-    m_changingOffsetsEventSource.remove(token);
-}
-
-winrt::event_token ScrollViewerProperties::ChangingZoomFactor(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollerChangingZoomFactorEventArgs> const& value)
-{
-    return m_changingZoomFactorEventSource.add(value);
-}
-
-void ScrollViewerProperties::ChangingZoomFactor(winrt::event_token const& token)
-{
-    m_changingZoomFactorEventSource.remove(token);
-}
-
 winrt::event_token ScrollViewerProperties::ExtentChanged(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::IInspectable> const& value)
 {
     return m_extentChangedEventSource.add(value);
@@ -620,6 +601,26 @@ winrt::event_token ScrollViewerProperties::ExtentChanged(winrt::TypedEventHandle
 void ScrollViewerProperties::ExtentChanged(winrt::event_token const& token)
 {
     m_extentChangedEventSource.remove(token);
+}
+
+winrt::event_token ScrollViewerProperties::ScrollAnimationStarting(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollAnimationStartingEventArgs> const& value)
+{
+    return m_scrollAnimationStartingEventSource.add(value);
+}
+
+void ScrollViewerProperties::ScrollAnimationStarting(winrt::event_token const& token)
+{
+    m_scrollAnimationStartingEventSource.remove(token);
+}
+
+winrt::event_token ScrollViewerProperties::ScrollCompleted(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollCompletedEventArgs> const& value)
+{
+    return m_scrollCompletedEventSource.add(value);
+}
+
+void ScrollViewerProperties::ScrollCompleted(winrt::event_token const& token)
+{
+    m_scrollCompletedEventSource.remove(token);
 }
 
 winrt::event_token ScrollViewerProperties::StateChanged(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::IInspectable> const& value)
@@ -632,16 +633,6 @@ void ScrollViewerProperties::StateChanged(winrt::event_token const& token)
     m_stateChangedEventSource.remove(token);
 }
 
-winrt::event_token ScrollViewerProperties::ViewChangeCompleted(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollerViewChangeCompletedEventArgs> const& value)
-{
-    return m_viewChangeCompletedEventSource.add(value);
-}
-
-void ScrollViewerProperties::ViewChangeCompleted(winrt::event_token const& token)
-{
-    m_viewChangeCompletedEventSource.remove(token);
-}
-
 winrt::event_token ScrollViewerProperties::ViewChanged(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::IInspectable> const& value)
 {
     return m_viewChangedEventSource.add(value);
@@ -650,4 +641,24 @@ winrt::event_token ScrollViewerProperties::ViewChanged(winrt::TypedEventHandler<
 void ScrollViewerProperties::ViewChanged(winrt::event_token const& token)
 {
     m_viewChangedEventSource.remove(token);
+}
+
+winrt::event_token ScrollViewerProperties::ZoomAnimationStarting(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ZoomAnimationStartingEventArgs> const& value)
+{
+    return m_zoomAnimationStartingEventSource.add(value);
+}
+
+void ScrollViewerProperties::ZoomAnimationStarting(winrt::event_token const& token)
+{
+    m_zoomAnimationStartingEventSource.remove(token);
+}
+
+winrt::event_token ScrollViewerProperties::ZoomCompleted(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ZoomCompletedEventArgs> const& value)
+{
+    return m_zoomCompletedEventSource.add(value);
+}
+
+void ScrollViewerProperties::ZoomCompleted(winrt::event_token const& token)
+{
+    m_zoomCompletedEventSource.remove(token);
 }
