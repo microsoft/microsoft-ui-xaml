@@ -137,19 +137,20 @@ checks in order to pass on all versions.
 
 This project collects usage data and sends it to Microsoft to help improve our 
 products and services. Note however that no data collection is performed by default
-when using your private builds. Data collection is indeed dependent on an 
-EMIT_TELEMETRY_EVENTS preprocessor definition.
+when using your private builds. An environment variable called "EmitTelemetryEvents"
+must be defined during the build for data collection to be turned on.
 
-If desired you can enable data collection when building the project by following these 
-steps:
+When using the Build.cmd script, you can use its /EmitTelemetryEvents option to define
+that variable.
+Or when building in Visual Studio, you can first define the System variable by following
+these steps:
 
-1. In Microsoft Visual Studio's Solution Explorer window, right-click the 
-"Microsoft.UI.Xaml (Universal Windows)" project. 
-2. Select the "Properties" menu.
-3. Select "All Configurations" in the Configuration dropdown.
-4. Select "All Platforms" in the Platform dropdown.
-5. Select "Configuration Properties", then "C/C++", then "Preprocessor" in the 
-left tree structure.
-6. In the entry called "Preprocessor Definitions", add "EMIT_TELEMETRY_EVENTS;".
-7. Click the "Apply" button.
-8. Recompile the project.
+1. Start the Settings application from the Windows Start menu.
+2. Click the 'System' option.
+3. Click the 'About' option.
+4. Click the 'System info' link.
+5. Click the 'Advanced system settings' link.
+6. Click the 'Environment Variables ...' button.
+7. Add the System Variable EmitTelemetryEvents with the Value true.
+8. Click the 'OK' button.
+9. Recompile the project.
