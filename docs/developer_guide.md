@@ -136,9 +136,11 @@ checks in order to pass on all versions.
 ## Telemetry
 
 This project collects usage data and sends it to Microsoft to help improve our 
-products and services.
+products and services. Note however that no data collection is performed by default
+when using your private builds. Data collection is indeed dependent on an 
+EMIT_TELEMETRY_EVENTS preprocessor definition.
 
-If desired you can disable logging when building the project by following these 
+If desired you can enable data collection when building the project by following these 
 steps:
 
 1. In Microsoft Visual Studio's Solution Explorer window, right-click the 
@@ -148,11 +150,6 @@ steps:
 4. Select "All Platforms" in the Platform dropdown.
 5. Select "Configuration Properties", then "C/C++", then "Preprocessor" in the 
 left tree structure.
-6. In the entry called "Preprocessor Definitions":
-    * Add "DISABLE_TELEMETRY_TRACELOGGING;" to disable Microsoft telemetry 
-    logging alone. 
-    * Add "DISABLE_PERF_TRACELOGGING;" to disable performance logging alone.
-    * Add "DISABLE_DEBUG_TRACELOGGING;" to disable debug logging alone.
-    * Or simply add "DISABLE_ALL_TRACELOGGING;" to disable all three types of logging.
+6. In the entry called "Preprocessor Definitions", add "EMIT_TELEMETRY_EVENTS;".
 7. Click the "Apply" button.
 8. Recompile the project.
