@@ -92,7 +92,7 @@ namespace MUXControlsTestApp
 
                 txtMouseWheelInertiaDecayRate.Text = ScrollerTestHooks.MouseWheelInertiaDecayRate.ToString();
 
-                chkIsInteractionTrackerMouseWheelZoomingEnabled.IsChecked = (bool)ScrollerTestHooks.IsInteractionTrackerMouseWheelZoomingEnabled;
+                chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = (bool)ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
             }
             catch
             {
@@ -151,14 +151,14 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ChkIsInteractionTrackerMouseWheelZoomingEnabled_Checked(object sender, RoutedEventArgs e)
+        private void ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Checked(object sender, RoutedEventArgs e)
         {
-            ScrollerTestHooks.IsInteractionTrackerMouseWheelZoomingEnabled = true;
+            ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = true;
         }
 
-        private void ChkIsInteractionTrackerMouseWheelZoomingEnabled_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Unchecked(object sender, RoutedEventArgs e)
         {
-            ScrollerTestHooks.IsInteractionTrackerMouseWheelZoomingEnabled = false;
+            ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = false;
         }
     }
 }

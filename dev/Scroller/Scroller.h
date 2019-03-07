@@ -353,7 +353,6 @@ private:
     void UpdateScrollControllerValues(ScrollerDimension dimension);
     void UpdateVisualInteractionSourceMode(ScrollerDimension dimension);
     void UpdateManipulationRedirectionMode();
-    void UpdateKeyEvents();
     void OnContentSizeChanged(
         const winrt::UIElement& content);
     void OnViewChanged(bool horizontalOffsetChanged, bool verticalOffsetChanged);
@@ -386,6 +385,18 @@ private:
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         _Out_opt_ int32_t* viewChangeId);
 
+    void ProcessPointerWheelScroll(
+        bool isHorizontalMouseWheel,
+        int32_t mouseWheelDelta,
+        float endOfInertiaPosition,
+        float minPosition,
+        float maxPosition);
+    void ProcessPointerWheelZoom(
+        winrt::PointerPoint const& pointerPoint,
+        int32_t mouseWheelDelta,
+        float endOfInertiaZoomFactor,
+        float minZoomFactor,
+        float maxZoomFactor);
     void ProcessDequeuedViewChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
     void ProcessOffsetsChange(
@@ -501,9 +512,6 @@ private:
     void UnhookVerticalScrollControllerEvents(
         const winrt::IScrollController& verticalScrollController);
     void UnhookSnapPointsVectorChangedEvents();
-
-    void SetKeyEvents();
-    void ResetKeyEvents();
 
     void RaiseInteractionSourcesChanged();
     void RaiseExtentChanged();
@@ -675,7 +683,7 @@ private:
         const winrt::UIElement& descendant,
         const winrt::Rect& descendantRect);
 
-    static bool IsInteractionTrackerMouseWheelZoomingEnabled();
+    static bool IsInteractionTrackerPointerWheelRedirectionEnabled();
     static bool IsVisualTranslationPropertyAvailable();
     static wstring_view GetVisualTargetedPropertyName(ScrollerDimension dimension);
 
@@ -699,7 +707,6 @@ private:
     double m_viewportWidth{ 0.0 };
     double m_viewportHeight{ 0.0 };
     bool m_isAnchorElementDirty{ true }; // False when m_anchorElement is up-to-date, True otherwise.
-    bool m_isListeningToKeystrokes{ false }; // True when key-down/key-up handlers are used.
 
     // For perf reasons, the value of ContentOrientation is cached.
     winrt::ContentOrientation m_contentOrientation{ s_defaultContentOrientation };
@@ -787,6 +794,11 @@ private:
     std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator> m_sortedConsolidatedHorizontalSnapPoints{};
     std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator> m_sortedConsolidatedVerticalSnapPoints{};
     std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator> m_sortedConsolidatedZoomSnapPoints{};
+
+    // Maximum difference for offsets to be considered equal. Used for pointer wheel scrolling.
+    static constexpr float s_offsetEqualityEpsilon{ 0.00001f };
+    // Maximum difference for zoom factors to be considered equal. Used for pointer wheel zooming.
+    static constexpr float s_zoomFactorEqualityEpsilon{ 0.00001f };
 
     // Property names being targeted for the Scroller.Content's Visual.
     // RedStone v1 case:

@@ -26,8 +26,8 @@ public:
     static void AreAnchorNotificationsRaised(bool areAnchorNotificationsRaised);
     static bool AreInteractionSourcesNotificationsRaised();
     static void AreInteractionSourcesNotificationsRaised(bool areInteractionSourcesNotificationsRaised);
-    static bool IsInteractionTrackerMouseWheelZoomingEnabled();
-    static void IsInteractionTrackerMouseWheelZoomingEnabled(bool isInteractionTrackerMouseWheelZoomingEnabled);
+    static bool IsInteractionTrackerPointerWheelRedirectionEnabled();
+    static void IsInteractionTrackerPointerWheelRedirectionEnabled(bool isInteractionTrackerPointerWheelRedirectionEnabled);
     static int MouseWheelDeltaForVelocityUnit();
     static void MouseWheelDeltaForVelocityUnit(int mouseWheelDeltaForVelocityUnit);
     static float MouseWheelInertiaDecayRate();
@@ -74,7 +74,7 @@ private:
     winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_contentLayoutOffsetYChangedEventSource;
     bool m_areAnchorNotificationsRaised{ false };
     bool m_areInteractionSourcesNotificationsRaised{ false };
-    bool m_isInteractionTrackerMouseWheelZoomingEnabled{ true };
+    bool m_isInteractionTrackerPointerWheelRedirectionEnabled{ true };
     int m_offsetsChangeMsPerUnit{ 0 };
     int m_offsetsChangeMinMs{ 0 };
     int m_offsetsChangeMaxMs{ 0 };

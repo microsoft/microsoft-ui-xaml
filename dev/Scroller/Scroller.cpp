@@ -33,13 +33,6 @@ Scroller::~Scroller()
 {
     SCROLLER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
-    if (SharedHelpers::IsRS4OrHigher() &&
-        !Scroller::IsInteractionTrackerMouseWheelZoomingEnabled() &&
-        m_isListeningToKeystrokes)
-    {
-        ResetKeyEvents();
-    }
-
     UnhookCompositionTargetRendering();
     UnhookScrollerEvents();
     UnhookSnapPointsVectorChangedEvents();
@@ -964,15 +957,51 @@ void Scroller::IdleStateEntered(
 void Scroller::InertiaStateEntered(
     const winrt::InteractionTrackerInertiaStateEnteredArgs& args)
 {
-#ifdef ScrollerViewKind_RelativeToEndOfInertiaView
-    // Record the end-of-inertia view for this inertial phase. It may be needed for
-    // ChangeOffsets and ChangeZoomFactor calls with RelativeToEndOfInertiaView.
-
+    winrt::IReference<winrt::float3> modifiedRestingPosition = args.ModifiedRestingPosition();
     winrt::float3 naturalRestingPosition = args.NaturalRestingPosition();
+    winrt::IReference<float> modifiedRestingScale = args.NaturalRestingScale();
     float naturalRestingScale = args.NaturalRestingScale();
 
-    winrt::IReference<winrt::float3> modifiedRestingPosition = args.NaturalRestingPosition();
-    winrt::IReference<float> modifiedRestingScale = args.NaturalRestingScale();
+    if (IsScrollerTracingEnabled() || ScrollerTrace::s_IsDebugOutputEnabled || ScrollerTrace::s_IsVerboseDebugOutputEnabled)
+    {
+        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, args.RequestId());
+
+        winrt::float3 positionVelocity = args.PositionVelocityInPixelsPerSecond();
+        float scaleVelocity = args.ScaleVelocityInPercentPerSecond();
+
+        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+            TypeLogging::Float2ToString(winrt::float2{ positionVelocity.x, positionVelocity.y }).c_str(),
+            scaleVelocity);
+
+        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+            TypeLogging::Float2ToString(winrt::float2{ naturalRestingPosition.x, naturalRestingPosition.y }).c_str(),
+            naturalRestingScale);
+
+        if (modifiedRestingPosition)
+        {
+            winrt::float3 endOfInertiaPosition = modifiedRestingPosition.Value();
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this,
+                TypeLogging::Float2ToString(winrt::float2{ endOfInertiaPosition.x, endOfInertiaPosition.y }).c_str());
+        }
+
+        if (modifiedRestingScale)
+        {
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_FLT, METH_NAME, this, modifiedRestingScale.Value());
+        }
+
+        if (SharedHelpers::IsRS5OrHigher())
+        {
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, args.IsInertiaFromImpulse());
+        }
+
+        if (SharedHelpers::Is19H1OrHigher())
+        {
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, args.IsFromBinding());
+        }
+    }
+
+    // Record the end-of-inertia view for this inertial phase. It may be needed for
+    // custom pointer wheel processing.
 
     if (modifiedRestingPosition)
     {
@@ -992,12 +1021,6 @@ void Scroller::InertiaStateEntered(
     {
         m_endOfInertiaZoomFactor = naturalRestingScale;
     }
-
-    SCROLLER_TRACE_INFO(*this, L"%s[0x%p](%d, %s, %f)\n", METH_NAME, this,
-        args.RequestId(),
-        TypeLogging::Float2ToString(m_endOfInertiaPosition).c_str(),
-        m_endOfInertiaZoomFactor);
-#endif
 
     UpdateState(winrt::InteractionState::Inertia);
 }
@@ -1126,12 +1149,7 @@ float Scroller::ComputeEndOfInertiaZoomFactor() const
 {
     if (m_state == winrt::InteractionState::Inertia)
     {
-        float endOfInertiaZoomFactor = m_endOfInertiaZoomFactor;
-
-        endOfInertiaZoomFactor = std::max(endOfInertiaZoomFactor, m_interactionTracker.MinScale());
-        endOfInertiaZoomFactor = std::min(endOfInertiaZoomFactor, m_interactionTracker.MaxScale());
-
-        return endOfInertiaZoomFactor;
+        return std::clamp(m_endOfInertiaZoomFactor, m_interactionTracker.MinScale(), m_interactionTracker.MaxScale());
     }
     else
     {
@@ -1330,7 +1348,7 @@ double Scroller::ComputeValueAfterSnapPoints(double value, const std::set<winrt:
 // Returns the zooming center point for mouse-wheel-triggered zooming
 winrt::float2 Scroller::ComputeCenterPointerForMouseWheelZooming(const winrt::UIElement& content, const winrt::Point& pointerPosition) const
 {
-    MUX_ASSERT(!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
+    MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
 
     float centerPointX = pointerPosition.X;
     float centerPointY = pointerPosition.Y;
@@ -1957,14 +1975,12 @@ void Scroller::SetupScrollerVisualInteractionSource()
     UpdateVisualInteractionSourceMode(
         ScrollerDimension::VerticalScroll);
 
-    UpdateKeyEvents();
-
     SetupVisualInteractionSourceMode(
         m_scrollerVisualInteractionSource,
         ZoomMode());
 
 #ifdef IsMouseWheelZoomDisabled
-    if (Scroller::IsInteractionTrackerMouseWheelZoomingEnabled())
+    if (Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled())
     {
         SetupVisualInteractionSourcePointerWheelConfig(
             m_scrollerVisualInteractionSource,
@@ -2375,7 +2391,7 @@ void Scroller::SetupVisualInteractionSourcePointerWheelConfig(
     const winrt::ZoomMode& zoomMode)
 {
     MUX_ASSERT(visualInteractionSource);
-    MUX_ASSERT(Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
+    MUX_ASSERT(Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
 
     visualInteractionSource.PointerWheelConfig().ScaleSourceMode(InteractionSourceRedirectionModeFromZoomMode(zoomMode));
 }
@@ -2385,9 +2401,11 @@ void Scroller::SetupVisualInteractionSourceRedirectionMode(
     const winrt::VisualInteractionSource& visualInteractionSource,
     const winrt::InputKind& ignoredInputKind)
 {
+    MUX_ASSERT(visualInteractionSource);
+
     winrt::VisualInteractionSourceRedirectionMode redirectionMode = winrt::VisualInteractionSourceRedirectionMode::CapableTouchpadOnly;
 
-    if (SharedHelpers::AreInteractionTrackerPointerWheelRedirectionModesAvailable() &&
+    if (Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled() &&
         !IsInputKindIgnored(winrt::InputKind::MouseWheel))
     {
         redirectionMode = winrt::VisualInteractionSourceRedirectionMode::CapableTouchpadAndPointerWheel;
@@ -2526,7 +2544,7 @@ winrt::ScrollMode Scroller::GetComputedMouseWheelScrollMode(ScrollerDimension di
 #ifdef IsMouseWheelZoomDisabled
 winrt::ZoomMode Scroller::GetMouseWheelZoomMode()
 {
-    MUX_ASSERT(Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
+    MUX_ASSERT(Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
 
     // TODO: c.f. Task 18569498 - Consider public IsMouseWheelZoomDisabled properties
     return ZoomMode();
@@ -3130,7 +3148,7 @@ winrt::InteractionSourceRedirectionMode Scroller::InteractionSourceRedirectionMo
 winrt::InteractionSourceRedirectionMode Scroller::InteractionSourceRedirectionModeFromZoomMode(
     const winrt::ZoomMode& zoomMode)
 {
-    MUX_ASSERT(Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
+    MUX_ASSERT(Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
 
     return zoomMode == winrt::ZoomMode::Enabled ? winrt::InteractionSourceRedirectionMode::Enabled : winrt::InteractionSourceRedirectionMode::Disabled;
 }
@@ -3217,20 +3235,20 @@ void Scroller::ValidateZoomFactoryBoundary(double value)
     }
 }
 
-// Returns False prior to RS5 where the InteractionTracker does not support off-thread mouse-wheel-based zooming.
+// Returns False prior to RS5 where the InteractionTracker does not support effective off-thread mouse-wheel-based scrolling and zooming.
 // Starting with RS5, returns True unless a test hook is set to disable the use of the InteractionTracker's built-in feature.
-bool Scroller::IsInteractionTrackerMouseWheelZoomingEnabled()
+bool Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled()
 {
-    bool isInteractionTrackerMouseWheelZoomingEnabled = SharedHelpers::IsRS5OrHigher();
+    bool isInteractionTrackerPointerWheelRedirectionEnabled = SharedHelpers::IsRS5OrHigher();
 
-    if (isInteractionTrackerMouseWheelZoomingEnabled)
+    if (isInteractionTrackerPointerWheelRedirectionEnabled)
     {
         com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
 
-        isInteractionTrackerMouseWheelZoomingEnabled = !globalTestHooks || globalTestHooks->IsInteractionTrackerMouseWheelZoomingEnabled();
+        isInteractionTrackerPointerWheelRedirectionEnabled = !globalTestHooks || globalTestHooks->IsInteractionTrackerPointerWheelRedirectionEnabled();
     }
 
-    return isInteractionTrackerMouseWheelZoomingEnabled;
+    return isInteractionTrackerPointerWheelRedirectionEnabled;
 }
 
 // Returns True on RedStone 2 and later versions, where the ElementCompositionPreview::SetIsTranslationEnabled method is available.
@@ -3458,7 +3476,7 @@ void Scroller::OnPropertyChanged(
                 ZoomMode());
 
 #ifdef IsMouseWheelZoomDisabled
-            if (Scroller::IsInteractionTrackerMouseWheelZoomingEnabled())
+            if (Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled())
             {
                 SetupVisualInteractionSourcePointerWheelConfig(
                     m_scrollerVisualInteractionSource,
@@ -3468,7 +3486,6 @@ void Scroller::OnPropertyChanged(
         }
         else if (dependencyProperty == s_IgnoredInputKindProperty)
         {
-            UpdateKeyEvents();
             UpdateManipulationRedirectionMode();
         }
     }
@@ -3660,25 +3677,23 @@ void Scroller::OnUnloaded(
     }
 }
 
-// UIElement.PointerWheelChanged event handler for support of mouse-wheel-triggered zooming.
+// UIElement.PointerWheelChanged event handler for support of mouse-wheel-triggered scrolling and zooming.
 void Scroller::OnPointerWheelChangedHandler(
     const winrt::IInspectable& /*sender*/,
     const winrt::PointerRoutedEventArgs& args)
 {
-    MUX_ASSERT(!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
+    MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
 
     if (!m_interactionTracker || !m_scrollerVisualInteractionSource)
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"No InteractionTracker");
-
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 0);
         // No InteractionTracker has been set up.
         return;
     }
 
     if (IsInputKindIgnored(winrt::InputKind::MouseWheel))
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"InputKind::MouseWheel ignored");
-
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 1);
         // MouseWheel input is ignored.
         return;
     }
@@ -3688,124 +3703,103 @@ void Scroller::OnPointerWheelChangedHandler(
     winrt::PointerPointProperties pointerPointProperties = pointerPoint.Properties();
     bool isHorizontalMouseWheel = pointerPointProperties.IsHorizontalMouseWheel();
     bool isControlPressed = (ctrlState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    bool isForScroll = false;
 
     if (!isControlPressed || isHorizontalMouseWheel)
     {
         // Mouse-wheel-triggered zooming is only attempted when Control key is down and event is not for a horizontal scroll.
-        return;
+        isForScroll = true;
     }
 
-    if (ZoomMode() == winrt::ZoomMode::Disabled)
+    if (isForScroll)
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"ZoomMode off");
+#ifdef USE_SCROLLMODE_AUTO
+        const winrt::ScrollMode horizontalScrollMode = GetComputedScrollMode(ScrollerDimension::HorizontalScroll);
+        const winrt::ScrollMode verticalScrollMode = GetComputedScrollMode(ScrollerDimension::VerticalScroll);
+#else
+        const winrt::ScrollMode horizontalScrollMode = HorizontalScrollMode();
+        const winrt::ScrollMode verticalScrollMode = VerticalScrollMode();
+#endif
 
+        if (isHorizontalMouseWheel)
+        {
+            if (horizontalScrollMode == winrt::ScrollMode::Disabled)
+            {
+                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 2);
+                // HorizontalScrollMode disabled.
+                return;
+            }
+        }
+        else
+        {
+            if (verticalScrollMode == winrt::ScrollMode::Disabled)
+            {
+                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 3);
+                // VerticalScrollMode disabled.
+                return;
+            }
+        }
+    }
+    else if (ZoomMode() == winrt::ZoomMode::Disabled)
+    {
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 4);
+        // ZoomMode disabled.
         return;
     }
 
     int32_t mouseWheelDelta = pointerPointProperties.MouseWheelDelta();
-    float endOfInertiaZoomFactor = ComputeEndOfInertiaZoomFactor();
-    float minZoomFactor = m_interactionTracker.MinScale();
-    float maxZoomFactor = m_interactionTracker.MaxScale();
 
-    if ((endOfInertiaZoomFactor == minZoomFactor && mouseWheelDelta < 0) ||
-        (endOfInertiaZoomFactor == maxZoomFactor && mouseWheelDelta > 0))
+    if (isForScroll)
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Cannot zoom beyond boundary");
+        winrt::float2 endOfInertiaPosition = ComputeEndOfInertiaPosition();
+        winrt::float2 minPosition{};
+        winrt::float2 maxPosition{};
 
-        return;
-    }
+        ComputeMinMaxPositions(ComputeEndOfInertiaZoomFactor(), &minPosition, &maxPosition);
 
-    // Attempt to find a zoom factor change with velocity request for mouse wheel input within the same tick.
-    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationWithAdditionalVelocity(
-        false /*isOperationTypeForOffsetsChange*/,
-        InteractionTrackerAsyncOperationTrigger::MouseWheel);
-
-    // Mouse wheel delta amount required per initial velocity unit
-    int32_t mouseWheelDeltaForVelocityUnit = s_mouseWheelDeltaForVelocityUnit;
-    com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
-
-    if (globalTestHooks)
-    {
-        mouseWheelDeltaForVelocityUnit = globalTestHooks->MouseWheelDeltaForVelocityUnit();
-    }
-
-    // Maximum absolute velocity. Any additional velocity has no effect
-    const float c_maxVelocityUnits = 5.0f;
-    // Incremental zoom factor change per velocity unit
-    const float c_zoomFactorChangePerVelocityUnit = 0.1f;
-
-    std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity = nullptr;
-    float zoomFactorVelocity = static_cast<float>(mouseWheelDelta) / mouseWheelDeltaForVelocityUnit;
-
-    if (interactionTrackerAsyncOperation)
-    {
-        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
-        zoomFactorChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<ZoomFactorChangeWithAdditionalVelocity>(viewChangeBase);
-
-        if (zoomFactorChangeWithAdditionalVelocity)
+        if (isHorizontalMouseWheel)
         {
-            zoomFactorVelocity += zoomFactorChangeWithAdditionalVelocity->ZoomFactorVelocity();
+            if ((abs(endOfInertiaPosition.x - minPosition.x) <= s_offsetEqualityEpsilon && mouseWheelDelta < 0) ||
+                (abs(endOfInertiaPosition.x - maxPosition.x) <= s_offsetEqualityEpsilon && mouseWheelDelta > 0))
+            {
+                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 123456789);
+                // Cannot scroll horizontally beyond boundary
+                return;
+            }
         }
-    }
+        else
+        {
+            if ((abs(endOfInertiaPosition.y - minPosition.y) <= s_offsetEqualityEpsilon && mouseWheelDelta > 0) ||
+                (abs(endOfInertiaPosition.y - maxPosition.y) <= s_offsetEqualityEpsilon && mouseWheelDelta < 0))
+            {
+                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 123456789);
+                // Cannot scroll vertically beyond boundary
+                return;
+            }
+        }
 
-    if (zoomFactorVelocity > 0.0f)
-    {
-        MUX_ASSERT(endOfInertiaZoomFactor < maxZoomFactor);
-
-        // No point in exceeding the maximum effective velocity
-        zoomFactorVelocity = std::min(c_maxVelocityUnits, zoomFactorVelocity);
-
-        // Do not attempt to zoom factor beyond the MaxZoomFactor value
-        zoomFactorVelocity = std::min((maxZoomFactor - endOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, zoomFactorVelocity);
+        ProcessPointerWheelScroll(
+            isHorizontalMouseWheel,
+            mouseWheelDelta,
+            isHorizontalMouseWheel ? endOfInertiaPosition.x : endOfInertiaPosition.y,
+            isHorizontalMouseWheel ? minPosition.x : minPosition.y,
+            isHorizontalMouseWheel ? maxPosition.x : maxPosition.y);
     }
     else
     {
-        MUX_ASSERT(endOfInertiaZoomFactor > minZoomFactor);
+        float endOfInertiaZoomFactor = ComputeEndOfInertiaZoomFactor();
+        float minZoomFactor = m_interactionTracker.MinScale();
+        float maxZoomFactor = m_interactionTracker.MaxScale();
 
-        // No point in exceeding the minimum effective velocity
-        zoomFactorVelocity = std::max(-c_maxVelocityUnits, zoomFactorVelocity);
-
-        // Do not attempt to zoom factor beyond the MinZoomFactor value
-        zoomFactorVelocity = std::max((minZoomFactor - endOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, zoomFactorVelocity);
-    }
-
-    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this,
-        interactionTrackerAsyncOperation ? L"Coalesced MouseWheelDelta for zooming" : L"New MouseWheelDelta for zooming",
-        mouseWheelDelta);
-
-    if (!interactionTrackerAsyncOperation)
-    {
-        // Minimum absolute velocity. Any lower velocity has no effect
-        const float c_minVelocityUnits = 0.05f;
-
-        // Inertia decay rate to achieve the c_zoomFactorChangePerVelocityUnit change per velocity unit
-        float mouseWheelInertiaDecayRate = SharedHelpers::IsRS2OrHigher() ? s_mouseWheelInertiaDecayRate : s_mouseWheelInertiaDecayRateRS1;
-
-        if (globalTestHooks)
+        if ((abs(endOfInertiaZoomFactor - minZoomFactor) <= s_zoomFactorEqualityEpsilon && mouseWheelDelta < 0) ||
+            (abs(endOfInertiaZoomFactor - maxZoomFactor) <= s_zoomFactorEqualityEpsilon && mouseWheelDelta > 0))
         {
-            mouseWheelInertiaDecayRate = globalTestHooks->MouseWheelInertiaDecayRate();
+            SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 123456789);
+            // Cannot zoom beyond boundary
+            return;
         }
 
-        // Make sure the initial velocity is larger than the minimum effective velocity
-        zoomFactorVelocity += (zoomFactorVelocity > 0.0f) ? c_minVelocityUnits : -c_minVelocityUnits;
-
-        winrt::IInspectable inertiaDecayRateAsInsp = box_value(mouseWheelInertiaDecayRate);
-        winrt::IReference<float> inertiaDecayRate = inertiaDecayRateAsInsp.as<winrt::IReference<float>>();
-        winrt::float2 centerPoint = ComputeCenterPointerForMouseWheelZooming(Content(), pointerPoint.Position());
-
-        int32_t viewChangeId = -1;
-
-        // Queue up a zooming with additional velocity operation
-        ChangeZoomFactorWithAdditionalVelocityPrivate(
-            zoomFactorVelocity,
-            centerPoint,
-            inertiaDecayRate,
-            InteractionTrackerAsyncOperationTrigger::MouseWheel,
-            &viewChangeId);
-    }
-    else if (zoomFactorChangeWithAdditionalVelocity)
-    {
-        zoomFactorChangeWithAdditionalVelocity->ZoomFactorVelocity(zoomFactorVelocity);
+        ProcessPointerWheelZoom(pointerPoint, mouseWheelDelta, endOfInertiaZoomFactor, minZoomFactor, maxZoomFactor);
     }
 
     args.Handled(true);
@@ -3980,16 +3974,16 @@ void Scroller::OnPointerPressed(
 
     const winrt::UIElement content = Content();
 #ifdef USE_SCROLLMODE_AUTO
-    const winrt::ScrollMode horizontalScrollMore = GetComputedScrollMode(ScrollerDimension::HorizontalScroll);
-    const winrt::ScrollMode verticalScrollMore = GetComputedScrollMode(ScrollerDimension::VerticalScroll);
+    const winrt::ScrollMode horizontalScrollMode = GetComputedScrollMode(ScrollerDimension::HorizontalScroll);
+    const winrt::ScrollMode verticalScrollMode = GetComputedScrollMode(ScrollerDimension::VerticalScroll);
 #else
-    const winrt::ScrollMode horizontalScrollMore = HorizontalScrollMode();
-    const winrt::ScrollMode verticalScrollMore = VerticalScrollMode();
+    const winrt::ScrollMode horizontalScrollMode = HorizontalScrollMode();
+    const winrt::ScrollMode verticalScrollMode = VerticalScrollMode();
 #endif
 
     if (!content ||
-        (horizontalScrollMore == winrt::ScrollMode::Disabled &&
-         verticalScrollMore == winrt::ScrollMode::Disabled &&
+        (horizontalScrollMode == winrt::ScrollMode::Disabled &&
+         verticalScrollMode == winrt::ScrollMode::Disabled &&
          ZoomMode() == winrt::ZoomMode::Disabled))
     {
         return;
@@ -4903,7 +4897,7 @@ void Scroller::UpdateVisualInteractionSourceMode(ScrollerDimension dimension)
             scrollMode);
 
 #ifdef IsMouseWheelScrollDisabled
-        if (SharedHelpers::IsRS5OrHigher())
+        if (Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled())
         {
             SetupVisualInteractionSourcePointerWheelConfig(
                 m_scrollerVisualInteractionSource,
@@ -4920,55 +4914,9 @@ void Scroller::UpdateManipulationRedirectionMode()
 {
     if (m_scrollerVisualInteractionSource)
     {
-        winrt::InputKind ignoredInputKind = IgnoredInputKind();
-
-        if (!IsInputKindIgnored(winrt::InputKind::MouseWheel))
-        {
-            bool suppressMouseWheel = true;
-
-            if (SharedHelpers::IsRS4OrHigher())
-            {
-                // Suppressing InteractionTracker's mouse wheel support when a Control key is down so the Scroller
-                // can receive mouse wheel messages to zoom in and out.
-                // Starting with RS5, the InteractionTracker supports built-in zoom in and out with the Control key and mouse wheel, 
-                // so no suppression is required anymore.
-                if (Scroller::IsInteractionTrackerMouseWheelZoomingEnabled())
-                {
-                    suppressMouseWheel = false;
-                }
-                else
-                {
-                    winrt::CoreVirtualKeyStates ctrlState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Control);
-                    suppressMouseWheel = (ctrlState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-                }
-            }
-
-            if (suppressMouseWheel)
-            {
-                ignoredInputKind |= winrt::InputKind::MouseWheel;
-            }
-        }
-
         SetupVisualInteractionSourceRedirectionMode(
             m_scrollerVisualInteractionSource,
-            ignoredInputKind);
-    }
-}
-
-void Scroller::UpdateKeyEvents()
-{
-    MUX_ASSERT(m_scrollerVisualInteractionSource);
-
-    if (SharedHelpers::IsRS4OrHigher() && !Scroller::IsInteractionTrackerMouseWheelZoomingEnabled())
-    {
-        if (!IsInputKindIgnored(winrt::InputKind::MouseWheel))
-        {
-            SetKeyEvents();
-        }
-        else
-        {
-            ResetKeyEvents();
-        }
+            IgnoredInputKind());
     }
 }
 
@@ -5490,6 +5438,264 @@ void Scroller::ChangeZoomFactorWithAdditionalVelocityPrivate(
         m_latestViewChangeId = GetNextViewChangeId();
         interactionTrackerAsyncOperation->SetViewChangeId(m_latestViewChangeId);
         *viewChangeId = m_latestViewChangeId;
+    }
+}
+
+void Scroller::ProcessPointerWheelScroll(
+    bool isHorizontalMouseWheel,
+    int32_t mouseWheelDelta,
+    float endOfInertiaPosition,
+    float minPosition,
+    float maxPosition)
+{
+    MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
+
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, isHorizontalMouseWheel, mouseWheelDelta);
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT_FLT, METH_NAME, this, endOfInertiaPosition, minPosition, maxPosition);
+
+    // Attempt to find an offsets change with velocity request for mouse wheel input within the same tick.
+    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationWithAdditionalVelocity(
+        true /*isOperationTypeForOffsetsChange*/,
+        InteractionTrackerAsyncOperationTrigger::MouseWheel);
+
+    // Mouse wheel delta amount required per initial velocity unit
+    int32_t mouseWheelDeltaForVelocityUnit = s_mouseWheelDeltaForVelocityUnit;
+    com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
+
+    if (globalTestHooks)
+    {
+        mouseWheelDeltaForVelocityUnit = globalTestHooks->MouseWheelDeltaForVelocityUnit();
+    }
+
+    // Maximum absolute velocity. Any additional velocity has no effect.
+    const float c_maxVelocity = 4000.0f;
+    // Velocity per unit (which is a mouse wheel delta of 120 by default).
+    const float c_unitVelocity = 1100.0f;
+    // Effect of unit velocity on offset.
+    const float c_offsetChangePerVelocityUnit = 104.9338f;
+
+    std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = nullptr;
+    float offsetVelocity = static_cast<float>(mouseWheelDelta) / mouseWheelDeltaForVelocityUnit * c_unitVelocity;
+
+    if (!isHorizontalMouseWheel)
+    {
+        offsetVelocity *= -1.0f;
+    }
+
+    winrt::float2 offsetsVelocity{
+        isHorizontalMouseWheel ? offsetVelocity : 0.0f,
+        isHorizontalMouseWheel ? 0.0f : offsetVelocity };
+
+    if (interactionTrackerAsyncOperation)
+    {
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+        offsetsChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<OffsetsChangeWithAdditionalVelocity>(viewChangeBase);
+
+        if (offsetsChangeWithAdditionalVelocity)
+        {
+            offsetsVelocity += offsetsChangeWithAdditionalVelocity->OffsetsVelocity();
+        }
+    }
+
+    if (offsetVelocity > 0.0f)
+    {
+        MUX_ASSERT(endOfInertiaPosition < maxPosition);
+
+        if (isHorizontalMouseWheel)
+        {
+            // No point in exceeding the maximum effective velocity
+            offsetsVelocity.x = std::min(c_maxVelocity, offsetsVelocity.x);
+
+            // Do not attempt to scroll beyond the MaxPosition value
+            offsetsVelocity.x = std::min((maxPosition - endOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.x);
+        }
+        else
+        {
+            // No point in exceeding the maximum effective velocity
+            offsetsVelocity.y = std::min(c_maxVelocity, offsetsVelocity.y);
+
+            // Do not attempt to scroll beyond the MaxPosition value
+            offsetsVelocity.y = std::min((maxPosition - endOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.y);
+        }
+    }
+    else
+    {
+        MUX_ASSERT(endOfInertiaPosition > minPosition);
+
+        if (isHorizontalMouseWheel)
+        {
+            // No point in exceeding the minimum effective velocity
+            offsetsVelocity.x = std::max(-c_maxVelocity, offsetsVelocity.x);
+
+            // Do not attempt to scroll beyond the MinPosition value
+            offsetsVelocity.x = std::max((minPosition - endOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.x);
+        }
+        else
+        {
+            // No point in exceeding the minimum effective velocity
+            offsetsVelocity.y = std::max(-c_maxVelocity, offsetsVelocity.y);
+
+            // Do not attempt to scroll beyond the MinPosition value
+            offsetsVelocity.y = std::max((minPosition - endOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.y);
+        }
+    }
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this,
+        interactionTrackerAsyncOperation.get(),
+        interactionTrackerAsyncOperation ? L"Coalesced MouseWheelDelta for scrolling" : L"New MouseWheelDelta for scrolling");
+
+    if (!interactionTrackerAsyncOperation)
+    {
+        // Minimum absolute velocity. Any lower velocity has no effect.
+        const float c_minVelocity = 30.0f;
+
+        // Inertia decay rate to achieve the c_offsetChangePerVelocityUnit change per velocity unit
+        float mouseWheelInertiaDecayRate = SharedHelpers::IsRS2OrHigher() ? s_mouseWheelInertiaDecayRate : s_mouseWheelInertiaDecayRateRS1;
+
+        if (globalTestHooks)
+        {
+            mouseWheelInertiaDecayRate = globalTestHooks->MouseWheelInertiaDecayRate();
+        }
+
+        // Make sure the initial velocity is larger than the minimum effective velocity
+        const float minOffsetVelocity = (offsetVelocity > 0.0f) ? c_minVelocity : -c_minVelocity;
+        winrt::IReference<winrt::float3> currentInertiaDecayRate = m_interactionTracker.PositionInertiaDecayRate();
+        winrt::IInspectable inertiaDecayRateAsInsp = nullptr;
+
+        if (isHorizontalMouseWheel)
+        {
+            offsetsVelocity.x += minOffsetVelocity;
+            inertiaDecayRateAsInsp = box_value(winrt::float2({
+                mouseWheelInertiaDecayRate,
+                currentInertiaDecayRate ? currentInertiaDecayRate.Value().y : c_scrollerDefaultInertiaDecayRate }));
+        }
+        else
+        {
+            offsetsVelocity.y += minOffsetVelocity;
+            inertiaDecayRateAsInsp = box_value(winrt::float2({
+                currentInertiaDecayRate ? currentInertiaDecayRate.Value().x : c_scrollerDefaultInertiaDecayRate,
+                mouseWheelInertiaDecayRate }));
+        }
+
+        winrt::IReference<winrt::float2> inertiaDecayRate = inertiaDecayRateAsInsp.as<winrt::IReference<winrt::float2>>();
+        int32_t viewChangeId = -1;
+
+        // Queue up a zooming with additional velocity operation
+        ChangeOffsetsWithAdditionalVelocityPrivate(
+            offsetsVelocity,
+            inertiaDecayRate,
+            InteractionTrackerAsyncOperationTrigger::MouseWheel,
+            &viewChangeId);
+    }
+    else if (offsetsChangeWithAdditionalVelocity)
+    {
+        offsetsChangeWithAdditionalVelocity->OffsetsVelocity(offsetsVelocity);
+    }
+}
+
+void Scroller::ProcessPointerWheelZoom(
+    winrt::PointerPoint const& pointerPoint,
+    int32_t mouseWheelDelta,
+    float endOfInertiaZoomFactor,
+    float minZoomFactor,
+    float maxZoomFactor)
+{
+    MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
+
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, mouseWheelDelta);
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT_FLT, METH_NAME, this, endOfInertiaZoomFactor, minZoomFactor, maxZoomFactor);
+
+    // Attempt to find a zoom factor change with velocity request for mouse wheel input within the same tick.
+    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationWithAdditionalVelocity(
+        false /*isOperationTypeForOffsetsChange*/,
+        InteractionTrackerAsyncOperationTrigger::MouseWheel);
+
+    // Mouse wheel delta amount required per initial velocity unit
+    int32_t mouseWheelDeltaForVelocityUnit = s_mouseWheelDeltaForVelocityUnit;
+    com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
+
+    if (globalTestHooks)
+    {
+        mouseWheelDeltaForVelocityUnit = globalTestHooks->MouseWheelDeltaForVelocityUnit();
+    }
+
+    // Maximum absolute velocity. Any additional velocity has no effect
+    const float c_maxVelocityUnits = 5.0f;
+    // Incremental zoom factor change per velocity unit
+    const float c_zoomFactorChangePerVelocityUnit = 0.1f;
+
+    std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity = nullptr;
+    float zoomFactorVelocity = static_cast<float>(mouseWheelDelta) / mouseWheelDeltaForVelocityUnit;
+
+    if (interactionTrackerAsyncOperation)
+    {
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+        zoomFactorChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<ZoomFactorChangeWithAdditionalVelocity>(viewChangeBase);
+
+        if (zoomFactorChangeWithAdditionalVelocity)
+        {
+            zoomFactorVelocity += zoomFactorChangeWithAdditionalVelocity->ZoomFactorVelocity();
+        }
+    }
+
+    if (zoomFactorVelocity > 0.0f)
+    {
+        MUX_ASSERT(endOfInertiaZoomFactor < maxZoomFactor);
+
+        // No point in exceeding the maximum effective velocity
+        zoomFactorVelocity = std::min(c_maxVelocityUnits, zoomFactorVelocity);
+
+        // Do not attempt to zoom beyond the MaxZoomFactor value
+        zoomFactorVelocity = std::min((maxZoomFactor - endOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, zoomFactorVelocity);
+    }
+    else
+    {
+        MUX_ASSERT(endOfInertiaZoomFactor > minZoomFactor);
+
+        // No point in exceeding the minimum effective velocity
+        zoomFactorVelocity = std::max(-c_maxVelocityUnits, zoomFactorVelocity);
+
+        // Do not attempt to zoom beyond the MinZoomFactor value
+        zoomFactorVelocity = std::max((minZoomFactor - endOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, zoomFactorVelocity);
+    }
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this,
+        interactionTrackerAsyncOperation.get(),
+        interactionTrackerAsyncOperation ? L"Coalesced MouseWheelDelta for zooming" : L"New MouseWheelDelta for zooming");
+
+    if (!interactionTrackerAsyncOperation)
+    {
+        // Minimum absolute velocity. Any lower velocity has no effect
+        const float c_minVelocityUnits = 0.05f;
+
+        // Inertia decay rate to achieve the c_zoomFactorChangePerVelocityUnit change per velocity unit
+        float mouseWheelInertiaDecayRate = SharedHelpers::IsRS2OrHigher() ? s_mouseWheelInertiaDecayRate : s_mouseWheelInertiaDecayRateRS1;
+
+        if (globalTestHooks)
+        {
+            mouseWheelInertiaDecayRate = globalTestHooks->MouseWheelInertiaDecayRate();
+        }
+
+        // Make sure the initial velocity is larger than the minimum effective velocity
+        zoomFactorVelocity += (zoomFactorVelocity > 0.0f) ? c_minVelocityUnits : -c_minVelocityUnits;
+
+        winrt::IInspectable inertiaDecayRateAsInsp = box_value(mouseWheelInertiaDecayRate);
+        winrt::IReference<float> inertiaDecayRate = inertiaDecayRateAsInsp.as<winrt::IReference<float>>();
+        winrt::float2 centerPoint = ComputeCenterPointerForMouseWheelZooming(Content(), pointerPoint.Position());
+
+        int32_t viewChangeId = -1;
+
+        // Queue up a zooming with additional velocity operation
+        ChangeZoomFactorWithAdditionalVelocityPrivate(
+            zoomFactorVelocity,
+            centerPoint,
+            inertiaDecayRate,
+            InteractionTrackerAsyncOperationTrigger::MouseWheel,
+            &viewChangeId);
+    }
+    else if (zoomFactorChangeWithAdditionalVelocity)
+    {
+        zoomFactorChangeWithAdditionalVelocity->ZoomFactorVelocity(zoomFactorVelocity);
     }
 }
 
@@ -6249,7 +6455,7 @@ void Scroller::HookScrollerEvents()
         m_bringIntoViewRequested = BringIntoViewRequested({ this, &Scroller::OnBringIntoViewRequestedHandler });
     }
 
-    if (!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled() && m_pointerWheelChangedToken.value == 0)
+    if (!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled() && m_pointerWheelChangedToken.value == 0)
     {
         m_pointerWheelChangedToken = PointerWheelChanged({ this, &Scroller::OnPointerWheelChangedHandler });
     }
@@ -6284,7 +6490,7 @@ void Scroller::UnhookScrollerEvents()
 
     if (m_pointerWheelChangedToken.value != 0)
     {
-        MUX_ASSERT(!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
+        MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
         PointerWheelChanged(m_pointerWheelChangedToken);
         m_pointerWheelChangedToken.value = 0;
     }
@@ -6499,83 +6705,6 @@ void Scroller::UnhookVerticalScrollControllerEvents(
     {
         verticalScrollController.ScrollFromRequested(m_verticalScrollControllerScrollFromRequestedToken);
         m_verticalScrollControllerScrollFromRequestedToken.value = 0;
-    }
-}
-
-void Scroller::SetKeyEvents()
-{
-    MUX_ASSERT(SharedHelpers::IsRS4OrHigher());
-    MUX_ASSERT(!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
-
-    if (!m_isListeningToKeystrokes)
-    {
-#ifdef USE_INSIDER_SDK
-        if (winrt::IUIElement10 uiElement10 = *this)
-        {
-            if (auto xamlRoot = uiElement10.XamlRoot())
-            {
-                auto xamlRootContent = xamlRoot.Content();
-
-                m_onXamlRootKeyDownEventHandler.set(winrt::box_value<winrt::KeyEventHandler>({ this, &Scroller::OnXamlRootKeyDownOrUp }));
-                xamlRootContent.AddHandler(winrt::UIElement::KeyDownEvent(), m_onXamlRootKeyDownEventHandler.get(), true);
-
-                m_onXamlRootKeyUpEventHandler.set(winrt::box_value<winrt::KeyEventHandler>({ this, &Scroller::OnXamlRootKeyDownOrUp }));
-                xamlRootContent.AddHandler(winrt::UIElement::KeyUpEvent(), m_onXamlRootKeyUpEventHandler.get(), true);
-            }
-        }
-        else
-#endif
-        {
-            auto coreWindow = winrt::Window::Current().CoreWindow();
-
-            m_coreWindowKeyDownRevoker = coreWindow.KeyDown(
-                winrt::auto_revoke,
-                { this, &Scroller::OnCoreWindowKeyDownOrUp });
-
-            m_coreWindowKeyUpRevoker = coreWindow.KeyUp(
-                winrt::auto_revoke,
-                { this, &Scroller::OnCoreWindowKeyDownOrUp });
-        }
-
-        m_isListeningToKeystrokes = true;
-    }
-}
-
-void Scroller::ResetKeyEvents()
-{
-    MUX_ASSERT(SharedHelpers::IsRS4OrHigher());
-    MUX_ASSERT(!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
-
-    if (m_isListeningToKeystrokes)
-    {
-#ifdef USE_INSIDER_SDK
-        if (winrt::IUIElement10 uiElement10 = *this)
-        {
-            if (auto xamlRoot = uiElement10.XamlRoot())
-            {
-                auto xamlRootContent = xamlRoot.Content();
-
-                if (m_onXamlRootKeyDownEventHandler)
-                {
-                    xamlRootContent.RemoveHandler(winrt::UIElement::KeyDownEvent(), m_onXamlRootKeyDownEventHandler.get());
-                    m_onXamlRootKeyDownEventHandler.set(nullptr);
-                }
-
-                if (m_onXamlRootKeyUpEventHandler)
-                {
-                    xamlRootContent.RemoveHandler(winrt::UIElement::KeyUpEvent(), m_onXamlRootKeyUpEventHandler.get());
-                    m_onXamlRootKeyUpEventHandler.set(nullptr);
-                }
-            }
-        }
-        else
-#endif
-        {
-            m_coreWindowKeyDownRevoker = {};
-            m_coreWindowKeyUpRevoker = {};
-        }
-
-        m_isListeningToKeystrokes = false;
     }
 }
 

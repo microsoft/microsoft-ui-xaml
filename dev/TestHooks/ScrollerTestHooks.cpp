@@ -55,16 +55,16 @@ void ScrollerTestHooks::AreInteractionSourcesNotificationsRaised(bool areInterac
     hooks->m_areInteractionSourcesNotificationsRaised = areInteractionSourcesNotificationsRaised;
 }
 
-bool ScrollerTestHooks::IsInteractionTrackerMouseWheelZoomingEnabled()
+bool ScrollerTestHooks::IsInteractionTrackerPointerWheelRedirectionEnabled()
 {
     auto hooks = EnsureGlobalTestHooks();
-    return hooks->m_isInteractionTrackerMouseWheelZoomingEnabled;
+    return hooks->m_isInteractionTrackerPointerWheelRedirectionEnabled;
 }
 
-void ScrollerTestHooks::IsInteractionTrackerMouseWheelZoomingEnabled(bool isInteractionTrackerMouseWheelZoomingEnabled)
+void ScrollerTestHooks::IsInteractionTrackerPointerWheelRedirectionEnabled(bool isInteractionTrackerPointerWheelRedirectionEnabled)
 {
     auto hooks = EnsureGlobalTestHooks();
-    hooks->m_isInteractionTrackerMouseWheelZoomingEnabled = isInteractionTrackerMouseWheelZoomingEnabled;
+    hooks->m_isInteractionTrackerPointerWheelRedirectionEnabled = isInteractionTrackerPointerWheelRedirectionEnabled;
 }
 
 int ScrollerTestHooks::MouseWheelDeltaForVelocityUnit()

@@ -33,8 +33,6 @@ public:
 
     static bool IsCoreWindowActivationModeAvailable();
 
-    static bool AreInteractionTrackerPointerWheelRedirectionModesAvailable();
-
     static bool IsFlyoutShowOptionsAvailable();
 
     static bool IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable();

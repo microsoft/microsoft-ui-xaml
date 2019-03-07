@@ -63,7 +63,7 @@
                 <TextBlock Text="MouseWheelInertiaDecayRate:" VerticalAlignment="Center" Margin="2" Grid.Row="2"/>
                 <TextBox x:Name="txtMouseWheelInertiaDecayRate" AutomationProperties.Name="txtMouseWheelInertiaDecayRate" Margin="2" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="2" TextChanged="TxtMouseWheelDeltaForVelocityUnit_TextChanged"/>
 
-                <CheckBox x:Name="chkIsInteractionTrackerMouseWheelZoomingEnabled" Margin="2" Grid.ColumnSpan="2" Grid.Row="3" Content="IsInteractionTrackerMouseWheelZoomingEnabled?" Checked="ChkIsInteractionTrackerMouseWheelZoomingEnabled_Checked" Unchecked="ChkIsInteractionTrackerMouseWheelZoomingEnabled_Unchecked"/>
+                <CheckBox x:Name="chkIsInteractionTrackerPointerWheelRedirectionEnabled" Margin="2" Grid.ColumnSpan="2" Grid.Row="3" Content="IsInteractionTrackerPointerWheelRedirectionEnabled?" Checked="ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Checked" Unchecked="ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Unchecked"/>
             </Grid>
         
             <TextBlock Text="Offsets change velocity parameters" Foreground="Red" Margin="0, 4, 0, 1"/>
