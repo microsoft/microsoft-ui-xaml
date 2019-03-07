@@ -141,7 +141,7 @@ jobs:
       arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)' -ReleaseTests
 
   - task: DotNetCoreCLI@2
-    displayName: 'Run tests in Helix'
+    displayName: 'Run release tests in Helix'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
