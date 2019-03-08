@@ -48,6 +48,12 @@ ItemsRepeater::ItemsRepeater()
     OnLayoutChanged(nullptr, layout);
 }
 
+ItemsRepeater::~ItemsRepeater()
+{
+    m_itemTemplate = nullptr;
+    m_animator = nullptr;
+    m_layout = nullptr;
+}
 
 #pragma region IUIElementOverrides
 
@@ -495,6 +501,13 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory&  oldValu
         throw winrt::hresult_error(E_FAIL, L"ItemTemplate cannot be changed during layout.");
     }
 
+    if (!SharedHelpers::IsRS5OrHigher())
+    {
+        // Bug in framework's reference tracking causes crash during
+        // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
+        m_itemTemplate = newValue;
+    }
+
 #ifndef BUILD_WINDOWS
     m_itemTemplateWrapper = newValue.try_as<winrt::IElementFactoryShim>();
     if (!m_itemTemplateWrapper)
@@ -547,6 +560,13 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
         m_layoutState.set(nullptr);
     }
 
+    if (!SharedHelpers::IsRS5OrHigher())
+    {
+        // Bug in framework's reference tracking causes crash during
+        // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
+        m_layout = newValue;
+    }
+
     if (newValue)
     {
         newValue.InitializeForContext(GetLayoutContext());
@@ -561,6 +581,12 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
 void ItemsRepeater::OnAnimatorChanged(const winrt::ElementAnimator& /* oldValue */, const winrt::ElementAnimator& newValue)
 {
     m_animationManager.OnAnimatorChanged(newValue);
+    if (!SharedHelpers::IsRS5OrHigher())
+    {
+        // Bug in framework's reference tracking causes crash during
+        // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
+        m_animator = newValue;
+    }
 }
 
 void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args)

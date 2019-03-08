@@ -21,6 +21,7 @@ class ItemsRepeater :
 {
 public:
     ItemsRepeater();
+    ~ItemsRepeater();
 
     static winrt::Point ClearedElementsArrangePosition;
     // A convention we use in the ItemsRepeater codebase for an invalid Rect value.
@@ -173,4 +174,10 @@ private:
     // events. We keep these counters to detect out-of-sync unloaded events and take action to rectify.
     int _loadedCounter{};
     int _unloadedCounter{};
+
+    // Bug in framework's reference tracking causes crash during
+    // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
+    winrt::IElementFactory m_itemTemplate{ nullptr };
+    winrt::Layout m_layout{ nullptr };
+    winrt::ElementAnimator m_animator{ nullptr };
 };
