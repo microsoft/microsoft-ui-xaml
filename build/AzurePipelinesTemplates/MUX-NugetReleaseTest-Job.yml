@@ -1,6 +1,6 @@
 parameters:
   buildJobName: 'BuildNugetPkgTests'
-  runTestJobName: ''
+  runTestJobName: 'RunNugetPkgTestsInHelix'
   dependsOn: ''
   runTests: true
   pkgArtifactPath: ''
