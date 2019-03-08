@@ -298,7 +298,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         public enum TipLocationOptions
         {
-            SetAttach,
             ResourceDictionary,
             VisualTree
         }

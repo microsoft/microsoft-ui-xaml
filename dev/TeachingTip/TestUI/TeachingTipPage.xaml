@@ -44,27 +44,6 @@
                     </muxc:TeachingTip>
                     <Button x:Name="targetButton" HorizontalAlignment="Center" VerticalAlignment="Center" Click="OnShowButtonClicked" Height="300">Enable AutoSave
                         <Button.Resources>
-                            <muxc:TeachingTip x:Name="TeachingTipInSetAttach" 
-                                          AutomationProperties.Name="TeachingTipInSetAttach"
-                                          Title="We've Added Auto Saving!" 
-                                          Subtext="Documents will now automatically save to OneDrive." 
-                                          Closed="OnTeachingTipClosed" 
-                                          Closing="OnTeachingTipClosing"
-                                          ActionButtonClick="OnTeachingTipActionButtonClicked"
-                                          CloseButtonClick="OnTeachingTipCloseButtonClicked">
-                                <muxc:TeachingTip.IconSource>
-                                    <muxc:SymbolIconSource Symbol="People"/>
-                                </muxc:TeachingTip.IconSource>
-                                <muxc:TeachingTip.BleedingImageContent>
-                                    <Grid MinHeight="200" MinWidth="200" Background="red"/>
-                                </muxc:TeachingTip.BleedingImageContent>
-                                <muxc:TeachingTip.Content>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
-                                        <CheckBox x:Name="CancelClosesCheckBoxInSetAttach" IsChecked="False" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </muxc:TeachingTip.Content>
-                            </muxc:TeachingTip>
                             <muxc:TeachingTip x:Name="TeachingTipInResources" 
                                           AutomationProperties.Name="TeachingTipInResources"
                                           Title="We've Added Auto Saving!" 
@@ -145,7 +124,6 @@
 
                 <TextBlock Grid.Row="0" Text="Tip Location:" Foreground="Red"/>
                 <ComboBox x:Name="TipLocationComboBox" AutomationProperties.Name="TipLocationComboBox" SelectedIndex="0" Grid.Row="1">
-                    <ComboBoxItem x:Name="TipInSetAttach">SetAttach</ComboBoxItem>
                     <ComboBoxItem x:Name="TipInVisualTree">VisualTree</ComboBoxItem>
                     <ComboBoxItem x:Name="TipInResources">Resources</ComboBoxItem>
                 </ComboBox>
