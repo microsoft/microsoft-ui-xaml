@@ -1,6 +1,6 @@
 parameters:
   dependsOn: ''
-  useNupkgFromArtifacts: false
+  nugetArtifactPath: ''
   nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
   matrix: 
       Debug_x86:
@@ -33,7 +33,7 @@ jobs:
   # projects at the just-built nupkg. The MUXRelease projects use a specific nuget version so we need
   # to update nuget.config to include the drop location as well as update the version in the csproj and
   # packages.config for the projects.
-  - ${{ if eq(parameters.useNupkgFromArtifacts, 'true') }}:
+  - ${{ if ne(parameters.nugetArtifactPath, '') }}:
     - task: DownloadBuildArtifacts@0 
       inputs: 
         artifactName: drop
@@ -49,7 +49,7 @@ jobs:
             <clear />
             <add key='NuGet official package source' value='https://api.nuget.org/v3/index.json' />
             <add key='dotnetfeed' value='https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json' />
-            <add key='local' value='$env:artifactDownloadPath\drop'/>
+            <add key='local' value=${{parameters.nugetArtifactPath}}/>
           </packageSources>
         </configuration>
         "@ | Out-File -Encoding UTF8 $nugetConfigFullPath
