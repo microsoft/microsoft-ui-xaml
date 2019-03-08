@@ -33,4 +33,8 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 };

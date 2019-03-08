@@ -5,7 +5,6 @@
 #include <common.h>
 #include "ItemsRepeater.common.h"
 #include "ItemsRepeater.h"
-#include "RepeaterFactory.h"
 #include "RepeaterLayoutContext.h"
 #include "ChildrenInTabFocusOrderIterable.h"
 #include "SharedHelpers.h"
@@ -44,26 +43,16 @@ ItemsRepeater::ItemsRepeater()
     Loaded({ this, &ItemsRepeater::OnLoaded });
     Unloaded({ this, &ItemsRepeater::OnUnloaded });
 
-    EnsureProperties();
     // Initialize the cached layout to the default value
-    auto layout = GetValue(s_layoutProperty).as<winrt::VirtualizingLayout>();
+    auto layout = Layout().as<winrt::VirtualizingLayout>();
     OnLayoutChanged(nullptr, layout);
 }
 
 ItemsRepeater::~ItemsRepeater()
 {
-    if (m_layout)
-    {
-        if (m_measureInvalidated)
-        {
-            m_layout.MeasureInvalidated(m_measureInvalidated);
-        }
-
-        if (m_arrangeInvalidated)
-        {
-            m_layout.ArrangeInvalidated(m_arrangeInvalidated);
-        }
-    }
+    m_itemTemplate = nullptr;
+    m_animator = nullptr;
+    m_layout = nullptr;
 }
 
 #pragma region IUIElementOverrides
@@ -119,9 +108,9 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
     winrt::Rect extent{};
     winrt::Size desiredSize{};
 
-    if (m_layout)
+    if (auto layout = Layout())
     {
-        desiredSize = m_layout.Measure(GetLayoutContext(), availableSize);
+        desiredSize = layout.Measure(GetLayoutContext(), availableSize);
         extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, desiredSize.Width, desiredSize.Height };
 
         // Clear auto recycle candidate elements that have not been kept alive by layout - i.e layout did not
@@ -167,9 +156,9 @@ winrt::Size ItemsRepeater::ArrangeOverride(winrt::Size const& finalSize)
 
     winrt::Size arrangeSize{};
 
-    if (m_layout)
+    if (auto layout = Layout())
     {
-        arrangeSize = m_layout.Arrange(GetLayoutContext(), finalSize);
+        arrangeSize = layout.Arrange(GetLayoutContext(), finalSize);
     }
 
     // The view manager might clear elements during this call.
@@ -218,79 +207,9 @@ winrt::Size ItemsRepeater::ArrangeOverride(winrt::Size const& finalSize)
 
 #pragma region IRepeater interface.
 
-winrt::IInspectable ItemsRepeater::ItemsSource()
-{
-    return GetValue(s_itemsSourceProperty);
-}
-
-void ItemsRepeater::ItemsSource(winrt::IInspectable const& value)
-{
-    SetValue(s_itemsSourceProperty, value);
-}
-
 winrt::ItemsSourceView ItemsRepeater::ItemsSourceView()
 {
-    return m_dataSource.get();
-}
-
-winrt::IElementFactory ItemsRepeater::ItemTemplate()
-{
-    return m_itemTemplate;
-}
-
-void ItemsRepeater::ItemTemplate(winrt::IElementFactory const& value)
-{
-    SetValue(s_itemTemplateProperty, value);
-}
-
-winrt::Layout ItemsRepeater::Layout()
-{
-    return m_layout;
-}
-
-void ItemsRepeater::Layout(winrt::Layout const& value)
-{
-    SetValue(s_layoutProperty, value);
-}
-
-winrt::ElementAnimator ItemsRepeater::Animator()
-{
-    return m_animator;
-}
-
-void ItemsRepeater::Animator(winrt::ElementAnimator const& value)
-{
-    SetValue(s_animatorProperty, value);
-}
-
-double ItemsRepeater::HorizontalCacheLength()
-{
-    return m_viewportManager->HorizontalCacheLength();
-}
-
-void ItemsRepeater::HorizontalCacheLength(double value)
-{
-    SetValue(s_horizontalCacheLengthProperty, box_value(value));
-}
-
-double ItemsRepeater::VerticalCacheLength()
-{
-    return m_viewportManager->VerticalCacheLength();
-}
-
-void ItemsRepeater::VerticalCacheLength(double value)
-{
-    SetValue(s_verticalCacheLengthProperty, box_value(value));
-}
-
-winrt::Brush ItemsRepeater::Background()
-{
-    return ValueHelper<winrt::Brush>::CastOrUnbox((this)->GetValue(BackgroundProperty()));
-}
-
-void ItemsRepeater::Background(winrt::Brush const& value)
-{
-    SetValue(BackgroundProperty(), value);
+    return m_itemsSourceView.get();
 }
 
 int32_t ItemsRepeater::GetElementIndex(winrt::UIElement const& element)
@@ -316,36 +235,6 @@ void ItemsRepeater::UnpinElement(winrt::UIElement const& element)
 winrt::UIElement ItemsRepeater::GetOrCreateElement(int index)
 {
     return GetOrCreateElementImpl(index);
-}
-
-winrt::event_token ItemsRepeater::ElementPrepared(winrt::TypedEventHandler<winrt::ItemsRepeater, winrt::ItemsRepeaterElementPreparedEventArgs> const& value)
-{
-    return m_elementPreparedEventSource.add(value);
-}
-
-void ItemsRepeater::ElementPrepared(winrt::event_token const& token)
-{
-    m_elementPreparedEventSource.remove(token);
-}
-
-winrt::event_token ItemsRepeater::ElementClearing(winrt::TypedEventHandler<winrt::ItemsRepeater, winrt::ItemsRepeaterElementClearingEventArgs> const& value)
-{
-    return m_elementClearingEventSource.add(value);
-}
-
-void ItemsRepeater::ElementClearing(winrt::event_token const& token)
-{
-    m_elementClearingEventSource.remove(token);
-}
-
-winrt::event_token ItemsRepeater::ElementIndexChanged(winrt::TypedEventHandler<winrt::ItemsRepeater, winrt::ItemsRepeaterElementIndexChangedEventArgs> const& value)
-{
-    return m_elementIndexChangedEventSource.add(value);
-}
-
-void ItemsRepeater::ElementIndexChanged(winrt::event_token const& token)
-{
-    m_elementIndexChangedEventSource.remove(token);
 }
 
 #pragma endregion
@@ -412,7 +301,7 @@ winrt::UIElement ItemsRepeater::GetOrCreateElementImpl(int index)
 
     if (isAnchorOutsideRealizedRange)
     {
-        if (!m_layout)
+        if (!Layout())
         {
             throw winrt::hresult_error(E_FAIL, L"Cannot make an Anchor when there is no attached layout.");
         }
@@ -460,7 +349,7 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
 {
     winrt::IDependencyProperty property = args.Property();
 
-    if (property == s_itemsSourceProperty)
+    if (property == s_ItemsSourceProperty)
     {
         auto newValue = args.NewValue();
         auto newDataSource = safe_try_cast<winrt::ItemsSourceView>(newValue);
@@ -469,25 +358,25 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
             newDataSource = winrt::ItemsSourceView(newValue);
         }
 
-        OnDataSourcePropertyChanged(m_dataSource.get(), newDataSource);
+        OnDataSourcePropertyChanged(m_itemsSourceView.get(), newDataSource);
     }
-    else if (property == s_itemTemplateProperty)
+    else if (property == s_ItemTemplateProperty)
     {
         OnItemTemplateChanged(safe_cast<winrt::IElementFactory>(args.OldValue()), safe_cast<winrt::IElementFactory>(args.NewValue()));
     }
-    else if (property == s_layoutProperty)
+    else if (property == s_LayoutProperty)
     {
         OnLayoutChanged(safe_cast<winrt::Layout>(args.OldValue()), safe_cast<winrt::Layout>(args.NewValue()));
     }
-    else if (property == s_animatorProperty)
+    else if (property == s_AnimatorProperty)
     {
         OnAnimatorChanged(safe_cast<winrt::ElementAnimator>(args.OldValue()), safe_cast<winrt::ElementAnimator>(args.NewValue()));
     }
-    else if (property == s_horizontalCacheLengthProperty)
+    else if (property == s_HorizontalCacheLengthProperty)
     {
         m_viewportManager->HorizontalCacheLength(unbox_value<double>(args.NewValue()));
     }
-    else if (property == s_verticalCacheLengthProperty)
+    else if (property == s_VerticalCacheLengthProperty)
     {
         m_viewportManager->VerticalCacheLength(unbox_value<double>(args.NewValue()));
     }
@@ -574,19 +463,19 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
         throw winrt::hresult_error(E_FAIL, L"Cannot set ItemsSourceView during layout.");
     }
 
-    m_dataSource.set(newValue);
+    m_itemsSourceView.set(newValue);
 
     if (oldValue)
     {
-        oldValue.CollectionChanged(m_dataSourceChanged);
+        m_itemsSourceViewChanged.revoke();
     }
 
     if (newValue)
     {
-        m_dataSourceChanged = newValue.CollectionChanged({ this, &ItemsRepeater::OnDataSourceChanged });
+        m_itemsSourceViewChanged = newValue.CollectionChanged(winrt::auto_revoke, { this, &ItemsRepeater::OnItemsSourceViewChanged });
     }
 
-    if (m_layout)
+    if (auto layout = Layout())
     {
         auto args = winrt::NotifyCollectionChangedEventArgs(
             winrt::NotifyCollectionChangedAction::Reset,
@@ -596,7 +485,7 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
             -1 /* oldIndex */);
         args.Action();
 
-        if (auto virtualLayout = m_layout.try_as<winrt::VirtualizingLayout>())
+        if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
         {
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
@@ -612,19 +501,24 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory&  oldValu
         throw winrt::hresult_error(E_FAIL, L"ItemTemplate cannot be changed during layout.");
     }
 
-    m_itemTemplate = newValue;
+    if (!SharedHelpers::IsRS5OrHigher())
+    {
+        // Bug in framework's reference tracking causes crash during
+        // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
+        m_itemTemplate = newValue;
+    }
 
 #ifndef BUILD_WINDOWS
-    m_itemTemplateWrapper = m_itemTemplate.try_as<winrt::IElementFactoryShim>();
+    m_itemTemplateWrapper = newValue.try_as<winrt::IElementFactoryShim>();
     if (!m_itemTemplateWrapper)
     {
         // ItemTemplate set does not implement IElementFactoryShim. We also 
         // want to support DataTemplate and DataTemplateSelectors automagically.
-        if (auto dataTemplate = m_itemTemplate.try_as<winrt::DataTemplate>())
+        if (auto dataTemplate = newValue.try_as<winrt::DataTemplate>())
         {
             m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(dataTemplate);
         }
-        else if (auto selector = m_itemTemplate.try_as<winrt::DataTemplateSelector>())
+        else if (auto selector = newValue.try_as<winrt::DataTemplateSelector>())
         {
             m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(selector);
         }
@@ -649,9 +543,9 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
     if (oldValue)
     {
         oldValue.UninitializeForContext(GetLayoutContext());
-        oldValue.MeasureInvalidated(m_measureInvalidated);
-        oldValue.ArrangeInvalidated(m_arrangeInvalidated);
-
+        m_measureInvalidated.revoke();
+        m_arrangeInvalidated.revoke();
+        
         // Walk through all the elements and make sure they are cleared
         auto children = Children();
         for (unsigned i = 0u; i < children.Size(); ++i)
@@ -666,13 +560,18 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
         m_layoutState.set(nullptr);
     }
 
-    m_layout = newValue;
+    if (!SharedHelpers::IsRS5OrHigher())
+    {
+        // Bug in framework's reference tracking causes crash during
+        // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
+        m_layout = newValue;
+    }
 
     if (newValue)
     {
         newValue.InitializeForContext(GetLayoutContext());
-        m_measureInvalidated = newValue.MeasureInvalidated({ this, &ItemsRepeater::InvalidateMeasureForLayout });
-        m_arrangeInvalidated = newValue.ArrangeInvalidated({ this, &ItemsRepeater::InvalidateArrangeForLayout });
+        m_measureInvalidated = newValue.MeasureInvalidated(winrt::auto_revoke, { this, &ItemsRepeater::InvalidateMeasureForLayout });
+        m_arrangeInvalidated = newValue.ArrangeInvalidated(winrt::auto_revoke, { this, &ItemsRepeater::InvalidateArrangeForLayout });
     }
 
     m_viewportManager->OnLayoutChanged();
@@ -681,11 +580,16 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
 
 void ItemsRepeater::OnAnimatorChanged(const winrt::ElementAnimator& /* oldValue */, const winrt::ElementAnimator& newValue)
 {
-    m_animator = newValue;
     m_animationManager.OnAnimatorChanged(newValue);
+    if (!SharedHelpers::IsRS5OrHigher())
+    {
+        // Bug in framework's reference tracking causes crash during
+        // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
+        m_animator = newValue;
+    }
 }
 
-void ItemsRepeater::OnDataSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args)
+void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args)
 {
     if (m_isLayoutInProgress)
     {
@@ -707,9 +611,9 @@ void ItemsRepeater::OnDataSourceChanged(const winrt::IInspectable& sender, const
     m_animationManager.OnDataSourceChanged(sender, args);
     m_viewManager.OnDataSourceChanged(sender, args);
 
-    if (m_layout)
+    if (auto layout = Layout())
     {
-        if (auto virtualLayout = m_layout.as<winrt::VirtualizingLayout>())
+        if (auto virtualLayout = layout.as<winrt::VirtualizingLayout>())
         {
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), sender, args);
         }

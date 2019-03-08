@@ -112,23 +112,32 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
 {
     ItemsRepeater();
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Object ItemsSource { get; set; };
     ItemsSourceView ItemsSourceView { get; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 #ifdef BUILD_WINDOWS
     Windows.UI.Xaml.IElementFactory ItemTemplate { get; set; };
  #else
     Object ItemTemplate { get; set; };
  #endif
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::StackLayout()")]
     Layout Layout { get; set; };
     
     [WUXC_VERSION_PREVIEW]
     {
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         ElementAnimator Animator{ get; set; };
     }
     
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("2.0")]
     Double HorizontalCacheLength { get; set; };
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("2.0")]
     Double VerticalCacheLength { get; set; };
 
     Windows.UI.Xaml.Media.Brush Background{ get; set; };
@@ -375,16 +384,24 @@ unsealed runtimeclass UniformGridLayoutState
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 unsealed runtimeclass UniformGridLayout : VirtualizingLayout
 {
     UniformGridLayout();
 
+    [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
     Windows.UI.Xaml.Controls.Orientation Orientation { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double MinItemWidth { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double MinItemHeight { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double MinRowSpacing { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double MinColumnSpacing { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::UniformGridLayoutItemsJustification::Start")]
     UniformGridLayoutItemsJustification ItemsJustification{ get; set; };
+    [MUX_DEFAULT_VALUE("winrt::UniformGridLayoutItemsStretch::None")]
     UniformGridLayoutItemsStretch ItemsStretch{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
@@ -405,11 +422,14 @@ unsealed runtimeclass StackLayoutState
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 unsealed runtimeclass StackLayout : VirtualizingLayout
 {
     StackLayout();
 
+    [MUX_DEFAULT_VALUE("winrt::Orientation::Vertical")]
     Windows.UI.Xaml.Controls.Orientation Orientation { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double Spacing { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
@@ -430,13 +450,18 @@ unsealed runtimeclass FlowLayoutState
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 unsealed runtimeclass FlowLayout : VirtualizingLayout
 {
     FlowLayout();
 
+    [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
     Windows.UI.Xaml.Controls.Orientation Orientation { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double MinRowSpacing { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double MinColumnSpacing { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::FlowLayoutLineAlignment::Start")]
     FlowLayoutLineAlignment LineAlignment { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };

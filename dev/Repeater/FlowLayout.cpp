@@ -8,51 +8,6 @@
 #include "FlowLayoutAlgorithm.h"
 #include "FlowLayoutState.h"
 #include "FlowLayout.h"
-#include "FlowLayoutFactory.h"
-
-#pragma region IFlowLayout
-
-winrt::Orientation FlowLayout::Orientation()
-{
-    return auto_unbox(GetValue(s_orientationProperty));
-}
-
-void FlowLayout::Orientation(winrt::Orientation const& value)
-{
-    SetValue(s_orientationProperty, box_value(value));
-}
-
-double FlowLayout::MinRowSpacing()
-{
-    return m_minRowSpacing;
-}
-
-void FlowLayout::MinRowSpacing(double value)
-{
-    SetValue(s_minRowSpacingProperty, box_value(value));
-}
-
-double FlowLayout::MinColumnSpacing()
-{
-    return m_minColumnSpacing;
-}
-
-void FlowLayout::MinColumnSpacing(double value)
-{
-    SetValue(s_minColumnSpacingProperty, box_value(value));
-}
-
-winrt::FlowLayoutLineAlignment FlowLayout::LineAlignment()
-{
-    return m_lineAlignment;
-}
-
-void FlowLayout::LineAlignment(winrt::FlowLayoutLineAlignment const& value)
-{
-    SetValue(s_lineAlignmentProperty, box_value(value));
-}
-
-#pragma endregion
 
 #pragma region IVirtualizingLayoutOverrides
 
@@ -404,7 +359,7 @@ void FlowLayout::Algorithm_OnLineArranged(
 void FlowLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     auto property = args.Property();
-    if (property == s_orientationProperty)
+    if (property == s_OrientationProperty)
     {
         auto orientation = unbox_value<winrt::Orientation>(args.NewValue());
 
@@ -413,15 +368,15 @@ void FlowLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
         ScrollOrientation scrollOrientation = (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Vertical : ScrollOrientation::Horizontal;
         OrientationBasedMeasures::SetScrollOrientation(scrollOrientation);
     }
-    else if (property == s_minColumnSpacingProperty)
+    else if (property == s_MinColumnSpacingProperty)
     {
         m_minColumnSpacing = unbox_value<double>(args.NewValue());
     }
-    else if (property == s_minRowSpacingProperty)
+    else if (property == s_MinRowSpacingProperty)
     {
         m_minRowSpacing = unbox_value<double>(args.NewValue());
     }
-    else if (property == s_lineAlignmentProperty)
+    else if (property == s_LineAlignmentProperty)
     {
         m_lineAlignment = unbox_value<winrt::FlowLayoutLineAlignment>(args.NewValue());
     }
