@@ -179,5 +179,5 @@ private:
     // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
     winrt::IElementFactory m_itemTemplate{ nullptr };
     winrt::Layout m_layout{ nullptr };
-    winrt::ElementAnimator m_animator{ nullptr };
+    winrt::ElementAnimator m_animator{ nullptr }; 
 };
