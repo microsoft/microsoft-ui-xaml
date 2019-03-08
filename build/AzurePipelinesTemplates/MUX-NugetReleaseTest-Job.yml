@@ -5,9 +5,18 @@ parameters:
   pkgArtifactPath: ''
   nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
   matrix: 
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
+    Debug_x86:
+      buildPlatform: 'x86'
+      buildConfiguration: 'Debug'
+    Debug_x64:
+      buildPlatform: 'x64'
+      buildConfiguration: 'Debug'
+    Release_x64:
+      buildPlatform: 'x64'
+      buildConfiguration: 'Release'
+    Release_arm:
+      buildPlatform: 'arm'
+      buildConfiguration: 'Release'
       
 jobs:
 - job: ${{ parameters.buildJobName }}
@@ -97,6 +106,6 @@ jobs:
 - template: MUX-RunHelixTests-Job.yml
   parameters:
     name: ${{ parameters.runTestJobName }}
-    helixProjects: build\Helix\RunNuGetTestsInHelix.proj
+    helixProjects: build\Helix\RunNugetTestsInHelix.proj
     dependsOn: ${{ parameters.buildJobName }}
   
