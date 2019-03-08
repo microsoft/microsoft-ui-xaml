@@ -103,7 +103,7 @@ jobs:
       nugetConfigPath: $(nugetConfigPath)
 
   - template: MUX-PublishProjectOutput-Steps.yml
- ${{if eq(parameters.runTests, 'true')}}:     
+- ${{if eq(parameters.runTests, 'true')}}:     
   - template: MUX-RunHelixTests-Job.yml
     parameters:
       name: ${{ parameters.runTestJobName }}
