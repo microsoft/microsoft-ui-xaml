@@ -101,7 +101,7 @@ jobs:
       solutionPath: $(solutionPath)
       nugetConfigPath: $(nugetConfigPath)
 
-  - template: MUX-PublishDevProject-Steps.yml
+  - template: MUX-PublishProjectOutput-Steps.yml
       
 - template: MUX-RunHelixTests-Job.yml
   parameters:

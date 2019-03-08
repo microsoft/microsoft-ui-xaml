@@ -25,7 +25,7 @@ jobs:
 
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-  - template: AzurePipelinesTemplates\MUX-PublishDevProject-Steps.yml
+  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
   parameters:
