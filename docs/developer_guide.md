@@ -136,23 +136,15 @@ checks in order to pass on all versions.
 ## Telemetry
 
 This project collects usage data and sends it to Microsoft to help improve our 
-products and services.
+products and services. Note however that no data collection is performed by default
+when using your private builds. An environment variable called "EmitTelemetryEvents"
+must be defined during the build for data collection to be turned on.
 
-If desired you can disable logging when building the project by following these 
-steps:
+When using the Build.cmd script, you can use its /EmitTelemetryEvents option to define
+that variable.
+Or when building in Visual Studio, you can first define the environment variable in a
+Command Prompt window and then launch the solution from there:
 
-1. In Microsoft Visual Studio's Solution Explorer window, right-click the 
-"Microsoft.UI.Xaml (Universal Windows)" project. 
-2. Select the "Properties" menu.
-3. Select "All Configurations" in the Configuration dropdown.
-4. Select "All Platforms" in the Platform dropdown.
-5. Select "Configuration Properties", then "C/C++", then "Preprocessor" in the 
-left tree structure.
-6. In the entry called "Preprocessor Definitions":
-    * Add "DISABLE_TELEMETRY_TRACELOGGING;" to disable Microsoft telemetry 
-    logging alone. 
-    * Add "DISABLE_PERF_TRACELOGGING;" to disable performance logging alone.
-    * Add "DISABLE_DEBUG_TRACELOGGING;" to disable debug logging alone.
-    * Or simply add "DISABLE_ALL_TRACELOGGING;" to disable all three types of logging.
-7. Click the "Apply" button.
-8. Recompile the project.
+1. In a Command Prompt window, set the required environment variable: set EmitTelemetryEvents=true
+2. Then from that same Command Prompt, open the Visual Studio solution: MUXControls.sln
+3. Recompile the solution in Visual Studio. The build will use that environment variable.

@@ -88,8 +88,8 @@ private:
     bool m_isDataSourceStableResetPending{};
 
     // Event tokens
-    winrt::event_token m_gotFocus{};
-    winrt::event_token m_lostFocus{};
+    winrt::UIElement::GotFocus_revoker m_gotFocus{};
+    winrt::UIElement::LostFocus_revoker m_lostFocus{};
 
     ::Phaser m_phaser;
 

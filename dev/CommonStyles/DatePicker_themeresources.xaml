@@ -120,6 +120,9 @@
     <Thickness x:Key="DatePickerFlyoutPresenterItemPadding">0,3,0,6</Thickness>
     <Thickness x:Key="DatePickerFlyoutPresenterMonthPadding">9,3,0,6</Thickness>
     
+    <Thickness x:Key="DatePickerHostPadding">0,3,0,6</Thickness>
+    <Thickness x:Key="DatePickerHostMonthPadding">9,3,0,6</Thickness>
+
     <Style TargetType="DatePicker">
         <Setter Property="Orientation" Value="Horizontal" />
         <Setter Property="IsTabStop" Value="False" />
@@ -295,7 +298,7 @@
                                 <TextBlock x:Name="DayTextBlock"
                                     Text="Day"
                                     TextAlignment="Center"
-                                    Padding="{ThemeResource DatePickerFlyoutPresenterItemPadding}"
+                                    Padding="{ThemeResource DatePickerHostPadding}"
                                     FontFamily="{TemplateBinding FontFamily}"
                                     FontWeight="{TemplateBinding FontWeight}"
                                     FontSize="{TemplateBinding FontSize}"
@@ -303,7 +306,7 @@
                                 <TextBlock x:Name="MonthTextBlock"
                                     Text="Month"
                                     TextAlignment="Left"
-                                    Padding="{ThemeResource DatePickerFlyoutPresenterMonthPadding}"
+                                    Padding="{ThemeResource DatePickerHostMonthPadding}"
                                     Margin="1,0,0,0"
                                     FontFamily="{TemplateBinding FontFamily}"
                                     FontWeight="{TemplateBinding FontWeight}"
@@ -312,7 +315,7 @@
                                 <TextBlock x:Name="YearTextBlock"
                                     Text="Year"
                                     TextAlignment="Center"
-                                    Padding="{ThemeResource DatePickerFlyoutPresenterItemPadding}"
+                                    Padding="{ThemeResource DatePickerHostPadding}"
                                     FontFamily="{TemplateBinding FontFamily}"
                                     FontWeight="{TemplateBinding FontWeight}"
                                     FontSize="{TemplateBinding FontSize}"

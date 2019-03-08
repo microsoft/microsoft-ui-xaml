@@ -809,11 +809,11 @@ void ViewManager::OnFocusChanged(const winrt::IInspectable&, const winrt::Routed
 
 void ViewManager::EnsureEventSubscriptions()
 {
-    if (!m_gotFocus.value)
+    if (!m_gotFocus)
     {
-        MUX_ASSERT(!m_lostFocus.value);
-        m_gotFocus = m_owner->GotFocus({ this, &ViewManager::OnFocusChanged });
-        m_lostFocus = m_owner->LostFocus({ this, &ViewManager::OnFocusChanged });
+        MUX_ASSERT(!m_lostFocus);
+        m_gotFocus = m_owner->GotFocus(winrt::auto_revoke, { this, &ViewManager::OnFocusChanged });
+        m_lostFocus = m_owner->LostFocus(winrt::auto_revoke, { this, &ViewManager::OnFocusChanged });
     }
 }
 

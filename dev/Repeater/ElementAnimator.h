@@ -179,5 +179,5 @@ private:
     event_source<winrt::ElementAnimationCompleted> m_boundsChangeAnimationCompleted{ this };
 
     // Event tokens.
-    winrt::event_token m_rendering{};
+    winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_rendering{};
 };
