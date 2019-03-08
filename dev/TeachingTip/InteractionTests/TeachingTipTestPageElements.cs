@@ -248,7 +248,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public UIObject GetTeachingTipAlternateCloseButton()
         {
             ElementCache.Clear();
-            var element = GetElement(ref teachingTipAlternateCloseButton, "Teaching tip alternate close button");
+            var element = GetElement(ref teachingTipAlternateCloseButton, "Close");
             teachingTipAlternateCloseButton = null;
             return element;
         }

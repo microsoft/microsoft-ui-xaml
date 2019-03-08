@@ -26,7 +26,7 @@ public:
     // UIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
 
-    tracker_ref<winrt::UIElement> m_target{ this };
+    tracker_ref<winrt::FrameworkElement> m_target{ this };
 
     static void SetAttach(const winrt::UIElement& element, const winrt::TeachingTip& teachingTip);
     static winrt::TeachingTip GetAttach(const winrt::UIElement& element);
@@ -96,7 +96,7 @@ private:
     void ClosePopupWithAnimationIfAvailable();
     void ClosePopup();
 
-    void SetTarget(const winrt::UIElement& element);
+    void SetTarget(const winrt::FrameworkElement& element);
     void SetViewportChangedEvent();
     void RevokeViewportChangedEvent();
     void TargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&);
