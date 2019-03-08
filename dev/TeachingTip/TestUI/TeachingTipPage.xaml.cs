@@ -559,12 +559,12 @@ namespace MUXControlsTestApp
 
         public void OnSetTargetButtonClicked(object sender, RoutedEventArgs args)
         {
-            TeachingTip.SetAttach(this.targetButton, getTeachingTip());
+            getTeachingTip().Target = this.targetButton;
         }
 
         public void OnUntargetButtonClicked(object sender, RoutedEventArgs args)
         {
-            TeachingTip.SetAttach(null, getTeachingTip());
+            getTeachingTip().Target = null;
         }
 
         public void OnShowButtonClicked(object sender, RoutedEventArgs args)
