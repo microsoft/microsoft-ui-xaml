@@ -57,8 +57,8 @@ public:
     void Subtext(winrt::hstring const& value);
     winrt::hstring Subtext();
 
-    void Target(winrt::UIElement const& value);
-    winrt::UIElement Target();
+    void Target(winrt::FrameworkElement const& value);
+    winrt::FrameworkElement Target();
 
     void TargetOffset(winrt::Thickness const& value);
     winrt::Thickness TargetOffset();

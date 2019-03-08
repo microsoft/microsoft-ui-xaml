@@ -89,7 +89,7 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsOpen;
 
-    Windows.UI.Xaml.UIElement Target;
+    Windows.UI.Xaml.FrameworkElement Target;
 
     String ActionButtonText;
     Windows.UI.Xaml.Style ActionButtonStyle;

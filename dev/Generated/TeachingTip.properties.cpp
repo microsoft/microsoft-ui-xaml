@@ -221,10 +221,10 @@ void TeachingTipProperties::EnsureProperties()
         s_TargetProperty =
             InitializeDependencyProperty(
                 L"Target",
-                winrt::name_of<winrt::UIElement>(),
+                winrt::name_of<winrt::FrameworkElement>(),
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
-                ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
+                ValueHelper<winrt::FrameworkElement>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_TargetOffsetProperty)
@@ -454,14 +454,14 @@ winrt::hstring TeachingTipProperties::Subtext()
     return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_SubtextProperty));
 }
 
-void TeachingTipProperties::Target(winrt::UIElement const& value)
+void TeachingTipProperties::Target(winrt::FrameworkElement const& value)
 {
-    static_cast<TeachingTip*>(this)->SetValue(s_TargetProperty, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    static_cast<TeachingTip*>(this)->SetValue(s_TargetProperty, ValueHelper<winrt::FrameworkElement>::BoxValueIfNecessary(value));
 }
 
-winrt::UIElement TeachingTipProperties::Target()
+winrt::FrameworkElement TeachingTipProperties::Target()
 {
-    return ValueHelper<winrt::UIElement>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_TargetProperty));
+    return ValueHelper<winrt::FrameworkElement>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_TargetProperty));
 }
 
 void TeachingTipProperties::TargetOffset(winrt::Thickness const& value)
