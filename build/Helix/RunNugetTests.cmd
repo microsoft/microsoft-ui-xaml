@@ -3,7 +3,7 @@ robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP
 reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
 
 cd scripts
-powershell -ExecutionPolicy Bypass .\InstallTestAppDependencies.ps1
+powershell -ExecutionPolicy Bypass .\InstallNugetTestAppDependencies.ps1
 cd ..
 
 te MUXControls.ReleaseTest.dll NugetPackageTestApp.appx NugetPackageTestAppCX.appx /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError %* 
