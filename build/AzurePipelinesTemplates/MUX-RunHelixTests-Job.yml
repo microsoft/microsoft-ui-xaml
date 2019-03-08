@@ -1,5 +1,5 @@
 parameters:
-  name: 'RunTestInHelix'
+  name: 'RunTestsInHelix'
   helixProjects: ''
   dependsOn: ''
   condition: ''
