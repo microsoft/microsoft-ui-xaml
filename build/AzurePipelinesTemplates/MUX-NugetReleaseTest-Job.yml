@@ -94,7 +94,7 @@ jobs:
       
 - template: MUX-RunHelixTests-Job.yml
   parameters:
-    name: RunNuGetTestsInHelix
+    name: RunNugetTestsInHelix
     helixProjects: build\Helix\RunNuGetTestsInHelix.proj
-    dependsOn: BuildNuGetTests
+    dependsOn: BuildNugetTests
   
