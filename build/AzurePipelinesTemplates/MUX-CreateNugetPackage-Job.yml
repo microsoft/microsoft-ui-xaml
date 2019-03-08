@@ -78,7 +78,7 @@ jobs:
       PathtoPublish: '${{ parameters.nupkgdir }}'
       artifactName: 'drop'
 
-  - ${{if parameters.publishVstsFeed }}:
+  - ${{ if ne(parameters.publishVstsFeed, '') }}:
     - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
       displayName: 'NuGet push to ${{ parameters.publishVstsFeed }}'
       inputs:
