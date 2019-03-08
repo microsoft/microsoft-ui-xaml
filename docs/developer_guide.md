@@ -142,15 +142,9 @@ must be defined during the build for data collection to be turned on.
 
 When using the Build.cmd script, you can use its /EmitTelemetryEvents option to define
 that variable.
-Or when building in Visual Studio, you can first define the System variable by following
-these steps:
+Or when building in Visual Studio, you can first define the environment variable in a
+Command Prompt window and then launch the solution from there:
 
-1. Start the Settings application from the Windows Start menu.
-2. Click the 'System' option.
-3. Click the 'About' option.
-4. Click the 'System info' link.
-5. Click the 'Advanced system settings' link.
-6. Click the 'Environment Variables ...' button.
-7. Add the System Variable EmitTelemetryEvents with the Value true.
-8. Click the 'OK' button.
-9. Recompile the project.
+1. In a Command Prompt window, set the required environment variable: set EmitTelemetryEvents=true
+2. Then from that same Command Prompt, open the Visual Studio solution: MUXControls.sln
+3. Recompile the solution in Visual Studio. The build will use that environment variable.
