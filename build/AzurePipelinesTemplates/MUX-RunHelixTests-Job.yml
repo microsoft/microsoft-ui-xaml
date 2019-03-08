@@ -2,6 +2,7 @@ parameters:
   name: 'RunTestInHelix'
   helixProjects: ''
   dependsOn: ''
+  condition: ''
   maxParallel: 4
   matrix: 
     Release_x86:
@@ -18,8 +19,7 @@ jobs:
 - job: ${{parameters.name}}
   dependsOn: ${{parameters.dependsOn}}
   # Run this job even if the Build job was skipped
-  condition:
-    in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+  condition: ${{parameters.condition}}
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
