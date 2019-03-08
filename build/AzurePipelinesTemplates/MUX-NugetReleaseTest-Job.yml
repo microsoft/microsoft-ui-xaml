@@ -92,67 +92,73 @@ jobs:
 
   - template: MUX-PublishDevProject-Steps.yml
       
-- job: RunNugetTests
-  dependsOn:
-  - BuildNugetTests
-  pool:
-    vmImage: 'VS2017-Win2016'
-  timeoutInMinutes: 120
-  variables:
-    artifactsDir : $(Build.SourcesDirectory)\Artifacts
-  strategy:
-    maxParallel: 4
-    matrix:
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-        # %3b is the escape code for ';' which is used as the delimiter
-        helixTargetQueues: 'Windows.10.Amd64.Open%3bWindows.10.Amd64.ClientRS3.DevEx.Open%3bWindows.10.Amd64.ServerRS5.Open'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-        helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open'
+- template: MUX-RunHelixTests-Job.yml
+  parameters:
+    name: RunNuGetTestsInHelix
+    helixProjects: build\Helix\RunNuGetTestsInHelix.proj
+    dependsOn: BuildNuGetTests
+    
+# - job: RunNugetTests
+#   dependsOn:
+#   - BuildNugetTests
+#   pool:
+#     vmImage: 'VS2017-Win2016'
+#   timeoutInMinutes: 120
+#   variables:
+#     artifactsDir : $(Build.SourcesDirectory)\Artifacts
+#   strategy:
+#     maxParallel: 4
+#     matrix:
+#       Release_x86:
+#         buildPlatform: 'x86'
+#         buildConfiguration: 'Release'
+#         # %3b is the escape code for ';' which is used as the delimiter
+#         helixTargetQueues: 'Windows.10.Amd64.Open%3bWindows.10.Amd64.ClientRS3.DevEx.Open%3bWindows.10.Amd64.ServerRS5.Open'
+#       Release_x64:
+#         buildPlatform: 'x64'
+#         buildConfiguration: 'Release'
+#         helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open'
 
-  steps:
+#   steps:
 
-  - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.9.3'
-    inputs:
-      versionSpec: 4.9.3
+#   - task: NuGetToolInstaller@0
+#     displayName: 'Use NuGet 4.9.3'
+#     inputs:
+#       versionSpec: 4.9.3
 
-  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-    displayName: 'NuGet restore build/Helix/packages.config'
-    inputs:
-      restoreSolution: build/Helix/packages.config
-      feedsToUse: config
-      nugetConfigPath: nuget.config
-      restoreDirectory: packages
+#   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+#     displayName: 'NuGet restore build/Helix/packages.config'
+#     inputs:
+#       restoreSolution: build/Helix/packages.config
+#       feedsToUse: config
+#       nugetConfigPath: nuget.config
+#       restoreDirectory: packages
 
-  - task: DownloadBuildArtifacts@0 
-    inputs: 
-      artifactName: drop 
-      downloadPath: '$(artifactsDir)'
+#   - task: DownloadBuildArtifacts@0 
+#     inputs: 
+#       artifactName: drop 
+#       downloadPath: '$(artifactsDir)'
 
-  - task: powershell@2
-    displayName: 'PrepareHelixPayload.ps1'
-    inputs:
-      targetType: filePath
-      filePath: build\Helix\PrepareHelixPayload.ps1
-      arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
+#   - task: powershell@2
+#     displayName: 'PrepareHelixPayload.ps1'
+#     inputs:
+#       targetType: filePath
+#       filePath: build\Helix\PrepareHelixPayload.ps1
+#       arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Run NuGet tests in Helix'
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    inputs:
-      command: custom
-      projects: build\Helix\RunNuGetTestsInHelix.proj
-      custom: msbuild
-      arguments: '/binaryLogger:$(Build.SourcesDirectory)/RunNuGetTestsInHelix.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues)'
+#   - task: DotNetCoreCLI@2
+#     displayName: 'Run NuGet tests in Helix'
+#     env:
+#       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+#     inputs:
+#       command: custom
+#       projects: build\Helix\RunNuGetTestsInHelix.proj
+#       custom: msbuild
+#       arguments: '/binaryLogger:$(Build.SourcesDirectory)/RunNuGetTestsInHelix.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues)'
   
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish RunNuGetTestsInHelix binlog'
-    condition: succeededOrFailed()
-    inputs:
-      PathtoPublish: $(Build.SourcesDirectory)/RunNuGetTestsInHelix.$(buildPlatform).$(buildConfiguration).binlog
-      artifactName: 'drop'
+#   - task: PublishBuildArtifacts@1
+#     displayName: 'Publish RunNuGetTestsInHelix binlog'
+#     condition: succeededOrFailed()
+#     inputs:
+#       PathtoPublish: $(Build.SourcesDirectory)/RunNuGetTestsInHelix.$(buildPlatform).$(buildConfiguration).binlog
+#       artifactName: 'drop'
