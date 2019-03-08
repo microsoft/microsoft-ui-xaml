@@ -35,6 +35,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private ListBox lstTeachingTipEvents;
 
+        public Button GetBtnClearTeachingTipEvents()
+        {
+            return GetElement(ref btnClearTeachingTipEvents, "btnClearTeachingTipEvents");
+        }
+        private Button btnClearTeachingTipEvents;
+
+        public ComboBox GetTipLocationComboBox()
+        {
+            return GetElement(ref tipLocationComboBox, "TipLocationComboBox");
+        }
+        private ComboBox tipLocationComboBox;
+
+        public Button GetSetTipLocationButton()
+        {
+            return GetElement(ref setTipLocationButton, "SetTipLocationButton");
+        }
+        private Button setTipLocationButton;
+
         public TextBlock GetEffectivePlacementTextBlock()
         {
             return GetElement(ref effectivePlacementTextBlock, "EffectivePlacementTextBlock");
@@ -155,6 +173,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Button setPlacementButton;
 
+        public Button GetSetTargetButton()
+        {
+            return GetElement(ref setTargetButton, "SetTargetButton");
+        }
+        private Button setTargetButton;
+
+        public Button GetRemoveTargetButton()
+        {
+            return GetElement(ref removeTargetButton, "RemoveTargetButton");
+        }
+        private Button removeTargetButton;
+
         public ComboBox GetIsLightDismissEnabledComboBox()
         {
             return GetElement(ref isLightDismissEnabledComboBox, "IsLightDismissEnabledComboBox");
@@ -215,11 +245,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Button setIconButton;
 
-        public UIObject GetTeachingTip()
+        public UIObject GetTeachingTipAlternateCloseButton()
         {
-            return GetElement(ref teachingTip, "TeachingTip");
+            ElementCache.Clear();
+            var element = GetElement(ref teachingTipAlternateCloseButton, "Close");
+            teachingTipAlternateCloseButton = null;
+            return element;
         }
-        private UIObject teachingTip;
+        private UIObject teachingTipAlternateCloseButton;
 
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
@@ -261,6 +294,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             People,
             NoIcon
+        }
+
+        public enum TipLocationOptions
+        {
+            SetAttach,
+            ResourceDictionary,
+            VisualTree
         }
     }
 }
