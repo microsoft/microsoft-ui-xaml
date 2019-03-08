@@ -18,7 +18,6 @@ parameters:
 jobs:
 - job: ${{parameters.name}}
   dependsOn: ${{parameters.dependsOn}}
-  # Run this job even if the Build job was skipped
   condition: ${{parameters.condition}}
   pool:
     vmImage: 'VS2017-Win2016'
