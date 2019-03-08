@@ -9,11 +9,15 @@ using Windows.UI.Composition;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 
 #if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollerSnapPointIrregular = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointIrregular;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollerSnapPointAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment;
 using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
 using ScrollerBringingIntoViewEventArgs = Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs;
 using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
@@ -67,6 +71,14 @@ namespace MUXControlsTestApp
 #endif
             repeater3.ItemsSource = dataSource;
             repeater3.ElementPrepared += Repeater_ElementPrepared;
+
+#if BUILD_WINDOWS
+            repeater4.ItemTemplate = (Windows.UI.Xaml.IElementFactory)repeater4ElementFactory;
+#else
+            repeater4.ItemTemplate = repeater4ElementFactory;
+#endif
+            repeater4.ItemsSource = dataSource;
+            repeater4.ElementPrepared += Repeater_ElementPrepared;
         }
 
         private void Repeater_ElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
@@ -84,8 +96,9 @@ namespace MUXControlsTestApp
                     b.Visibility = Visibility.Collapsed;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                txtExceptionReport.Text = ex.ToString();
             }
         }
 
@@ -111,10 +124,14 @@ namespace MUXControlsTestApp
                 {
                     HookScrollerEvents(innerScroller);
                     HookScrollerEvents(innerScroller2);
+                    HookScrollerEvents(innerScroller3);
                     HookScrollerEvents(outerScroller);
                     HookScrollerEvents(outerScroller2);
+                    HookScrollerEvents(outerScroller3);
                     HookScrollViewerEvents(innerScrollViewer);
+                    HookScrollViewerEvents(innerScrollViewer2);
                     HookScrollViewerEvents(outerScrollViewer);
+                    HookScrollViewerEvents(outerScrollViewer2);
                 }
             }
             catch (Exception ex)
@@ -129,6 +146,7 @@ namespace MUXControlsTestApp
             string asyncEventMessage = "BringingIntoView Scroller=" + sender.Name;
             asyncEventMessage += ", TargetHorizontalOffset=" + args.TargetHorizontalOffset + ", TargetVerticalOffset=" + args.TargetVerticalOffset;
             asyncEventMessage += ", OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId;
+            asyncEventMessage += ", SnapPointsMode=" + args.SnapPointsMode;
             asyncEventMessage += ", RequestEventArgs.AnimationDesired=" + args.RequestEventArgs.AnimationDesired + ", RequestEventArgs.Handled=" + args.RequestEventArgs.Handled;
             asyncEventMessage += ", RequestEventArgs.HorizontalAlignmentRatio=" + args.RequestEventArgs.HorizontalAlignmentRatio + ", RequestEventArgs.VerticalAlignmentRatio=" + args.RequestEventArgs.VerticalAlignmentRatio;
             asyncEventMessage += ", RequestEventArgs.HorizontalOffset=" + args.RequestEventArgs.HorizontalOffset + ", RequestEventArgs.VerticalOffset=" + args.RequestEventArgs.VerticalOffset;
@@ -139,6 +157,8 @@ namespace MUXControlsTestApp
             else
                 asyncEventMessage += (args.RequestEventArgs.OriginalSource as FrameworkElement).Name;
             AppendAsyncEventMessage(asyncEventMessage);
+
+            args.SnapPointsMode = chkIgnoreSnapPoints.IsChecked == true ? SnapPointsMode.Ignore : SnapPointsMode.Default;
 
             if (chkCancelOperationInBringingIntoView.IsChecked == true)
             {
@@ -244,20 +264,34 @@ namespace MUXControlsTestApp
 
                 switch (cmbNestingCombination.SelectedIndex)
                 {
-                    case 0: //ScrollerInScroller
+                    case 0: //ScrollerInScroller (1)
                         repeater = repeater1;
                         break;
 
-                    case 1: //ScrollerInScrollViewer
+                    case 2: //ScrollerInScrollViewer
                         repeater = repeater2;
                         break;
 
-                    case 2: //ScrollViewerInScroller
+                    case 3: //ScrollViewerInScroller
                         repeater = repeater3;
+                        break;
+
+                    case 4: //ScrollViewerInScrollViewer
+                        repeater = repeater4;
                         break;
                 }
 
-                Border border = repeater.TryGetElement(Convert.ToInt16(txtTargetElement.Text)) as Border;
+                Border border = null;
+
+                if (repeater != null)
+                {
+                    border = repeater.TryGetElement(Convert.ToInt16(txtTargetElement.Text)) as Border;
+                }
+                else
+                {
+                    // case ScrollerInScroller (2)
+                    border = (innerScroller3.Content as StackPanel).Children[Convert.ToInt16(txtTargetElement.Text)] as Border;
+                }
 
                 if (border != null)
                 {
@@ -272,6 +306,43 @@ namespace MUXControlsTestApp
                         options.VerticalAlignmentRatio = Convert.ToDouble(txtVerticalAlignmentRatio.Text);
                         options.HorizontalOffset = Convert.ToDouble(txtHorizontalOffset.Text);
                         options.VerticalOffset = Convert.ToDouble(txtVerticalOffset.Text);
+
+                        if (chkIgnoreSnapPoints.IsChecked == false)
+                        {
+                            Scroller scroller1 = null;
+                            Scroller scroller2 = null;
+
+                            switch (cmbNestingCombination.SelectedIndex)
+                            {
+                                case 0: //ScrollerInScroller (1)
+                                    scroller1 = outerScroller;
+                                    scroller2 = innerScroller;
+                                    break;
+
+                                case 1: //ScrollerInScroller (2)
+                                    scroller1 = outerScroller3;
+                                    scroller2 = innerScroller3;
+                                    break;
+
+                                case 2: //ScrollerInScrollViewer
+                                    scroller1 = innerScroller2;
+                                    break;
+
+                                case 3: //ScrollViewerInScroller
+                                    scroller1 = outerScroller2;
+                                    break;
+                            }
+
+                            if (scroller1 != null)
+                            {
+                                RefreshSnapPoints(scroller1, scroller1.Content as StackPanel);
+                            }
+
+                            if (scroller2 != null)
+                            {
+                                RefreshSnapPoints(scroller2, scroller2.Content as StackPanel);
+                            }
+                        }
 
                         if (chkLogBringIntoViewRequestedEvents.IsChecked == true)
                         {
@@ -295,26 +366,52 @@ namespace MUXControlsTestApp
 
         private void CmbNestingCombination_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (outerScroller == null || outerScrollViewer == null || outerScroller2 == null) return;
+            if (outerScroller == null ||
+                outerScroller2 == null ||
+                outerScroller3 == null ||
+                outerScrollViewer == null ||
+                outerScrollViewer2 == null) return;
 
             switch (cmbNestingCombination.SelectedIndex)
             {
-                case 0: //ScrollerInScroller
+                case 0: //ScrollerInScroller (1)
                     outerScroller.Visibility = Visibility.Visible;
                     outerScrollViewer.Visibility = Visibility.Collapsed;
                     outerScroller2.Visibility = Visibility.Collapsed;
+                    outerScrollViewer2.Visibility = Visibility.Collapsed;
+                    outerScroller3.Visibility = Visibility.Collapsed;
                     break;
 
-                case 1: //ScrollerInScrollViewer
+                case 1: //ScrollerInScroller (2)
+                    outerScroller.Visibility = Visibility.Collapsed;
+                    outerScrollViewer.Visibility = Visibility.Collapsed;
+                    outerScroller2.Visibility = Visibility.Collapsed;
+                    outerScrollViewer2.Visibility = Visibility.Collapsed;
+                    outerScroller3.Visibility = Visibility.Visible;
+                    break;
+
+                case 2: //ScrollerInScrollViewer
                     outerScroller.Visibility = Visibility.Collapsed;
                     outerScrollViewer.Visibility = Visibility.Visible;
                     outerScroller2.Visibility = Visibility.Collapsed;
+                    outerScrollViewer2.Visibility = Visibility.Collapsed;
+                    outerScroller3.Visibility = Visibility.Collapsed;
                     break;
 
-                case 2: //ScrollViewerInScroller
+                case 3: //ScrollViewerInScroller
                     outerScroller.Visibility = Visibility.Collapsed;
                     outerScrollViewer.Visibility = Visibility.Collapsed;
                     outerScroller2.Visibility = Visibility.Visible;
+                    outerScrollViewer2.Visibility = Visibility.Collapsed;
+                    outerScroller3.Visibility = Visibility.Collapsed;
+                    break;
+
+                case 4: //ScrollViewerInScrollViewer
+                    outerScroller.Visibility = Visibility.Collapsed;
+                    outerScrollViewer.Visibility = Visibility.Collapsed;
+                    outerScroller2.Visibility = Visibility.Collapsed;
+                    outerScrollViewer2.Visibility = Visibility.Visible;
+                    outerScroller3.Visibility = Visibility.Collapsed;
                     break;
             }
         }
@@ -347,21 +444,30 @@ namespace MUXControlsTestApp
             {
                 innerScroller.BringingIntoView += Scroller_BringingIntoView;
                 innerScroller2.BringingIntoView += Scroller_BringingIntoView;
+                innerScroller3.BringingIntoView += Scroller_BringingIntoView;
                 outerScroller.BringingIntoView += Scroller_BringingIntoView;
                 outerScroller2.BringingIntoView += Scroller_BringingIntoView;
+                outerScroller3.BringingIntoView += Scroller_BringingIntoView;
 
                 innerScroller.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
                 innerScroller2.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
+                innerScroller3.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
                 outerScroller.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
                 outerScroller2.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
+                outerScroller3.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
 
                 innerScroller.BringIntoViewRequested += FrameworkElement_BringIntoViewRequested;
                 innerScroller2.BringIntoViewRequested += FrameworkElement_BringIntoViewRequested;
+                innerScroller3.BringIntoViewRequested += FrameworkElement_BringIntoViewRequested;
                 outerScroller.BringIntoViewRequested += FrameworkElement_BringIntoViewRequested;
                 outerScroller2.BringIntoViewRequested += FrameworkElement_BringIntoViewRequested;
+                outerScroller3.BringIntoViewRequested += FrameworkElement_BringIntoViewRequested;
 
                 outerScrollViewer.BringIntoViewRequested += FrameworkElement_BringIntoViewRequested;
                 innerScrollViewer.BringIntoViewRequested += FrameworkElement_BringIntoViewRequested;
+
+                outerScrollViewer2.BringIntoViewRequested += FrameworkElement_BringIntoViewRequested;
+                innerScrollViewer2.BringIntoViewRequested += FrameworkElement_BringIntoViewRequested;
             }
         }
 
@@ -371,21 +477,30 @@ namespace MUXControlsTestApp
             {
                 innerScroller.BringingIntoView -= Scroller_BringingIntoView;
                 innerScroller2.BringingIntoView -= Scroller_BringingIntoView;
+                innerScroller3.BringingIntoView -= Scroller_BringingIntoView;
                 outerScroller.BringingIntoView -= Scroller_BringingIntoView;
                 outerScroller2.BringingIntoView -= Scroller_BringingIntoView;
+                outerScroller3.BringingIntoView -= Scroller_BringingIntoView;
 
                 innerScroller.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
                 innerScroller2.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
+                innerScroller3.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
                 outerScroller.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
                 outerScroller2.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
+                outerScroller3.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
 
                 innerScroller.BringIntoViewRequested -= FrameworkElement_BringIntoViewRequested;
                 innerScroller2.BringIntoViewRequested -= FrameworkElement_BringIntoViewRequested;
+                innerScroller3.BringIntoViewRequested -= FrameworkElement_BringIntoViewRequested;
                 outerScroller.BringIntoViewRequested -= FrameworkElement_BringIntoViewRequested;
                 outerScroller2.BringIntoViewRequested -= FrameworkElement_BringIntoViewRequested;
+                outerScroller3.BringIntoViewRequested -= FrameworkElement_BringIntoViewRequested;
 
                 outerScrollViewer.BringIntoViewRequested -= FrameworkElement_BringIntoViewRequested;
                 innerScrollViewer.BringIntoViewRequested -= FrameworkElement_BringIntoViewRequested;
+
+                outerScrollViewer2.BringIntoViewRequested -= FrameworkElement_BringIntoViewRequested;
+                innerScrollViewer2.BringIntoViewRequested -= FrameworkElement_BringIntoViewRequested;
             }
         }
 
@@ -393,20 +508,28 @@ namespace MUXControlsTestApp
         {
             HookScrollerEvents(innerScroller);
             HookScrollerEvents(innerScroller2);
+            HookScrollerEvents(innerScroller3);
             HookScrollerEvents(outerScroller);
             HookScrollerEvents(outerScroller2);
+            HookScrollerEvents(outerScroller3);
             HookScrollViewerEvents(innerScrollViewer);
+            HookScrollViewerEvents(innerScrollViewer2);
             HookScrollViewerEvents(outerScrollViewer);
+            HookScrollViewerEvents(outerScrollViewer2);
         }
 
         private void ChkLogScrollerEvents_Unchecked(object sender, RoutedEventArgs e)
         {
             UnhookScrollerEvents(innerScroller);
             UnhookScrollerEvents(innerScroller2);
+            UnhookScrollerEvents(innerScroller3);
             UnhookScrollerEvents(outerScroller);
             UnhookScrollerEvents(outerScroller2);
+            UnhookScrollerEvents(outerScroller3);
             UnhookScrollViewerEvents(innerScrollViewer);
+            UnhookScrollViewerEvents(innerScrollViewer2);
             UnhookScrollViewerEvents(outerScrollViewer);
+            UnhookScrollViewerEvents(outerScrollViewer2);
         }
 
         private void HookScrollerEvents(Scroller scroller)
@@ -455,6 +578,82 @@ namespace MUXControlsTestApp
         private void BtnClearExceptionReport_Click(object sender, RoutedEventArgs e)
         {
             txtExceptionReport.Text = string.Empty;
+        }
+
+        private void RefreshSnapPoints(Scroller scroller, StackPanel stackPanel)
+        {
+            if (scroller != null && stackPanel != null && stackPanel.Children.Count > 0)
+            {
+                AppendAsyncEventMessage("Populating snap points for " + scroller.Name + ":");
+
+                ScrollerSnapPointIrregular sspi;
+                GeneralTransform gt = stackPanel.TransformToVisual(scroller.Content);
+                Point stackPanelOriginPoint = new Point();
+                stackPanelOriginPoint = gt.TransformPoint(stackPanelOriginPoint);
+                
+                if (stackPanel.Orientation == Orientation.Horizontal)
+                {
+                    scroller.HorizontalSnapPoints.Clear();
+
+                    sspi = new ScrollerSnapPointIrregular(stackPanelOriginPoint.X, ScrollerSnapPointAlignment.Near);
+                    AppendAsyncEventMessage("Adding horizontal snap point to " + scroller.Name + " at value " + stackPanelOriginPoint.X);
+                    scroller.HorizontalSnapPoints.Add(sspi);
+                }
+                else
+                {
+                    scroller.VerticalSnapPoints.Clear();
+
+                    sspi = new ScrollerSnapPointIrregular(stackPanelOriginPoint.Y, ScrollerSnapPointAlignment.Near);
+                    AppendAsyncEventMessage("Adding vertical snap point to " + scroller.Name + " at value " + stackPanelOriginPoint.Y);
+                    scroller.VerticalSnapPoints.Add(sspi);
+                }
+
+                foreach (UIElement child in stackPanel.Children)
+                {
+                    FrameworkElement childAsFE = child as FrameworkElement;
+
+                    if (childAsFE != null)
+                    {
+                        gt = childAsFE.TransformToVisual(stackPanel);
+                        Point childOriginPoint = new Point();
+                        childOriginPoint = gt.TransformPoint(childOriginPoint);
+
+                        double snapPointValue = 0.0;
+                        Thickness margin = childAsFE.Margin;
+
+                        if (stackPanel.Orientation == Orientation.Horizontal)
+                        {
+                            snapPointValue = margin.Right + childAsFE.ActualWidth + childOriginPoint.X;
+                            if (snapPointValue <= scroller.ScrollableWidth)
+                            {
+                                sspi = new ScrollerSnapPointIrregular(snapPointValue, ScrollerSnapPointAlignment.Near);
+                                AppendAsyncEventMessage("Adding horizontal snap point to " + scroller.Name + " at value " + snapPointValue);
+                                scroller.HorizontalSnapPoints.Add(sspi);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            snapPointValue = margin.Bottom + childAsFE.ActualHeight + childOriginPoint.Y;
+                            if (snapPointValue <= scroller.ScrollableHeight)
+                            {
+                                sspi = new ScrollerSnapPointIrregular(snapPointValue, ScrollerSnapPointAlignment.Near);
+                                AppendAsyncEventMessage("Adding vertical snap point to " + scroller.Name + " at value " + snapPointValue);
+                                scroller.VerticalSnapPoints.Add(sspi);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                    }
+
+                    RefreshSnapPoints(scroller, child as StackPanel);
+                }
+            }
         }
 
         private void MUXControlsTestHooks_LoggingMessage(object sender, MUXControlsTestHooksLoggingMessageEventArgs args)

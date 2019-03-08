@@ -372,7 +372,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void PressXCloseButton()
         {
-            InputHelper.Tap(elements.GetTeachingTip(), double.Parse(elements.GetTipWidthTextBlock().GetText()) + 90, 110);
+            InputHelper.Tap(elements.GetTeachingTip(), double.Parse(elements.GetTipWidthTextBlock().GetText()) - 10, 10);
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
                 WaitForUnchecked(elements.GetIsIdleCheckBox());

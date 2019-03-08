@@ -179,7 +179,15 @@ namespace CustomTasks
 
             IncludedTypesMetadata["FlowLayout"] = true;
             // FlowLayout -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["FlowLayout.LineAlignment"] = true;
+            NeedsPropChangedCallbackMetadata["FlowLayout.MinColumnSpacing"] = true;
+            NeedsPropChangedCallbackMetadata["FlowLayout.MinRowSpacing"] = true;
+            NeedsPropChangedCallbackMetadata["FlowLayout.Orientation"] = true;
             // FlowLayout -- DefaultValueMetadata
+            DefaultValueMetadata["FlowLayout.LineAlignment"] = @"winrt::FlowLayoutLineAlignment::Start";
+            DefaultValueMetadata["FlowLayout.MinColumnSpacing"] = @"0.0";
+            DefaultValueMetadata["FlowLayout.MinRowSpacing"] = @"0.0";
+            DefaultValueMetadata["FlowLayout.Orientation"] = @"winrt::Orientation::Horizontal";
 
             IncludedTypesMetadata["FontIconSource"] = true;
             // FontIconSource -- NeedsPropChangedCallbackMetadata
@@ -212,7 +220,16 @@ namespace CustomTasks
 
             IncludedTypesMetadata["ItemsRepeater"] = true;
             // ItemsRepeater -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["ItemsRepeater.Animator"] = true;
+            NeedsPropChangedCallbackMetadata["ItemsRepeater.HorizontalCacheLength"] = true;
+            NeedsPropChangedCallbackMetadata["ItemsRepeater.ItemsSource"] = true;
+            NeedsPropChangedCallbackMetadata["ItemsRepeater.ItemTemplate"] = true;
+            NeedsPropChangedCallbackMetadata["ItemsRepeater.Layout"] = true;
+            NeedsPropChangedCallbackMetadata["ItemsRepeater.VerticalCacheLength"] = true;
             // ItemsRepeater -- DefaultValueMetadata
+            DefaultValueMetadata["ItemsRepeater.HorizontalCacheLength"] = @"2.0";
+            DefaultValueMetadata["ItemsRepeater.Layout"] = @"winrt::StackLayout()";
+            DefaultValueMetadata["ItemsRepeater.VerticalCacheLength"] = @"2.0";
 
             IncludedTypesMetadata["Layout"] = true;
             // Layout -- NeedsPropChangedCallbackMetadata
@@ -348,7 +365,16 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["PersonPicture.IsGroup"] = true;
             NeedsPropChangedCallbackMetadata["PersonPicture.PreferSmallImage"] = true;
             NeedsPropChangedCallbackMetadata["PersonPicture.ProfilePicture"] = true;
+            NeedsPropChangedCallbackMetadata["PersonPicture.TemplateSettings"] = true;
+            NeedsDependencyPropertyFieldMetadata["PersonPicture.TemplateSettings"] = true;
             // PersonPicture -- DefaultValueMetadata
+
+            IncludedTypesMetadata["PersonPictureTemplateSettings"] = true;
+            // PersonPictureTemplateSettings -- NeedsPropChangedCallbackMetadata
+            NeedsDependencyPropertyFieldMetadata["PersonPictureTemplateSettings.ActualImageBrush"] = true;
+            NeedsDependencyPropertyFieldMetadata["PersonPictureTemplateSettings.ActualInitials"] = true;
+            NeedsDependencyPropertyFieldMetadata["PersonPictureTemplateSettings.Dispatcher"] = true;
+            // PersonPictureTemplateSettings -- DefaultValueMetadata
 
             IncludedTypesMetadata["RadioButtons"] = true;
             // RadioButtons -- NeedsPropChangedCallbackMetadata
@@ -548,7 +574,11 @@ namespace CustomTasks
 
             IncludedTypesMetadata["StackLayout"] = true;
             // StackLayout -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["StackLayout.Orientation"] = true;
+            NeedsPropChangedCallbackMetadata["StackLayout.Spacing"] = true;
             // StackLayout -- DefaultValueMetadata
+            DefaultValueMetadata["StackLayout.Orientation"] = @"winrt::Orientation::Vertical";
+            DefaultValueMetadata["StackLayout.Spacing"] = @"0.0";
 
             IncludedTypesMetadata["SwipeControl"] = true;
             // SwipeControl -- NeedsPropChangedCallbackMetadata
@@ -684,7 +714,21 @@ namespace CustomTasks
 
             IncludedTypesMetadata["UniformGridLayout"] = true;
             // UniformGridLayout -- NeedsPropChangedCallbackMetadata
+            NeedsPropChangedCallbackMetadata["UniformGridLayout.ItemsJustification"] = true;
+            NeedsPropChangedCallbackMetadata["UniformGridLayout.ItemsStretch"] = true;
+            NeedsPropChangedCallbackMetadata["UniformGridLayout.MinColumnSpacing"] = true;
+            NeedsPropChangedCallbackMetadata["UniformGridLayout.MinItemHeight"] = true;
+            NeedsPropChangedCallbackMetadata["UniformGridLayout.MinItemWidth"] = true;
+            NeedsPropChangedCallbackMetadata["UniformGridLayout.MinRowSpacing"] = true;
+            NeedsPropChangedCallbackMetadata["UniformGridLayout.Orientation"] = true;
             // UniformGridLayout -- DefaultValueMetadata
+            DefaultValueMetadata["UniformGridLayout.ItemsJustification"] = @"winrt::UniformGridLayoutItemsJustification::Start";
+            DefaultValueMetadata["UniformGridLayout.ItemsStretch"] = @"winrt::UniformGridLayoutItemsStretch::None";
+            DefaultValueMetadata["UniformGridLayout.MinColumnSpacing"] = @"0.0";
+            DefaultValueMetadata["UniformGridLayout.MinItemHeight"] = @"0.0";
+            DefaultValueMetadata["UniformGridLayout.MinItemWidth"] = @"0.0";
+            DefaultValueMetadata["UniformGridLayout.MinRowSpacing"] = @"0.0";
+            DefaultValueMetadata["UniformGridLayout.Orientation"] = @"winrt::Orientation::Horizontal";
 
             IncludedTypesMetadata["XamlAmbientLight"] = true;
             // XamlAmbientLight -- NeedsPropChangedCallbackMetadata

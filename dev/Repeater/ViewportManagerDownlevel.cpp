@@ -213,13 +213,6 @@ void ViewportManagerDownLevel::OnBringIntoViewRequested(const winrt::BringIntoVi
 
 void ViewportManagerDownLevel::ResetScrollers()
 {
-    for (const auto& scrollerInfo : m_parentScrollers)
-    {
-        const auto scroller = scrollerInfo.Scroller();
-        scroller.ConfigurationChanged(scrollerInfo.ConfigurationChangedToken());
-        if (scrollerInfo.ViewportChangedToken().value != 0) { scroller.ViewportChanged(scrollerInfo.ViewportChangedToken()); };
-        if (scrollerInfo.PostArrangeToken().value != 0) { scroller.PostArrange(scrollerInfo.PostArrangeToken()); };
-    }
     m_parentScrollers.clear();
     m_horizontalScroller.set(nullptr);
     m_verticalScroller.set(nullptr);
@@ -315,7 +308,7 @@ void ViewportManagerDownLevel::EnsureScrollers()
         else
         {
             auto& outerScrollerInfo = m_parentScrollers.back();
-            outerScrollerInfo.PostArrangeToken(outerScrollerInfo.Scroller().PostArrange({ this, &ViewportManagerDownLevel::OnPostArrange }));
+            outerScrollerInfo.PostArrangeToken = outerScrollerInfo.Scroller().PostArrange(winrt::auto_revoke, { this, &ViewportManagerDownLevel::OnPostArrange });
         }
 
         m_ensuredScrollers = true;
@@ -337,12 +330,17 @@ bool ViewportManagerDownLevel::AddScroller(const winrt::IRepeaterScrollingSurfac
     if (setVerticalScroller) { m_verticalScroller.set(scroller); }
     if (setInnerScrollableScroller) { m_innerScrollableScroller.set(scroller); }
 
-    m_parentScrollers.push_back(ScrollerInfo(
+    auto scrollerInfo = ScrollerInfo(
         m_owner,
-        scroller,
-        setHorizontalScroller || setVerticalScroller ? scroller.ViewportChanged({ this, &ViewportManagerDownLevel::OnViewportChanged }) : winrt::event_token{},
-        scroller.ConfigurationChanged({ this, &ViewportManagerDownLevel::OnConfigurationChanged })));
+        scroller);
 
+    scrollerInfo.ConfigurationChangedToken = scroller.ConfigurationChanged(winrt::auto_revoke, { this, &ViewportManagerDownLevel::OnConfigurationChanged });
+    if (setHorizontalScroller || setVerticalScroller)
+    {
+        scrollerInfo.ViewportChangedToken = scroller.ViewportChanged(winrt::auto_revoke, { this, &ViewportManagerDownLevel::OnViewportChanged });
+    }
+
+    m_parentScrollers.push_back(std::move(scrollerInfo));
     return allScrollersSet;
 }
 

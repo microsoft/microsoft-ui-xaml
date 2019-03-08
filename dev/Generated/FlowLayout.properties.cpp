@@ -28,8 +28,8 @@ void FlowLayoutProperties::EnsureProperties()
                 winrt::name_of<winrt::FlowLayoutLineAlignment>(),
                 winrt::name_of<winrt::FlowLayout>(),
                 false /* isAttached */,
-                ValueHelper<winrt::FlowLayoutLineAlignment>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<winrt::FlowLayoutLineAlignment>::BoxValueIfNecessary(winrt::FlowLayoutLineAlignment::Start),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_MinColumnSpacingProperty)
     {
@@ -39,8 +39,8 @@ void FlowLayoutProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::FlowLayout>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<double>::BoxValueIfNecessary(0.0),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_MinRowSpacingProperty)
     {
@@ -50,8 +50,8 @@ void FlowLayoutProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::FlowLayout>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<double>::BoxValueIfNecessary(0.0),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_OrientationProperty)
     {
@@ -61,8 +61,8 @@ void FlowLayoutProperties::EnsureProperties()
                 winrt::name_of<winrt::Orientation>(),
                 winrt::name_of<winrt::FlowLayout>(),
                 false /* isAttached */,
-                ValueHelper<winrt::Orientation>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<winrt::Orientation>::BoxValueIfNecessary(winrt::Orientation::Horizontal),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
 }
 
@@ -72,6 +72,14 @@ void FlowLayoutProperties::ClearProperties()
     s_MinColumnSpacingProperty = nullptr;
     s_MinRowSpacingProperty = nullptr;
     s_OrientationProperty = nullptr;
+}
+
+void FlowLayoutProperties::OnPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::FlowLayout>();
+    winrt::get_self<FlowLayout>(owner)->OnPropertyChanged(args);
 }
 
 void FlowLayoutProperties::LineAlignment(winrt::FlowLayoutLineAlignment const& value)

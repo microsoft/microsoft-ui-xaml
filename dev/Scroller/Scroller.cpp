@@ -1395,12 +1395,13 @@ winrt::float2 Scroller::ComputeCenterPointerForMouseWheelZooming(const winrt::UI
 
 void Scroller::ComputeBringIntoViewTargetOffsets(
     const winrt::UIElement& content,
+    const winrt::SnapPointsMode& snapPointsMode,
     const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
     _Out_ double* targetZoomedHorizontalOffset,
     _Out_ double* targetZoomedVerticalOffset,
     _Out_ double* appliedOffsetX,
     _Out_ double* appliedOffsetY,
-    _Out_ winrt::Rect* targetRect) const
+    _Out_ winrt::Rect* targetRect)
 {
     *targetZoomedHorizontalOffset = 0.0;
     *targetZoomedVerticalOffset = 0.0;
@@ -1451,13 +1452,11 @@ void Scroller::ComputeBringIntoViewTargetOffsets(
         targetY * m_zoomFactor,
         (targetY + targetHeight) * m_zoomFactor);
 
-    const double scrollableWidth = std::max(0.0, m_unzoomedExtentWidth * m_zoomFactor - m_viewportWidth);
-    const double scrollableHeight = std::max(0.0, m_unzoomedExtentHeight * m_zoomFactor - m_viewportHeight);
+    const double scrollableWidth = ScrollableWidth();
+    const double scrollableHeight = ScrollableHeight();
 
-    targetZoomedHorizontalOffsetTmp = std::max(0.0, targetZoomedHorizontalOffsetTmp);
-    targetZoomedVerticalOffsetTmp = std::max(0.0, targetZoomedVerticalOffsetTmp);
-    targetZoomedHorizontalOffsetTmp = std::min(scrollableWidth, targetZoomedHorizontalOffsetTmp);
-    targetZoomedVerticalOffsetTmp = std::min(scrollableHeight, targetZoomedVerticalOffsetTmp);
+    targetZoomedHorizontalOffsetTmp = std::clamp(targetZoomedHorizontalOffsetTmp, 0.0, scrollableWidth);
+    targetZoomedVerticalOffsetTmp = std::clamp(targetZoomedVerticalOffsetTmp, 0.0, scrollableHeight);
 
     const double offsetX = requestEventArgs.HorizontalOffset();
     const double offsetY = requestEventArgs.VerticalOffset();
@@ -1501,6 +1500,22 @@ void Scroller::ComputeBringIntoViewTargetOffsets(
     MUX_ASSERT(targetZoomedVerticalOffsetTmp >= 0.0);
     MUX_ASSERT(targetZoomedHorizontalOffsetTmp <= scrollableWidth);
     MUX_ASSERT(targetZoomedVerticalOffsetTmp <= scrollableHeight);
+
+    if (snapPointsMode == winrt::SnapPointsMode::Default)
+    {
+        // Finally adjust the target offsets based on snap points
+        targetZoomedHorizontalOffsetTmp = ComputeValueAfterSnapPoints(targetZoomedHorizontalOffsetTmp, m_sortedConsolidatedHorizontalSnapPoints);
+        targetZoomedHorizontalOffsetTmp = ComputeValueAfterSnapPoints(targetZoomedHorizontalOffsetTmp, m_sortedConsolidatedVerticalSnapPoints);
+
+        // Make sure the target offsets are within the scrollable boundaries
+        targetZoomedHorizontalOffsetTmp = std::clamp(targetZoomedHorizontalOffsetTmp, 0.0, scrollableWidth);
+        targetZoomedVerticalOffsetTmp = std::clamp(targetZoomedVerticalOffsetTmp, 0.0, scrollableHeight);
+
+        MUX_ASSERT(targetZoomedHorizontalOffsetTmp >= 0.0);
+        MUX_ASSERT(targetZoomedVerticalOffsetTmp >= 0.0);
+        MUX_ASSERT(targetZoomedHorizontalOffsetTmp <= scrollableWidth);
+        MUX_ASSERT(targetZoomedVerticalOffsetTmp <= scrollableHeight);
+    }
 
     *targetZoomedHorizontalOffset = targetZoomedHorizontalOffsetTmp;
     *targetZoomedVerticalOffset = targetZoomedVerticalOffsetTmp;
@@ -3830,10 +3845,12 @@ void Scroller::OnBringIntoViewRequestedHandler(
     double targetZoomedVerticalOffset = 0.0;
     double appliedOffsetX = 0.0;
     double appliedOffsetY = 0.0;
+    winrt::SnapPointsMode snapPointsMode = winrt::SnapPointsMode::Ignore;
 
     // Compute the target offsets based on the provided BringIntoViewRequestedEventArgs.
     ComputeBringIntoViewTargetOffsets(
         content,
+        snapPointsMode,
         args,
         &targetZoomedHorizontalOffset,
         &targetZoomedVerticalOffset,
@@ -3851,7 +3868,8 @@ void Scroller::OnBringIntoViewRequestedHandler(
             targetZoomedHorizontalOffset,
             targetZoomedVerticalOffset,
             args,
-            offsetsChangeId))
+            offsetsChangeId,
+            &snapPointsMode))
         {
             // A listener canceled the operation in the Scroller.BringingIntoView event handler before any scrolling was attempted.
             RaiseViewChangeCompleted(true /*isForScroll*/, ScrollerViewChangeResult::Completed, offsetsChangeId);
@@ -3875,8 +3893,10 @@ void Scroller::OnBringIntoViewRequestedHandler(
         }
 
         // Re-evaluate the target offsets based on the potentially modified BringIntoViewRequestedEventArgs.
+        // Take into account potential SnapPointsMode == Default so that parents contribute accordingly.
         ComputeBringIntoViewTargetOffsets(
             content,
+            snapPointsMode,
             args,
             &targetZoomedHorizontalOffset,
             &targetZoomedVerticalOffset,
@@ -3906,7 +3926,7 @@ void Scroller::OnBringIntoViewRequestedHandler(
         com_ptr<ScrollOptions> options =
             winrt::make_self<ScrollOptions>(
                 args.AnimationDesired() ? winrt::AnimationMode::Enabled : winrt::AnimationMode::Disabled,
-                winrt::SnapPointsMode::Ignore);
+                snapPointsMode);
 
         ChangeOffsetsPrivate(
             targetZoomedHorizontalOffset /*zoomedHorizontalOffset*/,
@@ -6193,45 +6213,38 @@ bool Scroller::IsInputKindIgnored(winrt::InputKind const& inputKind)
 
 void Scroller::HookCompositionTargetRendering()
 {
-    if (m_renderingToken.value == 0)
+    if (!m_renderingToken)
     {
         winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{ nullptr };
-
-        m_renderingToken = compositionTarget.Rendering({ this, &Scroller::OnCompositionTargetRendering });
+        m_renderingToken = compositionTarget.Rendering(winrt::auto_revoke, { this, &Scroller::OnCompositionTargetRendering });
     }
 }
 
 void Scroller::UnhookCompositionTargetRendering()
 {
-    if (m_renderingToken.value != 0)
-    {
-        winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{ nullptr };
-
-        compositionTarget.Rendering(m_renderingToken);
-        m_renderingToken.value = 0;
-    }
+    m_renderingToken.revoke();    
 }
 
 void Scroller::HookScrollerEvents()
 {
-    if (m_loadedToken.value == 0)
+    if (!m_loadedToken)
     {
-        m_loadedToken = Loaded({ this, &Scroller::OnLoaded });
+        m_loadedToken = Loaded(winrt::auto_revoke, { this, &Scroller::OnLoaded });
     }
 
-    if (m_unloadedToken.value == 0)
+    if (!m_unloadedToken)
     {
-        m_unloadedToken = Unloaded({ this, &Scroller::OnUnloaded });
+        m_unloadedToken = Unloaded(winrt::auto_revoke, { this, &Scroller::OnUnloaded });
     }
 
-    if (SharedHelpers::IsRS4OrHigher() && m_bringIntoViewRequested.value == 0)
+    if (SharedHelpers::IsRS4OrHigher() && !m_bringIntoViewRequested)
     {
-        m_bringIntoViewRequested = BringIntoViewRequested({ this, &Scroller::OnBringIntoViewRequestedHandler });
+        m_bringIntoViewRequested = BringIntoViewRequested(winrt::auto_revoke, { this, &Scroller::OnBringIntoViewRequestedHandler });
     }
 
-    if (!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled() && m_pointerWheelChangedToken.value == 0)
+    if (!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled() && !m_pointerWheelChangedToken)
     {
-        m_pointerWheelChangedToken = PointerWheelChanged({ this, &Scroller::OnPointerWheelChangedHandler });
+        m_pointerWheelChangedToken = PointerWheelChanged(winrt::auto_revoke, { this, &Scroller::OnPointerWheelChangedHandler });
     }
 
     if (!m_pointerPressedEventHandler)
@@ -6244,29 +6257,15 @@ void Scroller::HookScrollerEvents()
 
 void Scroller::UnhookScrollerEvents()
 {
-    if (m_loadedToken.value != 0)
-    {
-        Loaded(m_loadedToken);
-        m_loadedToken.value = 0;
-    }
-
-    if (m_unloadedToken.value != 0)
-    {
-        Unloaded(m_unloadedToken);
-        m_unloadedToken.value = 0;
-    }
-
-    if (m_bringIntoViewRequested.value != 0)
-    {
-        BringIntoViewRequested(m_bringIntoViewRequested);
-        m_bringIntoViewRequested.value = 0;
-    }
-
-    if (m_pointerWheelChangedToken.value != 0)
+    m_loadedToken.revoke();
+    m_unloadedToken.revoke();
+    
+    m_bringIntoViewRequested.revoke();
+    
+    if (m_pointerWheelChangedToken)
     {
         MUX_ASSERT(!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
-        PointerWheelChanged(m_pointerWheelChangedToken);
-        m_pointerWheelChangedToken.value = 0;
+        m_pointerWheelChangedToken.revoke();
     }
 
     if (m_pointerPressedEventHandler)
@@ -6305,20 +6304,13 @@ void Scroller::HookContentPropertyChanged(
 {
     if (content)
     {
-        const winrt::FrameworkElement contentAsFE = content.try_as<winrt::FrameworkElement>();
-
-        if (contentAsFE)
+        if (!m_contentHorizontalAlignmentChangedToken)
         {
-            if (m_contentHorizontalAlignmentChangedToken.value == 0)
-            {
-                m_contentHorizontalAlignmentChangedToken.value = contentAsFE.RegisterPropertyChangedCallback(
-                    winrt::FrameworkElement::HorizontalAlignmentProperty(), { this, &Scroller::OnContentPropertyChanged });
-            }
-            if (m_contentVerticalAlignmentChangedToken.value == 0)
-            {
-                m_contentVerticalAlignmentChangedToken.value = contentAsFE.RegisterPropertyChangedCallback(
-                    winrt::FrameworkElement::VerticalAlignmentProperty(), { this, &Scroller::OnContentPropertyChanged });
-            }
+            m_contentHorizontalAlignmentChangedToken = RegisterPropertyChanged(content, winrt::FrameworkElement::HorizontalAlignmentProperty(), { this, &Scroller::OnContentPropertyChanged });
+        }
+        if (!m_contentVerticalAlignmentChangedToken)
+        {
+            m_contentVerticalAlignmentChangedToken = RegisterPropertyChanged(content, winrt::FrameworkElement::VerticalAlignmentProperty(), { this, &Scroller::OnContentPropertyChanged });
         }
     }
 }
@@ -6332,16 +6324,8 @@ void Scroller::UnhookContentPropertyChanged(
 
         if (contentAsFE)
         {
-            if (m_contentHorizontalAlignmentChangedToken.value != 0)
-            {
-                contentAsFE.UnregisterPropertyChangedCallback(winrt::FrameworkElement::HorizontalAlignmentProperty(), m_contentHorizontalAlignmentChangedToken.value);
-                m_contentHorizontalAlignmentChangedToken.value = 0;
-            }
-            if (m_contentVerticalAlignmentChangedToken.value != 0)
-            {
-                contentAsFE.UnregisterPropertyChangedCallback(winrt::FrameworkElement::VerticalAlignmentProperty(), m_contentVerticalAlignmentChangedToken.value);
-                m_contentVerticalAlignmentChangedToken.value = 0;
-            }
+            m_contentHorizontalAlignmentChangedToken.revoke();
+            m_contentVerticalAlignmentChangedToken.revoke();
         }
     }
 }
@@ -6352,29 +6336,29 @@ void Scroller::HookHorizontalScrollControllerEvents(
 {
     MUX_ASSERT(horizontalScrollController);
 
-    if (hasInteractionSource && m_horizontalScrollControllerInteractionRequestedToken.value == 0)
+    if (hasInteractionSource && !m_horizontalScrollControllerInteractionRequestedToken)
     {
-        m_horizontalScrollControllerInteractionRequestedToken = horizontalScrollController.InteractionRequested({ this, &Scroller::OnScrollControllerInteractionRequested });
+        m_horizontalScrollControllerInteractionRequestedToken = horizontalScrollController.InteractionRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionRequested });
     }
 
-    if (m_horizontalScrollControllerInteractionInfoChangedToken.value == 0)
+    if (!m_horizontalScrollControllerInteractionInfoChangedToken)
     {
-        m_horizontalScrollControllerInteractionInfoChangedToken = horizontalScrollController.InteractionInfoChanged({ this, &Scroller::OnScrollControllerInteractionInfoChanged });
+        m_horizontalScrollControllerInteractionInfoChangedToken = horizontalScrollController.InteractionInfoChanged(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionInfoChanged });
     }
 
-    if (m_horizontalScrollControllerScrollToRequestedToken.value == 0)
+    if (!m_horizontalScrollControllerScrollToRequestedToken)
     {
-        m_horizontalScrollControllerScrollToRequestedToken = horizontalScrollController.ScrollToRequested({ this, &Scroller::OnScrollControllerScrollToRequested });
+        m_horizontalScrollControllerScrollToRequestedToken = horizontalScrollController.ScrollToRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollToRequested });
     }
 
-    if (m_horizontalScrollControllerScrollByRequestedToken.value == 0)
+    if (!m_horizontalScrollControllerScrollByRequestedToken)
     {
-        m_horizontalScrollControllerScrollByRequestedToken = horizontalScrollController.ScrollByRequested({ this, &Scroller::OnScrollControllerScrollByRequested });
+        m_horizontalScrollControllerScrollByRequestedToken = horizontalScrollController.ScrollByRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollByRequested });
     }
 
-    if (m_horizontalScrollControllerScrollFromRequestedToken.value == 0)
+    if (!m_horizontalScrollControllerScrollFromRequestedToken)
     {
-        m_horizontalScrollControllerScrollFromRequestedToken = horizontalScrollController.ScrollFromRequested({ this, &Scroller::OnScrollControllerScrollFromRequested });
+        m_horizontalScrollControllerScrollFromRequestedToken = horizontalScrollController.ScrollFromRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollFromRequested });
     }
 }
 
@@ -6384,29 +6368,29 @@ void Scroller::HookVerticalScrollControllerEvents(
 {
     MUX_ASSERT(verticalScrollController);
 
-    if (hasInteractionSource && m_verticalScrollControllerInteractionRequestedToken.value == 0)
+    if (hasInteractionSource && !m_verticalScrollControllerInteractionRequestedToken)
     {
-        m_verticalScrollControllerInteractionRequestedToken = verticalScrollController.InteractionRequested({ this, &Scroller::OnScrollControllerInteractionRequested });
+        m_verticalScrollControllerInteractionRequestedToken = verticalScrollController.InteractionRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionRequested });
     }
 
-    if (m_verticalScrollControllerInteractionInfoChangedToken.value == 0)
+    if (!m_verticalScrollControllerInteractionInfoChangedToken)
     {
-        m_verticalScrollControllerInteractionInfoChangedToken = verticalScrollController.InteractionInfoChanged({ this, &Scroller::OnScrollControllerInteractionInfoChanged });
+        m_verticalScrollControllerInteractionInfoChangedToken = verticalScrollController.InteractionInfoChanged(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionInfoChanged });
     }
 
-    if (m_verticalScrollControllerScrollToRequestedToken.value == 0)
+    if (!m_verticalScrollControllerScrollToRequestedToken)
     {
-        m_verticalScrollControllerScrollToRequestedToken = verticalScrollController.ScrollToRequested({ this, &Scroller::OnScrollControllerScrollToRequested });
+        m_verticalScrollControllerScrollToRequestedToken = verticalScrollController.ScrollToRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollToRequested });
     }
 
-    if (m_verticalScrollControllerScrollByRequestedToken.value == 0)
+    if (!m_verticalScrollControllerScrollByRequestedToken)
     {
-        m_verticalScrollControllerScrollByRequestedToken = verticalScrollController.ScrollByRequested({ this, &Scroller::OnScrollControllerScrollByRequested });
+        m_verticalScrollControllerScrollByRequestedToken = verticalScrollController.ScrollByRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollByRequested });
     }
 
-    if (m_verticalScrollControllerScrollFromRequestedToken.value == 0)
+    if (!m_verticalScrollControllerScrollFromRequestedToken)
     {
-        m_verticalScrollControllerScrollFromRequestedToken = verticalScrollController.ScrollFromRequested({ this, &Scroller::OnScrollControllerScrollFromRequested });
+        m_verticalScrollControllerScrollFromRequestedToken = verticalScrollController.ScrollFromRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollFromRequested });
     }
 }
 
@@ -6414,72 +6398,22 @@ void Scroller::UnhookHorizontalScrollControllerEvents(
     const winrt::IScrollController& horizontalScrollController)
 {
     MUX_ASSERT(horizontalScrollController);
-
-    if (m_horizontalScrollControllerInteractionRequestedToken.value != 0)
-    {
-        horizontalScrollController.InteractionRequested(m_horizontalScrollControllerInteractionRequestedToken);
-        m_horizontalScrollControllerInteractionRequestedToken.value = 0;
-    }
-
-    if (m_horizontalScrollControllerInteractionInfoChangedToken.value != 0)
-    {
-        horizontalScrollController.InteractionInfoChanged(m_horizontalScrollControllerInteractionInfoChangedToken);
-        m_horizontalScrollControllerInteractionInfoChangedToken.value = 0;
-    }
-
-    if (m_verticalScrollControllerScrollToRequestedToken.value != 0)
-    {
-        horizontalScrollController.ScrollToRequested(m_horizontalScrollControllerScrollToRequestedToken);
-        m_verticalScrollControllerScrollToRequestedToken.value = 0;
-    }
-
-    if (m_verticalScrollControllerScrollByRequestedToken.value != 0)
-    {
-        horizontalScrollController.ScrollByRequested(m_horizontalScrollControllerScrollByRequestedToken);
-        m_verticalScrollControllerScrollByRequestedToken.value = 0;
-    }
-
-    if (m_horizontalScrollControllerScrollFromRequestedToken.value != 0)
-    {
-        horizontalScrollController.ScrollFromRequested(m_horizontalScrollControllerScrollFromRequestedToken);
-        m_horizontalScrollControllerScrollFromRequestedToken.value = 0;
-    }
+    m_horizontalScrollControllerInteractionRequestedToken.revoke();
+    m_horizontalScrollControllerInteractionInfoChangedToken.revoke();
+    m_verticalScrollControllerScrollToRequestedToken.revoke();
+    m_verticalScrollControllerScrollByRequestedToken.revoke();
+    m_horizontalScrollControllerScrollFromRequestedToken.revoke();
 }
 
 void Scroller::UnhookVerticalScrollControllerEvents(
     const winrt::IScrollController& verticalScrollController)
 {
     MUX_ASSERT(verticalScrollController);
-
-    if (m_verticalScrollControllerInteractionRequestedToken.value != 0)
-    {
-        verticalScrollController.InteractionRequested(m_verticalScrollControllerInteractionRequestedToken);
-        m_verticalScrollControllerInteractionRequestedToken.value = 0;
-    }
-
-    if (m_verticalScrollControllerInteractionInfoChangedToken.value != 0)
-    {
-        verticalScrollController.InteractionInfoChanged(m_verticalScrollControllerInteractionInfoChangedToken);
-        m_verticalScrollControllerInteractionInfoChangedToken.value = 0;
-    }
-
-    if (m_verticalScrollControllerScrollToRequestedToken.value != 0)
-    {
-        verticalScrollController.ScrollToRequested(m_verticalScrollControllerScrollToRequestedToken);
-        m_verticalScrollControllerScrollToRequestedToken.value = 0;
-    }
-
-    if (m_verticalScrollControllerScrollByRequestedToken.value != 0)
-    {
-        verticalScrollController.ScrollByRequested(m_verticalScrollControllerScrollByRequestedToken);
-        m_verticalScrollControllerScrollByRequestedToken.value = 0;
-    }
-
-    if (m_verticalScrollControllerScrollFromRequestedToken.value != 0)
-    {
-        verticalScrollController.ScrollFromRequested(m_verticalScrollControllerScrollFromRequestedToken);
-        m_verticalScrollControllerScrollFromRequestedToken.value = 0;
-    }
+    m_verticalScrollControllerInteractionRequestedToken.revoke();
+    m_verticalScrollControllerInteractionInfoChangedToken.revoke();
+    m_verticalScrollControllerScrollToRequestedToken.revoke();
+    m_verticalScrollControllerScrollByRequestedToken.revoke();
+    m_verticalScrollControllerScrollFromRequestedToken.revoke();
 }
 
 void Scroller::SetKeyEvents()
@@ -6726,7 +6660,8 @@ bool Scroller::RaiseBringingIntoView(
     double targetZoomedHorizontalOffset,
     double targetZoomedVerticalOffset,
     const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
-    int32_t offsetsChangeId)
+    int32_t offsetsChangeId,
+    _Inout_ winrt::SnapPointsMode* snapPointsMode)
 {
     if (m_bringingIntoViewEventSource)
     {
@@ -6734,11 +6669,13 @@ bool Scroller::RaiseBringingIntoView(
 
         auto bringingIntoViewEventArgs = winrt::make_self<ScrollerBringingIntoViewEventArgs>();
 
+        bringingIntoViewEventArgs->SnapPointsMode(*snapPointsMode);
         bringingIntoViewEventArgs->OffsetsChangeId(offsetsChangeId);
         bringingIntoViewEventArgs->RequestEventArgs(requestEventArgs);
         bringingIntoViewEventArgs->TargetOffsets(targetZoomedHorizontalOffset, targetZoomedVerticalOffset);
 
         m_bringingIntoViewEventSource(*this, *bringingIntoViewEventArgs);
+        *snapPointsMode = bringingIntoViewEventArgs->SnapPointsMode();
         return !bringingIntoViewEventArgs->Cancel();
     }
     return true;

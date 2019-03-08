@@ -18,6 +18,7 @@ GlobalDependencyProperty PersonPictureProperties::s_InitialsProperty{ nullptr };
 GlobalDependencyProperty PersonPictureProperties::s_IsGroupProperty{ nullptr };
 GlobalDependencyProperty PersonPictureProperties::s_PreferSmallImageProperty{ nullptr };
 GlobalDependencyProperty PersonPictureProperties::s_ProfilePictureProperty{ nullptr };
+GlobalDependencyProperty PersonPictureProperties::s_TemplateSettingsProperty{ nullptr };
 
 PersonPictureProperties::PersonPictureProperties()
 {
@@ -136,6 +137,17 @@ void PersonPictureProperties::EnsureProperties()
                 ValueHelper<winrt::ImageSource>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
+    if (!s_TemplateSettingsProperty)
+    {
+        s_TemplateSettingsProperty =
+            InitializeDependencyProperty(
+                L"TemplateSettings",
+                winrt::name_of<winrt::PersonPictureTemplateSettings>(),
+                winrt::name_of<winrt::PersonPicture>(),
+                false /* isAttached */,
+                ValueHelper<winrt::PersonPictureTemplateSettings>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
+    }
 }
 
 void PersonPictureProperties::ClearProperties()
@@ -150,6 +162,7 @@ void PersonPictureProperties::ClearProperties()
     s_IsGroupProperty = nullptr;
     s_PreferSmallImageProperty = nullptr;
     s_ProfilePictureProperty = nullptr;
+    s_TemplateSettingsProperty = nullptr;
 }
 
 void PersonPictureProperties::OnPropertyChanged(
@@ -258,4 +271,14 @@ void PersonPictureProperties::ProfilePicture(winrt::ImageSource const& value)
 winrt::ImageSource PersonPictureProperties::ProfilePicture()
 {
     return ValueHelper<winrt::ImageSource>::CastOrUnbox(static_cast<PersonPicture*>(this)->GetValue(s_ProfilePictureProperty));
+}
+
+void PersonPictureProperties::TemplateSettings(winrt::PersonPictureTemplateSettings const& value)
+{
+    static_cast<PersonPicture*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::PersonPictureTemplateSettings>::BoxValueIfNecessary(value));
+}
+
+winrt::PersonPictureTemplateSettings PersonPictureProperties::TemplateSettings()
+{
+    return ValueHelper<winrt::PersonPictureTemplateSettings>::CastOrUnbox(static_cast<PersonPicture*>(this)->GetValue(s_TemplateSettingsProperty));
 }

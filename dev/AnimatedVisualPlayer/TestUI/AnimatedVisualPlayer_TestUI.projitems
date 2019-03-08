@@ -22,5 +22,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)LottieLogo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\inc\Constants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)nullsource.cs" />
   </ItemGroup>
 </Project>

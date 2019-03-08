@@ -258,12 +258,13 @@ private:
     winrt::float2 ComputeCenterPointerForMouseWheelZooming(const winrt::UIElement& content, const winrt::Point& pointerPosition) const;
     void ComputeBringIntoViewTargetOffsets(
         const winrt::UIElement& content,
+        const winrt::SnapPointsMode& snapPointsMode,
         const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
         _Out_ double* targetZoomedHorizontalOffset,
         _Out_ double* targetZoomedVerticalOffset,
         _Out_ double* appliedOffsetX,
         _Out_ double* appliedOffsetY,
-        _Out_ winrt::Rect* targetRect) const;
+        _Out_ winrt::Rect* targetRect);
 
     void EnsureExpressionAnimationSources();
     void EnsureInteractionTracker();
@@ -526,7 +527,8 @@ private:
         double targetZoomedHorizontalOffset,
         double targetZoomedVerticalOffset,
         const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
-        int32_t offsetsChangeId);
+        int32_t offsetsChangeId,
+        _Inout_ winrt::SnapPointsMode* snapPointsMode);
 
     // Event handlers
     void OnCompositionTargetRendering(
@@ -744,25 +746,25 @@ private:
     event_source<winrt::ConfigurationChangedEventHandler> m_configurationChanged{ this };
 
     // Event Tokens
-    winrt::event_token m_renderingToken{};
-    winrt::event_token m_loadedToken{};
-    winrt::event_token m_unloadedToken{};
-    winrt::event_token m_bringIntoViewRequested{};
-    winrt::event_token m_pointerWheelChangedToken{};
-    winrt::event_token m_contentHorizontalAlignmentChangedToken{};
-    winrt::event_token m_contentVerticalAlignmentChangedToken{};
+    winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingToken{};
+    winrt::FrameworkElement::Loaded_revoker m_loadedToken{};
+    winrt::FrameworkElement::Unloaded_revoker m_unloadedToken{};
+    winrt::UIElement::BringIntoViewRequested_revoker m_bringIntoViewRequested{};
+    winrt::UIElement::PointerWheelChanged_revoker m_pointerWheelChangedToken{};
+    PropertyChanged_revoker m_contentHorizontalAlignmentChangedToken{};
+    PropertyChanged_revoker m_contentVerticalAlignmentChangedToken{};
 
-    winrt::event_token m_horizontalScrollControllerScrollToRequestedToken{};
-    winrt::event_token m_horizontalScrollControllerScrollByRequestedToken{};
-    winrt::event_token m_horizontalScrollControllerScrollFromRequestedToken{};
-    winrt::event_token m_horizontalScrollControllerInteractionRequestedToken{};
-    winrt::event_token m_horizontalScrollControllerInteractionInfoChangedToken{};
+    winrt::IScrollController::ScrollToRequested_revoker m_horizontalScrollControllerScrollToRequestedToken{};
+    winrt::IScrollController::ScrollByRequested_revoker m_horizontalScrollControllerScrollByRequestedToken{};
+    winrt::IScrollController::ScrollFromRequested_revoker m_horizontalScrollControllerScrollFromRequestedToken{};
+    winrt::IScrollController::InteractionRequested_revoker m_horizontalScrollControllerInteractionRequestedToken{};
+    winrt::IScrollController::InteractionInfoChanged_revoker m_horizontalScrollControllerInteractionInfoChangedToken{};
 
-    winrt::event_token m_verticalScrollControllerScrollToRequestedToken{};
-    winrt::event_token m_verticalScrollControllerScrollByRequestedToken{};
-    winrt::event_token m_verticalScrollControllerScrollFromRequestedToken{};
-    winrt::event_token m_verticalScrollControllerInteractionRequestedToken{};
-    winrt::event_token m_verticalScrollControllerInteractionInfoChangedToken{};
+    winrt::IScrollController::ScrollToRequested_revoker m_verticalScrollControllerScrollToRequestedToken{};
+    winrt::IScrollController::ScrollByRequested_revoker m_verticalScrollControllerScrollByRequestedToken{};
+    winrt::IScrollController::ScrollFromRequested_revoker m_verticalScrollControllerScrollFromRequestedToken{};
+    winrt::IScrollController::InteractionRequested_revoker m_verticalScrollControllerInteractionRequestedToken{};
+    winrt::IScrollController::InteractionInfoChanged_revoker m_verticalScrollControllerInteractionInfoChangedToken{};
 
     // Used on platforms where we have XamlRoot.
     tracker_ref<winrt::IInspectable> m_onXamlRootKeyDownEventHandler{ this };
