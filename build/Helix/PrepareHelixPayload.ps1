@@ -42,14 +42,14 @@ function Copy-If-Exists
 Copy-If-Exists "$repoDirectory\Artifacts\drop\$Configuration\$Platform\Test\MUXControls.Test.dll" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\*" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\Dependencies\$Platform\*" $payloadDir
-Copy-If-Exists -Force "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\*" $payloadDir
-Copy-If-Exists -Force "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\Dependencies\$Platform\*" $payloadDir
+Copy-If-Exists "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\*" $payloadDir
+Copy-If-Exists "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\Dependencies\$Platform\*" $payloadDir
 # NuGet test artifacts
 Copy-If-Exists "$repoDirectory\Artifacts\drop\$Configuration\$Platform\Test\MUXControls.ReleaseTest.dll" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test\*" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test\Dependencies\$Platform\*" $payloadDir
-Copy-If-Exists -Force "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\*" $payloadDir
-Copy-If-Exists -Force "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\Dependencies\$Platform\*" $payloadDir
+Copy-If-Exists "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\*" $payloadDir
+Copy-If-Exists "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\Dependencies\$Platform\*" $payloadDir
 # Copy files from the repo
 New-Item -ItemType Directory -Force -Path "$payloadDir\scripts"
 Copy-Item "build\helix\ConvertWttLogToXUnit.ps1" "$payloadDir\scripts"
