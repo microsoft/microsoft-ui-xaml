@@ -30,3 +30,16 @@ jobs:
     jobName: CreateNugetPackage
     dependsOn: Build
     primaryBuildArch: x64
+
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    dependsOn: CreateNugetPackage
+    pkgArtifactPath: '$env:artifactDownloadPath\drop'
+    runTest: false
+    matrix: 
+      Debug_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Debug'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'

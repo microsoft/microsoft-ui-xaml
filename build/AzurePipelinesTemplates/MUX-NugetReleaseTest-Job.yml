@@ -1,7 +1,8 @@
 parameters:
-  buildJobName: ''
+  buildJobName: 'BuildNugetPkgTests'
   runTestJobName: ''
   dependsOn: ''
+  runTests: true
   pkgArtifactPath: ''
   nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
   matrix: 
@@ -102,10 +103,10 @@ jobs:
       nugetConfigPath: $(nugetConfigPath)
 
   - template: MUX-PublishProjectOutput-Steps.yml
-      
-- template: MUX-RunHelixTests-Job.yml
-  parameters:
-    name: ${{ parameters.runTestJobName }}
-    helixProjects: build\Helix\RunNugetTestsInHelix.proj
-    dependsOn: ${{ parameters.buildJobName }}
+ ${{if eq(parameters.runTests, 'true')}}:     
+  - template: MUX-RunHelixTests-Job.yml
+    parameters:
+      name: ${{ parameters.runTestJobName }}
+      helixProjects: build\Helix\RunNugetTestsInHelix.proj
+      dependsOn: ${{ parameters.buildJobName }}
   
