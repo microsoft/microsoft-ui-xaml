@@ -402,11 +402,11 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="Root"
-                                  MinHeight="{ThemeResource TeachingTipMinHeight}" 
-                                  MinWidth="{ThemeResource TeachingTipMinWidth}"
-                                  MaxHeight="{ThemeResource TeachingTipMaxHeight}"
-                                  MaxWidth="{ThemeResource TeachingTipMaxWidth}">
+                        <Grid MinHeight="{ThemeResource TeachingTipMinHeight}" 
+                              MinWidth="{ThemeResource TeachingTipMinWidth}"
+                              MaxHeight="{ThemeResource TeachingTipMaxHeight}"
+                              MaxWidth="{ThemeResource TeachingTipMaxWidth}"
+                              AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
                                 <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>

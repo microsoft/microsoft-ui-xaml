@@ -115,7 +115,7 @@ private:
     tracker_ref<winrt::Popup> m_popup{ this };
     tracker_ref<winrt::Popup> m_lightDismissIndicatorPopup{ this };
 
-    tracker_ref<winrt::Grid> m_rootGrid{ this };
+    tracker_ref<winrt::UIElement> m_rootElement{ this };
     tracker_ref<winrt::Grid> m_beakOcclusionGrid{ this };
     tracker_ref<winrt::Grid> m_contentRootGrid{ this };
     tracker_ref<winrt::Grid> m_nonBleedingContentRootGrid{ this };
@@ -185,7 +185,6 @@ private:
     static constexpr wstring_view s_translationTargetName{ L"Translation"sv };
 
     static constexpr wstring_view s_containerName{ L"Container"sv };
-    static constexpr wstring_view s_rootName{ L"Root"sv };
     static constexpr wstring_view s_popupName{ L"Popup"sv };
     static constexpr wstring_view s_beakOcclusionGridName{ L"BeakOcclusionGrid"sv };
     static constexpr wstring_view s_contentRootGridName{ L"ContentRootGrid"sv };

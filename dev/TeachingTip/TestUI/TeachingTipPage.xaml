@@ -378,8 +378,8 @@
             <Button Click="OnSetTargetOffsetButtonClicked" Grid.Row="7" Grid.Column="1">Set</Button>
 
             <TextBlock Grid.Row="8" Text="Target:" Foreground="Red"/>
-            <Button Grid.Row="9" Click="OnSetTargetButtonClicked">Target</Button>
-            <Button Grid.Row="9" Grid.Column="1" Click="OnUntargetButtonClicked">Untarget</Button>
+            <Button Grid.Row="9" AutomationProperties.Name="SetTargetButton" Click="OnSetTargetButtonClicked">Target</Button>
+            <Button Grid.Row="9" Grid.Column="1" AutomationProperties.Name="RemoveTargetButton" Click="OnUntargetButtonClicked">Untarget</Button>
                     
             <TextBlock Grid.Row="10" Text="Show:" Foreground="Red"/>
             <Button AutomationProperties.Name="ShowButton" Grid.Row="11" Click="OnShowButtonClicked">Show</Button>
@@ -465,7 +465,7 @@
             <TextBlock Text="TeachingTip Messages &amp; Events" Foreground="Red"/>
 
             <StackPanel Orientation="Horizontal" Grid.Row="1">
-                <Button x:Name="btnClearTeachingTipEvents" Content="Clear" Click="BtnClearTeachingTipEvents_Click" Margin="1"/>
+                <Button x:Name="btnClearTeachingTipEvents" AutomationProperties.Name="btnClearTeachingTipEvents" Content="Clear" Click="BtnClearTeachingTipEvents_Click" Margin="1"/>
                 <CheckBox x:Name="chkLogTeachingTipMessages" Content="Log TeachingTip Messages?" Margin="1"/>
                 <CheckBox x:Name="chkLogTeachingTipEvents" Content="Log TeachingTip Events?" Margin="1" IsChecked="true"/>
                 <CheckBox x:Name="chkDisplayLogs" Content="Display Logs?" Margin="1"/>

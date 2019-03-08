@@ -32,8 +32,7 @@ void TeachingTip::OnApplyTemplate()
     winrt::IControlProtected controlProtected{ *this };
 
     m_container.set(GetTemplateChildT<winrt::Border>(s_containerName, controlProtected));
-    m_popup.set(GetTemplateChildT<winrt::Popup>(s_popupName, controlProtected));
-    m_rootGrid.set(GetTemplateChildT<winrt::Grid>(s_rootName, controlProtected));
+    m_rootElement.set(m_container.get().Child());
     m_beakOcclusionGrid.set(GetTemplateChildT<winrt::Grid>(s_beakOcclusionGridName, controlProtected));
     m_contentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_contentRootGridName, controlProtected));
     m_nonBleedingContentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_nonBleedingContentRootGridName, controlProtected));
@@ -86,6 +85,7 @@ void TeachingTip::OnApplyTemplate()
     }
     if (auto&& alternateCloseButton = m_alternateCloseButton.get())
     {
+        winrt::AutomationProperties::SetName(alternateCloseButton, ResourceAccessor::GetLocalizedStringResource(SR_TeachingTipAlternateCloseButtonName));
         m_alternateCloseButtonClickedRevoker = alternateCloseButton.Click(winrt::auto_revoke, {this, &TeachingTip::OnCloseButtonClicked });
     }
 
@@ -757,7 +757,7 @@ void TeachingTip::OnIsOpenChanged()
         auto&& popup = m_popup.get();
         if (!popup.IsOpen())
         {
-            popup.Child(m_rootGrid.get());
+            popup.Child(m_rootElement.get());
             m_lightDismissIndicatorPopup.get().IsOpen(true);
             popup.IsOpen(true);
         }

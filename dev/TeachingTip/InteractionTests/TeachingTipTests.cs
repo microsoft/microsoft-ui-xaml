@@ -22,6 +22,7 @@ using MS.Internal.Mita.Foundation.Waiters;
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using Microsoft.Windows.Apps.Test.Foundation;
 #endif 
 
 using static Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TeachingTipTestPageElements;
@@ -59,57 +60,64 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
             {
                 elements = new TeachingTipTestPageElements();
-                ScrollTargetIntoView();
-                OpenTeachingTip();
-                CloseTeachingTipProgrammatically();
-                var message0 = GetTeachingTipDebugMessage(0);
-                var message1 = GetTeachingTipDebugMessage(1);
-                Verify.IsTrue(message0.ToString().Contains("Closing"));
-                Verify.IsTrue(message0.ToString().Contains("Programmatic"));
-                Verify.IsTrue(message1.ToString().Contains("Closed"));
-                Verify.IsTrue(message1.ToString().Contains("Programmatic"));
+                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
 
-                SetBleedingContent(BleedingContentOptions.NoContent);
-                OpenTeachingTip();
-                PressXCloseButton();
-                var message2 = GetTeachingTipDebugMessage(2);
-                var message3 = GetTeachingTipDebugMessage(3);
-                var message4 = GetTeachingTipDebugMessage(4);
-                Verify.IsTrue(message2.ToString().Contains("Close Button Clicked"));
-                Verify.IsTrue(message3.ToString().Contains("Closing"));
-                Verify.IsTrue(message3.ToString().Contains("CloseButton"));
-                Verify.IsTrue(message4.ToString().Contains("Closed"));
-                Verify.IsTrue(message4.ToString().Contains("CloseButton"));
+                    ScrollTargetIntoView();
+                    OpenTeachingTip();
+                    CloseTeachingTipProgrammatically();
+                    var message0 = GetTeachingTipDebugMessage(0);
+                    var message1 = GetTeachingTipDebugMessage(1);
+                    Verify.IsTrue(message0.ToString().Contains("Closing"));
+                    Verify.IsTrue(message0.ToString().Contains("Programmatic"));
+                    Verify.IsTrue(message1.ToString().Contains("Closed"));
+                    Verify.IsTrue(message1.ToString().Contains("Programmatic"));
 
-                EnableLightDismiss(true);
-                OpenTeachingTip();
-                CloseTeachingTipProgrammatically();
-                var message5 = GetTeachingTipDebugMessage(5);
-                var message6 = GetTeachingTipDebugMessage(6);
-                Verify.IsTrue(message5.ToString().Contains("Closing"));
-                Verify.IsTrue(message5.ToString().Contains("Programmatic"));
-                Verify.IsTrue(message6.ToString().Contains("Closed"));
-                Verify.IsTrue(message6.ToString().Contains("Programmatic"));
+                    SetBleedingContent(BleedingContentOptions.NoContent);
+                    OpenTeachingTip();
+                    PressXCloseButton(location);
+                    var message2 = GetTeachingTipDebugMessage(2);
+                    var message3 = GetTeachingTipDebugMessage(3);
+                    var message4 = GetTeachingTipDebugMessage(4);
+                    Verify.IsTrue(message2.ToString().Contains("Close Button Clicked"));
+                    Verify.IsTrue(message3.ToString().Contains("Closing"));
+                    Verify.IsTrue(message3.ToString().Contains("CloseButton"));
+                    Verify.IsTrue(message4.ToString().Contains("Closed"));
+                    Verify.IsTrue(message4.ToString().Contains("CloseButton"));
 
-                OpenTeachingTip();
-                CloseTeachingTipByLightDismiss();
-                var message7 = GetTeachingTipDebugMessage(7);
-                var message8 = GetTeachingTipDebugMessage(8);
-                Verify.IsTrue(message7.ToString().Contains("Closing"));
-                Verify.IsTrue(message7.ToString().Contains("LightDismiss"));
-                Verify.IsTrue(message8.ToString().Contains("Closed"));
-                Verify.IsTrue(message8.ToString().Contains("LightDismiss"));
+                    EnableLightDismiss(true);
+                    OpenTeachingTip();
+                    CloseTeachingTipProgrammatically();
+                    var message5 = GetTeachingTipDebugMessage(5);
+                    var message6 = GetTeachingTipDebugMessage(6);
+                    Verify.IsTrue(message5.ToString().Contains("Closing"));
+                    Verify.IsTrue(message5.ToString().Contains("Programmatic"));
+                    Verify.IsTrue(message6.ToString().Contains("Closed"));
+                    Verify.IsTrue(message6.ToString().Contains("Programmatic"));
 
-                OpenTeachingTip();
-                PressXCloseButton();
-                var message9 = GetTeachingTipDebugMessage(9);
-                var message10 = GetTeachingTipDebugMessage(10);
-                var message11 = GetTeachingTipDebugMessage(11);
-                Verify.IsTrue(message9.ToString().Contains("Close Button Clicked"));
-                Verify.IsTrue(message10.ToString().Contains("Closing"));
-                Verify.IsTrue(message10.ToString().Contains("CloseButton"));
-                Verify.IsTrue(message11.ToString().Contains("Closed"));
-                Verify.IsTrue(message11.ToString().Contains("CloseButton"));
+                    OpenTeachingTip();
+                    CloseTeachingTipByLightDismiss();
+                    var message7 = GetTeachingTipDebugMessage(7);
+                    var message8 = GetTeachingTipDebugMessage(8);
+                    Verify.IsTrue(message7.ToString().Contains("Closing"));
+                    Verify.IsTrue(message7.ToString().Contains("LightDismiss"));
+                    Verify.IsTrue(message8.ToString().Contains("Closed"));
+                    Verify.IsTrue(message8.ToString().Contains("LightDismiss"));
+
+                    OpenTeachingTip();
+                    PressXCloseButton(location);
+                    var message9 = GetTeachingTipDebugMessage(9);
+                    var message10 = GetTeachingTipDebugMessage(10);
+                    var message11 = GetTeachingTipDebugMessage(11);
+                    Verify.IsTrue(message9.ToString().Contains("Close Button Clicked"));
+                    Verify.IsTrue(message10.ToString().Contains("Closing"));
+                    Verify.IsTrue(message10.ToString().Contains("CloseButton"));
+                    Verify.IsTrue(message11.ToString().Contains("Closed"));
+                    Verify.IsTrue(message11.ToString().Contains("CloseButton"));
+
+                    ClearTeachingTipDebugMessages();
+                }
             }
         }
 
@@ -119,50 +127,53 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
             {
                 elements = new TeachingTipTestPageElements();
+                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
 
-                ScrollTargetIntoView();
-                Wait.ForIdle();
-                OpenTeachingTip();
-                double initialTipVerticalOffset = GetTipVerticalOffset();
-                double initialScrollViewerVerticalOffset = GetScrollViewerVerticalOffset();
+                    ScrollTargetIntoView();
+                    Wait.ForIdle();
+                    OpenTeachingTip();
+                    double initialTipVerticalOffset = GetTipVerticalOffset();
+                    double initialScrollViewerVerticalOffset = GetScrollViewerVerticalOffset();
 
-                ScrollBy(10);
-                WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
-                Verify.Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
-                ScrollBy(-20);
-                WaitForOffsetUpdated(initialScrollViewerVerticalOffset - 10);
-                Wait.ForIdle();
-                Verify.Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
-                ScrollBy(10);
-                WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
-                Verify.Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    ScrollBy(10);
+                    WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
+                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    ScrollBy(-20);
+                    WaitForOffsetUpdated(initialScrollViewerVerticalOffset - 10);
+                    Wait.ForIdle();
+                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    ScrollBy(10);
+                    WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
+                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
 
-                SetTipFollowsTarget(true);
+                    SetTipFollowsTarget(true);
 
-                ScrollBy(10);
-                WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
-                Verify.IsLessThan(GetTipVerticalOffset(), initialTipVerticalOffset);
-                ScrollBy(-20);
-                WaitForOffsetUpdated(initialScrollViewerVerticalOffset - 10);
-                Wait.ForIdle();
-                Verify.IsGreaterThan(GetTipVerticalOffset(), initialTipVerticalOffset);
-                ScrollBy(10);
-                WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
-                Verify.Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    ScrollBy(10);
+                    WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
+                    Verify.IsLessThan(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    ScrollBy(-20);
+                    WaitForOffsetUpdated(initialScrollViewerVerticalOffset - 10);
+                    Wait.ForIdle();
+                    Verify.IsGreaterThan(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    ScrollBy(10);
+                    WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
+                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
 
-                SetTipFollowsTarget(false);
+                    SetTipFollowsTarget(false);
 
-                ScrollBy(10);
-                WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
-                Verify.Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
-                ScrollBy(-20);
-                WaitForOffsetUpdated(initialScrollViewerVerticalOffset - 10);
-                Wait.ForIdle();
-                Verify.Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
-                ScrollBy(10);
-                WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
-                Verify.Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
-
+                    ScrollBy(10);
+                    WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
+                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    ScrollBy(-20);
+                    WaitForOffsetUpdated(initialScrollViewerVerticalOffset - 10);
+                    Wait.ForIdle();
+                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    ScrollBy(10);
+                    WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
+                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                }
             }
         }
 
@@ -172,62 +183,66 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
             {
                 elements = new TeachingTipTestPageElements();
+                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
 
-                ScrollTargetIntoView();
-                ScrollBy(10);
-                var targetRect = GetTargetBounds();
-                UseTestWindowBounds(targetRect.W - 329, targetRect.X - 340, targetRect.Y + 656, targetRect.Z + 680);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("Top"));
-                CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 329, targetRect.X - 336, targetRect.Y + 656, targetRect.Z + 680);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("Bottom"));
-                CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 329, targetRect.X - 318, targetRect.Y + 658, targetRect.Z + 640);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedTop"));
-                CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 658, targetRect.Z + 403);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedBottom"));
-                CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 643, targetRect.Z + 403);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedBottom"));
-                CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 329, targetRect.X - 300, targetRect.Y + 643, targetRect.Z + 603);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedTop"));
-                CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 340, targetRect.Y + 348, targetRect.Z + 608);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedLeft"));
-                CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 20, targetRect.X - 340, targetRect.Y + 348, targetRect.Z + 608);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedRight"));
-                CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 328, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 444);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedLeft"));
-                CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 444);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedRight"));
-                CloseTeachingTipProgrammatically();
+                    ScrollTargetIntoView();
+                    ScrollBy(10);
+                    var targetRect = GetTargetBounds();
+                    UseTestWindowBounds(targetRect.W - 329, targetRect.X - 340, targetRect.Y + 656, targetRect.Z + 680);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("Top"));
+                    CloseTeachingTipProgrammatically();
+                    UseTestWindowBounds(targetRect.W - 329, targetRect.X - 336, targetRect.Y + 656, targetRect.Z + 680);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("Bottom"));
+                    CloseTeachingTipProgrammatically();
+                    UseTestWindowBounds(targetRect.W - 329, targetRect.X - 318, targetRect.Y + 658, targetRect.Z + 640);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedTop"));
+                    CloseTeachingTipProgrammatically();
+                    UseTestWindowBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 658, targetRect.Z + 403);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedBottom"));
+                    CloseTeachingTipProgrammatically();
+                    UseTestWindowBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 643, targetRect.Z + 403);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedBottom"));
+                    CloseTeachingTipProgrammatically();
+                    UseTestWindowBounds(targetRect.W - 329, targetRect.X - 300, targetRect.Y + 643, targetRect.Z + 603);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedTop"));
+                    CloseTeachingTipProgrammatically();
+                    UseTestWindowBounds(targetRect.W - 328, targetRect.X - 340, targetRect.Y + 348, targetRect.Z + 608);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedLeft"));
+                    CloseTeachingTipProgrammatically();
+                    UseTestWindowBounds(targetRect.W - 20, targetRect.X - 340, targetRect.Y + 348, targetRect.Z + 608);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedRight"));
+                    CloseTeachingTipProgrammatically();
+                    UseTestWindowBounds(targetRect.W - 328, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 444);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedLeft"));
+                    CloseTeachingTipProgrammatically();
+                    UseTestWindowBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 444);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedRight"));
+                    CloseTeachingTipProgrammatically();
 
-                // Remove the bleeding content;
-                SetBleedingContent(BleedingContentOptions.NoContent);
+                    // Remove the bleeding content;
+                    SetBleedingContent(BleedingContentOptions.NoContent);
 
-                UseTestWindowBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("Left"));
-                CloseTeachingTipProgrammatically();
-                UseTestWindowBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("Right"));
-                CloseTeachingTipProgrammatically();
+                    UseTestWindowBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("Left"));
+                    CloseTeachingTipProgrammatically();
+                    UseTestWindowBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("Right"));
+                    CloseTeachingTipProgrammatically();
+                }
             }
         }
 
@@ -238,68 +253,73 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 elements = new TeachingTipTestPageElements();
 
-                ScrollTargetIntoView();
-                ScrollBy(10);
+                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
 
-                SetPlacement(PlacementOptions.Top);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("Top"));
-                CloseTeachingTipProgrammatically();
-                
-                SetPlacement(PlacementOptions.Bottom);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("Bottom"));
-                CloseTeachingTipProgrammatically();
+                    ScrollTargetIntoView();
+                    ScrollBy(10);
 
-                SetPlacement(PlacementOptions.Left);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("Left"));
-                CloseTeachingTipProgrammatically();
+                    SetPlacement(PlacementOptions.Top);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("Top"));
+                    CloseTeachingTipProgrammatically();
 
-                SetPlacement(PlacementOptions.Right);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("Right"));
-                CloseTeachingTipProgrammatically();
-                
-                SetPlacement(PlacementOptions.TopEdgeAlignedRight);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedRight"));
-                CloseTeachingTipProgrammatically();
+                    SetPlacement(PlacementOptions.Bottom);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("Bottom"));
+                    CloseTeachingTipProgrammatically();
 
-                SetPlacement(PlacementOptions.TopEdgeAlignedLeft);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedLeft"));
-                CloseTeachingTipProgrammatically();
+                    SetPlacement(PlacementOptions.Left);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("Left"));
+                    CloseTeachingTipProgrammatically();
 
-                SetPlacement(PlacementOptions.BottomEdgeAlignedRight);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedRight"));
-                CloseTeachingTipProgrammatically();
+                    SetPlacement(PlacementOptions.Right);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("Right"));
+                    CloseTeachingTipProgrammatically();
 
-                SetPlacement(PlacementOptions.BottomEdgeAlignedLeft);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedLeft"));
-                CloseTeachingTipProgrammatically();
+                    SetPlacement(PlacementOptions.TopEdgeAlignedRight);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedRight"));
+                    CloseTeachingTipProgrammatically();
 
-                SetPlacement(PlacementOptions.LeftEdgeAlignedTop);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedTop"));
-                CloseTeachingTipProgrammatically();
+                    SetPlacement(PlacementOptions.TopEdgeAlignedLeft);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedLeft"));
+                    CloseTeachingTipProgrammatically();
 
-                SetPlacement(PlacementOptions.LeftEdgeAlignedBottom);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedBottom"));
-                CloseTeachingTipProgrammatically();
+                    SetPlacement(PlacementOptions.BottomEdgeAlignedRight);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedRight"));
+                    CloseTeachingTipProgrammatically();
 
-                SetPlacement(PlacementOptions.RightEdgeAlignedTop);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedTop"));
-                CloseTeachingTipProgrammatically();
+                    SetPlacement(PlacementOptions.BottomEdgeAlignedLeft);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedLeft"));
+                    CloseTeachingTipProgrammatically();
 
-                SetPlacement(PlacementOptions.RightEdgeAlignedBottom);
-                OpenTeachingTip();
-                Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedBottom"));
-                CloseTeachingTipProgrammatically();
+                    SetPlacement(PlacementOptions.LeftEdgeAlignedTop);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedTop"));
+                    CloseTeachingTipProgrammatically();
+
+                    SetPlacement(PlacementOptions.LeftEdgeAlignedBottom);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedBottom"));
+                    CloseTeachingTipProgrammatically();
+
+                    SetPlacement(PlacementOptions.RightEdgeAlignedTop);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedTop"));
+                    CloseTeachingTipProgrammatically();
+
+                    SetPlacement(PlacementOptions.RightEdgeAlignedBottom);
+                    OpenTeachingTip();
+                    Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedBottom"));
+                    CloseTeachingTipProgrammatically();
+                }
             }
         }
 
@@ -310,15 +330,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 elements = new TeachingTipTestPageElements();
 
-                ScrollTargetIntoView();
-                ScrollBy(10);
+                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
 
-                SetIcon(IconOptions.NoIcon);
-                OpenTeachingTip();
-                CloseTeachingTipProgrammatically();
-                SetIcon(IconOptions.People);
-                OpenTeachingTip();
-                SetIcon(IconOptions.NoIcon);
+                    ScrollTargetIntoView();
+                    ScrollBy(10);
+
+                    SetIcon(IconOptions.NoIcon);
+                    OpenTeachingTip();
+                    CloseTeachingTipProgrammatically();
+                    SetIcon(IconOptions.People);
+                    OpenTeachingTip();
+                    SetIcon(IconOptions.NoIcon);
+                }
             }
         }
 
@@ -370,15 +395,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        private void PressXCloseButton()
+        private void PressXCloseButton(TipLocationOptions location)
         {
-            InputHelper.Tap(elements.GetTeachingTip(), double.Parse(elements.GetTipWidthTextBlock().GetText()) - 10, 10);
+            InputHelper.Tap(elements.GetTeachingTipAlternateCloseButton());
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
                 WaitForUnchecked(elements.GetIsIdleCheckBox());
             }
             WaitForUnchecked(elements.GetIsOpenCheckBox());
             WaitForChecked(elements.GetIsIdleCheckBox());
+        }
+
+        private void SetTeachingTipLocation(TipLocationOptions location)
+        {
+            switch(location)
+            {
+                case TipLocationOptions.ResourceDictionary:
+                    elements.GetTipLocationComboBox().SelectItemByName("Resources");
+                    break;
+                case TipLocationOptions.SetAttach:
+                    elements.GetTipLocationComboBox().SelectItemByName("SetAttach");
+                    break;
+                default:
+                    elements.GetTipLocationComboBox().SelectItemByName("VisualTree");
+                    break;
+            }
+            elements.GetSetTipLocationButton().Invoke();
+            //If a tip was open this action would cause that tip to close, so wait until that happens
+            WaitForUnchecked(elements.GetIsOpenCheckBox());
+            WaitForChecked(elements.GetIsIdleCheckBox());
+
+            SetTipIsTargeted(true);
         }
 
         private void EnableLightDismiss(bool enable)
@@ -461,6 +508,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.GetSetBleedingContentButton().Invoke();
         }
 
+        private void SetTipIsTargeted(bool targeted)
+        {
+            if(targeted)
+            {
+                elements.GetSetTargetButton().Invoke();
+            }
+            else
+            {
+                elements.GetRemoveTargetButton().Invoke();
+            }
+        }
+
         private void SetIcon(IconOptions icon)
         {
             switch(icon)
@@ -538,6 +597,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private ListBoxItem GetTeachingTipDebugMessage(int index)
         {
             return elements.GetLstTeachingTipEvents().Items[index];
+        }
+
+        private void ClearTeachingTipDebugMessages()
+        {
+            elements.GetBtnClearTeachingTipEvents().Invoke();
         }
 
         private bool WaitForChecked(CheckBox checkBox, double millisecondsTimeout = 2000, bool throwOnError = true)
