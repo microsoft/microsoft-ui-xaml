@@ -843,11 +843,6 @@ void AnimatedVisualPlayer::UnloadContent()
 
 void AnimatedVisualPlayer::UpdateContent()
 {
-    if (!SharedHelpers::IsRS5OrHigher())
-    {
-        return;
-    }
-
     // Unload the existing content, if any.
     UnloadContent();
 

@@ -909,7 +909,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 #if BUILD_WINDOWS
                     repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
 #else
-                    repeater.ItemTemplate = (Microsoft.UI.Xaml.Controls.IElementFactoryShim)elementFactory;
+                    repeater.ItemTemplate = elementFactory;
 #endif
 
                     var scrollViewer = new ScrollViewer();
@@ -1002,7 +1002,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 #if BUILD_WINDOWS
                         repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
 #else
-                        repeater.ItemTemplate = (Microsoft.UI.Xaml.Controls.IElementFactoryShim)elementFactory;
+                        repeater.ItemTemplate = elementFactory;
 #endif
                         repeater.Layout = layout;
 
