@@ -48,8 +48,25 @@ jobs:
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
+    buildJobName: 'BuildNugetTests'
+    runTestJobName: 'RunNugetTestsInHelix'
     dependsOn: CreateNugetPackage
-    nugetArtifactPath: '$env:artifactDownloadPath\drop'
+    pkgArtifactPath: '$env:artifactDownloadPath\drop'
+    matrix: 
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+
+# Framework package tests
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildFrameworkTests'
+    runTestJobName: 'RunFrameworkTestsInHelix'
+    dependsOn: CreateNugetPackage
+    pkgArtifactPath: '$env:artifactDownloadPath\drop\FrameworkPackage'
     matrix: 
       Release_x86:
         buildPlatform: 'x86'

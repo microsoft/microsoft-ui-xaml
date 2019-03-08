@@ -1,6 +1,8 @@
 parameters:
+  buildJobName: ''
+  runTestJobName: ''
   dependsOn: ''
-  nugetArtifactPath: ''
+  pkgArtifactPath: ''
   nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
   matrix: 
       Debug_x86:
@@ -8,7 +10,7 @@ parameters:
         buildConfiguration: 'Debug'
       
 jobs:
-- job: BuildNugetTests
+- job: ${{ parameters.buildJobName }}
   dependsOn:
     - ${{if parameters.dependsOn }}:
       - ${{ parameters.dependsOn }}
@@ -33,7 +35,7 @@ jobs:
   # projects at the just-built nupkg. The MUXRelease projects use a specific nuget version so we need
   # to update nuget.config to include the drop location as well as update the version in the csproj and
   # packages.config for the projects.
-  - ${{ if ne(parameters.nugetArtifactPath, '') }}:
+  - ${{ if parameters.pkgArtifactPath }}:
     - task: DownloadBuildArtifacts@0 
       inputs: 
         artifactName: drop
@@ -49,7 +51,7 @@ jobs:
             <clear />
             <add key='NuGet official package source' value='https://api.nuget.org/v3/index.json' />
             <add key='dotnetfeed' value='https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json' />
-            <add key='local' value=${{parameters.nugetArtifactPath}}/>
+            <add key='local' value=${{parameters.pkgArtifactPath}}/>
           </packageSources>
         </configuration>
         "@ | Out-File -Encoding UTF8 $nugetConfigFullPath
@@ -94,7 +96,7 @@ jobs:
       
 - template: MUX-RunHelixTests-Job.yml
   parameters:
-    name: RunNugetTestsInHelix
+    name: ${{ parameters.runTestJobName }}
     helixProjects: build\Helix\RunNuGetTestsInHelix.proj
-    dependsOn: BuildNugetTests
+    dependsOn: ${{ parameters.buildJobName }}
   
