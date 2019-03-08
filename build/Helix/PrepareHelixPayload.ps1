@@ -40,6 +40,7 @@ if(!$NuGetTests)
 }
 else
 {
+    Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\Test\MUXControls.ReleaseTest.dll" $payloadDir
     Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test\*" $payloadDir
     Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestApp_Test\Dependencies\$Platform\*" $payloadDir
     Copy-Item -Force "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\*" $payloadDir
