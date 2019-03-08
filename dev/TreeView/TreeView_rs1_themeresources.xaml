@@ -96,7 +96,6 @@
             <Thickness x:Key="TreeViewItemBorderThemeThickness">2,1</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-    
-    <x:Double x:Key="TreeViewItemMinHeight">44</x:Double>
-
+   
+    <x:Double x:Key="TreeViewItemMinHeight">32</x:Double>
 </ResourceDictionary>

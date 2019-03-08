@@ -65,28 +65,28 @@ namespace MUXControlsTestApp
 
         public string Header;
         public string SubHeader = "This is a sub-header";
-        public BitmapImage Image;
+        public BitmapImage ImageSource;
 
         public static ObservableCollection<RevealGridItem> GetItems()
         {
             if(items == null)
             {
                 items = new ObservableCollection<RevealGridItem>();
-                items.Add(new RevealGridItem { Header = "Smile", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage12.jpg")) });
-                items.Add(new RevealGridItem { Header = "Business", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage23.jpg")) });
-                items.Add(new RevealGridItem { Header = "Kid", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage20.jpg")) });
-                items.Add(new RevealGridItem { Header = "Metal", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage22.jpg")) });
-                items.Add(new RevealGridItem { Header = "Super Metal", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage7.jpg")) });
-                items.Add(new RevealGridItem { Header = "Smile", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage12.jpg")) });
-                items.Add(new RevealGridItem { Header = "Business", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage23.jpg")) });
-                items.Add(new RevealGridItem { Header = "Kid", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage20.jpg")) });
-                items.Add(new RevealGridItem { Header = "Metal", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage22.jpg")) });
-                items.Add(new RevealGridItem { Header = "Super Metal", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage7.jpg")) });
-                items.Add(new RevealGridItem { Header = "Smile", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage12.jpg")) });
-                items.Add(new RevealGridItem { Header = "Business", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage23.jpg")) });
-                items.Add(new RevealGridItem { Header = "Kid", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage20.jpg")) });
-                items.Add(new RevealGridItem { Header = "Metal", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage22.jpg")) });
-                items.Add(new RevealGridItem { Header = "Super Metal", Image = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage7.jpg")) });
+                items.Add(new RevealGridItem { Header = "Smile", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage12.jpg")) });
+                items.Add(new RevealGridItem { Header = "Business", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage23.jpg")) });
+                items.Add(new RevealGridItem { Header = "Kid", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage20.jpg")) });
+                items.Add(new RevealGridItem { Header = "Metal", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage22.jpg")) });
+                items.Add(new RevealGridItem { Header = "Super Metal", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage7.jpg")) });
+                items.Add(new RevealGridItem { Header = "Smile", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage12.jpg")) });
+                items.Add(new RevealGridItem { Header = "Business", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage23.jpg")) });
+                items.Add(new RevealGridItem { Header = "Kid", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage20.jpg")) });
+                items.Add(new RevealGridItem { Header = "Metal", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage22.jpg")) });
+                items.Add(new RevealGridItem { Header = "Super Metal", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage7.jpg")) });
+                items.Add(new RevealGridItem { Header = "Smile", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage12.jpg")) });
+                items.Add(new RevealGridItem { Header = "Business", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage23.jpg")) });
+                items.Add(new RevealGridItem { Header = "Kid", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage20.jpg")) });
+                items.Add(new RevealGridItem { Header = "Metal", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage22.jpg")) });
+                items.Add(new RevealGridItem { Header = "Super Metal", ImageSource = new BitmapImage(new Uri("https://raw.githubusercontent.com/Microsoft/Windows-universal-samples/master/SharedContent/media/Samples/LandscapeImage7.jpg")) });
             }
 
             return items;

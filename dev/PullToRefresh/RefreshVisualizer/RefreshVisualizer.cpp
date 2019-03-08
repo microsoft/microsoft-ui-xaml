@@ -19,8 +19,6 @@
 //The position the progress indicator parallax animation places the indicator during manipulation
 #define PARALLAX_POSITION_RATIO 0.5f
 
-using namespace std::chrono_literals;
-
 //////////////////////////////////////////////////////////
 /////////          RefreshVisualizer         /////////////
 //////////////////////////////////////////////////////////

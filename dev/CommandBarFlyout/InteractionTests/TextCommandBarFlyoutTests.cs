@@ -54,19 +54,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         internal class TextCommandBarFlyoutTestSetupHelper : TestSetupHelper
         {
             public TextCommandBarFlyoutTestSetupHelper(string languageOverride = "", bool attemptRestartOnDispose = true)
-                : base("CommandBarFlyout Tests", languageOverride, attemptRestartOnDispose)
+                : base(new[] { "CommandBarFlyout Tests", "TextCommandBarFlyout Tests" }, languageOverride, attemptRestartOnDispose)
             {
-                innerPageSetupHelper = new TestSetupHelper("TextCommandBarFlyout Tests", languageOverride, attemptRestartOnDispose);
                 FindElement.ById<Button>("ClearClipboardContentsButton").InvokeAndWait();
             }
-
-            public override void Dispose()
-            {
-                innerPageSetupHelper.Dispose();
-                base.Dispose();
-            }
-
-            private TestSetupHelper innerPageSetupHelper;
         }
 
         [TestMethod]
@@ -541,27 +532,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (var setup1 = new TestSetupHelper("CommandBarFlyout Tests"))
+            using (var setup = new TestSetupHelper(new[] { "CommandBarFlyout Tests", "Extra CommandBarFlyout Tests" }))
             {
-                using (var setup2 = new TestSetupHelper("Extra CommandBarFlyout Tests"))
-                {
-                    Edit textBox = FindElement.ById<Edit>("TextBox");
+                Edit textBox = FindElement.ById<Edit>("TextBox");
 
-                    Log.Comment("Type \"asdf\" plus a space to create a misspelled word.");
-                    KeyboardHelper.EnterText(textBox, "asdf ", useKeyboard: true);
+                Log.Comment("Type \"asdf\" plus a space to create a misspelled word.");
+                KeyboardHelper.EnterText(textBox, "asdf ", useKeyboard: true);
 
-                    // We know that the word appears at the start of the text box's content,
-                    // so we'll use a point 10 pixels from the text box's left edge as a point
-                    // known to be within the word's bounding box.
-                    Log.Comment("Right-click on the word's location in the text box to get the proofing menu.");
-                    InputHelper.RightClick(textBox, 10 - textBox.BoundingRectangle.Width / 2, 0);
+                // We know that the word appears at the start of the text box's content,
+                // so we'll use a point 10 pixels from the text box's left edge as a point
+                // known to be within the word's bounding box.
+                Log.Comment("Right-click on the word's location in the text box to get the proofing menu.");
+                InputHelper.RightClick(textBox, 10 - textBox.BoundingRectangle.Width / 2, 0);
 
-                    Log.Comment("Tap on \"ads\" in the proofing menu to fix the spelling error.");
-                    var proofingItem = FindElement.ByNameAndClassName("ads", "MenuFlyoutItem");
-                    InputHelper.Tap(proofingItem);
+                Log.Comment("Tap on \"ads\" in the proofing menu to fix the spelling error.");
+                var proofingItem = FindElement.ByNameAndClassName("ads", "MenuFlyoutItem");
+                InputHelper.Tap(proofingItem);
 
-                    Verify.AreEqual("ads ", textBox.Value);
-                }
+                Verify.AreEqual("ads ", textBox.Value);
             }
         }
 
@@ -574,21 +562,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (var setup1 = new TestSetupHelper("CommandBarFlyout Tests"))
+            using (var setup = new TestSetupHelper(new[] { "CommandBarFlyout Tests", "Extra CommandBarFlyout Tests" }))
             {
-                using (var setup2 = new TestSetupHelper("Extra CommandBarFlyout Tests"))
-                {
-                    Log.Comment("Clear the clipboard.");
-                    FindElement.ById<Button>("ClearClipboardContentsButton").InvokeAndWait();
+                Log.Comment("Clear the clipboard.");
+                FindElement.ById<Button>("ClearClipboardContentsButton").InvokeAndWait();
 
-                    Log.Comment("Right-click on the text box.");
-                    InputHelper.RightClick(FindElement.ById("TextBox"));
+                Log.Comment("Right-click on the text box.");
+                InputHelper.RightClick(FindElement.ById("TextBox"));
 
-                    Log.Comment("Count the number of open popups.");
-                    FindElement.ById<Button>("CountPopupsButton").InvokeAndWait();
-                    
-                    Verify.AreEqual("0", FindElement.ById<Edit>("PopupCountTextBox").Value);
-                }
+                Log.Comment("Count the number of open popups.");
+                FindElement.ById<Button>("CountPopupsButton").InvokeAndWait();
+
+                Verify.AreEqual("0", FindElement.ById<Edit>("PopupCountTextBox").Value);
             }
         }
 
@@ -601,22 +586,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (var setup1 = new TestSetupHelper("CommandBarFlyout Tests"))
+            using (var setup = new TestSetupHelper(new[] { "CommandBarFlyout Tests", "Extra CommandBarFlyout Tests" }))
             {
-                using (var setup2 = new TestSetupHelper("Extra CommandBarFlyout Tests"))
-                {
-                    Log.Comment("Right-click on the rich text block.");
-                    InputHelper.RightClick(FindElement.ById("RichTextBlock"), 10, 10);
+                Log.Comment("Right-click on the rich text block.");
+                InputHelper.RightClick(FindElement.ById("RichTextBlock"), 10, 10);
 
-                    Log.Comment("Select all the text.");
-                    FindElement.ByName<Button>("Select All").InvokeAndWait();
-                    
-                    Log.Comment("Now right-click on the rich text block overflow.");
-                    InputHelper.RightClick(FindElement.ById("RichTextBlockOverflow"), 10, 10);
+                Log.Comment("Select all the text.");
+                FindElement.ByName<Button>("Select All").InvokeAndWait();
 
-                    Log.Comment("The copy option should be available now, because the rich text block's overflow element delegates to the rich text block.");
-                    FindElement.ByName<Button>("Copy").InvokeAndWait();
-                }
+                Log.Comment("Now right-click on the rich text block overflow.");
+                InputHelper.RightClick(FindElement.ById("RichTextBlockOverflow"), 10, 10);
+
+                Log.Comment("The copy option should be available now, because the rich text block's overflow element delegates to the rich text block.");
+                FindElement.ByName<Button>("Copy").InvokeAndWait();
             }
         }
 

@@ -99,7 +99,6 @@
     <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared" />
     <Import Project="..\ParallaxView\ParallaxView.vcxitems" Label="Shared" />
     <Import Project="..\Scroller\Scroller.vcxitems" Label="Shared" />
-    <Import Project="..\ScrollBar2\ScrollBar2.vcxitems" Label="Shared" Condition="$(BuildingWithBuildExe) != 'true' And $(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\ScrollViewer\ScrollViewer.vcxitems" Label="Shared" Condition="$(BuildingWithBuildExe) != 'true' And $(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\Lights\Lights.vcxitems" Label="Shared" />
     <Import Project="..\Repeater\Repeater.vcxitems" Label="Shared" />
@@ -119,6 +118,7 @@
     <Import Project="..\Interactions\ButtonInteraction\ButtonInteraction.vcxitems" Label="Shared" Condition="$(BuildingWithBuildExe) != 'true' And $(UseInternalSDK) == 'true'" />
     <Import Project="..\Interactions\SliderInteraction\SliderInteraction.vcxitems" Label="Shared" Condition="$(BuildingWithBuildExe) != 'true' And $(UseInternalSDK) == 'true'" />
     <Import Project="..\MenuFlyout\MenuFlyout.vcxitems" Label="Shared" />
+    <Import Project="..\TeachingTip\TeachingTip.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' and $(BuildingWithBuildExe) != 'true' And $(UseInsiderSDK) == 'true'" />
     <Import Project="..\Forms\Forms.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
@@ -673,7 +673,7 @@
   <Target Name="GenerateRS3ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage)" Outputs="$(OutDir)rs3_themeresources.xaml;$(OutDir)rs3_themeresources.prefixed.xaml">
     <Message Text="Generating theme resources XAML files for RS3..." />
     <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs3_themeresources.prefixed.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs3_themeresources.prefixed.xaml" />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs3_themeresources.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs3_themeresources.xaml" />
+    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs3_themeresources.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs3_themeresources.prefixed.xaml&quot; -ForVersion RS3" FilesWritten="$(OutDir)rs3_themeresources.xaml" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
          PropertyGroup values are always evaluated even when their enclosing target is skipped,
          whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
@@ -691,7 +691,7 @@
   <Target Name="GenerateRS4ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage)" Outputs="$(OutDir)rs4_themeresources.xaml;$(OutDir)rs4_themeresources.prefixed.xaml">
     <Message Text="Generating theme resources XAML files for RS4..." />
     <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs4_themeresources.prefixed.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs4_themeresources.prefixed.xaml" />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs4_themeresources.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs4_themeresources.xaml" />
+    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs4_themeresources.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs4_themeresources.prefixed.xaml&quot; -ForVersion RS4" FilesWritten="$(OutDir)rs4_themeresources.xaml" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
          PropertyGroup values are always evaluated even when their enclosing target is skipped,
          whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
@@ -710,7 +710,7 @@
   <Target Name="GenerateRS5ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage)" Outputs="$(OutDir)rs5_themeresources.xaml;$(OutDir)rs5_themeresources.prefixed.xaml">
     <Message Text="Generating theme resources XAML file for RS5..." />
     <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs5_themeresources.prefixed.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs5_themeresources.prefixed.xaml" />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs5_themeresources.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs5_themeresources.xaml" />
+    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs5_themeresources.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs5_themeresources.prefixed.xaml&quot; -ForVersion RS5" FilesWritten="$(OutDir)rs5_themeresources.xaml" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
          PropertyGroup values are always evaluated even when their enclosing target is skipped,
          whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
@@ -727,9 +727,10 @@
       <FileWrites Include="$(OutDir)rs5_themeresources.xaml" />
     </ItemGroup>
   </Target>
-  <Target Name="Generate19H1ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)" Outputs="$(OutDir)19h1_themeresources.xaml">
+  <Target Name="Generate19H1ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)" Outputs="$(OutDir)19h1_themeresources.xaml;$(OutDir)19h1_themeresources.prefixed.xaml">
     <Message Text="Generating theme resources XAML file for 19H1..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)19h1_themeresources.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)19h1_themeresources.xaml" />
+    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)19h1_themeresources.prefixed.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)19h1_themeresources.prefixed.xaml" />
+    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)19h1_themeresources.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)19h1_themeresources.prefixed.xaml&quot; -ForVersion 19H1" FilesWritten="$(OutDir)19h1_themeresources.xaml" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
          PropertyGroup values are always evaluated even when their enclosing target is skipped,
          whereas CreateProperty has the TaskParameter ValueSetByTask that can be used

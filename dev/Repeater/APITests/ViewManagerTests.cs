@@ -704,7 +704,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 #if BUILD_WINDOWS
                 ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory
 #else
-                ItemTemplate = (Microsoft.UI.Xaml.Controls.IElementFactoryShim)elementFactory
+                ItemTemplate = elementFactory
 #endif
             };
             repeater.Layout = CreateLayout(repeater);

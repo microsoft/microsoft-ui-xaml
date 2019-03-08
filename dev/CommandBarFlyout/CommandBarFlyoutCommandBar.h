@@ -24,6 +24,10 @@ public:
     bool HasCloseAnimation();
     void PlayCloseAnimation(std::function<void()> onCompleteFunc);
 
+#ifdef USE_INSIDER_SDK
+    void ClearShadow();
+#endif
+
 private:
     void AttachEventHandlers();
     void DetachEventHandlers(bool useSafeGet = false);
@@ -32,6 +36,11 @@ private:
     void UpdateUI(bool useTransitions = true);
     void UpdateVisualState(bool useTransitions);
     void UpdateTemplateSettings();
+
+#ifdef USE_INSIDER_SDK
+    void AddShadow();
+    void UpdateShadow();
+#endif
 
     tracker_ref<winrt::FrameworkElement> m_primaryItemsRoot{ this };
     tracker_ref<winrt::FrameworkElement> m_secondaryItemsRoot{ this };

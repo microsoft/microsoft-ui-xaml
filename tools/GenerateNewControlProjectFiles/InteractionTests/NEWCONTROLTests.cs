@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
-
 using Common;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
+using System.Collections.Generic;
 
 #if USING_TAEF
 using WEX.TestExecution;

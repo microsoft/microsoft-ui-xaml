@@ -33,7 +33,10 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
     });
     
     SizeChanged({ [this](auto const&, auto const&) { UpdateUI(); } });
-    Closed({ [this](auto const&, auto const&) { m_secondaryItemsRootSized = false; } });
+    Closed({ [this](auto const&, auto const&)
+    {
+        m_secondaryItemsRootSized = false;
+    } });
 
     RegisterPropertyChangedCallback(
         winrt::AppBar::IsOpenProperty(),
@@ -226,24 +229,22 @@ void CommandBarFlyoutCommandBar::UpdateFlowsFromAndFlowsTo()
                 primaryCommandAsControl.IsTabStop();
         };
 
-        // If we have a more button, then that's the last element in our primary items list.
-        // Otherwise, we'll find the last focusable element in the primary commands.
-        if (m_moreButton)
+        auto primaryCommands = PrimaryCommands();
+        for (int i = static_cast<int>(primaryCommands.Size() - 1); i >= 0; i--)
+        {
+            auto primaryCommand = primaryCommands.GetAt(i);
+            if (isElementFocusable(primaryCommand))
+            {
+                m_currentPrimaryItemsEndElement.set(primaryCommand.try_as<winrt::FrameworkElement>());
+                break;
+            }
+        }
+
+        // If we have a more button and at least one focusable primary item, then
+        // we'll use the more button as the last element in our primary items list.
+        if (m_moreButton && m_currentPrimaryItemsEndElement)
         {
             m_currentPrimaryItemsEndElement.set(m_moreButton.get());
-        }
-        else
-        {
-            auto primaryCommands = PrimaryCommands();
-            for (int i = static_cast<int>(primaryCommands.Size() - 1); i >= 0; i--)
-            {
-                auto primaryCommand = primaryCommands.GetAt(i);
-                if (isElementFocusable(primaryCommand))
-                {
-                    m_currentPrimaryItemsEndElement.set(primaryCommand.try_as<winrt::FrameworkElement>());
-                    break;
-                }
-            }
         }
 
         for (const auto& secondaryCommand : SecondaryCommands())
@@ -267,6 +268,10 @@ void CommandBarFlyoutCommandBar::UpdateUI(bool useTransitions)
 {
     UpdateTemplateSettings();
     UpdateVisualState(useTransitions);
+
+#ifdef USE_INSIDER_SDK
+    UpdateShadow();
+#endif
 }
 
 void CommandBarFlyoutCommandBar::UpdateVisualState(bool useTransitions)
@@ -468,3 +473,61 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
         }
     }
 }
+
+#ifdef USE_INSIDER_SDK
+void CommandBarFlyoutCommandBar::UpdateShadow()
+{
+    if (PrimaryCommands().Size() > 0)
+    {
+        AddShadow();
+    }
+    else if (PrimaryCommands().Size() == 0)
+    {
+        ClearShadow();
+    }
+}
+
+void CommandBarFlyoutCommandBar::AddShadow()
+{
+    if (SharedHelpers::IsThemeShadowAvailable())
+    {
+        //Apply Shadow on the Grid named "ContentRoot", this is the first element below
+        //the clip animation of the commandBar. This guarantees that shadow respects the 
+        //animation
+        winrt::IControlProtected thisAsControlProtected = *this;
+        auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
+
+        if (winrt::IUIElement10 grid_uiElement10 = grid)
+        {
+            if (!grid_uiElement10.Shadow())
+            {
+                winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
+                grid_uiElement10.Shadow(shadow);
+
+                auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 32.0f };
+                grid.Translation(translation);
+            }
+        }
+    }
+}
+
+void CommandBarFlyoutCommandBar::ClearShadow()
+{
+    if (SharedHelpers::IsThemeShadowAvailable())
+    {
+        winrt::IControlProtected thisAsControlProtected = *this;
+        auto grid = GetTemplateChildT<winrt::Grid>(L"ContentRoot", thisAsControlProtected);
+        if (winrt::IUIElement10 grid_uiElement10 = grid)
+        {
+            if (grid_uiElement10.Shadow())
+            {
+                grid_uiElement10.Shadow(nullptr);
+
+                //Undo the elevation
+                auto translation = winrt::float3{ grid.Translation().x, grid.Translation().y, 0.0f };
+                grid.Translation(translation);
+            }
+        }
+    }
+}
+#endif

@@ -18,14 +18,12 @@ using ScrollerSnapPointBase = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnap
 using ScrollerSnapPointRegular = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointRegular;
 using ScrollerSnapPointIrregular = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointIrregular;
 using ScrollerSnapPointAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment;
-using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 using ScrollerSnapPointDimension = Microsoft.UI.Private.Controls.ScrollerSnapPointDimension;
-using ScrollerChangeOffsetsWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions;
-using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
@@ -219,8 +217,7 @@ namespace MUXControlsTestApp
             try
             {
                 double changeAmount = Convert.ToDouble(txtScrollerOffsetChange.Text);
-                ScrollerChangeOffsetsWithAdditionalVelocityOptions options = new ScrollerChangeOffsetsWithAdditionalVelocityOptions(new Vector2(0.0f,(float)((changeAmount * 3) + 30)), null);
-                markupScroller.ChangeOffsetsWithAdditionalVelocity(options);
+                markupScroller.ScrollFrom(new Vector2(0.0f, (float)((changeAmount * 3) + 30)), null);
             }
             catch (Exception ex)
             {
@@ -232,8 +229,7 @@ namespace MUXControlsTestApp
         {
             try
             { 
-                ScrollerChangeOffsetsOptions options = new ScrollerChangeOffsetsOptions(0.0, 10.0, ScrollerViewKind.RelativeToEndOfInertiaView, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.RespectSnapPoints);
-                markupScroller.ChangeOffsets(options);
+                markupScroller.ScrollBy(0.0, 10.0, new ScrollOptions(AnimationMode.Enabled, SnapPointsMode.Default));
             }
             catch (Exception ex)
             {
@@ -244,9 +240,8 @@ namespace MUXControlsTestApp
         private void BtnOffsetPlus10Without_Click(object sender, RoutedEventArgs e)
         {
             try
-            {
-                ScrollerChangeOffsetsOptions options = new ScrollerChangeOffsetsOptions(0.0, 10.0, ScrollerViewKind.RelativeToEndOfInertiaView, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints);
-                markupScroller.ChangeOffsets(options);
+            {                
+                markupScroller.ScrollBy(0.0, 10.0, new ScrollOptions(AnimationMode.Enabled, SnapPointsMode.Ignore));
             }
             catch (Exception ex)
             {

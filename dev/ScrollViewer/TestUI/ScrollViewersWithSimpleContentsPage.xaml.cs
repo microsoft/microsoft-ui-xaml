@@ -7,14 +7,18 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
+using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
-using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
-using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
-using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
-using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
+using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
+using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
+using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
+using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+
+using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
 using ScrollViewerTestHooks = Microsoft.UI.Private.Controls.ScrollViewerTestHooks;
 
 namespace MUXControlsTestApp
@@ -45,11 +49,16 @@ namespace MUXControlsTestApp
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer31).ViewChanged += Scroller_ViewChanged;
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer41).ViewChanged += Scroller_ViewChanged;
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer51).ViewChanged += Scroller_ViewChanged;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer11).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer21).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer31).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer41).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer51).ViewChangeCompleted += Scroller_ViewChangeCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer11).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer21).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer31).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer41).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer51).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer11).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer21).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer31).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer41).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer51).ZoomCompleted += Scroller_ZoomCompleted;
 
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer12).StateChanged += Scroller_StateChanged;
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer22).StateChanged += Scroller_StateChanged;
@@ -61,38 +70,77 @@ namespace MUXControlsTestApp
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer32).ViewChanged += Scroller_ViewChanged;
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer42).ViewChanged += Scroller_ViewChanged;
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer52).ViewChanged += Scroller_ViewChanged;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer12).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer22).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer32).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer42).ViewChangeCompleted += Scroller_ViewChangeCompleted;
-            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer52).ViewChangeCompleted += Scroller_ViewChangeCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer12).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer22).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer32).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer42).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer52).ScrollCompleted += Scroller_ScrollCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer12).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer22).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer32).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer42).ZoomCompleted += Scroller_ZoomCompleted;
+            ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer52).ZoomCompleted += Scroller_ZoomCompleted;
         }
 
         private void Scroller_StateChanged(Scroller sender, object args)
         {
+            string senderId = "." + sender.Name;
             FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
-            FrameworkElement grandParent = VisualTreeHelper.GetParent(parent) as FrameworkElement;
-            string senderId = grandParent.Name + "." + parent.Name + "." + sender.Name;
+            if (parent != null)
+            {
+                senderId = "." + parent.Name + senderId;
+                FrameworkElement grandParent = VisualTreeHelper.GetParent(parent) as FrameworkElement;
+                if (grandParent != null)
+                {
+                    senderId = grandParent.Name + senderId;
+                }
+            }
             this.txtScrollerState.Text = senderId + " " + sender.State.ToString();
             this.fullLogs.Add(senderId + " StateChanged S=" + sender.State.ToString());
         }
 
         private void Scroller_ViewChanged(Scroller sender, object args)
         {
-            string senderId = (VisualTreeHelper.GetParent(sender) as FrameworkElement).Name + "." + sender.Name;
+            string senderId = "." + sender.Name;
+            FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
+            if (parent != null)
+            {
+                senderId = parent.Name + senderId;
+            }
             this.txtScrollerHorizontalOffset.Text = sender.HorizontalOffset.ToString();
             this.txtScrollerVerticalOffset.Text = sender.VerticalOffset.ToString();
             this.txtScrollerZoomFactor.Text = sender.ZoomFactor.ToString();
             this.fullLogs.Add(senderId + " ViewChanged H=" + this.txtScrollerHorizontalOffset.Text + ", V=" + this.txtScrollerVerticalOffset.Text + ", ZF=" + this.txtScrollerZoomFactor.Text);
         }
 
-        private void Scroller_ViewChangeCompleted(Scroller sender, ScrollerViewChangeCompletedEventArgs args)
+        private void Scroller_ScrollCompleted(Scroller sender, ScrollCompletedEventArgs args)
         {
-            string senderId = (VisualTreeHelper.GetParent(sender) as FrameworkElement).Name + "." + sender.Name;
+            string senderId = "." + sender.Name;
+            FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
+            if (parent != null)
+            {
+                senderId = parent.Name + senderId;
+            }
 
-            this.fullLogs.Add(senderId + " View change completed. ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
+            ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
 
-            if (args.ViewChangeId == scrollViewer52ZoomFactorChangeId)
+            this.fullLogs.Add(senderId + " ScrollCompleted. OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+        }
+
+        private void Scroller_ZoomCompleted(Scroller sender, ZoomCompletedEventArgs args)
+        {
+            string senderId = "." + sender.Name;
+            FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
+            if (parent != null)
+            {
+                senderId = parent.Name + senderId;
+            }
+
+            ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+
+            this.fullLogs.Add(senderId + " ZoomCompleted. ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+
+            if (args.ZoomInfo.ZoomFactorChangeId == scrollViewer52ZoomFactorChangeId)
             {
                 this.txtResetStatus.Text = "Views reset";
                 scrollViewer52ZoomFactorChangeId = -1;
@@ -142,6 +190,9 @@ namespace MUXControlsTestApp
 
                     for (int columnIndex = 0; columnIndex < 5; columnIndex++)
                         this.rootGrid.ColumnDefinitions[columnIndex].Width = new GridLength(1, GridUnitType.Star);
+
+                    cmbIgnoredInputKind.IsEnabled = false;
+                    cmbIgnoredInputKind.SelectedIndex = 0;
                 }
                 else
                 {
@@ -162,41 +213,9 @@ namespace MUXControlsTestApp
                     for (int columnIndex = 0; columnIndex < 5; columnIndex++)
                         this.rootGrid.ColumnDefinitions[columnIndex].Width = GridLength.Auto;
 
-                    ScrollViewer scrollViewer = null;
+                    cmbIgnoredInputKind.IsEnabled = true;
 
-                    switch (cmbShowScrollViewer.SelectedIndex)
-                    {
-                        case 1:
-                            scrollViewer = this.scrollViewer11;
-                            break;
-                        case 2:
-                            scrollViewer = this.scrollViewer21;
-                            break;
-                        case 3:
-                            scrollViewer = this.scrollViewer31;
-                            break;
-                        case 4:
-                            scrollViewer = this.scrollViewer41;
-                            break;
-                        case 5:
-                            scrollViewer = this.scrollViewer51;
-                            break;
-                        case 6:
-                            scrollViewer = this.scrollViewer12;
-                            break;
-                        case 7:
-                            scrollViewer = this.scrollViewer22;
-                            break;
-                        case 8:
-                            scrollViewer = this.scrollViewer32;
-                            break;
-                        case 9:
-                            scrollViewer = this.scrollViewer42;
-                            break;
-                        case 10:
-                            scrollViewer = this.scrollViewer52;
-                            break;
-                    }
+                    ScrollViewer scrollViewer = SelectedScrollViewer;
 
                     scrollViewer.Visibility = Visibility.Visible;
                     scrollViewer.Width = 300;
@@ -205,8 +224,71 @@ namespace MUXControlsTestApp
                     txtScrollerHorizontalOffset.Text = scrollViewer.HorizontalOffset.ToString();
                     txtScrollerVerticalOffset.Text = scrollViewer.VerticalOffset.ToString();
                     txtScrollerZoomFactor.Text = scrollViewer.ZoomFactor.ToString();
+
+                    switch (scrollViewer.IgnoredInputKind)
+                    {
+                        case InputKind.None:
+                            cmbIgnoredInputKind.SelectedIndex = 1;
+                            break;
+                        case InputKind.Touch:
+                            cmbIgnoredInputKind.SelectedIndex = 2;
+                            break;
+                        case InputKind.Pen:
+                            cmbIgnoredInputKind.SelectedIndex = 3;
+                            break;
+                        case InputKind.MouseWheel:
+                            cmbIgnoredInputKind.SelectedIndex = 4;
+                            break;
+                        case InputKind.Keyboard:
+                            cmbIgnoredInputKind.SelectedIndex = 5;
+                            break;
+                        case InputKind.Gamepad:
+                            cmbIgnoredInputKind.SelectedIndex = 6;
+                            break;
+                        case InputKind.All:
+                            cmbIgnoredInputKind.SelectedIndex = 7;
+                            break;
+                        default:
+                            cmbIgnoredInputKind.SelectedIndex = 0;
+                            break;
+                    }
                 }
             }
+        }
+
+        private void CmbIgnoredInputKind_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            InputKind ignoredInputKind;
+            ScrollViewer scrollViewer = SelectedScrollViewer;
+
+            switch (cmbIgnoredInputKind.SelectedIndex)
+            {
+                case 0:
+                    return;
+                case 1:
+                    ignoredInputKind = InputKind.None;
+                    break;
+                case 2:
+                    ignoredInputKind = InputKind.Touch;
+                    break;
+                case 3:
+                    ignoredInputKind = InputKind.Pen;
+                    break;
+                case 4:
+                    ignoredInputKind = InputKind.MouseWheel;
+                    break;
+                case 5:
+                    ignoredInputKind = InputKind.Keyboard;
+                    break;
+                case 6:
+                    ignoredInputKind = InputKind.Gamepad;
+                    break;
+                default:
+                    ignoredInputKind = InputKind.All;
+                    break;
+            }
+
+            scrollViewer.IgnoredInputKind = ignoredInputKind;
         }
 
         private void btnGetFullLog_Click(object sender, RoutedEventArgs e)
@@ -243,14 +325,58 @@ namespace MUXControlsTestApp
             Scroller scroller = ScrollViewerTestHooks.GetScrollerPart(scrollViewer);
             string scrollerId = (VisualTreeHelper.GetParent(scroller) as FrameworkElement).Name + "." + scroller.Name;
 
-            int viewChangeId = scroller.ChangeOffsets(new ScrollerChangeOffsetsOptions(0.0, 0.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
-            this.fullLogs.Add(scrollerId + " ChangeOffsets requested. Id=" + viewChangeId);
+            int viewChangeId = scroller.ScrollTo(0.0, 0.0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).OffsetsChangeId;
+            this.fullLogs.Add(scrollerId + " ScrollTo requested. Id=" + viewChangeId);
 
-            viewChangeId = scroller.ChangeZoomFactor(new ScrollerChangeZoomFactorOptions(1.0f, ScrollerViewKind.Absolute, System.Numerics.Vector2.Zero, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
-            this.fullLogs.Add(scrollerId + " ChangeZoomFactor requested. Id=" + viewChangeId);
+            viewChangeId = scroller.ZoomTo(1.0f, System.Numerics.Vector2.Zero, new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
+            this.fullLogs.Add(scrollerId + " ZoomTo requested. Id=" + viewChangeId);
 
             if (scrollViewer == this.scrollViewer52)
                 scrollViewer52ZoomFactorChangeId = viewChangeId;
+        }
+
+        private ScrollViewer SelectedScrollViewer
+        {
+            get
+            {
+                ScrollViewer scrollViewer = null;
+
+                switch (cmbShowScrollViewer.SelectedIndex)
+                {
+                    case 1:
+                        scrollViewer = this.scrollViewer11;
+                        break;
+                    case 2:
+                        scrollViewer = this.scrollViewer21;
+                        break;
+                    case 3:
+                        scrollViewer = this.scrollViewer31;
+                        break;
+                    case 4:
+                        scrollViewer = this.scrollViewer41;
+                        break;
+                    case 5:
+                        scrollViewer = this.scrollViewer51;
+                        break;
+                    case 6:
+                        scrollViewer = this.scrollViewer12;
+                        break;
+                    case 7:
+                        scrollViewer = this.scrollViewer22;
+                        break;
+                    case 8:
+                        scrollViewer = this.scrollViewer32;
+                        break;
+                    case 9:
+                        scrollViewer = this.scrollViewer42;
+                        break;
+                    case 10:
+                        scrollViewer = this.scrollViewer52;
+                        break;
+                }
+
+                return scrollViewer;
+            }
         }
     }
 }

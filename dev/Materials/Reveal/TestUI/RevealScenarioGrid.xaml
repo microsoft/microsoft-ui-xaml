@@ -12,14 +12,14 @@
         <ResourceDictionary>
             <DataTemplate x:Key="ImageTextItem" x:DataType="local:RevealGridItem">
                 <StackPanel>
-                    <Image Source="{x:Bind Image}" Width="138" Height="138" Stretch="UniformToFill" Margin="0,0,0,5"/>
+                    <Image Source="{x:Bind ImageSource}" Width="138" Height="138" Stretch="UniformToFill" Margin="0,0,0,5"/>
                     <TextBlock Text="{x:Bind Header}" FontSize="15" Margin="4,0,4,2"/>
                     <TextBlock Text="{x:Bind SubHeader}" FontSize="12" Margin="4,0,4,8"/>
                 </StackPanel>
             </DataTemplate>
 
             <DataTemplate x:Key="ImageItem" x:DataType="local:RevealGridItem">
-                <Image Source="{x:Bind Image}" Width="250" Stretch="UniformToFill"/>
+                <Image Source="{x:Bind ImageSource}" Width="250" Stretch="UniformToFill"/>
             </DataTemplate>
 
             <DataTemplate x:Key="SemiTransparentItem" x:DataType="local:RevealGridItem">

@@ -28,10 +28,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
-using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 using ScrollerAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
@@ -49,14 +48,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const int c_defaultAnchoringUIRepeaterChildrenCount = 16;
 
         [TestMethod]
-        [TestProperty("Description", "Verifies HorizontalOffset remains at 0 when inserting an item at the beginning (IsAnchoredAtHorizontalExtent=True, HorizontalAnchorRatio=0).")]
+        [TestProperty("Description", "Verifies HorizontalOffset remains at 0 when inserting an item at the beginning (HorizontalAnchorRatio=0).")]
         public void AnchoringAtLeftEdge()
         {
             AnchoringAtNearEdge(Orientation.Horizontal);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies VerticalOffset remains at 0 when inserting an item at the beginning (IsAnchoredAtVerticalExtent=True, VerticalAnchorRatio=0).")]
+        [TestProperty("Description", "Verifies VerticalOffset remains at 0 when inserting an item at the beginning (VerticalAnchorRatio=0).")]
         public void AnchoringAtTopEdge()
         {
             AnchoringAtNearEdge(Orientation.Vertical);
@@ -102,42 +101,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies HorizontalOffset growns to max value when inserting an item at the end (IsAnchoredAtHorizontalExtent=True, HorizontalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies HorizontalOffset growns to max value when inserting an item at the end (HorizontalAnchorRatio=1).")]
         public void AnchoringAtRightEdgeWhileIncreasingContentWidth()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Horizontal, 0 /*viewportSizeChange*/, 3876 /*expectedFinalOffset*/);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end (IsAnchoredAtVerticalExtent=True, VerticalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end (VerticalAnchorRatio=1).")]
         public void AnchoringAtBottomEdgeWhileIncreasingContentHeight()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Vertical, 0 /*viewportSizeChange*/, 3876 /*expectedFinalOffset*/);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies HorizontalOffset growns to max value when inserting an item at the end and growing viewport (IsAnchoredAtHorizontalExtent=True, HorizontalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies HorizontalOffset growns to max value when inserting an item at the end and growing viewport (HorizontalAnchorRatio=1).")]
         public void AnchoringAtRightEdgeWhileIncreasingContentAndViewportWidth()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Horizontal, 10 /*viewportSizeChange*/, 3866 /*expectedFinalOffset*/);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end and growning viewport (IsAnchoredAtVerticalExtent=True, VerticalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end and growning viewport (VerticalAnchorRatio=1).")]
         public void AnchoringAtBottomEdgeWhileIncreasingContentAndViewportHeight()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Vertical, 10 /*viewportSizeChange*/, 3866 /*expectedFinalOffset*/);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies HorizontalOffset growns to max value when inserting an item at the end and shrinking viewport (IsAnchoredAtHorizontalExtent=True, HorizontalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies HorizontalOffset growns to max value when inserting an item at the end and shrinking viewport (HorizontalAnchorRatio=1).")]
         public void AnchoringAtRightEdgeWhileIncreasingContentAndDecreasingViewportWidth()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Horizontal, -10 /*viewportSizeChange*/, 3886 /*expectedFinalOffset*/);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end and shrinking viewport (IsAnchoredAtVerticalExtent=True, VerticalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end and shrinking viewport (VerticalAnchorRatio=1).")]
         public void AnchoringAtBottomEdgeWhileIncreasingContentAndDecreasingViewportHeight()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Vertical, -10 /*viewportSizeChange*/, 3886 /*expectedFinalOffset*/);
@@ -166,7 +165,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
-                ChangeZoomFactor(scroller, 2.0f, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+                ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -185,7 +184,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ChangeOffsets(scroller, horizontalOffset, verticalOffset, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
+                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -240,14 +239,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies HorizontalOffset shrinks to max value when decreasing viewport width (IsAnchoredAtHorizontalExtent=True, HorizontalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies HorizontalOffset shrinks to max value when decreasing viewport width (HorizontalAnchorRatio=1).")]
         public void AnchoringAtRightEdgeWhileDecreasingViewportWidth()
         {
             AnchoringAtFarEdgeWhileDecreasingViewport(Orientation.Horizontal);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies VerticalOffset shrinks to max value when decreasing viewport height (IsAnchoredAtVerticalExtent=True, VerticalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies VerticalOffset shrinks to max value when decreasing viewport height (VerticalAnchorRatio=1).")]
         public void AnchoringAtBottomEdgeWhileDecreasingViewportHeight()
         {
             AnchoringAtFarEdgeWhileDecreasingViewport(Orientation.Vertical);
@@ -276,7 +275,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
-                ChangeZoomFactor(scroller, 2.0f, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+                ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -295,7 +294,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ChangeOffsets(scroller, horizontalOffset, verticalOffset, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
+                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -340,14 +339,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies HorizontalOffset growns when inserting an item at the beginning (IsAnchoredAtHorizontalExtent=True, HorizontalAnchorRatio=0).")]
+        [TestProperty("Description", "Verifies HorizontalOffset growns when inserting an item at the beginning (HorizontalAnchorRatio=0).")]
         public void AnchoringAtAlmostLeftEdge()
         {
             AnchoringAtAlmostNearEdge(Orientation.Horizontal);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies VerticalOffset grows when inserting an item at the beginning (IsAnchoredAtVerticalExtent=True, VerticalAnchorRatio=0).")]
+        [TestProperty("Description", "Verifies VerticalOffset grows when inserting an item at the beginning (VerticalAnchorRatio=0).")]
         public void AnchoringAtAlmostTopEdge()
         {
             AnchoringAtAlmostNearEdge(Orientation.Vertical);
@@ -373,7 +372,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 double horizontalOffset = orientation == Orientation.Vertical ? 0.0 : 1.0;
                 double verticalOffset = orientation == Orientation.Vertical ? 1.0 : 0.0;
 
-                ChangeOffsets(scroller, horizontalOffset, verticalOffset, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints);
+                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -407,14 +406,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies HorizontalOffset does not change when inserting an item at the end (IsAnchoredAtHorizontalExtent=True, HorizontalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies HorizontalOffset does not change when inserting an item at the end (HorizontalAnchorRatio=1).")]
         public void AnchoringAtAlmostRightEdge()
         {
             AnchoringAtAlmostFarEdge(Orientation.Horizontal);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies VerticalOffset does not change when inserting an item at the end (IsAnchoredAtVerticalExtent=True, VerticalAnchorRatio=1).")]
+        [TestProperty("Description", "Verifies VerticalOffset does not change when inserting an item at the end (VerticalAnchorRatio=1).")]
         public void AnchoringAtAlmostBottomEdge()
         {
             AnchoringAtAlmostFarEdge(Orientation.Vertical);
@@ -436,7 +435,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
-                ChangeZoomFactor(scroller, 2.0f, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+                ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -455,7 +454,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ChangeOffsets(scroller, horizontalOffset, verticalOffset, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
+                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -511,7 +510,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
-                ChangeZoomFactor(scroller, 2.0f, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+                ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -530,7 +529,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ChangeOffsets(scroller, horizontalOffset, verticalOffset, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
+                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -756,7 +755,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 WaitForEvent("Waiting for Scroller.Loaded event", scrollerLoadedEvent);
                 IdleSynchronizer.Wait();
 
-                ChangeOffsets(scroller, 0.0, 600.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints);
+                ScrollTo(scroller, 0.0, 600.0, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -807,8 +806,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
-                    ChangeZoomFactor(scroller, 2.0f, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation);
-                    ChangeOffsets(scroller, 0.0, 250.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
+                    ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Enabled, SnapPointsMode.Ignore);
+                    ScrollTo(scroller, 0.0, 250.0, AnimationMode.Enabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                     ItemsRepeater repeater = null;
                     TestDataSource dataSource = null;

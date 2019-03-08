@@ -145,13 +145,17 @@ void RevealBrush::OnElementConnected(winrt::DependencyObject element) noexcept
     {
         if (xamlIsland != m_associatedIsland)
         {
-            if (m_associatedIsland)
+            if (m_associatedIsland) // Brush has already been connected to a different Island
             {
                 m_isInterIsland = true;
             }
             else
             {
                 // First time getting MP for island
+                if (m_materialProperties) // Brush has already been connected under a CoreWindow
+                {
+                    m_isInterIsland = true;
+                }
                 m_associatedIsland = xamlIsland;
                 winrt::IInspectable materialPropertiesInsp = xamlIsland.MaterialProperties();
                 m_materialProperties = materialPropertiesInsp.try_as<winrt::MaterialProperties>();
@@ -166,7 +170,7 @@ void RevealBrush::OnElementConnected(winrt::DependencyObject element) noexcept
     }
     else
     {
-        if (m_associatedIsland)
+        if (m_associatedIsland) // Brush has already been connected under an island
         {
             // Attempt to use brush in both an island and CoreWindow - not supported by AcrylicBrush in RS5.
             // Put the brush in fallback mode.
@@ -185,7 +189,7 @@ void RevealBrush::OnElementConnected(winrt::DependencyObject element) noexcept
             MaterialHelper::BrushTemplates<RevealBrush>::HookupWindowDpiChangedHandler(this);
         }
     }
-    _ASSERT_EXPR(m_mateiralProperties, L"No MaterialProperties available in RevealBrush::OnElementConnected");
+    _ASSERT_EXPR(m_materialProperties, L"No MaterialProperties available in RevealBrush::OnElementConnected");
 
     // Dispatcher needed as TransparencyPolicyChanged is raised off thread
     if (!m_dispatcherQueue)
@@ -1018,9 +1022,13 @@ bool RevealBrush::IsOnXboxAndNotMouseMode()
 
 bool RevealBrush::IsInFallbackMode()
 {
+#if BUILD_WINDOWS
+    return m_isInFallbackMode = m_isDisabledByMaterialPolicy || AlwaysUseFallback() || IsOnXboxAndNotMouseMode() || m_isInterIsland;
+#else
     return m_isInFallbackMode = m_isDisabledByMaterialPolicy || AlwaysUseFallback() || IsOnXboxAndNotMouseMode();
-
+#endif
 }
+
 
 #if BUILD_WINDOWS
 void RevealBrush::OnTransparencyPolicyChanged(const winrt::IMaterialProperties& sender, const winrt::IInspectable& /*args*/)

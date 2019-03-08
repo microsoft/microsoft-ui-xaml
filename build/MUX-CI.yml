@@ -32,34 +32,18 @@ jobs:
     value: $(Build.ArtifactStagingDirectory)
 
   steps:
-  - template: AzurePipelinesTemplates\MUX-BuildProject-Steps.yml
-    parameters:
-      solutionPath: MUXControls.sln
-      nugetConfigPath: nuget.config
-      appxPackageDir: $(appxPackageDir)
-      buildOutputDir: $(buildOutputDir)
-      publishDir: $(publishDir)
-
-  - task: powershell@2
-    displayName: 'Copy files to staging dir'
-    inputs:
-      targetType: filePath
-      filePath: build\CopyFilesToStagingDir.ps1
-      arguments: -BuildOutputDir '$(buildOutputDir)' -PublishDir '$(Build.ArtifactStagingDirectory)' -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish artifact: drop'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'drop'
+  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+  
+  - template: AzurePipelinesTemplates\MUX-PublishDevProject-Steps.yml
 
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
   parameters:
     jobName: CreateNugetPackage
     dependsOn: Build
+    # To publish the package to vsts feed, set queue time variable NuGetFeed = d62f8eac-f05c-4c25-bccb-21f98b95c95f
     # This is the magic GUID from the pipeline visual designer for this feed: https://dev.azure.com/ms/microsoft-ui-xaml/_packaging?_a=feed&feed=MUX-CI
-    publishVstsFeed: 'd62f8eac-f05c-4c25-bccb-21f98b95c95f'
+    publishVstsFeed: $(NuGetFeed)
  
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml

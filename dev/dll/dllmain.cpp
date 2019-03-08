@@ -19,6 +19,8 @@ HINSTANCE g_hInstance = NULL;
 void InitCheckedMemoryChainLock();
 #endif
 
+STDAPI_(void) SendTelemetryOnSuspend();
+
 STDAPI_(BOOL) DllMain(_In_ HINSTANCE hInstance, _In_ DWORD reason, _In_opt_ void *)
 {
     if (DLL_PROCESS_ATTACH == reason)
@@ -34,6 +36,7 @@ STDAPI_(BOOL) DllMain(_In_ HINSTANCE hInstance, _In_ DWORD reason, _In_opt_ void
     }
     else if (DLL_PROCESS_DETACH == reason)
     {
+        SendTelemetryOnSuspend();
         UnRegisterTraceLogging();
     }
 

@@ -16,9 +16,6 @@
 #include "Microsoft.UI.Composition.Effects_impl.h"
 #pragma warning(pop)
 
-
-using namespace std::chrono_literals;
-
 winrt::Color GetLuminosityColor(winrt::Color tintColor, winrt::IReference<double> luminosityOpacity);
 double GetTintOpacityModifier(winrt::Color tintColor);
 

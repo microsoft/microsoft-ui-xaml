@@ -473,6 +473,76 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void ValidateFlowLayoutVaryingHeights()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (ScrollOrientation scrollOrientation in Enum.GetValues(typeof(ScrollOrientation)))
+                {
+                    Log.Comment(string.Format("ScrollOrientation: {0}", scrollOrientation));
+                    var om = new OrientationBasedMeasures(scrollOrientation);
+                    const int numItems = 10;
+                    LayoutPanel panel = new LayoutPanel() {
+                        Layout = new FlowLayout() {
+                            Orientation = scrollOrientation.ToOrthogonalLayoutOrientation(),
+                            LineAlignment = FlowLayoutLineAlignment.Start
+                        }
+                    };
+
+                    SetPanelMinorSize(panel, om, 180);
+                    for (int i = 0; i < numItems; i++)
+                    {
+                        var child = new Button() { Content = i };
+                        if (scrollOrientation == ScrollOrientation.Vertical)
+                        {
+                            child.Width = 50;
+                            child.Height = 50 + i % 2 * 50;
+                        }
+                        else
+                        {
+                            child.Width = 50 + i % 2 * 50;
+                            child.Height = 50;
+                        }
+
+                        panel.Children.Add(child);
+                    }
+
+                    Content = panel;
+
+                    Content.UpdateLayout();
+                    int minItemSpacing = 0;
+                    int lineSpacing = 0;
+                    Log.Comment("Validate with no spacing");
+                    ValidateFlowLayoutChildrenLayoutBounds(
+                        om,
+                        (i) => panel.Children[i],
+                        minItemSpacing,
+                        lineSpacing,
+                        panel.Children.Count,
+                        panel.DesiredSize,
+                        scrollOrientation == ScrollOrientation.Vertical ? 50 : 100,
+                        scrollOrientation == ScrollOrientation.Vertical ? 100 : 50);
+
+                    minItemSpacing = 10;
+                    lineSpacing = 10;
+                    ((FlowLayout)panel.Layout).MinRowSpacing = minItemSpacing;
+                    ((FlowLayout)panel.Layout).MinColumnSpacing = lineSpacing;
+                    Content.UpdateLayout();
+                    Log.Comment("Validate with spacing");
+                    ValidateFlowLayoutChildrenLayoutBounds(
+                        om,
+                        (i) => panel.Children[i],
+                        minItemSpacing,
+                        lineSpacing,
+                        panel.Children.Count,
+                        panel.DesiredSize,
+                        scrollOrientation == ScrollOrientation.Vertical ? 50 : 100,
+                        scrollOrientation == ScrollOrientation.Vertical ? 100 : 50);
+                }
+            });
+        }
+
+        [TestMethod]
         public void ValidateFlowLayoutLineAlignment()
         {
             RunOnUIThread.Execute(() =>
@@ -839,7 +909,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 #if BUILD_WINDOWS
                     repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
 #else
-                    repeater.ItemTemplate = (Microsoft.UI.Xaml.Controls.IElementFactoryShim)elementFactory;
+                    repeater.ItemTemplate = elementFactory;
 #endif
 
                     var scrollViewer = new ScrollViewer();
@@ -932,7 +1002,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 #if BUILD_WINDOWS
                         repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
 #else
-                        repeater.ItemTemplate = (Microsoft.UI.Xaml.Controls.IElementFactoryShim)elementFactory;
+                        repeater.ItemTemplate = elementFactory;
 #endif
                         repeater.Layout = layout;
 
@@ -1067,20 +1137,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             double minItemSpacing,
             double lineSpacing,
             int childCount,
-            Size desiredSize)
+            Size desiredSize, 
+            float? expectedItemWidth = null,
+            float? expectedItemHeight = null)
         {
             var expectedRect = om.MinorMajorRect(0, 0, 0, 0);
             double extentMajor = 0;
             double lineSize = 0;
+            Log.Comment("ValidateFlowLayoutChildrenLayoutBounds");
             for (int i = 0; i < childCount; i++)
             {
                 var child = (FrameworkElement)elementAtIndexFunc(i);
 
                 var layoutBounds = LayoutInformation.GetLayoutSlot(child);
-                expectedRect.Width = child.DesiredSize.Width;
-                expectedRect.Height = child.DesiredSize.Height;
+
+                expectedRect.Width = expectedItemWidth.HasValue ? expectedItemWidth.Value: child.DesiredSize.Width;
+                expectedRect.Height = expectedItemHeight.HasValue? expectedItemHeight.Value: child.DesiredSize.Height;
                 lineSize = Math.Max(lineSize, om.Major(child.DesiredSize));
 
+                Log.Comment(string.Format(@"Index:{0}, Expected:{1} Actual:{2}", i, expectedRect, layoutBounds));
                 Verify.AreEqual(expectedRect, layoutBounds);
 
                 extentMajor = om.MajorStart(expectedRect) + lineSize;
@@ -1092,6 +1167,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 }
             }
 
+            Log.Comment(string.Format(@"Extent Expected:{0} Actual:{1}", om.Major(desiredSize), extentMajor));
             Verify.AreEqual(extentMajor, om.Major(desiredSize));
         }
 

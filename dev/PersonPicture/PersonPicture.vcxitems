@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PersonPicture.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PersonPictureTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InitialsGenerator.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)PersonPicture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)PersonPictureAutomationPeer.cpp" />

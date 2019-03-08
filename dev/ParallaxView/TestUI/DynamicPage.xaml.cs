@@ -18,12 +18,11 @@ using Windows.UI.Xaml.Hosting;
 using ParallaxSourceOffsetKind = Microsoft.UI.Xaml.Controls.ParallaxSourceOffsetKind;
 using ParallaxView = Microsoft.UI.Xaml.Controls.ParallaxView;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
-using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
-using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
+using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
-using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
 #endif
 
@@ -1232,9 +1231,10 @@ namespace MUXControlsTestApp
                 }
                 else if (this.Scroller != null)
                 {
-                    this.Scroller.ChangeOffsets(
-                        new ScrollerChangeOffsetsOptions(
-                            Convert.ToSingle(this.txtHorizontalOffset.Text), this.Scroller.VerticalOffset, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
+                    this.Scroller.ScrollTo(
+                        Convert.ToSingle(this.txtHorizontalOffset.Text),
+                        this.Scroller.VerticalOffset,
+                        new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                 }
             }
             catch (FormatException)
@@ -1264,9 +1264,11 @@ namespace MUXControlsTestApp
                 }
                 else if (this.Scroller != null)
                 {
-                    this.Scroller.ChangeOffsets(
-                        new ScrollerChangeOffsetsOptions(
-                            this.Scroller.HorizontalOffset, Convert.ToSingle(this.txtVerticalOffset.Text), ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
+                    this.Scroller.ScrollTo(
+                        this.Scroller.HorizontalOffset,
+                        Convert.ToSingle(this.txtVerticalOffset.Text),
+                        new ScrollOptions(
+                            AnimationMode.Disabled, SnapPointsMode.Ignore));
                 }
             }
             catch (FormatException)
@@ -1296,9 +1298,10 @@ namespace MUXControlsTestApp
                 }
                 else if (this.Scroller != null)
                 {
-                    this.Scroller.ChangeZoomFactor(
-                        new ScrollerChangeZoomFactorOptions(
-                            Convert.ToSingle(this.txtZoomFactor.Text), ScrollerViewKind.Absolute, System.Numerics.Vector2.Zero, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
+                    this.Scroller.ZoomTo(
+                        Convert.ToSingle(this.txtZoomFactor.Text),
+                        System.Numerics.Vector2.Zero,
+                        new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                 }
             }
             catch (FormatException)

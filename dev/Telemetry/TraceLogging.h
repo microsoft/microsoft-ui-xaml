@@ -20,8 +20,7 @@
 #define KEYWORD_SCROLLER        0x0000000000000002
 #define KEYWORD_PTR             0x0000000000000003
 #define KEYWORD_SCROLLVIEWER    0x0000000000000004
-#define KEYWORD_SCROLLBAR2      0x0000000000000005
-#define KEYWORD_SWIPECONTROL    0x0000000000000006
+#define KEYWORD_SWIPECONTROL    0x0000000000000005
 
 // Common output formats
 #define TRACE_MSG_METH L"%s[0x%p]()\n"
@@ -30,6 +29,7 @@
 #define TRACE_MSG_METH_DBL_INT L"%s[0x%p](%lf, %d)\n"
 #define TRACE_MSG_METH_DBL_DBL_INT L"%s[0x%p](%lf, %lf, %d)\n"
 #define TRACE_MSG_METH_DBL_DBL_FLT L"%s[0x%p](%lf, %lf, %f)\n"
+#define TRACE_MSG_METH_DBL_DBL_STR L"%s[0x%p](%lf, %lf, %s)\n"
 #define TRACE_MSG_METH_FLT L"%s[0x%p](%f)\n"
 #define TRACE_MSG_METH_FLT_FLT L"%s[0x%p](%f, %f)\n"
 #define TRACE_MSG_METH_FLT_FLT_FLT L"%s[0x%p](%f, %f, %f)\n"
@@ -50,6 +50,7 @@
 #define TRACE_MSG_METH_STR_STR_STR L"%s[0x%p](%s, %s, %s)\n"
 #define TRACE_MSG_METH_STR_INT_INT L"%s[0x%p](%s, %d, %d)\n"
 #define TRACE_MSG_METH_STR_FLT_FLT L"%s[0x%p](%s, %f, %f)\n"
+#define TRACE_MSG_METH_STR_STR_FLT L"%s[0x%p](%s, %s, %f)\n"
 #define TRACE_MSG_METH_STR_STR_INT_INT L"%s[0x%p](%s, %s, %d, %d)\n"
 
 #define TRACE_MSG_METH_METH L"%s[0x%p] - calls %s()\n"

@@ -241,7 +241,6 @@ namespace MU_XC_NAMESPACE
 #include <NavigationView\NavigationView.idl>
 #include <ParallaxView\ParallaxView.idl>
 #include <Repeater\ItemsRepeater.idl>
-#include <Repeater\RepeaterAutomationPeer.idl>
 #include <Scroller\Scroller.idl>
 #include <LayoutPanel\LayoutPanel.idl>
 
@@ -265,14 +264,12 @@ namespace MU_XC_NAMESPACE
 #include <SwipeControl\SwipeControl.idl>
 #include <TreeView\TreeView.idl>
 #include <SplitButton\SplitButton.idl>
-#include <SplitButton\SplitButtonAutomationPeer.idl>
 #include <DropDownButton\DropDownButton.idl>
-#include <DropDownButton\DropDownButtonAutomationPeer.idl>
 #include <RadioButtons\RadioButtons.idl>
 #include <RadioMenuFlyoutItem\RadioMenuFlyoutItem.idl>
+#include <TeachingTip\TeachingTip.idl>
 #ifndef BUILD_WINDOWS
 #include <ScrollViewer\ScrollViewer.idl>
-#include <ScrollBar2\ScrollBar2.idl>
 #endif
 #include <Forms\Forms.idl>
 #endif
@@ -298,7 +295,6 @@ namespace MU_XCP_NAMESPACE
 #endif
 #include <NavigationView\NavigationViewItemPresenter.idl>
 #include <Scroller\ScrollerPrimitives.idl>
-#include <Scroller\ScrollerAutomationPeer.idl>
 }
 
 namespace MU_XM_NAMESPACE
@@ -315,6 +311,7 @@ namespace MU_XAP_NAMESPACE
 #ifndef BUILD_WINDOWS
 #include <AnimatedVisualPlayer\AnimatedVisualPlayerAutomationPeer.idl>
 #endif
+#include <TeachingTip\TeachingTipAutomationPeer.idl>
 #include <ColorPicker\ColorSpectrumAutomationPeer.idl>
 #include <ColorPicker\ColorPickerSliderAutomationPeer.idl>
 #include <MenuBar\MenuBarAutomationPeer.idl>
@@ -322,6 +319,10 @@ namespace MU_XAP_NAMESPACE
 #include <RatingControl\RatingControlAutomationPeer.idl>
 #include <TreeView\TreeViewAutomationPeers.idl>
 #include <RadioButtons\RadioButtonsAutomationPeer.idl>
+#include <Repeater\RepeaterAutomationPeer.idl>
+#include <SplitButton\SplitButtonAutomationPeer.idl>
+#include <DropDownButton\DropDownButtonAutomationPeer.idl>
+#include <Scroller\ScrollerAutomationPeer.idl>
 #endif
 }
 
@@ -351,6 +352,7 @@ namespace MU_PRIVATE_CONTROLS_NAMESPACE
 #include <PullToRefresh\RefreshContainer\RefreshContainerPrivate.idl>
 #include <PullToRefresh\RefreshVisualizer\PullToRefreshHelperTestAPI.idl>
 #include <TwoPaneView\DisplayRegionHelperTestApi.idl>
+#include <TestHooks\TeachingTipTestHooks.idl>
 #include <SplitButton\SplitButtonTestApi.idl>
 #ifndef BUILD_WINDOWS
 #include <TestHooks\ScrollViewerTestHooks.idl>

@@ -169,6 +169,15 @@ bool SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable()
     return s_isApplicationViewGetDisplayRegionsAvailable;
 }
 
+bool SharedHelpers::IsControlCornerRadiusAvailable()
+{
+    static bool s_isControlCornerRadiusAvailable =
+        IsSystemDll() ||
+        Is19H1OrHigher() ||
+        (IsRS5OrHigher() && winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.Control", L"CornerRadius"));
+    return s_isControlCornerRadiusAvailable;
+}
+
 bool SharedHelpers::IsTranslationFacadeAvailable(const winrt::UIElement& element)
 {
     static bool s_areFacadesAvailable = (element.try_as<winrt::Windows::UI::Xaml::IUIElement9>() != nullptr);
