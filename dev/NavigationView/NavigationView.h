@@ -191,6 +191,7 @@ private:
     void OnTitleBarMetricsChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
     void OnTitleBarIsVisibleChanged(const winrt::CoreApplicationViewTitleBar& sender, const winrt::IInspectable& args);
     void UpdateTitleBarPadding();
+    void UpdatePaneTitleInTemplateSettings();
 
     void RaiseDisplayModeChanged(const winrt::NavigationViewDisplayMode& displayMode);
     void AnimateSelectionChanged(const winrt::IInspectable& lastItem, const winrt::IInspectable& currentItem);

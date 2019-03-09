@@ -180,7 +180,7 @@
                                     <TextBlock
                                         x:Name="PaneTitleTextBlock" 
                                         Grid.Column="0"
-                                        Text="{TemplateBinding PaneTitle}"
+                                        Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneTitle}"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Center"
                                         Style="{StaticResource NavigationViewItemHeaderTextStyle}"/>

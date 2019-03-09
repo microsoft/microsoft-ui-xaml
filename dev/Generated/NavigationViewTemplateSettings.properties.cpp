@@ -11,6 +11,7 @@ CppWinRTActivatableClassWithDPFactory(NavigationViewTemplateSettings)
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_BackButtonVisibilityProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_LeftPaneVisibilityProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_OverflowButtonVisibilityProperty{ nullptr };
+GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_PaneTitleProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_PaneToggleButtonVisibilityProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_SingleSelectionFollowsFocusProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_TopPaddingProperty{ nullptr };
@@ -54,6 +55,17 @@ void NavigationViewTemplateSettingsProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationViewTemplateSettings>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Visibility>::BoxValueIfNecessary(winrt::Visibility::Collapsed),
+                nullptr);
+    }
+    if (!s_PaneTitleProperty)
+    {
+        s_PaneTitleProperty =
+            InitializeDependencyProperty(
+                L"PaneTitle",
+                winrt::name_of<winrt::hstring>(),
+                winrt::name_of<winrt::NavigationViewTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<winrt::hstring>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_PaneToggleButtonVisibilityProperty)
@@ -107,6 +119,7 @@ void NavigationViewTemplateSettingsProperties::ClearProperties()
     s_BackButtonVisibilityProperty = nullptr;
     s_LeftPaneVisibilityProperty = nullptr;
     s_OverflowButtonVisibilityProperty = nullptr;
+    s_PaneTitleProperty = nullptr;
     s_PaneToggleButtonVisibilityProperty = nullptr;
     s_SingleSelectionFollowsFocusProperty = nullptr;
     s_TopPaddingProperty = nullptr;
@@ -141,6 +154,16 @@ void NavigationViewTemplateSettingsProperties::OverflowButtonVisibility(winrt::V
 winrt::Visibility NavigationViewTemplateSettingsProperties::OverflowButtonVisibility()
 {
     return ValueHelper<winrt::Visibility>::CastOrUnbox(static_cast<NavigationViewTemplateSettings*>(this)->GetValue(s_OverflowButtonVisibilityProperty));
+}
+
+void NavigationViewTemplateSettingsProperties::PaneTitle(winrt::hstring const& value)
+{
+    static_cast<NavigationViewTemplateSettings*>(this)->SetValue(s_PaneTitleProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+}
+
+winrt::hstring NavigationViewTemplateSettingsProperties::PaneTitle()
+{
+    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<NavigationViewTemplateSettings*>(this)->GetValue(s_PaneTitleProperty));
 }
 
 void NavigationViewTemplateSettingsProperties::PaneToggleButtonVisibility(winrt::Visibility const& value)

@@ -353,7 +353,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_PaneTitleProperty)
     {

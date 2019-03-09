@@ -2598,6 +2598,11 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_PaneTitleProperty)
     {
         UpdatePaneToggleSize();
+        UpdatePaneTitleInTemplateSettings();
+    }
+    else if (property == s_PaneHeaderProperty)
+    {
+        UpdatePaneTitleInTemplateSettings();
     }
     else if (property == s_IsBackButtonVisibleProperty)
     {
@@ -3318,6 +3323,13 @@ void NavigationView::UpdateTitleBarPadding()
             GetTemplateSettings()->TopPadding(topPadding);
         }
     }
+}
+
+void NavigationView::UpdatePaneTitleInTemplateSettings()
+{
+    // PaneTitle is introduced in RS4, but it's a string, PaneHeader would deprecate PaneTitle
+    // Make TemplateSettings.PaneTitle to empty when PaneHeader exists.
+    GetTemplateSettings()->PaneTitle(PaneHeader() ? L"" : PaneTitle());
 }
 
 void NavigationView::UpdateSelectedItem()

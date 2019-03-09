@@ -264,6 +264,7 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["NavigationView.OverflowLabelMode"] = true;
             NeedsPropChangedCallbackMetadata["NavigationView.PaneDisplayMode"] = true;
             NeedsPropChangedCallbackMetadata["NavigationView.PaneFooter"] = true;
+            NeedsPropChangedCallbackMetadata["NavigationView.PaneHeader"] = true;
             NeedsPropChangedCallbackMetadata["NavigationView.PaneTitle"] = true;
             NeedsPropChangedCallbackMetadata["NavigationView.PaneToggleButtonStyle"] = true;
             NeedsPropChangedCallbackMetadata["NavigationView.SelectedItem"] = true;

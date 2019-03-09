@@ -2844,6 +2844,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "C")]
+        public void VerifyPaneTitleIsEmptyWhenPaneHeaderIsSet()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                TextBlock paneTitleTextBlock = new TextBlock(FindElement.ByName("NavView Test"));
+
+                Verify.AreNotEqual("", paneTitleTextBlock.DocumentText, "Verify that the pane title is not empty");
+
+                Button changePaneTitleButton = new Button(FindElement.ByName("ChangePaneHeader"));
+                changePaneTitleButton.Invoke();
+                Wait.ForIdle();
+
+                Verify.AreEqual("", paneTitleTextBlock.DocumentText, "Verify that the pane title is empty");
+            }
+        }
 
         [TestMethod]
         [TestProperty("NavViewTestSuite", "C")]

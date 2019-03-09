@@ -1,4 +1,4 @@
-[WUXC_VERSION_RS3]
+﻿[WUXC_VERSION_RS3]
 [webhosthidden]
 enum NavigationViewDisplayMode
 {
@@ -135,6 +135,12 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
     static Windows.UI.Xaml.DependencyProperty TopPaneVisibilityProperty { get; };
     static Windows.UI.Xaml.DependencyProperty LeftPaneVisibilityProperty { get; };
     static Windows.UI.Xaml.DependencyProperty SingleSelectionFollowsFocusProperty { get; };
+
+    [WUXC_VERSION_MUXONLY]
+    {
+        String PaneTitle{ get; };
+        static Windows.UI.Xaml.DependencyProperty PaneTitleProperty{ get; };
+    }
 }
 
 [WUXC_VERSION_RS3]
@@ -234,7 +240,7 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     {
         [MUX_DEFAULT_VALUE("winrt::NavigationViewPaneDisplayMode::Auto")]
         NavigationViewPaneDisplayMode PaneDisplayMode { get; set; };
-        [MUX_PROPERTY_CHANGED_CALLBACK(FALSE)]
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         Windows.UI.Xaml.UIElement PaneHeader { get; set; };
         [MUX_PROPERTY_CHANGED_CALLBACK(FALSE)]
         Windows.UI.Xaml.UIElement PaneCustomContent { get; set; };

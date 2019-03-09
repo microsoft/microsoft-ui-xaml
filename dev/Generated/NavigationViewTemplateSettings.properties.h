@@ -18,6 +18,9 @@ public:
     void OverflowButtonVisibility(winrt::Visibility const& value);
     winrt::Visibility OverflowButtonVisibility();
 
+    void PaneTitle(winrt::hstring const& value);
+    winrt::hstring PaneTitle();
+
     void PaneToggleButtonVisibility(winrt::Visibility const& value);
     winrt::Visibility PaneToggleButtonVisibility();
 
@@ -33,6 +36,7 @@ public:
     static winrt::DependencyProperty BackButtonVisibilityProperty() { return s_BackButtonVisibilityProperty; }
     static winrt::DependencyProperty LeftPaneVisibilityProperty() { return s_LeftPaneVisibilityProperty; }
     static winrt::DependencyProperty OverflowButtonVisibilityProperty() { return s_OverflowButtonVisibilityProperty; }
+    static winrt::DependencyProperty PaneTitleProperty() { return s_PaneTitleProperty; }
     static winrt::DependencyProperty PaneToggleButtonVisibilityProperty() { return s_PaneToggleButtonVisibilityProperty; }
     static winrt::DependencyProperty SingleSelectionFollowsFocusProperty() { return s_SingleSelectionFollowsFocusProperty; }
     static winrt::DependencyProperty TopPaddingProperty() { return s_TopPaddingProperty; }
@@ -41,6 +45,7 @@ public:
     static GlobalDependencyProperty s_BackButtonVisibilityProperty;
     static GlobalDependencyProperty s_LeftPaneVisibilityProperty;
     static GlobalDependencyProperty s_OverflowButtonVisibilityProperty;
+    static GlobalDependencyProperty s_PaneTitleProperty;
     static GlobalDependencyProperty s_PaneToggleButtonVisibilityProperty;
     static GlobalDependencyProperty s_SingleSelectionFollowsFocusProperty;
     static GlobalDependencyProperty s_TopPaddingProperty;
