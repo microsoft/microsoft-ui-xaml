@@ -118,6 +118,8 @@
     <x:Double x:Key="TimePickerFlyoutPresenterItemHeight">40</x:Double>
     <Thickness x:Key="TimePickerFlyoutPresenterItemPadding">0,3,0,6</Thickness>
 
+    <Thickness x:Key="TimePickerHostPadding">0,3,0,6</Thickness>
+
     <Style TargetType="TimePicker">
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
@@ -293,7 +295,7 @@
                                 <Border x:Name="FirstPickerHost" Grid.Column="0">
                                     <TextBlock x:Name="HourTextBlock"
                                         TextAlignment="Center"
-                                        Padding="{ThemeResource TimePickerFlyoutPresenterItemPadding}"
+                                        Padding="{ThemeResource TimePickerHostPadding}"
                                         FontFamily="{TemplateBinding FontFamily}"
                                         FontWeight="{TemplateBinding FontWeight}"
                                         FontSize="{TemplateBinding FontSize}"
@@ -307,7 +309,7 @@
                                 <Border x:Name="SecondPickerHost" Grid.Column="2">
                                     <TextBlock x:Name="MinuteTextBlock"
                                         TextAlignment="Center"
-                                        Padding="{ThemeResource TimePickerFlyoutPresenterItemPadding}"
+                                        Padding="{ThemeResource TimePickerHostPadding}"
                                         FontFamily="{TemplateBinding FontFamily}"
                                         FontWeight="{TemplateBinding FontWeight}"
                                         FontSize="{TemplateBinding FontSize}"
@@ -321,7 +323,7 @@
                                 <Border x:Name="ThirdPickerHost" Grid.Column="4">
                                     <TextBlock x:Name="PeriodTextBlock"
                                         TextAlignment="Center"
-                                        Padding="{ThemeResource TimePickerFlyoutPresenterItemPadding}"
+                                        Padding="{ThemeResource TimePickerHostPadding}"
                                         FontFamily="{TemplateBinding FontFamily}"
                                         FontWeight="{TemplateBinding FontWeight}"
                                         FontSize="{TemplateBinding FontSize}"

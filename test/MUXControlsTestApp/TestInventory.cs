@@ -30,6 +30,7 @@ namespace MUXControlsTestApp
             Tests.Add(new TestDeclaration("DropDownButton Tests", typeof(DropDownButtonPage)));
             Tests.Add(new TestDeclaration("CommandBarFlyout Tests", typeof(CommandBarFlyoutMainPage)));
             Tests.Add(new TestDeclaration("CommonStyles Tests", typeof(CommonStylesPage)));
+            Tests.Add(new TestDeclaration("Compact Tests", typeof(CompactPage)));
             Tests.Add(new TestDeclaration("RadioButtons Tests", typeof(RadioButtonsPage)));
             Tests.Add(new TestDeclaration("RadioMenuFlyoutItem Tests", typeof(RadioMenuFlyoutItemPage)));
 #endif
