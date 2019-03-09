@@ -5485,6 +5485,7 @@ void Scroller::ProcessPointerWheelScroll(
     winrt::float2 offsetsVelocity{
         isHorizontalMouseWheel ? offsetVelocity : 0.0f,
         isHorizontalMouseWheel ? 0.0f : offsetVelocity };
+    bool isQueuedOffsetVelocityCanceled = false;
 
     if (interactionTrackerAsyncOperation)
     {
@@ -5493,7 +5494,26 @@ void Scroller::ProcessPointerWheelScroll(
 
         if (offsetsChangeWithAdditionalVelocity)
         {
-            offsetsVelocity += offsetsChangeWithAdditionalVelocity->OffsetsVelocity();
+            winrt::float2 queuedOffsetsVelocity = offsetsChangeWithAdditionalVelocity->OffsetsVelocity();
+            float queuedOffsetVelocity = isHorizontalMouseWheel ? queuedOffsetsVelocity.x : queuedOffsetsVelocity.y;
+
+            if (offsetVelocity * queuedOffsetVelocity > 0.0f)
+            {
+                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"Direction unchange", queuedOffsetVelocity, offsetVelocity);
+                if (isHorizontalMouseWheel)
+                {
+                    offsetsVelocity.x += queuedOffsetVelocity;
+                }
+                else
+                {
+                    offsetsVelocity.y += queuedOffsetVelocity;
+                }
+            }
+            else
+            {
+                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"Direction change", queuedOffsetVelocity, offsetVelocity);
+                isQueuedOffsetVelocityCanceled = true;
+            }
         }
     }
 
@@ -5544,11 +5564,25 @@ void Scroller::ProcessPointerWheelScroll(
         interactionTrackerAsyncOperation.get(),
         interactionTrackerAsyncOperation ? L"Coalesced MouseWheelDelta for scrolling" : L"New MouseWheelDelta for scrolling");
 
-    if (!interactionTrackerAsyncOperation)
+    if (!interactionTrackerAsyncOperation || isQueuedOffsetVelocityCanceled)
     {
         // Minimum absolute velocity. Any lower velocity has no effect.
         const float c_minVelocity = 30.0f;
+        // Make sure the initial velocity is larger than the minimum effective velocity
+        const float minOffsetVelocity = (offsetVelocity > 0.0f) ? c_minVelocity : -c_minVelocity;
 
+        if (isHorizontalMouseWheel)
+        {
+            offsetsVelocity.x += minOffsetVelocity;
+        }
+        else
+        {
+            offsetsVelocity.y += minOffsetVelocity;
+        }
+    }
+
+    if (!interactionTrackerAsyncOperation)
+    {
         // Inertia decay rate to achieve the c_offsetChangePerVelocityUnit change per velocity unit
         float mouseWheelInertiaDecayRate = SharedHelpers::IsRS2OrHigher() ? s_mouseWheelInertiaDecayRate : s_mouseWheelInertiaDecayRateRS1;
 
@@ -5557,21 +5591,17 @@ void Scroller::ProcessPointerWheelScroll(
             mouseWheelInertiaDecayRate = globalTestHooks->MouseWheelInertiaDecayRate();
         }
 
-        // Make sure the initial velocity is larger than the minimum effective velocity
-        const float minOffsetVelocity = (offsetVelocity > 0.0f) ? c_minVelocity : -c_minVelocity;
         winrt::IReference<winrt::float3> currentInertiaDecayRate = m_interactionTracker.PositionInertiaDecayRate();
         winrt::IInspectable inertiaDecayRateAsInsp = nullptr;
 
         if (isHorizontalMouseWheel)
         {
-            offsetsVelocity.x += minOffsetVelocity;
             inertiaDecayRateAsInsp = box_value(winrt::float2({
                 mouseWheelInertiaDecayRate,
                 currentInertiaDecayRate ? currentInertiaDecayRate.Value().y : c_scrollerDefaultInertiaDecayRate }));
         }
         else
         {
-            offsetsVelocity.y += minOffsetVelocity;
             inertiaDecayRateAsInsp = box_value(winrt::float2({
                 currentInertiaDecayRate ? currentInertiaDecayRate.Value().x : c_scrollerDefaultInertiaDecayRate,
                 mouseWheelInertiaDecayRate }));
