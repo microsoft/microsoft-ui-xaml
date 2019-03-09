@@ -37,7 +37,7 @@ jobs:
     nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
     packageSaveDirectory: $(Build.SourcesDirectory)\packages\muxreleasetest
     artifactDownloadPath: $(Build.SourcesDirectory)\Artifacts
-    currentPackageVersion: 2.1.181217001-prerelease
+    currentPackageVersion: 2.1.190218001-prerelease
     buildOutputDir: $(Build.SourcesDirectory)\BuildOutput
 
   steps:
@@ -103,7 +103,7 @@ jobs:
       nugetConfigPath: $(nugetConfigPath)
 
   - template: MUX-PublishProjectOutput-Steps.yml
-  
+
 - ${{if eq(parameters.runTests, 'true')}}:     
   - template: MUX-RunHelixTests-Job.yml
     parameters:
