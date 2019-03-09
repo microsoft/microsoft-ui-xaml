@@ -301,16 +301,13 @@ void SelectionNode::HookupCollectionChangedHandler()
 {
     if (m_dataSource)
     {
-        m_dataSourceChanged = m_dataSource.get().CollectionChanged({ this, &SelectionNode::OnSourceListChanged });
+        m_itemsSourceViewChanged = m_dataSource.get().CollectionChanged(winrt::auto_revoke, { this, &SelectionNode::OnSourceListChanged });
     }
 }
 
 void SelectionNode::UnhookCollectionChangedHandler()
 {
-    if (auto dataSource = m_dataSource.safe_get())
-    {
-        dataSource.CollectionChanged(m_dataSourceChanged);
-    }
+        m_itemsSourceViewChanged.revoke();
 }
 
 bool SelectionNode::IsValidIndex(int index)

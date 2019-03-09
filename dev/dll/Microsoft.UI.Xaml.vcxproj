@@ -365,6 +365,16 @@
       <ThemeResource>true</ThemeResource>
       <Link>Themes\%(Filename)%(Extension)</Link>
     </Page>
+    <Page Include="$(MSBuildProjectDirectory)\DensityStyles\Compact.xaml">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>DensityStyles\%(Filename)%(Extension)</Link>
+    </Page>
+    <Page Include="$(MSBuildProjectDirectory)\DensityStyles\CompactDatePickerTimePickerFlyout.xaml">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>DensityStyles\%(Filename)%(Extension)</Link>
+    </Page>    
     <Page Include="$(OutDir)rs1_themeresources.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>

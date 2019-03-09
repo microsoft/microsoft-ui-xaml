@@ -27,6 +27,11 @@ struct GlobalDependencyProperty
         return *this;
     }
 
+    GlobalDependencyProperty(winrt::DependencyProperty const& other)
+    {
+        Property() = other;
+    }
+
     // Cannot copy or assign this helper because it is only for global static usage.
     GlobalDependencyProperty(GlobalDependencyProperty const&) = delete;
     GlobalDependencyProperty& operator=(GlobalDependencyProperty const& other) = delete;

@@ -21,4 +21,16 @@
       <DependentUpon>CommonStylesPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
+    <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)CompactPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CompactPage.xaml.cs">
+      <DependentUpon>CompactPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

@@ -35,7 +35,7 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ElementAnimator>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_BackgroundProperty)
     {
@@ -56,8 +56,8 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<double>::BoxValueIfNecessary(2.0),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_ItemsSourceProperty)
     {
@@ -68,7 +68,7 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_ItemTemplateProperty)
     {
@@ -79,7 +79,7 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_LayoutProperty)
     {
@@ -89,8 +89,8 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<winrt::Layout>(),
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
-                ValueHelper<winrt::Layout>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<winrt::Layout>::BoxValueIfNecessary(winrt::StackLayout()),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_VerticalCacheLengthProperty)
     {
@@ -100,8 +100,8 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<double>::BoxValueIfNecessary(2.0),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
 }
 
@@ -114,6 +114,14 @@ void ItemsRepeaterProperties::ClearProperties()
     s_ItemTemplateProperty = nullptr;
     s_LayoutProperty = nullptr;
     s_VerticalCacheLengthProperty = nullptr;
+}
+
+void ItemsRepeaterProperties::OnPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ItemsRepeater>();
+    winrt::get_self<ItemsRepeater>(owner)->OnPropertyChanged(args);
 }
 
 void ItemsRepeaterProperties::Animator(winrt::ElementAnimator const& value)
