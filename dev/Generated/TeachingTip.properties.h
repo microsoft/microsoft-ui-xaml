@@ -24,12 +24,6 @@ public:
     static void SetAttach(winrt::UIElement const& target, winrt::TeachingTip const& value);
     static winrt::TeachingTip GetAttach(winrt::UIElement const& target);
 
-    void BleedingImageContent(winrt::UIElement const& value);
-    winrt::UIElement BleedingImageContent();
-
-    void BleedingImagePlacement(winrt::TeachingTipBleedingImagePlacementMode const& value);
-    winrt::TeachingTipBleedingImagePlacementMode BleedingImagePlacement();
-
     void CloseButtonCommand(winrt::ICommand const& value);
     winrt::ICommand CloseButtonCommand();
 
@@ -44,6 +38,12 @@ public:
 
     void CloseButtonText(winrt::hstring const& value);
     winrt::hstring CloseButtonText();
+
+    void HeroContent(winrt::UIElement const& value);
+    winrt::UIElement HeroContent();
+
+    void HeroContentPlacement(winrt::TeachingTipHeroContentPlacementMode const& value);
+    winrt::TeachingTipHeroContentPlacementMode HeroContentPlacement();
 
     void IconSource(winrt::IconSource const& value);
     winrt::IconSource IconSource();
@@ -74,13 +74,13 @@ public:
     static winrt::DependencyProperty ActionButtonStyleProperty() { return s_ActionButtonStyleProperty; }
     static winrt::DependencyProperty ActionButtonTextProperty() { return s_ActionButtonTextProperty; }
     static winrt::DependencyProperty AttachProperty() { return s_AttachProperty; }
-    static winrt::DependencyProperty BleedingImageContentProperty() { return s_BleedingImageContentProperty; }
-    static winrt::DependencyProperty BleedingImagePlacementProperty() { return s_BleedingImagePlacementProperty; }
     static winrt::DependencyProperty CloseButtonCommandProperty() { return s_CloseButtonCommandProperty; }
     static winrt::DependencyProperty CloseButtonCommandParameterProperty() { return s_CloseButtonCommandParameterProperty; }
     static winrt::DependencyProperty CloseButtonKindProperty() { return s_CloseButtonKindProperty; }
     static winrt::DependencyProperty CloseButtonStyleProperty() { return s_CloseButtonStyleProperty; }
     static winrt::DependencyProperty CloseButtonTextProperty() { return s_CloseButtonTextProperty; }
+    static winrt::DependencyProperty HeroContentProperty() { return s_HeroContentProperty; }
+    static winrt::DependencyProperty HeroContentPlacementProperty() { return s_HeroContentPlacementProperty; }
     static winrt::DependencyProperty IconSourceProperty() { return s_IconSourceProperty; }
     static winrt::DependencyProperty IsLightDismissEnabledProperty() { return s_IsLightDismissEnabledProperty; }
     static winrt::DependencyProperty IsOpenProperty() { return s_IsOpenProperty; }
@@ -95,13 +95,13 @@ public:
     static GlobalDependencyProperty s_ActionButtonStyleProperty;
     static GlobalDependencyProperty s_ActionButtonTextProperty;
     static GlobalDependencyProperty s_AttachProperty;
-    static GlobalDependencyProperty s_BleedingImageContentProperty;
-    static GlobalDependencyProperty s_BleedingImagePlacementProperty;
     static GlobalDependencyProperty s_CloseButtonCommandProperty;
     static GlobalDependencyProperty s_CloseButtonCommandParameterProperty;
     static GlobalDependencyProperty s_CloseButtonKindProperty;
     static GlobalDependencyProperty s_CloseButtonStyleProperty;
     static GlobalDependencyProperty s_CloseButtonTextProperty;
+    static GlobalDependencyProperty s_HeroContentProperty;
+    static GlobalDependencyProperty s_HeroContentPlacementProperty;
     static GlobalDependencyProperty s_IconSourceProperty;
     static GlobalDependencyProperty s_IsLightDismissEnabledProperty;
     static GlobalDependencyProperty s_IsOpenProperty;

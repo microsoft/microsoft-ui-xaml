@@ -11,8 +11,8 @@ public:
 
 
 
-    winrt::event_token EffectiveBleedingPlacementChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value);
-    void EffectiveBleedingPlacementChanged(winrt::event_token const& token);
+    winrt::event_token EffectiveHeroContentPlacementChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value);
+    void EffectiveHeroContentPlacementChanged(winrt::event_token const& token);
     winrt::event_token EffectivePlacementChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value);
     void EffectivePlacementChanged(winrt::event_token const& token);
     winrt::event_token IdleStatusChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value);
@@ -22,7 +22,7 @@ public:
     winrt::event_token OpenedStatusChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value);
     void OpenedStatusChanged(winrt::event_token const& token);
 
-    event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_effectiveBleedingPlacementChangedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_effectiveHeroContentPlacementChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_effectivePlacementChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_idleStatusChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_offsetChangedEventSource;

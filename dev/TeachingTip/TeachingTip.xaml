@@ -99,15 +99,15 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="BleedingContentPlacementStates">
-                                <VisualState x:Name="BleedingContentTop">
+                            <VisualStateGroup x:Name="HeroContentPlacementStates">
+                                <VisualState x:Name="HeroContentTop">
                                     <VisualState.Setters>
-                                        <Setter Target="BleedingImageBorder.(Grid.Row)" Value="0"/>
+                                        <Setter Target="HeroContentBorder.(Grid.Row)" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="BleedingContentBottom">
+                                <VisualState x:Name="HeroContentBottom">
                                     <VisualState.Setters>
-                                        <Setter Target="BleedingImageBorder.(Grid.Row)" Value="2"/>
+                                        <Setter Target="HeroContentBorder.(Grid.Row)" Value="2"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -477,8 +477,8 @@
                                         <RowDefinition Height="*"/>
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
-                                    <Border x:Name="BleedingImageBorder" Grid.Row="0" Child="{TemplateBinding BleedingImageContent}" Background="{TemplateBinding Background}"/>
-                                    <Grid x:Name="NonBleedingContentRootGrid" Grid.Row="1">
+                                    <Border x:Name="HeroContentBorder" Grid.Row="0" Child="{TemplateBinding HeroContent}" Background="{TemplateBinding Background}"/>
+                                    <Grid x:Name="NonHeroContentRootGrid" Grid.Row="1">
                                         <ScrollViewer>
                                             <StackPanel Margin="{StaticResource TeachingTipContentMargin}">
                                                 <Grid Grid.Row="0">

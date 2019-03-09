@@ -21,7 +21,7 @@ using TeachingTip = Microsoft.UI.Xaml.Controls.TeachingTip;
 using TeachingTipClosedEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs;
 using TeachingTipClosingEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs;
 using TeachingTipTestHooks = Microsoft.UI.Private.Controls.TeachingTipTestHooks;
-using TeachingTipBleedingImagePlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipBleedingImagePlacementMode;
+using TeachingTipHeroContentPlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode;
 using TeachingTipPlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode;
 using TeachingTipCloseButtonKind = Microsoft.UI.Xaml.Controls.TeachingTipCloseButtonKind;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
@@ -51,7 +51,7 @@ namespace MUXControlsTestApp
             TeachingTipTestHooks.IdleStatusChanged += TeachingTipTestHooks_IdleStatusChanged;
             TeachingTipTestHooks.OpenedStatusChanged += TeachingTipTestHooks_OpenedStatusChanged;
             TeachingTipTestHooks.EffectivePlacementChanged += TeachingTipTestHooks_EffectivePlacementChanged;
-            TeachingTipTestHooks.EffectiveBleedingPlacementChanged += TeachingTipTestHooks_EffectiveBleedingPlacementChanged;
+            TeachingTipTestHooks.EffectiveHeroContentPlacementChanged += TeachingTipTestHooks_EffectiveHeroContentPlacementChanged;
             TeachingTipTestHooks.OffsetChanged += TeachingTipTestHooks_OffsetChanged;
             this.TeachingTipInVisualTree.Closed += TeachingTipInVisualTree_Closed;
             this.TeachingTipInSetAttach.Closed += TeachingTipInSetAttach_Closed;
@@ -120,12 +120,12 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void TeachingTipTestHooks_EffectiveBleedingPlacementChanged(TeachingTip sender, object args)
+        private void TeachingTipTestHooks_EffectiveHeroContentPlacementChanged(TeachingTip sender, object args)
         {
             if (sender == getTeachingTip())
             {
-                var placement = TeachingTipTestHooks.GetEffectiveBleedingPlacement(sender);
-                this.EffectiveBleedingPlacementTextBlock.Text = placement.ToString();
+                var placement = TeachingTipTestHooks.GetEffectiveHeroContentPlacement(sender);
+                this.EffectiveHeroContentPlacementTextBlock.Text = placement.ToString();
             }
         }
 
@@ -228,40 +228,40 @@ namespace MUXControlsTestApp
             }
         }
 
-        public void OnSetBleedingContentButtonClicked(object sender, RoutedEventArgs args)
+        public void OnSetHeroContentButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.BleedingContentComboBox.SelectedItem == BleedingRedSquare)
+            if (this.HeroContentComboBox.SelectedItem == HeroContentRedSquare)
             {
                 Grid grid = new Grid();
                 grid.Background = new SolidColorBrush(Colors.Red);
-                getTeachingTip().BleedingImageContent = grid;
+                getTeachingTip().HeroContent = grid;
             }
-            else if (this.BleedingContentComboBox.SelectedItem == BleedingBlueSquare)
+            else if (this.HeroContentComboBox.SelectedItem == HeroContentBlueSquare)
             {
                 Grid grid = new Grid();
                 grid.Background = new SolidColorBrush(Colors.Blue);
-                getTeachingTip().BleedingImageContent = grid;
+                getTeachingTip().HeroContent = grid;
             }
-            else if (this.BleedingContentComboBox.SelectedItem == BleedingImage)
+            else if (this.HeroContentComboBox.SelectedItem == HeroContentImage)
             {
                 Image image = new Image();
                 BitmapImage bitmapImage = new BitmapImage();
                 image.Width = bitmapImage.DecodePixelWidth = 300;
                 bitmapImage.UriSource = new Uri("ms-appx:///Assets/ingredient1.png");
                 image.Source = bitmapImage;
-                getTeachingTip().BleedingImageContent = image;
+                getTeachingTip().HeroContent = image;
             }
-            else if (this.BleedingContentComboBox.SelectedItem == BleedingAutoSave)
+            else if (this.HeroContentComboBox.SelectedItem == HeroContentAutoSave)
             {
                 Image image = new Image();
                 BitmapImage bitmapImage = new BitmapImage();
                 bitmapImage.UriSource = new Uri("ms-appx:///Assets/AutoSave.png");
                 image.Source = bitmapImage;
-                getTeachingTip().BleedingImageContent = image;
+                getTeachingTip().HeroContent = image;
             }
             else
             {
-                getTeachingTip().BleedingImageContent = null;
+                getTeachingTip().HeroContent = null;
             }
         }
 
@@ -390,17 +390,17 @@ namespace MUXControlsTestApp
 
         public void OnSetBleeingImagePlacementButtonClicked(object sender, RoutedEventArgs args)
         {
-            if(this.BleedingImagePlacementComboBox.SelectedItem == BleedingPlacementAuto)
+            if(this.HeroContentPlacementComboBox.SelectedItem == HeroContentPlacementAuto)
             {
-                getTeachingTip().BleedingImagePlacement = TeachingTipBleedingImagePlacementMode.Auto;
+                getTeachingTip().HeroContentPlacement = TeachingTipHeroContentPlacementMode.Auto;
             }
-            else if(this.BleedingImagePlacementComboBox.SelectedItem == BleedingPlacementTop)
+            else if(this.HeroContentPlacementComboBox.SelectedItem == HeroContentPlacementTop)
             {
-                getTeachingTip().BleedingImagePlacement = TeachingTipBleedingImagePlacementMode.Top;
+                getTeachingTip().HeroContentPlacement = TeachingTipHeroContentPlacementMode.Top;
             }
             else
             {
-                getTeachingTip().BleedingImagePlacement = TeachingTipBleedingImagePlacementMode.Bottom;
+                getTeachingTip().HeroContentPlacement = TeachingTipHeroContentPlacementMode.Bottom;
             }
         }
         public void OnGetTargetBoundsButtonClicked(object sender, RoutedEventArgs args)

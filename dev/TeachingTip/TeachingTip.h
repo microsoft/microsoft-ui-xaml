@@ -39,7 +39,7 @@ public:
     void SetBeakElevation(float elevation);
     bool GetIsIdle();
     winrt::TeachingTipPlacementMode GetEffectivePlacement();
-    winrt::TeachingTipBleedingImagePlacementMode GetEffectiveBleedingPlacement();
+    winrt::TeachingTipHeroContentPlacementMode GetEffectiveHeroContentPlacement();
     double GetHorizontalOffset();
     double GetVerticalOffset();
     void SetUseTestWindowBounds(bool useTestWindowBounds);
@@ -68,8 +68,8 @@ private:
     void PositionUntargetedPopup();
     void UpdateSizeBasedTemplateSettings();
     void UpdateButtonsState();
-    void UpdateDynamicBleedingContentPlacementToTop();
-    void UpdateDynamicBleedingContentPlacementToBottom();
+    void UpdateDynamicHeroContentPlacementToTop();
+    void UpdateDynamicHeroContentPlacementToBottom();
 
     static void OnPropertyChanged(
         const winrt::DependencyObject& sender,
@@ -83,7 +83,7 @@ private:
     void OnIconSourceChanged();
     void OnTargetOffsetChanged();
     void OnIsLightDismissEnabledChanged();
-    void OnBleedingImagePlacementChanged();
+    void OnHeroContentPlacementChanged();
 
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
@@ -118,8 +118,8 @@ private:
     tracker_ref<winrt::UIElement> m_rootElement{ this };
     tracker_ref<winrt::Grid> m_beakOcclusionGrid{ this };
     tracker_ref<winrt::Grid> m_contentRootGrid{ this };
-    tracker_ref<winrt::Grid> m_nonBleedingContentRootGrid{ this };
-    tracker_ref<winrt::Border> m_bleedingImageContentBorder{ this };
+    tracker_ref<winrt::Grid> m_nonHeroContentRootGrid{ this };
+    tracker_ref<winrt::Border> m_heroContentBorder{ this };
     tracker_ref<winrt::Border> m_iconBorder{ this };
     tracker_ref<winrt::Button> m_actionButton{ this };
     tracker_ref<winrt::Button> m_alternateCloseButton{ this };
@@ -135,7 +135,7 @@ private:
     tracker_ref<winrt::CompositionEasingFunction> m_contractEasingFunction{ this };
 
     winrt::TeachingTipPlacementMode m_currentEffectivePlacementMode{ winrt::TeachingTipPlacementMode::Auto };
-    winrt::TeachingTipBleedingImagePlacementMode m_currentBleedingEffectivePlacementMode{ winrt::TeachingTipBleedingImagePlacementMode::Auto };
+    winrt::TeachingTipHeroContentPlacementMode m_currentHeroContentEffectivePlacementMode{ winrt::TeachingTipHeroContentPlacementMode::Auto };
 
     winrt::Rect m_currentBounds{ 0,0,0,0 };
     winrt::Rect m_currentTargetBounds{ 0,0,0,0 };
@@ -188,9 +188,9 @@ private:
     static constexpr wstring_view s_popupName{ L"Popup"sv };
     static constexpr wstring_view s_beakOcclusionGridName{ L"BeakOcclusionGrid"sv };
     static constexpr wstring_view s_contentRootGridName{ L"ContentRootGrid"sv };
-    static constexpr wstring_view s_nonBleedingContentRootGridName{ L"NonBleedingContentRootGrid"sv };
+    static constexpr wstring_view s_nonHeroContentRootGridName{ L"NonHeroContentRootGrid"sv };
     static constexpr wstring_view s_shadowTargetName{ L"ShadowTarget"sv };
-    static constexpr wstring_view s_bleedingImageBorderName{ L"BleedingImageBorder"sv };
+    static constexpr wstring_view s_heroContentBorderName{ L"HeroContentBorder"sv };
     static constexpr wstring_view s_iconBorderName{ L"IconBorder"sv };
     static constexpr wstring_view s_titlesStackPanelName{ L"TitlesStackPanel"sv };
     static constexpr wstring_view s_titleTextBoxName{ L"TitleTextBlock"sv };

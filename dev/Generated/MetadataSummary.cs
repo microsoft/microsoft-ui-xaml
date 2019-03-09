@@ -622,13 +622,13 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonStyle"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonText"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.Attach"] = true;
-            NeedsPropChangedCallbackMetadata["TeachingTip.BleedingImageContent"] = true;
-            NeedsPropChangedCallbackMetadata["TeachingTip.BleedingImagePlacement"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonCommand"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonCommandParameter"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonKind"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonStyle"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonText"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.HeroContent"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.HeroContentPlacement"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.IconSource"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.IsLightDismissEnabled"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.IsOpen"] = true;
@@ -638,8 +638,8 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["TeachingTip.TemplateSettings"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.Title"] = true;
             // TeachingTip -- DefaultValueMetadata
-            DefaultValueMetadata["TeachingTip.BleedingImagePlacement"] = @"winrt::TeachingTipBleedingImagePlacementMode::Auto";
             DefaultValueMetadata["TeachingTip.CloseButtonKind"] = @"winrt::TeachingTipCloseButtonKind::Auto";
+            DefaultValueMetadata["TeachingTip.HeroContentPlacement"] = @"winrt::TeachingTipHeroContentPlacementMode::Auto";
             DefaultValueMetadata["TeachingTip.IsLightDismissEnabled"] = @"false";
             DefaultValueMetadata["TeachingTip.IsOpen"] = @"false";
             DefaultValueMetadata["TeachingTip.Placement"] = @"winrt::TeachingTipPlacementMode::Auto";

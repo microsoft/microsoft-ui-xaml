@@ -149,17 +149,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private TextBlock popupVerticalOffsetTextBlock;
 
-        public ComboBox GetBleedingContentComboBox()
+        public ComboBox GetHeroContentComboBox()
         {
-            return GetElement(ref bleedingContentComboBox, "BleedingContentComboBox");
+            return GetElement(ref heroContentComboBox, "HeroContentComboBox");
         }
-        private ComboBox bleedingContentComboBox;
+        private ComboBox heroContentComboBox;
 
-        public Button GetSetBleedingContentButton()
+        public Button GetSetHeroContentButton()
         {
-            return GetElement(ref setBleedingContentButton, "SetBleedingContentButton");
+            return GetElement(ref setHeroContentButton, "SetHeroContentButton");
         }
-        private Button setBleedingContentButton;
+        private Button setHeroContentButton;
 
         public ComboBox GetPlacementComboBox()
         {
@@ -282,7 +282,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Auto
         }
 
-        public enum BleedingContentOptions
+        public enum HeroContentOptions
         {
             RedSquare,
             BlueSquare,

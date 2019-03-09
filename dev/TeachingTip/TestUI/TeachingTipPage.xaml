@@ -32,9 +32,9 @@
                         <muxc:TeachingTip.IconSource>
                             <muxc:SymbolIconSource Symbol="People"/>
                         </muxc:TeachingTip.IconSource>
-                        <muxc:TeachingTip.BleedingImageContent>
+                        <muxc:TeachingTip.HeroContent>
                             <Grid MinHeight="200" MinWidth="200" Background="red"/>
-                        </muxc:TeachingTip.BleedingImageContent>
+                        </muxc:TeachingTip.HeroContent>
                         <muxc:TeachingTip.Content>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
@@ -55,9 +55,9 @@
                                 <muxc:TeachingTip.IconSource>
                                     <muxc:SymbolIconSource Symbol="People"/>
                                 </muxc:TeachingTip.IconSource>
-                                <muxc:TeachingTip.BleedingImageContent>
+                                <muxc:TeachingTip.HeroContent>
                                     <Grid MinHeight="200" MinWidth="200" Background="red"/>
-                                </muxc:TeachingTip.BleedingImageContent>
+                                </muxc:TeachingTip.HeroContent>
                                 <muxc:TeachingTip.Content>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
@@ -78,9 +78,9 @@
                                 <muxc:TeachingTip.IconSource>
                                     <muxc:SymbolIconSource Symbol="People"/>
                                 </muxc:TeachingTip.IconSource>
-                                <muxc:TeachingTip.BleedingImageContent>
+                                <muxc:TeachingTip.HeroContent>
                                     <Grid MinHeight="200" MinWidth="200" Background="red"/>
-                                </muxc:TeachingTip.BleedingImageContent>
+                                </muxc:TeachingTip.HeroContent>
                                 <muxc:TeachingTip.Content>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
@@ -153,15 +153,15 @@
                 </ComboBox>
                 <Button AutomationProperties.Name="SetTipLocationButton" Click="OnSetTipLocationButton" Grid.Row="1" Grid.Column="1">Set</Button>
                 
-                <TextBlock Grid.Row="2" Text="Bleeding Content:" Foreground="Red"/>
-                <ComboBox x:Name="BleedingContentComboBox" AutomationProperties.Name="BleedingContentComboBox" SelectedIndex="0" Grid.Row="3">
-                    <ComboBoxItem x:Name="BleedingRedSquare">Red Square</ComboBoxItem>
-                    <ComboBoxItem x:Name="BleedingBlueSquare">Blue Square</ComboBoxItem>
-                    <ComboBoxItem x:Name="BleedingImage">Image</ComboBoxItem>
-                    <ComboBoxItem x:Name="BleedingAutoSave">AutoSaveImage</ComboBoxItem>
-                    <ComboBoxItem x:Name="BleedingNoContent">No Content</ComboBoxItem>
+                <TextBlock Grid.Row="2" Text="Hero Content:" Foreground="Red"/>
+                <ComboBox x:Name="HeroContentComboBox" AutomationProperties.Name="HeroContentComboBox" SelectedIndex="0" Grid.Row="3">
+                    <ComboBoxItem x:Name="HeroContentRedSquare">Red Square</ComboBoxItem>
+                    <ComboBoxItem x:Name="HeroContentBlueSquare">Blue Square</ComboBoxItem>
+                    <ComboBoxItem x:Name="HeroContentImage">Image</ComboBoxItem>
+                    <ComboBoxItem x:Name="HeroContentAutoSave">AutoSaveImage</ComboBoxItem>
+                    <ComboBoxItem x:Name="HeroContentNoContent">No Content</ComboBoxItem>
                 </ComboBox>
-                <Button AutomationProperties.Name="SetBleedingContentButton" Click="OnSetBleedingContentButtonClicked" Grid.Row ="3" Grid.Column="1">Set</Button>
+                <Button AutomationProperties.Name="SetHeroContentButton" Click="OnSetHeroContentButtonClicked" Grid.Row ="3" Grid.Column="1">Set</Button>
 
                 <TextBlock Grid.Row="4" Text="Icon:" Foreground="Red"/>
                 <ComboBox x:Name="IconComboBox" AutomationProperties.Name="IconComboBox" SelectedIndex="0" Grid.Row="5">
@@ -214,11 +214,11 @@
                 </ComboBox>
                 <Button Click="OnSetCloseButtonTextButtonClicked" Grid.Row="15" Grid.Column="1">Set</Button>
 
-                <TextBlock Grid.Row="16" Text="BleedingImagePlacement:" Foreground="Red"/>
-                <ComboBox x:Name="BleedingImagePlacementComboBox" SelectedIndex="0" Grid.Row="17">
-                    <ComboBoxItem x:Name="BleedingPlacementAuto">Auto</ComboBoxItem>
-                    <ComboBoxItem x:Name="BleedingPlacementTop">Top</ComboBoxItem>
-                    <ComboBoxItem x:Name="BleedingPlacementBottom">Bottom</ComboBoxItem>
+                <TextBlock Grid.Row="16" Text="HeroContentPlacement:" Foreground="Red"/>
+                <ComboBox x:Name="HeroContentPlacementComboBox" SelectedIndex="0" Grid.Row="17">
+                    <ComboBoxItem x:Name="HeroContentPlacementAuto">Auto</ComboBoxItem>
+                    <ComboBoxItem x:Name="HeroContentPlacementTop">Top</ComboBoxItem>
+                    <ComboBoxItem x:Name="HeroContentPlacementBottom">Bottom</ComboBoxItem>
                 </ComboBox>
                 <Button Click="OnSetBleeingImagePlacementButtonClicked" Grid.Row="17" Grid.Column="1">Set</Button>
                 <TextBlock Grid.Row="18" Text="--------------------------------------" Foreground="Red" Grid.ColumnSpan="2"/>
@@ -264,8 +264,8 @@
                 </StackPanel>
                 <TextBlock Grid.Row="29" Text="Effective Placement:"/>
                 <TextBlock x:Name="EffectivePlacementTextBlock" AutomationProperties.Name="EffectivePlacementTextBlock" Grid.Row="29" Grid.Column="1" />
-                <TextBlock Grid.Row="30" Text="Bleeding Placement:"/>
-                <TextBlock x:Name="EffectiveBleedingPlacementTextBlock" AutomationProperties.Name="EffectiveBleedingPlacementTextBlock" Grid.Row="30" Grid.Column="1" />
+                <TextBlock Grid.Row="30" Text="Hero Placement:"/>
+                <TextBlock x:Name="EffectiveHeroContentPlacementTextBlock" AutomationProperties.Name="EffectiveHeroContentPlacementTextBlock" Grid.Row="30" Grid.Column="1" />
                 <TextBlock Grid.Row="31" Text="--------------------------------------" Foreground="Red" Grid.ColumnSpan="2"/>
                 <TextBlock Grid.Row="32" Text="ScrollViewerState" Foreground="Red"/>
                 <TextBlock Grid.Row="32" Grid.Column="1" x:Name="ScrollViewerStateTextBox" AutomationProperties.Name="ScrollViewerStateTextBox" Text="Idle"/>

@@ -37,11 +37,11 @@ enum TeachingTipPlacementMode
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum TeachingTipBleedingImagePlacementMode
+enum TeachingTipHeroContentPlacementMode
 {
+    Auto,
     Top,
     Bottom,
-    Auto,
 };
 
 [WUXC_VERSION_PREVIEW]
@@ -106,10 +106,10 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     Boolean IsLightDismissEnabled;
     [MUX_DEFAULT_VALUE("winrt::TeachingTipPlacementMode::Auto")]
     TeachingTipPlacementMode Placement;
-    [MUX_DEFAULT_VALUE("winrt::TeachingTipBleedingImagePlacementMode::Auto")]
-    TeachingTipBleedingImagePlacementMode BleedingImagePlacement;
+    [MUX_DEFAULT_VALUE("winrt::TeachingTipHeroContentPlacementMode::Auto")]
+    TeachingTipHeroContentPlacementMode HeroContentPlacement;
 
-    Windows.UI.Xaml.UIElement BleedingImageContent;
+    Windows.UI.Xaml.UIElement HeroContent;
     IconSource IconSource;
 
     TeachingTipTemplateSettings TemplateSettings{ get; };
@@ -142,9 +142,9 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty TargetOffsetProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsLightDismissEnabledProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty PlacementProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty BleedingImagePlacementProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HeroContentPlacementProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty BleedingImageContentProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HeroContentProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };

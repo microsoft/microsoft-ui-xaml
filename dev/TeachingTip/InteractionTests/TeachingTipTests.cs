@@ -74,7 +74,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsTrue(message1.ToString().Contains("Closed"));
                     Verify.IsTrue(message1.ToString().Contains("Programmatic"));
 
-                    SetBleedingContent(BleedingContentOptions.NoContent);
+                    SetHeroContent(HeroContentOptions.NoContent);
                     OpenTeachingTip();
                     PressXCloseButton(location);
                     var message2 = GetTeachingTipDebugMessage(2);
@@ -231,8 +231,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedRight"));
                     CloseTeachingTipProgrammatically();
 
-                    // Remove the bleeding content;
-                    SetBleedingContent(BleedingContentOptions.NoContent);
+                    // Remove the hero content;
+                    SetHeroContent(HeroContentOptions.NoContent);
 
                     UseTestWindowBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20);
                     OpenTeachingTip();
@@ -488,24 +488,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.GetSetPlacementButton().Invoke();
         }
 
-        private void SetBleedingContent(BleedingContentOptions bleedingContent)
+        private void SetHeroContent(HeroContentOptions heroContent)
         {
-            switch (bleedingContent)
+            switch (heroContent)
             {
-                case BleedingContentOptions.RedSquare:
-                    elements.GetBleedingContentComboBox().SelectItemByName("Red Square");
+                case HeroContentOptions.RedSquare:
+                    elements.GetHeroContentComboBox().SelectItemByName("Red Square");
                     break;
-                case BleedingContentOptions.BlueSquare:
-                    elements.GetBleedingContentComboBox().SelectItemByName("Blue Square");
+                case HeroContentOptions.BlueSquare:
+                    elements.GetHeroContentComboBox().SelectItemByName("Blue Square");
                     break;
-                case BleedingContentOptions.Image:
-                    elements.GetBleedingContentComboBox().SelectItemByName("Image");
+                case HeroContentOptions.Image:
+                    elements.GetHeroContentComboBox().SelectItemByName("Image");
                     break;
                 default:
-                    elements.GetBleedingContentComboBox().SelectItemByName("No Content");
+                    elements.GetHeroContentComboBox().SelectItemByName("No Content");
                     break;
             }
-            elements.GetSetBleedingContentButton().Invoke();
+            elements.GetSetHeroContentButton().Invoke();
         }
 
         private void SetTipIsTargeted(bool targeted)
