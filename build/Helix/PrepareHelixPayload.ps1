@@ -36,10 +36,14 @@ function Copy-If-Exists
         Write-Host "Copy from '$source' to '$destinationDir'"
         Copy-Item -Force $source $destinationDir
     }
+    else
+    {
+        Write-Host "'$source' does not exist."
+    }
 }
 
 # Copy files from the 'drop' artifact dir
-Copy-If-Exists "$repoDirectory\Artifacts\drop\$Configuration\$Platform\Test\MUXControls.Test.dll" $payloadDir
+Copy-Item "$repoDirectory\Artifacts\drop\$Configuration\$Platform\Test\MUXControls.Test.dll" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\*" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\MUXControlsTestApp_Test\Dependencies\$Platform\*" $payloadDir
 Copy-If-Exists "$repoDirectory\Artifacts\drop\$Configuration\$Platform\AppxPackages\IXMPTestApp_Test\*" $payloadDir
