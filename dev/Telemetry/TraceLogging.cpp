@@ -115,12 +115,12 @@ void WINAPI LoggingProviderEnabledCallback(
 
 void RegisterTraceLogging()
 {
-#ifndef DISABLE_ALL_TRACELOGGING
+    HRESULT hr = S_OK;
 
-#ifndef DISABLE_TELEMETRY_TRACELOGGING
+#ifdef EMIT_TELEMETRY_EVENTS
     TraceLoggingRegisterEx(g_hTelemetryProvider, TelemetryProviderEnabledCallback, nullptr);
     //Generate the ActivityId used to track the session
-    HRESULT hr = CoCreateGuid(&g_TelemetryProviderActivityId);
+    hr = CoCreateGuid(&g_TelemetryProviderActivityId);
     if (FAILED(hr))
     {
         TraceLoggingWriteActivity(
@@ -133,9 +133,8 @@ void RegisterTraceLogging()
 
         g_TelemetryProviderActivityId = GUID_NULL;
     };
-#endif // !DISABLE_TELEMETRY_TRACELOGGING
+#endif // EMIT_TELEMETRY_EVENTS
 
-#ifndef DISABLE_PERF_TRACELOGGING
     TraceLoggingRegisterEx(g_hPerfProvider, PerfProviderEnabledCallback, nullptr);
     //Generate the ActivityId used to track the session
     hr = CoCreateGuid(&g_PerfProviderActivityId);
@@ -150,9 +149,7 @@ void RegisterTraceLogging()
 
         g_PerfProviderActivityId = GUID_NULL;
     };
-#endif // !DISABLE_PERF_TRACELOGGING
 
-#ifndef DISABLE_DEBUG_TRACELOGGING
     TraceLoggingRegisterEx(g_hLoggingProvider, LoggingProviderEnabledCallback, nullptr);
     //Generate the ActivityId used to track the session
     hr = CoCreateGuid(&g_LoggingProviderActivityId);
@@ -167,26 +164,14 @@ void RegisterTraceLogging()
 
         g_LoggingProviderActivityId = GUID_NULL;
     };
-#endif // !DISABLE_DEBUG_TRACELOGGING
-
-#endif // !DISABLE_ALL_TRACELOGGING
 }
 
 void UnRegisterTraceLogging()
 {
-#ifndef DISABLE_ALL_TRACELOGGING
-
-#ifndef DISABLE_TELEMETRY_TRACELOGGING
+#ifdef EMIT_TELEMETRY_EVENTS
     TraceLoggingUnregister(g_hTelemetryProvider);
-#endif // !DISABLE_TELEMETRY_TRACELOGGING
+#endif // EMIT_TELEMETRY_EVENTS
 
-#ifndef DISABLE_PERF_TRACELOGGING
     TraceLoggingUnregister(g_hPerfProvider);
-#endif // !DISABLE_PERF_TRACELOGGING
-
-#ifndef DISABLE_DEBUG_TRACELOGGING
     TraceLoggingUnregister(g_hLoggingProvider);
-#endif // !DISABLE_DEBUG_TRACELOGGING
-
-#endif // !DISABLE_ALL_TRACELOGGING
 }

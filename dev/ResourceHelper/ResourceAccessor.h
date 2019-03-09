@@ -154,6 +154,7 @@ public:
 #define SR_TextCommandKeyboardAcceleratorKeyUnderline L"TextCommandKeyboardAcceleratorKeyUnderline"
 #define SR_TextCommandKeyboardAcceleratorKeyUndo L"TextCommandKeyboardAcceleratorKeyUndo"
 #define SR_TextCommandKeyboardAcceleratorKeyRedo L"TextCommandKeyboardAcceleratorKeyRedo"
+#define SR_TeachingTipAlternateCloseButtonName L"TeachingTipAlternateCloseButtonName"
 
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"
 

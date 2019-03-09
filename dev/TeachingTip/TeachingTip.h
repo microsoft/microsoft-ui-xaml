@@ -26,7 +26,7 @@ public:
     // UIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
 
-    tracker_ref<winrt::UIElement> m_target{ this };
+    tracker_ref<winrt::FrameworkElement> m_target{ this };
 
     static void SetAttach(const winrt::UIElement& element, const winrt::TeachingTip& teachingTip);
     static winrt::TeachingTip GetAttach(const winrt::UIElement& element);
@@ -53,11 +53,14 @@ private:
     winrt::Button::Click_revoker m_alternateCloseButtonClickedRevoker{};
     winrt::Button::Click_revoker m_actionButtonClickedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_contentSizeChangedRevoker{};
+    winrt::FrameworkElement::EffectiveViewportChanged_revoker m_effectiveViewportChangedRevoker{};
     winrt::FrameworkElement::EffectiveViewportChanged_revoker m_targetEffectiveViewportChangedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_targetLayoutUpdatedRevoker{};
+    winrt::Popup::Opened_revoker m_popupOpenedRevoker{};
     winrt::Popup::Closed_revoker m_popupClosedRevoker{};
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
     winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
+    winrt::Grid::Loaded_revoker m_beakOcclusionGridLoadedRevoker{};
     void CreateLightDismissIndicatorPopup();
     void UpdateBeak();
     void PositionPopup();
@@ -84,14 +87,16 @@ private:
 
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
+    void OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnBeakOcclusionGridLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
 
     void RaiseClosingEvent();
     void ClosePopupWithAnimationIfAvailable();
     void ClosePopup();
 
-    void SetTarget(const winrt::UIElement& element);
+    void SetTarget(const winrt::FrameworkElement& element);
     void SetViewportChangedEvent();
     void RevokeViewportChangedEvent();
     void TargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&);
@@ -105,9 +110,12 @@ private:
     winrt::TeachingTipPlacementMode DetermineEffectivePlacement();
     void EstablishShadows();
 
+    tracker_ref<winrt::Border> m_container{ this };
+
     tracker_ref<winrt::Popup> m_popup{ this };
     tracker_ref<winrt::Popup> m_lightDismissIndicatorPopup{ this };
 
+    tracker_ref<winrt::UIElement> m_rootElement{ this };
     tracker_ref<winrt::Grid> m_beakOcclusionGrid{ this };
     tracker_ref<winrt::Grid> m_contentRootGrid{ this };
     tracker_ref<winrt::Grid> m_nonBleedingContentRootGrid{ this };
@@ -129,7 +137,10 @@ private:
     winrt::TeachingTipPlacementMode m_currentEffectivePlacementMode{ winrt::TeachingTipPlacementMode::Auto };
     winrt::TeachingTipBleedingImagePlacementMode m_currentBleedingEffectivePlacementMode{ winrt::TeachingTipBleedingImagePlacementMode::Auto };
 
+    winrt::Rect m_currentBounds{ 0,0,0,0 };
     winrt::Rect m_currentTargetBounds{ 0,0,0,0 };
+
+    bool m_isTemplateApplied{ false };
 
     bool m_isExpandAnimationPlaying{ false };
     bool m_isContractAnimationPlaying{ false };
@@ -144,8 +155,6 @@ private:
     float m_contentElevation{ 32.0f };
     float m_beakElevation{ 0.0f };
     bool m_beakShadowTargetsShadowTarget{ false };
-
-    bool m_startAnimationInOnApplyTemplate{ false };
 
     bool m_isIdle{ true };
 
@@ -175,6 +184,8 @@ private:
     static constexpr wstring_view s_scaleTargetName{ L"Scale"sv };
     static constexpr wstring_view s_translationTargetName{ L"Translation"sv };
 
+    static constexpr wstring_view s_containerName{ L"Container"sv };
+    static constexpr wstring_view s_popupName{ L"Popup"sv };
     static constexpr wstring_view s_beakOcclusionGridName{ L"BeakOcclusionGrid"sv };
     static constexpr wstring_view s_contentRootGridName{ L"ContentRootGrid"sv };
     static constexpr wstring_view s_nonBleedingContentRootGridName{ L"NonBleedingContentRootGrid"sv };
