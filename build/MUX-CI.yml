@@ -58,5 +58,5 @@ jobs:
   parameters:
     buildJobName: 'BuildFrameworkPkgTests'
     runTestJobName: 'RunFrameworkPkgTestsInHelix'
-    dependsOn: Build
+    dependsOn: CreateNugetPackage
     pkgArtifactPath: '$env:artifactDownloadPath\drop\FrameworkPackage'
