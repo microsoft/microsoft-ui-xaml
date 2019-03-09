@@ -2,7 +2,7 @@ parameters:
   buildJobName: 'BuildNugetPkgTests'
   runTestJobName: 'RunNugetPkgTestsInHelix'
   dependsOn: ''
-  runTests: true
+  runTests: 'true'
   pkgArtifactPath: ''
   nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
   matrix: 

@@ -35,7 +35,7 @@ jobs:
   parameters:
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$env:artifactDownloadPath\drop'
-    runTest: false
+    runTest: 'false'
     matrix: 
       Debug_x64:
         buildPlatform: 'x64'
