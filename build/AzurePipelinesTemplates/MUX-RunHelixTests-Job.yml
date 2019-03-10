@@ -43,24 +43,22 @@ jobs:
       nugetConfigPath: nuget.config
       restoreDirectory: packages
 
-  - task: DownloadBuildArtifacts@0 
-    condition:
-      eq(variables['useBuildOutputFromBuildId'],'')
-    inputs: 
-      artifactName: drop 
-      downloadPath: '$(artifactsDir)'
+  - ${{ if eq(variables['useBuildOutputFromBuildId'],'') }}:
+    - task: DownloadBuildArtifacts@0 
+      inputs: 
+        artifactName: drop 
+        downloadPath: '$(artifactsDir)'
 
-  - task: DownloadBuildArtifacts@0 
-    condition:
-      ne(variables['useBuildOutputFromBuildId'],'')
-    inputs: 
-      buildType: specific
-      buildVersionToDownload: specific
-      project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
-      pipeline: 22
-      buildId: $(useBuildOutputFromBuildId)
-      artifactName: drop 
-      downloadPath: '$(artifactsDir)'
+  - ${{ if ne(variables['useBuildOutputFromBuildId'],'') }}:
+    - task: DownloadBuildArtifacts@0 
+      inputs: 
+        buildType: specific
+        buildVersionToDownload: specific
+        project: '66f07283-7714-4cbf-be8f-73dfb782cfdc'
+        pipeline: 22
+        buildId: $(useBuildOutputFromBuildId)
+        artifactName: drop 
+        downloadPath: '$(artifactsDir)'
 
   - task: powershell@2
     displayName: 'PrepareHelixPayload.ps1'
