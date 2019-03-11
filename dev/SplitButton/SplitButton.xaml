@@ -251,6 +251,8 @@
                             CommandParameter="{TemplateBinding CommandParameter}"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             Padding="{TemplateBinding Padding}"
                             IsTabStop="False"
                             AutomationProperties.AccessibilityView="Raw"/>
