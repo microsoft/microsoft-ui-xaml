@@ -1017,8 +1017,8 @@ void TeachingTip::OnTargetChanged()
             m_currentTargetBounds = target.TransformToVisual(nullptr).TransformBounds({
                 0.0,
                 0.0,
-                static_cast<float>(target.as<winrt::FrameworkElement>().ActualWidth()),
-                static_cast<float>(target.as<winrt::FrameworkElement>().ActualHeight())
+                static_cast<float>(target.ActualWidth()),
+                static_cast<float>(target.ActualHeight())
             });
         }
         SetViewportChangedEvent();

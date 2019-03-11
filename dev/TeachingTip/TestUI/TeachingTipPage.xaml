@@ -28,7 +28,8 @@
                                           Closed="OnTeachingTipClosed" 
                                           Closing="OnTeachingTipClosing"
                                           ActionButtonClick="OnTeachingTipActionButtonClicked"
-                                          CloseButtonClick="OnTeachingTipCloseButtonClicked">
+                                          CloseButtonClick="OnTeachingTipCloseButtonClicked"
+                                          Target="{x:Bind targetButton}">
                         <muxc:TeachingTip.IconSource>
                             <muxc:SymbolIconSource Symbol="People"/>
                         </muxc:TeachingTip.IconSource>
@@ -51,7 +52,8 @@
                                           Closed="OnTeachingTipClosed" 
                                           Closing="OnTeachingTipClosing"
                                           ActionButtonClick="OnTeachingTipActionButtonClicked"
-                                          CloseButtonClick="OnTeachingTipCloseButtonClicked">
+                                          CloseButtonClick="OnTeachingTipCloseButtonClicked"
+                                          Target="{x:Bind targetButton}">
                                 <muxc:TeachingTip.IconSource>
                                     <muxc:SymbolIconSource Symbol="People"/>
                                 </muxc:TeachingTip.IconSource>
