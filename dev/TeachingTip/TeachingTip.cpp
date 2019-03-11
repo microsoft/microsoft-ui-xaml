@@ -590,9 +590,15 @@ void TeachingTip::UpdateButtonsState()
 {
     hstring actionText = ActionButtonText();
     hstring closeText = CloseButtonText();
+    bool isLightDismiss = IsLightDismissEnabled();
     if (actionText.size() > 0 && closeText.size() > 0)
     {
         winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
+    }
+    else if (actionText.size() > 0 && isLightDismiss)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
         winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
     }
     else if (actionText.size() > 0)
@@ -603,6 +609,11 @@ void TeachingTip::UpdateButtonsState()
     else if (closeText.size() > 0)
     {
         winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
+    }
+    else if (isLightDismiss)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
         winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
     }
     else
@@ -789,6 +800,7 @@ void TeachingTip::OnIsLightDismissEnabledChanged()
         }
         m_lightDismissIndicatorPopupClosedRevoker.revoke();
     }
+    UpdateButtonsState();
 }
 
 void TeachingTip::OnHeroContentPlacementChanged()
