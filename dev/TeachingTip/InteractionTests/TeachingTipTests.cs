@@ -413,9 +413,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 case TipLocationOptions.ResourceDictionary:
                     elements.GetTipLocationComboBox().SelectItemByName("Resources");
                     break;
-                case TipLocationOptions.SetAttach:
-                    elements.GetTipLocationComboBox().SelectItemByName("SetAttach");
-                    break;
                 default:
                     elements.GetTipLocationComboBox().SelectItemByName("VisualTree");
                     break;

@@ -12,7 +12,6 @@ GlobalDependencyProperty TeachingTipProperties::s_ActionButtonCommandProperty{ n
 GlobalDependencyProperty TeachingTipProperties::s_ActionButtonCommandParameterProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_ActionButtonStyleProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_ActionButtonTextProperty{ nullptr };
-GlobalDependencyProperty TeachingTipProperties::s_AttachProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_CloseButtonCommandProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_CloseButtonCommandParameterProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_CloseButtonStyleProperty{ nullptr };
@@ -24,6 +23,7 @@ GlobalDependencyProperty TeachingTipProperties::s_IsLightDismissEnabledProperty{
 GlobalDependencyProperty TeachingTipProperties::s_IsOpenProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_PlacementProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_SubtextProperty{ nullptr };
+GlobalDependencyProperty TeachingTipProperties::s_TargetProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_TargetOffsetProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_TemplateSettingsProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_TitleProperty{ nullptr };
@@ -81,17 +81,6 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
-    }
-    if (!s_AttachProperty)
-    {
-        s_AttachProperty =
-            InitializeDependencyProperty(
-                L"Attach",
-                winrt::name_of<winrt::TeachingTip>(),
-                winrt::name_of<winrt::TeachingTip>(),
-                true /* isAttached */,
-                ValueHelper<winrt::TeachingTip>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_CloseButtonCommandProperty)
@@ -215,6 +204,17 @@ void TeachingTipProperties::EnsureProperties()
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
+    if (!s_TargetProperty)
+    {
+        s_TargetProperty =
+            InitializeDependencyProperty(
+                L"Target",
+                winrt::name_of<winrt::FrameworkElement>(),
+                winrt::name_of<winrt::TeachingTip>(),
+                false /* isAttached */,
+                ValueHelper<winrt::FrameworkElement>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
+    }
     if (!s_TargetOffsetProperty)
     {
         s_TargetOffsetProperty =
@@ -256,7 +256,6 @@ void TeachingTipProperties::ClearProperties()
     s_ActionButtonCommandParameterProperty = nullptr;
     s_ActionButtonStyleProperty = nullptr;
     s_ActionButtonTextProperty = nullptr;
-    s_AttachProperty = nullptr;
     s_CloseButtonCommandProperty = nullptr;
     s_CloseButtonCommandParameterProperty = nullptr;
     s_CloseButtonStyleProperty = nullptr;
@@ -268,6 +267,7 @@ void TeachingTipProperties::ClearProperties()
     s_IsOpenProperty = nullptr;
     s_PlacementProperty = nullptr;
     s_SubtextProperty = nullptr;
+    s_TargetProperty = nullptr;
     s_TargetOffsetProperty = nullptr;
     s_TemplateSettingsProperty = nullptr;
     s_TitleProperty = nullptr;
@@ -319,16 +319,6 @@ void TeachingTipProperties::ActionButtonText(winrt::hstring const& value)
 winrt::hstring TeachingTipProperties::ActionButtonText()
 {
     return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_ActionButtonTextProperty));
-}
-
-void TeachingTipProperties::SetAttach(winrt::UIElement const& target, winrt::TeachingTip const& value)
-{
-    target.SetValue(s_AttachProperty, ValueHelper<winrt::TeachingTip>::BoxValueIfNecessary(value));
-}
-
-winrt::TeachingTip TeachingTipProperties::GetAttach(winrt::UIElement const& target)
-{
-    return ValueHelper<winrt::TeachingTip>::CastOrUnbox(target.GetValue(s_AttachProperty));
 }
 
 void TeachingTipProperties::CloseButtonCommand(winrt::ICommand const& value)
@@ -439,6 +429,16 @@ void TeachingTipProperties::Subtext(winrt::hstring const& value)
 winrt::hstring TeachingTipProperties::Subtext()
 {
     return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_SubtextProperty));
+}
+
+void TeachingTipProperties::Target(winrt::FrameworkElement const& value)
+{
+    static_cast<TeachingTip*>(this)->SetValue(s_TargetProperty, ValueHelper<winrt::FrameworkElement>::BoxValueIfNecessary(value));
+}
+
+winrt::FrameworkElement TeachingTipProperties::Target()
+{
+    return ValueHelper<winrt::FrameworkElement>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_TargetProperty));
 }
 
 void TeachingTipProperties::TargetOffset(winrt::Thickness const& value)

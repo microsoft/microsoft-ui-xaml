@@ -30,18 +30,16 @@ namespace MUXControlsTestApp
 {
     enum TipLocation
     {
-        SetAttach = 0,
-        VisualTree = 1,
-        Resources = 2
+        VisualTree = 0,
+        Resources = 1
     }
     public sealed partial class TeachingTipPage : TestPage
     {
         Deferral deferral;
         DispatcherTimer timer;
         Popup testWindowBounds;
-        TipLocation tipLocation = TipLocation.SetAttach;
+        TipLocation tipLocation = TipLocation.VisualTree;
         FrameworkElement TeachingTipInResourcesRoot;
-        FrameworkElement TeachingTipInSetAttachRoot;
         FrameworkElement TeachingTipInVisualTreeRoot;
 
         public TeachingTipPage()
@@ -53,7 +51,6 @@ namespace MUXControlsTestApp
             TeachingTipTestHooks.EffectiveHeroContentPlacementChanged += TeachingTipTestHooks_EffectiveHeroContentPlacementChanged;
             TeachingTipTestHooks.OffsetChanged += TeachingTipTestHooks_OffsetChanged;
             this.TeachingTipInVisualTree.Closed += TeachingTipInVisualTree_Closed;
-            this.TeachingTipInSetAttach.Closed += TeachingTipInSetAttach_Closed;
             this.TeachingTipInResources.Closed += TeachingTipInResources_Closed;
             this.ContentScrollViewer.ViewChanged += ContentScrollViewer_ViewChanged;
         }
@@ -63,14 +60,6 @@ namespace MUXControlsTestApp
             if (TeachingTipInResourcesRoot != null)
             {
                 TeachingTipInResourcesRoot.SizeChanged -= TeachingTip_SizeChanged;
-            }
-        }
-
-        private void TeachingTipInSetAttach_Closed(TeachingTip sender, TeachingTipClosedEventArgs args)
-        {
-            if (TeachingTipInSetAttachRoot != null)
-            {
-                TeachingTipInSetAttachRoot.SizeChanged -= TeachingTip_SizeChanged;
             }
         }
 
@@ -84,10 +73,6 @@ namespace MUXControlsTestApp
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            if (this.TeachingTipInSetAttach != null && this.TeachingTipInSetAttach.IsOpen)
-            {
-                this.TeachingTipInSetAttach.IsOpen = false;
-            }
             if (this.TeachingTipInResources != null && this.TeachingTipInResources.IsOpen)
             {
                 this.TeachingTipInResources.IsOpen = false;
@@ -154,7 +139,6 @@ namespace MUXControlsTestApp
         private void TeachingTipTestHooks_OpenedStatusChanged(TeachingTip sender, object args)
         {
             if (this.TeachingTipInResources.IsOpen ||
-                this.TeachingTipInSetAttach.IsOpen ||
                 this.TeachingTipInVisualTree.IsOpen)
             {
                 this.IsOpenCheckBox.IsChecked = true;
@@ -168,7 +152,6 @@ namespace MUXControlsTestApp
         private void TeachingTipTestHooks_IdleStatusChanged(TeachingTip sender, object args)
         {
             if (TeachingTipTestHooks.GetIsIdle(this.TeachingTipInResources) &&
-                TeachingTipTestHooks.GetIsIdle(this.TeachingTipInSetAttach) &&
                 TeachingTipTestHooks.GetIsIdle(this.TeachingTipInVisualTree))
             {
                 this.IsIdleCheckBox.IsChecked = true;
@@ -196,21 +179,11 @@ namespace MUXControlsTestApp
 
         public void OnSetTipLocationButton(object sender, RoutedEventArgs args)
         {
-            if(this.TipLocationComboBox.SelectedItem == TipInSetAttach)
-            {
-                if(tipLocation != TipLocation.SetAttach)
-                {
-                    TeachingTipInResources.IsOpen = false;
-                    TeachingTipInVisualTree.IsOpen = false;
-                    tipLocation = TipLocation.SetAttach;
-                }
-            }
-            else if (this.TipLocationComboBox.SelectedItem == TipInVisualTree)
+            if (this.TipLocationComboBox.SelectedItem == TipInVisualTree)
             {
                 if (tipLocation != TipLocation.VisualTree)
                 {
                     TeachingTipInResources.IsOpen = false;
-                    TeachingTipInSetAttach.IsOpen = false;
                     tipLocation = TipLocation.VisualTree;
                 }
                 tipLocation = TipLocation.VisualTree;
@@ -220,7 +193,6 @@ namespace MUXControlsTestApp
                 if (tipLocation != TipLocation.Resources)
                 {
                     TeachingTipInVisualTree.IsOpen = false;
-                    TeachingTipInSetAttach.IsOpen = false;
                     tipLocation = TipLocation.Resources;
                 }
                 tipLocation = TipLocation.Resources;
@@ -542,12 +514,12 @@ namespace MUXControlsTestApp
 
         public void OnSetTargetButtonClicked(object sender, RoutedEventArgs args)
         {
-            TeachingTip.SetAttach(this.targetButton, getTeachingTip());
+            getTeachingTip().Target = this.targetButton;
         }
 
         public void OnUntargetButtonClicked(object sender, RoutedEventArgs args)
         {
-            TeachingTip.SetAttach(null, getTeachingTip());
+            getTeachingTip().Target = null;
         }
 
         public void OnShowButtonClicked(object sender, RoutedEventArgs args)
@@ -555,17 +527,6 @@ namespace MUXControlsTestApp
             getTeachingTip().IsOpen = true;
             switch (tipLocation)
             {
-                case TipLocation.SetAttach:
-                    if (TeachingTipInSetAttachRoot == null)
-                    {
-                        getCancelClosesInTeachingTip().Loaded += TeachingTipInSetAttachRoot_Loaded;
-                    }
-                    else
-                    {
-                        TeachingTipInSetAttachRoot.SizeChanged += TeachingTip_SizeChanged;
-                        TeachingTip_SizeChanged(TeachingTipInSetAttachRoot, null);
-                    }
-                    break;
                 case TipLocation.VisualTree:
                     if (TeachingTipInVisualTreeRoot == null)
                     {
@@ -593,7 +554,7 @@ namespace MUXControlsTestApp
 
         private void TeachingTipInResourcesRoot_Loaded(object sender, RoutedEventArgs e)
         {
-            ((FrameworkElement)sender).Loaded -= TeachingTipInSetAttachRoot_Loaded;
+            ((FrameworkElement)sender).Loaded -= TeachingTipInResourcesRoot_Loaded;
             TeachingTipInResourcesRoot = getTeachingTipRoot(getCancelClosesInTeachingTip());
             TeachingTipInResourcesRoot.SizeChanged += TeachingTip_SizeChanged;
             TeachingTip_SizeChanged(TeachingTipInResourcesRoot, null);
@@ -601,18 +562,10 @@ namespace MUXControlsTestApp
 
         private void TeachingTipInVisualTreeRoot_Loaded(object sender, RoutedEventArgs e)
         {
-            ((FrameworkElement)sender).Loaded -= TeachingTipInSetAttachRoot_Loaded;
+            ((FrameworkElement)sender).Loaded -= TeachingTipInVisualTreeRoot_Loaded;
             TeachingTipInVisualTreeRoot = getTeachingTipRoot(getCancelClosesInTeachingTip());
             TeachingTipInVisualTreeRoot.SizeChanged += TeachingTip_SizeChanged;
             TeachingTip_SizeChanged(TeachingTipInVisualTreeRoot, null);
-        }
-
-        private void TeachingTipInSetAttachRoot_Loaded(object sender, RoutedEventArgs e)
-        {
-            ((FrameworkElement)sender).Loaded -= TeachingTipInSetAttachRoot_Loaded;
-            TeachingTipInSetAttachRoot = getTeachingTipRoot(getCancelClosesInTeachingTip());
-            TeachingTipInSetAttachRoot.SizeChanged += TeachingTip_SizeChanged;
-            TeachingTip_SizeChanged(TeachingTipInSetAttachRoot, null);
         }
 
         public void OnCloseButtonClicked(object sender, RoutedEventArgs args)
@@ -708,11 +661,7 @@ namespace MUXControlsTestApp
             lstTeachingTipEvents.ScrollIntoView(lstTeachingTipEvents.Items.Last<object>());
 
             CheckBox cancelClosesCheckBox = null;
-            if (sender == TeachingTipInSetAttach)
-            {
-                cancelClosesCheckBox = CancelClosesCheckBoxInSetAttach;
-            }
-            else if (sender == TeachingTipInResources)
+            if (sender == TeachingTipInResources)
             {
                 cancelClosesCheckBox = CancelClosesCheckBoxInResources;
             }
@@ -759,8 +708,6 @@ namespace MUXControlsTestApp
         {
             switch(tipLocation)
             {
-                case TipLocation.SetAttach:
-                    return this.TeachingTipInSetAttach;
                 case TipLocation.VisualTree:
                     return this.TeachingTipInVisualTree;
                 default:
@@ -772,8 +719,6 @@ namespace MUXControlsTestApp
         {
             switch(tipLocation)
             {
-                case TipLocation.SetAttach:
-                    return this.CancelClosesCheckBoxInSetAttach;
                 case TipLocation.VisualTree:
                     return this.CancelClosesCheckBoxInVisualTree;
                 default:

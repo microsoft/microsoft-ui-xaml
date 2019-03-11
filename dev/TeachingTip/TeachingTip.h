@@ -28,9 +28,6 @@ public:
 
     tracker_ref<winrt::FrameworkElement> m_target{ this };
 
-    static void SetAttach(const winrt::UIElement& element, const winrt::TeachingTip& teachingTip);
-    static winrt::TeachingTip GetAttach(const winrt::UIElement& element);
-
     // TestHooks
     void SetExpandEasingFunction(const winrt::CompositionEasingFunction& easingFunction);
     void SetContractEasingFunction(const winrt::CompositionEasingFunction& easingFunction);
@@ -75,11 +72,8 @@ private:
         const winrt::DependencyObject& sender,
         const winrt::DependencyPropertyChangedEventArgs& args);
 
-    static void OnAttachPropertyChanged(
-        const winrt::DependencyObject& sender,
-        const winrt::DependencyPropertyChangedEventArgs& args);
-
     void OnIsOpenChanged();
+    void OnTargetChanged();
     void OnIconSourceChanged();
     void OnTargetOffsetChanged();
     void OnIsLightDismissEnabledChanged();
@@ -96,7 +90,6 @@ private:
     void ClosePopupWithAnimationIfAvailable();
     void ClosePopup();
 
-    void SetTarget(const winrt::FrameworkElement& element);
     void SetViewportChangedEvent();
     void RevokeViewportChangedEvent();
     void TargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&);
@@ -217,7 +210,7 @@ private:
     static constexpr float s_untargetedTipWindowEdgeMargin = 24;
     static constexpr float s_defaultTipHeightAndWidth = 320;
 
-    //Ideally this would be computed from playout but it is difficult to do.
+    //Ideally this would be computed from layout but it is difficult to do.
     static constexpr float s_beakOcclusionAmount = 2;
 
     // The beak is designed as an 8x16 pixel shape, however it is actual a 10x20 shape which is partially occluded by the tip content.

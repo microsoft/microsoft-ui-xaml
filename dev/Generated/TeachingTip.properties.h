@@ -21,9 +21,6 @@ public:
     void ActionButtonText(winrt::hstring const& value);
     winrt::hstring ActionButtonText();
 
-    static void SetAttach(winrt::UIElement const& target, winrt::TeachingTip const& value);
-    static winrt::TeachingTip GetAttach(winrt::UIElement const& target);
-
     void CloseButtonCommand(winrt::ICommand const& value);
     winrt::ICommand CloseButtonCommand();
 
@@ -57,6 +54,9 @@ public:
     void Subtext(winrt::hstring const& value);
     winrt::hstring Subtext();
 
+    void Target(winrt::FrameworkElement const& value);
+    winrt::FrameworkElement Target();
+
     void TargetOffset(winrt::Thickness const& value);
     winrt::Thickness TargetOffset();
 
@@ -70,7 +70,6 @@ public:
     static winrt::DependencyProperty ActionButtonCommandParameterProperty() { return s_ActionButtonCommandParameterProperty; }
     static winrt::DependencyProperty ActionButtonStyleProperty() { return s_ActionButtonStyleProperty; }
     static winrt::DependencyProperty ActionButtonTextProperty() { return s_ActionButtonTextProperty; }
-    static winrt::DependencyProperty AttachProperty() { return s_AttachProperty; }
     static winrt::DependencyProperty CloseButtonCommandProperty() { return s_CloseButtonCommandProperty; }
     static winrt::DependencyProperty CloseButtonCommandParameterProperty() { return s_CloseButtonCommandParameterProperty; }
     static winrt::DependencyProperty CloseButtonStyleProperty() { return s_CloseButtonStyleProperty; }
@@ -82,6 +81,7 @@ public:
     static winrt::DependencyProperty IsOpenProperty() { return s_IsOpenProperty; }
     static winrt::DependencyProperty PlacementProperty() { return s_PlacementProperty; }
     static winrt::DependencyProperty SubtextProperty() { return s_SubtextProperty; }
+    static winrt::DependencyProperty TargetProperty() { return s_TargetProperty; }
     static winrt::DependencyProperty TargetOffsetProperty() { return s_TargetOffsetProperty; }
     static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
     static winrt::DependencyProperty TitleProperty() { return s_TitleProperty; }
@@ -90,7 +90,6 @@ public:
     static GlobalDependencyProperty s_ActionButtonCommandParameterProperty;
     static GlobalDependencyProperty s_ActionButtonStyleProperty;
     static GlobalDependencyProperty s_ActionButtonTextProperty;
-    static GlobalDependencyProperty s_AttachProperty;
     static GlobalDependencyProperty s_CloseButtonCommandProperty;
     static GlobalDependencyProperty s_CloseButtonCommandParameterProperty;
     static GlobalDependencyProperty s_CloseButtonStyleProperty;
@@ -102,6 +101,7 @@ public:
     static GlobalDependencyProperty s_IsOpenProperty;
     static GlobalDependencyProperty s_PlacementProperty;
     static GlobalDependencyProperty s_SubtextProperty;
+    static GlobalDependencyProperty s_TargetProperty;
     static GlobalDependencyProperty s_TargetOffsetProperty;
     static GlobalDependencyProperty s_TemplateSettingsProperty;
     static GlobalDependencyProperty s_TitleProperty;
