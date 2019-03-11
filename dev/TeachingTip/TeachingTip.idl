@@ -89,6 +89,8 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsOpen;
 
+    Windows.UI.Xaml.FrameworkElement Target;
+
     String ActionButtonText;
     Windows.UI.Xaml.Style ActionButtonStyle;
     Windows.UI.Xaml.Input.ICommand ActionButtonCommand;
@@ -121,9 +123,7 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
 
     static Windows.UI.Xaml.DependencyProperty IsOpenProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty AttachProperty{ get; };
-    static void SetAttach(Windows.UI.Xaml.UIElement element, TeachingTip teachingTip);
-    static TeachingTip GetAttach(Windows.UI.Xaml.UIElement element);
+    static Windows.UI.Xaml.DependencyProperty TargetProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TitleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SubtextProperty{ get; };
