@@ -621,7 +621,6 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonCommandParameter"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonStyle"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonText"] = true;
-            NeedsPropChangedCallbackMetadata["TeachingTip.Attach"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.BleedingImageContent"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.BleedingImagePlacement"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonCommand"] = true;
@@ -634,6 +633,7 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["TeachingTip.IsOpen"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.Placement"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.Subtext"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.Target"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.TargetOffset"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.TemplateSettings"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.Title"] = true;
