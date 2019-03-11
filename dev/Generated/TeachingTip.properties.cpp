@@ -22,7 +22,7 @@ GlobalDependencyProperty TeachingTipProperties::s_IconSourceProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_IsLightDismissEnabledProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_IsOpenProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_PlacementProperty{ nullptr };
-GlobalDependencyProperty TeachingTipProperties::s_SubtextProperty{ nullptr };
+GlobalDependencyProperty TeachingTipProperties::s_SubtitleProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_TargetProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_TargetOffsetProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_TemplateSettingsProperty{ nullptr };
@@ -193,11 +193,11 @@ void TeachingTipProperties::EnsureProperties()
                 ValueHelper<winrt::TeachingTipPlacementMode>::BoxValueIfNecessary(winrt::TeachingTipPlacementMode::Auto),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
-    if (!s_SubtextProperty)
+    if (!s_SubtitleProperty)
     {
-        s_SubtextProperty =
+        s_SubtitleProperty =
             InitializeDependencyProperty(
-                L"Subtext",
+                L"Subtitle",
                 winrt::name_of<winrt::hstring>(),
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
@@ -266,7 +266,7 @@ void TeachingTipProperties::ClearProperties()
     s_IsLightDismissEnabledProperty = nullptr;
     s_IsOpenProperty = nullptr;
     s_PlacementProperty = nullptr;
-    s_SubtextProperty = nullptr;
+    s_SubtitleProperty = nullptr;
     s_TargetProperty = nullptr;
     s_TargetOffsetProperty = nullptr;
     s_TemplateSettingsProperty = nullptr;
@@ -421,14 +421,14 @@ winrt::TeachingTipPlacementMode TeachingTipProperties::Placement()
     return ValueHelper<winrt::TeachingTipPlacementMode>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_PlacementProperty));
 }
 
-void TeachingTipProperties::Subtext(winrt::hstring const& value)
+void TeachingTipProperties::Subtitle(winrt::hstring const& value)
 {
-    static_cast<TeachingTip*>(this)->SetValue(s_SubtextProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    static_cast<TeachingTip*>(this)->SetValue(s_SubtitleProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
 }
 
-winrt::hstring TeachingTipProperties::Subtext()
+winrt::hstring TeachingTipProperties::Subtitle()
 {
-    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_SubtextProperty));
+    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_SubtitleProperty));
 }
 
 void TeachingTipProperties::Target(winrt::FrameworkElement const& value)

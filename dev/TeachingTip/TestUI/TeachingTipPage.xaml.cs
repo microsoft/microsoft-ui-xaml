@@ -310,20 +310,20 @@ namespace MUXControlsTestApp
             }
         }
 
-        public void OnSetSubtextButtonClicked(object sender, RoutedEventArgs args)
+        public void OnSetSubtitleButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.SubtextComboBox.SelectedItem == SubtextNo)
+            if (this.SubtitleComboBox.SelectedItem == SubtitleNo)
             {
-                getTeachingTip().Subtext = "";
+                getTeachingTip().Subtitle = "";
             }
-            else if (this.SubtextComboBox.SelectedItem == SubtextSmall)
+            else if (this.SubtitleComboBox.SelectedItem == SubtitleSmall)
             {
-                getTeachingTip().Subtext = "Short Subtext.";
+                getTeachingTip().Subtitle = "Short Subtitle.";
             }
             else
             {
-                getTeachingTip().Subtext = "This is a much longer subtext that might cause some issues if we don't do the right thing..." +
-                    "This is a much longer subtext that might cause some issues if we don't do the right thing...";
+                getTeachingTip().Subtitle = "This is a much longer subtitle that might cause some issues if we don't do the right thing..." +
+                    "This is a much longer subtitle that might cause some issues if we don't do the right thing...";
             }
         }
 
@@ -339,7 +339,7 @@ namespace MUXControlsTestApp
             }
             else
             {
-                getTeachingTip().ActionButtonText = "A:This is a much longer subtext that might cause some issues if we don't do the right thing...";
+                getTeachingTip().ActionButtonText = "A:This is a much longer button text that might cause some issues if we don't do the right thing...";
             }
         }
 
@@ -355,7 +355,7 @@ namespace MUXControlsTestApp
             }
             else
             {
-                getTeachingTip().CloseButtonText = "C:This is a much longer subtext that might cause some issues if we don't do the right thing...";
+                getTeachingTip().CloseButtonText = "C:This is a much longer button text that might cause some issues if we don't do the right thing...";
             }
         }
 

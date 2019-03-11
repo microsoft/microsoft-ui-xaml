@@ -24,7 +24,7 @@
                     <muxc:TeachingTip x:Name="TeachingTipInVisualTree" 
                                           AutomationProperties.Name="TeachingTipInVisualTree"
                                           Title="We've Added Auto Saving!" 
-                                          Subtext="Documents will now automatically save to OneDrive." 
+                                          Subtitle="Documents will now automatically save to OneDrive." 
                                           Closed="OnTeachingTipClosed" 
                                           Closing="OnTeachingTipClosing"
                                           ActionButtonClick="OnTeachingTipActionButtonClicked"
@@ -48,7 +48,7 @@
                             <muxc:TeachingTip x:Name="TeachingTipInResources" 
                                           AutomationProperties.Name="TeachingTipInResources"
                                           Title="We've Added Auto Saving!" 
-                                          Subtext="Documents will now automatically save to OneDrive." 
+                                          Subtitle="Documents will now automatically save to OneDrive." 
                                           Closed="OnTeachingTipClosed" 
                                           Closing="OnTeachingTipClosing"
                                           ActionButtonClick="OnTeachingTipActionButtonClicked"
@@ -156,13 +156,13 @@
                 </ComboBox>
                 <Button Click="OnSetTitleButtonClicked" Grid.Column="1" Grid.Row="7">Set</Button>
 
-                <TextBlock Grid.Row="8" Text="Subtext:" Foreground="Red"/>
-                <ComboBox x:Name="SubtextComboBox" Grid.Row="9">
-                    <ComboBoxItem x:Name="SubtextNo">No subtext</ComboBoxItem>
-                    <ComboBoxItem x:Name="SubtextSmall">Small text</ComboBoxItem>
-                    <ComboBoxItem x:Name="SubtextLong">Long text</ComboBoxItem>
+                <TextBlock Grid.Row="8" Text="Subtitle:" Foreground="Red"/>
+                <ComboBox x:Name="SubtitleComboBox" Grid.Row="9">
+                    <ComboBoxItem x:Name="SubtitleNo">No subtitle</ComboBoxItem>
+                    <ComboBoxItem x:Name="SubtitleSmall">Small text</ComboBoxItem>
+                    <ComboBoxItem x:Name="SubtitleLong">Long text</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetSubtextButtonClicked" Grid.Row="9" Grid.Column="1">Set</Button>
+                <Button Click="OnSetSubtitleButtonClicked" Grid.Row="9" Grid.Column="1">Set</Button>
 
                 <TextBlock Grid.Row="10" Text="Content:" Foreground="Red"/>
                 <ComboBox x:Name="ContentComboBox" Grid.Row="11">

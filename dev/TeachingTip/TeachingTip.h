@@ -187,7 +187,7 @@ private:
     static constexpr wstring_view s_iconBorderName{ L"IconBorder"sv };
     static constexpr wstring_view s_titlesStackPanelName{ L"TitlesStackPanel"sv };
     static constexpr wstring_view s_titleTextBoxName{ L"TitleTextBlock"sv };
-    static constexpr wstring_view s_subtextTextBoxName{ L"SubtextTextBlock"sv };
+    static constexpr wstring_view s_subtitleTextBoxName{ L"SubtitleTextBlock"sv };
     static constexpr wstring_view s_alternateCloseButtonName{ L"AlternateCloseButton"sv };
     static constexpr wstring_view s_mainContentPresenterName{ L"MainContentPresenter"sv };
     static constexpr wstring_view s_actionButtonName{ L"ActionButton"sv };

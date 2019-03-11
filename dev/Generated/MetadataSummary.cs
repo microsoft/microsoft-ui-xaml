@@ -631,7 +631,7 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["TeachingTip.IsLightDismissEnabled"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.IsOpen"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.Placement"] = true;
-            NeedsPropChangedCallbackMetadata["TeachingTip.Subtext"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.Subtitle"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.Target"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.TargetOffset"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.TemplateSettings"] = true;

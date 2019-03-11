@@ -75,7 +75,7 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     TeachingTip();
 
     String Title;
-    String Subtext;
+    String Subtitle;
 
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsOpen;
@@ -115,7 +115,7 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty TargetProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TitleProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty SubtextProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SubtitleProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty ActionButtonTextProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ActionButtonStyleProperty{ get; };

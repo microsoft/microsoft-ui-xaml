@@ -51,8 +51,8 @@ public:
     void Placement(winrt::TeachingTipPlacementMode const& value);
     winrt::TeachingTipPlacementMode Placement();
 
-    void Subtext(winrt::hstring const& value);
-    winrt::hstring Subtext();
+    void Subtitle(winrt::hstring const& value);
+    winrt::hstring Subtitle();
 
     void Target(winrt::FrameworkElement const& value);
     winrt::FrameworkElement Target();
@@ -80,7 +80,7 @@ public:
     static winrt::DependencyProperty IsLightDismissEnabledProperty() { return s_IsLightDismissEnabledProperty; }
     static winrt::DependencyProperty IsOpenProperty() { return s_IsOpenProperty; }
     static winrt::DependencyProperty PlacementProperty() { return s_PlacementProperty; }
-    static winrt::DependencyProperty SubtextProperty() { return s_SubtextProperty; }
+    static winrt::DependencyProperty SubtitleProperty() { return s_SubtitleProperty; }
     static winrt::DependencyProperty TargetProperty() { return s_TargetProperty; }
     static winrt::DependencyProperty TargetOffsetProperty() { return s_TargetOffsetProperty; }
     static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
@@ -100,7 +100,7 @@ public:
     static GlobalDependencyProperty s_IsLightDismissEnabledProperty;
     static GlobalDependencyProperty s_IsOpenProperty;
     static GlobalDependencyProperty s_PlacementProperty;
-    static GlobalDependencyProperty s_SubtextProperty;
+    static GlobalDependencyProperty s_SubtitleProperty;
     static GlobalDependencyProperty s_TargetProperty;
     static GlobalDependencyProperty s_TargetOffsetProperty;
     static GlobalDependencyProperty s_TemplateSettingsProperty;
