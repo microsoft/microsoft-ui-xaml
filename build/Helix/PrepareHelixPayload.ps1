@@ -61,4 +61,3 @@ Copy-Item "build\helix\ConvertWttLogToXUnit.cs" "$payloadDir\scripts"
 Copy-Item "build\helix\runtests.cmd" $payloadDir
 Copy-Item "build\helix\InstallTestAppDependencies.ps1" "$payloadDir\scripts"
 Copy-Item "build\helix\InstallNugetTestAppDependencies.ps1" "$payloadDir\scripts"
-Copy-Item "build\helix\RunNugetTests.cmd" $payloadDir

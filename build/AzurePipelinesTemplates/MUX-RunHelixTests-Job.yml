@@ -16,16 +16,16 @@ parameters:
       helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open'
 
 jobs:
-- job: ${{parameters.name}}
-  dependsOn: ${{parameters.dependsOn}}
-  condition: ${{parameters.condition}}
+- job: ${{ parameters.name }}
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: ${{ parameters.condition }}
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
   variables:
     artifactsDir : $(Build.SourcesDirectory)\Artifacts
   strategy:
-    maxParallel: ${{parameters.maxParallel}}
+    maxParallel: ${{ parameters.maxParallel }}
     matrix: ${{ parameters.matrix }}
       
   steps:
