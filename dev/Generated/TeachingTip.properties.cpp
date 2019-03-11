@@ -15,7 +15,6 @@ GlobalDependencyProperty TeachingTipProperties::s_ActionButtonTextProperty{ null
 GlobalDependencyProperty TeachingTipProperties::s_AttachProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_CloseButtonCommandProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_CloseButtonCommandParameterProperty{ nullptr };
-GlobalDependencyProperty TeachingTipProperties::s_CloseButtonKindProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_CloseButtonStyleProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_CloseButtonTextProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_HeroContentProperty{ nullptr };
@@ -115,17 +114,6 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
-    }
-    if (!s_CloseButtonKindProperty)
-    {
-        s_CloseButtonKindProperty =
-            InitializeDependencyProperty(
-                L"CloseButtonKind",
-                winrt::name_of<winrt::TeachingTipCloseButtonKind>(),
-                winrt::name_of<winrt::TeachingTip>(),
-                false /* isAttached */,
-                ValueHelper<winrt::TeachingTipCloseButtonKind>::BoxValueIfNecessary(winrt::TeachingTipCloseButtonKind::Auto),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_CloseButtonStyleProperty)
@@ -271,7 +259,6 @@ void TeachingTipProperties::ClearProperties()
     s_AttachProperty = nullptr;
     s_CloseButtonCommandProperty = nullptr;
     s_CloseButtonCommandParameterProperty = nullptr;
-    s_CloseButtonKindProperty = nullptr;
     s_CloseButtonStyleProperty = nullptr;
     s_CloseButtonTextProperty = nullptr;
     s_HeroContentProperty = nullptr;
@@ -362,16 +349,6 @@ void TeachingTipProperties::CloseButtonCommandParameter(winrt::IInspectable cons
 winrt::IInspectable TeachingTipProperties::CloseButtonCommandParameter()
 {
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_CloseButtonCommandParameterProperty));
-}
-
-void TeachingTipProperties::CloseButtonKind(winrt::TeachingTipCloseButtonKind const& value)
-{
-    static_cast<TeachingTip*>(this)->SetValue(s_CloseButtonKindProperty, ValueHelper<winrt::TeachingTipCloseButtonKind>::BoxValueIfNecessary(value));
-}
-
-winrt::TeachingTipCloseButtonKind TeachingTipProperties::CloseButtonKind()
-{
-    return ValueHelper<winrt::TeachingTipCloseButtonKind>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_CloseButtonKindProperty));
 }
 
 void TeachingTipProperties::CloseButtonStyle(winrt::Style const& value)

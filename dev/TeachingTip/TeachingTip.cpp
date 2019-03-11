@@ -109,7 +109,6 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
         OnIsOpenChanged();
     }
     else if (property == s_ActionButtonTextProperty ||
-        property == s_CloseButtonKindProperty  ||
         property == s_CloseButtonTextProperty)
     {
         UpdateButtonsState();
@@ -587,84 +586,25 @@ void TeachingTip::UpdateButtonsState()
 {
     hstring actionText = ActionButtonText();
     hstring closeText = CloseButtonText();
-    switch (CloseButtonKind())
+    if (actionText.size() > 0 && closeText.size() > 0)
     {
-    case winrt::TeachingTipCloseButtonKind::Auto:
-        if (actionText.size() > 0 && closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
-            winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
-        }
-        else if (actionText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
-            winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
-        }
-        else if (closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
-            winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
-        }
-        else
-        {
-            winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
-            winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
-        }
-        break;
-    case winrt::TeachingTipCloseButtonKind::Header:
-        winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
-        if (actionText.size() > 0 && closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
-        }
-        else if (actionText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
-        }
-        else if (closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
-        }
-        else
-        {
-            winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
-        }
-        break;
-    case winrt::TeachingTipCloseButtonKind::Footer:
+        winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
         winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
-        if (actionText.size() > 0 && closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
-        }
-        else if (actionText.size() > 0)
-        {
-            if (IsLightDismissEnabled())
-            {
-                winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
-            }
-            else
-            {
-                // Without light dismiss we require that at least one close button be shown at all times.
-                winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
-            }
-        }
-        else if (closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
-        }
-        else
-        {
-            if (IsLightDismissEnabled())
-            {
-                winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
-            }
-            else
-            {
-                // We require that at least one close button be shown at all times.
-                winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
-            }
-        }
-        break;
+    }
+    else if (actionText.size() > 0)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
+    }
+    else if (closeText.size() > 0)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
     }
 }
 

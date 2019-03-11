@@ -624,7 +624,6 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["TeachingTip.Attach"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonCommand"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonCommandParameter"] = true;
-            NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonKind"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonStyle"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonText"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.HeroContent"] = true;
@@ -638,7 +637,6 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["TeachingTip.TemplateSettings"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.Title"] = true;
             // TeachingTip -- DefaultValueMetadata
-            DefaultValueMetadata["TeachingTip.CloseButtonKind"] = @"winrt::TeachingTipCloseButtonKind::Auto";
             DefaultValueMetadata["TeachingTip.HeroContentPlacement"] = @"winrt::TeachingTipHeroContentPlacementMode::Auto";
             DefaultValueMetadata["TeachingTip.IsLightDismissEnabled"] = @"false";
             DefaultValueMetadata["TeachingTip.IsOpen"] = @"false";

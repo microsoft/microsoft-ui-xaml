@@ -1,14 +1,5 @@
 ﻿[WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum TeachingTipCloseButtonKind
-{
-    Auto,
-    Header,
-    Footer,
-};
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
 enum TeachingTipCloseReason
 {
     CloseButton,
@@ -94,8 +85,6 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     Windows.UI.Xaml.Input.ICommand ActionButtonCommand;
     Object ActionButtonCommandParameter;
 
-    [MUX_DEFAULT_VALUE("winrt::TeachingTipCloseButtonKind::Auto")]
-    TeachingTipCloseButtonKind CloseButtonKind;
     String CloseButtonText;
     Windows.UI.Xaml.Style CloseButtonStyle;
     Windows.UI.Xaml.Input.ICommand CloseButtonCommand;
@@ -133,7 +122,6 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty ActionButtonCommandProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ActionButtonCommandParameterProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty CloseButtonKindProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonTextProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonStyleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandProperty{ get; };

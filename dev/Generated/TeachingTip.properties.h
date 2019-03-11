@@ -30,9 +30,6 @@ public:
     void CloseButtonCommandParameter(winrt::IInspectable const& value);
     winrt::IInspectable CloseButtonCommandParameter();
 
-    void CloseButtonKind(winrt::TeachingTipCloseButtonKind const& value);
-    winrt::TeachingTipCloseButtonKind CloseButtonKind();
-
     void CloseButtonStyle(winrt::Style const& value);
     winrt::Style CloseButtonStyle();
 
@@ -76,7 +73,6 @@ public:
     static winrt::DependencyProperty AttachProperty() { return s_AttachProperty; }
     static winrt::DependencyProperty CloseButtonCommandProperty() { return s_CloseButtonCommandProperty; }
     static winrt::DependencyProperty CloseButtonCommandParameterProperty() { return s_CloseButtonCommandParameterProperty; }
-    static winrt::DependencyProperty CloseButtonKindProperty() { return s_CloseButtonKindProperty; }
     static winrt::DependencyProperty CloseButtonStyleProperty() { return s_CloseButtonStyleProperty; }
     static winrt::DependencyProperty CloseButtonTextProperty() { return s_CloseButtonTextProperty; }
     static winrt::DependencyProperty HeroContentProperty() { return s_HeroContentProperty; }
@@ -97,7 +93,6 @@ public:
     static GlobalDependencyProperty s_AttachProperty;
     static GlobalDependencyProperty s_CloseButtonCommandProperty;
     static GlobalDependencyProperty s_CloseButtonCommandParameterProperty;
-    static GlobalDependencyProperty s_CloseButtonKindProperty;
     static GlobalDependencyProperty s_CloseButtonStyleProperty;
     static GlobalDependencyProperty s_CloseButtonTextProperty;
     static GlobalDependencyProperty s_HeroContentProperty;

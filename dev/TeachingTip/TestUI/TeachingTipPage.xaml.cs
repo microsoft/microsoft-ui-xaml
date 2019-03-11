@@ -23,7 +23,6 @@ using TeachingTipClosingEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosin
 using TeachingTipTestHooks = Microsoft.UI.Private.Controls.TeachingTipTestHooks;
 using TeachingTipHeroContentPlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode;
 using TeachingTipPlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode;
-using TeachingTipCloseButtonKind = Microsoft.UI.Xaml.Controls.TeachingTipCloseButtonKind;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 #endif
 
@@ -521,22 +520,6 @@ namespace MUXControlsTestApp
             else
             {
                 getTeachingTip().Placement = TeachingTipPlacementMode.Auto;
-            }
-        }
-
-        public void OnSetCloseButtonKindButtonClicked(object sender, RoutedEventArgs args)
-        {
-            if(this.CloseButtonKindComboBox.SelectedItem == CloseButtonKindAuto)
-            {
-                getTeachingTip().CloseButtonKind = TeachingTipCloseButtonKind.Auto;
-            }
-            else if (this.CloseButtonKindComboBox.SelectedItem == CloseButtonKindHeader)
-            {
-                getTeachingTip().CloseButtonKind = TeachingTipCloseButtonKind.Header;
-            }
-            else
-            {
-                getTeachingTip().CloseButtonKind = TeachingTipCloseButtonKind.Footer;
             }
         }
 
