@@ -74,6 +74,7 @@ private:
 
     void OnIsOpenChanged();
     void OnTargetChanged();
+    void OnPointerModeChanged();
     void OnIconSourceChanged();
     void OnTargetOffsetChanged();
     void OnIsLightDismissEnabledChanged();
@@ -127,7 +128,8 @@ private:
     tracker_ref<winrt::CompositionEasingFunction> m_expandEasingFunction{ this };
     tracker_ref<winrt::CompositionEasingFunction> m_contractEasingFunction{ this };
 
-    winrt::TeachingTipPlacementMode m_currentEffectivePlacementMode{ winrt::TeachingTipPlacementMode::Auto };
+    winrt::TeachingTipPlacementMode m_currentEffectiveTipPlacementMode{ winrt::TeachingTipPlacementMode::Auto };
+    winrt::TeachingTipPlacementMode m_currentEffectiveBeakPlacementMode{ winrt::TeachingTipPlacementMode::Auto };
     winrt::TeachingTipBleedingImagePlacementMode m_currentBleedingEffectivePlacementMode{ winrt::TeachingTipBleedingImagePlacementMode::Auto };
 
     winrt::Rect m_currentBounds{ 0,0,0,0 };

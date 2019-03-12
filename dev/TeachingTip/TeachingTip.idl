@@ -9,6 +9,15 @@ enum TeachingTipCloseButtonKind
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
+enum TeachingTipPointerMode
+{
+    Auto,
+    On,
+    Off,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
 enum TeachingTipCloseReason
 {
     CloseButton,
@@ -91,6 +100,9 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
 
     Windows.UI.Xaml.FrameworkElement Target;
 
+    [MUX_DEFAULT_VALUE("winrt::TeachingTipPointerMode::Auto")]
+    TeachingTipPointerMode PointerMode;
+
     String ActionButtonText;
     Windows.UI.Xaml.Style ActionButtonStyle;
     Windows.UI.Xaml.Input.ICommand ActionButtonCommand;
@@ -124,6 +136,8 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty IsOpenProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TargetProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty PointerModeProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TitleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SubtextProperty{ get; };

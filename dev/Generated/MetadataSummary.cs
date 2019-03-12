@@ -632,6 +632,7 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["TeachingTip.IsLightDismissEnabled"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.IsOpen"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.Placement"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.PointerMode"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.Subtext"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.Target"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.TargetOffset"] = true;
@@ -643,6 +644,7 @@ namespace CustomTasks
             DefaultValueMetadata["TeachingTip.IsLightDismissEnabled"] = @"false";
             DefaultValueMetadata["TeachingTip.IsOpen"] = @"false";
             DefaultValueMetadata["TeachingTip.Placement"] = @"winrt::TeachingTipPlacementMode::Auto";
+            DefaultValueMetadata["TeachingTip.PointerMode"] = @"winrt::TeachingTipPointerMode::Auto";
 
             IncludedTypesMetadata["TeachingTipTemplateSettings"] = true;
             // TeachingTipTemplateSettings -- NeedsPropChangedCallbackMetadata

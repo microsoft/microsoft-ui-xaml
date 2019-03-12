@@ -21,6 +21,7 @@ using TeachingTip = Microsoft.UI.Xaml.Controls.TeachingTip;
 using TeachingTipClosedEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs;
 using TeachingTipClosingEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs;
 using TeachingTipTestHooks = Microsoft.UI.Private.Controls.TeachingTipTestHooks;
+using TeachingTipPointerMode = Microsoft.UI.Xaml.Controls.TeachingTipPointerMode;
 using TeachingTipBleedingImagePlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipBleedingImagePlacementMode;
 using TeachingTipPlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode;
 using TeachingTipCloseButtonKind = Microsoft.UI.Xaml.Controls.TeachingTipCloseButtonKind;
@@ -527,6 +528,22 @@ namespace MUXControlsTestApp
         public void OnSetTargetOffsetButtonClicked(object sender, RoutedEventArgs args)
         {
             getTeachingTip().TargetOffset = new Thickness(Double.Parse(this.TargetOffsetTextBox.Text));
+        }
+
+        public void OnSetPointerModeButtonClicked(object sender, RoutedEventArgs args)
+        {
+            if (this.PointerModeComboBox.SelectedItem == PointerModeAuto)
+            {
+                getTeachingTip().PointerMode = TeachingTipPointerMode.Auto;
+            }
+            else if (this.PointerModeComboBox.SelectedItem == PointerModeOn)
+            {
+                getTeachingTip().PointerMode = TeachingTipPointerMode.On;
+            }
+            else
+            {
+                getTeachingTip().PointerMode = TeachingTipPointerMode.Off;
+            }
         }
 
         public void OnSetTargetButtonClicked(object sender, RoutedEventArgs args)

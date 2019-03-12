@@ -56,7 +56,7 @@ void TeachingTip::OnApplyTemplate()
             {
                 UpdateSizeBasedTemplateSettings();
                 // Reset the currentEffectivePlacementMode so that the beak will be updated for the new size as well.
-                m_currentEffectivePlacementMode = winrt::TeachingTipPlacementMode::Auto;
+                m_currentEffectiveTipPlacementMode = winrt::TeachingTipPlacementMode::Auto;
                 TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
                 if (IsOpen())
                 {
@@ -126,6 +126,10 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         OnIsLightDismissEnabledChanged();
     }
+    else if (property == s_PointerModeProperty)
+    {
+        OnPointerModeChanged();
+    }
     else if (property == s_PlacementProperty)
     {
         if (IsOpen())
@@ -177,6 +181,21 @@ void TeachingTip::CreateLightDismissIndicatorPopup()
 
 void TeachingTip::UpdateBeak()
 {
+    // An effective placement of auto indicates that no beak should be shown.
+    auto placement = DetermineEffectivePlacement();
+    m_currentEffectiveBeakPlacementMode = placement;
+    auto&& pointerMode = PointerMode();
+    if(pointerMode == winrt::TeachingTipPointerMode::Off || (!m_target && pointerMode != winrt::TeachingTipPointerMode::On))
+    {
+        m_currentEffectiveBeakPlacementMode = winrt::TeachingTipPlacementMode::Auto;
+    }
+
+    if (placement != m_currentEffectiveTipPlacementMode)
+    {
+        m_currentEffectiveTipPlacementMode = placement;
+        TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
+    }
+
     auto&& beakOcclusionGrid = m_beakOcclusionGrid.get();
     auto&& beakEdgeBorder = m_beakEdgeBorder.get();
 
@@ -198,7 +217,7 @@ void TeachingTip::UpdateBeak()
 
     UpdateSizeBasedTemplateSettings();
 
-    switch (m_currentEffectivePlacementMode)
+    switch (m_currentEffectiveBeakPlacementMode)
     {
     // An effective placement of auto means the tip should not display a beak.
     case winrt::TeachingTipPlacementMode::Auto:
@@ -352,7 +371,7 @@ void TeachingTip::PositionTargetedPopup()
 {
     if (auto&& popup = m_popup.get())
     {
-        auto placement = DetermineEffectivePlacement();
+        UpdateBeak();
         auto offset = TargetOffset();
 
         auto&& beakOcclusionGrid = m_beakOcclusionGrid.get();
@@ -361,7 +380,7 @@ void TeachingTip::PositionTargetedPopup()
 
         // Depending on the effective placement mode of the tip we use a combination of the tip's size, the target's position within the app, the target's
         // size, and the target offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
-        switch (placement)
+        switch (m_currentEffectiveTipPlacementMode)
         {
         case winrt::TeachingTipPlacementMode::Top:
             popup.VerticalOffset(m_currentTargetBounds.Y - tipHeight - offset.Top);
@@ -426,13 +445,6 @@ void TeachingTip::PositionTargetedPopup()
         default:
             MUX_FAIL_FAST();
         }
-
-        if (placement != m_currentEffectivePlacementMode)
-        {
-            m_currentEffectivePlacementMode = placement;
-            TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
-            UpdateBeak();
-        }
     }
 }
 
@@ -444,9 +456,6 @@ void TeachingTip::PositionUntargetedPopup()
     double finalTipHeight = beakOcclusionGrid.ActualHeight();
     double finalTipWidth = beakOcclusionGrid.ActualWidth();
 
-    // An effective placement of auto indicates that no beak should be shown.
-    m_currentEffectivePlacementMode = winrt::TeachingTipPlacementMode::Auto;
-    TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
     UpdateBeak();
 
     auto offset = TargetOffset();
@@ -530,7 +539,7 @@ void TeachingTip::UpdateSizeBasedTemplateSettings()
     auto height = contentRootGrid.ActualHeight();
     auto floatWidth = static_cast<float>(width);
     auto floatHeight = static_cast<float>(height);
-    switch (m_currentEffectivePlacementMode)
+    switch (m_currentEffectiveBeakPlacementMode)
     {
     case winrt::TeachingTipPlacementMode::Top:
         templateSettings->TopRightHighlightMargin(OtherPlacementTopRightHighlightMargin(width, height));
@@ -800,10 +809,15 @@ void TeachingTip::OnIsOpenChanged()
             }
         }
 
-        m_currentEffectivePlacementMode = winrt::TeachingTipPlacementMode::Auto;
+        m_currentEffectiveTipPlacementMode = winrt::TeachingTipPlacementMode::Auto;
         TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
     }
     TeachingTipTestHooks::NotifyOpenedStatusChanged(*this);
+}
+
+void TeachingTip::OnPointerModeChanged()
+{
+    UpdateBeak();
 }
 
 void TeachingTip::OnIconSourceChanged()
@@ -875,10 +889,10 @@ void TeachingTip::OnBleedingImagePlacementChanged()
         break;
     }
 
-    // Setting m_currentEffectivePlacementMode to auto ensures that the next time position popup is called we'll rerun the DetermineEffectivePlacement
+    // Setting m_currentEffectiveTipPlacementMode to auto ensures that the next time position popup is called we'll rerun the DetermineEffectivePlacement
     // alogorithm. If we did not do this and the popup was opened the algorithm would maintain the current effective placement mode, which we don't want
     // since the bleeding image placement contributes to the choice of tip placement mode.
-    m_currentEffectivePlacementMode = winrt::TeachingTipPlacementMode::Auto;
+    m_currentEffectiveTipPlacementMode = winrt::TeachingTipPlacementMode::Auto;
     TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
     if (IsOpen())
     {
@@ -1251,9 +1265,9 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
     }
     else
     {
-        if (IsOpen() && m_currentEffectivePlacementMode != winrt::TeachingTipPlacementMode::Auto)
+        if (IsOpen() && m_currentEffectiveTipPlacementMode != winrt::TeachingTipPlacementMode::Auto)
         {
-            return m_currentEffectivePlacementMode;
+            return m_currentEffectiveTipPlacementMode;
         }
         if (m_target)
         {
@@ -1655,7 +1669,7 @@ bool TeachingTip::GetIsIdle()
 
 winrt::TeachingTipPlacementMode TeachingTip::GetEffectivePlacement()
 {
-    return m_currentEffectivePlacementMode;
+    return m_currentEffectiveTipPlacementMode;
 }
 
 winrt::TeachingTipBleedingImagePlacementMode TeachingTip::GetEffectiveBleedingPlacement()

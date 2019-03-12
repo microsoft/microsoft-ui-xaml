@@ -54,6 +54,9 @@ public:
     void Placement(winrt::TeachingTipPlacementMode const& value);
     winrt::TeachingTipPlacementMode Placement();
 
+    void PointerMode(winrt::TeachingTipPointerMode const& value);
+    winrt::TeachingTipPointerMode PointerMode();
+
     void Subtext(winrt::hstring const& value);
     winrt::hstring Subtext();
 
@@ -84,6 +87,7 @@ public:
     static winrt::DependencyProperty IsLightDismissEnabledProperty() { return s_IsLightDismissEnabledProperty; }
     static winrt::DependencyProperty IsOpenProperty() { return s_IsOpenProperty; }
     static winrt::DependencyProperty PlacementProperty() { return s_PlacementProperty; }
+    static winrt::DependencyProperty PointerModeProperty() { return s_PointerModeProperty; }
     static winrt::DependencyProperty SubtextProperty() { return s_SubtextProperty; }
     static winrt::DependencyProperty TargetProperty() { return s_TargetProperty; }
     static winrt::DependencyProperty TargetOffsetProperty() { return s_TargetOffsetProperty; }
@@ -105,6 +109,7 @@ public:
     static GlobalDependencyProperty s_IsLightDismissEnabledProperty;
     static GlobalDependencyProperty s_IsOpenProperty;
     static GlobalDependencyProperty s_PlacementProperty;
+    static GlobalDependencyProperty s_PointerModeProperty;
     static GlobalDependencyProperty s_SubtextProperty;
     static GlobalDependencyProperty s_TargetProperty;
     static GlobalDependencyProperty s_TargetOffsetProperty;
