@@ -433,9 +433,20 @@ bool FlowLayoutAlgorithm::ShouldContinueFillingUpSpace(
     {
         auto realizationRect = m_context.get().RealizationRect();
         auto elementBounds = m_elementManager.GetLayoutBoundsForDataIndex(index);
+
+        auto elementMajorStart = elementBounds.*MajorStart();
+        auto elementMajorEnd = MajorEnd(elementBounds);
+        auto rectMajorStart = realizationRect.*MajorStart();
+        auto rectMajorEnd = MajorEnd(realizationRect);
+
+        auto elementMinorStart = elementBounds.*MinorStart();
+        auto elementMinorEnd = MinorEnd(elementBounds);
+        auto rectMinorStart = realizationRect.*MinorStart();
+        auto rectMinorEnd = MinorEnd(realizationRect);
+
         shouldContinue =
-            (direction == GenerateDirection::Forward && elementBounds.*MajorStart() < MajorEnd(realizationRect)) ||
-            (direction == GenerateDirection::Backward && MajorEnd(elementBounds) > realizationRect.*MajorStart());
+            (direction == GenerateDirection::Forward && elementMajorStart < rectMajorEnd && elementMinorStart < rectMinorEnd) ||
+            (direction == GenerateDirection::Backward && elementMajorEnd > rectMajorStart && elementMinorEnd > rectMinorStart);
     }
 
     return shouldContinue;
