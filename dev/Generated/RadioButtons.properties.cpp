@@ -33,7 +33,7 @@ void RadioButtonsProperties::EnsureProperties()
                 winrt::name_of<winrt::RadioButtons>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnHeaderPropertyChanged));
     }
     if (!s_ItemsProperty)
     {
@@ -44,7 +44,7 @@ void RadioButtonsProperties::EnsureProperties()
                 winrt::name_of<winrt::RadioButtons>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnItemsPropertyChanged));
     }
     if (!s_ItemsSourceProperty)
     {
@@ -55,7 +55,7 @@ void RadioButtonsProperties::EnsureProperties()
                 winrt::name_of<winrt::RadioButtons>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnItemsSourcePropertyChanged));
     }
     if (!s_ItemTemplateProperty)
     {
@@ -66,7 +66,7 @@ void RadioButtonsProperties::EnsureProperties()
                 winrt::name_of<winrt::RadioButtons>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnItemTemplatePropertyChanged));
     }
     if (!s_MaximumColumnsProperty)
     {
@@ -77,7 +77,7 @@ void RadioButtonsProperties::EnsureProperties()
                 winrt::name_of<winrt::RadioButtons>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(1),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnMaximumColumnsPropertyChanged));
     }
     if (!s_SelectedIndexProperty)
     {
@@ -88,7 +88,7 @@ void RadioButtonsProperties::EnsureProperties()
                 winrt::name_of<winrt::RadioButtons>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(-1),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnSelectedIndexPropertyChanged));
     }
     if (!s_SelectedItemProperty)
     {
@@ -99,7 +99,7 @@ void RadioButtonsProperties::EnsureProperties()
                 winrt::name_of<winrt::RadioButtons>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnSelectedItemPropertyChanged));
     }
 }
 
@@ -114,7 +114,49 @@ void RadioButtonsProperties::ClearProperties()
     s_SelectedItemProperty = nullptr;
 }
 
-void RadioButtonsProperties::OnPropertyChanged(
+void RadioButtonsProperties::OnHeaderPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RadioButtons>();
+    winrt::get_self<RadioButtons>(owner)->OnPropertyChanged(args);
+}
+void RadioButtonsProperties::OnItemsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RadioButtons>();
+    winrt::get_self<RadioButtons>(owner)->OnPropertyChanged(args);
+}
+void RadioButtonsProperties::OnItemsSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RadioButtons>();
+    winrt::get_self<RadioButtons>(owner)->OnPropertyChanged(args);
+}
+void RadioButtonsProperties::OnItemTemplatePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RadioButtons>();
+    winrt::get_self<RadioButtons>(owner)->OnPropertyChanged(args);
+}
+void RadioButtonsProperties::OnMaximumColumnsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RadioButtons>();
+    winrt::get_self<RadioButtons>(owner)->OnPropertyChanged(args);
+}
+void RadioButtonsProperties::OnSelectedIndexPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RadioButtons>();
+    winrt::get_self<RadioButtons>(owner)->OnPropertyChanged(args);
+}
+void RadioButtonsProperties::OnSelectedItemPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

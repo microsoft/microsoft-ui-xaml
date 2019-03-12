@@ -29,7 +29,7 @@ void FlowLayoutProperties::EnsureProperties()
                 winrt::name_of<winrt::FlowLayout>(),
                 false /* isAttached */,
                 ValueHelper<winrt::FlowLayoutLineAlignment>::BoxValueIfNecessary(winrt::FlowLayoutLineAlignment::Start),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnLineAlignmentPropertyChanged));
     }
     if (!s_MinColumnSpacingProperty)
     {
@@ -40,7 +40,7 @@ void FlowLayoutProperties::EnsureProperties()
                 winrt::name_of<winrt::FlowLayout>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(0.0),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnMinColumnSpacingPropertyChanged));
     }
     if (!s_MinRowSpacingProperty)
     {
@@ -51,7 +51,7 @@ void FlowLayoutProperties::EnsureProperties()
                 winrt::name_of<winrt::FlowLayout>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(0.0),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnMinRowSpacingPropertyChanged));
     }
     if (!s_OrientationProperty)
     {
@@ -62,7 +62,7 @@ void FlowLayoutProperties::EnsureProperties()
                 winrt::name_of<winrt::FlowLayout>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Orientation>::BoxValueIfNecessary(winrt::Orientation::Horizontal),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnOrientationPropertyChanged));
     }
 }
 
@@ -74,7 +74,28 @@ void FlowLayoutProperties::ClearProperties()
     s_OrientationProperty = nullptr;
 }
 
-void FlowLayoutProperties::OnPropertyChanged(
+void FlowLayoutProperties::OnLineAlignmentPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::FlowLayout>();
+    winrt::get_self<FlowLayout>(owner)->OnPropertyChanged(args);
+}
+void FlowLayoutProperties::OnMinColumnSpacingPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::FlowLayout>();
+    winrt::get_self<FlowLayout>(owner)->OnPropertyChanged(args);
+}
+void FlowLayoutProperties::OnMinRowSpacingPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::FlowLayout>();
+    winrt::get_self<FlowLayout>(owner)->OnPropertyChanged(args);
+}
+void FlowLayoutProperties::OnOrientationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

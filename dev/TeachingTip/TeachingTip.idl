@@ -79,6 +79,7 @@ unsealed runtimeclass TeachingTipTemplateSettings : Windows.UI.Xaml.DependencyOb
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
 {
     TeachingTip();

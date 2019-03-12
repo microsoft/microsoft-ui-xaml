@@ -94,7 +94,7 @@ void TreeViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnItemsSourcePropertyChanged));
     }
     if (!s_ItemTemplateProperty)
     {
@@ -127,7 +127,7 @@ void TreeViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::TreeViewSelectionMode>::BoxValueIfNecessary(winrt::TreeViewSelectionMode::Single),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnSelectionModePropertyChanged));
     }
 }
 
@@ -144,7 +144,14 @@ void TreeViewProperties::ClearProperties()
     s_SelectionModeProperty = nullptr;
 }
 
-void TreeViewProperties::OnPropertyChanged(
+void TreeViewProperties::OnItemsSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TreeView>();
+    winrt::get_self<TreeView>(owner)->OnPropertyChanged(args);
+}
+void TreeViewProperties::OnSelectionModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

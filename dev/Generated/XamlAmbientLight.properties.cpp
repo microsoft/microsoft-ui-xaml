@@ -27,7 +27,7 @@ void XamlAmbientLightProperties::EnsureProperties()
                 winrt::name_of<winrt::XamlAmbientLight>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Color>::BoxValueIfNecessary({ 255, 255, 255, 255 }),
-                &XamlAmbientLight::OnPropertyChanged);
+                nullptr);
     }
     if (!s_IsTargetProperty)
     {

@@ -27,7 +27,7 @@ void RadioMenuFlyoutItemProperties::EnsureProperties()
                 winrt::name_of<winrt::RadioMenuFlyoutItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnGroupNamePropertyChanged));
     }
     if (!s_IsCheckedProperty)
     {
@@ -38,7 +38,7 @@ void RadioMenuFlyoutItemProperties::EnsureProperties()
                 winrt::name_of<winrt::RadioMenuFlyoutItem>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnIsCheckedPropertyChanged));
     }
 }
 
@@ -48,7 +48,14 @@ void RadioMenuFlyoutItemProperties::ClearProperties()
     s_IsCheckedProperty = nullptr;
 }
 
-void RadioMenuFlyoutItemProperties::OnPropertyChanged(
+void RadioMenuFlyoutItemProperties::OnGroupNamePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RadioMenuFlyoutItem>();
+    winrt::get_self<RadioMenuFlyoutItem>(owner)->OnPropertyChanged(args);
+}
+void RadioMenuFlyoutItemProperties::OnIsCheckedPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

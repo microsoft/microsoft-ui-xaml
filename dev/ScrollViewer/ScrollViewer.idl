@@ -11,6 +11,7 @@ enum ScrollBarVisibility
 [webhosthidden]
 [contentproperty("Content")]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
 {
     ScrollViewer();
