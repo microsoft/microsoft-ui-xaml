@@ -588,25 +588,25 @@ void TeachingTip::UpdateSizeBasedTemplateSettings()
 
 void TeachingTip::UpdateButtonsState()
 {
-    hstring actionText = ActionButtonText();
-    hstring closeText = CloseButtonText();
+    auto actionText = ActionButtonText();
+    auto closeText = CloseButtonText();
     bool isLightDismiss = IsLightDismissEnabled();
-    if (actionText.size() > 0 && closeText.size() > 0)
+    if (actionText && closeText)
     {
         winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
         winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
     }
-    else if (actionText.size() > 0 && isLightDismiss)
+    else if (actionText && isLightDismiss)
     {
         winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
         winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
     }
-    else if (actionText.size() > 0)
+    else if (actionText)
     {
         winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
         winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
     }
-    else if (closeText.size() > 0)
+    else if (closeText)
     {
         winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
         winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);

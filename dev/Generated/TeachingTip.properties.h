@@ -18,8 +18,8 @@ public:
     void ActionButtonStyle(winrt::Style const& value);
     winrt::Style ActionButtonStyle();
 
-    void ActionButtonText(winrt::hstring const& value);
-    winrt::hstring ActionButtonText();
+    void ActionButtonText(winrt::IInspectable const& value);
+    winrt::IInspectable ActionButtonText();
 
     void CloseButtonCommand(winrt::ICommand const& value);
     winrt::ICommand CloseButtonCommand();
@@ -30,8 +30,8 @@ public:
     void CloseButtonStyle(winrt::Style const& value);
     winrt::Style CloseButtonStyle();
 
-    void CloseButtonText(winrt::hstring const& value);
-    winrt::hstring CloseButtonText();
+    void CloseButtonText(winrt::IInspectable const& value);
+    winrt::IInspectable CloseButtonText();
 
     void HeroContent(winrt::UIElement const& value);
     winrt::UIElement HeroContent();

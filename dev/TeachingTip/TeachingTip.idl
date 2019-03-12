@@ -82,12 +82,12 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
 
     Windows.UI.Xaml.FrameworkElement Target;
 
-    String ActionButtonText;
+    Object ActionButtonText;
     Windows.UI.Xaml.Style ActionButtonStyle;
     Windows.UI.Xaml.Input.ICommand ActionButtonCommand;
     Object ActionButtonCommandParameter;
 
-    String CloseButtonText;
+    Object CloseButtonText;
     Windows.UI.Xaml.Style CloseButtonStyle;
     Windows.UI.Xaml.Input.ICommand CloseButtonCommand;
     Object CloseButtonCommandParameter;

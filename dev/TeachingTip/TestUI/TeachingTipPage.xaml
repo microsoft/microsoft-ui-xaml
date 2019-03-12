@@ -181,6 +181,7 @@
                     <ComboBoxItem x:Name="ActionButtonTextNo">No text</ComboBoxItem>
                     <ComboBoxItem x:Name="ActionButtonTextSmall">Small text</ComboBoxItem>
                     <ComboBoxItem x:Name="ActionButtonTextLong">Long text</ComboBoxItem>
+                    <ComboBoxItem x:Name="ActionButtonButton">Button</ComboBoxItem>
                 </ComboBox>
                 <Button Click="OnSetActionButtonTextButtonClicked" Grid.Row="13" Grid.Column="1">Set</Button>
 
@@ -189,6 +190,7 @@
                     <ComboBoxItem x:Name="CloseButtonTextNo">No text</ComboBoxItem>
                     <ComboBoxItem x:Name="CloseButtonTextSmall">Small text</ComboBoxItem>
                     <ComboBoxItem x:Name="CloseButtonTextLong">Long text</ComboBoxItem>
+                    <ComboBoxItem x:Name="CloseButtonButton">Button</ComboBoxItem>
                 </ComboBox>
                 <Button Click="OnSetCloseButtonTextButtonClicked" AutomationProperties.Name="SetCloseButtonTextButton" Grid.Row="15" Grid.Column="1">Set</Button>
 

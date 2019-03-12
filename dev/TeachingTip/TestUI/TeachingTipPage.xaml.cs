@@ -337,9 +337,15 @@ namespace MUXControlsTestApp
             {
                 getTeachingTip().ActionButtonText = "A:Short Text.";
             }
-            else
+            else if (this.ActionButtonTextComboBox.SelectedItem == ActionButtonTextLong)
             {
                 getTeachingTip().ActionButtonText = "A:This is a much longer button text that might cause some issues if we don't do the right thing...";
+            }
+            else
+            {
+                var button = new Button();
+                button.Content = "A:Button in a Button!";
+                getTeachingTip().ActionButtonText = button;
             }
         }
 
@@ -353,9 +359,15 @@ namespace MUXControlsTestApp
             {
                 getTeachingTip().CloseButtonText = "C:Short Text.";
             }
-            else
+            else if (this.CloseButtonTextComboBox.SelectedItem == CloseButtonTextLong)
             {
                 getTeachingTip().CloseButtonText = "C:This is a much longer button text that might cause some issues if we don't do the right thing...";
+            }
+            else
+            {
+                var button = new Button();
+                button.Content = "C:Button in a Button!";
+                getTeachingTip().CloseButtonText = button;
             }
         }
 
