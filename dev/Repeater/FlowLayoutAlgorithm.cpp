@@ -177,7 +177,17 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
             if (m_elementManager.IsDataIndexRealized(anchorIndex))
             {
                 auto anchorBounds = m_elementManager.GetLayoutBoundsForDataIndex(anchorIndex);
-                anchorPosition = winrt::Point(anchorBounds.X, anchorBounds.Y);
+                if (needAnchorColumnRevaluation)
+                {
+                    // We were provided a valid anchor, but its position might be incorrect because for example it is in
+                    // the wrong column. We do know that the anchor is the first element in the row, so we can force the minor position
+                    // to start at 0.
+                    anchorPosition = MinorMajorPoint(0, anchorBounds.*MajorStart());
+                }
+                else
+                {
+                    anchorPosition = winrt::Point(anchorBounds.X, anchorBounds.Y);
+                }
             }
             else
             {
