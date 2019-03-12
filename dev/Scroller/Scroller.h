@@ -368,6 +368,7 @@ private:
         _Out_opt_ int32_t* viewChangeId);
     void ChangeOffsetsWithAdditionalVelocityPrivate(
         winrt::float2 offsetsVelocity,
+        winrt::float2 anticipatedOffsetsChange,
         winrt::IReference<winrt::float2> inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         _Out_opt_ int32_t* viewChangeId);
@@ -388,7 +389,7 @@ private:
     void ProcessPointerWheelScroll(
         bool isHorizontalMouseWheel,
         int32_t mouseWheelDelta,
-        float endOfInertiaPosition,
+        float anticipatedEndOfInertiaPosition,
         float minPosition,
         float maxPosition);
     void ProcessPointerWheelZoom(
@@ -405,6 +406,7 @@ private:
         int32_t offsetsChangeId,
         bool isForAsyncOperation);
     void ProcessOffsetsChange(
+        InteractionTrackerAsyncOperationTrigger operationTrigger,
         std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity);
     void PostProcessOffsetsChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
@@ -428,6 +430,7 @@ private:
         bool completePriorNonAnimatedOperations,
         bool completePriorAnimatedOperations);
     void CompleteDelayedOperations();
+    winrt::float2 GetMouseWheelAnticipatedOffsetsChange() const;
     int GetInteractionTrackerOperationsTicksCountdownForTrigger(
         InteractionTrackerAsyncOperationTrigger operationTrigger) const;
     int GetInteractionTrackerOperationsCount(
@@ -435,7 +438,7 @@ private:
         bool includeNonAnimatedOperations) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromRequestId(
         int requestId) const;
-    std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTrackerOperationFromKinds(
+    std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromKinds(
         bool isOperationTypeForOffsetsChange,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         ScrollerViewKind const& viewKind,

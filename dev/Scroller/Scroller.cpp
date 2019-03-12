@@ -497,6 +497,7 @@ winrt::ScrollInfo Scroller::ScrollFrom(winrt::float2 offsetsVelocity, winrt::IRe
     int32_t viewChangeId;
     ChangeOffsetsWithAdditionalVelocityPrivate(
         offsetsVelocity,
+        winrt::float2::zero() /*anticipatedOffsetsChange*/,
         inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger::DirectViewChange,
         &viewChangeId);
@@ -959,34 +960,41 @@ void Scroller::InertiaStateEntered(
 {
     winrt::IReference<winrt::float3> modifiedRestingPosition = args.ModifiedRestingPosition();
     winrt::float3 naturalRestingPosition = args.NaturalRestingPosition();
-    winrt::IReference<float> modifiedRestingScale = args.NaturalRestingScale();
+    winrt::IReference<float> modifiedRestingScale = args.ModifiedRestingScale();
     float naturalRestingScale = args.NaturalRestingScale();
+    bool isTracingEnabled = IsScrollerTracingEnabled() || ScrollerTrace::s_IsDebugOutputEnabled || ScrollerTrace::s_IsVerboseDebugOutputEnabled;
+    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationFromRequestId(args.RequestId());
 
-    if (IsScrollerTracingEnabled() || ScrollerTrace::s_IsDebugOutputEnabled || ScrollerTrace::s_IsVerboseDebugOutputEnabled)
+    if (isTracingEnabled)
     {
-        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, args.RequestId());
+        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_PTR_INT, METH_NAME, this, interactionTrackerAsyncOperation.get(), args.RequestId());
 
         winrt::float3 positionVelocity = args.PositionVelocityInPixelsPerSecond();
         float scaleVelocity = args.ScaleVelocityInPercentPerSecond();
 
-        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+            L"ViewVelocity:",
             TypeLogging::Float2ToString(winrt::float2{ positionVelocity.x, positionVelocity.y }).c_str(),
             scaleVelocity);
 
-        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+            L"ViewNaturalRest",
             TypeLogging::Float2ToString(winrt::float2{ naturalRestingPosition.x, naturalRestingPosition.y }).c_str(),
             naturalRestingScale);
 
         if (modifiedRestingPosition)
         {
             winrt::float3 endOfInertiaPosition = modifiedRestingPosition.Value();
-            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this,
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
+                L"PositionModifiedRest",
                 TypeLogging::Float2ToString(winrt::float2{ endOfInertiaPosition.x, endOfInertiaPosition.y }).c_str());
         }
 
         if (modifiedRestingScale)
         {
-            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_FLT, METH_NAME, this, modifiedRestingScale.Value());
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+                L"ScaleModifiedRest",
+                modifiedRestingScale.Value());
         }
 
         if (SharedHelpers::IsRS5OrHigher())
@@ -1020,6 +1028,29 @@ void Scroller::InertiaStateEntered(
     else
     {
         m_endOfInertiaZoomFactor = naturalRestingScale;
+    }
+
+    if (isTracingEnabled)
+    {
+        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+            L"ViewEndOfInertia:",
+            TypeLogging::Float2ToString(m_endOfInertiaPosition).c_str(),
+            m_endOfInertiaZoomFactor);
+    }
+
+    if (interactionTrackerAsyncOperation)
+    {
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+
+        if (viewChangeBase && interactionTrackerAsyncOperation->GetOperationType() == InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity)
+        {
+            std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<OffsetsChangeWithAdditionalVelocity>(viewChangeBase);
+
+            if (offsetsChangeWithAdditionalVelocity)
+            {
+                offsetsChangeWithAdditionalVelocity->AnticipatedOffsetsChange(winrt::float2::zero());
+            }
+        }
     }
 
     UpdateState(winrt::InteractionState::Inertia);
@@ -3751,28 +3782,29 @@ void Scroller::OnPointerWheelChangedHandler(
 
     if (isForScroll)
     {
-        winrt::float2 endOfInertiaPosition = ComputeEndOfInertiaPosition();
+        winrt::float2 anticipatedEndOfInertiaPosition = ComputeEndOfInertiaPosition() + GetMouseWheelAnticipatedOffsetsChange();
         winrt::float2 minPosition{};
         winrt::float2 maxPosition{};
 
         ComputeMinMaxPositions(ComputeEndOfInertiaZoomFactor(), &minPosition, &maxPosition);
 
+        anticipatedEndOfInertiaPosition.x = std::clamp(anticipatedEndOfInertiaPosition.x, minPosition.x, maxPosition.x);
+        anticipatedEndOfInertiaPosition.y = std::clamp(anticipatedEndOfInertiaPosition.y, minPosition.y, maxPosition.y);
+
         if (isHorizontalMouseWheel)
         {
-            if ((abs(endOfInertiaPosition.x - minPosition.x) <= s_offsetEqualityEpsilon && mouseWheelDelta < 0) ||
-                (abs(endOfInertiaPosition.x - maxPosition.x) <= s_offsetEqualityEpsilon && mouseWheelDelta > 0))
+            if ((abs(anticipatedEndOfInertiaPosition.x - minPosition.x) <= s_offsetEqualityEpsilon && mouseWheelDelta < 0) ||
+                (abs(anticipatedEndOfInertiaPosition.x - maxPosition.x) <= s_offsetEqualityEpsilon && mouseWheelDelta > 0))
             {
-                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 123456789);
                 // Cannot scroll horizontally beyond boundary
                 return;
             }
         }
         else
         {
-            if ((abs(endOfInertiaPosition.y - minPosition.y) <= s_offsetEqualityEpsilon && mouseWheelDelta > 0) ||
-                (abs(endOfInertiaPosition.y - maxPosition.y) <= s_offsetEqualityEpsilon && mouseWheelDelta < 0))
+            if ((abs(anticipatedEndOfInertiaPosition.y - minPosition.y) <= s_offsetEqualityEpsilon && mouseWheelDelta > 0) ||
+                (abs(anticipatedEndOfInertiaPosition.y - maxPosition.y) <= s_offsetEqualityEpsilon && mouseWheelDelta < 0))
             {
-                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 123456789);
                 // Cannot scroll vertically beyond boundary
                 return;
             }
@@ -3781,7 +3813,7 @@ void Scroller::OnPointerWheelChangedHandler(
         ProcessPointerWheelScroll(
             isHorizontalMouseWheel,
             mouseWheelDelta,
-            isHorizontalMouseWheel ? endOfInertiaPosition.x : endOfInertiaPosition.y,
+            isHorizontalMouseWheel ? anticipatedEndOfInertiaPosition.x : anticipatedEndOfInertiaPosition.y,
             isHorizontalMouseWheel ? minPosition.x : minPosition.y,
             isHorizontalMouseWheel ? maxPosition.x : maxPosition.y);
     }
@@ -3794,7 +3826,6 @@ void Scroller::OnPointerWheelChangedHandler(
         if ((abs(endOfInertiaZoomFactor - minZoomFactor) <= s_zoomFactorEqualityEpsilon && mouseWheelDelta < 0) ||
             (abs(endOfInertiaZoomFactor - maxZoomFactor) <= s_zoomFactorEqualityEpsilon && mouseWheelDelta > 0))
         {
-            SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 123456789);
             // Cannot zoom beyond boundary
             return;
         }
@@ -4367,6 +4398,7 @@ void Scroller::OnScrollControllerScrollFromRequested(
 
         ChangeOffsetsWithAdditionalVelocityPrivate(
             offsetsVelocity,
+            winrt::float2::zero() /*anticipatedOffsetsChange*/,
             inertiaDecayRate,
             isFromHorizontalScrollController ? InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest : InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest,
             &viewChangeId);
@@ -5175,6 +5207,7 @@ void Scroller::ChangeOffsetsPrivate(
 
 void Scroller::ChangeOffsetsWithAdditionalVelocityPrivate(
     winrt::float2 offsetsVelocity,
+    winrt::float2 anticipatedOffsetsChange,
     winrt::IReference<winrt::float2> inertiaDecayRate,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
     _Out_opt_ int32_t* viewChangeId)
@@ -5201,7 +5234,7 @@ void Scroller::ChangeOffsetsWithAdditionalVelocityPrivate(
 
     std::shared_ptr<ViewChangeBase> offsetsChangeWithAdditionalVelocity =
         std::make_shared<OffsetsChangeWithAdditionalVelocity>(
-            offsetsVelocity, inertiaDecayRate);
+            offsetsVelocity, anticipatedOffsetsChange, inertiaDecayRate);
 
     if (!delayOperation)
     {
@@ -5444,14 +5477,14 @@ void Scroller::ChangeZoomFactorWithAdditionalVelocityPrivate(
 void Scroller::ProcessPointerWheelScroll(
     bool isHorizontalMouseWheel,
     int32_t mouseWheelDelta,
-    float endOfInertiaPosition,
+    float anticipatedEndOfInertiaPosition,
     float minPosition,
     float maxPosition)
 {
     MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
 
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, isHorizontalMouseWheel, mouseWheelDelta);
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT_FLT, METH_NAME, this, endOfInertiaPosition, minPosition, maxPosition);
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT_FLT, METH_NAME, this, anticipatedEndOfInertiaPosition, minPosition, maxPosition);
 
     // Attempt to find an offsets change with velocity request for mouse wheel input within the same tick.
     std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationWithAdditionalVelocity(
@@ -5485,7 +5518,7 @@ void Scroller::ProcessPointerWheelScroll(
     winrt::float2 offsetsVelocity{
         isHorizontalMouseWheel ? offsetVelocity : 0.0f,
         isHorizontalMouseWheel ? 0.0f : offsetVelocity };
-    bool isQueuedOffsetVelocityCanceled = false;
+    winrt::float2 anticipatedOffsetsChange{};
 
     if (interactionTrackerAsyncOperation)
     {
@@ -5495,6 +5528,7 @@ void Scroller::ProcessPointerWheelScroll(
         if (offsetsChangeWithAdditionalVelocity)
         {
             winrt::float2 queuedOffsetsVelocity = offsetsChangeWithAdditionalVelocity->OffsetsVelocity();
+            anticipatedOffsetsChange = offsetsChangeWithAdditionalVelocity->AnticipatedOffsetsChange();
             float queuedOffsetVelocity = isHorizontalMouseWheel ? queuedOffsetsVelocity.x : queuedOffsetsVelocity.y;
 
             if (offsetVelocity * queuedOffsetVelocity > 0.0f)
@@ -5512,14 +5546,13 @@ void Scroller::ProcessPointerWheelScroll(
             else
             {
                 SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"Direction change", queuedOffsetVelocity, offsetVelocity);
-                isQueuedOffsetVelocityCanceled = true;
             }
         }
     }
 
     if (offsetVelocity > 0.0f)
     {
-        MUX_ASSERT(endOfInertiaPosition < maxPosition);
+        MUX_ASSERT(anticipatedEndOfInertiaPosition < maxPosition);
 
         if (isHorizontalMouseWheel)
         {
@@ -5527,7 +5560,7 @@ void Scroller::ProcessPointerWheelScroll(
             offsetsVelocity.x = std::min(c_maxVelocity, offsetsVelocity.x);
 
             // Do not attempt to scroll beyond the MaxPosition value
-            offsetsVelocity.x = std::min((maxPosition - endOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.x);
+            offsetsVelocity.x = std::min((maxPosition - anticipatedEndOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.x);
         }
         else
         {
@@ -5535,12 +5568,12 @@ void Scroller::ProcessPointerWheelScroll(
             offsetsVelocity.y = std::min(c_maxVelocity, offsetsVelocity.y);
 
             // Do not attempt to scroll beyond the MaxPosition value
-            offsetsVelocity.y = std::min((maxPosition - endOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.y);
+            offsetsVelocity.y = std::min((maxPosition - anticipatedEndOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.y);
         }
     }
     else
     {
-        MUX_ASSERT(endOfInertiaPosition > minPosition);
+        MUX_ASSERT(anticipatedEndOfInertiaPosition > minPosition);
 
         if (isHorizontalMouseWheel)
         {
@@ -5548,7 +5581,7 @@ void Scroller::ProcessPointerWheelScroll(
             offsetsVelocity.x = std::max(-c_maxVelocity, offsetsVelocity.x);
 
             // Do not attempt to scroll beyond the MinPosition value
-            offsetsVelocity.x = std::max((minPosition - endOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.x);
+            offsetsVelocity.x = std::max((minPosition - anticipatedEndOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.x);
         }
         else
         {
@@ -5556,30 +5589,30 @@ void Scroller::ProcessPointerWheelScroll(
             offsetsVelocity.y = std::max(-c_maxVelocity, offsetsVelocity.y);
 
             // Do not attempt to scroll beyond the MinPosition value
-            offsetsVelocity.y = std::max((minPosition - endOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.y);
+            offsetsVelocity.y = std::max((minPosition - anticipatedEndOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.y);
         }
     }
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+        L"Corrected Velocity:",
+        isHorizontalMouseWheel ? offsetsVelocity.x : offsetsVelocity.y);
 
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this,
         interactionTrackerAsyncOperation.get(),
         interactionTrackerAsyncOperation ? L"Coalesced MouseWheelDelta for scrolling" : L"New MouseWheelDelta for scrolling");
 
-    if (!interactionTrackerAsyncOperation || isQueuedOffsetVelocityCanceled)
+    if (isHorizontalMouseWheel)
     {
-        // Minimum absolute velocity. Any lower velocity has no effect.
-        const float c_minVelocity = 30.0f;
-        // Make sure the initial velocity is larger than the minimum effective velocity
-        const float minOffsetVelocity = (offsetVelocity > 0.0f) ? c_minVelocity : -c_minVelocity;
-
-        if (isHorizontalMouseWheel)
-        {
-            offsetsVelocity.x += minOffsetVelocity;
-        }
-        else
-        {
-            offsetsVelocity.y += minOffsetVelocity;
-        }
+        anticipatedOffsetsChange.x = offsetsVelocity.x / c_unitVelocity * c_offsetChangePerVelocityUnit;
     }
+    else
+    {
+        anticipatedOffsetsChange.y = offsetsVelocity.y / c_unitVelocity * c_offsetChangePerVelocityUnit;
+    }
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
+        L"AnticipatedOffsetsChange:",
+        TypeLogging::Float2ToString(anticipatedOffsetsChange).c_str());
 
     if (!interactionTrackerAsyncOperation)
     {
@@ -5613,6 +5646,7 @@ void Scroller::ProcessPointerWheelScroll(
         // Queue up a zooming with additional velocity operation
         ChangeOffsetsWithAdditionalVelocityPrivate(
             offsetsVelocity,
+            anticipatedOffsetsChange,
             inertiaDecayRate,
             InteractionTrackerAsyncOperationTrigger::MouseWheel,
             &viewChangeId);
@@ -5620,6 +5654,7 @@ void Scroller::ProcessPointerWheelScroll(
     else if (offsetsChangeWithAdditionalVelocity)
     {
         offsetsChangeWithAdditionalVelocity->OffsetsVelocity(offsetsVelocity);
+        offsetsChangeWithAdditionalVelocity->AnticipatedOffsetsChange(anticipatedOffsetsChange);
     }
 }
 
@@ -5759,7 +5794,9 @@ void Scroller::ProcessDequeuedViewChange(std::shared_ptr<InteractionTrackerAsync
         {
             std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<OffsetsChangeWithAdditionalVelocity>(viewChangeBase);
 
-            ProcessOffsetsChange(offsetsChangeWithAdditionalVelocity);
+            ProcessOffsetsChange(
+                interactionTrackerAsyncOperation->GetOperationTrigger() /*operationTrigger*/,
+                offsetsChangeWithAdditionalVelocity);
             break;
         }
         case InteractionTrackerAsyncOperationType::TryUpdateScale:
@@ -5894,6 +5931,7 @@ void Scroller::ProcessOffsetsChange(
 
 // Launches an InteractionTracker request to change the offsets with an additional velocity and optional scroll inertia decay rate.
 void Scroller::ProcessOffsetsChange(
+    InteractionTrackerAsyncOperationTrigger operationTrigger,
     std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity)
 {
     MUX_ASSERT(m_interactionTracker);
@@ -5911,6 +5949,33 @@ void Scroller::ProcessOffsetsChange(
 
         m_interactionTracker.PositionInertiaDecayRate(
             winrt::float3(horizontalInertiaDecayRate, verticalInertiaDecayRate, 0.0f));
+    }
+
+    // For mouse-wheel scrolling, make sure the initial velocity is larger than the minimum effective velocity.
+    if (operationTrigger == InteractionTrackerAsyncOperationTrigger::MouseWheel && m_state == winrt::InteractionState::Idle)
+    {
+        // Minimum absolute velocity. Any lower velocity has no effect.
+        const float c_minVelocity = 30.0f;
+        // Maximum absolute velocity. Any additional velocity has no effect.
+        const float c_maxVelocity = 4000.0f;
+
+        if (offsetsVelocity.x > 0.0f && offsetsVelocity.x < c_maxVelocity)
+        {
+            offsetsVelocity.x = std::min(offsetsVelocity.x + c_minVelocity, c_maxVelocity);
+        }
+        else if (offsetsVelocity.x < 0.0f && offsetsVelocity.x > -c_maxVelocity)
+        {
+            offsetsVelocity.x = std::max(offsetsVelocity.x - c_minVelocity, -c_maxVelocity);
+        }
+
+        if (offsetsVelocity.y > 0.0f && offsetsVelocity.y < c_maxVelocity)
+        {
+            offsetsVelocity.y = std::min(offsetsVelocity.y + c_minVelocity, c_maxVelocity);
+        }
+        else if (offsetsVelocity.y < 0.0f && offsetsVelocity.y > -c_maxVelocity)
+        {
+            offsetsVelocity.y = std::max(offsetsVelocity.y - c_minVelocity, -c_maxVelocity);
+        }
     }
 
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_STR, METH_NAME, this,
@@ -6032,7 +6097,7 @@ void Scroller::ProcessZoomFactorChange(
 
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(nullableCenterPoint).c_str(),
-        inertiaDecayRate,
+        TypeLogging::NullableFloatToString(inertiaDecayRate).c_str(),
         zoomFactorVelocity);
 
     if (inertiaDecayRate)
@@ -6243,6 +6308,30 @@ void Scroller::CompleteDelayedOperations()
             m_interactionTrackerAsyncOperations.remove(interactionTrackerAsyncOperation);
         }
     }
+}
+
+winrt::float2 Scroller::GetMouseWheelAnticipatedOffsetsChange() const
+{
+    winrt::float2 anticipatedOffsetsChange{};
+
+    for (auto& interactionTrackerAsyncOperation : m_interactionTrackerAsyncOperations)
+    {
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+
+        if (interactionTrackerAsyncOperation->GetOperationTrigger() != InteractionTrackerAsyncOperationTrigger::MouseWheel ||
+            interactionTrackerAsyncOperation->GetOperationType() != InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity ||
+            interactionTrackerAsyncOperation->IsCanceled() ||
+            !viewChangeBase)
+        {
+            continue;
+        }
+
+        std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<OffsetsChangeWithAdditionalVelocity>(viewChangeBase);
+
+        anticipatedOffsetsChange += offsetsChangeWithAdditionalVelocity->AnticipatedOffsetsChange();
+    }
+
+    return anticipatedOffsetsChange;
 }
 
 int Scroller::GetInteractionTrackerOperationsTicksCountdownForTrigger(InteractionTrackerAsyncOperationTrigger operationTrigger) const
@@ -6495,20 +6584,12 @@ void Scroller::UnhookScrollerEvents()
 {
     m_loadedToken.revoke();
     m_unloadedToken.revoke();
-    
     m_bringIntoViewRequested.revoke();
     
     if (m_pointerWheelChangedToken)
     {
-        BringIntoViewRequested(m_bringIntoViewRequested);
-        m_bringIntoViewRequested.value = 0;
-    }
-
-    if (m_pointerWheelChangedToken.value != 0)
-    {
-        MUX_ASSERT(!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
-        PointerWheelChanged(m_pointerWheelChangedToken);
-        m_pointerWheelChangedToken.value = 0;
+        MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
+        m_pointerWheelChangedToken.revoke();
     }
 
     if (m_pointerPressedEventHandler)
