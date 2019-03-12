@@ -134,6 +134,7 @@ void RatingControlProperties::OnCaptionPropertyChanged(
     auto owner = sender.as<winrt::RatingControl>();
     winrt::get_self<RatingControl>(owner)->OnPropertyChanged(args);
 }
+
 void RatingControlProperties::OnInitialSetValuePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -141,6 +142,7 @@ void RatingControlProperties::OnInitialSetValuePropertyChanged(
     auto owner = sender.as<winrt::RatingControl>();
     winrt::get_self<RatingControl>(owner)->OnPropertyChanged(args);
 }
+
 void RatingControlProperties::OnIsClearEnabledPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -148,6 +150,7 @@ void RatingControlProperties::OnIsClearEnabledPropertyChanged(
     auto owner = sender.as<winrt::RatingControl>();
     winrt::get_self<RatingControl>(owner)->OnPropertyChanged(args);
 }
+
 void RatingControlProperties::OnIsReadOnlyPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -155,6 +158,7 @@ void RatingControlProperties::OnIsReadOnlyPropertyChanged(
     auto owner = sender.as<winrt::RatingControl>();
     winrt::get_self<RatingControl>(owner)->OnPropertyChanged(args);
 }
+
 void RatingControlProperties::OnItemInfoPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -162,6 +166,7 @@ void RatingControlProperties::OnItemInfoPropertyChanged(
     auto owner = sender.as<winrt::RatingControl>();
     winrt::get_self<RatingControl>(owner)->OnPropertyChanged(args);
 }
+
 void RatingControlProperties::OnMaxRatingPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -169,6 +174,7 @@ void RatingControlProperties::OnMaxRatingPropertyChanged(
     auto owner = sender.as<winrt::RatingControl>();
     winrt::get_self<RatingControl>(owner)->OnPropertyChanged(args);
 }
+
 void RatingControlProperties::OnPlaceholderValuePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -176,6 +182,7 @@ void RatingControlProperties::OnPlaceholderValuePropertyChanged(
     auto owner = sender.as<winrt::RatingControl>();
     winrt::get_self<RatingControl>(owner)->OnPropertyChanged(args);
 }
+
 void RatingControlProperties::OnValuePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

@@ -123,6 +123,7 @@ void ItemsRepeaterProperties::OnAnimatorPropertyChanged(
     auto owner = sender.as<winrt::ItemsRepeater>();
     winrt::get_self<ItemsRepeater>(owner)->OnPropertyChanged(args);
 }
+
 void ItemsRepeaterProperties::OnHorizontalCacheLengthPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -130,6 +131,7 @@ void ItemsRepeaterProperties::OnHorizontalCacheLengthPropertyChanged(
     auto owner = sender.as<winrt::ItemsRepeater>();
     winrt::get_self<ItemsRepeater>(owner)->OnPropertyChanged(args);
 }
+
 void ItemsRepeaterProperties::OnItemsSourcePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -137,6 +139,7 @@ void ItemsRepeaterProperties::OnItemsSourcePropertyChanged(
     auto owner = sender.as<winrt::ItemsRepeater>();
     winrt::get_self<ItemsRepeater>(owner)->OnPropertyChanged(args);
 }
+
 void ItemsRepeaterProperties::OnItemTemplatePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -144,6 +147,7 @@ void ItemsRepeaterProperties::OnItemTemplatePropertyChanged(
     auto owner = sender.as<winrt::ItemsRepeater>();
     winrt::get_self<ItemsRepeater>(owner)->OnPropertyChanged(args);
 }
+
 void ItemsRepeaterProperties::OnLayoutPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -151,6 +155,7 @@ void ItemsRepeaterProperties::OnLayoutPropertyChanged(
     auto owner = sender.as<winrt::ItemsRepeater>();
     winrt::get_self<ItemsRepeater>(owner)->OnPropertyChanged(args);
 }
+
 void ItemsRepeaterProperties::OnVerticalCacheLengthPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

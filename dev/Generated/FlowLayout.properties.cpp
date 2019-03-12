@@ -81,6 +81,7 @@ void FlowLayoutProperties::OnLineAlignmentPropertyChanged(
     auto owner = sender.as<winrt::FlowLayout>();
     winrt::get_self<FlowLayout>(owner)->OnPropertyChanged(args);
 }
+
 void FlowLayoutProperties::OnMinColumnSpacingPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -88,6 +89,7 @@ void FlowLayoutProperties::OnMinColumnSpacingPropertyChanged(
     auto owner = sender.as<winrt::FlowLayout>();
     winrt::get_self<FlowLayout>(owner)->OnPropertyChanged(args);
 }
+
 void FlowLayoutProperties::OnMinRowSpacingPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -95,6 +97,7 @@ void FlowLayoutProperties::OnMinRowSpacingPropertyChanged(
     auto owner = sender.as<winrt::FlowLayout>();
     winrt::get_self<FlowLayout>(owner)->OnPropertyChanged(args);
 }
+
 void FlowLayoutProperties::OnOrientationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

@@ -81,6 +81,7 @@ void SwipeControlProperties::OnBottomItemsPropertyChanged(
     auto owner = sender.as<winrt::SwipeControl>();
     winrt::get_self<SwipeControl>(owner)->OnPropertyChanged(args);
 }
+
 void SwipeControlProperties::OnLeftItemsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -88,6 +89,7 @@ void SwipeControlProperties::OnLeftItemsPropertyChanged(
     auto owner = sender.as<winrt::SwipeControl>();
     winrt::get_self<SwipeControl>(owner)->OnPropertyChanged(args);
 }
+
 void SwipeControlProperties::OnRightItemsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -95,6 +97,7 @@ void SwipeControlProperties::OnRightItemsPropertyChanged(
     auto owner = sender.as<winrt::SwipeControl>();
     winrt::get_self<SwipeControl>(owner)->OnPropertyChanged(args);
 }
+
 void SwipeControlProperties::OnTopItemsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

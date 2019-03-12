@@ -105,6 +105,7 @@ void AcrylicBrushProperties::OnAlwaysUseFallbackPropertyChanged(
     auto owner = sender.as<winrt::AcrylicBrush>();
     winrt::get_self<AcrylicBrush>(owner)->OnPropertyChanged(args);
 }
+
 void AcrylicBrushProperties::OnBackgroundSourcePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -112,6 +113,7 @@ void AcrylicBrushProperties::OnBackgroundSourcePropertyChanged(
     auto owner = sender.as<winrt::AcrylicBrush>();
     winrt::get_self<AcrylicBrush>(owner)->OnPropertyChanged(args);
 }
+
 void AcrylicBrushProperties::OnTintColorPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -119,6 +121,7 @@ void AcrylicBrushProperties::OnTintColorPropertyChanged(
     auto owner = sender.as<winrt::AcrylicBrush>();
     winrt::get_self<AcrylicBrush>(owner)->OnPropertyChanged(args);
 }
+
 void AcrylicBrushProperties::OnTintLuminosityOpacityPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -136,6 +139,7 @@ void AcrylicBrushProperties::OnTintLuminosityOpacityPropertyChanged(
 
     winrt::get_self<AcrylicBrush>(owner)->OnPropertyChanged(args);
 }
+
 void AcrylicBrushProperties::OnTintOpacityPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -153,6 +157,7 @@ void AcrylicBrushProperties::OnTintOpacityPropertyChanged(
 
     winrt::get_self<AcrylicBrush>(owner)->OnPropertyChanged(args);
 }
+
 void AcrylicBrushProperties::OnTintTransitionDurationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

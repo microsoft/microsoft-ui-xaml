@@ -81,6 +81,7 @@ void RevealBrushProperties::OnAlwaysUseFallbackPropertyChanged(
     auto owner = sender.as<winrt::RevealBrush>();
     winrt::get_self<RevealBrush>(owner)->OnPropertyChanged(args);
 }
+
 void RevealBrushProperties::OnColorPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -88,6 +89,7 @@ void RevealBrushProperties::OnColorPropertyChanged(
     auto owner = sender.as<winrt::RevealBrush>();
     winrt::get_self<RevealBrush>(owner)->OnPropertyChanged(args);
 }
+
 void RevealBrushProperties::OnTargetThemePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -115,6 +117,7 @@ winrt::Color RevealBrushProperties::Color()
 {
     return ValueHelper<winrt::Color>::CastOrUnbox(static_cast<RevealBrush*>(this)->GetValue(s_ColorProperty));
 }
+
 
 void RevealBrushProperties::SetState(winrt::UIElement const& target, winrt::RevealBrushState const& value)
 {

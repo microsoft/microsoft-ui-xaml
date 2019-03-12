@@ -38,7 +38,7 @@ void XamlAmbientLightProperties::EnsureProperties()
                 winrt::name_of<winrt::XamlAmbientLight>(),
                 true /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                &XamlAmbientLight::OnPropertyChanged);
+                &XamlAmbientLight::OnIsTargetPropertyChanged);
     }
 }
 
@@ -57,6 +57,7 @@ winrt::Color XamlAmbientLightProperties::Color()
 {
     return ValueHelper<winrt::Color>::CastOrUnbox(static_cast<XamlAmbientLight*>(this)->GetValue(s_ColorProperty));
 }
+
 
 void XamlAmbientLightProperties::SetIsTarget(winrt::DependencyObject const& target, bool value)
 {

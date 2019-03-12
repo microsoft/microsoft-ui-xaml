@@ -151,6 +151,7 @@ void TreeViewProperties::OnItemsSourcePropertyChanged(
     auto owner = sender.as<winrt::TreeView>();
     winrt::get_self<TreeView>(owner)->OnPropertyChanged(args);
 }
+
 void TreeViewProperties::OnSelectionModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

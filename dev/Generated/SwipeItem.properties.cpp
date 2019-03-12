@@ -121,6 +121,7 @@ void SwipeItemProperties::OnBackgroundPropertyChanged(
     auto owner = sender.as<winrt::SwipeItem>();
     winrt::get_self<SwipeItem>(owner)->OnPropertyChanged(args);
 }
+
 void SwipeItemProperties::OnBehaviorOnInvokedPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -128,6 +129,7 @@ void SwipeItemProperties::OnBehaviorOnInvokedPropertyChanged(
     auto owner = sender.as<winrt::SwipeItem>();
     winrt::get_self<SwipeItem>(owner)->OnPropertyChanged(args);
 }
+
 void SwipeItemProperties::OnCommandPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -135,6 +137,7 @@ void SwipeItemProperties::OnCommandPropertyChanged(
     auto owner = sender.as<winrt::SwipeItem>();
     winrt::get_self<SwipeItem>(owner)->OnPropertyChanged(args);
 }
+
 void SwipeItemProperties::OnCommandParameterPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -142,6 +145,7 @@ void SwipeItemProperties::OnCommandParameterPropertyChanged(
     auto owner = sender.as<winrt::SwipeItem>();
     winrt::get_self<SwipeItem>(owner)->OnPropertyChanged(args);
 }
+
 void SwipeItemProperties::OnForegroundPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -149,6 +153,7 @@ void SwipeItemProperties::OnForegroundPropertyChanged(
     auto owner = sender.as<winrt::SwipeItem>();
     winrt::get_self<SwipeItem>(owner)->OnPropertyChanged(args);
 }
+
 void SwipeItemProperties::OnIconSourcePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -156,6 +161,7 @@ void SwipeItemProperties::OnIconSourcePropertyChanged(
     auto owner = sender.as<winrt::SwipeItem>();
     winrt::get_self<SwipeItem>(owner)->OnPropertyChanged(args);
 }
+
 void SwipeItemProperties::OnTextPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

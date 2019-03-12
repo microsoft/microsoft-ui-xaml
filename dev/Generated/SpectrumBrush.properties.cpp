@@ -68,6 +68,7 @@ void SpectrumBrushProperties::OnMaxSurfacePropertyChanged(
     auto owner = sender.as<winrt::SpectrumBrush>();
     winrt::get_self<SpectrumBrush>(owner)->OnPropertyChanged(args);
 }
+
 void SpectrumBrushProperties::OnMaxSurfaceOpacityPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -75,6 +76,7 @@ void SpectrumBrushProperties::OnMaxSurfaceOpacityPropertyChanged(
     auto owner = sender.as<winrt::SpectrumBrush>();
     winrt::get_self<SpectrumBrush>(owner)->OnPropertyChanged(args);
 }
+
 void SpectrumBrushProperties::OnMinSurfacePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

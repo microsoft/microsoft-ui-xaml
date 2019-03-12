@@ -126,27 +126,22 @@ void XamlAmbientLight::OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelpe
 }
 #endif
 
-void XamlAmbientLight::OnPropertyChanged(
+void XamlAmbientLight::OnColorPropertyChanged(
     const winrt::DependencyObject& sender,
     const winrt::DependencyPropertyChangedEventArgs& args)
 {
     auto self = winrt::get_self<XamlAmbientLight>(sender.as<winrt::XamlAmbientLight>());
-    winrt::IDependencyProperty property = args.Property();
 
-    if (property == s_ColorProperty)
+    self->m_ambientLightColor = unbox_value<winrt::Color>(args.NewValue());
+    if (self->m_compositionAmbientLight)
     {
-        self->m_ambientLightColor = unbox_value<winrt::Color>(args.NewValue());
-        if (self->m_compositionAmbientLight)
-        {
-            self->m_compositionAmbientLight.Color(self->m_ambientLightColor);
-        }
+        self->m_compositionAmbientLight.Color(self->m_ambientLightColor);
     }
-    else if (property == s_IsTargetProperty)
-    {
-        OnAttachedIsTargetPropertyChanged<XamlAmbientLight>(sender, args);
-    }
-    else
-    {
-        MUX_ASSERT(false);
-    }
+}
+
+void XamlAmbientLight::OnIsTargetPropertyChanged(
+    const winrt::DependencyObject& sender,
+    const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    OnAttachedIsTargetPropertyChanged<XamlAmbientLight>(sender, args);
 }

@@ -69,6 +69,7 @@ void SplitButtonProperties::OnCommandPropertyChanged(
     auto owner = sender.as<winrt::SplitButton>();
     winrt::get_self<SplitButton>(owner)->OnPropertyChanged(args);
 }
+
 void SplitButtonProperties::OnCommandParameterPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -76,6 +77,7 @@ void SplitButtonProperties::OnCommandParameterPropertyChanged(
     auto owner = sender.as<winrt::SplitButton>();
     winrt::get_self<SplitButton>(owner)->OnPropertyChanged(args);
 }
+
 void SplitButtonProperties::OnFlyoutPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

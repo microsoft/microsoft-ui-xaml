@@ -55,6 +55,7 @@ void StackLayoutProperties::OnOrientationPropertyChanged(
     auto owner = sender.as<winrt::StackLayout>();
     winrt::get_self<StackLayout>(owner)->OnPropertyChanged(args);
 }
+
 void StackLayoutProperties::OnSpacingPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

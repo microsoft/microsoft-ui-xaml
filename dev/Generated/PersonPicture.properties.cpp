@@ -172,6 +172,7 @@ void PersonPictureProperties::OnBadgeGlyphPropertyChanged(
     auto owner = sender.as<winrt::PersonPicture>();
     winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
 }
+
 void PersonPictureProperties::OnBadgeImageSourcePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -179,6 +180,7 @@ void PersonPictureProperties::OnBadgeImageSourcePropertyChanged(
     auto owner = sender.as<winrt::PersonPicture>();
     winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
 }
+
 void PersonPictureProperties::OnBadgeNumberPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -186,6 +188,7 @@ void PersonPictureProperties::OnBadgeNumberPropertyChanged(
     auto owner = sender.as<winrt::PersonPicture>();
     winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
 }
+
 void PersonPictureProperties::OnBadgeTextPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -193,6 +196,7 @@ void PersonPictureProperties::OnBadgeTextPropertyChanged(
     auto owner = sender.as<winrt::PersonPicture>();
     winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
 }
+
 void PersonPictureProperties::OnContactPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -200,6 +204,7 @@ void PersonPictureProperties::OnContactPropertyChanged(
     auto owner = sender.as<winrt::PersonPicture>();
     winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
 }
+
 void PersonPictureProperties::OnDisplayNamePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -207,6 +212,7 @@ void PersonPictureProperties::OnDisplayNamePropertyChanged(
     auto owner = sender.as<winrt::PersonPicture>();
     winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
 }
+
 void PersonPictureProperties::OnInitialsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -214,6 +220,7 @@ void PersonPictureProperties::OnInitialsPropertyChanged(
     auto owner = sender.as<winrt::PersonPicture>();
     winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
 }
+
 void PersonPictureProperties::OnIsGroupPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -221,6 +228,7 @@ void PersonPictureProperties::OnIsGroupPropertyChanged(
     auto owner = sender.as<winrt::PersonPicture>();
     winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
 }
+
 void PersonPictureProperties::OnPreferSmallImagePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -228,6 +236,7 @@ void PersonPictureProperties::OnPreferSmallImagePropertyChanged(
     auto owner = sender.as<winrt::PersonPicture>();
     winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
 }
+
 void PersonPictureProperties::OnProfilePicturePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -235,6 +244,7 @@ void PersonPictureProperties::OnProfilePicturePropertyChanged(
     auto owner = sender.as<winrt::PersonPicture>();
     winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
 }
+
 void PersonPictureProperties::OnTemplateSettingsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

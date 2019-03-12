@@ -246,6 +246,7 @@ void ScrollerProperties::OnBackgroundPropertyChanged(
     auto owner = sender.as<winrt::Scroller>();
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnContentPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -253,6 +254,7 @@ void ScrollerProperties::OnContentPropertyChanged(
     auto owner = sender.as<winrt::Scroller>();
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnContentOrientationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -260,6 +262,7 @@ void ScrollerProperties::OnContentOrientationPropertyChanged(
     auto owner = sender.as<winrt::Scroller>();
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnHorizontalAnchorRatioPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -277,6 +280,7 @@ void ScrollerProperties::OnHorizontalAnchorRatioPropertyChanged(
 
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnHorizontalScrollChainingModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -284,6 +288,7 @@ void ScrollerProperties::OnHorizontalScrollChainingModePropertyChanged(
     auto owner = sender.as<winrt::Scroller>();
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnHorizontalScrollModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -291,6 +296,7 @@ void ScrollerProperties::OnHorizontalScrollModePropertyChanged(
     auto owner = sender.as<winrt::Scroller>();
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnHorizontalScrollRailingModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -298,6 +304,7 @@ void ScrollerProperties::OnHorizontalScrollRailingModePropertyChanged(
     auto owner = sender.as<winrt::Scroller>();
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnIgnoredInputKindPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -305,6 +312,7 @@ void ScrollerProperties::OnIgnoredInputKindPropertyChanged(
     auto owner = sender.as<winrt::Scroller>();
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnMaxZoomFactorPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -322,6 +330,7 @@ void ScrollerProperties::OnMaxZoomFactorPropertyChanged(
 
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnMinZoomFactorPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -339,6 +348,7 @@ void ScrollerProperties::OnMinZoomFactorPropertyChanged(
 
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnVerticalAnchorRatioPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -356,6 +366,7 @@ void ScrollerProperties::OnVerticalAnchorRatioPropertyChanged(
 
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnVerticalScrollChainingModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -363,6 +374,7 @@ void ScrollerProperties::OnVerticalScrollChainingModePropertyChanged(
     auto owner = sender.as<winrt::Scroller>();
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnVerticalScrollModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -370,6 +382,7 @@ void ScrollerProperties::OnVerticalScrollModePropertyChanged(
     auto owner = sender.as<winrt::Scroller>();
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnVerticalScrollRailingModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -377,6 +390,7 @@ void ScrollerProperties::OnVerticalScrollRailingModePropertyChanged(
     auto owner = sender.as<winrt::Scroller>();
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnZoomChainingModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -384,6 +398,7 @@ void ScrollerProperties::OnZoomChainingModePropertyChanged(
     auto owner = sender.as<winrt::Scroller>();
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
+
 void ScrollerProperties::OnZoomModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

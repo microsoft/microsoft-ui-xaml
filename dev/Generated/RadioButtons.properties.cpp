@@ -121,6 +121,7 @@ void RadioButtonsProperties::OnHeaderPropertyChanged(
     auto owner = sender.as<winrt::RadioButtons>();
     winrt::get_self<RadioButtons>(owner)->OnPropertyChanged(args);
 }
+
 void RadioButtonsProperties::OnItemsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -128,6 +129,7 @@ void RadioButtonsProperties::OnItemsPropertyChanged(
     auto owner = sender.as<winrt::RadioButtons>();
     winrt::get_self<RadioButtons>(owner)->OnPropertyChanged(args);
 }
+
 void RadioButtonsProperties::OnItemsSourcePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -135,6 +137,7 @@ void RadioButtonsProperties::OnItemsSourcePropertyChanged(
     auto owner = sender.as<winrt::RadioButtons>();
     winrt::get_self<RadioButtons>(owner)->OnPropertyChanged(args);
 }
+
 void RadioButtonsProperties::OnItemTemplatePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -142,6 +145,7 @@ void RadioButtonsProperties::OnItemTemplatePropertyChanged(
     auto owner = sender.as<winrt::RadioButtons>();
     winrt::get_self<RadioButtons>(owner)->OnPropertyChanged(args);
 }
+
 void RadioButtonsProperties::OnMaximumColumnsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -149,6 +153,7 @@ void RadioButtonsProperties::OnMaximumColumnsPropertyChanged(
     auto owner = sender.as<winrt::RadioButtons>();
     winrt::get_self<RadioButtons>(owner)->OnPropertyChanged(args);
 }
+
 void RadioButtonsProperties::OnSelectedIndexPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -156,6 +161,7 @@ void RadioButtonsProperties::OnSelectedIndexPropertyChanged(
     auto owner = sender.as<winrt::RadioButtons>();
     winrt::get_self<RadioButtons>(owner)->OnPropertyChanged(args);
 }
+
 void RadioButtonsProperties::OnSelectedItemPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

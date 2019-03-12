@@ -55,6 +55,7 @@ void RadioMenuFlyoutItemProperties::OnGroupNamePropertyChanged(
     auto owner = sender.as<winrt::RadioMenuFlyoutItem>();
     winrt::get_self<RadioMenuFlyoutItem>(owner)->OnPropertyChanged(args);
 }
+
 void RadioMenuFlyoutItemProperties::OnIsCheckedPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

@@ -120,6 +120,7 @@ void UniformGridLayoutProperties::OnItemsJustificationPropertyChanged(
     auto owner = sender.as<winrt::UniformGridLayout>();
     winrt::get_self<UniformGridLayout>(owner)->OnPropertyChanged(args);
 }
+
 void UniformGridLayoutProperties::OnItemsStretchPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -127,6 +128,7 @@ void UniformGridLayoutProperties::OnItemsStretchPropertyChanged(
     auto owner = sender.as<winrt::UniformGridLayout>();
     winrt::get_self<UniformGridLayout>(owner)->OnPropertyChanged(args);
 }
+
 void UniformGridLayoutProperties::OnMinColumnSpacingPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -134,6 +136,7 @@ void UniformGridLayoutProperties::OnMinColumnSpacingPropertyChanged(
     auto owner = sender.as<winrt::UniformGridLayout>();
     winrt::get_self<UniformGridLayout>(owner)->OnPropertyChanged(args);
 }
+
 void UniformGridLayoutProperties::OnMinItemHeightPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -141,6 +144,7 @@ void UniformGridLayoutProperties::OnMinItemHeightPropertyChanged(
     auto owner = sender.as<winrt::UniformGridLayout>();
     winrt::get_self<UniformGridLayout>(owner)->OnPropertyChanged(args);
 }
+
 void UniformGridLayoutProperties::OnMinItemWidthPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -148,6 +152,7 @@ void UniformGridLayoutProperties::OnMinItemWidthPropertyChanged(
     auto owner = sender.as<winrt::UniformGridLayout>();
     winrt::get_self<UniformGridLayout>(owner)->OnPropertyChanged(args);
 }
+
 void UniformGridLayoutProperties::OnMinRowSpacingPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -155,6 +160,7 @@ void UniformGridLayoutProperties::OnMinRowSpacingPropertyChanged(
     auto owner = sender.as<winrt::UniformGridLayout>();
     winrt::get_self<UniformGridLayout>(owner)->OnPropertyChanged(args);
 }
+
 void UniformGridLayoutProperties::OnOrientationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

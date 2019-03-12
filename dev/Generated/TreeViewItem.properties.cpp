@@ -146,6 +146,7 @@ void TreeViewItemProperties::OnHasUnrealizedChildrenPropertyChanged(
     auto owner = sender.as<winrt::TreeViewItem>();
     winrt::get_self<TreeViewItem>(owner)->OnPropertyChanged(args);
 }
+
 void TreeViewItemProperties::OnIsExpandedPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -153,6 +154,7 @@ void TreeViewItemProperties::OnIsExpandedPropertyChanged(
     auto owner = sender.as<winrt::TreeViewItem>();
     winrt::get_self<TreeViewItem>(owner)->OnPropertyChanged(args);
 }
+
 void TreeViewItemProperties::OnItemsSourcePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

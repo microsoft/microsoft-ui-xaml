@@ -83,6 +83,7 @@ void RefreshVisualizerProperties::OnContentPropertyChanged(
     auto owner = sender.as<winrt::RefreshVisualizer>();
     winrt::get_self<RefreshVisualizer>(owner)->OnPropertyChanged(args);
 }
+
 void RefreshVisualizerProperties::OnInfoProviderPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -90,6 +91,7 @@ void RefreshVisualizerProperties::OnInfoProviderPropertyChanged(
     auto owner = sender.as<winrt::RefreshVisualizer>();
     winrt::get_self<RefreshVisualizer>(owner)->OnPropertyChanged(args);
 }
+
 void RefreshVisualizerProperties::OnOrientationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -97,6 +99,7 @@ void RefreshVisualizerProperties::OnOrientationPropertyChanged(
     auto owner = sender.as<winrt::RefreshVisualizer>();
     winrt::get_self<RefreshVisualizer>(owner)->OnPropertyChanged(args);
 }
+
 void RefreshVisualizerProperties::OnStatePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -114,6 +117,7 @@ winrt::UIElement RefreshVisualizerProperties::Content()
 {
     return ValueHelper<winrt::UIElement>::CastOrUnbox(static_cast<RefreshVisualizer*>(this)->GetValue(s_ContentProperty));
 }
+
 
 void RefreshVisualizerProperties::Orientation(winrt::RefreshVisualizerOrientation const& value)
 {

@@ -81,6 +81,7 @@ void TreeViewNodeProperties::OnHasChildrenPropertyChanged(
     auto owner = sender.as<winrt::TreeViewNode>();
     winrt::get_self<TreeViewNode>(owner)->OnPropertyChanged(args);
 }
+
 void TreeViewNodeProperties::OnIsExpandedPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

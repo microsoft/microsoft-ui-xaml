@@ -160,6 +160,7 @@ void ColorSpectrumProperties::OnColorPropertyChanged(
     auto owner = sender.as<winrt::ColorSpectrum>();
     winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
 }
+
 void ColorSpectrumProperties::OnComponentsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -167,6 +168,7 @@ void ColorSpectrumProperties::OnComponentsPropertyChanged(
     auto owner = sender.as<winrt::ColorSpectrum>();
     winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
 }
+
 void ColorSpectrumProperties::OnHsvColorPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -174,6 +176,7 @@ void ColorSpectrumProperties::OnHsvColorPropertyChanged(
     auto owner = sender.as<winrt::ColorSpectrum>();
     winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
 }
+
 void ColorSpectrumProperties::OnMaxHuePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -181,6 +184,7 @@ void ColorSpectrumProperties::OnMaxHuePropertyChanged(
     auto owner = sender.as<winrt::ColorSpectrum>();
     winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
 }
+
 void ColorSpectrumProperties::OnMaxSaturationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -188,6 +192,7 @@ void ColorSpectrumProperties::OnMaxSaturationPropertyChanged(
     auto owner = sender.as<winrt::ColorSpectrum>();
     winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
 }
+
 void ColorSpectrumProperties::OnMaxValuePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -195,6 +200,7 @@ void ColorSpectrumProperties::OnMaxValuePropertyChanged(
     auto owner = sender.as<winrt::ColorSpectrum>();
     winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
 }
+
 void ColorSpectrumProperties::OnMinHuePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -202,6 +208,7 @@ void ColorSpectrumProperties::OnMinHuePropertyChanged(
     auto owner = sender.as<winrt::ColorSpectrum>();
     winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
 }
+
 void ColorSpectrumProperties::OnMinSaturationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -209,6 +216,7 @@ void ColorSpectrumProperties::OnMinSaturationPropertyChanged(
     auto owner = sender.as<winrt::ColorSpectrum>();
     winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
 }
+
 void ColorSpectrumProperties::OnMinValuePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -216,6 +224,7 @@ void ColorSpectrumProperties::OnMinValuePropertyChanged(
     auto owner = sender.as<winrt::ColorSpectrum>();
     winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
 }
+
 void ColorSpectrumProperties::OnShapePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

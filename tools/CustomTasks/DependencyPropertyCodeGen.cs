@@ -699,9 +699,9 @@ public:
             bool hasValidationCallback = props.Any(x => x.PropertyValidationCallback != null);
             if (needsPropertyChanged || hasValidationCallback)
             {
-                sb.AppendLine();
                 foreach (var prop in props.Where(x => x.NeedsPropChangedCallback || x.PropertyValidationCallback != null))
                 {
+                    sb.AppendLine();
                     // PropertyChanged callback
                     sb.AppendLine(
 $@"void {ownerType.Name}Properties::{prop.GetClassFuncName()}(
@@ -734,19 +734,21 @@ $@"void {ownerType.Name}Properties::{prop.GetClassFuncName()}(
                     {
                         string ownerFuncName = prop.PropChangedCallbackMethodName ?? prop.GetClassFuncName();
                         sb.AppendLine(
-$@"    winrt::get_self<{ownerType.Name}>(owner)->{ownerFuncName}(args);
-}}");
+$@"    winrt::get_self<{ownerType.Name}>(owner)->{ownerFuncName}(args);");
                     }
+
+                    sb.AppendLine("}");
                 }
             }
 
             // Instance property methods
             foreach (var prop in props)
             {
+                sb.AppendLine();
                 if (prop.InstanceProperty != null)
                 {
-                    sb.AppendLine(String.Format(@"
-void {0}Properties::{1}({2} {3}value)
+                    sb.AppendLine(String.Format(
+@"void {0}Properties::{1}({2} {3}value)
 {{", ownerType.Name, prop.Name, prop.PropertyCppName, CppInputModifier(prop.PropertyType)));
                     if (prop.PropertyValidationCallback != null)
                     {
@@ -779,8 +781,10 @@ void {0}Properties::Set{1}({2} const& target, {3} {4}value)
             // Events
             foreach (var eventInfo in events)
             {
-                sb.AppendLine(String.Format(@"
-winrt::event_token {0}Properties::{1}({2} const& value)
+                sb.AppendLine();
+
+                sb.AppendLine(String.Format(
+@"winrt::event_token {0}Properties::{1}({2} const& value)
 {{
     return {3}.add(value);
 }}

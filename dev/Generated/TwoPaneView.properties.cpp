@@ -160,6 +160,7 @@ void TwoPaneViewProperties::OnMinTallModeHeightPropertyChanged(
     auto owner = sender.as<winrt::TwoPaneView>();
     winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
 }
+
 void TwoPaneViewProperties::OnMinWideModeWidthPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -167,6 +168,7 @@ void TwoPaneViewProperties::OnMinWideModeWidthPropertyChanged(
     auto owner = sender.as<winrt::TwoPaneView>();
     winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
 }
+
 void TwoPaneViewProperties::OnPane1PropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -174,6 +176,7 @@ void TwoPaneViewProperties::OnPane1PropertyChanged(
     auto owner = sender.as<winrt::TwoPaneView>();
     winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
 }
+
 void TwoPaneViewProperties::OnPane1LengthPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -181,6 +184,7 @@ void TwoPaneViewProperties::OnPane1LengthPropertyChanged(
     auto owner = sender.as<winrt::TwoPaneView>();
     winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
 }
+
 void TwoPaneViewProperties::OnPane2PropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -188,6 +192,7 @@ void TwoPaneViewProperties::OnPane2PropertyChanged(
     auto owner = sender.as<winrt::TwoPaneView>();
     winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
 }
+
 void TwoPaneViewProperties::OnPane2LengthPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -195,6 +200,7 @@ void TwoPaneViewProperties::OnPane2LengthPropertyChanged(
     auto owner = sender.as<winrt::TwoPaneView>();
     winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
 }
+
 void TwoPaneViewProperties::OnPanePriorityPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -202,6 +208,7 @@ void TwoPaneViewProperties::OnPanePriorityPropertyChanged(
     auto owner = sender.as<winrt::TwoPaneView>();
     winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
 }
+
 void TwoPaneViewProperties::OnTallModeConfigurationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -209,6 +216,7 @@ void TwoPaneViewProperties::OnTallModeConfigurationPropertyChanged(
     auto owner = sender.as<winrt::TwoPaneView>();
     winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
 }
+
 void TwoPaneViewProperties::OnWideModeConfigurationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

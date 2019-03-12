@@ -479,6 +479,7 @@ void NavigationViewProperties::OnAlwaysShowHeaderPropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnAutoSuggestBoxPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -486,6 +487,7 @@ void NavigationViewProperties::OnAutoSuggestBoxPropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnCompactModeThresholdWidthPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -503,6 +505,7 @@ void NavigationViewProperties::OnCompactModeThresholdWidthPropertyChanged(
 
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnCompactPaneLengthPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -520,6 +523,7 @@ void NavigationViewProperties::OnCompactPaneLengthPropertyChanged(
 
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnDisplayModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -527,6 +531,7 @@ void NavigationViewProperties::OnDisplayModePropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnExpandedModeThresholdWidthPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -544,6 +549,7 @@ void NavigationViewProperties::OnExpandedModeThresholdWidthPropertyChanged(
 
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnHeaderPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -551,6 +557,7 @@ void NavigationViewProperties::OnHeaderPropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnHeaderTemplatePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -558,6 +565,7 @@ void NavigationViewProperties::OnHeaderTemplatePropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnIsBackButtonVisiblePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -565,6 +573,7 @@ void NavigationViewProperties::OnIsBackButtonVisiblePropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnIsBackEnabledPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -572,6 +581,7 @@ void NavigationViewProperties::OnIsBackEnabledPropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnIsPaneOpenPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -579,6 +589,7 @@ void NavigationViewProperties::OnIsPaneOpenPropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnIsPaneToggleButtonVisiblePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -586,6 +597,7 @@ void NavigationViewProperties::OnIsPaneToggleButtonVisiblePropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnIsPaneVisiblePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -593,6 +605,7 @@ void NavigationViewProperties::OnIsPaneVisiblePropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnIsSettingsVisiblePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -600,6 +613,7 @@ void NavigationViewProperties::OnIsSettingsVisiblePropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnMenuItemContainerStylePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -607,6 +621,7 @@ void NavigationViewProperties::OnMenuItemContainerStylePropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnMenuItemContainerStyleSelectorPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -614,6 +629,7 @@ void NavigationViewProperties::OnMenuItemContainerStyleSelectorPropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnMenuItemsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -621,6 +637,7 @@ void NavigationViewProperties::OnMenuItemsPropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnMenuItemsSourcePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -628,6 +645,7 @@ void NavigationViewProperties::OnMenuItemsSourcePropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnMenuItemTemplatePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -635,6 +653,7 @@ void NavigationViewProperties::OnMenuItemTemplatePropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnMenuItemTemplateSelectorPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -642,6 +661,7 @@ void NavigationViewProperties::OnMenuItemTemplateSelectorPropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnOpenPaneLengthPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -659,6 +679,7 @@ void NavigationViewProperties::OnOpenPaneLengthPropertyChanged(
 
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnOverflowLabelModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -666,6 +687,7 @@ void NavigationViewProperties::OnOverflowLabelModePropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnPaneDisplayModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -673,6 +695,7 @@ void NavigationViewProperties::OnPaneDisplayModePropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnPaneFooterPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -680,6 +703,7 @@ void NavigationViewProperties::OnPaneFooterPropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnPaneTitlePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -687,6 +711,7 @@ void NavigationViewProperties::OnPaneTitlePropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnPaneToggleButtonStylePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -694,6 +719,7 @@ void NavigationViewProperties::OnPaneToggleButtonStylePropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnSelectedItemPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -701,6 +727,7 @@ void NavigationViewProperties::OnSelectedItemPropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnSelectionFollowsFocusPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -708,6 +735,7 @@ void NavigationViewProperties::OnSelectionFollowsFocusPropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnSettingsItemPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -715,6 +743,7 @@ void NavigationViewProperties::OnSettingsItemPropertyChanged(
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
+
 void NavigationViewProperties::OnShoulderNavigationEnabledPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

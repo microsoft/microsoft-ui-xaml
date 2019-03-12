@@ -146,6 +146,7 @@ void AnimatedVisualPlayerProperties::OnAutoPlayPropertyChanged(
     auto owner = sender.as<winrt::AnimatedVisualPlayer>();
     winrt::get_self<AnimatedVisualPlayer>(owner)->OnAutoPlayPropertyChanged(args);
 }
+
 void AnimatedVisualPlayerProperties::OnFallbackContentPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -153,6 +154,7 @@ void AnimatedVisualPlayerProperties::OnFallbackContentPropertyChanged(
     auto owner = sender.as<winrt::AnimatedVisualPlayer>();
     winrt::get_self<AnimatedVisualPlayer>(owner)->OnFallbackContentPropertyChanged(args);
 }
+
 void AnimatedVisualPlayerProperties::OnPlaybackRatePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -160,6 +162,7 @@ void AnimatedVisualPlayerProperties::OnPlaybackRatePropertyChanged(
     auto owner = sender.as<winrt::AnimatedVisualPlayer>();
     winrt::get_self<AnimatedVisualPlayer>(owner)->OnPlaybackRatePropertyChanged(args);
 }
+
 void AnimatedVisualPlayerProperties::OnSourcePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -167,6 +170,7 @@ void AnimatedVisualPlayerProperties::OnSourcePropertyChanged(
     auto owner = sender.as<winrt::AnimatedVisualPlayer>();
     winrt::get_self<AnimatedVisualPlayer>(owner)->OnSourcePropertyChanged(args);
 }
+
 void AnimatedVisualPlayerProperties::OnStretchPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

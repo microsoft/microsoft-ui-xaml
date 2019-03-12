@@ -56,6 +56,7 @@ void RefreshContainerProperties::OnPullDirectionPropertyChanged(
     auto owner = sender.as<winrt::RefreshContainer>();
     winrt::get_self<RefreshContainer>(owner)->OnPropertyChanged(args);
 }
+
 void RefreshContainerProperties::OnVisualizerPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

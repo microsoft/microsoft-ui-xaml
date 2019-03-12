@@ -293,6 +293,7 @@ void TeachingTipProperties::OnActionButtonCommandPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnActionButtonCommandParameterPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -300,6 +301,7 @@ void TeachingTipProperties::OnActionButtonCommandParameterPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnActionButtonStylePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -307,6 +309,7 @@ void TeachingTipProperties::OnActionButtonStylePropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnActionButtonTextPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -314,6 +317,7 @@ void TeachingTipProperties::OnActionButtonTextPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnBleedingImageContentPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -321,6 +325,7 @@ void TeachingTipProperties::OnBleedingImageContentPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnBleedingImagePlacementPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -328,6 +333,7 @@ void TeachingTipProperties::OnBleedingImagePlacementPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnCloseButtonCommandPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -335,6 +341,7 @@ void TeachingTipProperties::OnCloseButtonCommandPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnCloseButtonCommandParameterPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -342,6 +349,7 @@ void TeachingTipProperties::OnCloseButtonCommandParameterPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnCloseButtonKindPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -349,6 +357,7 @@ void TeachingTipProperties::OnCloseButtonKindPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnCloseButtonStylePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -356,6 +365,7 @@ void TeachingTipProperties::OnCloseButtonStylePropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnCloseButtonTextPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -363,6 +373,7 @@ void TeachingTipProperties::OnCloseButtonTextPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnIconSourcePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -370,6 +381,7 @@ void TeachingTipProperties::OnIconSourcePropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnIsLightDismissEnabledPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -377,6 +389,7 @@ void TeachingTipProperties::OnIsLightDismissEnabledPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnIsOpenPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -384,6 +397,7 @@ void TeachingTipProperties::OnIsOpenPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnPlacementPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -391,6 +405,7 @@ void TeachingTipProperties::OnPlacementPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnSubtextPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -398,6 +413,7 @@ void TeachingTipProperties::OnSubtextPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnTargetPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -405,6 +421,7 @@ void TeachingTipProperties::OnTargetPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnTargetOffsetPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -412,6 +429,7 @@ void TeachingTipProperties::OnTargetOffsetPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnTemplateSettingsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -419,6 +437,7 @@ void TeachingTipProperties::OnTemplateSettingsPropertyChanged(
     auto owner = sender.as<winrt::TeachingTip>();
     winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
 }
+
 void TeachingTipProperties::OnTitlePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)

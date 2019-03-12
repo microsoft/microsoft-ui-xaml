@@ -277,6 +277,7 @@ void ColorPickerProperties::OnColorPropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnColorSpectrumComponentsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -284,6 +285,7 @@ void ColorPickerProperties::OnColorSpectrumComponentsPropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnColorSpectrumShapePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -291,6 +293,7 @@ void ColorPickerProperties::OnColorSpectrumShapePropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnIsAlphaEnabledPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -298,6 +301,7 @@ void ColorPickerProperties::OnIsAlphaEnabledPropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnIsAlphaSliderVisiblePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -305,6 +309,7 @@ void ColorPickerProperties::OnIsAlphaSliderVisiblePropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnIsAlphaTextInputVisiblePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -312,6 +317,7 @@ void ColorPickerProperties::OnIsAlphaTextInputVisiblePropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnIsColorChannelTextInputVisiblePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -319,6 +325,7 @@ void ColorPickerProperties::OnIsColorChannelTextInputVisiblePropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnIsColorPreviewVisiblePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -326,6 +333,7 @@ void ColorPickerProperties::OnIsColorPreviewVisiblePropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnIsColorSliderVisiblePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -333,6 +341,7 @@ void ColorPickerProperties::OnIsColorSliderVisiblePropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnIsColorSpectrumVisiblePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -340,6 +349,7 @@ void ColorPickerProperties::OnIsColorSpectrumVisiblePropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnIsHexInputVisiblePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -347,6 +357,7 @@ void ColorPickerProperties::OnIsHexInputVisiblePropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnIsMoreButtonVisiblePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -354,6 +365,7 @@ void ColorPickerProperties::OnIsMoreButtonVisiblePropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnMaxHuePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -361,6 +373,7 @@ void ColorPickerProperties::OnMaxHuePropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnMaxSaturationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -368,6 +381,7 @@ void ColorPickerProperties::OnMaxSaturationPropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnMaxValuePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -375,6 +389,7 @@ void ColorPickerProperties::OnMaxValuePropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnMinHuePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -382,6 +397,7 @@ void ColorPickerProperties::OnMinHuePropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnMinSaturationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -389,6 +405,7 @@ void ColorPickerProperties::OnMinSaturationPropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnMinValuePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -396,6 +413,7 @@ void ColorPickerProperties::OnMinValuePropertyChanged(
     auto owner = sender.as<winrt::ColorPicker>();
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
+
 void ColorPickerProperties::OnPreviousColorPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
