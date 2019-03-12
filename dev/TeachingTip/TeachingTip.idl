@@ -96,7 +96,7 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsLightDismissEnabled;
     [MUX_DEFAULT_VALUE("winrt::TeachingTipPlacementMode::Auto")]
-    TeachingTipPlacementMode Placement;
+    TeachingTipPlacementMode PreferredPlacement;
     [MUX_DEFAULT_VALUE("winrt::TeachingTipHeroContentPlacementMode::Auto")]
     TeachingTipHeroContentPlacementMode HeroContentPlacement;
 
@@ -129,7 +129,7 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
 
     static Windows.UI.Xaml.DependencyProperty TargetOffsetProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsLightDismissEnabledProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty PlacementProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PreferredPlacementProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty HeroContentPlacementProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty HeroContentProperty{ get; };

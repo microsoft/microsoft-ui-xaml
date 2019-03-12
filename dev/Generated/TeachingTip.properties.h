@@ -48,8 +48,8 @@ public:
     void IsOpen(bool value);
     bool IsOpen();
 
-    void Placement(winrt::TeachingTipPlacementMode const& value);
-    winrt::TeachingTipPlacementMode Placement();
+    void PreferredPlacement(winrt::TeachingTipPlacementMode const& value);
+    winrt::TeachingTipPlacementMode PreferredPlacement();
 
     void Subtitle(winrt::hstring const& value);
     winrt::hstring Subtitle();
@@ -79,7 +79,7 @@ public:
     static winrt::DependencyProperty IconSourceProperty() { return s_IconSourceProperty; }
     static winrt::DependencyProperty IsLightDismissEnabledProperty() { return s_IsLightDismissEnabledProperty; }
     static winrt::DependencyProperty IsOpenProperty() { return s_IsOpenProperty; }
-    static winrt::DependencyProperty PlacementProperty() { return s_PlacementProperty; }
+    static winrt::DependencyProperty PreferredPlacementProperty() { return s_PreferredPlacementProperty; }
     static winrt::DependencyProperty SubtitleProperty() { return s_SubtitleProperty; }
     static winrt::DependencyProperty TargetProperty() { return s_TargetProperty; }
     static winrt::DependencyProperty TargetOffsetProperty() { return s_TargetOffsetProperty; }
@@ -99,7 +99,7 @@ public:
     static GlobalDependencyProperty s_IconSourceProperty;
     static GlobalDependencyProperty s_IsLightDismissEnabledProperty;
     static GlobalDependencyProperty s_IsOpenProperty;
-    static GlobalDependencyProperty s_PlacementProperty;
+    static GlobalDependencyProperty s_PreferredPlacementProperty;
     static GlobalDependencyProperty s_SubtitleProperty;
     static GlobalDependencyProperty s_TargetProperty;
     static GlobalDependencyProperty s_TargetOffsetProperty;

@@ -125,7 +125,7 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         OnIsLightDismissEnabledChanged();
     }
-    else if (property == s_PlacementProperty)
+    else if (property == s_PreferredPlacementProperty)
     {
         if (IsOpen())
         {
@@ -453,7 +453,7 @@ void TeachingTip::PositionUntargetedPopup()
     // Depending on the effective placement mode of the tip we use a combination of the tip's size, the window's size, and the target
     // offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
     auto&& popup = m_popup.get();
-    switch (Placement())
+    switch (PreferredPlacement())
     {
     case winrt::TeachingTipPlacementMode::Auto:
     case winrt::TeachingTipPlacementMode::Bottom:
@@ -1196,7 +1196,7 @@ void TeachingTip::StartContractToClose()
 
 winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
 {
-    auto placement = Placement();
+    auto placement = PreferredPlacement();
     if (placement != winrt::TeachingTipPlacementMode::Auto)
     {
         return placement;

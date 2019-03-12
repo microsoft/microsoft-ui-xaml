@@ -630,7 +630,7 @@ namespace CustomTasks
             NeedsPropChangedCallbackMetadata["TeachingTip.IconSource"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.IsLightDismissEnabled"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.IsOpen"] = true;
-            NeedsPropChangedCallbackMetadata["TeachingTip.Placement"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.PreferredPlacement"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.Subtitle"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.Target"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.TargetOffset"] = true;
@@ -640,7 +640,7 @@ namespace CustomTasks
             DefaultValueMetadata["TeachingTip.HeroContentPlacement"] = @"winrt::TeachingTipHeroContentPlacementMode::Auto";
             DefaultValueMetadata["TeachingTip.IsLightDismissEnabled"] = @"false";
             DefaultValueMetadata["TeachingTip.IsOpen"] = @"false";
-            DefaultValueMetadata["TeachingTip.Placement"] = @"winrt::TeachingTipPlacementMode::Auto";
+            DefaultValueMetadata["TeachingTip.PreferredPlacement"] = @"winrt::TeachingTipPlacementMode::Auto";
 
             IncludedTypesMetadata["TeachingTipTemplateSettings"] = true;
             // TeachingTipTemplateSettings -- NeedsPropChangedCallbackMetadata

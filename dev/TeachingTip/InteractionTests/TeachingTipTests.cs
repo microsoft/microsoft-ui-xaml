@@ -76,7 +76,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     SetHeroContent(HeroContentOptions.NoContent);
                     OpenTeachingTip();
-                    PressXCloseButton(location);
+                    PressXCloseButton();
                     var message2 = GetTeachingTipDebugMessage(2);
                     var message3 = GetTeachingTipDebugMessage(3);
                     var message4 = GetTeachingTipDebugMessage(4);
@@ -105,8 +105,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsTrue(message8.ToString().Contains("Closed"));
                     Verify.IsTrue(message8.ToString().Contains("LightDismiss"));
 
+                    SetCloseButtonText(CloseButtonTextOptions.ShortText);
                     OpenTeachingTip();
-                    PressXCloseButton(location);
+                    PressTipCloseButton();
                     var message9 = GetTeachingTipDebugMessage(9);
                     var message10 = GetTeachingTipDebugMessage(10);
                     var message11 = GetTeachingTipDebugMessage(11);
@@ -260,62 +261,62 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     ScrollTargetIntoView();
                     ScrollBy(10);
 
-                    SetPlacement(PlacementOptions.Top);
+                    SetPreferredPlacement(PlacementOptions.Top);
                     OpenTeachingTip();
                     Verify.IsTrue(GetEffectivePlacement().Equals("Top"));
                     CloseTeachingTipProgrammatically();
 
-                    SetPlacement(PlacementOptions.Bottom);
+                    SetPreferredPlacement(PlacementOptions.Bottom);
                     OpenTeachingTip();
                     Verify.IsTrue(GetEffectivePlacement().Equals("Bottom"));
                     CloseTeachingTipProgrammatically();
 
-                    SetPlacement(PlacementOptions.Left);
+                    SetPreferredPlacement(PlacementOptions.Left);
                     OpenTeachingTip();
                     Verify.IsTrue(GetEffectivePlacement().Equals("Left"));
                     CloseTeachingTipProgrammatically();
 
-                    SetPlacement(PlacementOptions.Right);
+                    SetPreferredPlacement(PlacementOptions.Right);
                     OpenTeachingTip();
                     Verify.IsTrue(GetEffectivePlacement().Equals("Right"));
                     CloseTeachingTipProgrammatically();
 
-                    SetPlacement(PlacementOptions.TopEdgeAlignedRight);
+                    SetPreferredPlacement(PlacementOptions.TopEdgeAlignedRight);
                     OpenTeachingTip();
                     Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedRight"));
                     CloseTeachingTipProgrammatically();
 
-                    SetPlacement(PlacementOptions.TopEdgeAlignedLeft);
+                    SetPreferredPlacement(PlacementOptions.TopEdgeAlignedLeft);
                     OpenTeachingTip();
                     Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedLeft"));
                     CloseTeachingTipProgrammatically();
 
-                    SetPlacement(PlacementOptions.BottomEdgeAlignedRight);
+                    SetPreferredPlacement(PlacementOptions.BottomEdgeAlignedRight);
                     OpenTeachingTip();
                     Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedRight"));
                     CloseTeachingTipProgrammatically();
 
-                    SetPlacement(PlacementOptions.BottomEdgeAlignedLeft);
+                    SetPreferredPlacement(PlacementOptions.BottomEdgeAlignedLeft);
                     OpenTeachingTip();
                     Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedLeft"));
                     CloseTeachingTipProgrammatically();
 
-                    SetPlacement(PlacementOptions.LeftEdgeAlignedTop);
+                    SetPreferredPlacement(PlacementOptions.LeftEdgeAlignedTop);
                     OpenTeachingTip();
                     Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedTop"));
                     CloseTeachingTipProgrammatically();
 
-                    SetPlacement(PlacementOptions.LeftEdgeAlignedBottom);
+                    SetPreferredPlacement(PlacementOptions.LeftEdgeAlignedBottom);
                     OpenTeachingTip();
                     Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedBottom"));
                     CloseTeachingTipProgrammatically();
 
-                    SetPlacement(PlacementOptions.RightEdgeAlignedTop);
+                    SetPreferredPlacement(PlacementOptions.RightEdgeAlignedTop);
                     OpenTeachingTip();
                     Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedTop"));
                     CloseTeachingTipProgrammatically();
 
-                    SetPlacement(PlacementOptions.RightEdgeAlignedBottom);
+                    SetPreferredPlacement(PlacementOptions.RightEdgeAlignedBottom);
                     OpenTeachingTip();
                     Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedBottom"));
                     CloseTeachingTipProgrammatically();
@@ -372,12 +373,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
             {
                 elements.GetCloseButton().Invoke();
-                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-                {
-                    WaitForUnchecked(elements.GetIsIdleCheckBox());
-                }
-                WaitForUnchecked(elements.GetIsOpenCheckBox());
-                WaitForChecked(elements.GetIsIdleCheckBox());
+                WaitForTipClosed();
             }
         }
 
@@ -386,18 +382,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
             {
                 elements.GetLstTeachingTipEvents().Tap();
-                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-                {
-                    WaitForUnchecked(elements.GetIsIdleCheckBox());
-                }
-                WaitForUnchecked(elements.GetIsOpenCheckBox());
-                WaitForChecked(elements.GetIsIdleCheckBox());
+                WaitForTipClosed();
             }
         }
 
-        private void PressXCloseButton(TipLocationOptions location)
+        private void PressXCloseButton()
         {
-            InputHelper.Tap(elements.GetTeachingTipAlternateCloseButton());
+            if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
+            {
+                InputHelper.Tap(elements.GetTeachingTipAlternateCloseButton());
+                WaitForTipClosed();
+            }
+        }
+
+        private void PressTipCloseButton()
+        {
+            if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
+            {
+                InputHelper.Tap(elements.GetTeachingTipCloseButton());
+                WaitForTipClosed();
+            }
+        }
+
+        private void WaitForTipClosed()
+        {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
                 WaitForUnchecked(elements.GetIsIdleCheckBox());
@@ -438,51 +446,68 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.GetIsLightDismissEnabledButton().Invoke();
         }
 
-        private void SetPlacement(PlacementOptions placement)
+        private void SetCloseButtonText(CloseButtonTextOptions closeButtonText)
+        {
+            switch(closeButtonText)
+            {
+                case CloseButtonTextOptions.NoText:
+                    elements.GetCloseButtonTextComboBox().SelectItemByName("No text");
+                    break;
+                case CloseButtonTextOptions.ShortText:
+                    elements.GetCloseButtonTextComboBox().SelectItemByName("Small text");
+                    break; 
+                case CloseButtonTextOptions.LongText:
+                    elements.GetCloseButtonTextComboBox().SelectItemByName("Long text");
+                    break;
+            }
+            elements.GetSetCloseButtonTextButton().Invoke();
+        }
+
+        private void SetPreferredPlacement(PlacementOptions placement)
         {
             switch (placement)
             {
                 case PlacementOptions.Top:
-                    elements.GetPlacementComboBox().SelectItemByName("Top");
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("Top");
                     break;
                 case PlacementOptions.Bottom:
-                    elements.GetPlacementComboBox().SelectItemByName("Bottom");
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("Bottom");
                     break;
                 case PlacementOptions.Left:
-                    elements.GetPlacementComboBox().SelectItemByName("Left");
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("Left");
                     break;
                 case PlacementOptions.Right:
-                    elements.GetPlacementComboBox().SelectItemByName("Right");
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("Right");
                     break;
                 case PlacementOptions.TopEdgeAlignedRight:
-                    elements.GetPlacementComboBox().SelectItemByName("TopEdgeAlignedRight");
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("TopEdgeAlignedRight");
                     break;
                 case PlacementOptions.TopEdgeAlignedLeft:
-                    elements.GetPlacementComboBox().SelectItemByName("TopEdgeAlignedLeft");
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("TopEdgeAlignedLeft");
                     break;
                 case PlacementOptions.BottomEdgeAlignedRight:
-                    elements.GetPlacementComboBox().SelectItemByName("BottomEdgeAlignedRight");
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("BottomEdgeAlignedRight");
                     break;
                 case PlacementOptions.BottomEdgeAlignedLeft:
-                    elements.GetPlacementComboBox().SelectItemByName("BottomEdgeAlignedLeft");
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("BottomEdgeAlignedLeft");
                     break;
                 case PlacementOptions.LeftEdgeAlignedTop:
-                    elements.GetPlacementComboBox().SelectItemByName("LeftEdgeAlignedTop");
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("LeftEdgeAlignedTop");
                     break;
                 case PlacementOptions.LeftEdgeAlignedBottom:
-                    elements.GetPlacementComboBox().SelectItemByName("LeftEdgeAlignedBottom");
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("LeftEdgeAlignedBottom");
                     break;
                 case PlacementOptions.RightEdgeAlignedTop:
-                    elements.GetPlacementComboBox().SelectItemByName("RightEdgeAlignedTop");
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("RightEdgeAlignedTop");
                     break;
                 case PlacementOptions.RightEdgeAlignedBottom:
-                    elements.GetPlacementComboBox().SelectItemByName("RightEdgeAlignedBottom");
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("RightEdgeAlignedBottom");
                     break;
                 default:
-                    elements.GetPlacementComboBox().SelectItemByName("Auto");
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("Auto");
                     break;
             }
-            elements.GetSetPlacementButton().Invoke();
+            elements.GetSetPreferredPlacementButton().Invoke();
         }
 
         private void SetHeroContent(HeroContentOptions heroContent)

@@ -185,12 +185,12 @@
                 <Button Click="OnSetActionButtonTextButtonClicked" Grid.Row="13" Grid.Column="1">Set</Button>
 
                 <TextBlock Grid.Row="14" Text="CloseButtonText:" Foreground="Red"/>
-                <ComboBox x:Name="CloseButtonTextComboBox" SelectedIndex="0" Grid.Row="15">
+                <ComboBox x:Name="CloseButtonTextComboBox" AutomationProperties.Name="CloseButtonTextComboBox" SelectedIndex="0" Grid.Row="15">
                     <ComboBoxItem x:Name="CloseButtonTextNo">No text</ComboBoxItem>
                     <ComboBoxItem x:Name="CloseButtonTextSmall">Small text</ComboBoxItem>
                     <ComboBoxItem x:Name="CloseButtonTextLong">Long text</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetCloseButtonTextButtonClicked" Grid.Row="15" Grid.Column="1">Set</Button>
+                <Button Click="OnSetCloseButtonTextButtonClicked" AutomationProperties.Name="SetCloseButtonTextButton" Grid.Row="15" Grid.Column="1">Set</Button>
 
                 <TextBlock Grid.Row="16" Text="HeroContentPlacement:" Foreground="Red"/>
                 <ComboBox x:Name="HeroContentPlacementComboBox" SelectedIndex="0" Grid.Row="17">
@@ -316,8 +316,8 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Row="0" Text="Placement:" Foreground="Red"/>
-            <ComboBox x:Name="PlacementComboBox" AutomationProperties.Name="PlacementComboBox" Grid.Row="1">
+            <TextBlock Grid.Row="0" Text="PreferredPlacement:" Foreground="Red"/>
+            <ComboBox x:Name="PreferredPlacementComboBox" AutomationProperties.Name="PreferredPlacementComboBox" Grid.Row="1">
                 <ComboBoxItem x:Name="PlacementTop">Top</ComboBoxItem>
                 <ComboBoxItem x:Name="PlacementBottom">Bottom</ComboBoxItem>
                 <ComboBoxItem x:Name="PlacementLeft">Left</ComboBoxItem>
@@ -332,7 +332,7 @@
                 <ComboBoxItem x:Name="PlacementRightEdgeBottom">RightEdgeAlignedBottom</ComboBoxItem>
                 <ComboBoxItem x:Name="PlacementAuto">Auto</ComboBoxItem>
             </ComboBox>
-            <Button AutomationProperties.Name="SetPlacementButton" Click="OnSetPlacementButtonClicked" Grid.Row="1" Grid.Column="1">Set</Button>
+            <Button AutomationProperties.Name="SetPreferredPlacementButton" Click="OnSetPreferredPlacementButtonClicked" Grid.Row="1" Grid.Column="1">Set</Button>
 
             <TextBlock Grid.Row="2" Text="IsLightDismissEnabled:" Foreground="Red"/>
             <ComboBox x:Name="IsLightDismissEnabledComboBox" AutomationProperties.Name="IsLightDismissEnabledComboBox" Grid.Row="3">

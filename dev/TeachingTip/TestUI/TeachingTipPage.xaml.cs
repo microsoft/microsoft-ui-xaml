@@ -439,59 +439,59 @@ namespace MUXControlsTestApp
             TeachingTipTestHooks.SetTipFollowsTarget(getTeachingTip(), false);
         }
 
-        public void OnSetPlacementButtonClicked(object sender, RoutedEventArgs args)
+        public void OnSetPreferredPlacementButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.PlacementComboBox.SelectedItem == PlacementTop)
+            if (this.PreferredPlacementComboBox.SelectedItem == PlacementTop)
             {
-                getTeachingTip().Placement = TeachingTipPlacementMode.Top;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Top;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementBottom)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementBottom)
             {
-                getTeachingTip().Placement = TeachingTipPlacementMode.Bottom;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Bottom;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementLeft)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementLeft)
             {
-                getTeachingTip().Placement = TeachingTipPlacementMode.Left;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Left;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementRight)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementRight)
             {
-                getTeachingTip().Placement = TeachingTipPlacementMode.Right;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Right;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementTopEdgeRight)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementTopEdgeRight)
             {
-                getTeachingTip().Placement = TeachingTipPlacementMode.TopEdgeAlignedRight;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.TopEdgeAlignedRight;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementTopEdgeLeft)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementTopEdgeLeft)
             {
-                getTeachingTip().Placement = TeachingTipPlacementMode.TopEdgeAlignedLeft;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.TopEdgeAlignedLeft;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementBottomEdgeRight)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementBottomEdgeRight)
             {
-                getTeachingTip().Placement = TeachingTipPlacementMode.BottomEdgeAlignedRight;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.BottomEdgeAlignedRight;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementBottomEdgeLeft)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementBottomEdgeLeft)
             {
-                getTeachingTip().Placement = TeachingTipPlacementMode.BottomEdgeAlignedLeft;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.BottomEdgeAlignedLeft;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementLeftEdgeTop)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementLeftEdgeTop)
             {
-                getTeachingTip().Placement = TeachingTipPlacementMode.LeftEdgeAlignedTop;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.LeftEdgeAlignedTop;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementLeftEdgeBottom)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementLeftEdgeBottom)
             {
-                getTeachingTip().Placement = TeachingTipPlacementMode.LeftEdgeAlignedBottom;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.LeftEdgeAlignedBottom;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementRightEdgeTop)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementRightEdgeTop)
             {
-                getTeachingTip().Placement = TeachingTipPlacementMode.RightEdgeAlignedTop;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.RightEdgeAlignedTop;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementRightEdgeBottom)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementRightEdgeBottom)
             {
-                getTeachingTip().Placement = TeachingTipPlacementMode.RightEdgeAlignedBottom;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.RightEdgeAlignedBottom;
             }
             else
             {
-                getTeachingTip().Placement = TeachingTipPlacementMode.Auto;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Auto;
             }
         }
 

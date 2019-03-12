@@ -21,7 +21,7 @@ GlobalDependencyProperty TeachingTipProperties::s_HeroContentPlacementProperty{ 
 GlobalDependencyProperty TeachingTipProperties::s_IconSourceProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_IsLightDismissEnabledProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_IsOpenProperty{ nullptr };
-GlobalDependencyProperty TeachingTipProperties::s_PlacementProperty{ nullptr };
+GlobalDependencyProperty TeachingTipProperties::s_PreferredPlacementProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_SubtitleProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_TargetProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_TargetOffsetProperty{ nullptr };
@@ -182,11 +182,11 @@ void TeachingTipProperties::EnsureProperties()
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
-    if (!s_PlacementProperty)
+    if (!s_PreferredPlacementProperty)
     {
-        s_PlacementProperty =
+        s_PreferredPlacementProperty =
             InitializeDependencyProperty(
-                L"Placement",
+                L"PreferredPlacement",
                 winrt::name_of<winrt::TeachingTipPlacementMode>(),
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
@@ -265,7 +265,7 @@ void TeachingTipProperties::ClearProperties()
     s_IconSourceProperty = nullptr;
     s_IsLightDismissEnabledProperty = nullptr;
     s_IsOpenProperty = nullptr;
-    s_PlacementProperty = nullptr;
+    s_PreferredPlacementProperty = nullptr;
     s_SubtitleProperty = nullptr;
     s_TargetProperty = nullptr;
     s_TargetOffsetProperty = nullptr;
@@ -411,14 +411,14 @@ bool TeachingTipProperties::IsOpen()
     return ValueHelper<bool>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_IsOpenProperty));
 }
 
-void TeachingTipProperties::Placement(winrt::TeachingTipPlacementMode const& value)
+void TeachingTipProperties::PreferredPlacement(winrt::TeachingTipPlacementMode const& value)
 {
-    static_cast<TeachingTip*>(this)->SetValue(s_PlacementProperty, ValueHelper<winrt::TeachingTipPlacementMode>::BoxValueIfNecessary(value));
+    static_cast<TeachingTip*>(this)->SetValue(s_PreferredPlacementProperty, ValueHelper<winrt::TeachingTipPlacementMode>::BoxValueIfNecessary(value));
 }
 
-winrt::TeachingTipPlacementMode TeachingTipProperties::Placement()
+winrt::TeachingTipPlacementMode TeachingTipProperties::PreferredPlacement()
 {
-    return ValueHelper<winrt::TeachingTipPlacementMode>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_PlacementProperty));
+    return ValueHelper<winrt::TeachingTipPlacementMode>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_PreferredPlacementProperty));
 }
 
 void TeachingTipProperties::Subtitle(winrt::hstring const& value)
