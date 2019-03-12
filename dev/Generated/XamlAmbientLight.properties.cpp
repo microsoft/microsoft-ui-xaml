@@ -27,7 +27,7 @@ void XamlAmbientLightProperties::EnsureProperties()
                 winrt::name_of<winrt::XamlAmbientLight>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Color>::BoxValueIfNecessary({ 255, 255, 255, 255 }),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnColorPropertyChanged));
     }
     if (!s_IsTargetProperty)
     {
@@ -46,6 +46,14 @@ void XamlAmbientLightProperties::ClearProperties()
 {
     s_ColorProperty = nullptr;
     s_IsTargetProperty = nullptr;
+}
+
+void XamlAmbientLightProperties::OnColorPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::XamlAmbientLight>();
+    winrt::get_self<XamlAmbientLight>(owner)->OnColorPropertyChanged(args);
 }
 
 void XamlAmbientLightProperties::Color(winrt::Color const& value)
