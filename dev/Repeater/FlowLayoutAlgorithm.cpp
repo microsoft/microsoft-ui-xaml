@@ -148,7 +148,6 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
     {
         // Non virtualizing host, start generating from the element 0
         anchorIndex = m_context.get().ItemCountCore() > 0 ? 0 : -1;
-        //anchorPosition = default(Point);
     }
     else
     {
