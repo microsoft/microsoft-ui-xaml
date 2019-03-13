@@ -23,7 +23,7 @@ public:
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;
 
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     winrt::UIElement GetSelectionIndicator();
     winrt::ToolTip GetToolTip();

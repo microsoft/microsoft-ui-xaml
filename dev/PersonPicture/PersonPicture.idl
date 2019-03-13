@@ -4,6 +4,7 @@
 [WUXC_STATIC_NAME("IPersonPictureStatics", dbec0982-3c10-4639-9614-aa5b7cdc32ca)]
 [WUXC_CONSTRUCTOR_NAME("IPersonPictureFactory", 4f18330d-0416-4b92-bfd3-bf5780b46ab2)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass PersonPicture : Windows.UI.Xaml.Controls.Control
 {
     PersonPicture();

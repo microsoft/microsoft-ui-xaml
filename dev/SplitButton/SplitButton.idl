@@ -1,4 +1,4 @@
-[WUXC_VERSION_RS5]
+﻿[WUXC_VERSION_RS5]
 [webhosthidden]
 [default_interface]
 runtimeclass SplitButtonClickEventArgs
@@ -8,6 +8,7 @@ runtimeclass SplitButtonClickEventArgs
 [WUXC_VERSION_RS5]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass SplitButton : Windows.UI.Xaml.Controls.ContentControl
 {
     SplitButton();
@@ -34,6 +35,7 @@ runtimeclass ToggleSplitButtonIsCheckedChangedEventArgs
 [WUXC_VERSION_RS5]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass ToggleSplitButton : SplitButton
 {
     ToggleSplitButton();
