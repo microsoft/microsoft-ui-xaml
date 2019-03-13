@@ -261,6 +261,7 @@ void ViewportManagerWithPlatformFeatures::OnCacheBuildActionCompleted()
 
 void ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged(winrt::FrameworkElement const& sender, winrt::EffectiveViewportChangedEventArgs const& args)
 {
+    REPEATER_TRACE_INFO(L"%ls: \tEffectiveViewportChanged event callback \n", GetLayoutId().data());
     UpdateViewport(args.EffectiveViewport());
 
     m_pendingViewportShift = {};

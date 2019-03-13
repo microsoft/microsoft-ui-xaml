@@ -1062,6 +1062,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Make sure that GridLayout does not end up de-virtualizing if scrolling in the 
+        // same orientation as items are being laid out. It will layout in one line and 
+        // never wrap, but we should avoid devirtualizing.
+        [TestMethod]
+        public void ValidateGridLayoutWithSameOrientationAsScrolling()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var lastRealizedIndex = 0;
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(1, 1000),
+                    ItemTemplate = GetDataTemplate(@"<Button Content='{Binding}' Width='90' Height='90'/>"),
+                    Layout = new UniformGridLayout() { Orientation = Orientation.Vertical },
+                    HorizontalCacheLength = 0,
+                    VerticalCacheLength = 0,
+                };
+
+                repeater.ElementPrepared += (sender, args) =>
+                {
+                    lastRealizedIndex = Math.Max(lastRealizedIndex, args.Index);
+                };
+
+                var anchorProvier = new ScrollAnchorProvider() {
+                    Content = new ScrollViewer() {
+                        Content = repeater
+                    }
+                };
+
+                Content = anchorProvier;
+                Content.UpdateLayout();
+
+                Verify.IsGreaterThan(lastRealizedIndex, 3);
+                Verify.IsLessThan(lastRealizedIndex, 100);
+            });
+        }
+
         #region Private Helpers
 
         private enum LayoutChoice
