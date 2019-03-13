@@ -129,6 +129,9 @@ private:
 
     // If the scroll orientation is the same as the folow orientation
     // we will only have one line since we will never wrap. In that case
-    // we do not want to align the line.
+    // we do not want to align the line. We could potentially switch the
+    // meaning of line alignment in this case, but I'll hold off on that
+    // feature until someone asks for it - This is not a common scenario
+    // anyway. 
     bool m_shouldSkipLineAlignment{ false };
 };
