@@ -433,8 +433,8 @@
             <Slider Grid.Row="32" Grid.ColumnSpan="2" Minimum="0" Maximum="50" ValueChanged="ContentElevationSliderChanged" Value="32"/>
             <TextBlock Grid.Row="33" Foreground="Red" Text="Has Shadow: " VerticalAlignment="Center"/>
             <CheckBox Grid.Row="33" Grid.Column="1" Checked="OnTipShadowChecked" Unchecked="OnTipShadowUnchecked" IsChecked="True"/>
-            <TextBlock Grid.Row="34" Foreground="Red" Text="Beak Elevation" VerticalAlignment="Center"/>
-            <Slider Grid.Row="35" Grid.ColumnSpan="2" Minimum="0" Maximum="100" ValueChanged="BeakElevationSliderChanged" Value="0"/>
+            <TextBlock Grid.Row="34" Foreground="Red" Text="Pointer Elevation" VerticalAlignment="Center"/>
+            <Slider Grid.Row="35" Grid.ColumnSpan="2" Minimum="0" Maximum="100" ValueChanged="PointerElevationSliderChanged" Value="0"/>
         </Grid>
 
         <!-- Logging Output -->

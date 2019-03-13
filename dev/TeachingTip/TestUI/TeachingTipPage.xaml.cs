@@ -668,9 +668,9 @@ namespace MUXControlsTestApp
             TeachingTipTestHooks.SetContentElevation(getTeachingTip(), (float)args.NewValue);
         }
 
-        public void BeakElevationSliderChanged(object sender, RangeBaseValueChangedEventArgs args)
+        public void PointerElevationSliderChanged(object sender, RangeBaseValueChangedEventArgs args)
         {
-            TeachingTipTestHooks.SetBeakElevation(getTeachingTip(), (float)args.NewValue);
+            TeachingTipTestHooks.SetPointerElevation(getTeachingTip(), (float)args.NewValue);
         }
 
         public void OnTipShadowChecked(object sender, RoutedEventArgs args)
