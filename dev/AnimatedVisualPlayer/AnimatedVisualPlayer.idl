@@ -43,7 +43,7 @@ interface ISelfPlayingAnimatedVisual
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
 [contentproperty("Source")]
-unsealed runtimeclass AnimatedVisualPlayer 
+unsealed runtimeclass AnimatedVisualPlayer
     : Windows.UI.Xaml.FrameworkElement
 {
     AnimatedVisualPlayer();
@@ -52,28 +52,23 @@ unsealed runtimeclass AnimatedVisualPlayer
     Windows.Foundation.TimeSpan Duration{ get; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnSourcePropertyChanged")]
     IAnimatedVisualSource Source;
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnFallbackContentPropertyChanged")]
     Windows.UI.Xaml.DataTemplate FallbackContent;
 
     [MUX_DEFAULT_VALUE("true")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnAutoPlayPropertyChanged")]
     Boolean AutoPlay;
     Boolean IsAnimatedVisualLoaded{ get; };
     Boolean IsPlaying{ get; };
     [MUX_DEFAULT_VALUE("1")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPlaybackRatePropertyChanged")]
     Double PlaybackRate;
 
     Windows.UI.Composition.CompositionObject ProgressObject{ get; };
 
     [MUX_DEFAULT_VALUE("winrt::Stretch::Uniform")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnStretchPropertyChanged")]
     Windows.UI.Xaml.Media.Stretch Stretch;
 
     void Pause();

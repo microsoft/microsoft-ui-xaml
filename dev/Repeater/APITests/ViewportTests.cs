@@ -194,8 +194,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        //Unreliable test: RepeaterTests.ViewportTests.ValidateOneScrollerScenario #158
-        //[TestMethod]
+        [TestMethod]
         public void ValidateOneScrollerScenario()
         {
             var realizationRects = new List<Rect>();

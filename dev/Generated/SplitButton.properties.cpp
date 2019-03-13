@@ -29,7 +29,7 @@ void SplitButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::SplitButton>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ICommand>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnCommandPropertyChanged));
     }
     if (!s_CommandParameterProperty)
     {
@@ -40,7 +40,7 @@ void SplitButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::SplitButton>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnCommandParameterPropertyChanged));
     }
     if (!s_FlyoutProperty)
     {
@@ -51,7 +51,7 @@ void SplitButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::SplitButton>(),
                 false /* isAttached */,
                 ValueHelper<winrt::FlyoutBase>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnFlyoutPropertyChanged));
     }
 }
 
@@ -62,7 +62,23 @@ void SplitButtonProperties::ClearProperties()
     s_FlyoutProperty = nullptr;
 }
 
-void SplitButtonProperties::OnPropertyChanged(
+void SplitButtonProperties::OnCommandPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::SplitButton>();
+    winrt::get_self<SplitButton>(owner)->OnPropertyChanged(args);
+}
+
+void SplitButtonProperties::OnCommandParameterPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::SplitButton>();
+    winrt::get_self<SplitButton>(owner)->OnPropertyChanged(args);
+}
+
+void SplitButtonProperties::OnFlyoutPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

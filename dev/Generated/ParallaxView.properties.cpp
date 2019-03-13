@@ -39,7 +39,7 @@ void ParallaxViewProperties::EnsureProperties()
                 winrt::name_of<winrt::ParallaxView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnChildPropertyChanged));
     }
     if (!s_HorizontalShiftProperty)
     {
@@ -50,7 +50,7 @@ void ParallaxViewProperties::EnsureProperties()
                 winrt::name_of<winrt::ParallaxView>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnHorizontalShiftPropertyChanged));
     }
     if (!s_HorizontalSourceEndOffsetProperty)
     {
@@ -61,7 +61,7 @@ void ParallaxViewProperties::EnsureProperties()
                 winrt::name_of<winrt::ParallaxView>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnHorizontalSourceEndOffsetPropertyChanged));
     }
     if (!s_HorizontalSourceOffsetKindProperty)
     {
@@ -72,7 +72,7 @@ void ParallaxViewProperties::EnsureProperties()
                 winrt::name_of<winrt::ParallaxView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ParallaxSourceOffsetKind>::BoxValueIfNecessary(winrt::ParallaxSourceOffsetKind::Relative),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnHorizontalSourceOffsetKindPropertyChanged));
     }
     if (!s_HorizontalSourceStartOffsetProperty)
     {
@@ -83,7 +83,7 @@ void ParallaxViewProperties::EnsureProperties()
                 winrt::name_of<winrt::ParallaxView>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnHorizontalSourceStartOffsetPropertyChanged));
     }
     if (!s_IsHorizontalShiftClampedProperty)
     {
@@ -94,7 +94,7 @@ void ParallaxViewProperties::EnsureProperties()
                 winrt::name_of<winrt::ParallaxView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnIsHorizontalShiftClampedPropertyChanged));
     }
     if (!s_IsVerticalShiftClampedProperty)
     {
@@ -105,7 +105,7 @@ void ParallaxViewProperties::EnsureProperties()
                 winrt::name_of<winrt::ParallaxView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnIsVerticalShiftClampedPropertyChanged));
     }
     if (!s_MaxHorizontalShiftRatioProperty)
     {
@@ -116,7 +116,7 @@ void ParallaxViewProperties::EnsureProperties()
                 winrt::name_of<winrt::ParallaxView>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(1.0),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnMaxHorizontalShiftRatioPropertyChanged));
     }
     if (!s_MaxVerticalShiftRatioProperty)
     {
@@ -127,7 +127,7 @@ void ParallaxViewProperties::EnsureProperties()
                 winrt::name_of<winrt::ParallaxView>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(1.0),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnMaxVerticalShiftRatioPropertyChanged));
     }
     if (!s_SourceProperty)
     {
@@ -138,7 +138,7 @@ void ParallaxViewProperties::EnsureProperties()
                 winrt::name_of<winrt::ParallaxView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnSourcePropertyChanged));
     }
     if (!s_VerticalShiftProperty)
     {
@@ -149,7 +149,7 @@ void ParallaxViewProperties::EnsureProperties()
                 winrt::name_of<winrt::ParallaxView>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnVerticalShiftPropertyChanged));
     }
     if (!s_VerticalSourceEndOffsetProperty)
     {
@@ -160,7 +160,7 @@ void ParallaxViewProperties::EnsureProperties()
                 winrt::name_of<winrt::ParallaxView>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnVerticalSourceEndOffsetPropertyChanged));
     }
     if (!s_VerticalSourceOffsetKindProperty)
     {
@@ -171,7 +171,7 @@ void ParallaxViewProperties::EnsureProperties()
                 winrt::name_of<winrt::ParallaxView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ParallaxSourceOffsetKind>::BoxValueIfNecessary(winrt::ParallaxSourceOffsetKind::Relative),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnVerticalSourceOffsetKindPropertyChanged));
     }
     if (!s_VerticalSourceStartOffsetProperty)
     {
@@ -182,7 +182,7 @@ void ParallaxViewProperties::EnsureProperties()
                 winrt::name_of<winrt::ParallaxView>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnVerticalSourceStartOffsetPropertyChanged));
     }
 }
 
@@ -204,7 +204,111 @@ void ParallaxViewProperties::ClearProperties()
     s_VerticalSourceStartOffsetProperty = nullptr;
 }
 
-void ParallaxViewProperties::OnPropertyChanged(
+void ParallaxViewProperties::OnChildPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ParallaxView>();
+    winrt::get_self<ParallaxView>(owner)->OnPropertyChanged(args);
+}
+
+void ParallaxViewProperties::OnHorizontalShiftPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ParallaxView>();
+    winrt::get_self<ParallaxView>(owner)->OnPropertyChanged(args);
+}
+
+void ParallaxViewProperties::OnHorizontalSourceEndOffsetPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ParallaxView>();
+    winrt::get_self<ParallaxView>(owner)->OnPropertyChanged(args);
+}
+
+void ParallaxViewProperties::OnHorizontalSourceOffsetKindPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ParallaxView>();
+    winrt::get_self<ParallaxView>(owner)->OnPropertyChanged(args);
+}
+
+void ParallaxViewProperties::OnHorizontalSourceStartOffsetPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ParallaxView>();
+    winrt::get_self<ParallaxView>(owner)->OnPropertyChanged(args);
+}
+
+void ParallaxViewProperties::OnIsHorizontalShiftClampedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ParallaxView>();
+    winrt::get_self<ParallaxView>(owner)->OnPropertyChanged(args);
+}
+
+void ParallaxViewProperties::OnIsVerticalShiftClampedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ParallaxView>();
+    winrt::get_self<ParallaxView>(owner)->OnPropertyChanged(args);
+}
+
+void ParallaxViewProperties::OnMaxHorizontalShiftRatioPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ParallaxView>();
+    winrt::get_self<ParallaxView>(owner)->OnPropertyChanged(args);
+}
+
+void ParallaxViewProperties::OnMaxVerticalShiftRatioPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ParallaxView>();
+    winrt::get_self<ParallaxView>(owner)->OnPropertyChanged(args);
+}
+
+void ParallaxViewProperties::OnSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ParallaxView>();
+    winrt::get_self<ParallaxView>(owner)->OnPropertyChanged(args);
+}
+
+void ParallaxViewProperties::OnVerticalShiftPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ParallaxView>();
+    winrt::get_self<ParallaxView>(owner)->OnPropertyChanged(args);
+}
+
+void ParallaxViewProperties::OnVerticalSourceEndOffsetPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ParallaxView>();
+    winrt::get_self<ParallaxView>(owner)->OnPropertyChanged(args);
+}
+
+void ParallaxViewProperties::OnVerticalSourceOffsetKindPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ParallaxView>();
+    winrt::get_self<ParallaxView>(owner)->OnPropertyChanged(args);
+}
+
+void ParallaxViewProperties::OnVerticalSourceStartOffsetPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

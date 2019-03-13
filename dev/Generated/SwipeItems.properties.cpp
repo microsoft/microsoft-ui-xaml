@@ -26,7 +26,7 @@ void SwipeItemsProperties::EnsureProperties()
                 winrt::name_of<winrt::SwipeItems>(),
                 false /* isAttached */,
                 ValueHelper<winrt::SwipeMode>::BoxValueIfNecessary(winrt::SwipeMode::Reveal),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnModePropertyChanged));
     }
 }
 
@@ -35,7 +35,7 @@ void SwipeItemsProperties::ClearProperties()
     s_ModeProperty = nullptr;
 }
 
-void SwipeItemsProperties::OnPropertyChanged(
+void SwipeItemsProperties::OnModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

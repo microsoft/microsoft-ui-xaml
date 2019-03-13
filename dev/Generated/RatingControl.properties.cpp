@@ -34,7 +34,7 @@ void RatingControlProperties::EnsureProperties()
                 winrt::name_of<winrt::RatingControl>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnCaptionPropertyChanged));
     }
     if (!s_InitialSetValueProperty)
     {
@@ -45,7 +45,7 @@ void RatingControlProperties::EnsureProperties()
                 winrt::name_of<winrt::RatingControl>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(1),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnInitialSetValuePropertyChanged));
     }
     if (!s_IsClearEnabledProperty)
     {
@@ -56,7 +56,7 @@ void RatingControlProperties::EnsureProperties()
                 winrt::name_of<winrt::RatingControl>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnIsClearEnabledPropertyChanged));
     }
     if (!s_IsReadOnlyProperty)
     {
@@ -67,7 +67,7 @@ void RatingControlProperties::EnsureProperties()
                 winrt::name_of<winrt::RatingControl>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnIsReadOnlyPropertyChanged));
     }
     if (!s_ItemInfoProperty)
     {
@@ -78,7 +78,7 @@ void RatingControlProperties::EnsureProperties()
                 winrt::name_of<winrt::RatingControl>(),
                 false /* isAttached */,
                 ValueHelper<winrt::RatingItemInfo>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnItemInfoPropertyChanged));
     }
     if (!s_MaxRatingProperty)
     {
@@ -89,7 +89,7 @@ void RatingControlProperties::EnsureProperties()
                 winrt::name_of<winrt::RatingControl>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(5),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnMaxRatingPropertyChanged));
     }
     if (!s_PlaceholderValueProperty)
     {
@@ -100,7 +100,7 @@ void RatingControlProperties::EnsureProperties()
                 winrt::name_of<winrt::RatingControl>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(-1),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnPlaceholderValuePropertyChanged));
     }
     if (!s_ValueProperty)
     {
@@ -111,7 +111,7 @@ void RatingControlProperties::EnsureProperties()
                 winrt::name_of<winrt::RatingControl>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(-1),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnValuePropertyChanged));
     }
 }
 
@@ -127,7 +127,63 @@ void RatingControlProperties::ClearProperties()
     s_ValueProperty = nullptr;
 }
 
-void RatingControlProperties::OnPropertyChanged(
+void RatingControlProperties::OnCaptionPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RatingControl>();
+    winrt::get_self<RatingControl>(owner)->OnPropertyChanged(args);
+}
+
+void RatingControlProperties::OnInitialSetValuePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RatingControl>();
+    winrt::get_self<RatingControl>(owner)->OnPropertyChanged(args);
+}
+
+void RatingControlProperties::OnIsClearEnabledPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RatingControl>();
+    winrt::get_self<RatingControl>(owner)->OnPropertyChanged(args);
+}
+
+void RatingControlProperties::OnIsReadOnlyPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RatingControl>();
+    winrt::get_self<RatingControl>(owner)->OnPropertyChanged(args);
+}
+
+void RatingControlProperties::OnItemInfoPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RatingControl>();
+    winrt::get_self<RatingControl>(owner)->OnPropertyChanged(args);
+}
+
+void RatingControlProperties::OnMaxRatingPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RatingControl>();
+    winrt::get_self<RatingControl>(owner)->OnPropertyChanged(args);
+}
+
+void RatingControlProperties::OnPlaceholderValuePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RatingControl>();
+    winrt::get_self<RatingControl>(owner)->OnPropertyChanged(args);
+}
+
+void RatingControlProperties::OnValuePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

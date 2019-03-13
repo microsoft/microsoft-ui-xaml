@@ -29,7 +29,9 @@ public:
     void OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy);
 #endif
 
-    static void OnPropertyChanged(
+    void OnColorPropertyChanged(
+        const winrt::DependencyPropertyChangedEventArgs& args);
+    static void OnIsTargetPropertyChanged(
         const winrt::DependencyObject& sender,
         const winrt::DependencyPropertyChangedEventArgs& args);
 

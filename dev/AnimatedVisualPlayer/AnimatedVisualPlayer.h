@@ -81,21 +81,15 @@ private:
 
     void CompleteCurrentPlay();
 
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnAutoPlayPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnAutoPlayPropertyChanged(winrt::DependencyObject const& sender, winrt::DependencyPropertyChangedEventArgs const& args);
-    void OnAutoPlayPropertyChanged(bool newValue);
+    void OnFallbackContentPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnFallbackContentPropertyChanged(winrt::DependencyObject const& sender, winrt::DependencyPropertyChangedEventArgs const& args);
-    void OnFallbackContentPropertyChanged();
-
-    static void OnPlaybackRatePropertyChanged(winrt::DependencyObject const& sender, winrt::DependencyPropertyChangedEventArgs const& args);
     void OnPlaybackRatePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnSourcePropertyChanged(winrt::DependencyObject const& sender, winrt::DependencyPropertyChangedEventArgs const& args);
-    void OnSourcePropertyChanged(winrt::IAnimatedVisualSource const& oldSource, winrt::IAnimatedVisualSource const& newSource);
+    void OnSourcePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnStretchPropertyChanged(winrt::DependencyObject const& sender, winrt::DependencyPropertyChangedEventArgs const& args);
+    void OnStretchPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
     void UpdateContent();
     void UnloadContent();
