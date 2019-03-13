@@ -126,4 +126,9 @@ private:
     winrt::Rect m_lastExtent{};
     int m_firstRealizedDataIndexInsideRealizationWindow{ -1 };
     int m_lastRealizedDataIndexInsideRealizationWindow{ -1 };
+
+    // If the scroll orientation is the same as the folow orientation
+    // we will only have one line since we will never wrap. In that case
+    // we do not want to align the line.
+    bool m_shouldSkipLineAlignment{ false };
 };
