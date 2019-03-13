@@ -1068,12 +1068,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateGridLayoutWithSameOrientationAsScrolling()
         {
+            ManualResetEvent viewChanged = new ManualResetEvent(false);
+            var lastRealizedIndex = int.MinValue;
+            var firstRealizedIndex = int.MaxValue;
             RunOnUIThread.Execute(() =>
             {
-                var lastRealizedIndex = 0;
+             
                 var repeater = new ItemsRepeater() {
                     ItemsSource = Enumerable.Range(1, 1000),
-                    ItemTemplate = GetDataTemplate(@"<Button Content='{Binding}' Width='90' Height='90'/>"),
+                    ItemTemplate = GetDataTemplate(@"<Button Content='{Binding}' Width='100' Height='100'/>"),
                     Layout = new UniformGridLayout() { Orientation = Orientation.Vertical },
                     HorizontalCacheLength = 0,
                     VerticalCacheLength = 0,
@@ -1081,20 +1084,41 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 repeater.ElementPrepared += (sender, args) =>
                 {
+                    firstRealizedIndex = Math.Min(firstRealizedIndex, args.Index);
                     lastRealizedIndex = Math.Max(lastRealizedIndex, args.Index);
                 };
 
+                var scrollViewer = new ScrollViewer() {
+                    Content = repeater,
+                    Height = 200,
+                };
+
                 var anchorProvier = new ScrollAnchorProvider() {
-                    Content = new ScrollViewer() {
-                        Content = repeater
-                    }
+                    Content = scrollViewer
                 };
 
                 Content = anchorProvier;
                 Content.UpdateLayout();
 
-                Verify.IsGreaterThan(lastRealizedIndex, 3);
-                Verify.IsLessThan(lastRealizedIndex, 100);
+                Verify.IsLessThan(lastRealizedIndex - firstRealizedIndex, 10);
+
+                scrollViewer.ViewChanged += (sender, args) =>
+                {
+                    viewChanged.Set();
+                };
+
+                lastRealizedIndex = int.MinValue;
+                firstRealizedIndex = int.MaxValue;
+                scrollViewer.ChangeView(0, 1000, null);
+            });
+
+            IdleSynchronizer.Wait();
+            Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTime));
+
+            RunOnUIThread.Execute(() =>
+            {
+                // we used to crash due to a layout cycle before we get here.
+                Verify.IsLessThan(lastRealizedIndex - firstRealizedIndex, 10);
             });
         }
 
