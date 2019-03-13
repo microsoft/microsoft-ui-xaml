@@ -123,9 +123,10 @@
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.RatingItemFontInfo" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.RatingItemInfo" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.Scroller" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointBase" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointIrregular" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointRegular" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.NavigationViewItemSeparator" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.ElementFactoryRecycleArgs" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.SwipeItems" ThreadingModel="both" />

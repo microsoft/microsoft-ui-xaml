@@ -29,8 +29,9 @@ using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
-using ScrollerSnapPointIrregular = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointIrregular;
-using ScrollerSnapPointAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment;
+using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
+using ZoomSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint;
+using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
 using ZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs;
 using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
@@ -1819,19 +1820,39 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerSnapPointIrregular snapPoint = new ScrollerSnapPointIrregular(Convert.ToSingle(txtSnapPointValue.Text), Convert.ToSingle(txtSnapPointValueRange.Text), ScrollerSnapPointAlignment.Near);
+#if ApplicableRangeType
                 if (cmbSnapPointKind.SelectedIndex == 0)
                 {
+                    ScrollSnapPoint snapPoint = new ScrollSnapPoint(Convert.ToSingle(txtSnapPointValue.Text), Convert.ToSingle(txtSnapPointValueRange.Text), ScrollSnapPointsAlignment.Near);
                     scroller.VerticalSnapPoints.Add(snapPoint);
                 }
                 else if(cmbSnapPointKind.SelectedIndex == 1)
                 {
+                    ScrollSnapPoint snapPoint = new ScrollSnapPoint(Convert.ToSingle(txtSnapPointValue.Text), Convert.ToSingle(txtSnapPointValueRange.Text), ScrollSnapPointsAlignment.Near);
                     scroller.HorizontalSnapPoints.Add(snapPoint); 
                 }
                 else if(cmbSnapPointKind.SelectedIndex == 2)
                 {
+                    ZoomSnapPoint snapPoint = new ZoomSnapPoint(Convert.ToSingle(txtSnapPointValue.Text), Convert.ToSingle(txtSnapPointValueRange.Text));
                     scroller.ZoomSnapPoints.Add(snapPoint);
                 }
+#else
+                if (cmbSnapPointKind.SelectedIndex == 0)
+                {
+                    ScrollSnapPoint snapPoint = new ScrollSnapPoint(Convert.ToSingle(txtSnapPointValue.Text), ScrollSnapPointsAlignment.Near);
+                    scroller.VerticalSnapPoints.Add(snapPoint);
+                }
+                else if(cmbSnapPointKind.SelectedIndex == 1)
+                {
+                    ScrollSnapPoint snapPoint = new ScrollSnapPoint(Convert.ToSingle(txtSnapPointValue.Text), ScrollSnapPointsAlignment.Near);
+                    scroller.HorizontalSnapPoints.Add(snapPoint); 
+                }
+                else if(cmbSnapPointKind.SelectedIndex == 2)
+                {
+                    ZoomSnapPoint snapPoint = new ZoomSnapPoint(Convert.ToSingle(txtSnapPointValue.Text));
+                    scroller.ZoomSnapPoints.Add(snapPoint);
+                }
+#endif
             }
             catch (Exception ex)
             {
