@@ -724,25 +724,11 @@ void AnimatedVisualPlayer::Stop()
     }
 }
 
-void AnimatedVisualPlayer::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
-{
-    // This method is called by AnimatedVisualPlayerProperties::OnPropertyChanged which is auto generated.
-    // We have this empty function here in order to make compiler build successfully.
-    return;
-}
-
 void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(
-    winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto newValue = unbox_value<bool>(args.NewValue());
 
-    winrt::get_self<AnimatedVisualPlayer>(sender.as<winrt::AnimatedVisualPlayer>())->OnAutoPlayPropertyChanged(newValue);
-}
-
-
-void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(bool newValue)
-{
     if (newValue && IsAnimatedVisualLoaded() && !m_nowPlaying)
     {
         // Start playing immediately.
@@ -754,14 +740,7 @@ void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(bool newValue)
 }
 
 void AnimatedVisualPlayer::OnFallbackContentPropertyChanged(
-    winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    winrt::get_self<AnimatedVisualPlayer>(sender.as<winrt::AnimatedVisualPlayer>())->OnFallbackContentPropertyChanged();
-}
-
-
-void AnimatedVisualPlayer::OnFallbackContentPropertyChanged()
 {
     if (m_isFallenBack)
     {
@@ -770,19 +749,10 @@ void AnimatedVisualPlayer::OnFallbackContentPropertyChanged()
 }
 
 void AnimatedVisualPlayer::OnSourcePropertyChanged(
-    winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    auto oldValue = safe_cast<winrt::IAnimatedVisualSource>(args.OldValue());
-    auto newValue = safe_cast<winrt::IAnimatedVisualSource>(args.NewValue());
+    auto newSource = safe_cast<winrt::IAnimatedVisualSource>(args.NewValue());
 
-    winrt::get_self<AnimatedVisualPlayer>(sender.as<winrt::AnimatedVisualPlayer>())->OnSourcePropertyChanged(
-        oldValue,
-        newValue);
-}
-
-void AnimatedVisualPlayer::OnSourcePropertyChanged(winrt::IAnimatedVisualSource const& oldSource, winrt::IAnimatedVisualSource const& newSource)
-{
     CompleteCurrentPlay();
 
     // Disconnect from the update notifications of the old source.
@@ -974,13 +944,7 @@ void AnimatedVisualPlayer::SetFallbackContent(winrt::UIElement const& uiElement)
 }
 
 void AnimatedVisualPlayer::OnPlaybackRatePropertyChanged(
-    winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    winrt::get_self<AnimatedVisualPlayer>(sender.as<winrt::AnimatedVisualPlayer>())->OnPlaybackRatePropertyChanged(args);
-}
-
-void AnimatedVisualPlayer::OnPlaybackRatePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
     if (m_nowPlaying)
     {
@@ -989,8 +953,7 @@ void AnimatedVisualPlayer::OnPlaybackRatePropertyChanged(winrt::DependencyProper
 }
 
 void AnimatedVisualPlayer::OnStretchPropertyChanged(
-    winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const&)
 {
-    winrt::get_self<AnimatedVisualPlayer>(sender.as<winrt::AnimatedVisualPlayer>())->InvalidateMeasure();
+    InvalidateMeasure();
 }

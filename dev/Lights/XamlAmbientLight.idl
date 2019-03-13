@@ -1,14 +1,15 @@
 [WUXC_VERSION_INTERNAL]
 [webhosthidden]
-[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass XamlAmbientLight : Windows.UI.Xaml.Media.XamlLight
 {
     XamlAmbientLight();
 
     [MUX_DEFAULT_VALUE("{ 255, 255, 255, 255 }")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Windows.UI.Color Color { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty ColorProperty { get; };
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnIsTargetPropertyChanged")]
     static Windows.UI.Xaml.DependencyProperty IsTargetProperty { get; };
     static void SetIsTarget(Windows.UI.Xaml.DependencyObject object, Boolean value);
     static Boolean GetIsTarget(Windows.UI.Xaml.DependencyObject object);

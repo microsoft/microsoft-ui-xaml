@@ -1,4 +1,4 @@
-[WUXC_VERSION_RS4]
+﻿[WUXC_VERSION_RS4]
 [webhosthidden]
 enum RefreshVisualizerOrientation
 {
@@ -50,6 +50,7 @@ runtimeclass RefreshStateChangedEventArgs
 [WUXC_STATIC_NAME("IRefreshVisualizerStatics", afea56af-362a-4015-b155-733a1f869831)]
 [WUXC_CONSTRUCTOR_NAME("IRefreshVisualizerFactory", 6f5c6132-6e09-4c10-824a-127d36672715)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass RefreshVisualizer : Windows.UI.Xaml.Controls.Control
 {
     RefreshVisualizer();
