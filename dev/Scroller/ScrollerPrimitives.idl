@@ -1,15 +1,16 @@
-﻿[WUXC_VERSION_PREVIEW]
+﻿#ifdef ApplicableRangeType
+[WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ScrollerSnapPointApplicableRangeType
+enum SnapPointApplicableRangeType
 {
     Mandatory = 0,
-    MandatorySingle = 1,
-    Optional = 2,
+    Optional = 1,
 };
+#endif
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ScrollerSnapPointAlignment
+enum ScrollSnapPointsAlignment
 {
     Near = 0,
     Center = 1,
@@ -20,38 +21,126 @@ enum ScrollerSnapPointAlignment
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
-unsealed runtimeclass ScrollerSnapPointBase
+unsealed runtimeclass SnapPointBase
     // All composable classes must derrive from a Windows base class to pass WACK.
     : Windows.UI.Xaml.DependencyObject
 {
-    ScrollerSnapPointAlignment Alignment { get; set; };
-    Double SpecifiedApplicableRange { get; };
-    ScrollerSnapPointApplicableRangeType ApplicableRangeType { get; };
+#ifdef ApplicableRangeType
+    Double ApplicableRange { get; };
+#endif
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
-unsealed runtimeclass ScrollerSnapPointIrregular : ScrollerSnapPointBase
+unsealed runtimeclass ScrollSnapPointBase
+    : SnapPointBase
 {
-    ScrollerSnapPointIrregular(Double snapPointValue, ScrollerSnapPointAlignment alignment);
-    ScrollerSnapPointIrregular(Double snapPointValue, Double applicableRange, ScrollerSnapPointAlignment alignment);
-    Double Value { get; }; 
+    ScrollSnapPointsAlignment Alignment { get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
-unsealed runtimeclass ScrollerSnapPointRegular : ScrollerSnapPointBase
+unsealed runtimeclass ScrollSnapPoint
+    : ScrollSnapPointBase
 {
-    ScrollerSnapPointRegular(Double offset, Double interval, Double start, Double end, ScrollerSnapPointAlignment alignment);
-    ScrollerSnapPointRegular(Double offset, Double interval, Double start, Double end, Double applicableRange, ScrollerSnapPointAlignment alignment);
+    ScrollSnapPoint(
+        Double snapPointValue,
+        ScrollSnapPointsAlignment alignment);
+#ifdef ApplicableRangeType
+    ScrollSnapPoint(
+        Double snapPointValue,
+        Double applicableRange,
+        ScrollSnapPointsAlignment alignment);
+#endif
+
+    Double Value { get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[marshaling_behavior(agile)]
+[threading(both)]
+unsealed runtimeclass RepeatedScrollSnapPoint
+    : ScrollSnapPointBase
+{
+    RepeatedScrollSnapPoint(
+        Double offset,
+        Double interval,
+        Double start,
+        Double end,
+        ScrollSnapPointsAlignment alignment);
+#ifdef ApplicableRangeType
+    RepeatedScrollSnapPoint(
+        Double offset,
+        Double interval,
+        Double start,
+        Double end,
+        Double applicableRange,
+        ScrollSnapPointsAlignment alignment);
+#endif
+
     Double Offset { get; };
     Double Interval { get; };
     Double Start { get; };
-    Double End { get; }; 
+    Double End { get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[marshaling_behavior(agile)]
+[threading(both)]
+unsealed runtimeclass ZoomSnapPointBase
+    : SnapPointBase
+{
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[marshaling_behavior(agile)]
+[threading(both)]
+unsealed runtimeclass ZoomSnapPoint
+    : ZoomSnapPointBase
+{
+    ZoomSnapPoint(
+        Double snapPointValue);
+#ifdef ApplicableRangeType
+    ZoomSnapPoint(
+        Double snapPointValue,
+        Double applicableRange);
+#endif
+
+    Double Value { get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[marshaling_behavior(agile)]
+[threading(both)]
+unsealed runtimeclass RepeatedZoomSnapPoint
+    : ZoomSnapPointBase
+{
+    RepeatedZoomSnapPoint(
+        Double offset,
+        Double interval,
+        Double start,
+        Double end);
+#ifdef ApplicableRangeType
+    RepeatedZoomSnapPoint(
+        Double offset,
+        Double interval,
+        Double start,
+        Double end,
+        Double applicableRange);
+#endif
+
+    Double Offset { get; };
+    Double Interval { get; };
+    Double Start { get; };
+    Double End { get; };
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -180,9 +269,9 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     [MUX_DEFAULT_VALUE("Scroller::s_defaultAnchorRatio")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateAnchorRatio")]
     Double VerticalAnchorRatio { get; set; };
-    Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> HorizontalSnapPoints { get; };
-    Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> VerticalSnapPoints { get; };
-    Windows.Foundation.Collections.IVector<ScrollerSnapPointBase> ZoomSnapPoints { get; };
+    Windows.Foundation.Collections.IVector<ScrollSnapPointBase> HorizontalSnapPoints { get; };
+    Windows.Foundation.Collections.IVector<ScrollSnapPointBase> VerticalSnapPoints { get; };
+    Windows.Foundation.Collections.IVector<ZoomSnapPointBase> ZoomSnapPoints { get; };
     [method_name("ScrollTo")]
     MU_XC_NAMESPACE.ScrollInfo ScrollTo(
         Double horizontalOffset,

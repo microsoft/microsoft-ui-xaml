@@ -108,6 +108,10 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         OnIsOpenChanged();
     }
+    else if (property == s_TargetProperty)
+    {
+        OnTargetChanged();
+    }
     else if (property == s_ActionButtonTextProperty ||
         property == s_CloseButtonKindProperty  ||
         property == s_CloseButtonTextProperty)
@@ -999,22 +1003,22 @@ void TeachingTip::ClosePopup()
     }
 }
 
-void TeachingTip::SetTarget(const winrt::FrameworkElement& element)
+void TeachingTip::OnTargetChanged()
 {
     m_targetLayoutUpdatedRevoker.revoke();
     m_targetEffectiveViewportChangedRevoker.revoke();
 
-    m_target.set(element);
+    m_target.set(Target());
 
     if (IsOpen())
     {
-        if (element)
+        if (auto&& target = m_target.get())
         {
-            m_currentTargetBounds = element.TransformToVisual(nullptr).TransformBounds({
+            m_currentTargetBounds = target.TransformToVisual(nullptr).TransformBounds({
                 0.0,
                 0.0,
-                static_cast<float>(element.as<winrt::FrameworkElement>().ActualWidth()),
-                static_cast<float>(element.as<winrt::FrameworkElement>().ActualHeight())
+                static_cast<float>(target.ActualWidth()),
+                static_cast<float>(target.ActualHeight())
             });
         }
         SetViewportChangedEvent();
@@ -1535,42 +1539,7 @@ void TeachingTip::OnPropertyChanged(
     const winrt::DependencyObject& sender,
     const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    if (args.Property() == s_AttachProperty)
-    {
-        OnAttachPropertyChanged(sender, args);
-    }
-    else
-    {
-        winrt::get_self<TeachingTip>(sender.as<winrt::TeachingTip>())->OnPropertyChanged(args);
-    }
-}
-
-void TeachingTip::OnAttachPropertyChanged(
-    const winrt::DependencyObject& sender,
-    const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    auto oldTip = unbox_value<winrt::TeachingTip>(args.OldValue());
-    auto newTip = unbox_value<winrt::TeachingTip>(args.NewValue());
-
-    if (oldTip == newTip)
-    {
-        return;
-    }
-
-    winrt::TeachingTip::SetAttach(nullptr, oldTip);
-    winrt::TeachingTip::SetAttach(sender.try_as<winrt::UIElement>(), newTip);
-}
-
-void TeachingTip::SetAttach(const winrt::UIElement& element, const winrt::TeachingTip& teachingTip)
-{
-    MUX_ASSERT(teachingTip);
-    auto tip = winrt::get_self<TeachingTip>(teachingTip);
-    tip->SetTarget(element.as<winrt::FrameworkElement>());
-}
-
-winrt::TeachingTip TeachingTip::GetAttach(const winrt::UIElement& element)
-{
-    return unbox_value<winrt::TeachingTip>(element.GetValue(s_AttachProperty));
+    winrt::get_self<TeachingTip>(sender.as<winrt::TeachingTip>())->OnPropertyChanged(args);
 }
 
 ////////////////

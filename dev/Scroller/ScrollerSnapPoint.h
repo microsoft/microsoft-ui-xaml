@@ -3,9 +3,13 @@
 
 #pragma once
 
-#include "ScrollerSnapPointBase.g.h"
-#include "ScrollerSnapPointIrregular.g.h"
-#include "ScrollerSnapPointRegular.g.h"
+#include "SnapPointBase.g.h"
+#include "ScrollSnapPointBase.g.h"
+#include "ScrollSnapPoint.g.h"
+#include "RepeatedScrollSnapPoint.g.h"
+#include "ZoomSnapPointBase.g.h"
+#include "ZoomSnapPoint.g.h"
+#include "RepeatedZoomSnapPoint.g.h"
 
 struct ScrollerSnapPointSortPredicate
 {
@@ -24,25 +28,25 @@ struct ScrollerSnapPointSortPredicate
     short tertiary;
 };
 
-class ScrollerSnapPointBase :
-    public ReferenceTracker<ScrollerSnapPointBase, winrt::implementation::ScrollerSnapPointBaseT, winrt::composable>
+class SnapPointBase :
+    public ReferenceTracker<SnapPointBase, winrt::implementation::SnapPointBaseT, winrt::composable>
 {
 public:
-    winrt::ScrollerSnapPointAlignment Alignment();
-    void Alignment(winrt::ScrollerSnapPointAlignment alignment);
-    double SpecifiedApplicableRange();
-    winrt::ScrollerSnapPointApplicableRangeType ApplicableRangeType();
+#ifdef ApplicableRangeType
+    double ApplicableRange();
+    winrt::SnapPointApplicableRangeType ApplicableRangeType();
+#endif
 
     //Internal
-    bool operator< (ScrollerSnapPointBase* snapPoint);
-    bool operator== (ScrollerSnapPointBase* snapPoint);
+    bool operator< (SnapPointBase* snapPoint);
+    bool operator== (SnapPointBase* snapPoint);
 
     virtual winrt::ExpressionAnimation CreateRestingPointExpression(winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale) = 0;
     virtual winrt::ExpressionAnimation CreateConditionalExpression(winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale) = 0;
     virtual ScrollerSnapPointSortPredicate SortPredicate() = 0;
-    virtual void DetermineActualApplicableZone(ScrollerSnapPointBase* previousSnapPoint, ScrollerSnapPointBase* nextSnapPoint) = 0;
+    virtual void DetermineActualApplicableZone(SnapPointBase* previousSnapPoint, SnapPointBase* nextSnapPoint) = 0;
     virtual double Influence(double edgeOfMidpoint) = 0;
-    virtual void Combine(winrt::ScrollerSnapPointBase snapPoint) = 0;
+    virtual void Combine(winrt::SnapPointBase const& snapPoint) = 0;
     virtual double Evaluate(double value) = 0;
     int CombinationCount();
 #ifdef _DEBUG
@@ -53,35 +57,54 @@ public:
     void ActualApplicableZone(std::tuple<double, double> range);
 
 protected:
-    //Needed as work around for Modern Idl inheritance bug
-    ScrollerSnapPointBase();
+    // Needed as work around for Modern Idl inheritance bug
+    SnapPointBase();
 
     winrt::hstring GetTargetExpression(winrt::hstring target) const;
 
-    winrt::ScrollerSnapPointAlignment m_alignment{ winrt::ScrollerSnapPointAlignment::Near };
     double m_specifiedApplicableRange{ INFINITY };
     std::tuple<double, double> m_actualApplicableZone{ -INFINITY, INFINITY };
-    winrt::ScrollerSnapPointApplicableRangeType m_applicableRangeType{ winrt::ScrollerSnapPointApplicableRangeType::Mandatory };
+#ifdef ApplicableRangeType
+    // Only mandatory snap points are supported at this point.
+    winrt::SnapPointApplicableRangeType m_applicableRangeType{ winrt::SnapPointApplicableRangeType::Mandatory };
+#endif
     int m_combinationCount{ 0 };
 #ifdef _DEBUG
     winrt::Color m_visualizationColor{ winrt::Colors::Black() };
 #endif // _DEBUG
 
-    //Maximum difference for snap points to be considered equal
+    // Maximum difference for snap points to be considered equal
     static constexpr double s_equalityEpsilon{ 0.00001 };
 };
 
-class ScrollerSnapPointIrregular:
-    public winrt::implementation::ScrollerSnapPointIrregularT<ScrollerSnapPointIrregular, ScrollerSnapPointBase>
+class ScrollSnapPointBase :
+    public winrt::implementation::ScrollSnapPointBaseT<ScrollSnapPointBase, SnapPointBase>
 {
 public:
-    ScrollerSnapPointIrregular(double snapPointValue,
-        winrt::ScrollerSnapPointAlignment alignment = winrt::ScrollerSnapPointAlignment::Near);
+    winrt::ScrollSnapPointsAlignment Alignment();
+    void Alignment(winrt::ScrollSnapPointsAlignment alignment);
 
-    ScrollerSnapPointIrregular(double snapPointValue,
+protected:
+    // Needed as work around for Modern Idl inheritance bug
+    ScrollSnapPointBase();
+
+    winrt::ScrollSnapPointsAlignment m_alignment{ winrt::ScrollSnapPointsAlignment::Near };
+};
+
+class ScrollSnapPoint:
+    public winrt::implementation::ScrollSnapPointT<ScrollSnapPoint, ScrollSnapPointBase>
+{
+public:
+    ScrollSnapPoint(
+        double snapPointValue,
+        winrt::ScrollSnapPointsAlignment alignment = winrt::ScrollSnapPointsAlignment::Near);
+
+#ifdef ApplicableRangeType
+    ScrollSnapPoint(
+        double snapPointValue,
         double applicableRange,
-        winrt::ScrollerSnapPointAlignment alignment = winrt::ScrollerSnapPointAlignment::Near,
-        winrt::ScrollerSnapPointApplicableRangeType applicableRangeType = winrt::ScrollerSnapPointApplicableRangeType::Optional);
+        winrt::ScrollSnapPointsAlignment alignment = winrt::ScrollSnapPointsAlignment::Near);
+#endif
 
     double Value();
 
@@ -89,29 +112,38 @@ public:
     winrt::ExpressionAnimation CreateRestingPointExpression(winrt::Compositor compositor, winrt::hstring, winrt::hstring scale);
     winrt::ExpressionAnimation CreateConditionalExpression(winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale);
     ScrollerSnapPointSortPredicate SortPredicate();
-    void DetermineActualApplicableZone(ScrollerSnapPointBase* previousSnapPoint, ScrollerSnapPointBase* nextSnapPoint);
+    void DetermineActualApplicableZone(SnapPointBase* previousSnapPoint, SnapPointBase* nextSnapPoint);
     double Influence(double edgeOfMidpoint);
-    void Combine(winrt::ScrollerSnapPointBase snapPoint);
+    void Combine(winrt::SnapPointBase const& snapPoint);
     double Evaluate(double value);
 private:
-    double DetermineMinActualApplicableZone(ScrollerSnapPointBase* previousSnapPoint);
-    double DetermineMaxActualApplicableZone(ScrollerSnapPointBase* nextSnapPoint);
+    double DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint);
+    double DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint);
 
     double m_specifiedValue{ 0.0 };
     double m_actualValue{ 0.0 };
 };
 
-class ScrollerSnapPointRegular :
-    public winrt::implementation::ScrollerSnapPointRegularT<ScrollerSnapPointRegular, ScrollerSnapPointBase>
+class RepeatedScrollSnapPoint :
+    public winrt::implementation::RepeatedScrollSnapPointT<RepeatedScrollSnapPoint, ScrollSnapPointBase>
 {
 public:
-    ScrollerSnapPointRegular(double offset, double interval, double start, double end,
-        winrt::ScrollerSnapPointAlignment alignment = winrt::ScrollerSnapPointAlignment::Near);
+    RepeatedScrollSnapPoint(
+        double offset,
+        double interval,
+        double start,
+        double end,
+        winrt::ScrollSnapPointsAlignment alignment = winrt::ScrollSnapPointsAlignment::Near);
 
-    ScrollerSnapPointRegular(double offset, double interval, double start, double end,
+#ifdef ApplicableRangeType
+    RepeatedScrollSnapPoint(
+        double offset,
+        double interval,
+        double start,
+        double end,
         double applicableRange,
-        winrt::ScrollerSnapPointAlignment alignment = winrt::ScrollerSnapPointAlignment::Near,
-        winrt::ScrollerSnapPointApplicableRangeType applicableRangeType = winrt::ScrollerSnapPointApplicableRangeType::Optional);
+        winrt::ScrollSnapPointsAlignment alignment = winrt::ScrollSnapPointsAlignment::Near);
+#endif
 
     double Offset();
     double Interval();
@@ -122,9 +154,9 @@ public:
     winrt::ExpressionAnimation CreateRestingPointExpression(winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale);
     winrt::ExpressionAnimation CreateConditionalExpression(winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale);
     ScrollerSnapPointSortPredicate SortPredicate();
-    void DetermineActualApplicableZone(ScrollerSnapPointBase* previousSnapPoint, ScrollerSnapPointBase* nextSnapPoint);
+    void DetermineActualApplicableZone(SnapPointBase* previousSnapPoint, SnapPointBase* nextSnapPoint);
     double Influence(double edgeOfMidpoint);
-    void Combine(winrt::ScrollerSnapPointBase snapPoint);
+    void Combine(winrt::SnapPointBase const& snapPoint);
     double Evaluate(double value);
 
     double ActualStart();
@@ -133,16 +165,117 @@ public:
     void ActualEnd(double end);
 
 private:
-    double DetermineFirstRegularSnapPointValue();
-    double DetermineMinActualApplicableZone(ScrollerSnapPointBase* previousSnapPoint);
-    double DetermineMaxActualApplicableZone(ScrollerSnapPointBase* nextSnapPoint);
+    double DetermineFirstRepeatedSnapPointValue();
+    double DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint);
+    double DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint);
     void ValidateConstructorParameters(
+#ifdef ApplicableRangeType
+        bool applicableRangeToo,
+        double applicableRange,
+#endif
+        double offset,
+        double interval,
+        double start,
+        double end);
+
+    double m_offset{ 0.0f };
+    double m_interval{ 0.0f };
+    double m_specifiedStart{ 0.0f };
+    double m_actualStart{ 0.0f };
+    double m_specifiedEnd{ 0.0f };
+    double m_actualEnd{ 0.0f };
+};
+
+class ZoomSnapPointBase :
+    public winrt::implementation::ZoomSnapPointBaseT<ZoomSnapPointBase, SnapPointBase>
+{
+protected:
+    // Needed as work around for Modern Idl inheritance bug
+    ZoomSnapPointBase();
+};
+
+class ZoomSnapPoint :
+    public winrt::implementation::ZoomSnapPointT<ZoomSnapPoint, ZoomSnapPointBase>
+{
+public:
+    ZoomSnapPoint(
+        double snapPointValue);
+
+#ifdef ApplicableRangeType
+    ZoomSnapPoint(
+        double snapPointValue,
+        double applicableRange);
+#endif
+
+    double Value();
+
+    //Internal
+    winrt::ExpressionAnimation CreateRestingPointExpression(winrt::Compositor compositor, winrt::hstring, winrt::hstring scale);
+    winrt::ExpressionAnimation CreateConditionalExpression(winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale);
+    ScrollerSnapPointSortPredicate SortPredicate();
+    void DetermineActualApplicableZone(SnapPointBase* previousSnapPoint, SnapPointBase* nextSnapPoint);
+    double Influence(double edgeOfMidpoint);
+    void Combine(winrt::SnapPointBase const& snapPoint);
+    double Evaluate(double value);
+private:
+    double DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint);
+    double DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint);
+
+    double m_specifiedValue{ 0.0 };
+    double m_actualValue{ 0.0 };
+};
+
+class RepeatedZoomSnapPoint :
+    public winrt::implementation::RepeatedZoomSnapPointT<RepeatedZoomSnapPoint, ZoomSnapPointBase>
+{
+public:
+    RepeatedZoomSnapPoint(
+        double offset,
+        double interval,
+        double start,
+        double end);
+
+#ifdef ApplicableRangeType
+    RepeatedZoomSnapPoint(
         double offset,
         double interval,
         double start,
         double end,
+        double applicableRange);
+#endif
+
+    double Offset();
+    double Interval();
+    double Start();
+    double End();
+
+    //Internal
+    winrt::ExpressionAnimation CreateRestingPointExpression(winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale);
+    winrt::ExpressionAnimation CreateConditionalExpression(winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale);
+    ScrollerSnapPointSortPredicate SortPredicate();
+    void DetermineActualApplicableZone(SnapPointBase* previousSnapPoint, SnapPointBase* nextSnapPoint);
+    double Influence(double edgeOfMidpoint);
+    void Combine(winrt::SnapPointBase const& snapPoint);
+    double Evaluate(double value);
+
+    double ActualStart();
+    void ActualStart(double start);
+    double ActualEnd();
+    void ActualEnd(double end);
+
+private:
+    double DetermineFirstRepeatedSnapPointValue();
+    double DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint);
+    double DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint);
+    void ValidateConstructorParameters(
+#ifdef ApplicableRangeType
+        bool applicableRangeToo,
         double applicableRange,
-        bool applicableRangeTypeToo);
+#endif
+        double offset,
+        double interval,
+        double start,
+        double end);
 
     double m_offset{ 0.0f };
     double m_interval{ 0.0f };
@@ -154,8 +287,8 @@ private:
 
 struct winrtProjectionComparator
 {
-    inline bool operator()(winrt::ScrollerSnapPointBase left, winrt::ScrollerSnapPointBase right) const
+    inline bool operator()(winrt::SnapPointBase left, winrt::SnapPointBase right) const
     {
-        return *winrt::get_self<ScrollerSnapPointBase>(left) < winrt::get_self<ScrollerSnapPointBase>(right);
+        return *winrt::get_self<SnapPointBase>(left) < winrt::get_self<SnapPointBase>(right);
     }
 };
