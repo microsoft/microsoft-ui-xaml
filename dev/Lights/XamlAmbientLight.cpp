@@ -127,15 +127,12 @@ void XamlAmbientLight::OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelpe
 #endif
 
 void XamlAmbientLight::OnColorPropertyChanged(
-    const winrt::DependencyObject& sender,
     const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    auto self = winrt::get_self<XamlAmbientLight>(sender.as<winrt::XamlAmbientLight>());
-
-    self->m_ambientLightColor = unbox_value<winrt::Color>(args.NewValue());
-    if (self->m_compositionAmbientLight)
+    m_ambientLightColor = unbox_value<winrt::Color>(args.NewValue());
+    if (m_compositionAmbientLight)
     {
-        self->m_compositionAmbientLight.Color(self->m_ambientLightColor);
+        m_compositionAmbientLight.Color(m_ambientLightColor);
     }
 }
 
