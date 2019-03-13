@@ -619,12 +619,12 @@ namespace CustomTasks
             // TeachingTip -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonCommand"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonCommandParameter"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonContent"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonStyle"] = true;
-            NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonText"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonCommand"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonCommandParameter"] = true;
+            NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonContent"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonStyle"] = true;
-            NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonText"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.HeroContent"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.HeroContentPlacement"] = true;
             NeedsPropChangedCallbackMetadata["TeachingTip.IconSource"] = true;

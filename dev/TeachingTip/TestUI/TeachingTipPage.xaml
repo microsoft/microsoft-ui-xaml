@@ -176,23 +176,23 @@
                 </ComboBox>
                 <Button Click="OnSetContentButtonClicked" Grid.Row="11" Grid.Column="1">Set</Button>
 
-                <TextBlock Grid.Row="12" Text="ActionButtonText:" Foreground="Red"/>
-                <ComboBox x:Name="ActionButtonTextComboBox" SelectedIndex="0" Grid.Row="13">
-                    <ComboBoxItem x:Name="ActionButtonTextNo">No text</ComboBoxItem>
-                    <ComboBoxItem x:Name="ActionButtonTextSmall">Small text</ComboBoxItem>
-                    <ComboBoxItem x:Name="ActionButtonTextLong">Long text</ComboBoxItem>
+                <TextBlock Grid.Row="12" Text="ActionButtonContent:" Foreground="Red"/>
+                <ComboBox x:Name="ActionButtonContentComboBox" SelectedIndex="0" Grid.Row="13">
+                    <ComboBoxItem x:Name="ActionButtonContentNo">No text</ComboBoxItem>
+                    <ComboBoxItem x:Name="ActionButtonContentSmall">Small text</ComboBoxItem>
+                    <ComboBoxItem x:Name="ActionButtonContentLong">Long text</ComboBoxItem>
                     <ComboBoxItem x:Name="ActionButtonButton">Button</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetActionButtonTextButtonClicked" Grid.Row="13" Grid.Column="1">Set</Button>
+                <Button Click="OnSetActionButtonContentButtonClicked" Grid.Row="13" Grid.Column="1">Set</Button>
 
-                <TextBlock Grid.Row="14" Text="CloseButtonText:" Foreground="Red"/>
-                <ComboBox x:Name="CloseButtonTextComboBox" AutomationProperties.Name="CloseButtonTextComboBox" SelectedIndex="0" Grid.Row="15">
-                    <ComboBoxItem x:Name="CloseButtonTextNo">No text</ComboBoxItem>
-                    <ComboBoxItem x:Name="CloseButtonTextSmall">Small text</ComboBoxItem>
-                    <ComboBoxItem x:Name="CloseButtonTextLong">Long text</ComboBoxItem>
+                <TextBlock Grid.Row="14" Text="CloseButtonContent:" Foreground="Red"/>
+                <ComboBox x:Name="CloseButtonContentComboBox" AutomationProperties.Name="CloseButtonContentComboBox" SelectedIndex="0" Grid.Row="15">
+                    <ComboBoxItem x:Name="CloseButtonContentNo">No text</ComboBoxItem>
+                    <ComboBoxItem x:Name="CloseButtonContentSmall">Small text</ComboBoxItem>
+                    <ComboBoxItem x:Name="CloseButtonContentLong">Long text</ComboBoxItem>
                     <ComboBoxItem x:Name="CloseButtonButton">Button</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetCloseButtonTextButtonClicked" AutomationProperties.Name="SetCloseButtonTextButton" Grid.Row="15" Grid.Column="1">Set</Button>
+                <Button Click="OnSetCloseButtonContentButtonClicked" AutomationProperties.Name="SetCloseButtonContentButton" Grid.Row="15" Grid.Column="1">Set</Button>
 
                 <TextBlock Grid.Row="16" Text="HeroContentPlacement:" Foreground="Red"/>
                 <ComboBox x:Name="HeroContentPlacementComboBox" SelectedIndex="0" Grid.Row="17">

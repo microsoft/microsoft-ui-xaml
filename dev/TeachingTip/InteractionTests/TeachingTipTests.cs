@@ -105,7 +105,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsTrue(message8.ToString().Contains("Closed"));
                     Verify.IsTrue(message8.ToString().Contains("LightDismiss"));
 
-                    SetCloseButtonText(CloseButtonTextOptions.ShortText);
+                    SetCloseButtonContent(CloseButtonContentOptions.ShortText);
                     OpenTeachingTip();
                     PressTipCloseButton();
                     var message9 = GetTeachingTipDebugMessage(9);
@@ -446,21 +446,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.GetIsLightDismissEnabledButton().Invoke();
         }
 
-        private void SetCloseButtonText(CloseButtonTextOptions closeButtonText)
+        private void SetCloseButtonContent(CloseButtonContentOptions closeButtonContent)
         {
-            switch(closeButtonText)
+            switch(closeButtonContent)
             {
-                case CloseButtonTextOptions.NoText:
-                    elements.GetCloseButtonTextComboBox().SelectItemByName("No text");
+                case CloseButtonContentOptions.NoText:
+                    elements.GetCloseButtonContentComboBox().SelectItemByName("No text");
                     break;
-                case CloseButtonTextOptions.ShortText:
-                    elements.GetCloseButtonTextComboBox().SelectItemByName("Small text");
+                case CloseButtonContentOptions.ShortText:
+                    elements.GetCloseButtonContentComboBox().SelectItemByName("Small text");
                     break; 
-                case CloseButtonTextOptions.LongText:
-                    elements.GetCloseButtonTextComboBox().SelectItemByName("Long text");
+                case CloseButtonContentOptions.LongText:
+                    elements.GetCloseButtonContentComboBox().SelectItemByName("Long text");
                     break;
             }
-            elements.GetSetCloseButtonTextButton().Invoke();
+            elements.GetSetCloseButtonContentButton().Invoke();
         }
 
         private void SetPreferredPlacement(PlacementOptions placement)

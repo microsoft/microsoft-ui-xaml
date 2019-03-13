@@ -10,12 +10,12 @@ CppWinRTActivatableClassWithDPFactory(TeachingTip)
 
 GlobalDependencyProperty TeachingTipProperties::s_ActionButtonCommandProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_ActionButtonCommandParameterProperty{ nullptr };
+GlobalDependencyProperty TeachingTipProperties::s_ActionButtonContentProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_ActionButtonStyleProperty{ nullptr };
-GlobalDependencyProperty TeachingTipProperties::s_ActionButtonTextProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_CloseButtonCommandProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_CloseButtonCommandParameterProperty{ nullptr };
+GlobalDependencyProperty TeachingTipProperties::s_CloseButtonContentProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_CloseButtonStyleProperty{ nullptr };
-GlobalDependencyProperty TeachingTipProperties::s_CloseButtonTextProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_HeroContentProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_HeroContentPlacementProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_IconSourceProperty{ nullptr };
@@ -61,6 +61,17 @@ void TeachingTipProperties::EnsureProperties()
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
+    if (!s_ActionButtonContentProperty)
+    {
+        s_ActionButtonContentProperty =
+            InitializeDependencyProperty(
+                L"ActionButtonContent",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::TeachingTip>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
+    }
     if (!s_ActionButtonStyleProperty)
     {
         s_ActionButtonStyleProperty =
@@ -70,17 +81,6 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Style>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
-    }
-    if (!s_ActionButtonTextProperty)
-    {
-        s_ActionButtonTextProperty =
-            InitializeDependencyProperty(
-                L"ActionButtonText",
-                winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::TeachingTip>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_CloseButtonCommandProperty)
@@ -105,6 +105,17 @@ void TeachingTipProperties::EnsureProperties()
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
+    if (!s_CloseButtonContentProperty)
+    {
+        s_CloseButtonContentProperty =
+            InitializeDependencyProperty(
+                L"CloseButtonContent",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::TeachingTip>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
+    }
     if (!s_CloseButtonStyleProperty)
     {
         s_CloseButtonStyleProperty =
@@ -114,17 +125,6 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Style>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
-    }
-    if (!s_CloseButtonTextProperty)
-    {
-        s_CloseButtonTextProperty =
-            InitializeDependencyProperty(
-                L"CloseButtonText",
-                winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::TeachingTip>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_HeroContentProperty)
@@ -254,12 +254,12 @@ void TeachingTipProperties::ClearProperties()
 {
     s_ActionButtonCommandProperty = nullptr;
     s_ActionButtonCommandParameterProperty = nullptr;
+    s_ActionButtonContentProperty = nullptr;
     s_ActionButtonStyleProperty = nullptr;
-    s_ActionButtonTextProperty = nullptr;
     s_CloseButtonCommandProperty = nullptr;
     s_CloseButtonCommandParameterProperty = nullptr;
+    s_CloseButtonContentProperty = nullptr;
     s_CloseButtonStyleProperty = nullptr;
-    s_CloseButtonTextProperty = nullptr;
     s_HeroContentProperty = nullptr;
     s_HeroContentPlacementProperty = nullptr;
     s_IconSourceProperty = nullptr;
@@ -301,6 +301,16 @@ winrt::IInspectable TeachingTipProperties::ActionButtonCommandParameter()
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_ActionButtonCommandParameterProperty));
 }
 
+void TeachingTipProperties::ActionButtonContent(winrt::IInspectable const& value)
+{
+    static_cast<TeachingTip*>(this)->SetValue(s_ActionButtonContentProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+}
+
+winrt::IInspectable TeachingTipProperties::ActionButtonContent()
+{
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_ActionButtonContentProperty));
+}
+
 void TeachingTipProperties::ActionButtonStyle(winrt::Style const& value)
 {
     static_cast<TeachingTip*>(this)->SetValue(s_ActionButtonStyleProperty, ValueHelper<winrt::Style>::BoxValueIfNecessary(value));
@@ -309,16 +319,6 @@ void TeachingTipProperties::ActionButtonStyle(winrt::Style const& value)
 winrt::Style TeachingTipProperties::ActionButtonStyle()
 {
     return ValueHelper<winrt::Style>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_ActionButtonStyleProperty));
-}
-
-void TeachingTipProperties::ActionButtonText(winrt::IInspectable const& value)
-{
-    static_cast<TeachingTip*>(this)->SetValue(s_ActionButtonTextProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
-}
-
-winrt::IInspectable TeachingTipProperties::ActionButtonText()
-{
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_ActionButtonTextProperty));
 }
 
 void TeachingTipProperties::CloseButtonCommand(winrt::ICommand const& value)
@@ -341,6 +341,16 @@ winrt::IInspectable TeachingTipProperties::CloseButtonCommandParameter()
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_CloseButtonCommandParameterProperty));
 }
 
+void TeachingTipProperties::CloseButtonContent(winrt::IInspectable const& value)
+{
+    static_cast<TeachingTip*>(this)->SetValue(s_CloseButtonContentProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+}
+
+winrt::IInspectable TeachingTipProperties::CloseButtonContent()
+{
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_CloseButtonContentProperty));
+}
+
 void TeachingTipProperties::CloseButtonStyle(winrt::Style const& value)
 {
     static_cast<TeachingTip*>(this)->SetValue(s_CloseButtonStyleProperty, ValueHelper<winrt::Style>::BoxValueIfNecessary(value));
@@ -349,16 +359,6 @@ void TeachingTipProperties::CloseButtonStyle(winrt::Style const& value)
 winrt::Style TeachingTipProperties::CloseButtonStyle()
 {
     return ValueHelper<winrt::Style>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_CloseButtonStyleProperty));
-}
-
-void TeachingTipProperties::CloseButtonText(winrt::IInspectable const& value)
-{
-    static_cast<TeachingTip*>(this)->SetValue(s_CloseButtonTextProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
-}
-
-winrt::IInspectable TeachingTipProperties::CloseButtonText()
-{
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_CloseButtonTextProperty));
 }
 
 void TeachingTipProperties::HeroContent(winrt::UIElement const& value)

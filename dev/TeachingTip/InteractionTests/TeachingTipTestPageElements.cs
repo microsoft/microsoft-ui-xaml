@@ -191,17 +191,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private ComboBox isLightDismissEnabledComboBox;
 
-        public ComboBox GetCloseButtonTextComboBox()
+        public ComboBox GetCloseButtonContentComboBox()
         {
-            return GetElement(ref closeButtonTextComboBox, "CloseButtonTextComboBox");
+            return GetElement(ref closeButtonContentComboBox, "CloseButtonContentComboBox");
         }
-        private ComboBox closeButtonTextComboBox;
+        private ComboBox closeButtonContentComboBox;
 
-        public Button GetSetCloseButtonTextButton()
+        public Button GetSetCloseButtonContentButton()
         {
-            return GetElement(ref setCloseButtonTextButton, "SetCloseButtonTextButton");
+            return GetElement(ref setCloseButtonContentButton, "SetCloseButtonContentButton");
         }
-        private Button setCloseButtonTextButton;
+        private Button setCloseButtonContentButton;
 
         public Button GetIsLightDismissEnabledButton()
         {
@@ -323,7 +323,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             VisualTree
         }
 
-        public enum CloseButtonTextOptions
+        public enum CloseButtonContentOptions
         {
             NoText,
             ShortText,

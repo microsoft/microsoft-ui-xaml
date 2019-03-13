@@ -327,47 +327,47 @@ namespace MUXControlsTestApp
             }
         }
 
-        public void OnSetActionButtonTextButtonClicked(object sender, RoutedEventArgs args)
+        public void OnSetActionButtonContentButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.ActionButtonTextComboBox.SelectedItem == ActionButtonTextNo)
+            if (this.ActionButtonContentComboBox.SelectedItem == ActionButtonContentNo)
             {
-                getTeachingTip().ActionButtonText = "";
+                getTeachingTip().ActionButtonContent = "";
             }
-            else if (this.ActionButtonTextComboBox.SelectedItem == ActionButtonTextSmall)
+            else if (this.ActionButtonContentComboBox.SelectedItem == ActionButtonContentSmall)
             {
-                getTeachingTip().ActionButtonText = "A:Short Text.";
+                getTeachingTip().ActionButtonContent = "A:Short Text.";
             }
-            else if (this.ActionButtonTextComboBox.SelectedItem == ActionButtonTextLong)
+            else if (this.ActionButtonContentComboBox.SelectedItem == ActionButtonContentLong)
             {
-                getTeachingTip().ActionButtonText = "A:This is a much longer button text that might cause some issues if we don't do the right thing...";
+                getTeachingTip().ActionButtonContent = "A:This is a much longer button text that might cause some issues if we don't do the right thing...";
             }
             else
             {
                 var button = new Button();
                 button.Content = "A:Button in a Button!";
-                getTeachingTip().ActionButtonText = button;
+                getTeachingTip().ActionButtonContent = button;
             }
         }
 
-        public void OnSetCloseButtonTextButtonClicked(object sender, RoutedEventArgs args)
+        public void OnSetCloseButtonContentButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.CloseButtonTextComboBox.SelectedItem == CloseButtonTextNo)
+            if (this.CloseButtonContentComboBox.SelectedItem == CloseButtonContentNo)
             {
-                getTeachingTip().CloseButtonText = "";
+                getTeachingTip().CloseButtonContent = "";
             }
-            else if (this.CloseButtonTextComboBox.SelectedItem == CloseButtonTextSmall)
+            else if (this.CloseButtonContentComboBox.SelectedItem == CloseButtonContentSmall)
             {
-                getTeachingTip().CloseButtonText = "C:Short Text.";
+                getTeachingTip().CloseButtonContent = "C:Short Text.";
             }
-            else if (this.CloseButtonTextComboBox.SelectedItem == CloseButtonTextLong)
+            else if (this.CloseButtonContentComboBox.SelectedItem == CloseButtonContentLong)
             {
-                getTeachingTip().CloseButtonText = "C:This is a much longer button text that might cause some issues if we don't do the right thing...";
+                getTeachingTip().CloseButtonContent = "C:This is a much longer button text that might cause some issues if we don't do the right thing...";
             }
             else
             {
                 var button = new Button();
                 button.Content = "C:Button in a Button!";
-                getTeachingTip().CloseButtonText = button;
+                getTeachingTip().CloseButtonContent = button;
             }
         }
 

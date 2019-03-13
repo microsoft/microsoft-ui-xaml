@@ -82,12 +82,12 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
 
     Windows.UI.Xaml.FrameworkElement Target;
 
-    Object ActionButtonText;
+    Object ActionButtonContent;
     Windows.UI.Xaml.Style ActionButtonStyle;
     Windows.UI.Xaml.Input.ICommand ActionButtonCommand;
     Object ActionButtonCommandParameter;
 
-    Object CloseButtonText;
+    Object CloseButtonContent;
     Windows.UI.Xaml.Style CloseButtonStyle;
     Windows.UI.Xaml.Input.ICommand CloseButtonCommand;
     Object CloseButtonCommandParameter;
@@ -117,12 +117,12 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty TitleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SubtitleProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty ActionButtonTextProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ActionButtonContentProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ActionButtonStyleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ActionButtonCommandProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ActionButtonCommandParameterProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty CloseButtonTextProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty CloseButtonContentProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonStyleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandParameterProperty{ get; };

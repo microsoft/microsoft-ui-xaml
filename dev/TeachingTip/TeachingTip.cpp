@@ -112,8 +112,8 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         OnTargetChanged();
     }
-    else if (property == s_ActionButtonTextProperty ||
-        property == s_CloseButtonTextProperty)
+    else if (property == s_ActionButtonContentProperty ||
+        property == s_CloseButtonContentProperty)
     {
         UpdateButtonsState();
     }
@@ -588,25 +588,25 @@ void TeachingTip::UpdateSizeBasedTemplateSettings()
 
 void TeachingTip::UpdateButtonsState()
 {
-    auto actionText = ActionButtonText();
-    auto closeText = CloseButtonText();
+    auto actionContent = ActionButtonContent();
+    auto closeContent = CloseButtonContent();
     bool isLightDismiss = IsLightDismissEnabled();
-    if (actionText && closeText)
+    if (actionContent && closeContent)
     {
         winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
         winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
     }
-    else if (actionText && isLightDismiss)
+    else if (actionContent && isLightDismiss)
     {
         winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
         winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
     }
-    else if (actionText)
+    else if (actionContent)
     {
         winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
         winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
     }
-    else if (closeText)
+    else if (closeContent)
     {
         winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
         winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
