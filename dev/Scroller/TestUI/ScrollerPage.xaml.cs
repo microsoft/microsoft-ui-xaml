@@ -94,8 +94,9 @@ namespace MUXControlsTestApp
 
                 chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = (bool)ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
             }
-            catch
+            catch (Exception ex)
             {
+                tbException.Text = ex.ToString();
             }
         }
 
@@ -118,8 +119,9 @@ namespace MUXControlsTestApp
             {
                 ScrollerTestHooks.MouseWheelInertiaDecayRate = Convert.ToSingle(txtMouseWheelInertiaDecayRate.Text);
             }
-            catch
+            catch (Exception ex)
             {
+                tbException.Text = ex.ToString();
             }
         }
 
@@ -132,8 +134,9 @@ namespace MUXControlsTestApp
                     Convert.ToInt32(txtOffsetsChangeMinMilliseconds.Text),
                     Convert.ToInt32(txtOffsetsChangeMaxMilliseconds.Text));
             }
-            catch
+            catch (Exception ex)
             {
+                tbException.Text = ex.ToString();
             }
         }
 
@@ -146,8 +149,9 @@ namespace MUXControlsTestApp
                     Convert.ToInt32(txtZoomFactorChangeMinMilliseconds.Text),
                     Convert.ToInt32(txtZoomFactorChangeMaxMilliseconds.Text));
             }
-            catch
+            catch (Exception ex)
             {
+                tbException.Text = ex.ToString();
             }
         }
 

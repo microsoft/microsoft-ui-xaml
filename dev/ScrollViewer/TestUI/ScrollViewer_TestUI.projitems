@@ -19,6 +19,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScrollViewersWithSimpleContentsPage.xaml.cs">
       <DependentUpon>ScrollViewersWithSimpleContentsPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerWithRTLFlowDirectionPage.xaml.cs">
+      <DependentUpon>ScrollViewerWithRTLFlowDirectionPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerWithScrollControllersPage.xaml.cs">
       <DependentUpon>ScrollViewerWithScrollControllersPage.xaml</DependentUpon>
     </Compile>
@@ -33,6 +36,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewerWithRTLFlowDirectionPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollViewerWithScrollControllersPage.xaml">
       <SubType>Designer</SubType>

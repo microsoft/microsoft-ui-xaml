@@ -52,6 +52,11 @@ Scroller::Scroller()
     if (!SharedHelpers::IsTH2OrLower())
     {
         HookScrollerEvents();
+
+        if (!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled())
+        {
+            HookDpiChangedEvent();
+        }
     }
 
     // Set the default Transparent background so that hit-testing allows to start a touch manipulation
@@ -583,6 +588,7 @@ winrt::ZoomInfo Scroller::ZoomFrom(float zoomFactorVelocity, winrt::IReference<w
     int32_t viewChangeId;
     ChangeZoomFactorWithAdditionalVelocityPrivate(
         zoomFactorVelocity,
+        0.0f /*anticipatedZoomFactorChange*/,
         centerPoint,
         inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger::DirectViewChange,
@@ -972,28 +978,24 @@ void Scroller::InertiaStateEntered(
         winrt::float3 positionVelocity = args.PositionVelocityInPixelsPerSecond();
         float scaleVelocity = args.ScaleVelocityInPercentPerSecond();
 
-        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
-            L"ViewVelocity:",
+        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
             TypeLogging::Float2ToString(winrt::float2{ positionVelocity.x, positionVelocity.y }).c_str(),
             scaleVelocity);
 
-        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
-            L"ViewNaturalRest",
+        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
             TypeLogging::Float2ToString(winrt::float2{ naturalRestingPosition.x, naturalRestingPosition.y }).c_str(),
             naturalRestingScale);
 
         if (modifiedRestingPosition)
         {
             winrt::float3 endOfInertiaPosition = modifiedRestingPosition.Value();
-            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
-                L"PositionModifiedRest",
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this,
                 TypeLogging::Float2ToString(winrt::float2{ endOfInertiaPosition.x, endOfInertiaPosition.y }).c_str());
         }
 
         if (modifiedRestingScale)
         {
-            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
-                L"ScaleModifiedRest",
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_FLT, METH_NAME, this,
                 modifiedRestingScale.Value());
         }
 
@@ -1032,8 +1034,7 @@ void Scroller::InertiaStateEntered(
 
     if (isTracingEnabled)
     {
-        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
-            L"ViewEndOfInertia:",
+        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
             TypeLogging::Float2ToString(m_endOfInertiaPosition).c_str(),
             m_endOfInertiaZoomFactor);
     }
@@ -3555,6 +3556,11 @@ void Scroller::OnContentPropertyChanged(const winrt::DependencyObject& /*sender*
     }
 }
 
+void Scroller::OnDpiChanged(const winrt::IInspectable& sender, const winrt::IInspectable& /*args*/)
+{
+    UpdateDisplayInformation(sender.as<winrt::DisplayInformation>());
+}
+
 void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
@@ -3819,18 +3825,25 @@ void Scroller::OnPointerWheelChangedHandler(
     }
     else
     {
-        float endOfInertiaZoomFactor = ComputeEndOfInertiaZoomFactor();
+        float anticipatedEndOfInertiaZoomFactor = ComputeEndOfInertiaZoomFactor() + GetMouseWheelAnticipatedZoomFactorChange();
         float minZoomFactor = m_interactionTracker.MinScale();
         float maxZoomFactor = m_interactionTracker.MaxScale();
 
-        if ((abs(endOfInertiaZoomFactor - minZoomFactor) <= s_zoomFactorEqualityEpsilon && mouseWheelDelta < 0) ||
-            (abs(endOfInertiaZoomFactor - maxZoomFactor) <= s_zoomFactorEqualityEpsilon && mouseWheelDelta > 0))
+        anticipatedEndOfInertiaZoomFactor = std::clamp(anticipatedEndOfInertiaZoomFactor, minZoomFactor, maxZoomFactor);
+
+        if ((abs(anticipatedEndOfInertiaZoomFactor - minZoomFactor) <= s_zoomFactorEqualityEpsilon && mouseWheelDelta < 0) ||
+            (abs(anticipatedEndOfInertiaZoomFactor - maxZoomFactor) <= s_zoomFactorEqualityEpsilon && mouseWheelDelta > 0))
         {
             // Cannot zoom beyond boundary
             return;
         }
 
-        ProcessPointerWheelZoom(pointerPoint, mouseWheelDelta, endOfInertiaZoomFactor, minZoomFactor, maxZoomFactor);
+        ProcessPointerWheelZoom(
+            pointerPoint,
+            mouseWheelDelta,
+            anticipatedEndOfInertiaZoomFactor,
+            minZoomFactor,
+            maxZoomFactor);
     }
 
     args.Handled(true);
@@ -4952,6 +4965,26 @@ void Scroller::UpdateManipulationRedirectionMode()
     }
 }
 
+void Scroller::UpdateDisplayInformation(winrt::DisplayInformation const& displayInformation)
+{
+    MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
+
+    try
+    {
+        m_rawPixelsPerViewPixel = displayInformation.RawPixelsPerViewPixel();
+        m_screenWidthInRawPixels = displayInformation.ScreenWidthInRawPixels();
+        m_screenHeightInRawPixels = displayInformation.ScreenHeightInRawPixels();
+    }
+    catch (winrt::hresult_error)
+    {
+        // Calling GetForCurrentView on threads without a CoreWindow throws an error. This comes up in places like LogonUI.
+        // In this circumstance, default values are used, resulting in good mouse-wheel scrolling increments:
+        m_rawPixelsPerViewPixel = 1.0;
+        m_screenWidthInRawPixels = 1024;
+        m_screenHeightInRawPixels = 738;
+    }
+}
+
 void Scroller::OnContentSizeChanged(const winrt::UIElement& content)
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
@@ -5407,16 +5440,18 @@ void Scroller::ChangeZoomFactorPrivate(
 
 void Scroller::ChangeZoomFactorWithAdditionalVelocityPrivate(
     float zoomFactorVelocity,
+    float anticipatedZoomFactorChange,
     winrt::IReference<winrt::float2> centerPoint,
     winrt::IReference<float> inertiaDecayRate,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
     _Out_opt_ int32_t* viewChangeId)
 {
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this,
+        zoomFactorVelocity,
+        anticipatedZoomFactorChange);
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR_STR, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
         TypeLogging::NullableFloatToString(inertiaDecayRate).c_str(),
-        zoomFactorVelocity);
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str());
 
     if (viewChangeId)
@@ -5436,7 +5471,7 @@ void Scroller::ChangeZoomFactorWithAdditionalVelocityPrivate(
 
     std::shared_ptr<ViewChangeBase> zoomFactorChangeWithAdditionalVelocity =
         std::make_shared<ZoomFactorChangeWithAdditionalVelocity>(
-            zoomFactorVelocity, centerPoint, inertiaDecayRate);
+            zoomFactorVelocity, anticipatedZoomFactorChange, centerPoint, inertiaDecayRate);
 
     if (!delayOperation)
     {
@@ -5491,7 +5526,7 @@ void Scroller::ProcessPointerWheelScroll(
         true /*isOperationTypeForOffsetsChange*/,
         InteractionTrackerAsyncOperationTrigger::MouseWheel);
 
-    // Mouse wheel delta amount required per initial velocity unit
+    // Mouse wheel delta amount required per initial velocity unit.
     int32_t mouseWheelDeltaForVelocityUnit = s_mouseWheelDeltaForVelocityUnit;
     com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
 
@@ -5500,12 +5535,13 @@ void Scroller::ProcessPointerWheelScroll(
         mouseWheelDeltaForVelocityUnit = globalTestHooks->MouseWheelDeltaForVelocityUnit();
     }
 
+    const float c_displayAdjustment = static_cast<float>((isHorizontalMouseWheel ? m_screenWidthInRawPixels : m_screenHeightInRawPixels) / m_rawPixelsPerViewPixel);
     // Maximum absolute velocity. Any additional velocity has no effect.
     const float c_maxVelocity = 4000.0f;
-    // Velocity per unit (which is a mouse wheel delta of 120 by default).
-    const float c_unitVelocity = 1100.0f;
-    // Effect of unit velocity on offset.
-    const float c_offsetChangePerVelocityUnit = 104.9338f;
+    // Velocity per unit (which is a mouse wheel delta of 120 by default). That is the velocity required to achieve a change of c_offsetChangePerVelocityUnit pixels.
+    const float c_unitVelocity = 1.572420572916667f * c_displayAdjustment;
+    // Effect of unit velocity on offset, to match the built-in RS5 behavior.
+    const float c_offsetChangePerVelocityUnit = 0.15f * c_displayAdjustment;
 
     std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = nullptr;
     float offsetVelocity = static_cast<float>(mouseWheelDelta) / mouseWheelDeltaForVelocityUnit * c_unitVelocity;
@@ -5531,9 +5567,11 @@ void Scroller::ProcessPointerWheelScroll(
             anticipatedOffsetsChange = offsetsChangeWithAdditionalVelocity->AnticipatedOffsetsChange();
             float queuedOffsetVelocity = isHorizontalMouseWheel ? queuedOffsetsVelocity.x : queuedOffsetsVelocity.y;
 
+            SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, queuedOffsetVelocity, offsetVelocity);
+
             if (offsetVelocity * queuedOffsetVelocity > 0.0f)
             {
-                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"Direction unchange", queuedOffsetVelocity, offsetVelocity);
+                // The wheel rotation direction is unchanged. Add the queued up velocity to the new velocity request.
                 if (isHorizontalMouseWheel)
                 {
                     offsetsVelocity.x += queuedOffsetVelocity;
@@ -5543,10 +5581,7 @@ void Scroller::ProcessPointerWheelScroll(
                     offsetsVelocity.y += queuedOffsetVelocity;
                 }
             }
-            else
-            {
-                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"Direction change", queuedOffsetVelocity, offsetVelocity);
-            }
+            // else the wheel rotation direction is changed. The old velocity request is ignored.
         }
     }
 
@@ -5556,18 +5591,18 @@ void Scroller::ProcessPointerWheelScroll(
 
         if (isHorizontalMouseWheel)
         {
-            // No point in exceeding the maximum effective velocity
+            // No point in exceeding the maximum effective velocity.
             offsetsVelocity.x = std::min(c_maxVelocity, offsetsVelocity.x);
 
-            // Do not attempt to scroll beyond the MaxPosition value
+            // Do not attempt to scroll beyond the MaxPosition value.
             offsetsVelocity.x = std::min((maxPosition - anticipatedEndOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.x);
         }
         else
         {
-            // No point in exceeding the maximum effective velocity
+            // No point in exceeding the maximum effective velocity.
             offsetsVelocity.y = std::min(c_maxVelocity, offsetsVelocity.y);
 
-            // Do not attempt to scroll beyond the MaxPosition value
+            // Do not attempt to scroll beyond the MaxPosition value.
             offsetsVelocity.y = std::min((maxPosition - anticipatedEndOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.y);
         }
     }
@@ -5577,30 +5612,23 @@ void Scroller::ProcessPointerWheelScroll(
 
         if (isHorizontalMouseWheel)
         {
-            // No point in exceeding the minimum effective velocity
+            // No point in exceeding the minimum effective velocity.
             offsetsVelocity.x = std::max(-c_maxVelocity, offsetsVelocity.x);
 
-            // Do not attempt to scroll beyond the MinPosition value
+            // Do not attempt to scroll beyond the MinPosition value.
             offsetsVelocity.x = std::max((minPosition - anticipatedEndOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.x);
         }
         else
         {
-            // No point in exceeding the minimum effective velocity
+            // No point in exceeding the minimum effective velocity.
             offsetsVelocity.y = std::max(-c_maxVelocity, offsetsVelocity.y);
 
-            // Do not attempt to scroll beyond the MinPosition value
+            // Do not attempt to scroll beyond the MinPosition value.
             offsetsVelocity.y = std::max((minPosition - anticipatedEndOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.y);
         }
     }
 
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
-        L"Corrected Velocity:",
-        isHorizontalMouseWheel ? offsetsVelocity.x : offsetsVelocity.y);
-
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this,
-        interactionTrackerAsyncOperation.get(),
-        interactionTrackerAsyncOperation ? L"Coalesced MouseWheelDelta for scrolling" : L"New MouseWheelDelta for scrolling");
-
+    // Evaluate the anticipated offsets to prevent scrolling beyond the Min/MaxPosition in subsequent requests.
     if (isHorizontalMouseWheel)
     {
         anticipatedOffsetsChange.x = offsetsVelocity.x / c_unitVelocity * c_offsetChangePerVelocityUnit;
@@ -5610,13 +5638,14 @@ void Scroller::ProcessPointerWheelScroll(
         anticipatedOffsetsChange.y = offsetsVelocity.y / c_unitVelocity * c_offsetChangePerVelocityUnit;
     }
 
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
-        L"AnticipatedOffsetsChange:",
-        TypeLogging::Float2ToString(anticipatedOffsetsChange).c_str());
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+        interactionTrackerAsyncOperation ? L"Coalesced MouseWheelDelta for scrolling" : L"New MouseWheelDelta for scrolling",
+        TypeLogging::Float2ToString(anticipatedOffsetsChange).c_str(),
+        isHorizontalMouseWheel ? offsetsVelocity.x : offsetsVelocity.y);
 
     if (!interactionTrackerAsyncOperation)
     {
-        // Inertia decay rate to achieve the c_offsetChangePerVelocityUnit change per velocity unit
+        // Inertia decay rate to achieve the c_offsetChangePerVelocityUnit change per velocity unit.
         float mouseWheelInertiaDecayRate = SharedHelpers::IsRS2OrHigher() ? s_mouseWheelInertiaDecayRate : s_mouseWheelInertiaDecayRateRS1;
 
         if (globalTestHooks)
@@ -5643,7 +5672,7 @@ void Scroller::ProcessPointerWheelScroll(
         winrt::IReference<winrt::float2> inertiaDecayRate = inertiaDecayRateAsInsp.as<winrt::IReference<winrt::float2>>();
         int32_t viewChangeId = -1;
 
-        // Queue up a zooming with additional velocity operation
+        // Queue up a zooming with additional velocity operation.
         ChangeOffsetsWithAdditionalVelocityPrivate(
             offsetsVelocity,
             anticipatedOffsetsChange,
@@ -5653,6 +5682,7 @@ void Scroller::ProcessPointerWheelScroll(
     }
     else if (offsetsChangeWithAdditionalVelocity)
     {
+        // Update the queued up request with the new velocity and anticipated offsets change.
         offsetsChangeWithAdditionalVelocity->OffsetsVelocity(offsetsVelocity);
         offsetsChangeWithAdditionalVelocity->AnticipatedOffsetsChange(anticipatedOffsetsChange);
     }
@@ -5661,14 +5691,14 @@ void Scroller::ProcessPointerWheelScroll(
 void Scroller::ProcessPointerWheelZoom(
     winrt::PointerPoint const& pointerPoint,
     int32_t mouseWheelDelta,
-    float endOfInertiaZoomFactor,
+    float anticipatedEndOfInertiaZoomFactor,
     float minZoomFactor,
     float maxZoomFactor)
 {
     MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
 
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, mouseWheelDelta);
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT_FLT, METH_NAME, this, endOfInertiaZoomFactor, minZoomFactor, maxZoomFactor);
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT_FLT, METH_NAME, this, anticipatedEndOfInertiaZoomFactor, minZoomFactor, maxZoomFactor);
 
     // Attempt to find a zoom factor change with velocity request for mouse wheel input within the same tick.
     std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationWithAdditionalVelocity(
@@ -5691,6 +5721,7 @@ void Scroller::ProcessPointerWheelZoom(
 
     std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity = nullptr;
     float zoomFactorVelocity = static_cast<float>(mouseWheelDelta) / mouseWheelDeltaForVelocityUnit;
+    float anticipatedZoomFactorChange{};
 
     if (interactionTrackerAsyncOperation)
     {
@@ -5699,40 +5730,51 @@ void Scroller::ProcessPointerWheelZoom(
 
         if (zoomFactorChangeWithAdditionalVelocity)
         {
-            zoomFactorVelocity += zoomFactorChangeWithAdditionalVelocity->ZoomFactorVelocity();
+            float queuedZoomFactorVelocity = zoomFactorChangeWithAdditionalVelocity->ZoomFactorVelocity();
+            anticipatedZoomFactorChange = zoomFactorChangeWithAdditionalVelocity->AnticipatedZoomFactorChange();
+
+            SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, queuedZoomFactorVelocity, zoomFactorVelocity);
+
+            if (zoomFactorVelocity * queuedZoomFactorVelocity > 0.0f)
+            {
+                // The wheel rotation direction is unchanged. Add the queued up velocity to the new velocity request.
+                zoomFactorVelocity += queuedZoomFactorVelocity;
+            }
+            // else the wheel rotation direction is changed. The old velocity request is ignored.
         }
     }
 
     if (zoomFactorVelocity > 0.0f)
     {
-        MUX_ASSERT(endOfInertiaZoomFactor < maxZoomFactor);
+        MUX_ASSERT(anticipatedEndOfInertiaZoomFactor < maxZoomFactor);
 
         // No point in exceeding the maximum effective velocity
         zoomFactorVelocity = std::min(c_maxVelocityUnits, zoomFactorVelocity);
 
         // Do not attempt to zoom beyond the MaxZoomFactor value
-        zoomFactorVelocity = std::min((maxZoomFactor - endOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, zoomFactorVelocity);
+        zoomFactorVelocity = std::min((maxZoomFactor - anticipatedEndOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, zoomFactorVelocity);
     }
     else
     {
-        MUX_ASSERT(endOfInertiaZoomFactor > minZoomFactor);
+        MUX_ASSERT(anticipatedEndOfInertiaZoomFactor > minZoomFactor);
 
         // No point in exceeding the minimum effective velocity
         zoomFactorVelocity = std::max(-c_maxVelocityUnits, zoomFactorVelocity);
 
         // Do not attempt to zoom beyond the MinZoomFactor value
-        zoomFactorVelocity = std::max((minZoomFactor - endOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, zoomFactorVelocity);
+        zoomFactorVelocity = std::max((minZoomFactor - anticipatedEndOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, zoomFactorVelocity);
     }
 
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this,
-        interactionTrackerAsyncOperation.get(),
-        interactionTrackerAsyncOperation ? L"Coalesced MouseWheelDelta for zooming" : L"New MouseWheelDelta for zooming");
+    // Evaluate the anticipated offsets to prevent scrolling beyond the Min/MaxZoomFactor in subsequent requests.
+    anticipatedZoomFactorChange = zoomFactorVelocity * c_zoomFactorChangePerVelocityUnit;
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this,
+        interactionTrackerAsyncOperation ? L"Coalesced MouseWheelDelta for zooming" : L"New MouseWheelDelta for zooming",
+        anticipatedZoomFactorChange,
+        zoomFactorVelocity);
 
     if (!interactionTrackerAsyncOperation)
     {
-        // Minimum absolute velocity. Any lower velocity has no effect
-        const float c_minVelocityUnits = 0.05f;
-
         // Inertia decay rate to achieve the c_zoomFactorChangePerVelocityUnit change per velocity unit
         float mouseWheelInertiaDecayRate = SharedHelpers::IsRS2OrHigher() ? s_mouseWheelInertiaDecayRate : s_mouseWheelInertiaDecayRateRS1;
 
@@ -5741,18 +5783,15 @@ void Scroller::ProcessPointerWheelZoom(
             mouseWheelInertiaDecayRate = globalTestHooks->MouseWheelInertiaDecayRate();
         }
 
-        // Make sure the initial velocity is larger than the minimum effective velocity
-        zoomFactorVelocity += (zoomFactorVelocity > 0.0f) ? c_minVelocityUnits : -c_minVelocityUnits;
-
         winrt::IInspectable inertiaDecayRateAsInsp = box_value(mouseWheelInertiaDecayRate);
         winrt::IReference<float> inertiaDecayRate = inertiaDecayRateAsInsp.as<winrt::IReference<float>>();
         winrt::float2 centerPoint = ComputeCenterPointerForMouseWheelZooming(Content(), pointerPoint.Position());
-
         int32_t viewChangeId = -1;
 
         // Queue up a zooming with additional velocity operation
         ChangeZoomFactorWithAdditionalVelocityPrivate(
             zoomFactorVelocity,
+            anticipatedZoomFactorChange,
             centerPoint,
             inertiaDecayRate,
             InteractionTrackerAsyncOperationTrigger::MouseWheel,
@@ -5760,7 +5799,9 @@ void Scroller::ProcessPointerWheelZoom(
     }
     else if (zoomFactorChangeWithAdditionalVelocity)
     {
+        // Update the queued up request with the new velocity and anticipated zoom factor change.
         zoomFactorChangeWithAdditionalVelocity->ZoomFactorVelocity(zoomFactorVelocity);
+        zoomFactorChangeWithAdditionalVelocity->AnticipatedZoomFactorChange(anticipatedZoomFactorChange);
     }
 }
 
@@ -5813,7 +5854,9 @@ void Scroller::ProcessDequeuedViewChange(std::shared_ptr<InteractionTrackerAsync
         {
             std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<ZoomFactorChangeWithAdditionalVelocity>(viewChangeBase);
 
-            ProcessZoomFactorChange(zoomFactorChangeWithAdditionalVelocity);
+            ProcessZoomFactorChange(
+                interactionTrackerAsyncOperation->GetOperationTrigger() /*operationTrigger*/,
+                zoomFactorChangeWithAdditionalVelocity);
             break;
         }
         default:
@@ -6086,6 +6129,7 @@ void Scroller::ProcessZoomFactorChange(
 
 // Launches an InteractionTracker request to change the zoomFactor with an additional velocity and an optional zoomFactor inertia decay rate.
 void Scroller::ProcessZoomFactorChange(
+    InteractionTrackerAsyncOperationTrigger operationTrigger,
     std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity)
 {
     MUX_ASSERT(m_interactionTracker);
@@ -6095,6 +6139,8 @@ void Scroller::ProcessZoomFactorChange(
     winrt::IReference<float> inertiaDecayRate = zoomFactorChangeWithAdditionalVelocity->InertiaDecayRate();
     winrt::IReference<winrt::float2> nullableCenterPoint = zoomFactorChangeWithAdditionalVelocity->CenterPoint();
 
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this,
+        TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str());
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(nullableCenterPoint).c_str(),
         TypeLogging::NullableFloatToString(inertiaDecayRate).c_str(),
@@ -6110,6 +6156,24 @@ void Scroller::ProcessZoomFactorChange(
     winrt::float2 centerPoint2D = nullableCenterPoint == nullptr ?
         winrt::float2(static_cast<float>(m_viewportWidth / 2.0), static_cast<float>(m_viewportHeight / 2.0)) : nullableCenterPoint.Value();
     winrt::float3 centerPoint(centerPoint2D.x - m_contentLayoutOffsetX, centerPoint2D.y - m_contentLayoutOffsetY, 0.0f);
+
+    // For mouse-wheel zooming, make sure the initial velocity is larger than the minimum effective velocity.
+    if (operationTrigger == InteractionTrackerAsyncOperationTrigger::MouseWheel && m_state == winrt::InteractionState::Idle)
+    {
+        // Minimum absolute velocity. Any lower velocity has no effect.
+        const float c_minVelocity = 0.05f;
+        // Maximum absolute velocity. Any additional velocity has no effect.
+        const float c_maxVelocity = 5.0f;
+
+        if (zoomFactorVelocity > 0.0f && zoomFactorVelocity < c_maxVelocity)
+        {
+            zoomFactorVelocity = std::min(zoomFactorVelocity + c_minVelocity, c_maxVelocity);
+        }
+        else if (zoomFactorVelocity < 0.0f && zoomFactorVelocity > -c_maxVelocity)
+        {
+            zoomFactorVelocity = std::max(zoomFactorVelocity - c_minVelocity, -c_maxVelocity);
+        }
+    }
 
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_FLT_STR, METH_NAME, this,
         L"TryUpdateScaleWithAdditionalVelocity", zoomFactorVelocity, TypeLogging::Float2ToString(winrt::float2(centerPoint.x, centerPoint.y)).c_str());
@@ -6334,6 +6398,30 @@ winrt::float2 Scroller::GetMouseWheelAnticipatedOffsetsChange() const
     return anticipatedOffsetsChange;
 }
 
+float Scroller::GetMouseWheelAnticipatedZoomFactorChange() const
+{
+    float anticipatedZoomFactorChange{};
+
+    for (auto& interactionTrackerAsyncOperation : m_interactionTrackerAsyncOperations)
+    {
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+
+        if (interactionTrackerAsyncOperation->GetOperationTrigger() != InteractionTrackerAsyncOperationTrigger::MouseWheel ||
+            interactionTrackerAsyncOperation->GetOperationType() != InteractionTrackerAsyncOperationType::TryUpdateScaleWithAdditionalVelocity ||
+            interactionTrackerAsyncOperation->IsCanceled() ||
+            !viewChangeBase)
+        {
+            continue;
+        }
+
+        std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<ZoomFactorChangeWithAdditionalVelocity>(viewChangeBase);
+
+        anticipatedZoomFactorChange += zoomFactorChangeWithAdditionalVelocity->AnticipatedZoomFactorChange();
+    }
+
+    return anticipatedZoomFactorChange;
+}
+
 int Scroller::GetInteractionTrackerOperationsTicksCountdownForTrigger(InteractionTrackerAsyncOperationTrigger operationTrigger) const
 {
     int ticksCountdown = 0;
@@ -6548,6 +6636,28 @@ void Scroller::HookCompositionTargetRendering()
 void Scroller::UnhookCompositionTargetRendering()
 {
     m_renderingToken.revoke();    
+}
+
+void Scroller::HookDpiChangedEvent()
+{
+    MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
+
+    try
+    {
+        winrt::DisplayInformation displayInformation = winrt::DisplayInformation::GetForCurrentView();
+
+        m_dpiChangedRevoker = displayInformation.DpiChanged(winrt::auto_revoke, { this, &Scroller::OnDpiChanged });
+
+        UpdateDisplayInformation(displayInformation);
+    }
+    catch (winrt::hresult_error)
+    {
+        // Calling GetForCurrentView on threads without a CoreWindow throws an error. This comes up in places like LogonUI.
+        // In this circumstance, default values are used, resulting in good mouse-wheel scrolling increments:
+        m_rawPixelsPerViewPixel = 1.0;
+        m_screenWidthInRawPixels = 1024;
+        m_screenHeightInRawPixels = 738;
+    }
 }
 
 void Scroller::HookScrollerEvents()
