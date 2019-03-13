@@ -1,4 +1,4 @@
-[WUXC_VERSION_RS3]
+﻿[WUXC_VERSION_RS3]
 [webhosthidden]
 [WUXC_INTERFACE_NAME("IRatingItemInfo", 9ccbe6a2-591e-47a0-a318-6a1f7947da2d)]
 [WUXC_CONSTRUCTOR_NAME("IRatingItemInfoFactory", b0fd43d6-cfec-43c8-9ac5-0b0d5e25d862)]
@@ -61,6 +61,7 @@ unsealed runtimeclass RatingItemImageInfo : RatingItemInfo
 [WUXC_STATIC_NAME("IRatingControlStatics", d062d399-ad85-4c1c-b2c4-35dd4432275e)]
 [WUXC_CONSTRUCTOR_NAME("IRatingControlFactory", 18d81716-c542-4ccb-b347-5e62c5db782e)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass RatingControl : Windows.UI.Xaml.Controls.Control
 {
     RatingControl();

@@ -58,11 +58,13 @@ public:
     static winrt::event_token ContentLayoutOffsetYChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
     static void ContentLayoutOffsetYChanged(winrt::event_token const& token);
 
-    static winrt::IVector<winrt::ScrollerSnapPointBase> GetConsolidatedSnapPoints(const winrt::Scroller& scroller, const winrt::ScrollerSnapPointDimension& dimension);
-    static winrt::float2 GetSnapPointActualApplicableZone(const winrt::ScrollerSnapPointBase& snapPoint);
-    static int GetSnapPointCombinationCount(const winrt::ScrollerSnapPointBase& snapPoint);
-    static winrt::Color GetSnapPointVisualizationColor(const winrt::ScrollerSnapPointBase& snapPoint);
-    static void SetSnapPointVisualizationColor(const winrt::ScrollerSnapPointBase& snapPoint, const winrt::Color& color);
+    static winrt::IVector<winrt::ScrollSnapPointBase> GetConsolidatedHorizontalScrollSnapPoints(const winrt::Scroller& scroller);
+    static winrt::IVector<winrt::ScrollSnapPointBase> GetConsolidatedVerticalScrollSnapPoints(const winrt::Scroller& scroller);
+    static winrt::IVector<winrt::ZoomSnapPointBase> GetConsolidatedZoomSnapPoints(const winrt::Scroller& scroller);
+    static winrt::float2 GetSnapPointActualApplicableZone(const winrt::SnapPointBase& snapPoint);
+    static int GetSnapPointCombinationCount(const winrt::SnapPointBase& snapPoint);
+    static winrt::Color GetSnapPointVisualizationColor(const winrt::SnapPointBase& snapPoint);
+    static void SetSnapPointVisualizationColor(const winrt::SnapPointBase& snapPoint, const winrt::Color& color);
 
 private:
     static winrt::ScrollerViewChangeResult TestHooksViewChangeResult(ScrollerViewChangeResult result);

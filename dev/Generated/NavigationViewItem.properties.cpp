@@ -39,7 +39,7 @@ void NavigationViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationViewItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IconElement>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnIconPropertyChanged));
     }
     if (!s_SelectsOnInvokedProperty)
     {
@@ -61,12 +61,12 @@ void NavigationViewItemProperties::ClearProperties()
     s_SelectsOnInvokedProperty = nullptr;
 }
 
-void NavigationViewItemProperties::OnPropertyChanged(
+void NavigationViewItemProperties::OnIconPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NavigationViewItem>();
-    winrt::get_self<NavigationViewItem>(owner)->OnPropertyChanged(args);
+    winrt::get_self<NavigationViewItem>(owner)->OnIconPropertyChanged(args);
 }
 
 void NavigationViewItemProperties::CompactPaneLength(double value)

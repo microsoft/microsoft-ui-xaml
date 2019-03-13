@@ -1,6 +1,7 @@
-[WUXC_VERSION_INTERNAL]
+﻿[WUXC_VERSION_INTERNAL]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 runtimeclass SpectrumBrush : Windows.UI.Xaml.Media.XamlCompositionBrushBase
 {
     SpectrumBrush();

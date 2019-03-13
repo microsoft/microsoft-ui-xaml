@@ -27,7 +27,7 @@ void StackLayoutProperties::EnsureProperties()
                 winrt::name_of<winrt::StackLayout>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Orientation>::BoxValueIfNecessary(winrt::Orientation::Vertical),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnOrientationPropertyChanged));
     }
     if (!s_SpacingProperty)
     {
@@ -38,7 +38,7 @@ void StackLayoutProperties::EnsureProperties()
                 winrt::name_of<winrt::StackLayout>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(0.0),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnSpacingPropertyChanged));
     }
 }
 
@@ -48,7 +48,15 @@ void StackLayoutProperties::ClearProperties()
     s_SpacingProperty = nullptr;
 }
 
-void StackLayoutProperties::OnPropertyChanged(
+void StackLayoutProperties::OnOrientationPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::StackLayout>();
+    winrt::get_self<StackLayout>(owner)->OnPropertyChanged(args);
+}
+
+void StackLayoutProperties::OnSpacingPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

@@ -22,8 +22,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 #if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
-using ScrollerSnapPointAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment;
-using ScrollerSnapPointIrregular = Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointIrregular;
+using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
+using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
@@ -1439,22 +1439,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Log.Comment("Populating snap points for " + scroller.Name + ":");
 
-            ScrollerSnapPointIrregular sspi;
+            ScrollSnapPoint scrollSnapPoint;
             GeneralTransform gt = stackPanel.TransformToVisual(scroller.Content);
             Point stackPanelOriginPoint = new Point();
             stackPanelOriginPoint = gt.TransformPoint(stackPanelOriginPoint);
 
             if (stackPanel.Orientation == Orientation.Horizontal)
             {
-                sspi = new ScrollerSnapPointIrregular(stackPanelOriginPoint.X, ScrollerSnapPointAlignment.Near);
+                scrollSnapPoint = new ScrollSnapPoint(stackPanelOriginPoint.X, ScrollSnapPointsAlignment.Near);
                 Log.Comment("Adding horizontal snap point to " + scroller.Name + " at value " + stackPanelOriginPoint.X);
-                scroller.HorizontalSnapPoints.Add(sspi);
+                scroller.HorizontalSnapPoints.Add(scrollSnapPoint);
             }
             else
             {
-                sspi = new ScrollerSnapPointIrregular(stackPanelOriginPoint.Y, ScrollerSnapPointAlignment.Near);
+                scrollSnapPoint = new ScrollSnapPoint(stackPanelOriginPoint.Y, ScrollSnapPointsAlignment.Near);
                 Log.Comment("Adding vertical snap point to " + scroller.Name + " at value " + stackPanelOriginPoint.Y);
-                scroller.VerticalSnapPoints.Add(sspi);
+                scroller.VerticalSnapPoints.Add(scrollSnapPoint);
             }
 
             foreach (UIElement child in stackPanel.Children)
@@ -1475,9 +1475,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         snapPointValue = margin.Right + childAsFE.ActualWidth + childOriginPoint.X;
                         if (snapPointValue <= scroller.ScrollableWidth)
                         {
-                            sspi = new ScrollerSnapPointIrregular(snapPointValue, ScrollerSnapPointAlignment.Near);
+                            scrollSnapPoint = new ScrollSnapPoint(snapPointValue, ScrollSnapPointsAlignment.Near);
                             Log.Comment("Adding horizontal snap point to " + scroller.Name + " at value " + snapPointValue);
-                            scroller.HorizontalSnapPoints.Add(sspi);
+                            scroller.HorizontalSnapPoints.Add(scrollSnapPoint);
                         }
                         else
                         {
@@ -1489,9 +1489,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         snapPointValue = margin.Bottom + childAsFE.ActualHeight + childOriginPoint.Y;
                         if (snapPointValue <= scroller.ScrollableHeight)
                         {
-                            sspi = new ScrollerSnapPointIrregular(snapPointValue, ScrollerSnapPointAlignment.Near);
+                            scrollSnapPoint = new ScrollSnapPoint(snapPointValue, ScrollSnapPointsAlignment.Near);
                             Log.Comment("Adding vertical snap point to " + scroller.Name + " at value " + snapPointValue);
-                            scroller.VerticalSnapPoints.Add(sspi);
+                            scroller.VerticalSnapPoints.Add(scrollSnapPoint);
                         }
                         else
                         {

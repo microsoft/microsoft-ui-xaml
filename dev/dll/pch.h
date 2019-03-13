@@ -86,7 +86,9 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::hstring>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::IndexPath>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::MenuBarItem>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollerSnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::SnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollSnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ZoomSnapPointBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::SwipeItem>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::Foundation::Collections::IKeyValuePair<struct winrt::hstring,struct winrt::Windows::UI::Xaml::DataTemplate> >>();
@@ -101,7 +103,9 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::hstring>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Microsoft::UI::Xaml::Controls::IndexPath>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Microsoft::UI::Xaml::Controls::MenuBarItem>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollerSnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::SnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollSnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ZoomSnapPointBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Microsoft::UI::Xaml::Controls::SwipeItem>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Windows::Foundation::Collections::IKeyValuePair<struct winrt::hstring,struct winrt::Windows::UI::Xaml::DataTemplate> >>();
@@ -122,7 +126,9 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::Windows::Foundation::IInspectable,struct winrt::Windows::Foundation::IInspectable>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMapView<struct winrt::hstring,struct winrt::Windows::UI::Xaml::DataTemplate>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Microsoft::UI::Xaml::Controls::MenuBarItem>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollerSnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::SnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollSnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ZoomSnapPointBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Microsoft::UI::Xaml::Controls::SwipeItem>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Windows::Foundation::IInspectable>>();
@@ -132,7 +138,9 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<double>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::hstring>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Xaml::Controls::MenuBarItem>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollerSnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::SnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollSnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ZoomSnapPointBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Xaml::Controls::SwipeItem>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Windows::Foundation::IInspectable>>();
@@ -161,7 +169,9 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVectorView<struct winrt::Windows::Foundation::IInspectable>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVectorView<struct winrt::Windows::UI::Composition::Interactions::CompositionConditionalValue>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::MenuBarItem>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollerSnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::SnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollSnapPointBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ZoomSnapPointBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::SwipeItem>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Windows::Foundation::IInspectable>>();
@@ -187,8 +197,7 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::NavigationViewSelectionFollowsFocus>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::NavigationViewShoulderNavigationEnabled>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ParallaxSourceOffsetKind>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollerSnapPointAlignment>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollerSnapPointApplicableRangeType>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollSnapPointsAlignment>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::RefreshPullDirection>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::RefreshVisualizerOrientation>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::RefreshVisualizerState>>();
