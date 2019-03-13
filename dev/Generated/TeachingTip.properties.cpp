@@ -215,7 +215,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::TeachingTipPointerMode>::BoxValueIfNecessary(winrt::TeachingTipPointerMode::Auto),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnPointerModePropertyChanged));
     }
     if (!s_SubtextProperty)
     {
@@ -412,6 +412,14 @@ void TeachingTipProperties::OnIsOpenPropertyChanged(
 }
 
 void TeachingTipProperties::OnPlacementPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TeachingTip>();
+    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
+}
+
+void TeachingTipProperties::OnPointerModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

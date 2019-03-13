@@ -221,8 +221,8 @@ private:
     {
         return m_pointerOcclusionGrid.get().ColumnDefinitions().Size() > 1 ?
             static_cast<float>(m_pointerOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() + s_pointerOcclusionAmount)
-            : 0.0f
-    };
+            : 0.0f;
+    }
 
     inline float MinimumTipEdgeToPointerCenter()
     {
