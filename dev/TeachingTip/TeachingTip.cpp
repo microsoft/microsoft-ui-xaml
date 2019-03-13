@@ -185,7 +185,7 @@ void TeachingTip::UpdatePointer()
     auto placement = DetermineEffectivePlacement();
     m_currentEffectivePointerPlacementMode = placement;
     auto&& pointerMode = PointerMode();
-    if(pointerMode == winrt::TeachingTipPointerMode::Off || (!m_target && pointerMode != winrt::TeachingTipPointerMode::On))
+    if (pointerMode == winrt::TeachingTipPointerMode::Off || (!m_target && pointerMode != winrt::TeachingTipPointerMode::On))
     {
         m_currentEffectivePointerPlacementMode = winrt::TeachingTipPlacementMode::Auto;
     }
@@ -205,15 +205,15 @@ void TeachingTip::UpdatePointer()
     auto columnDefinitions = pointerOcclusionGrid.ColumnDefinitions();
     auto rowDefinitions = pointerOcclusionGrid.RowDefinitions();
 
-    float firstColumnWidth = static_cast<float>(columnDefinitions.GetAt(0).ActualWidth());
-    float secondColumnWidth = static_cast<float>(columnDefinitions.GetAt(1).ActualWidth());
-    float nextToLastColumnWidth = static_cast<float>(columnDefinitions.GetAt(columnDefinitions.Size() - 2).ActualWidth());
-    float lastColumnWidth = static_cast<float>(columnDefinitions.GetAt(columnDefinitions.Size() - 1).ActualWidth());
+    float firstColumnWidth = columnDefinitions.Size() > 0 ? static_cast<float>(columnDefinitions.GetAt(0).ActualWidth()) : 0.0f;
+    float secondColumnWidth = columnDefinitions.Size() > 1 ? static_cast<float>(columnDefinitions.GetAt(1).ActualWidth()) : 0.0f;
+    float nextToLastColumnWidth = columnDefinitions.Size() > 1 ? static_cast<float>(columnDefinitions.GetAt(columnDefinitions.Size() - 2).ActualWidth()) : 0.0f;
+    float lastColumnWidth = columnDefinitions.Size() > 0 ? static_cast<float>(columnDefinitions.GetAt(columnDefinitions.Size() - 1).ActualWidth()) : 0.0f;
 
-    float firstRowHeight = static_cast<float>(rowDefinitions.GetAt(0).ActualHeight());
-    float secondRowHeight = static_cast<float>(rowDefinitions.GetAt(1).ActualHeight());
-    float nextToLastRowHeight = static_cast<float>(rowDefinitions.GetAt(rowDefinitions.Size() - 2).ActualHeight());
-    float lastRowHeight = static_cast<float>(rowDefinitions.GetAt(rowDefinitions.Size() - 1).ActualHeight());
+    float firstRowHeight = rowDefinitions.Size() > 0 ? static_cast<float>(rowDefinitions.GetAt(0).ActualHeight()) : 0.0f;
+    float secondRowHeight = rowDefinitions.Size() > 1 ? static_cast<float>(rowDefinitions.GetAt(1).ActualHeight()) : 0.0f;
+    float nextToLastRowHeight = rowDefinitions.Size() > 1 ? static_cast<float>(rowDefinitions.GetAt(rowDefinitions.Size() - 2).ActualHeight()) : 0.0f;
+    float lastRowHeight = rowDefinitions.Size() > 0 ? static_cast<float>(rowDefinitions.GetAt(rowDefinitions.Size() - 1).ActualHeight()) : 0.0f;
 
     UpdateSizeBasedTemplateSettings();
 
@@ -1425,7 +1425,7 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
                 topLeftAvailable = false;
                 bottomLeftAvailable = false;
             }
-            // If the tip is too wide to fit in the window when the pointer is centerd horizontally on the target and the tip.
+            // If the tip is too wide to fit in the window when the pointer is centered horizontally on the target and the tip.
             if (contentWidth / 2.0f > targetBounds.X + targetBounds.Width / 2.0f ||
                 contentWidth / 2.0f > (windowBounds.Width - (targetBounds.Width + targetBounds.X) + (targetBounds.Width / 2.0f)))
             {

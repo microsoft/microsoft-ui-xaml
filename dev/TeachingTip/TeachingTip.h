@@ -168,7 +168,7 @@ private:
     inline winrt::Thickness BottomEdgeAlignedRightPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, width - (MinimumTipEdgeToPointerEdgeMargin() + 1.0f), 0 }; }
     inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, MinimumTipEdgeToPointerEdgeMargin() + PointerLongSideLength() - 1.0f, 0 }; }
     static inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 1, 0 }; }
-    // Shifted by one since the Pointer edge's border is not accounted for automatically.
+    // Shifted by one since the pointer edge's border is not accounted for automatically.
     static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 0, 0 }; }
     static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 0, 1, 1, 0 }; }
 
@@ -215,12 +215,23 @@ private:
     //Ideally this would be computed from layout but it is difficult to do.
     static constexpr float s_pointerOcclusionAmount = 2;
 
-    // The Pointer is designed as an 8x16 pixel shape, however it is actual a 10x20 shape which is partially occluded by the tip content.
-    // This is done to get the border of the tip to follow the Pointer shape without drawing the border on the tip edge of the Pointer.
-    inline float MinimumTipEdgeToPointerEdgeMargin() { return static_cast<float>(m_pointerOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() + s_pointerOcclusionAmount); };
-    inline float MinimumTipEdgeToPointerCenter() { return static_cast<float>(m_pointerOcclusionGrid.get().ColumnDefinitions().GetAt(0).ActualWidth() +
-                                                m_pointerOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() +
-                                                (std::max(m_pointerPolygon.get().ActualHeight(), m_pointerPolygon.get().ActualWidth()) / 2)); }
+    // The pointer is designed as an 8x16 pixel shape, however it is actually a 10x20 shape which is partially occluded by the tip content.
+    // This is done to get the border of the tip to follow the pointer shape without drawing the border on the tip edge of the pointer.
+    inline float MinimumTipEdgeToPointerEdgeMargin()
+    {
+        return m_pointerOcclusionGrid.get().ColumnDefinitions().Size() > 1 ?
+            static_cast<float>(m_pointerOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() + s_pointerOcclusionAmount)
+            : 0.0f
+    };
+
+    inline float MinimumTipEdgeToPointerCenter()
+    {
+        return m_pointerOcclusionGrid.get().ColumnDefinitions().Size() > 1 ?  
+            static_cast<float>(m_pointerOcclusionGrid.get().ColumnDefinitions().GetAt(0).ActualWidth() +
+                m_pointerOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() +
+                (std::max(m_pointerPolygon.get().ActualHeight(), m_pointerPolygon.get().ActualWidth()) / 2))
+            : 0.0f;
+    }
 
     inline float PointerLongSideActualLength() { return static_cast<float>(std::max(m_pointerPolygon.get().ActualHeight(), m_pointerPolygon.get().ActualWidth())); }
     inline float PointerLongSideLength() { return static_cast<float>(PointerLongSideActualLength() - (2 * s_pointerOcclusionAmount)); }
