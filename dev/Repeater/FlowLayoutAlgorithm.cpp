@@ -38,7 +38,7 @@ winrt::Size FlowLayoutAlgorithm::Measure(
     SetScrollOrientation(orientation);
 
     // If minor size is infinity, there is only one line and no need to align that line.
-    m_shouldSkipLineAlignment = availableSize.*Minor() == std::numeric_limits<float>::infinity();
+    m_scrollOrientationSameAsFlow = availableSize.*Minor() == std::numeric_limits<float>::infinity();
     const auto realizationRect = RealizationRect();
     REPEATER_TRACE_INFO(L"%ls: \tMeasureLayout Realization(%.0f,%.0f,%.0f,%.0f)\n",
         layoutId.data(),
@@ -154,7 +154,7 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
     }
     else
     {
-        bool isRealizationWindowConnected = m_elementManager.IsWindowConnected(RealizationRect(), GetScrollOrientation());
+        bool isRealizationWindowConnected = m_elementManager.IsWindowConnected(RealizationRect(), GetScrollOrientation(), m_scrollOrientationSameAsFlow);
         // Item spacing and size in non-virtualizing direction change can cause elements to reflow
         // and get a new column position. In that case we need the anchor to be positioned in the 
         // correct column.
@@ -599,7 +599,7 @@ void FlowLayoutAlgorithm::PerformLineAlignment(
     {
         auto bounds = m_elementManager.GetLayoutBoundsForRealizedIndex(rangeIndex);
 
-        if (!m_shouldSkipLineAlignment)
+        if (!m_scrollOrientationSameAsFlow)
         {
             // Note: Space at start could potentially be negative
             if (spaceAtLineStart != 0 || spaceAtLineEnd != 0)

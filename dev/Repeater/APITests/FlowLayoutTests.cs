@@ -1069,6 +1069,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         public void ValidateGridLayoutWithSameOrientationAsScrolling()
         {
             ManualResetEvent viewChanged = new ManualResetEvent(false);
+            ScrollViewer scrollViewer = null;
             var lastRealizedIndex = int.MinValue;
             var firstRealizedIndex = int.MaxValue;
             RunOnUIThread.Execute(() =>
@@ -1088,7 +1089,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     lastRealizedIndex = Math.Max(lastRealizedIndex, args.Index);
                 };
 
-                var scrollViewer = new ScrollViewer() {
+                scrollViewer = new ScrollViewer() {
                     Content = repeater,
                     Height = 200,
                 };
@@ -1107,19 +1108,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     viewChanged.Set();
                 };
 
-                lastRealizedIndex = int.MinValue;
-                firstRealizedIndex = int.MaxValue;
-                scrollViewer.ChangeView(0, 1000, null);
             });
 
-            IdleSynchronizer.Wait();
-            Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTime));
-
-            RunOnUIThread.Execute(() =>
+            for (int i = 0; i < 3; i++)
             {
+                viewChanged.Reset();
+                RunOnUIThread.Execute(() =>
+                {
+                    lastRealizedIndex = int.MinValue;
+                    firstRealizedIndex = int.MaxValue;
+                    scrollViewer.ChangeView(horizontalOffset: 0, verticalOffset: (i+1)*80, zoomFactor: null, disableAnimation: true);
+                });
+
+                IdleSynchronizer.Wait();
+                Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTime));
+
+                RunOnUIThread.Execute(() =>
+                {
                 // we used to crash due to a layout cycle before we get here.
                 Verify.IsLessThan(lastRealizedIndex - firstRealizedIndex, 10);
-            });
+                });
+            }
         }
 
         #region Private Helpers

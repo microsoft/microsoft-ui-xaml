@@ -133,5 +133,5 @@ private:
     // meaning of line alignment in this case, but I'll hold off on that
     // feature until someone asks for it - This is not a common scenario
     // anyway. 
-    bool m_shouldSkipLineAlignment{ false };
+    bool m_scrollOrientationSameAsFlow{ false };
 };
