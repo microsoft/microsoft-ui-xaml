@@ -48,14 +48,14 @@ public:
     void IsOpen(bool value);
     bool IsOpen();
 
+    void PointerMode(winrt::TeachingTipPointerMode const& value);
+    winrt::TeachingTipPointerMode PointerMode();
+
     void PreferredPlacement(winrt::TeachingTipPlacementMode const& value);
     winrt::TeachingTipPlacementMode PreferredPlacement();
 
     void Subtitle(winrt::hstring const& value);
     winrt::hstring Subtitle();
-
-    void PointerMode(winrt::TeachingTipPointerMode const& value);
-    winrt::TeachingTipPointerMode PointerMode();
 
     void Target(winrt::FrameworkElement const& value);
     winrt::FrameworkElement Target();
@@ -82,8 +82,8 @@ public:
     static winrt::DependencyProperty IconSourceProperty() { return s_IconSourceProperty; }
     static winrt::DependencyProperty IsLightDismissEnabledProperty() { return s_IsLightDismissEnabledProperty; }
     static winrt::DependencyProperty IsOpenProperty() { return s_IsOpenProperty; }
+    static winrt::DependencyProperty PointerModeProperty() { return s_PointerModeProperty; }
     static winrt::DependencyProperty PreferredPlacementProperty() { return s_PreferredPlacementProperty; }
-	static winrt::DependencyProperty PointerModeProperty() { return s_PointerModeProperty; }
     static winrt::DependencyProperty SubtitleProperty() { return s_SubtitleProperty; }
     static winrt::DependencyProperty TargetProperty() { return s_TargetProperty; }
     static winrt::DependencyProperty TargetOffsetProperty() { return s_TargetOffsetProperty; }
@@ -103,8 +103,8 @@ public:
     static GlobalDependencyProperty s_IconSourceProperty;
     static GlobalDependencyProperty s_IsLightDismissEnabledProperty;
     static GlobalDependencyProperty s_IsOpenProperty;
+    static GlobalDependencyProperty s_PointerModeProperty;
     static GlobalDependencyProperty s_PreferredPlacementProperty;
-	static GlobalDependencyProperty s_PointerModeProperty;
     static GlobalDependencyProperty s_SubtitleProperty;
     static GlobalDependencyProperty s_TargetProperty;
     static GlobalDependencyProperty s_TargetOffsetProperty;
@@ -180,11 +180,11 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnPreferredPlacementPropertyChanged(
+    static void OnPointerModePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnPointerModePropertyChanged(
+    static void OnPreferredPlacementPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

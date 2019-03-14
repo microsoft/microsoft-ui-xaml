@@ -130,7 +130,7 @@ private:
 
     winrt::TeachingTipPlacementMode m_currentEffectiveTipPlacementMode{ winrt::TeachingTipPlacementMode::Auto };
     winrt::TeachingTipPlacementMode m_currentEffectivePointerPlacementMode{ winrt::TeachingTipPlacementMode::Auto };
-    winrt::TeachingTipBleedingImagePlacementMode m_currentHeroContentEffectivePlacementMode{ winrt::TeachingTipBleedingImagePlacementMode::Auto };
+    winrt::TeachingTipHeroContentPlacementMode m_currentHeroContentEffectivePlacementMode{ winrt::TeachingTipHeroContentPlacementMode::Auto };
 
     winrt::Rect m_currentBounds{ 0,0,0,0 };
     winrt::Rect m_currentTargetBounds{ 0,0,0,0 };
