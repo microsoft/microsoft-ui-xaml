@@ -1,14 +1,5 @@
 ﻿[WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum TeachingTipCloseButtonKind
-{
-    Auto,
-    Header,
-    Footer,
-};
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
 enum TeachingTipPointerMode
 {
     Auto,
@@ -46,11 +37,11 @@ enum TeachingTipPlacementMode
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum TeachingTipBleedingImagePlacementMode
+enum TeachingTipHeroContentPlacementMode
 {
+    Auto,
     Top,
     Bottom,
-    Auto,
 };
 
 [WUXC_VERSION_PREVIEW]
@@ -94,7 +85,7 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     TeachingTip();
 
     String Title;
-    String Subtext;
+    String Subtitle;
 
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsOpen;
@@ -104,14 +95,12 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     [MUX_DEFAULT_VALUE("winrt::TeachingTipPointerMode::Auto")]
     TeachingTipPointerMode PointerMode;
 
-    String ActionButtonText;
+    Object ActionButtonContent;
     Windows.UI.Xaml.Style ActionButtonStyle;
     Windows.UI.Xaml.Input.ICommand ActionButtonCommand;
     Object ActionButtonCommandParameter;
 
-    [MUX_DEFAULT_VALUE("winrt::TeachingTipCloseButtonKind::Auto")]
-    TeachingTipCloseButtonKind CloseButtonKind;
-    String CloseButtonText;
+    Object CloseButtonContent;
     Windows.UI.Xaml.Style CloseButtonStyle;
     Windows.UI.Xaml.Input.ICommand CloseButtonCommand;
     Object CloseButtonCommandParameter;
@@ -120,11 +109,11 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsLightDismissEnabled;
     [MUX_DEFAULT_VALUE("winrt::TeachingTipPlacementMode::Auto")]
-    TeachingTipPlacementMode Placement;
-    [MUX_DEFAULT_VALUE("winrt::TeachingTipBleedingImagePlacementMode::Auto")]
-    TeachingTipBleedingImagePlacementMode BleedingImagePlacement;
+    TeachingTipPlacementMode PreferredPlacement;
+    [MUX_DEFAULT_VALUE("winrt::TeachingTipHeroContentPlacementMode::Auto")]
+    TeachingTipHeroContentPlacementMode HeroContentPlacement;
 
-    Windows.UI.Xaml.UIElement BleedingImageContent;
+    Windows.UI.Xaml.UIElement HeroContent;
     IconSource IconSource;
 
     TeachingTipTemplateSettings TemplateSettings{ get; };
@@ -141,25 +130,24 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty PointerModeProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TitleProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty SubtextProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SubtitleProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty ActionButtonTextProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ActionButtonContentProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ActionButtonStyleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ActionButtonCommandProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ActionButtonCommandParameterProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty CloseButtonKindProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty CloseButtonTextProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty CloseButtonContentProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonStyleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandParameterProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TargetOffsetProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsLightDismissEnabledProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty PlacementProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty BleedingImagePlacementProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PreferredPlacementProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HeroContentPlacementProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty BleedingImageContentProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HeroContentProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };

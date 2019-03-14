@@ -85,7 +85,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void TeachingTipWithContentAndWithoutBleedingContentDoesNotCrash()
+        public void TeachingTipWithContentAndWithoutHeroContentDoesNotCrash()
         {
             var loadedEvent = new AutoResetEvent(false);
             RunOnUIThread.Execute(() =>
@@ -111,10 +111,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Grid contentGrid = new Grid();
-                Grid bleedingGrid = new Grid();
+                Grid heroGrid = new Grid();
                 TeachingTip teachingTip = new TeachingTip();
                 teachingTip.Content = contentGrid;
-                teachingTip.BleedingImageContent = bleedingGrid;
+                teachingTip.HeroContent = heroGrid;
                 teachingTip.Loaded += (object sender, RoutedEventArgs args) => { loadedEvent.Set(); };
                 MUXControlsTestApp.App.TestContentRoot = teachingTip;
             });

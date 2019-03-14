@@ -35,8 +35,8 @@ void TeachingTip::OnApplyTemplate()
     m_rootElement.set(m_container.get().Child());
     m_pointerOcclusionGrid.set(GetTemplateChildT<winrt::Grid>(s_pointerOcclusionGridName, controlProtected));
     m_contentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_contentRootGridName, controlProtected));
-    m_nonBleedingContentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_nonBleedingContentRootGridName, controlProtected));
-    m_bleedingImageContentBorder.set(GetTemplateChildT<winrt::Border>(s_bleedingImageBorderName, controlProtected));
+    m_nonHeroContentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_nonHeroContentRootGridName, controlProtected));
+    m_heroContentBorder.set(GetTemplateChildT<winrt::Border>(s_heroContentBorderName, controlProtected));
     m_iconBorder.set(GetTemplateChildT<winrt::Border>(s_iconBorderName, controlProtected));
     m_actionButton.set(GetTemplateChildT<winrt::Button>(s_actionButtonName, controlProtected));
     m_alternateCloseButton.set(GetTemplateChildT<winrt::Button>(s_alternateCloseButtonName, controlProtected));
@@ -112,9 +112,8 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         OnTargetChanged();
     }
-    else if (property == s_ActionButtonTextProperty ||
-        property == s_CloseButtonKindProperty  ||
-        property == s_CloseButtonTextProperty)
+    else if (property == s_ActionButtonContentProperty ||
+        property == s_CloseButtonContentProperty)
     {
         UpdateButtonsState();
     }
@@ -130,16 +129,16 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         OnPointerModeChanged();
     }
-    else if (property == s_PlacementProperty)
+    else if (property == s_PreferredPlacementProperty)
     {
         if (IsOpen())
         {
             PositionPopup();
         }
     }
-    else if (property == s_BleedingImagePlacementProperty)
+    else if (property == s_HeroContentPlacementProperty)
     {
-        OnBleedingImagePlacementChanged();
+        OnHeroContentPlacementChanged();
     }
     else if (property == s_IconSourceProperty)
     {
@@ -225,7 +224,7 @@ void TeachingTip::UpdatePointer()
         {
             pointerOcclusionGrid.CenterPoint({ width / 2, height / 2, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Untargeted"sv, false);
         break;
 
@@ -235,7 +234,7 @@ void TeachingTip::UpdatePointer()
             pointerOcclusionGrid.CenterPoint({ width / 2, height - lastRowHeight, 0.0f });
             pointerEdgeBorder.CenterPoint({ (width / 2) - firstColumnWidth, 0.0f, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Top"sv, false);
         break;
 
@@ -245,7 +244,7 @@ void TeachingTip::UpdatePointer()
             pointerOcclusionGrid.CenterPoint({ width / 2, firstRowHeight, 0.0f });
             pointerEdgeBorder.CenterPoint({ (width / 2) - firstColumnWidth, 0.0f, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToBottom();
+        UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"Bottom"sv, false);
         break;
 
@@ -255,7 +254,7 @@ void TeachingTip::UpdatePointer()
             pointerOcclusionGrid.CenterPoint({ width - lastColumnWidth, (height / 2), 0.0f });
             pointerEdgeBorder.CenterPoint({ 0.0f, (height / 2) - firstRowHeight, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Left"sv, false);
         break;
 
@@ -265,7 +264,7 @@ void TeachingTip::UpdatePointer()
             pointerOcclusionGrid.CenterPoint({ firstColumnWidth, height / 2, 0.0f });
             pointerEdgeBorder.CenterPoint({ 0.0f, (height / 2) - firstRowHeight, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Right"sv, false);
         break;
 
@@ -275,7 +274,7 @@ void TeachingTip::UpdatePointer()
             pointerOcclusionGrid.CenterPoint({ firstColumnWidth + secondColumnWidth + 1, height - lastRowHeight, 0.0f });
             pointerEdgeBorder.CenterPoint({ secondColumnWidth, 0.0f, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"TopEdgeAlignedRight"sv, false);
         break;
 
@@ -285,7 +284,7 @@ void TeachingTip::UpdatePointer()
             pointerOcclusionGrid.CenterPoint({ width - (nextToLastColumnWidth + lastColumnWidth + 1), height - lastRowHeight, 0.0f });
             pointerEdgeBorder.CenterPoint({ width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"TopEdgeAlignedLeft"sv, false);
         break;
 
@@ -295,7 +294,7 @@ void TeachingTip::UpdatePointer()
             pointerOcclusionGrid.CenterPoint({ firstColumnWidth + secondColumnWidth + 1, firstRowHeight, 0.0f });
             pointerEdgeBorder.CenterPoint({ secondColumnWidth, 0.0f, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToBottom();
+        UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"BottomEdgeAlignedRight"sv, false);
         break;
 
@@ -305,7 +304,7 @@ void TeachingTip::UpdatePointer()
             pointerOcclusionGrid.CenterPoint({ width - (nextToLastColumnWidth + lastColumnWidth + 1), firstRowHeight, 0.0f });
             pointerEdgeBorder.CenterPoint({ width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToBottom();
+        UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"BottomEdgeAlignedLeft"sv, false);
         break;
 
@@ -315,7 +314,7 @@ void TeachingTip::UpdatePointer()
             pointerOcclusionGrid.CenterPoint({ width - lastColumnWidth,  height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
             pointerEdgeBorder.CenterPoint({ 0.0f,  height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"LeftEdgeAlignedTop"sv, false);
         break;
 
@@ -325,7 +324,7 @@ void TeachingTip::UpdatePointer()
             pointerOcclusionGrid.CenterPoint({ width - lastColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
             pointerEdgeBorder.CenterPoint({ 0.0f, secondRowHeight, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToBottom();
+        UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"LeftEdgeAlignedBottom"sv, false);
         break;
 
@@ -335,7 +334,7 @@ void TeachingTip::UpdatePointer()
             pointerOcclusionGrid.CenterPoint({ firstColumnWidth, height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
             pointerEdgeBorder.CenterPoint({ 0.0f, height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"RightEdgeAlignedTop"sv, false);
         break;
 
@@ -345,7 +344,7 @@ void TeachingTip::UpdatePointer()
             pointerOcclusionGrid.CenterPoint({ firstColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
             pointerEdgeBorder.CenterPoint({ 0.0f, secondRowHeight, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToBottom();
+        UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"RightEdgeAlignedBottom"sv, false);
         break;
 
@@ -463,7 +462,7 @@ void TeachingTip::PositionUntargetedPopup()
     // Depending on the effective placement mode of the tip we use a combination of the tip's size, the window's size, and the target
     // offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
     auto&& popup = m_popup.get();
-    switch (Placement())
+    switch (PreferredPlacement())
     {
     case winrt::TeachingTipPlacementMode::Auto:
     case winrt::TeachingTipPlacementMode::Bottom:
@@ -598,111 +597,63 @@ void TeachingTip::UpdateSizeBasedTemplateSettings()
 
 void TeachingTip::UpdateButtonsState()
 {
-    hstring actionText = ActionButtonText();
-    hstring closeText = CloseButtonText();
-    switch (CloseButtonKind())
+    auto actionContent = ActionButtonContent();
+    auto closeContent = CloseButtonContent();
+    bool isLightDismiss = IsLightDismissEnabled();
+    if (actionContent && closeContent)
     {
-    case winrt::TeachingTipCloseButtonKind::Auto:
-        if (actionText.size() > 0 && closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
-            winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
-        }
-        else if (actionText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
-            winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
-        }
-        else if (closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
-            winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
-        }
-        else
-        {
-            winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
-            winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
-        }
-        break;
-    case winrt::TeachingTipCloseButtonKind::Header:
-        winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
-        if (actionText.size() > 0 && closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
-        }
-        else if (actionText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
-        }
-        else if (closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
-        }
-        else
-        {
-            winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
-        }
-        break;
-    case winrt::TeachingTipCloseButtonKind::Footer:
+        winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
         winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
-        if (actionText.size() > 0 && closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
-        }
-        else if (actionText.size() > 0)
-        {
-            if (IsLightDismissEnabled())
-            {
-                winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
-            }
-            else
-            {
-                // Without light dismiss we require that at least one close button be shown at all times.
-                winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
-            }
-        }
-        else if (closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
-        }
-        else
-        {
-            if (IsLightDismissEnabled())
-            {
-                winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
-            }
-            else
-            {
-                // We require that at least one close button be shown at all times.
-                winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
-            }
-        }
-        break;
+    }
+    else if (actionContent && isLightDismiss)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
+    }
+    else if (actionContent)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
+    }
+    else if (closeContent)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
+    }
+    else if (isLightDismiss)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
     }
 }
 
-void TeachingTip::UpdateDynamicBleedingContentPlacementToTop()
+void TeachingTip::UpdateDynamicHeroContentPlacementToTop()
 {
-    if (BleedingImagePlacement() == winrt::TeachingTipBleedingImagePlacementMode::Auto)
+    if (HeroContentPlacement() == winrt::TeachingTipHeroContentPlacementMode::Auto)
     {
-        winrt::VisualStateManager::GoToState(*this, L"BleedingContentTop"sv, false);
-        if (m_currentBleedingEffectivePlacementMode != winrt::TeachingTipBleedingImagePlacementMode::Top)
+        winrt::VisualStateManager::GoToState(*this, L"HeroContentTop"sv, false);
+        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
         {
-            m_currentBleedingEffectivePlacementMode = winrt::TeachingTipBleedingImagePlacementMode::Top;
-            TeachingTipTestHooks::NotifyEffectiveBleedingPlacementChanged(*this);
+            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
+            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
         }
     }
 }
 
-void TeachingTip::UpdateDynamicBleedingContentPlacementToBottom()
+void TeachingTip::UpdateDynamicHeroContentPlacementToBottom()
 {
-    if (BleedingImagePlacement() == winrt::TeachingTipBleedingImagePlacementMode::Auto)
+    if (HeroContentPlacement() == winrt::TeachingTipHeroContentPlacementMode::Auto)
     {
-        winrt::VisualStateManager::GoToState(*this, L"BleedingContentBottom"sv, false);
-        if (m_currentBleedingEffectivePlacementMode != winrt::TeachingTipBleedingImagePlacementMode::Bottom)
+        winrt::VisualStateManager::GoToState(*this, L"HeroContentBottom"sv, false);
+        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
         {
-            m_currentBleedingEffectivePlacementMode = winrt::TeachingTipBleedingImagePlacementMode::Bottom;
-            TeachingTipTestHooks::NotifyEffectiveBleedingPlacementChanged(*this);
+            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
+            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
         }
     }
 }
@@ -863,35 +814,36 @@ void TeachingTip::OnIsLightDismissEnabledChanged()
         }
         m_lightDismissIndicatorPopupClosedRevoker.revoke();
     }
+    UpdateButtonsState();
 }
 
-void TeachingTip::OnBleedingImagePlacementChanged()
+void TeachingTip::OnHeroContentPlacementChanged()
 {
-    switch (BleedingImagePlacement())
+    switch (HeroContentPlacement())
     {
-    case winrt::TeachingTipBleedingImagePlacementMode::Auto:
+    case winrt::TeachingTipHeroContentPlacementMode::Auto:
         break;
-    case winrt::TeachingTipBleedingImagePlacementMode::Top:
-        winrt::VisualStateManager::GoToState(*this, L"BleedingContentTop"sv, false);
-        if (m_currentBleedingEffectivePlacementMode != winrt::TeachingTipBleedingImagePlacementMode::Top)
+    case winrt::TeachingTipHeroContentPlacementMode::Top:
+        winrt::VisualStateManager::GoToState(*this, L"HeroContentTop"sv, false);
+        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
         {
-            m_currentBleedingEffectivePlacementMode = winrt::TeachingTipBleedingImagePlacementMode::Top;
-            TeachingTipTestHooks::NotifyEffectiveBleedingPlacementChanged(*this);
+            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
+            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
         }
         break;
-    case winrt::TeachingTipBleedingImagePlacementMode::Bottom:
-        winrt::VisualStateManager::GoToState(*this, L"BleedingContentBottom"sv, false);
-        if (m_currentBleedingEffectivePlacementMode != winrt::TeachingTipBleedingImagePlacementMode::Bottom)
+    case winrt::TeachingTipHeroContentPlacementMode::Bottom:
+        winrt::VisualStateManager::GoToState(*this, L"HeroContentBottom"sv, false);
+        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
         {
-            m_currentBleedingEffectivePlacementMode = winrt::TeachingTipBleedingImagePlacementMode::Bottom;
-            TeachingTipTestHooks::NotifyEffectiveBleedingPlacementChanged(*this);
+            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
+            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
         }
         break;
     }
 
     // Setting m_currentEffectiveTipPlacementMode to auto ensures that the next time position popup is called we'll rerun the DetermineEffectivePlacement
     // alogorithm. If we did not do this and the popup was opened the algorithm would maintain the current effective placement mode, which we don't want
-    // since the bleeding image placement contributes to the choice of tip placement mode.
+    // since the hero content placement contributes to the choice of tip placement mode.
     m_currentEffectiveTipPlacementMode = winrt::TeachingTipPlacementMode::Auto;
     TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
     if (IsOpen())
@@ -1258,7 +1210,7 @@ void TeachingTip::StartContractToClose()
 
 winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
 {
-    auto placement = Placement();
+    auto placement = PreferredPlacement();
     if (placement != winrt::TeachingTipPlacementMode::Auto)
     {
         return placement;
@@ -1298,24 +1250,24 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
             double tipHeight = contentHeight + PointerShortSideLength();
             double tipWidth = contentWidth + PointerShortSideLength();
 
-            if (BleedingImageContent())
+            if (HeroContent())
             {
-                if (m_bleedingImageContentBorder.get().ActualHeight() > m_nonBleedingContentRootGrid.get().ActualHeight() - PointerLongSideActualLength())
+                if (m_heroContentBorder.get().ActualHeight() > m_nonHeroContentRootGrid.get().ActualHeight() - PointerLongSideActualLength())
                 {
                     leftCenterAvailable = false;
                     rightCenterAvailable = false;
                 }
 
-                switch(BleedingImagePlacement())
+                switch(HeroContentPlacement())
                 {
-                case winrt::TeachingTipBleedingImagePlacementMode::Bottom:
+                case winrt::TeachingTipHeroContentPlacementMode::Bottom:
                     topCenterAvailable = false;
                     topRightAvailable = false;
                     topLeftAvailable = false;
                     rightTopAvailable = false;
                     leftTopAvailable = false;
                     break;
-                case winrt::TeachingTipBleedingImagePlacementMode::Top:
+                case winrt::TeachingTipHeroContentPlacementMode::Top:
                     bottomCenterAvailable = false;
                     bottomLeftAvailable = false;
                     bottomRightAvailable = false;
@@ -1672,9 +1624,9 @@ winrt::TeachingTipPlacementMode TeachingTip::GetEffectivePlacement()
     return m_currentEffectiveTipPlacementMode;
 }
 
-winrt::TeachingTipBleedingImagePlacementMode TeachingTip::GetEffectiveBleedingPlacement()
+winrt::TeachingTipHeroContentPlacementMode TeachingTip::GetEffectiveHeroContentPlacement()
 {
-    return m_currentBleedingEffectivePlacementMode;
+    return m_currentHeroContentEffectivePlacementMode;
 }
 
 double TeachingTip::GetHorizontalOffset()
