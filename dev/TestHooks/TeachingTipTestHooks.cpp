@@ -50,11 +50,11 @@ void TeachingTipTestHooks::SetContentElevation(const winrt::TeachingTip& teachin
     }
 }
 
-void TeachingTipTestHooks::SetBeakElevation(const winrt::TeachingTip& teachingTip, float elevation)
+void TeachingTipTestHooks::SetPointerElevation(const winrt::TeachingTip& teachingTip, float elevation)
 {
     if (teachingTip)
     {
-        winrt::get_self<TeachingTip>(teachingTip)->SetBeakElevation(elevation);
+        winrt::get_self<TeachingTip>(teachingTip)->SetPointerElevation(elevation);
     }
 }
 
