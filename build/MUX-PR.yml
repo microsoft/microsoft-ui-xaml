@@ -34,7 +34,7 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
     dependsOn: CreateNugetPackage
-    pkgArtifactPath: '$env:artifactDownloadPath\drop'
+    pkgArtifactPath: '$(artifactDownloadPath)\drop'
     runTests: 'false'
     matrix: 
       Debug_x64:

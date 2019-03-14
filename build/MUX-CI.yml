@@ -52,7 +52,7 @@ jobs:
     buildJobName: 'BuildNugetPkgTests'
     runTestJobName: 'RunNugetPkgTestsInHelix'
     dependsOn: CreateNugetPackage
-    pkgArtifactPath: '$env:artifactDownloadPath\drop'
+    pkgArtifactPath: '$(artifactDownloadPath)\drop'
    
 # Framework package tests
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
@@ -60,4 +60,4 @@ jobs:
     buildJobName: 'BuildFrameworkPkgTests'
     runTestJobName: 'RunFrameworkPkgTestsInHelix'
     dependsOn: CreateNugetPackage
-    pkgArtifactPath: '$env:artifactDownloadPath\drop\FrameworkPackage'
+    pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
