@@ -373,18 +373,19 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
     if (m_primaryItemsRoot && m_secondaryItemsRoot)
     {
         auto flyoutTemplateSettings = winrt::get_self<CommandBarFlyoutCommandBarTemplateSettings>(FlyoutTemplateSettings());
+        float maxWidth = static_cast<float>(MaxWidth());
 
         winrt::Size infiniteSize = { std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
         m_primaryItemsRoot.get().Measure(infiniteSize);
         winrt::Size primaryItemsRootDesiredSize = m_primaryItemsRoot.get().DesiredSize();
-        float collapsedWidth = primaryItemsRootDesiredSize.Width;
+        float collapsedWidth = std::min(maxWidth, primaryItemsRootDesiredSize.Width);
 
         if (m_secondaryItemsRoot)
         {
             m_secondaryItemsRoot.get().Measure(infiniteSize);
             auto overflowPopupSize = m_secondaryItemsRoot.get().DesiredSize();
 
-            flyoutTemplateSettings->ExpandedWidth(std::max(collapsedWidth, overflowPopupSize.Width));
+            flyoutTemplateSettings->ExpandedWidth(std::min(maxWidth, std::max(collapsedWidth, overflowPopupSize.Width)));
             flyoutTemplateSettings->ExpandUpOverflowVerticalPosition(-overflowPopupSize.Height);
             flyoutTemplateSettings->ExpandUpAnimationStartPosition(overflowPopupSize.Height / 2);
             flyoutTemplateSettings->ExpandUpAnimationEndPosition(0);

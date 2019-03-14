@@ -21,7 +21,7 @@
         <Setter Property="DefaultLabelPosition" Value="Collapsed" />
         <Setter Property="MaxWidth" Value="440" />
         <Setter Property="Height" Value="40" />
-        <Setter Property="IsDynamicOverflowEnabled" Value="False" />
+        <Setter Property="IsDynamicOverflowEnabled" Value="True" />
         <Setter Property="CommandBarOverflowPresenterStyle" Value="{StaticResource CommandBarFlyoutCommandBarOverflowPresenterStyle}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -104,7 +104,12 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="OuterContentRoot">
+                        <Grid x:Name="OuterContentRoot"
+                            VerticalAlignment="Top"
+                            Margin="{TemplateBinding Padding}"
+                            Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
+                            Height="{TemplateBinding Height}"
+                            Background="{TemplateBinding Background}">
                             <Grid.Clip>
                                 <RectangleGeometry x:Name="OuterContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ContentClipRect}">
                                     <RectangleGeometry.Transform>
@@ -112,12 +117,7 @@
                                     </RectangleGeometry.Transform>
                                 </RectangleGeometry>
                             </Grid.Clip>
-                            <Grid x:Name="ContentRoot"
-                                VerticalAlignment="Top"
-                                Margin="{TemplateBinding Padding}"
-                                Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
-                                Height="{TemplateBinding Height}"
-                                Background="{TemplateBinding Background}">
+                            <Grid x:Name="ContentRoot">
                                 <Grid.Clip>
                                     <RectangleGeometry x:Name="ContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ContentClipRect}">
                                         <RectangleGeometry.Transform>
@@ -136,14 +136,14 @@
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <ItemsControl x:Name="PrimaryItemsControl"
                                         Height="40"
                                         Grid.Column="0"
-                                        IsTabStop="False">
+                                        IsTabStop="False"
+                                        HorizontalAlignment="Left">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
                                                 <StackPanel Orientation="Horizontal" />
@@ -153,7 +153,7 @@
                                     <Button x:Name="MoreButton"
                                         Foreground="{TemplateBinding Foreground}"
                                         Style="{StaticResource CommandBarFlyoutEllipsisButtonStyle}"
-                                        Grid.Column="2"
+                                        Grid.Column="1"
                                         IsAccessKeyScope="True"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}">
                                         <Button.RenderTransform>
