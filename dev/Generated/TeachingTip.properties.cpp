@@ -23,6 +23,7 @@ GlobalDependencyProperty TeachingTipProperties::s_IconSourceProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_IsLightDismissEnabledProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_IsOpenProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_PlacementProperty{ nullptr };
+GlobalDependencyProperty TeachingTipProperties::s_PointerModeProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_SubtextProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_TargetProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_TargetOffsetProperty{ nullptr };
@@ -205,6 +206,17 @@ void TeachingTipProperties::EnsureProperties()
                 ValueHelper<winrt::TeachingTipPlacementMode>::BoxValueIfNecessary(winrt::TeachingTipPlacementMode::Auto),
                 winrt::PropertyChangedCallback(&OnPlacementPropertyChanged));
     }
+    if (!s_PointerModeProperty)
+    {
+        s_PointerModeProperty =
+            InitializeDependencyProperty(
+                L"PointerMode",
+                winrt::name_of<winrt::TeachingTipPointerMode>(),
+                winrt::name_of<winrt::TeachingTip>(),
+                false /* isAttached */,
+                ValueHelper<winrt::TeachingTipPointerMode>::BoxValueIfNecessary(winrt::TeachingTipPointerMode::Auto),
+                winrt::PropertyChangedCallback(&OnPointerModePropertyChanged));
+    }
     if (!s_SubtextProperty)
     {
         s_SubtextProperty =
@@ -279,6 +291,7 @@ void TeachingTipProperties::ClearProperties()
     s_IsLightDismissEnabledProperty = nullptr;
     s_IsOpenProperty = nullptr;
     s_PlacementProperty = nullptr;
+    s_PointerModeProperty = nullptr;
     s_SubtextProperty = nullptr;
     s_TargetProperty = nullptr;
     s_TargetOffsetProperty = nullptr;
@@ -399,6 +412,14 @@ void TeachingTipProperties::OnIsOpenPropertyChanged(
 }
 
 void TeachingTipProperties::OnPlacementPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TeachingTip>();
+    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
+}
+
+void TeachingTipProperties::OnPointerModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -594,6 +615,16 @@ void TeachingTipProperties::Placement(winrt::TeachingTipPlacementMode const& val
 winrt::TeachingTipPlacementMode TeachingTipProperties::Placement()
 {
     return ValueHelper<winrt::TeachingTipPlacementMode>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_PlacementProperty));
+}
+
+void TeachingTipProperties::PointerMode(winrt::TeachingTipPointerMode const& value)
+{
+    static_cast<TeachingTip*>(this)->SetValue(s_PointerModeProperty, ValueHelper<winrt::TeachingTipPointerMode>::BoxValueIfNecessary(value));
+}
+
+winrt::TeachingTipPointerMode TeachingTipProperties::PointerMode()
+{
+    return ValueHelper<winrt::TeachingTipPointerMode>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_PointerModeProperty));
 }
 
 void TeachingTipProperties::Subtext(winrt::hstring const& value)
