@@ -2,9 +2,9 @@
 [webhosthidden]
 enum TeachingTipPointerMode
 {
-	Auto,
-	On,
-	Off,
+    Auto,
+    On,
+    Off,
 };
 
 [WUXC_VERSION_PREVIEW]
