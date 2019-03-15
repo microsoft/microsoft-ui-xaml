@@ -35,22 +35,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         All,
         None
     }
+
+    // This class is used for internal debug purpose only. We don't have a flag to control log level in UnitTesting.Logging.
+    // Like debug information, it's too big and we should not show to customer. You can change the setting by _shouldLogDebugInfo
     class VisualTreeLog
     {
+        private static bool _shouldLogDebugInfo = false;
         public static void LogInfo(string info)
         {
             Log.Comment(info);
         }
-        public static void LogDebugInfo(string debugInfo) {}
+
+        public static void LogDebugInfo(string debugInfo) 
+        {
+            if (_shouldLogDebugInfo)
+            {
+                Log.Comment(info);  
+            }    
+        }
     }
 
     public class VisualTreeTestHelper
     {
-// Log MasterFile to MusicLibrary or LocalFolder. By default(AlwaysLogMasterFile=false), It logs the master files to  LocalFolder. 
-// You can change the setting by set AlwaysLogMasterFile = true. After you run the tests and test case fails, the master files are put into MusicLibrary.
-// Finally you can copy master files to master/ directory and check in with code. 
-
+        // Log MasterFile to MusicLibrary or LocalFolder. By default(AlwaysLogMasterFile=false), It logs the master files to  LocalFolder. 
+        // You can change the setting by set AlwaysLogMasterFile = true. After you run the tests and test case fails, the master files are put into MusicLibrary.
+        // Finally you can copy master files to master/ directory and check in with code. 
         public static bool AlwaysLogMasterFile = false;
+        
         public static void ChangeRequestedTheme(UIElement root, ElementTheme theme)
         {
             FrameworkElement element = root as FrameworkElement;
@@ -161,6 +172,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 return _testResult.ToString();
             }
+
             public void DumpAndVerifyVisualTree(UIElement root, string masterFilePrefix, string messageOnError = null)
             {
                 VisualTreeLog.LogDebugInfo("DumpVisualTreeAndCompareWithMaster with masterFilePrefix " + masterFilePrefix);
@@ -210,6 +222,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         */
         public string ExpectedMasterFileName { get; private set; }
         public string BestMatchedMasterFileName { get; private set; }
+
         public MasterFileStorage(bool useLocalStorage, string masterFileNamePrefix)
         {
             _storage = useLocalStorage ? ApplicationData.Current.LocalFolder : KnownFolders.MusicLibrary;
@@ -291,6 +304,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
+    // A simple string diff class to provide readable text to show the difference of two strings. Here is a example of output.
+    // + This is only in A
+    // - This is only in B
     class VisualTreeOutputCompare
     {
         public VisualTreeOutputCompare(string a, string b)
