@@ -466,6 +466,7 @@
                                          StrokeThickness="{StaticResource TeachingTipTopHighlightHeight}"
                                          Points="0,10 10,0 20,10"/>
                                 <Grid x:Name="ContentRootGrid"
+                                      AutomationProperties.LandmarkType="Custom"
                                       Background="{TemplateBinding Background}"
                                       BorderBrush="{ThemeResource TeachingTipBorderBrush}"
                                       Grid.Row="1"

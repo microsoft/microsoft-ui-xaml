@@ -79,6 +79,11 @@ void TeachingTip::OnApplyTemplate()
         });
     }
 
+    if (auto && contentRootGrid = m_contentRootGrid.get())
+    {
+        winrt::AutomationProperties::SetLocalizedLandmarkType(contentRootGrid, ResourceAccessor::GetLocalizedStringResource(SR_TeachingTipCustomLandmarkName));
+    }
+
     if (auto&& closeButton = m_closeButton.get())
     {
         m_closeButtonClickedRevoker = closeButton.Click(winrt::auto_revoke, {this, &TeachingTip::OnCloseButtonClicked });
@@ -86,15 +91,19 @@ void TeachingTip::OnApplyTemplate()
     if (auto&& alternateCloseButton = m_alternateCloseButton.get())
     {
         winrt::AutomationProperties::SetName(alternateCloseButton, ResourceAccessor::GetLocalizedStringResource(SR_TeachingTipAlternateCloseButtonName));
+        winrt::ToolTip tooltip = winrt::ToolTip();
+        tooltip.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_TeachingTipAlternateCloseButtonTooltip)));
+        winrt::ToolTipService::SetToolTip(alternateCloseButton, tooltip);
         m_alternateCloseButtonClickedRevoker = alternateCloseButton.Click(winrt::auto_revoke, {this, &TeachingTip::OnCloseButtonClicked });
     }
-
     if (auto&& actionButton = m_actionButton.get())
     {
         m_actionButtonClickedRevoker = actionButton.Click(winrt::auto_revoke, {this, &TeachingTip::OnActionButtonClicked });
     }
     UpdateButtonsState();
+
     OnIconSourceChanged();
+
     EstablishShadows();
 
     m_isTemplateApplied = true;
