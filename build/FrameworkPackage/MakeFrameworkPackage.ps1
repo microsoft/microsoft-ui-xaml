@@ -15,7 +15,6 @@ Param(
     [string]$PackageNameSuffix)
 
 Import-Module $PSScriptRoot\..\..\tools\Utils.psm1 -DisableNameChecking
-gci env:* | sort-object name
 
 function Copy-IntoNewDirectory {
     Param($source, $destinationDir, [switch]$IfExists = $false)
@@ -66,12 +65,13 @@ ForEach ($input in ($inputs -split ";"))
     Write-Verbose "Copying $inputBasePath\Themes"
     Copy-IntoNewDirectory -IfExists $inputBasePath\Themes $fullOutputPath\PackageContents\Microsoft.UI.Xaml
 
-    # MiniWindowsSDKWinMDPath itemsgroup
-    $classes = Get-WinmdTypes $inputBasePath\$inputBaseFileName.winmd "C:\Program Files (x86)\Windows Kits\10\References\10.0.18323.0\Windows.Foundation.FoundationContract\3.0.0.0\Windows.Foundation.FoundationContract.winmd;C:\Program Files (x86)\Windows Kits\10\References\10.0.18323.0\Windows.Foundation.UniversalApiContract\8.0.0.0\Windows.Foundation.UniversalApiContract.winmd"
+    $sdkReferencesPath=$kitsRoot10+"\References\10.0.18323.0";
+    $wimdReferences = $sdkReferencesPath + "\Windows.Foundation.FoundationContract\3.0.0.0\Windows.Foundation.FoundationContract.winmd;" + $sdkReferencesPath + "\Windows.Foundation.UniversalApiContract\8.0.0.0\Windows.Foundation.UniversalApiContract.winmd"
+    $classes = Get-WinmdTypes $inputBasePath\$inputBaseFileName.winmd  $wimdReferences
 
 @"
 "$inputBaseFileName.dll" "$inputBaseFileName.dll"
-"$inputBaseFileName.winmd" "$inputBaseFileName.winmd"
+"$inputBaseFileName.winmd" "$inputBaseFileName.winmd" 
 "@ | Out-File -Append -Encoding "UTF8" $fullOutputPath\PackageContents\FrameworkPackageFiles.txt
 
     $ActivatableTypes += @"
