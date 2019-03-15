@@ -323,7 +323,7 @@
                                                                 </VisualState>
                                                             </VisualStateGroup>
                                                         </VisualStateManager.VisualStateGroups>
-                                                        <Grid VerticalAlignment="Stretch">
+                                                        <Grid VerticalAlignment="Stretch" HorizontalAlignment="Right">
                                                             <Rectangle x:Name="NormalRectangle"
                                                                 VerticalAlignment="Center" HorizontalAlignment="Center"
                                                                 Fill="{ThemeResource CheckBoxCheckBackgroundFillUnchecked}"
