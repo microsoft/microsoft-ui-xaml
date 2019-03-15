@@ -1101,7 +1101,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Content = anchorProvier;
                 Content.UpdateLayout();
 
-                Verify.IsLessThan(lastRealizedIndex - firstRealizedIndex, 10);
+                Verify.IsLessThan(lastRealizedIndex - firstRealizedIndex, 10); 
 
                 scrollViewer.ViewChanged += (sender, args) =>
                 {
