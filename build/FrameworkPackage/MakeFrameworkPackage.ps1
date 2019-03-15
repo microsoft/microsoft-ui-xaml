@@ -49,16 +49,6 @@ $scriptDirectory = Split-Path -Path $script:MyInvocation.MyCommand.Path -Parent
 
 $ActivatableTypes = ""
 
-$activatableTypeEntries = @{}
-
-$testAppManifestContents = Get-Content $TestAppManifest -Raw
-ForEach ($match in ($testAppManifestContents | Select-String '(?s)(\<Extension Category.*?\</Extension\>)' -AllMatches).Matches)
-{
-    $value = $match.Value
-    $dllPath = ($value | Select-String  '\<Path\>(.*?)\</Path\>').Matches[0].Groups[1]
-    $activatableTypeEntries[$dllPath.Value.ToLower()] = $value
-}
-
 # Copy over and add to the manifest file list the .dll, .winmd for the inputs. Also copy the .pri
 # but don't list it because it will be merged together.
 ForEach ($input in ($inputs -split ";"))
@@ -79,34 +69,31 @@ ForEach ($input in ($inputs -split ";"))
 "$inputBaseFileName.winmd" "$inputBaseFileName.winmd"
 "@ | Out-File -Append -Encoding "UTF8" $fullOutputPath\PackageContents\FrameworkPackageFiles.txt
 
-    $ActivatableTypes += $activatableTypeEntries["$($inputBaseFileName.ToLower()).dll"]
-
     # NOTE: Build machines don't have ILDAsm or .NET SDK so we have to do this differently.
 #    # Get the activatable types out of each WinMD
-#    $ildasmCommand = "`"ildasm.exe`" /classlist `"$inputBasePath\$inputBaseFileName.winmd`" /text"
-#    Write-Host "cmd /c $ildasmCommand"
-#    $classes = cmd /c $ildasmCommand | where {$_.Contains(".class public")}
-#    $classes = $classes -replace '.* ([\w\.]+)$',"`$1"
+    $ildasmCommand = "`"ildasm.exe`" /classlist `"$inputBasePath\$inputBaseFileName.winmd`" /text"
+    Write-Host "cmd /c $ildasmCommand"
+    $classes = cmd /c $ildasmCommand | where {$_.Contains(".class public")}
+    $classes = $classes -replace '.* ([\w\.]+)$',"`$1"
 
-#    $ActivatableTypes += @"
-#    <Extension Category="windows.activatableClass.inProcessServer">
-#      <InProcessServer>
-#        <Path>$inputBaseFileName.dll</Path>
+    $ActivatableTypes += @"
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>$inputBaseFileName.dll</Path>
 
-#"@
-#    ForEach ($class in $classes)
-#    {
-#        Write-Host "Activatable type : $class"
-#        $ActivatableTypes += "        <ActivatableClass ActivatableClassId=`"$class`" ThreadingModel=`"both`" />`r`n"
-#    }
+"@
+    ForEach ($class in $classes)
+    {
+        Write-Host "Activatable type : $class"
+        $ActivatableTypes += "        <ActivatableClass ActivatableClassId=`"$class`" ThreadingModel=`"both`" />`r`n"
+    }
 
-#    $ActivatableTypes += @"
-#      </InProcessServer>
-#    </Extension>
-
-#"@
+    $ActivatableTypes += @"
+      </InProcessServer>
+    </Extension>
+    
+"@
 }
-
 
 Copy-IntoNewDirectory ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png $fullOutputPath\Assets
 
