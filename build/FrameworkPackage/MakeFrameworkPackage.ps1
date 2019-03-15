@@ -14,6 +14,8 @@ Param(
     [string]$BasePackageName,
     [string]$PackageNameSuffix)
 
+Import-Module $PSScriptRoot\..\..\tools\Utils.psm1 -DisableNameChecking
+gci env:* | sort-object name
 
 function Copy-IntoNewDirectory {
     Param($source, $destinationDir, [switch]$IfExists = $false)
@@ -64,17 +66,13 @@ ForEach ($input in ($inputs -split ";"))
     Write-Verbose "Copying $inputBasePath\Themes"
     Copy-IntoNewDirectory -IfExists $inputBasePath\Themes $fullOutputPath\PackageContents\Microsoft.UI.Xaml
 
+    # MiniWindowsSDKWinMDPath itemsgroup
+    $classes = Get-WinmdTypes $inputBasePath\$inputBaseFileName.winmd "C:\Program Files (x86)\Windows Kits\10\References\10.0.18323.0\Windows.Foundation.FoundationContract\3.0.0.0\Windows.Foundation.FoundationContract.winmd;C:\Program Files (x86)\Windows Kits\10\References\10.0.18323.0\Windows.Foundation.UniversalApiContract\8.0.0.0\Windows.Foundation.UniversalApiContract.winmd"
+
 @"
 "$inputBaseFileName.dll" "$inputBaseFileName.dll"
 "$inputBaseFileName.winmd" "$inputBaseFileName.winmd"
 "@ | Out-File -Append -Encoding "UTF8" $fullOutputPath\PackageContents\FrameworkPackageFiles.txt
-
-    # NOTE: Build machines don't have ILDAsm or .NET SDK so we have to do this differently.
-#    # Get the activatable types out of each WinMD
-    $ildasmCommand = "`"ildasm.exe`" /classlist `"$inputBasePath\$inputBaseFileName.winmd`" /text"
-    Write-Host "cmd /c $ildasmCommand"
-    $classes = cmd /c $ildasmCommand | where {$_.Contains(".class public")}
-    $classes = $classes -replace '.* ([\w\.]+)$',"`$1"
 
     $ActivatableTypes += @"
     <Extension Category="windows.activatableClass.inProcessServer">
@@ -84,14 +82,15 @@ ForEach ($input in ($inputs -split ";"))
 "@
     ForEach ($class in $classes)
     {
-        Write-Host "Activatable type : $class"
-        $ActivatableTypes += "        <ActivatableClass ActivatableClassId=`"$class`" ThreadingModel=`"both`" />`r`n"
+        $className = $class.fullname
+        #Write-Host "Activatable type : $className"
+        $ActivatableTypes += "        <ActivatableClass ActivatableClassId=`"$className`" ThreadingModel=`"both`" />`r`n"
     }
 
     $ActivatableTypes += @"
       </InProcessServer>
     </Extension>
-    
+
 "@
 }
 
