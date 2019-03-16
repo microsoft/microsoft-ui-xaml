@@ -24,17 +24,18 @@
                     <muxc:TeachingTip x:Name="TeachingTipInVisualTree" 
                                           AutomationProperties.Name="TeachingTipInVisualTree"
                                           Title="We've Added Auto Saving!" 
-                                          Subtext="Documents will now automatically save to OneDrive." 
+                                          Subtitle="Documents will now automatically save to OneDrive." 
                                           Closed="OnTeachingTipClosed" 
                                           Closing="OnTeachingTipClosing"
                                           ActionButtonClick="OnTeachingTipActionButtonClicked"
-                                          CloseButtonClick="OnTeachingTipCloseButtonClicked">
+                                          CloseButtonClick="OnTeachingTipCloseButtonClicked"
+                                          Target="{x:Bind targetButton}">
                         <muxc:TeachingTip.IconSource>
                             <muxc:SymbolIconSource Symbol="People"/>
                         </muxc:TeachingTip.IconSource>
-                        <muxc:TeachingTip.BleedingImageContent>
+                        <muxc:TeachingTip.HeroContent>
                             <Grid MinHeight="200" MinWidth="200" Background="red"/>
-                        </muxc:TeachingTip.BleedingImageContent>
+                        </muxc:TeachingTip.HeroContent>
                         <muxc:TeachingTip.Content>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
@@ -43,44 +44,22 @@
                         </muxc:TeachingTip.Content>
                     </muxc:TeachingTip>
                     <Button x:Name="targetButton" HorizontalAlignment="Center" VerticalAlignment="Center" Click="OnShowButtonClicked" Height="300">Enable AutoSave
-                        <muxc:TeachingTip.Attach>
-                            <muxc:TeachingTip x:Name="TeachingTipInSetAttach" 
-                                          AutomationProperties.Name="TeachingTipInSetAttach"
-                                          Title="We've Added Auto Saving!" 
-                                          Subtext="Documents will now automatically save to OneDrive." 
-                                          Closed="OnTeachingTipClosed" 
-                                          Closing="OnTeachingTipClosing"
-                                          ActionButtonClick="OnTeachingTipActionButtonClicked"
-                                          CloseButtonClick="OnTeachingTipCloseButtonClicked">
-                                <muxc:TeachingTip.IconSource>
-                                    <muxc:SymbolIconSource Symbol="People"/>
-                                </muxc:TeachingTip.IconSource>
-                                <muxc:TeachingTip.BleedingImageContent>
-                                    <Grid MinHeight="200" MinWidth="200" Background="red"/>
-                                </muxc:TeachingTip.BleedingImageContent>
-                                <muxc:TeachingTip.Content>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
-                                        <CheckBox x:Name="CancelClosesCheckBoxInSetAttach" IsChecked="False" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </muxc:TeachingTip.Content>
-                            </muxc:TeachingTip>
-                        </muxc:TeachingTip.Attach>
                         <Button.Resources>
                             <muxc:TeachingTip x:Name="TeachingTipInResources" 
                                           AutomationProperties.Name="TeachingTipInResources"
                                           Title="We've Added Auto Saving!" 
-                                          Subtext="Documents will now automatically save to OneDrive." 
+                                          Subtitle="Documents will now automatically save to OneDrive." 
                                           Closed="OnTeachingTipClosed" 
                                           Closing="OnTeachingTipClosing"
                                           ActionButtonClick="OnTeachingTipActionButtonClicked"
-                                          CloseButtonClick="OnTeachingTipCloseButtonClicked">
+                                          CloseButtonClick="OnTeachingTipCloseButtonClicked"
+                                          Target="{x:Bind targetButton}">
                                 <muxc:TeachingTip.IconSource>
                                     <muxc:SymbolIconSource Symbol="People"/>
                                 </muxc:TeachingTip.IconSource>
-                                <muxc:TeachingTip.BleedingImageContent>
+                                <muxc:TeachingTip.HeroContent>
                                     <Grid MinHeight="200" MinWidth="200" Background="red"/>
-                                </muxc:TeachingTip.BleedingImageContent>
+                                </muxc:TeachingTip.HeroContent>
                                 <muxc:TeachingTip.Content>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
@@ -147,21 +126,20 @@
 
                 <TextBlock Grid.Row="0" Text="Tip Location:" Foreground="Red"/>
                 <ComboBox x:Name="TipLocationComboBox" AutomationProperties.Name="TipLocationComboBox" SelectedIndex="0" Grid.Row="1">
-                    <ComboBoxItem x:Name="TipInSetAttach">SetAttach</ComboBoxItem>
                     <ComboBoxItem x:Name="TipInVisualTree">VisualTree</ComboBoxItem>
                     <ComboBoxItem x:Name="TipInResources">Resources</ComboBoxItem>
                 </ComboBox>
                 <Button AutomationProperties.Name="SetTipLocationButton" Click="OnSetTipLocationButton" Grid.Row="1" Grid.Column="1">Set</Button>
                 
-                <TextBlock Grid.Row="2" Text="Bleeding Content:" Foreground="Red"/>
-                <ComboBox x:Name="BleedingContentComboBox" AutomationProperties.Name="BleedingContentComboBox" SelectedIndex="0" Grid.Row="3">
-                    <ComboBoxItem x:Name="BleedingRedSquare">Red Square</ComboBoxItem>
-                    <ComboBoxItem x:Name="BleedingBlueSquare">Blue Square</ComboBoxItem>
-                    <ComboBoxItem x:Name="BleedingImage">Image</ComboBoxItem>
-                    <ComboBoxItem x:Name="BleedingAutoSave">AutoSaveImage</ComboBoxItem>
-                    <ComboBoxItem x:Name="BleedingNoContent">No Content</ComboBoxItem>
+                <TextBlock Grid.Row="2" Text="Hero Content:" Foreground="Red"/>
+                <ComboBox x:Name="HeroContentComboBox" AutomationProperties.Name="HeroContentComboBox" SelectedIndex="0" Grid.Row="3">
+                    <ComboBoxItem x:Name="HeroContentRedSquare">Red Square</ComboBoxItem>
+                    <ComboBoxItem x:Name="HeroContentBlueSquare">Blue Square</ComboBoxItem>
+                    <ComboBoxItem x:Name="HeroContentImage">Image</ComboBoxItem>
+                    <ComboBoxItem x:Name="HeroContentAutoSave">AutoSaveImage</ComboBoxItem>
+                    <ComboBoxItem x:Name="HeroContentNoContent">No Content</ComboBoxItem>
                 </ComboBox>
-                <Button AutomationProperties.Name="SetBleedingContentButton" Click="OnSetBleedingContentButtonClicked" Grid.Row ="3" Grid.Column="1">Set</Button>
+                <Button AutomationProperties.Name="SetHeroContentButton" Click="OnSetHeroContentButtonClicked" Grid.Row ="3" Grid.Column="1">Set</Button>
 
                 <TextBlock Grid.Row="4" Text="Icon:" Foreground="Red"/>
                 <ComboBox x:Name="IconComboBox" AutomationProperties.Name="IconComboBox" SelectedIndex="0" Grid.Row="5">
@@ -178,13 +156,13 @@
                 </ComboBox>
                 <Button Click="OnSetTitleButtonClicked" Grid.Column="1" Grid.Row="7">Set</Button>
 
-                <TextBlock Grid.Row="8" Text="Subtext:" Foreground="Red"/>
-                <ComboBox x:Name="SubtextComboBox" Grid.Row="9">
-                    <ComboBoxItem x:Name="SubtextNo">No subtext</ComboBoxItem>
-                    <ComboBoxItem x:Name="SubtextSmall">Small text</ComboBoxItem>
-                    <ComboBoxItem x:Name="SubtextLong">Long text</ComboBoxItem>
+                <TextBlock Grid.Row="8" Text="Subtitle:" Foreground="Red"/>
+                <ComboBox x:Name="SubtitleComboBox" Grid.Row="9">
+                    <ComboBoxItem x:Name="SubtitleNo">No subtitle</ComboBoxItem>
+                    <ComboBoxItem x:Name="SubtitleSmall">Small text</ComboBoxItem>
+                    <ComboBoxItem x:Name="SubtitleLong">Long text</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetSubtextButtonClicked" Grid.Row="9" Grid.Column="1">Set</Button>
+                <Button Click="OnSetSubtitleButtonClicked" Grid.Row="9" Grid.Column="1">Set</Button>
 
                 <TextBlock Grid.Row="10" Text="Content:" Foreground="Red"/>
                 <ComboBox x:Name="ContentComboBox" Grid.Row="11">
@@ -198,27 +176,29 @@
                 </ComboBox>
                 <Button Click="OnSetContentButtonClicked" Grid.Row="11" Grid.Column="1">Set</Button>
 
-                <TextBlock Grid.Row="12" Text="ActionButtonText:" Foreground="Red"/>
-                <ComboBox x:Name="ActionButtonTextComboBox" SelectedIndex="0" Grid.Row="13">
-                    <ComboBoxItem x:Name="ActionButtonTextNo">No text</ComboBoxItem>
-                    <ComboBoxItem x:Name="ActionButtonTextSmall">Small text</ComboBoxItem>
-                    <ComboBoxItem x:Name="ActionButtonTextLong">Long text</ComboBoxItem>
+                <TextBlock Grid.Row="12" Text="ActionButtonContent:" Foreground="Red"/>
+                <ComboBox x:Name="ActionButtonContentComboBox" SelectedIndex="0" Grid.Row="13">
+                    <ComboBoxItem x:Name="ActionButtonContentNo">No text</ComboBoxItem>
+                    <ComboBoxItem x:Name="ActionButtonContentSmall">Small text</ComboBoxItem>
+                    <ComboBoxItem x:Name="ActionButtonContentLong">Long text</ComboBoxItem>
+                    <ComboBoxItem x:Name="ActionButtonButton">Button</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetActionButtonTextButtonClicked" Grid.Row="13" Grid.Column="1">Set</Button>
+                <Button Click="OnSetActionButtonContentButtonClicked" Grid.Row="13" Grid.Column="1">Set</Button>
 
-                <TextBlock Grid.Row="14" Text="CloseButtonText:" Foreground="Red"/>
-                <ComboBox x:Name="CloseButtonTextComboBox" SelectedIndex="0" Grid.Row="15">
-                    <ComboBoxItem x:Name="CloseButtonTextNo">No text</ComboBoxItem>
-                    <ComboBoxItem x:Name="CloseButtonTextSmall">Small text</ComboBoxItem>
-                    <ComboBoxItem x:Name="CloseButtonTextLong">Long text</ComboBoxItem>
+                <TextBlock Grid.Row="14" Text="CloseButtonContent:" Foreground="Red"/>
+                <ComboBox x:Name="CloseButtonContentComboBox" AutomationProperties.Name="CloseButtonContentComboBox" SelectedIndex="0" Grid.Row="15">
+                    <ComboBoxItem x:Name="CloseButtonContentNo">No text</ComboBoxItem>
+                    <ComboBoxItem x:Name="CloseButtonContentSmall">Small text</ComboBoxItem>
+                    <ComboBoxItem x:Name="CloseButtonContentLong">Long text</ComboBoxItem>
+                    <ComboBoxItem x:Name="CloseButtonButton">Button</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetCloseButtonTextButtonClicked" Grid.Row="15" Grid.Column="1">Set</Button>
+                <Button Click="OnSetCloseButtonContentButtonClicked" AutomationProperties.Name="SetCloseButtonContentButton" Grid.Row="15" Grid.Column="1">Set</Button>
 
-                <TextBlock Grid.Row="16" Text="BleedingImagePlacement:" Foreground="Red"/>
-                <ComboBox x:Name="BleedingImagePlacementComboBox" SelectedIndex="0" Grid.Row="17">
-                    <ComboBoxItem x:Name="BleedingPlacementAuto">Auto</ComboBoxItem>
-                    <ComboBoxItem x:Name="BleedingPlacementTop">Top</ComboBoxItem>
-                    <ComboBoxItem x:Name="BleedingPlacementBottom">Bottom</ComboBoxItem>
+                <TextBlock Grid.Row="16" Text="HeroContentPlacement:" Foreground="Red"/>
+                <ComboBox x:Name="HeroContentPlacementComboBox" SelectedIndex="0" Grid.Row="17">
+                    <ComboBoxItem x:Name="HeroContentPlacementAuto">Auto</ComboBoxItem>
+                    <ComboBoxItem x:Name="HeroContentPlacementTop">Top</ComboBoxItem>
+                    <ComboBoxItem x:Name="HeroContentPlacementBottom">Bottom</ComboBoxItem>
                 </ComboBox>
                 <Button Click="OnSetBleeingImagePlacementButtonClicked" Grid.Row="17" Grid.Column="1">Set</Button>
                 <TextBlock Grid.Row="18" Text="--------------------------------------" Foreground="Red" Grid.ColumnSpan="2"/>
@@ -264,8 +244,8 @@
                 </StackPanel>
                 <TextBlock Grid.Row="29" Text="Effective Placement:"/>
                 <TextBlock x:Name="EffectivePlacementTextBlock" AutomationProperties.Name="EffectivePlacementTextBlock" Grid.Row="29" Grid.Column="1" />
-                <TextBlock Grid.Row="30" Text="Bleeding Placement:"/>
-                <TextBlock x:Name="EffectiveBleedingPlacementTextBlock" AutomationProperties.Name="EffectiveBleedingPlacementTextBlock" Grid.Row="30" Grid.Column="1" />
+                <TextBlock Grid.Row="30" Text="Hero Placement:"/>
+                <TextBlock x:Name="EffectiveHeroContentPlacementTextBlock" AutomationProperties.Name="EffectiveHeroContentPlacementTextBlock" Grid.Row="30" Grid.Column="1" />
                 <TextBlock Grid.Row="31" Text="--------------------------------------" Foreground="Red" Grid.ColumnSpan="2"/>
                 <TextBlock Grid.Row="32" Text="ScrollViewerState" Foreground="Red"/>
                 <TextBlock Grid.Row="32" Grid.Column="1" x:Name="ScrollViewerStateTextBox" AutomationProperties.Name="ScrollViewerStateTextBox" Text="Idle"/>
@@ -332,16 +312,14 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Row="0" Text="Placement:" Foreground="Red"/>
-            <ComboBox x:Name="PlacementComboBox" AutomationProperties.Name="PlacementComboBox" Grid.Row="1">
+            <TextBlock Grid.Row="0" Text="PreferredPlacement:" Foreground="Red"/>
+            <ComboBox x:Name="PreferredPlacementComboBox" AutomationProperties.Name="PreferredPlacementComboBox" Grid.Row="1">
                 <ComboBoxItem x:Name="PlacementTop">Top</ComboBoxItem>
                 <ComboBoxItem x:Name="PlacementBottom">Bottom</ComboBoxItem>
                 <ComboBoxItem x:Name="PlacementLeft">Left</ComboBoxItem>
@@ -356,26 +334,26 @@
                 <ComboBoxItem x:Name="PlacementRightEdgeBottom">RightEdgeAlignedBottom</ComboBoxItem>
                 <ComboBoxItem x:Name="PlacementAuto">Auto</ComboBoxItem>
             </ComboBox>
-            <Button AutomationProperties.Name="SetPlacementButton" Click="OnSetPlacementButtonClicked" Grid.Row="1" Grid.Column="1">Set</Button>
+            <Button AutomationProperties.Name="SetPreferredPlacementButton" Click="OnSetPreferredPlacementButtonClicked" Grid.Row="1" Grid.Column="1">Set</Button>
 
-            <TextBlock Grid.Row="2" Text="CloseButtonKind:" Foreground="Red"/>
-            <ComboBox x:Name="CloseButtonKindComboBox" Grid.Row="3">
-                <ComboBoxItem x:Name="CloseButtonKindAuto">Auto</ComboBoxItem>
-                <ComboBoxItem x:Name="CloseButtonKindHeader">Header</ComboBoxItem>
-                <ComboBoxItem x:Name="CloseButtonKindFooter">Footer</ComboBoxItem>
-            </ComboBox>
-            <Button Click="OnSetCloseButtonKindButtonClicked" Grid.Row="3" Grid.Column="1">Set</Button>
-
-            <TextBlock Grid.Row="4" Text="IsLightDismissEnabled:" Foreground="Red"/>
-            <ComboBox x:Name="IsLightDismissEnabledComboBox" AutomationProperties.Name="IsLightDismissEnabledComboBox" Grid.Row="5">
+            <TextBlock Grid.Row="2" Text="IsLightDismissEnabled:" Foreground="Red"/>
+            <ComboBox x:Name="IsLightDismissEnabledComboBox" AutomationProperties.Name="IsLightDismissEnabledComboBox" Grid.Row="3">
                 <ComboBoxItem x:Name="IsLightDismissFalse">False</ComboBoxItem>
                 <ComboBoxItem x:Name="IsLightDismissTrue">True</ComboBoxItem>
             </ComboBox>
-            <Button AutomationProperties.Name="IsLightDismissEnabledButton" Click="OnSetIsLightDismissEnabledButtonClicked" Grid.Row="5" Grid.Column="1">Set</Button>
+            <Button AutomationProperties.Name="IsLightDismissEnabledButton" Click="OnSetIsLightDismissEnabledButtonClicked" Grid.Row="3" Grid.Column="1">Set</Button>
 
-            <TextBlock Grid.Row="6" Text="TargetOffset:" Foreground="Red"/>
-            <TextBox x:Name="TargetOffsetTextBox" Grid.Row="7" MaxWidth="100" HorizontalAlignment="Left"/>
-            <Button Click="OnSetTargetOffsetButtonClicked" Grid.Row="7" Grid.Column="1">Set</Button>
+            <TextBlock Grid.Row="4" Text="TargetOffset:" Foreground="Red"/>
+            <TextBox x:Name="TargetOffsetTextBox" Grid.Row="5" MaxWidth="100" HorizontalAlignment="Left"/>
+            <Button Click="OnSetTargetOffsetButtonClicked" Grid.Row="5" Grid.Column="1">Set</Button>
+
+            <TextBlock Grid.Row="6" Text="Pointer Mode:" Foreground="Red"/>
+            <ComboBox x:Name="PointerModeComboBox" Grid.Row="7">
+                <ComboBoxItem x:Name="PointerModeAuto">Auto</ComboBoxItem>
+                <ComboBoxItem x:Name="PointerModeOn">On</ComboBoxItem>
+                <ComboBoxItem x:Name="PointerModeOff">Off</ComboBoxItem>
+            </ComboBox>
+            <Button Click="OnSetPointerModeButtonClicked" Grid.Row="7" Grid.Column="1">Set</Button>
 
             <TextBlock Grid.Row="8" Text="Target:" Foreground="Red"/>
             <Button Grid.Row="9" AutomationProperties.Name="SetTargetButton" Click="OnSetTargetButtonClicked">Target</Button>
@@ -447,8 +425,8 @@
             <Slider Grid.Row="30" Grid.ColumnSpan="2" Minimum="0" Maximum="50" ValueChanged="ContentElevationSliderChanged" Value="32"/>
             <TextBlock Grid.Row="31" Foreground="Red" Text="Has Shadow: " VerticalAlignment="Center"/>
             <CheckBox Grid.Row="31" Grid.Column="1" Checked="OnTipShadowChecked" Unchecked="OnTipShadowUnchecked" IsChecked="True"/>
-            <TextBlock Grid.Row="32" Foreground="Red" Text="Beak Elevation" VerticalAlignment="Center"/>
-            <Slider Grid.Row="33" Grid.ColumnSpan="2" Minimum="0" Maximum="100" ValueChanged="BeakElevationSliderChanged" Value="0"/>
+            <TextBlock Grid.Row="32" Foreground="Red" Text="Pointer Elevation" VerticalAlignment="Center"/>
+            <Slider Grid.Row="33" Grid.ColumnSpan="2" Minimum="0" Maximum="100" ValueChanged="PointerElevationSliderChanged" Value="0"/>
         </Grid>
 
         <!-- Logging Output -->

@@ -149,29 +149,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private TextBlock popupVerticalOffsetTextBlock;
 
-        public ComboBox GetBleedingContentComboBox()
+        public ComboBox GetHeroContentComboBox()
         {
-            return GetElement(ref bleedingContentComboBox, "BleedingContentComboBox");
+            return GetElement(ref heroContentComboBox, "HeroContentComboBox");
         }
-        private ComboBox bleedingContentComboBox;
+        private ComboBox heroContentComboBox;
 
-        public Button GetSetBleedingContentButton()
+        public Button GetSetHeroContentButton()
         {
-            return GetElement(ref setBleedingContentButton, "SetBleedingContentButton");
+            return GetElement(ref setHeroContentButton, "SetHeroContentButton");
         }
-        private Button setBleedingContentButton;
+        private Button setHeroContentButton;
 
-        public ComboBox GetPlacementComboBox()
+        public ComboBox GetPreferredPlacementComboBox()
         {
-            return GetElement(ref placementComboBox, "PlacementComboBox");
+            return GetElement(ref preferredPlacementComboBox, "PreferredPlacementComboBox");
         }
-        private ComboBox placementComboBox;
+        private ComboBox preferredPlacementComboBox;
 
-        public Button GetSetPlacementButton()
+        public Button GetSetPreferredPlacementButton()
         {
-            return GetElement(ref setPlacementButton, "SetPlacementButton");
+            return GetElement(ref setPreferredPlacementButton, "SetPreferredPlacementButton");
         }
-        private Button setPlacementButton;
+        private Button setPreferredPlacementButton;
 
         public Button GetSetTargetButton()
         {
@@ -190,6 +190,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return GetElement(ref isLightDismissEnabledComboBox, "IsLightDismissEnabledComboBox");
         }
         private ComboBox isLightDismissEnabledComboBox;
+
+        public ComboBox GetCloseButtonContentComboBox()
+        {
+            return GetElement(ref closeButtonContentComboBox, "CloseButtonContentComboBox");
+        }
+        private ComboBox closeButtonContentComboBox;
+
+        public Button GetSetCloseButtonContentButton()
+        {
+            return GetElement(ref setCloseButtonContentButton, "SetCloseButtonContentButton");
+        }
+        private Button setCloseButtonContentButton;
 
         public Button GetIsLightDismissEnabledButton()
         {
@@ -254,6 +266,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private UIObject teachingTipAlternateCloseButton;
 
+        public UIObject GetTeachingTipCloseButton()
+        {
+            ElementCache.Clear();
+            var element = GetElement(ref teachingTipCloseButton, "C:Short Text.");
+            teachingTipCloseButton = null;
+            return element;
+        }
+        private UIObject teachingTipCloseButton;
+
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)
@@ -282,7 +303,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Auto
         }
 
-        public enum BleedingContentOptions
+        public enum HeroContentOptions
         {
             RedSquare,
             BlueSquare,
@@ -298,9 +319,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         public enum TipLocationOptions
         {
-            SetAttach,
             ResourceDictionary,
             VisualTree
+        }
+
+        public enum CloseButtonContentOptions
+        {
+            NoText,
+            ShortText,
+            LongText
         }
     }
 }

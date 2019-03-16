@@ -10,7 +10,7 @@ CppWinRTActivatableClassWithBasicFactory(TeachingTipTestHooks)
 
 
 TeachingTipTestHooksProperties::TeachingTipTestHooksProperties()
-    : m_effectiveBleedingPlacementChangedEventSource{static_cast<TeachingTipTestHooks*>(this)}
+    : m_effectiveHeroContentPlacementChangedEventSource{static_cast<TeachingTipTestHooks*>(this)}
     , m_effectivePlacementChangedEventSource{static_cast<TeachingTipTestHooks*>(this)}
     , m_idleStatusChangedEventSource{static_cast<TeachingTipTestHooks*>(this)}
     , m_offsetChangedEventSource{static_cast<TeachingTipTestHooks*>(this)}
@@ -26,14 +26,14 @@ void TeachingTipTestHooksProperties::ClearProperties()
 {
 }
 
-winrt::event_token TeachingTipTestHooksProperties::EffectiveBleedingPlacementChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value)
+winrt::event_token TeachingTipTestHooksProperties::EffectiveHeroContentPlacementChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value)
 {
-    return m_effectiveBleedingPlacementChangedEventSource.add(value);
+    return m_effectiveHeroContentPlacementChangedEventSource.add(value);
 }
 
-void TeachingTipTestHooksProperties::EffectiveBleedingPlacementChanged(winrt::event_token const& token)
+void TeachingTipTestHooksProperties::EffectiveHeroContentPlacementChanged(winrt::event_token const& token)
 {
-    m_effectiveBleedingPlacementChangedEventSource.remove(token);
+    m_effectiveHeroContentPlacementChangedEventSource.remove(token);
 }
 
 winrt::event_token TeachingTipTestHooksProperties::EffectivePlacementChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value)

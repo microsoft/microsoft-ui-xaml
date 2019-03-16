@@ -36,6 +36,9 @@ winrt::Size FlowLayoutAlgorithm::Measure(
     const wstring_view& layoutId)
 {
     SetScrollOrientation(orientation);
+
+    // If minor size is infinity, there is only one line and no need to align that line.
+    m_scrollOrientationSameAsFlow = availableSize.*Minor() == std::numeric_limits<float>::infinity();
     const auto realizationRect = RealizationRect();
     REPEATER_TRACE_INFO(L"%ls: \tMeasureLayout Realization(%.0f,%.0f,%.0f,%.0f)\n",
         layoutId.data(),
@@ -148,11 +151,10 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
     {
         // Non virtualizing host, start generating from the element 0
         anchorIndex = m_context.get().ItemCountCore() > 0 ? 0 : -1;
-        //anchorPosition = default(Point);
     }
     else
     {
-        bool isRealizationWindowConnected = m_elementManager.IsWindowConnected(RealizationRect(), GetScrollOrientation());
+        bool isRealizationWindowConnected = m_elementManager.IsWindowConnected(RealizationRect(), GetScrollOrientation(), m_scrollOrientationSameAsFlow);
         // Item spacing and size in non-virtualizing direction change can cause elements to reflow
         // and get a new column position. In that case we need the anchor to be positioned in the 
         // correct column.
@@ -177,7 +179,17 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
             if (m_elementManager.IsDataIndexRealized(anchorIndex))
             {
                 auto anchorBounds = m_elementManager.GetLayoutBoundsForDataIndex(anchorIndex);
-                anchorPosition = winrt::Point(anchorBounds.X, anchorBounds.Y);
+                if (needAnchorColumnRevaluation)
+                {
+                    // We were provided a valid anchor, but its position might be incorrect because for example it is in
+                    // the wrong column. We do know that the anchor is the first element in the row, so we can force the minor position
+                    // to start at 0.
+                    anchorPosition = MinorMajorPoint(0, anchorBounds.*MajorStart());
+                }
+                else
+                {
+                    anchorPosition = winrt::Point(anchorBounds.X, anchorBounds.Y);
+                }
             }
             else
             {
@@ -433,9 +445,22 @@ bool FlowLayoutAlgorithm::ShouldContinueFillingUpSpace(
     {
         auto realizationRect = m_context.get().RealizationRect();
         auto elementBounds = m_elementManager.GetLayoutBoundsForDataIndex(index);
+
+        auto elementMajorStart = elementBounds.*MajorStart();
+        auto elementMajorEnd = MajorEnd(elementBounds);
+        auto rectMajorStart = realizationRect.*MajorStart();
+        auto rectMajorEnd = MajorEnd(realizationRect);
+
+        auto elementMinorStart = elementBounds.*MinorStart();
+        auto elementMinorEnd = MinorEnd(elementBounds);
+        auto rectMinorStart = realizationRect.*MinorStart();
+        auto rectMinorEnd = MinorEnd(realizationRect);
+
+        // Ensure that both minor and major directions are taken into consideration so that if the scrolling direction
+        // is the same as the flow direction we still stop at the end of the viewport rectangle.
         shouldContinue =
-            (direction == GenerateDirection::Forward && elementBounds.*MajorStart() < MajorEnd(realizationRect)) ||
-            (direction == GenerateDirection::Backward && MajorEnd(elementBounds) > realizationRect.*MajorStart());
+            (direction == GenerateDirection::Forward && elementMajorStart < rectMajorEnd && elementMinorStart < rectMinorEnd) ||
+            (direction == GenerateDirection::Backward && elementMajorEnd > rectMajorStart && elementMinorEnd > rectMinorStart);
     }
 
     return shouldContinue;
@@ -574,40 +599,42 @@ void FlowLayoutAlgorithm::PerformLineAlignment(
     {
         auto bounds = m_elementManager.GetLayoutBoundsForRealizedIndex(rangeIndex);
 
-        // Note: Space at start could potentially be negative
-        if (spaceAtLineStart != 0 || spaceAtLineEnd != 0)
+        if (!m_scrollOrientationSameAsFlow)
         {
-            float totalSpace = spaceAtLineStart + spaceAtLineEnd;
-            switch (lineAlignment)
+            // Note: Space at start could potentially be negative
+            if (spaceAtLineStart != 0 || spaceAtLineEnd != 0)
             {
-            case FlowLayoutAlgorithm::LineAlignment::Start:
+                float totalSpace = spaceAtLineStart + spaceAtLineEnd;
+                switch (lineAlignment)
+                {
+                case FlowLayoutAlgorithm::LineAlignment::Start:
                 {
                     bounds.*MinorStart() -= spaceAtLineStart;
                     break;
                 }
 
-            case FlowLayoutAlgorithm::LineAlignment::End:
+                case FlowLayoutAlgorithm::LineAlignment::End:
                 {
                     bounds.*MinorStart() += spaceAtLineEnd;
                     break;
                 }
 
-            case FlowLayoutAlgorithm::LineAlignment::Center:
+                case FlowLayoutAlgorithm::LineAlignment::Center:
                 {
                     bounds.*MinorStart() -= spaceAtLineStart;
                     bounds.*MinorStart() += totalSpace / 2;
                     break;
                 }
-            
-            case FlowLayoutAlgorithm::LineAlignment::SpaceAround:
+
+                case FlowLayoutAlgorithm::LineAlignment::SpaceAround:
                 {
                     float interItemSpace = countInLine >= 1 ? totalSpace / (countInLine * 2) : 0;
                     bounds.*MinorStart() -= spaceAtLineStart;
-                    bounds.*MinorStart() += interItemSpace * ((rangeIndex - lineStartIndex + 1)*2 - 1);
+                    bounds.*MinorStart() += interItemSpace * ((rangeIndex - lineStartIndex + 1) * 2 - 1);
                     break;
                 }
 
-            case FlowLayoutAlgorithm::LineAlignment::SpaceBetween:
+                case FlowLayoutAlgorithm::LineAlignment::SpaceBetween:
                 {
                     float interItemSpace = countInLine > 1 ? totalSpace / (countInLine - 1) : 0;
                     bounds.*MinorStart() -= spaceAtLineStart;
@@ -615,12 +642,13 @@ void FlowLayoutAlgorithm::PerformLineAlignment(
                     break;
                 }
 
-            case FlowLayoutAlgorithm::LineAlignment::SpaceEvenly:
+                case FlowLayoutAlgorithm::LineAlignment::SpaceEvenly:
                 {
                     float interItemSpace = countInLine >= 1 ? totalSpace / (countInLine + 1) : 0;
                     bounds.*MinorStart() -= spaceAtLineStart;
                     bounds.*MinorStart() += interItemSpace * (rangeIndex - lineStartIndex + 1);
                     break;
+                }
                 }
             }
         }

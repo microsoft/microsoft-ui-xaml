@@ -17,9 +17,9 @@
                             <VisualStateGroup x:Name="LightDismissStates">
                                 <VisualState x:Name="LightDismiss">
                                     <VisualState.Setters>
-                                        <Setter Target="BeakEdgeBorder.Background" Value="{ThemeResource TeachingTipTransientBackground}"/>
-                                        <Setter Target="BeakPolygon.Fill" Value="{ThemeResource TeachingTipTransientBackground}"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Fill" Value="{ThemeResource TeachingTipTransientBackground}"/>
+                                        <Setter Target="PointerEdgeBorder.Background" Value="{ThemeResource TeachingTipTransientBackground}"/>
+                                        <Setter Target="PointerPolygon.Fill" Value="{ThemeResource TeachingTipTransientBackground}"/>
+                                        <Setter Target="TopPointerPolygonHighlight.Fill" Value="{ThemeResource TeachingTipTransientBackground}"/>
                                         <Setter Target="ContentRootGrid.Background" Value="{ThemeResource TeachingTipTransientBackground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -99,15 +99,15 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="BleedingContentPlacementStates">
-                                <VisualState x:Name="BleedingContentTop">
+                            <VisualStateGroup x:Name="HeroContentPlacementStates">
+                                <VisualState x:Name="HeroContentTop">
                                     <VisualState.Setters>
-                                        <Setter Target="BleedingImageBorder.(Grid.Row)" Value="0"/>
+                                        <Setter Target="HeroContentBorder.(Grid.Row)" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="BleedingContentBottom">
+                                <VisualState x:Name="HeroContentBottom">
                                     <VisualState.Setters>
-                                        <Setter Target="BleedingImageBorder.(Grid.Row)" Value="2"/>
+                                        <Setter Target="HeroContentBorder.(Grid.Row)" Value="2"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -115,289 +115,289 @@
                                 <VisualState x:Name="Top">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessTop}"/>
-                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Stretch"/>
-                                        <Setter Target="BeakEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="BeakEdgeBorder.Width" Value="Auto"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Row)" Value="4"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Column)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.RowSpan)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="PointerEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="PointerEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="4"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
+                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Points" Value="0,0 10,10, 20,0"/>
-                                        <Setter Target="BeakPolygon.(Grid.Row)" Value="4"/>
-                                        <Setter Target="BeakPolygon.(Grid.Column)" Value="2"/>
-                                        <Setter Target="BeakPolygon.HorizontalAlignment" Value="Center"/>
-                                        <Setter Target="BeakPolygon.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="BeakPolygon.Margin" Value="{StaticResource TeachingTipBeakPolygonMarginTop}"/>
+                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerPolygon.Points" Value="0,0 10,10, 20,0"/>
+                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="4"/>
+                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="2"/>
+                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Center"/>
+                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginTop}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Bottom">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessBottom}"/>
-                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Stretch"/>
-                                        <Setter Target="BeakEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="BeakEdgeBorder.Width" Value="Auto"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Row)" Value="0"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Column)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.RowSpan)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Visible"/>
-                                        <Setter Target="TopBeakPolygonHighlight.HorizontalAlignment" Value="Center"/>
+                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="PointerEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="PointerEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="0"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
+                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Visible"/>
+                                        <Setter Target="TopPointerPolygonHighlight.HorizontalAlignment" Value="Center"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Points" Value="0,10 10,0 20,10"/>
-                                        <Setter Target="BeakPolygon.(Grid.Row)" Value="0"/>
-                                        <Setter Target="BeakPolygon.(Grid.Column)" Value="2"/>
-                                        <Setter Target="BeakPolygon.HorizontalAlignment" Value="Center"/>
-                                        <Setter Target="BeakPolygon.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="BeakPolygon.Margin" Value="{StaticResource TeachingTipBeakPolygonMarginBottom}"/>
+                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerPolygon.Points" Value="0,10 10,0 20,10"/>
+                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="0"/>
+                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="2"/>
+                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Center"/>
+                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginBottom}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Left">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessLeft}"/>
-                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Stretch"/>
-                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="BeakEdgeBorder.Height" Value="Auto"/>
-                                        <Setter Target="BeakEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Row)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Column)" Value="4"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.RowSpan)" Value="3"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="PointerEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="PointerEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="4"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="3"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
+                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Points" Value="0,0 10,10 0,20"/>
-                                        <Setter Target="BeakPolygon.(Grid.Row)" Value="2"/>
-                                        <Setter Target="BeakPolygon.(Grid.Column)" Value="4"/>
-                                        <Setter Target="BeakPolygon.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="BeakPolygon.VerticalAlignment" Value="Center"/>
-                                        <Setter Target="BeakPolygon.Margin" Value="{StaticResource TeachingTipBeakPolygonMarginLeft}"/>
+                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerPolygon.Points" Value="0,0 10,10 0,20"/>
+                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="2"/>
+                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="4"/>
+                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Center"/>
+                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginLeft}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Right">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessRight}"/>
-                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Stretch"/>
-                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="BeakEdgeBorder.Height" Value="Auto"/>
-                                        <Setter Target="BeakEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Row)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Column)" Value="0"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.RowSpan)" Value="3"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="PointerEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="PointerEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="0"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="3"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
+                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Points" Value="10,0 0,10 10,20"/>
-                                        <Setter Target="BeakPolygon.(Grid.Row)" Value="2"/>
-                                        <Setter Target="BeakPolygon.(Grid.Column)" Value="0"/>
-                                        <Setter Target="BeakPolygon.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="BeakPolygon.VerticalAlignment" Value="Center"/>
-                                        <Setter Target="BeakPolygon.Margin" Value="{StaticResource TeachingTipBeakPolygonMarginRight}"/>
+                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerPolygon.Points" Value="10,0 0,10 10,20"/>
+                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="2"/>
+                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="0"/>
+                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Center"/>
+                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginRight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="TopEdgeAlignedRight">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessTop}"/>
-                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Stretch"/>
-                                        <Setter Target="BeakEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="BeakEdgeBorder.Width" Value="Auto"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Row)" Value="4"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Column)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.RowSpan)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="PointerEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="PointerEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="4"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
+                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Points" Value="0,0 10,10 20,0"/>
-                                        <Setter Target="BeakPolygon.(Grid.Row)" Value="4"/>
-                                        <Setter Target="BeakPolygon.(Grid.Column)" Value="2"/>
-                                        <Setter Target="BeakPolygon.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="BeakPolygon.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="BeakPolygon.Margin" Value="{StaticResource TeachingTipBeakPolygonMarginTop}"/>
+                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerPolygon.Points" Value="0,0 10,10 20,0"/>
+                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="4"/>
+                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="2"/>
+                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginTop}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="TopEdgeAlignedLeft">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessTop}"/>
-                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Stretch"/>
-                                        <Setter Target="BeakEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="BeakEdgeBorder.Width" Value="Auto"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Row)" Value="4"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Column)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.RowSpan)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="PointerEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="PointerEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="4"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
+                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Points" Value="0,0 10,10 20,0"/>
-                                        <Setter Target="BeakPolygon.(Grid.Row)" Value="4"/>
-                                        <Setter Target="BeakPolygon.(Grid.Column)" Value="2"/>
-                                        <Setter Target="BeakPolygon.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="BeakPolygon.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="BeakPolygon.Margin" Value="{StaticResource TeachingTipBeakPolygonMarginTop}"/>
+                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerPolygon.Points" Value="0,0 10,10 20,0"/>
+                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="4"/>
+                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="2"/>
+                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginTop}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="BottomEdgeAlignedRight">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessBottom}"/>
-                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Stretch"/>
-                                        <Setter Target="BeakEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="BeakEdgeBorder.Width" Value="Auto"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Row)" Value="0"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Column)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.RowSpan)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Visible"/>
-                                        <Setter Target="TopBeakPolygonHighlight.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="PointerEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="PointerEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="0"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
+                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Visible"/>
+                                        <Setter Target="TopPointerPolygonHighlight.HorizontalAlignment" Value="Left"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Points" Value="0,10 10,0 20,10"/>
-                                        <Setter Target="BeakPolygon.(Grid.Row)" Value="0"/>
-                                        <Setter Target="BeakPolygon.(Grid.Column)" Value="2"/>
-                                        <Setter Target="BeakPolygon.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="BeakPolygon.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="BeakPolygon.Margin" Value="{StaticResource TeachingTipBeakPolygonMarginBottom}"/>
+                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerPolygon.Points" Value="0,10 10,0 20,10"/>
+                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="0"/>
+                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="2"/>
+                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginBottom}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="BottomEdgeAlignedLeft">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessBottom}"/>
-                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Stretch"/>
-                                        <Setter Target="BeakEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="BeakEdgeBorder.Width" Value="Auto"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Row)" Value="0"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Column)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.RowSpan)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Visible"/>
-                                        <Setter Target="TopBeakPolygonHighlight.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="PointerEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="PointerEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="0"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
+                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Visible"/>
+                                        <Setter Target="TopPointerPolygonHighlight.HorizontalAlignment" Value="Right"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Points" Value="0,10 10,0 20,10"/>
-                                        <Setter Target="BeakPolygon.(Grid.Row)" Value="0"/>
-                                        <Setter Target="BeakPolygon.(Grid.Column)" Value="2"/>
-                                        <Setter Target="BeakPolygon.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="BeakPolygon.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="BeakPolygon.Margin" Value="{StaticResource TeachingTipBeakPolygonMarginBottom}"/>
+                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerPolygon.Points" Value="0,10 10,0 20,10"/>
+                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="0"/>
+                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="2"/>
+                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginBottom}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftEdgeAlignedTop">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessLeft}"/>
-                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Stretch"/>
-                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="BeakEdgeBorder.Height" Value="Auto"/>
-                                        <Setter Target="BeakEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Row)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Column)" Value="4"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.RowSpan)" Value="3"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="PointerEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="PointerEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="4"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="3"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
+                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Points" Value="0,0 10,10 0,20"/>
-                                        <Setter Target="BeakPolygon.(Grid.Row)" Value="2"/>
-                                        <Setter Target="BeakPolygon.(Grid.Column)" Value="4"/>
-                                        <Setter Target="BeakPolygon.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="BeakPolygon.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="BeakPolygon.Margin" Value="{StaticResource TeachingTipBeakPolygonMarginLeft}"/>
+                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerPolygon.Points" Value="0,0 10,10 0,20"/>
+                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="2"/>
+                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="4"/>
+                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginLeft}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftEdgeAlignedBottom">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessLeft}"/>
-                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Stretch"/>
-                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="BeakEdgeBorder.Height" Value="Auto"/>
-                                        <Setter Target="BeakEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Row)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Column)" Value="4"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.RowSpan)" Value="3"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="PointerEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="PointerEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="4"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="3"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
+                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Points" Value="0,0 10,10 0,20"/>
-                                        <Setter Target="BeakPolygon.(Grid.Row)" Value="2"/>
-                                        <Setter Target="BeakPolygon.(Grid.Column)" Value="4"/>
-                                        <Setter Target="BeakPolygon.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="BeakPolygon.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="BeakPolygon.Margin" Value="{StaticResource TeachingTipBeakPolygonMarginLeft}"/>
+                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerPolygon.Points" Value="0,0 10,10 0,20"/>
+                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="2"/>
+                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="4"/>
+                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginLeft}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="RightEdgeAlignedTop">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessRight}"/>
-                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Stretch"/>
-                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="BeakEdgeBorder.Height" Value="Auto"/>
-                                        <Setter Target="BeakEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Row)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Column)" Value="0"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.RowSpan)" Value="3"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="PointerEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="PointerEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="0"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="3"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
+                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Points" Value="10,0 0,10 10,20"/>
-                                        <Setter Target="BeakPolygon.(Grid.Row)" Value="2"/>
-                                        <Setter Target="BeakPolygon.(Grid.Column)" Value="0"/>
-                                        <Setter Target="BeakPolygon.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="BeakPolygon.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="BeakPolygon.Margin" Value="{StaticResource TeachingTipBeakPolygonMarginRight}"/>
+                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerPolygon.Points" Value="10,0 0,10 10,20"/>
+                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="2"/>
+                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="0"/>
+                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginRight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="RightEdgeAlignedBottom">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessRight}"/>
-                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakEdgeBorder.VerticalAlignment" Value="Stretch"/>
-                                        <Setter Target="BeakEdgeBorder.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="BeakEdgeBorder.Height" Value="Auto"/>
-                                        <Setter Target="BeakEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Row)" Value="1"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.Column)" Value="0"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.RowSpan)" Value="3"/>
-                                        <Setter Target="BeakEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="PointerEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="PointerEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="1"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="0"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="3"/>
+                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
+                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="BeakPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="BeakPolygon.Points" Value="10,0 0,10 10,20"/>
-                                        <Setter Target="BeakPolygon.(Grid.Row)" Value="2"/>
-                                        <Setter Target="BeakPolygon.(Grid.Column)" Value="0"/>
-                                        <Setter Target="BeakPolygon.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="BeakPolygon.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="BeakPolygon.Margin" Value="{StaticResource TeachingTipBeakPolygonMarginRight}"/>
+                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="PointerPolygon.Points" Value="10,0 0,10 10,20"/>
+                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="2"/>
+                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="0"/>
+                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginRight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Untargeted">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessUntargeted}"/>
-                                        <Setter Target="BeakEdgeBorder.Visibility" Value="Collapsed"/>
-                                        <Setter Target="TopBeakPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="BeakPolygon.Visibility" Value="Collapsed"/>
+                                        <Setter Target="PointerPolygon.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -408,32 +408,32 @@
                               MaxWidth="{ThemeResource TeachingTipMaxWidth}"
                               AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
-                                <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>
+                                <ColumnDefinition Width="{StaticResource TeachingTipPointerShortSideLength}"/>
+                                <ColumnDefinition Width="{StaticResource TeachingTipPointerMargin}"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>
-                                <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
+                                <ColumnDefinition Width="{StaticResource TeachingTipPointerMargin}"/>
+                                <ColumnDefinition Width="{StaticResource TeachingTipPointerShortSideLength}"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="{StaticResource TeachingTipBeakShortSideLength}"/>
-                                <RowDefinition Height="{StaticResource TeachingTipBeakMargin}"/>
+                                <RowDefinition Height="{StaticResource TeachingTipPointerShortSideLength}"/>
+                                <RowDefinition Height="{StaticResource TeachingTipPointerMargin}"/>
                                 <RowDefinition Height="*"/>
-                                <RowDefinition Height="{StaticResource TeachingTipBeakMargin}"/>
-                                <RowDefinition Height="{StaticResource TeachingTipBeakShortSideLength}"/>
+                                <RowDefinition Height="{StaticResource TeachingTipPointerMargin}"/>
+                                <RowDefinition Height="{StaticResource TeachingTipPointerShortSideLength}"/>
                             </Grid.RowDefinitions>
-                           <!-- This BeakEdgeBorder needs to be z ordered underneath the BeakPolygon while the BeakOcclusionGrid needs to be over it, hence declaring these parts
-                                 in this order. This is to achieve the desired occlusion of the beaks content edge border. The beak edge border is a low opacity highlight,
+                           <!-- This PointerEdgeBorder needs to be z ordered underneath the PointerPolygon while the PointerOcclusionGrid needs to be over it, hence declaring these parts
+                                 in this order. This is to achieve the desired occlusion of the pointer's content edge border. The pointer edge border is a low opacity highlight,
                                  which means we need to have the background color present underneath the highlight, hence the double grid here. -->
-                            <Grid x:Name="BeakEdgeBorder" Background="{TemplateBinding Background}">
+                            <Grid x:Name="PointerEdgeBorder" Background="{TemplateBinding Background}">
                                 <Grid Background="{ThemeResource TeachingTipBorderBrush}"/>
                             </Grid>
-                            <Polygon x:Name="BeakPolygon"
+                            <Polygon x:Name="PointerPolygon"
                                      Fill="{TemplateBinding Background}"
                                      HorizontalAlignment="Left"
                                      VerticalAlignment="Top"
                                      Stroke="{ThemeResource TeachingTipBorderBrush}"
                                      StrokeThickness="{StaticResource TeachingTipBorderThickness}"/>
-                            <Grid x:Name="BeakOcclusionGrid" 
+                            <Grid x:Name="PointerOcclusionGrid" 
                                   HorizontalAlignment="Left" 
                                   VerticalAlignment="Top" 
                                   MinHeight="{ThemeResource TeachingTipMinHeight}" 
@@ -443,20 +443,20 @@
                                   Grid.ColumnSpan="5"
                                   Grid.RowSpan="5">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
-                                    <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>
+                                    <ColumnDefinition Width="{StaticResource TeachingTipPointerShortSideLength}"/>
+                                    <ColumnDefinition Width="{StaticResource TeachingTipPointerMargin}"/>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="{StaticResource TeachingTipBeakMargin}"/>
-                                    <ColumnDefinition Width="{StaticResource TeachingTipBeakShortSideLength}"/>
+                                    <ColumnDefinition Width="{StaticResource TeachingTipPointerMargin}"/>
+                                    <ColumnDefinition Width="{StaticResource TeachingTipPointerShortSideLength}"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="{StaticResource TeachingTipBeakShortSideLength}"/>
-                                    <RowDefinition Height="{StaticResource TeachingTipBeakMargin}"/>
+                                    <RowDefinition Height="{StaticResource TeachingTipPointerShortSideLength}"/>
+                                    <RowDefinition Height="{StaticResource TeachingTipPointerMargin}"/>
                                     <RowDefinition Height="*"/>
-                                    <RowDefinition Height="{StaticResource TeachingTipBeakMargin}"/>
-                                    <RowDefinition Height="{StaticResource TeachingTipBeakShortSideLength}"/>
+                                    <RowDefinition Height="{StaticResource TeachingTipPointerMargin}"/>
+                                    <RowDefinition Height="{StaticResource TeachingTipPointerShortSideLength}"/>
                                 </Grid.RowDefinitions>
-                                <Polygon x:Name="TopBeakPolygonHighlight"
+                                <Polygon x:Name="TopPointerPolygonHighlight"
                                          Grid.Row="0"
                                          Grid.Column="2"
                                          Margin="{StaticResource TeachingTipTopHighlightOffsetForBorder}"
@@ -477,8 +477,8 @@
                                         <RowDefinition Height="*"/>
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
-                                    <Border x:Name="BleedingImageBorder" Grid.Row="0" Child="{TemplateBinding BleedingImageContent}" Background="{TemplateBinding Background}"/>
-                                    <Grid x:Name="NonBleedingContentRootGrid" Grid.Row="1">
+                                    <Border x:Name="HeroContentBorder" Grid.Row="0" Child="{TemplateBinding HeroContent}" Background="{TemplateBinding Background}"/>
+                                    <Grid x:Name="NonHeroContentRootGrid" Grid.Row="1">
                                         <ScrollViewer>
                                             <StackPanel Margin="{StaticResource TeachingTipContentMargin}">
                                                 <Grid Grid.Row="0">
@@ -490,7 +490,7 @@
                                                     <Border x:Name="IconBorder" Grid.Column="0" Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}"/>
                                                     <StackPanel x:Name="TitlesStackPanel" Grid.Column="1">
                                                         <TextBlock x:Name="TitleTextBlock" Grid.Column="0" Text="{TemplateBinding Title}" TextWrapping="WrapWholeWords" FontWeight="SemiBold"/>
-                                                        <TextBlock x:Name="SubtextTextBlock" Grid.Row="1" Text="{TemplateBinding Subtext}" TextWrapping="WrapWholeWords"/>
+                                                        <TextBlock x:Name="SubtitleTextBlock" Grid.Row="1" Text="{TemplateBinding Subtitle}" TextWrapping="WrapWholeWords"/>
                                                     </StackPanel>
                                                 </Grid>
                                                 <ContentPresenter x:Name="MainContentPresenter" Grid.Row="1" Content="{TemplateBinding Content}"/>
@@ -500,12 +500,12 @@
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
                                                     <Button x:Name="ActionButton"
-                                                            Content="{TemplateBinding ActionButtonText}"
+                                                            Content="{TemplateBinding ActionButtonContent}"
                                                             Style="{TemplateBinding ActionButtonStyle}" 
                                                             Command="{TemplateBinding ActionButtonCommand}"
                                                             CommandParameter="{TemplateBinding ActionButtonCommandParameter}"/>
                                                     <Button x:Name="CloseButton"
-                                                            Content="{TemplateBinding CloseButtonText}"
+                                                            Content="{TemplateBinding CloseButtonContent}"
                                                             Style="{TemplateBinding CloseButtonStyle}"
                                                             Command="{TemplateBinding CloseButtonCommand}"
                                                             CommandParameter="{TemplateBinding CloseButtonCommandParameter}"

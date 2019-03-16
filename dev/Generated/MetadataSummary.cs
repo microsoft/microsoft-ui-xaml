@@ -36,13 +36,19 @@ namespace CustomTasks
             HasCustomActivationFactoryMetadata["AcrylicBrush"] = true;
             // AcrylicBrush -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["AcrylicBrush.AlwaysUseFallback"] = true;
+            PropChangedCallbackMethodNameMetadata["AcrylicBrush.AlwaysUseFallback"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["AcrylicBrush.BackgroundSource"] = true;
+            PropChangedCallbackMethodNameMetadata["AcrylicBrush.BackgroundSource"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["AcrylicBrush.TintColor"] = true;
+            PropChangedCallbackMethodNameMetadata["AcrylicBrush.TintColor"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["AcrylicBrush.TintLuminosityOpacity"] = true;
+            PropChangedCallbackMethodNameMetadata["AcrylicBrush.TintLuminosityOpacity"] = "OnPropertyChanged";
             PropValidationCallbackMetadata["AcrylicBrush.TintLuminosityOpacity"] = "CoerceToZeroOneRange_Nullable";
             NeedsPropChangedCallbackMetadata["AcrylicBrush.TintOpacity"] = true;
+            PropChangedCallbackMethodNameMetadata["AcrylicBrush.TintOpacity"] = "OnPropertyChanged";
             PropValidationCallbackMetadata["AcrylicBrush.TintOpacity"] = "CoerceToZeroOneRange";
             NeedsPropChangedCallbackMetadata["AcrylicBrush.TintTransitionDuration"] = true;
+            PropChangedCallbackMethodNameMetadata["AcrylicBrush.TintTransitionDuration"] = "OnPropertyChanged";
             // AcrylicBrush -- DefaultValueMetadata
             DefaultValueMetadata["AcrylicBrush.BackgroundSource"] = @"winrt::AcrylicBackgroundSource::Backdrop";
             DefaultValueMetadata["AcrylicBrush.TintColor"] = @"AcrylicBrush::sc_defaultTintColor";
@@ -52,15 +58,10 @@ namespace CustomTasks
             IncludedTypesMetadata["AnimatedVisualPlayer"] = true;
             // AnimatedVisualPlayer -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.AutoPlay"] = true;
-            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.AutoPlay"] = "OnAutoPlayPropertyChanged";
             NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.FallbackContent"] = true;
-            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.FallbackContent"] = "OnFallbackContentPropertyChanged";
             NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.PlaybackRate"] = true;
-            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.PlaybackRate"] = "OnPlaybackRatePropertyChanged";
             NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.Source"] = true;
-            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.Source"] = "OnSourcePropertyChanged";
             NeedsPropChangedCallbackMetadata["AnimatedVisualPlayer.Stretch"] = true;
-            PropChangedCallbackMethodNameMetadata["AnimatedVisualPlayer.Stretch"] = "OnStretchPropertyChanged";
             // AnimatedVisualPlayer -- DefaultValueMetadata
             DefaultValueMetadata["AnimatedVisualPlayer.AutoPlay"] = @"true";
             DefaultValueMetadata["AnimatedVisualPlayer.PlaybackRate"] = @"1";
@@ -78,24 +79,43 @@ namespace CustomTasks
             IncludedTypesMetadata["ColorPicker"] = true;
             // ColorPicker -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["ColorPicker.Color"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.Color"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.ColorSpectrumComponents"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.ColorSpectrumComponents"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.ColorSpectrumShape"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.ColorSpectrumShape"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.IsAlphaEnabled"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.IsAlphaEnabled"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.IsAlphaSliderVisible"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.IsAlphaSliderVisible"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.IsAlphaTextInputVisible"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.IsAlphaTextInputVisible"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.IsColorChannelTextInputVisible"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.IsColorChannelTextInputVisible"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.IsColorPreviewVisible"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.IsColorPreviewVisible"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.IsColorSliderVisible"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.IsColorSliderVisible"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.IsColorSpectrumVisible"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.IsColorSpectrumVisible"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.IsHexInputVisible"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.IsHexInputVisible"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.IsMoreButtonVisible"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.IsMoreButtonVisible"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.MaxHue"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.MaxHue"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.MaxSaturation"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.MaxSaturation"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.MaxValue"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.MaxValue"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.MinHue"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.MinHue"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.MinSaturation"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.MinSaturation"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.MinValue"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.MinValue"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorPicker.PreviousColor"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorPicker.PreviousColor"] = "OnPropertyChanged";
             // ColorPicker -- DefaultValueMetadata
             DefaultValueMetadata["ColorPicker.Color"] = @"{ 255, 255, 255, 255 }";
             DefaultValueMetadata["ColorPicker.ColorSpectrumComponents"] = @"winrt::ColorSpectrumComponents::HueSaturation";
@@ -122,15 +142,25 @@ namespace CustomTasks
             IncludedTypesMetadata["ColorSpectrum"] = true;
             // ColorSpectrum -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["ColorSpectrum.Color"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorSpectrum.Color"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorSpectrum.Components"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorSpectrum.Components"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorSpectrum.HsvColor"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorSpectrum.HsvColor"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorSpectrum.MaxHue"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorSpectrum.MaxHue"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorSpectrum.MaxSaturation"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorSpectrum.MaxSaturation"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorSpectrum.MaxValue"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorSpectrum.MaxValue"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorSpectrum.MinHue"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorSpectrum.MinHue"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorSpectrum.MinSaturation"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorSpectrum.MinSaturation"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorSpectrum.MinValue"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorSpectrum.MinValue"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ColorSpectrum.Shape"] = true;
+            PropChangedCallbackMethodNameMetadata["ColorSpectrum.Shape"] = "OnPropertyChanged";
             // ColorSpectrum -- DefaultValueMetadata
             DefaultValueMetadata["ColorSpectrum.Color"] = @"{ 255, 255, 255, 255 }";
             DefaultValueMetadata["ColorSpectrum.Components"] = @"winrt::ColorSpectrumComponents::HueSaturation";
@@ -180,9 +210,13 @@ namespace CustomTasks
             IncludedTypesMetadata["FlowLayout"] = true;
             // FlowLayout -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["FlowLayout.LineAlignment"] = true;
+            PropChangedCallbackMethodNameMetadata["FlowLayout.LineAlignment"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["FlowLayout.MinColumnSpacing"] = true;
+            PropChangedCallbackMethodNameMetadata["FlowLayout.MinColumnSpacing"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["FlowLayout.MinRowSpacing"] = true;
+            PropChangedCallbackMethodNameMetadata["FlowLayout.MinRowSpacing"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["FlowLayout.Orientation"] = true;
+            PropChangedCallbackMethodNameMetadata["FlowLayout.Orientation"] = "OnPropertyChanged";
             // FlowLayout -- DefaultValueMetadata
             DefaultValueMetadata["FlowLayout.LineAlignment"] = @"winrt::FlowLayoutLineAlignment::Start";
             DefaultValueMetadata["FlowLayout.MinColumnSpacing"] = @"0.0";
@@ -221,11 +255,18 @@ namespace CustomTasks
             IncludedTypesMetadata["ItemsRepeater"] = true;
             // ItemsRepeater -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["ItemsRepeater.Animator"] = true;
+            PropChangedCallbackMethodNameMetadata["ItemsRepeater.Animator"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["ItemsRepeater.Background"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ItemsRepeater.HorizontalCacheLength"] = true;
+            PropChangedCallbackMethodNameMetadata["ItemsRepeater.HorizontalCacheLength"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ItemsRepeater.ItemsSource"] = true;
+            PropChangedCallbackMethodNameMetadata["ItemsRepeater.ItemsSource"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ItemsRepeater.ItemTemplate"] = true;
+            PropChangedCallbackMethodNameMetadata["ItemsRepeater.ItemTemplate"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ItemsRepeater.Layout"] = true;
+            PropChangedCallbackMethodNameMetadata["ItemsRepeater.Layout"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ItemsRepeater.VerticalCacheLength"] = true;
+            PropChangedCallbackMethodNameMetadata["ItemsRepeater.VerticalCacheLength"] = "OnPropertyChanged";
             // ItemsRepeater -- DefaultValueMetadata
             DefaultValueMetadata["ItemsRepeater.HorizontalCacheLength"] = @"2.0";
             DefaultValueMetadata["ItemsRepeater.Layout"] = @"winrt::StackLayout()";
@@ -254,39 +295,73 @@ namespace CustomTasks
             IncludedTypesMetadata["NavigationView"] = true;
             // NavigationView -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["NavigationView.AlwaysShowHeader"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.AlwaysShowHeader"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.AutoSuggestBox"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.AutoSuggestBox"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.CompactModeThresholdWidth"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.CompactModeThresholdWidth"] = "OnPropertyChanged";
             PropValidationCallbackMetadata["NavigationView.CompactModeThresholdWidth"] = "CoerceToGreaterThanZero";
             NeedsPropChangedCallbackMetadata["NavigationView.CompactPaneLength"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.CompactPaneLength"] = "OnPropertyChanged";
             PropValidationCallbackMetadata["NavigationView.CompactPaneLength"] = "CoerceToGreaterThanZero";
+            PropChangedCallbackMethodNameMetadata["NavigationView.ContentOverlay"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.DisplayMode"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.DisplayMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.ExpandedModeThresholdWidth"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.ExpandedModeThresholdWidth"] = "OnPropertyChanged";
             PropValidationCallbackMetadata["NavigationView.ExpandedModeThresholdWidth"] = "CoerceToGreaterThanZero";
             NeedsPropChangedCallbackMetadata["NavigationView.Header"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.Header"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.HeaderTemplate"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.HeaderTemplate"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.IsBackButtonVisible"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.IsBackButtonVisible"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.IsBackEnabled"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.IsBackEnabled"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.IsPaneOpen"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.IsPaneOpen"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.IsPaneToggleButtonVisible"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.IsPaneToggleButtonVisible"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.IsPaneVisible"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.IsPaneVisible"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.IsSettingsVisible"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.IsSettingsVisible"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.MenuItemContainerStyle"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.MenuItemContainerStyle"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.MenuItemContainerStyleSelector"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.MenuItemContainerStyleSelector"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.MenuItems"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.MenuItems"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.MenuItemsSource"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.MenuItemsSource"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.MenuItemTemplate"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.MenuItemTemplate"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.MenuItemTemplateSelector"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.MenuItemTemplateSelector"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.OpenPaneLength"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.OpenPaneLength"] = "OnPropertyChanged";
             PropValidationCallbackMetadata["NavigationView.OpenPaneLength"] = "CoerceToGreaterThanZero";
             NeedsPropChangedCallbackMetadata["NavigationView.OverflowLabelMode"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.OverflowLabelMode"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["NavigationView.PaneCustomContent"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.PaneDisplayMode"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.PaneDisplayMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.PaneFooter"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.PaneFooter"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["NavigationView.PaneHeader"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.PaneTitle"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.PaneTitle"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.PaneToggleButtonStyle"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.PaneToggleButtonStyle"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.SelectedItem"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.SelectedItem"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.SelectionFollowsFocus"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.SelectionFollowsFocus"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.SettingsItem"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.SettingsItem"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["NavigationView.ShoulderNavigationEnabled"] = true;
+            PropChangedCallbackMethodNameMetadata["NavigationView.ShoulderNavigationEnabled"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["NavigationView.TemplateSettings"] = "OnPropertyChanged";
             // NavigationView -- DefaultValueMetadata
             DefaultValueMetadata["NavigationView.AlwaysShowHeader"] = @"true";
             DefaultValueMetadata["NavigationView.CompactModeThresholdWidth"] = @"641.0";
@@ -328,19 +403,33 @@ namespace CustomTasks
             IncludedTypesMetadata["ParallaxView"] = true;
             // ParallaxView -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["ParallaxView.Child"] = true;
+            PropChangedCallbackMethodNameMetadata["ParallaxView.Child"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ParallaxView.HorizontalShift"] = true;
+            PropChangedCallbackMethodNameMetadata["ParallaxView.HorizontalShift"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ParallaxView.HorizontalSourceEndOffset"] = true;
+            PropChangedCallbackMethodNameMetadata["ParallaxView.HorizontalSourceEndOffset"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ParallaxView.HorizontalSourceOffsetKind"] = true;
+            PropChangedCallbackMethodNameMetadata["ParallaxView.HorizontalSourceOffsetKind"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ParallaxView.HorizontalSourceStartOffset"] = true;
+            PropChangedCallbackMethodNameMetadata["ParallaxView.HorizontalSourceStartOffset"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ParallaxView.IsHorizontalShiftClamped"] = true;
+            PropChangedCallbackMethodNameMetadata["ParallaxView.IsHorizontalShiftClamped"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ParallaxView.IsVerticalShiftClamped"] = true;
+            PropChangedCallbackMethodNameMetadata["ParallaxView.IsVerticalShiftClamped"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ParallaxView.MaxHorizontalShiftRatio"] = true;
+            PropChangedCallbackMethodNameMetadata["ParallaxView.MaxHorizontalShiftRatio"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ParallaxView.MaxVerticalShiftRatio"] = true;
+            PropChangedCallbackMethodNameMetadata["ParallaxView.MaxVerticalShiftRatio"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ParallaxView.Source"] = true;
+            PropChangedCallbackMethodNameMetadata["ParallaxView.Source"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ParallaxView.VerticalShift"] = true;
+            PropChangedCallbackMethodNameMetadata["ParallaxView.VerticalShift"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ParallaxView.VerticalSourceEndOffset"] = true;
+            PropChangedCallbackMethodNameMetadata["ParallaxView.VerticalSourceEndOffset"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ParallaxView.VerticalSourceOffsetKind"] = true;
+            PropChangedCallbackMethodNameMetadata["ParallaxView.VerticalSourceOffsetKind"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ParallaxView.VerticalSourceStartOffset"] = true;
+            PropChangedCallbackMethodNameMetadata["ParallaxView.VerticalSourceStartOffset"] = "OnPropertyChanged";
             // ParallaxView -- DefaultValueMetadata
             DefaultValueMetadata["ParallaxView.HorizontalSourceOffsetKind"] = @"winrt::ParallaxSourceOffsetKind::Relative";
             DefaultValueMetadata["ParallaxView.IsHorizontalShiftClamped"] = @"true";
@@ -356,16 +445,27 @@ namespace CustomTasks
             IncludedTypesMetadata["PersonPicture"] = true;
             // PersonPicture -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["PersonPicture.BadgeGlyph"] = true;
+            PropChangedCallbackMethodNameMetadata["PersonPicture.BadgeGlyph"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["PersonPicture.BadgeImageSource"] = true;
+            PropChangedCallbackMethodNameMetadata["PersonPicture.BadgeImageSource"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["PersonPicture.BadgeNumber"] = true;
+            PropChangedCallbackMethodNameMetadata["PersonPicture.BadgeNumber"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["PersonPicture.BadgeText"] = true;
+            PropChangedCallbackMethodNameMetadata["PersonPicture.BadgeText"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["PersonPicture.Contact"] = true;
+            PropChangedCallbackMethodNameMetadata["PersonPicture.Contact"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["PersonPicture.DisplayName"] = true;
+            PropChangedCallbackMethodNameMetadata["PersonPicture.DisplayName"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["PersonPicture.Initials"] = true;
+            PropChangedCallbackMethodNameMetadata["PersonPicture.Initials"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["PersonPicture.IsGroup"] = true;
+            PropChangedCallbackMethodNameMetadata["PersonPicture.IsGroup"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["PersonPicture.PreferSmallImage"] = true;
+            PropChangedCallbackMethodNameMetadata["PersonPicture.PreferSmallImage"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["PersonPicture.ProfilePicture"] = true;
+            PropChangedCallbackMethodNameMetadata["PersonPicture.ProfilePicture"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["PersonPicture.TemplateSettings"] = true;
+            PropChangedCallbackMethodNameMetadata["PersonPicture.TemplateSettings"] = "OnPropertyChanged";
             NeedsDependencyPropertyFieldMetadata["PersonPicture.TemplateSettings"] = true;
             // PersonPicture -- DefaultValueMetadata
 
@@ -379,12 +479,19 @@ namespace CustomTasks
             IncludedTypesMetadata["RadioButtons"] = true;
             // RadioButtons -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["RadioButtons.Header"] = true;
+            PropChangedCallbackMethodNameMetadata["RadioButtons.Header"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RadioButtons.Items"] = true;
+            PropChangedCallbackMethodNameMetadata["RadioButtons.Items"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RadioButtons.ItemsSource"] = true;
+            PropChangedCallbackMethodNameMetadata["RadioButtons.ItemsSource"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RadioButtons.ItemTemplate"] = true;
+            PropChangedCallbackMethodNameMetadata["RadioButtons.ItemTemplate"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RadioButtons.MaximumColumns"] = true;
+            PropChangedCallbackMethodNameMetadata["RadioButtons.MaximumColumns"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RadioButtons.SelectedIndex"] = true;
+            PropChangedCallbackMethodNameMetadata["RadioButtons.SelectedIndex"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RadioButtons.SelectedItem"] = true;
+            PropChangedCallbackMethodNameMetadata["RadioButtons.SelectedItem"] = "OnPropertyChanged";
             // RadioButtons -- DefaultValueMetadata
             DefaultValueMetadata["RadioButtons.MaximumColumns"] = @"1";
             DefaultValueMetadata["RadioButtons.SelectedIndex"] = @"-1";
@@ -392,19 +499,29 @@ namespace CustomTasks
             IncludedTypesMetadata["RadioMenuFlyoutItem"] = true;
             // RadioMenuFlyoutItem -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["RadioMenuFlyoutItem.GroupName"] = true;
+            PropChangedCallbackMethodNameMetadata["RadioMenuFlyoutItem.GroupName"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RadioMenuFlyoutItem.IsChecked"] = true;
+            PropChangedCallbackMethodNameMetadata["RadioMenuFlyoutItem.IsChecked"] = "OnPropertyChanged";
             // RadioMenuFlyoutItem -- DefaultValueMetadata
 
             IncludedTypesMetadata["RatingControl"] = true;
             // RatingControl -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["RatingControl.Caption"] = true;
+            PropChangedCallbackMethodNameMetadata["RatingControl.Caption"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RatingControl.InitialSetValue"] = true;
+            PropChangedCallbackMethodNameMetadata["RatingControl.InitialSetValue"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RatingControl.IsClearEnabled"] = true;
+            PropChangedCallbackMethodNameMetadata["RatingControl.IsClearEnabled"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RatingControl.IsReadOnly"] = true;
+            PropChangedCallbackMethodNameMetadata["RatingControl.IsReadOnly"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RatingControl.ItemInfo"] = true;
+            PropChangedCallbackMethodNameMetadata["RatingControl.ItemInfo"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RatingControl.MaxRating"] = true;
+            PropChangedCallbackMethodNameMetadata["RatingControl.MaxRating"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RatingControl.PlaceholderValue"] = true;
+            PropChangedCallbackMethodNameMetadata["RatingControl.PlaceholderValue"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RatingControl.Value"] = true;
+            PropChangedCallbackMethodNameMetadata["RatingControl.Value"] = "OnPropertyChanged";
             // RatingControl -- DefaultValueMetadata
             DefaultValueMetadata["RatingControl.InitialSetValue"] = @"1";
             DefaultValueMetadata["RatingControl.IsClearEnabled"] = @"true";
@@ -431,17 +548,23 @@ namespace CustomTasks
             IncludedTypesMetadata["RefreshContainer"] = true;
             // RefreshContainer -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["RefreshContainer.PullDirection"] = true;
+            PropChangedCallbackMethodNameMetadata["RefreshContainer.PullDirection"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RefreshContainer.Visualizer"] = true;
+            PropChangedCallbackMethodNameMetadata["RefreshContainer.Visualizer"] = "OnPropertyChanged";
             // RefreshContainer -- DefaultValueMetadata
             DefaultValueMetadata["RefreshContainer.PullDirection"] = @"winrt::RefreshPullDirection::TopToBottom";
 
             IncludedTypesMetadata["RefreshVisualizer"] = true;
             // RefreshVisualizer -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["RefreshVisualizer.Content"] = true;
+            PropChangedCallbackMethodNameMetadata["RefreshVisualizer.Content"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RefreshVisualizer.InfoProvider"] = true;
+            PropChangedCallbackMethodNameMetadata["RefreshVisualizer.InfoProvider"] = "OnPropertyChanged";
             PropertyTypeOverrideMetadata["RefreshVisualizer.InfoProvider"] = "winrt::IInspectable";
             NeedsPropChangedCallbackMetadata["RefreshVisualizer.Orientation"] = true;
+            PropChangedCallbackMethodNameMetadata["RefreshVisualizer.Orientation"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RefreshVisualizer.State"] = true;
+            PropChangedCallbackMethodNameMetadata["RefreshVisualizer.State"] = "OnPropertyChanged";
             // RefreshVisualizer -- DefaultValueMetadata
             DefaultValueMetadata["RefreshVisualizer.Orientation"] = @"winrt::RefreshVisualizerOrientation::Auto";
             DefaultValueMetadata["RefreshVisualizer.State"] = @"winrt::RefreshVisualizerState::Idle";
@@ -453,10 +576,13 @@ namespace CustomTasks
             IncludedTypesMetadata["RevealBrush"] = true;
             // RevealBrush -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["RevealBrush.AlwaysUseFallback"] = true;
+            PropChangedCallbackMethodNameMetadata["RevealBrush.AlwaysUseFallback"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RevealBrush.Color"] = true;
+            PropChangedCallbackMethodNameMetadata["RevealBrush.Color"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["RevealBrush.State"] = true;
             PropChangedCallbackMethodNameMetadata["RevealBrush.State"] = "OnStatePropertyChanged";
             NeedsPropChangedCallbackMetadata["RevealBrush.TargetTheme"] = true;
+            PropChangedCallbackMethodNameMetadata["RevealBrush.TargetTheme"] = "OnPropertyChanged";
             // RevealBrush -- DefaultValueMetadata
             DefaultValueMetadata["RevealBrush.Color"] = @"RevealBrush::sc_defaultColor";
             DefaultValueMetadata["RevealBrush.State"] = @"winrt::RevealBrushState::Normal";
@@ -465,25 +591,41 @@ namespace CustomTasks
             IncludedTypesMetadata["Scroller"] = true;
             // Scroller -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["Scroller.Background"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.Background"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["Scroller.Content"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.Content"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["Scroller.ContentOrientation"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.ContentOrientation"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["Scroller.HorizontalAnchorRatio"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.HorizontalAnchorRatio"] = "OnPropertyChanged";
             PropValidationCallbackMetadata["Scroller.HorizontalAnchorRatio"] = "ValidateAnchorRatio";
             NeedsPropChangedCallbackMetadata["Scroller.HorizontalScrollChainingMode"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.HorizontalScrollChainingMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["Scroller.HorizontalScrollMode"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.HorizontalScrollMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["Scroller.HorizontalScrollRailingMode"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.HorizontalScrollRailingMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["Scroller.IgnoredInputKind"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.IgnoredInputKind"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["Scroller.MaxZoomFactor"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.MaxZoomFactor"] = "OnPropertyChanged";
             PropValidationCallbackMetadata["Scroller.MaxZoomFactor"] = "ValidateZoomFactoryBoundary";
             NeedsPropChangedCallbackMetadata["Scroller.MinZoomFactor"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.MinZoomFactor"] = "OnPropertyChanged";
             PropValidationCallbackMetadata["Scroller.MinZoomFactor"] = "ValidateZoomFactoryBoundary";
             NeedsPropChangedCallbackMetadata["Scroller.VerticalAnchorRatio"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.VerticalAnchorRatio"] = "OnPropertyChanged";
             PropValidationCallbackMetadata["Scroller.VerticalAnchorRatio"] = "ValidateAnchorRatio";
             NeedsPropChangedCallbackMetadata["Scroller.VerticalScrollChainingMode"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.VerticalScrollChainingMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["Scroller.VerticalScrollMode"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.VerticalScrollMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["Scroller.VerticalScrollRailingMode"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.VerticalScrollRailingMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["Scroller.ZoomChainingMode"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.ZoomChainingMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["Scroller.ZoomMode"] = true;
+            PropChangedCallbackMethodNameMetadata["Scroller.ZoomMode"] = "OnPropertyChanged";
             // Scroller -- DefaultValueMetadata
             DefaultValueMetadata["Scroller.ContentOrientation"] = @"Scroller::s_defaultContentOrientation";
             DefaultValueMetadata["Scroller.HorizontalAnchorRatio"] = @"Scroller::s_defaultAnchorRatio";
@@ -507,32 +649,54 @@ namespace CustomTasks
             IncludedTypesMetadata["ScrollViewer"] = true;
             // ScrollViewer -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["ScrollViewer.ComputedHorizontalScrollBarVisibility"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.ComputedHorizontalScrollBarVisibility"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.ComputedVerticalScrollBarVisibility"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.ComputedVerticalScrollBarVisibility"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.Content"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.Content"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.ContentOrientation"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.ContentOrientation"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalAnchorRatio"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.HorizontalAnchorRatio"] = "OnPropertyChanged";
             PropValidationCallbackMetadata["ScrollViewer.HorizontalAnchorRatio"] = "ValidateAnchorRatio";
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalScrollBarVisibility"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.HorizontalScrollBarVisibility"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalScrollChainingMode"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.HorizontalScrollChainingMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalScrollController"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.HorizontalScrollController"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalScrollMode"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.HorizontalScrollMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.HorizontalScrollRailingMode"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.HorizontalScrollRailingMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.IgnoredInputKind"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.IgnoredInputKind"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.MaxZoomFactor"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.MaxZoomFactor"] = "OnPropertyChanged";
             PropValidationCallbackMetadata["ScrollViewer.MaxZoomFactor"] = "ValidateZoomFactoryBoundary";
             NeedsPropChangedCallbackMetadata["ScrollViewer.MinZoomFactor"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.MinZoomFactor"] = "OnPropertyChanged";
             PropValidationCallbackMetadata["ScrollViewer.MinZoomFactor"] = "ValidateZoomFactoryBoundary";
             NeedsPropChangedCallbackMetadata["ScrollViewer.Scroller"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.Scroller"] = "OnPropertyChanged";
             PropertyTypeOverrideMetadata["ScrollViewer.Scroller"] = "winrt::Scroller";
             NeedsPropChangedCallbackMetadata["ScrollViewer.VerticalAnchorRatio"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.VerticalAnchorRatio"] = "OnPropertyChanged";
             PropValidationCallbackMetadata["ScrollViewer.VerticalAnchorRatio"] = "ValidateAnchorRatio";
             NeedsPropChangedCallbackMetadata["ScrollViewer.VerticalScrollBarVisibility"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.VerticalScrollBarVisibility"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.VerticalScrollChainingMode"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.VerticalScrollChainingMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.VerticalScrollController"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.VerticalScrollController"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.VerticalScrollMode"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.VerticalScrollMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.VerticalScrollRailingMode"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.VerticalScrollRailingMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.ZoomChainingMode"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.ZoomChainingMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["ScrollViewer.ZoomMode"] = true;
+            PropChangedCallbackMethodNameMetadata["ScrollViewer.ZoomMode"] = "OnPropertyChanged";
             // ScrollViewer -- DefaultValueMetadata
             DefaultValueMetadata["ScrollViewer.ComputedHorizontalScrollBarVisibility"] = @"ScrollViewer::s_defaultComputedHorizontalScrollBarVisibility";
             DefaultValueMetadata["ScrollViewer.ComputedVerticalScrollBarVisibility"] = @"ScrollViewer::s_defaultComputedVerticalScrollBarVisibility";
@@ -560,22 +724,30 @@ namespace CustomTasks
             IncludedTypesMetadata["SpectrumBrush"] = true;
             // SpectrumBrush -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["SpectrumBrush.MaxSurface"] = true;
+            PropChangedCallbackMethodNameMetadata["SpectrumBrush.MaxSurface"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["SpectrumBrush.MaxSurfaceOpacity"] = true;
+            PropChangedCallbackMethodNameMetadata["SpectrumBrush.MaxSurfaceOpacity"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["SpectrumBrush.MinSurface"] = true;
+            PropChangedCallbackMethodNameMetadata["SpectrumBrush.MinSurface"] = "OnPropertyChanged";
             // SpectrumBrush -- DefaultValueMetadata
             DefaultValueMetadata["SpectrumBrush.MaxSurfaceOpacity"] = @"1.0";
 
             IncludedTypesMetadata["SplitButton"] = true;
             // SplitButton -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["SplitButton.Command"] = true;
+            PropChangedCallbackMethodNameMetadata["SplitButton.Command"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["SplitButton.CommandParameter"] = true;
+            PropChangedCallbackMethodNameMetadata["SplitButton.CommandParameter"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["SplitButton.Flyout"] = true;
+            PropChangedCallbackMethodNameMetadata["SplitButton.Flyout"] = "OnPropertyChanged";
             // SplitButton -- DefaultValueMetadata
 
             IncludedTypesMetadata["StackLayout"] = true;
             // StackLayout -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["StackLayout.Orientation"] = true;
+            PropChangedCallbackMethodNameMetadata["StackLayout.Orientation"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["StackLayout.Spacing"] = true;
+            PropChangedCallbackMethodNameMetadata["StackLayout.Spacing"] = "OnPropertyChanged";
             // StackLayout -- DefaultValueMetadata
             DefaultValueMetadata["StackLayout.Orientation"] = @"winrt::Orientation::Vertical";
             DefaultValueMetadata["StackLayout.Spacing"] = @"0.0";
@@ -583,26 +755,38 @@ namespace CustomTasks
             IncludedTypesMetadata["SwipeControl"] = true;
             // SwipeControl -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["SwipeControl.BottomItems"] = true;
+            PropChangedCallbackMethodNameMetadata["SwipeControl.BottomItems"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["SwipeControl.LeftItems"] = true;
+            PropChangedCallbackMethodNameMetadata["SwipeControl.LeftItems"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["SwipeControl.RightItems"] = true;
+            PropChangedCallbackMethodNameMetadata["SwipeControl.RightItems"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["SwipeControl.TopItems"] = true;
+            PropChangedCallbackMethodNameMetadata["SwipeControl.TopItems"] = "OnPropertyChanged";
             // SwipeControl -- DefaultValueMetadata
 
             IncludedTypesMetadata["SwipeItem"] = true;
             // SwipeItem -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["SwipeItem.Background"] = true;
+            PropChangedCallbackMethodNameMetadata["SwipeItem.Background"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["SwipeItem.BehaviorOnInvoked"] = true;
+            PropChangedCallbackMethodNameMetadata["SwipeItem.BehaviorOnInvoked"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["SwipeItem.Command"] = true;
+            PropChangedCallbackMethodNameMetadata["SwipeItem.Command"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["SwipeItem.CommandParameter"] = true;
+            PropChangedCallbackMethodNameMetadata["SwipeItem.CommandParameter"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["SwipeItem.Foreground"] = true;
+            PropChangedCallbackMethodNameMetadata["SwipeItem.Foreground"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["SwipeItem.IconSource"] = true;
+            PropChangedCallbackMethodNameMetadata["SwipeItem.IconSource"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["SwipeItem.Text"] = true;
+            PropChangedCallbackMethodNameMetadata["SwipeItem.Text"] = "OnPropertyChanged";
             // SwipeItem -- DefaultValueMetadata
             DefaultValueMetadata["SwipeItem.BehaviorOnInvoked"] = @"winrt::SwipeBehaviorOnInvoked::Auto";
 
             IncludedTypesMetadata["SwipeItems"] = true;
             // SwipeItems -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["SwipeItems.Mode"] = true;
+            PropChangedCallbackMethodNameMetadata["SwipeItems.Mode"] = "OnPropertyChanged";
             // SwipeItems -- DefaultValueMetadata
             DefaultValueMetadata["SwipeItems.Mode"] = @"winrt::SwipeMode::Reveal";
 
@@ -618,31 +802,54 @@ namespace CustomTasks
             IncludedTypesMetadata["TeachingTip"] = true;
             // TeachingTip -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonCommand"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.ActionButtonCommand"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonCommandParameter"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.ActionButtonCommandParameter"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonStyle"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.ActionButtonStyle"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.ActionButtonText"] = true;
-            NeedsPropChangedCallbackMetadata["TeachingTip.Attach"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.ActionButtonText"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.BleedingImageContent"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.BleedingImageContent"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.BleedingImagePlacement"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.BleedingImagePlacement"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonCommand"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.CloseButtonCommand"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonCommandParameter"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.CloseButtonCommandParameter"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonKind"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.CloseButtonKind"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonStyle"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.CloseButtonStyle"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.CloseButtonText"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.CloseButtonText"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.IconSource"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.IconSource"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.IsLightDismissEnabled"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.IsLightDismissEnabled"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.IsOpen"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.IsOpen"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.Placement"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.Placement"] = "OnPropertyChanged";
+            NeedsPropChangedCallbackMetadata["TeachingTip.PointerMode"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.PointerMode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.Subtext"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.Subtext"] = "OnPropertyChanged";
+            NeedsPropChangedCallbackMetadata["TeachingTip.Target"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.Target"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.TargetOffset"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.TargetOffset"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.TemplateSettings"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.TemplateSettings"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TeachingTip.Title"] = true;
+            PropChangedCallbackMethodNameMetadata["TeachingTip.Title"] = "OnPropertyChanged";
             // TeachingTip -- DefaultValueMetadata
             DefaultValueMetadata["TeachingTip.BleedingImagePlacement"] = @"winrt::TeachingTipBleedingImagePlacementMode::Auto";
             DefaultValueMetadata["TeachingTip.CloseButtonKind"] = @"winrt::TeachingTipCloseButtonKind::Auto";
             DefaultValueMetadata["TeachingTip.IsLightDismissEnabled"] = @"false";
             DefaultValueMetadata["TeachingTip.IsOpen"] = @"false";
             DefaultValueMetadata["TeachingTip.Placement"] = @"winrt::TeachingTipPlacementMode::Auto";
+            DefaultValueMetadata["TeachingTip.PointerMode"] = @"winrt::TeachingTipPointerMode::Auto";
 
             IncludedTypesMetadata["TeachingTipTemplateSettings"] = true;
             // TeachingTipTemplateSettings -- NeedsPropChangedCallbackMetadata
@@ -655,13 +862,23 @@ namespace CustomTasks
             IncludedTypesMetadata["ToggleSplitButton"] = true;
             // ToggleSplitButton -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["ToggleSplitButton.IsChecked"] = true;
+            PropChangedCallbackMethodNameMetadata["ToggleSplitButton.IsChecked"] = "OnPropertyChanged";
             NeedsDependencyPropertyFieldMetadata["ToggleSplitButton.IsChecked"] = true;
             // ToggleSplitButton -- DefaultValueMetadata
 
             IncludedTypesMetadata["TreeView"] = true;
             // TreeView -- NeedsPropChangedCallbackMetadata
+            PropChangedCallbackMethodNameMetadata["TreeView.CanDragItems"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["TreeView.CanReorderItems"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["TreeView.ItemContainerStyle"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["TreeView.ItemContainerStyleSelector"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["TreeView.ItemContainerTransitions"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TreeView.ItemsSource"] = true;
+            PropChangedCallbackMethodNameMetadata["TreeView.ItemsSource"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["TreeView.ItemTemplate"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["TreeView.ItemTemplateSelector"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TreeView.SelectionMode"] = true;
+            PropChangedCallbackMethodNameMetadata["TreeView.SelectionMode"] = "OnPropertyChanged";
             // TreeView -- DefaultValueMetadata
             DefaultValueMetadata["TreeView.CanDragItems"] = @"true";
             DefaultValueMetadata["TreeView.CanReorderItems"] = @"true";
@@ -669,9 +886,18 @@ namespace CustomTasks
 
             IncludedTypesMetadata["TreeViewItem"] = true;
             // TreeViewItem -- NeedsPropChangedCallbackMetadata
+            PropChangedCallbackMethodNameMetadata["TreeViewItem.CollapsedGlyph"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["TreeViewItem.ExpandedGlyph"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["TreeViewItem.GlyphBrush"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["TreeViewItem.GlyphOpacity"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["TreeViewItem.GlyphSize"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TreeViewItem.HasUnrealizedChildren"] = true;
+            PropChangedCallbackMethodNameMetadata["TreeViewItem.HasUnrealizedChildren"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TreeViewItem.IsExpanded"] = true;
+            PropChangedCallbackMethodNameMetadata["TreeViewItem.IsExpanded"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TreeViewItem.ItemsSource"] = true;
+            PropChangedCallbackMethodNameMetadata["TreeViewItem.ItemsSource"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["TreeViewItem.TreeViewItemTemplateSettings"] = "OnPropertyChanged";
             // TreeViewItem -- DefaultValueMetadata
             DefaultValueMetadata["TreeViewItem.CollapsedGlyph"] = @"\uE76C";
             DefaultValueMetadata["TreeViewItem.ExpandedGlyph"] = @"\uE70D";
@@ -686,22 +912,36 @@ namespace CustomTasks
 
             IncludedTypesMetadata["TreeViewNode"] = true;
             // TreeViewNode -- NeedsPropChangedCallbackMetadata
+            PropChangedCallbackMethodNameMetadata["TreeViewNode.Content"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["TreeViewNode.Depth"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TreeViewNode.HasChildren"] = true;
+            PropChangedCallbackMethodNameMetadata["TreeViewNode.HasChildren"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TreeViewNode.IsExpanded"] = true;
+            PropChangedCallbackMethodNameMetadata["TreeViewNode.IsExpanded"] = "OnPropertyChanged";
             // TreeViewNode -- DefaultValueMetadata
             DefaultValueMetadata["TreeViewNode.Depth"] = @"-1";
 
             IncludedTypesMetadata["TwoPaneView"] = true;
             // TwoPaneView -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["TwoPaneView.MinTallModeHeight"] = true;
+            PropChangedCallbackMethodNameMetadata["TwoPaneView.MinTallModeHeight"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TwoPaneView.MinWideModeWidth"] = true;
+            PropChangedCallbackMethodNameMetadata["TwoPaneView.MinWideModeWidth"] = "OnPropertyChanged";
+            PropChangedCallbackMethodNameMetadata["TwoPaneView.Mode"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TwoPaneView.Pane1"] = true;
+            PropChangedCallbackMethodNameMetadata["TwoPaneView.Pane1"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TwoPaneView.Pane1Length"] = true;
+            PropChangedCallbackMethodNameMetadata["TwoPaneView.Pane1Length"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TwoPaneView.Pane2"] = true;
+            PropChangedCallbackMethodNameMetadata["TwoPaneView.Pane2"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TwoPaneView.Pane2Length"] = true;
+            PropChangedCallbackMethodNameMetadata["TwoPaneView.Pane2Length"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TwoPaneView.PanePriority"] = true;
+            PropChangedCallbackMethodNameMetadata["TwoPaneView.PanePriority"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TwoPaneView.TallModeConfiguration"] = true;
+            PropChangedCallbackMethodNameMetadata["TwoPaneView.TallModeConfiguration"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["TwoPaneView.WideModeConfiguration"] = true;
+            PropChangedCallbackMethodNameMetadata["TwoPaneView.WideModeConfiguration"] = "OnPropertyChanged";
             // TwoPaneView -- DefaultValueMetadata
             DefaultValueMetadata["TwoPaneView.MinTallModeHeight"] = @"c_defaultMinTallModeHeight";
             DefaultValueMetadata["TwoPaneView.MinWideModeWidth"] = @"c_defaultMinWideModeWidth";
@@ -715,12 +955,19 @@ namespace CustomTasks
             IncludedTypesMetadata["UniformGridLayout"] = true;
             // UniformGridLayout -- NeedsPropChangedCallbackMetadata
             NeedsPropChangedCallbackMetadata["UniformGridLayout.ItemsJustification"] = true;
+            PropChangedCallbackMethodNameMetadata["UniformGridLayout.ItemsJustification"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["UniformGridLayout.ItemsStretch"] = true;
+            PropChangedCallbackMethodNameMetadata["UniformGridLayout.ItemsStretch"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["UniformGridLayout.MinColumnSpacing"] = true;
+            PropChangedCallbackMethodNameMetadata["UniformGridLayout.MinColumnSpacing"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["UniformGridLayout.MinItemHeight"] = true;
+            PropChangedCallbackMethodNameMetadata["UniformGridLayout.MinItemHeight"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["UniformGridLayout.MinItemWidth"] = true;
+            PropChangedCallbackMethodNameMetadata["UniformGridLayout.MinItemWidth"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["UniformGridLayout.MinRowSpacing"] = true;
+            PropChangedCallbackMethodNameMetadata["UniformGridLayout.MinRowSpacing"] = "OnPropertyChanged";
             NeedsPropChangedCallbackMetadata["UniformGridLayout.Orientation"] = true;
+            PropChangedCallbackMethodNameMetadata["UniformGridLayout.Orientation"] = "OnPropertyChanged";
             // UniformGridLayout -- DefaultValueMetadata
             DefaultValueMetadata["UniformGridLayout.ItemsJustification"] = @"winrt::UniformGridLayoutItemsJustification::Start";
             DefaultValueMetadata["UniformGridLayout.ItemsStretch"] = @"winrt::UniformGridLayoutItemsStretch::None";
@@ -732,8 +979,8 @@ namespace CustomTasks
 
             IncludedTypesMetadata["XamlAmbientLight"] = true;
             // XamlAmbientLight -- NeedsPropChangedCallbackMetadata
-            PropChangedCallbackMethodNameMetadata["XamlAmbientLight.Color"] = "OnPropertyChanged";
-            PropChangedCallbackMethodNameMetadata["XamlAmbientLight.IsTarget"] = "OnPropertyChanged";
+            NeedsPropChangedCallbackMetadata["XamlAmbientLight.Color"] = true;
+            PropChangedCallbackMethodNameMetadata["XamlAmbientLight.IsTarget"] = "OnIsTargetPropertyChanged";
             // XamlAmbientLight -- DefaultValueMetadata
             DefaultValueMetadata["XamlAmbientLight.Color"] = @"{ 255, 255, 255, 255 }";
 

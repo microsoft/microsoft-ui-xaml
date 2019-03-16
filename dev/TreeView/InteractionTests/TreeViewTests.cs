@@ -2589,7 +2589,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void TapOnFlyoutTreeViewRootItemChevron()
         {
-            TapOnTreeViewAt(40, 20, "GetFlyoutItemCount");
+            // Chevron has 12px left padding, and it's 12px wide. 
+            // 18 is the center point of chevron.
+            TapOnTreeViewAt(18, 20, "GetFlyoutItemCount");
         }
 
         private UIObject LabelFirstItem()

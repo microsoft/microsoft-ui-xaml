@@ -33,46 +33,46 @@ void TeachingTip::OnApplyTemplate()
 
     m_container.set(GetTemplateChildT<winrt::Border>(s_containerName, controlProtected));
     m_rootElement.set(m_container.get().Child());
-    m_beakOcclusionGrid.set(GetTemplateChildT<winrt::Grid>(s_beakOcclusionGridName, controlProtected));
+    m_pointerOcclusionGrid.set(GetTemplateChildT<winrt::Grid>(s_pointerOcclusionGridName, controlProtected));
     m_contentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_contentRootGridName, controlProtected));
-    m_nonBleedingContentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_nonBleedingContentRootGridName, controlProtected));
-    m_bleedingImageContentBorder.set(GetTemplateChildT<winrt::Border>(s_bleedingImageBorderName, controlProtected));
+    m_nonHeroContentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_nonHeroContentRootGridName, controlProtected));
+    m_heroContentBorder.set(GetTemplateChildT<winrt::Border>(s_heroContentBorderName, controlProtected));
     m_iconBorder.set(GetTemplateChildT<winrt::Border>(s_iconBorderName, controlProtected));
     m_actionButton.set(GetTemplateChildT<winrt::Button>(s_actionButtonName, controlProtected));
     m_alternateCloseButton.set(GetTemplateChildT<winrt::Button>(s_alternateCloseButtonName, controlProtected));
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
-    m_beakEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_beakEdgeBorderName, controlProtected));
-    m_beakPolygon.set(GetTemplateChildT<winrt::Polygon>(s_beakPolygonName, controlProtected));
+    m_pointerEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_pointerEdgeBorderName, controlProtected));
+    m_pointerPolygon.set(GetTemplateChildT<winrt::Polygon>(s_pointerPolygonName, controlProtected));
 
     if (auto && container = m_container.get())
     {
         container.Child(nullptr);
     }
 
-    if (auto&& beakOcclusionGrid = m_beakOcclusionGrid.get())
+    if (auto&& pointerOcclusionGrid = m_pointerOcclusionGrid.get())
     {
-        m_contentSizeChangedRevoker = beakOcclusionGrid.SizeChanged(winrt::auto_revoke, {
+        m_contentSizeChangedRevoker = pointerOcclusionGrid.SizeChanged(winrt::auto_revoke, {
             [this](auto const&, auto const&)
             {
                 UpdateSizeBasedTemplateSettings();
-                // Reset the currentEffectivePlacementMode so that the beak will be updated for the new size as well.
-                m_currentEffectivePlacementMode = winrt::TeachingTipPlacementMode::Auto;
+                // Reset the currentEffectivePlacementMode so that the pointer will be updated for the new size as well.
+                m_currentEffectiveTipPlacementMode = winrt::TeachingTipPlacementMode::Auto;
                 TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
                 if (IsOpen())
                 {
                     PositionPopup();
                 }
                 {
-                    auto&& beakOcclusionGrid = m_beakOcclusionGrid.get();
+                    auto&& pointerOcclusionGrid = m_pointerOcclusionGrid.get();
                     if (auto&& expandAnimation = m_expandAnimation.get())
                     {
-                        expandAnimation.SetScalarParameter(L"Width", static_cast<float>(beakOcclusionGrid.ActualWidth()));
-                        expandAnimation.SetScalarParameter(L"Height", static_cast<float>(beakOcclusionGrid.ActualHeight()));
+                        expandAnimation.SetScalarParameter(L"Width", static_cast<float>(pointerOcclusionGrid.ActualWidth()));
+                        expandAnimation.SetScalarParameter(L"Height", static_cast<float>(pointerOcclusionGrid.ActualHeight()));
                     }
                     if (auto&& contractAnimation = m_contractAnimation.get())
                     {
-                        contractAnimation.SetScalarParameter(L"Width", static_cast<float>(beakOcclusionGrid.ActualWidth()));
-                        contractAnimation.SetScalarParameter(L"Height", static_cast<float>(beakOcclusionGrid.ActualHeight()));
+                        contractAnimation.SetScalarParameter(L"Width", static_cast<float>(pointerOcclusionGrid.ActualWidth()));
+                        contractAnimation.SetScalarParameter(L"Height", static_cast<float>(pointerOcclusionGrid.ActualHeight()));
                     }
                 }
             }
@@ -108,9 +108,12 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         OnIsOpenChanged();
     }
-    else if (property == s_ActionButtonTextProperty ||
-        property == s_CloseButtonKindProperty  ||
-        property == s_CloseButtonTextProperty)
+    else if (property == s_TargetProperty)
+    {
+        OnTargetChanged();
+    }
+    else if (property == s_ActionButtonContentProperty ||
+        property == s_CloseButtonContentProperty)
     {
         UpdateButtonsState();
     }
@@ -122,16 +125,20 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         OnIsLightDismissEnabledChanged();
     }
-    else if (property == s_PlacementProperty)
+    else if (property == s_PointerModeProperty)
+    {
+        OnPointerModeChanged();
+    }
+    else if (property == s_PreferredPlacementProperty)
     {
         if (IsOpen())
         {
             PositionPopup();
         }
     }
-    else if (property == s_BleedingImagePlacementProperty)
+    else if (property == s_HeroContentPlacementProperty)
     {
-        OnBleedingImagePlacementChanged();
+        OnHeroContentPlacementChanged();
     }
     else if (property == s_IconSourceProperty)
     {
@@ -171,158 +178,173 @@ void TeachingTip::CreateLightDismissIndicatorPopup()
     }
 }
 
-void TeachingTip::UpdateBeak()
+void TeachingTip::UpdatePointer()
 {
-    auto&& beakOcclusionGrid = m_beakOcclusionGrid.get();
-    auto&& beakEdgeBorder = m_beakEdgeBorder.get();
+    // An effective placement of auto indicates that no pointer should be shown.
+    auto placement = DetermineEffectivePlacement();
+    m_currentEffectivePointerPlacementMode = placement;
+    auto&& pointerMode = PointerMode();
+    if (pointerMode == winrt::TeachingTipPointerMode::Off || (!m_target && pointerMode != winrt::TeachingTipPointerMode::On))
+    {
+        m_currentEffectivePointerPlacementMode = winrt::TeachingTipPlacementMode::Auto;
+    }
 
-    float height = static_cast<float>(beakOcclusionGrid.ActualHeight());
-    float width = static_cast<float>(beakOcclusionGrid.ActualWidth());
+    if (placement != m_currentEffectiveTipPlacementMode)
+    {
+        m_currentEffectiveTipPlacementMode = placement;
+        TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
+    }
 
-    auto columnDefinitions = beakOcclusionGrid.ColumnDefinitions();
-    auto rowDefinitions = beakOcclusionGrid.RowDefinitions();
+    auto&& pointerOcclusionGrid = m_pointerOcclusionGrid.get();
+    auto&& pointerEdgeBorder = m_pointerEdgeBorder.get();
 
-    float firstColumnWidth = static_cast<float>(columnDefinitions.GetAt(0).ActualWidth());
-    float secondColumnWidth = static_cast<float>(columnDefinitions.GetAt(1).ActualWidth());
-    float nextToLastColumnWidth = static_cast<float>(columnDefinitions.GetAt(columnDefinitions.Size() - 2).ActualWidth());
-    float lastColumnWidth = static_cast<float>(columnDefinitions.GetAt(columnDefinitions.Size() - 1).ActualWidth());
+    float height = static_cast<float>(pointerOcclusionGrid.ActualHeight());
+    float width = static_cast<float>(pointerOcclusionGrid.ActualWidth());
 
-    float firstRowHeight = static_cast<float>(rowDefinitions.GetAt(0).ActualHeight());
-    float secondRowHeight = static_cast<float>(rowDefinitions.GetAt(1).ActualHeight());
-    float nextToLastRowHeight = static_cast<float>(rowDefinitions.GetAt(rowDefinitions.Size() - 2).ActualHeight());
-    float lastRowHeight = static_cast<float>(rowDefinitions.GetAt(rowDefinitions.Size() - 1).ActualHeight());
+    auto columnDefinitions = pointerOcclusionGrid.ColumnDefinitions();
+    auto rowDefinitions = pointerOcclusionGrid.RowDefinitions();
+
+    float firstColumnWidth = columnDefinitions.Size() > 0 ? static_cast<float>(columnDefinitions.GetAt(0).ActualWidth()) : 0.0f;
+    float secondColumnWidth = columnDefinitions.Size() > 1 ? static_cast<float>(columnDefinitions.GetAt(1).ActualWidth()) : 0.0f;
+    float nextToLastColumnWidth = columnDefinitions.Size() > 1 ? static_cast<float>(columnDefinitions.GetAt(columnDefinitions.Size() - 2).ActualWidth()) : 0.0f;
+    float lastColumnWidth = columnDefinitions.Size() > 0 ? static_cast<float>(columnDefinitions.GetAt(columnDefinitions.Size() - 1).ActualWidth()) : 0.0f;
+
+    float firstRowHeight = rowDefinitions.Size() > 0 ? static_cast<float>(rowDefinitions.GetAt(0).ActualHeight()) : 0.0f;
+    float secondRowHeight = rowDefinitions.Size() > 1 ? static_cast<float>(rowDefinitions.GetAt(1).ActualHeight()) : 0.0f;
+    float nextToLastRowHeight = rowDefinitions.Size() > 1 ? static_cast<float>(rowDefinitions.GetAt(rowDefinitions.Size() - 2).ActualHeight()) : 0.0f;
+    float lastRowHeight = rowDefinitions.Size() > 0 ? static_cast<float>(rowDefinitions.GetAt(rowDefinitions.Size() - 1).ActualHeight()) : 0.0f;
 
     UpdateSizeBasedTemplateSettings();
 
-    switch (m_currentEffectivePlacementMode)
+    switch (m_currentEffectivePointerPlacementMode)
     {
-    // An effective placement of auto means the tip should not display a beak.
+    // An effective placement of auto means the tip should not display a pointer.
     case winrt::TeachingTipPlacementMode::Auto:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            beakOcclusionGrid.CenterPoint({ width / 2, height / 2, 0.0f });
+            pointerOcclusionGrid.CenterPoint({ width / 2, height / 2, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Untargeted"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::Top:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            beakOcclusionGrid.CenterPoint({ width / 2, height - lastRowHeight, 0.0f });
-            beakEdgeBorder.CenterPoint({ (width / 2) - firstColumnWidth, 0.0f, 0.0f });
+            pointerOcclusionGrid.CenterPoint({ width / 2, height - lastRowHeight, 0.0f });
+            pointerEdgeBorder.CenterPoint({ (width / 2) - firstColumnWidth, 0.0f, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Top"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::Bottom:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            beakOcclusionGrid.CenterPoint({ width / 2, firstRowHeight, 0.0f });
-            beakEdgeBorder.CenterPoint({ (width / 2) - firstColumnWidth, 0.0f, 0.0f });
+            pointerOcclusionGrid.CenterPoint({ width / 2, firstRowHeight, 0.0f });
+            pointerEdgeBorder.CenterPoint({ (width / 2) - firstColumnWidth, 0.0f, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToBottom();
+        UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"Bottom"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::Left:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            beakOcclusionGrid.CenterPoint({ width - lastColumnWidth, (height / 2), 0.0f });
-            beakEdgeBorder.CenterPoint({ 0.0f, (height / 2) - firstRowHeight, 0.0f });
+            pointerOcclusionGrid.CenterPoint({ width - lastColumnWidth, (height / 2), 0.0f });
+            pointerEdgeBorder.CenterPoint({ 0.0f, (height / 2) - firstRowHeight, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Left"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::Right:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            beakOcclusionGrid.CenterPoint({ firstColumnWidth, height / 2, 0.0f });
-            beakEdgeBorder.CenterPoint({ 0.0f, (height / 2) - firstRowHeight, 0.0f });
+            pointerOcclusionGrid.CenterPoint({ firstColumnWidth, height / 2, 0.0f });
+            pointerEdgeBorder.CenterPoint({ 0.0f, (height / 2) - firstRowHeight, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Right"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::TopEdgeAlignedRight:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            beakOcclusionGrid.CenterPoint({ firstColumnWidth + secondColumnWidth + 1, height - lastRowHeight, 0.0f });
-            beakEdgeBorder.CenterPoint({ secondColumnWidth, 0.0f, 0.0f });
+            pointerOcclusionGrid.CenterPoint({ firstColumnWidth + secondColumnWidth + 1, height - lastRowHeight, 0.0f });
+            pointerEdgeBorder.CenterPoint({ secondColumnWidth, 0.0f, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"TopEdgeAlignedRight"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            beakOcclusionGrid.CenterPoint({ width - (nextToLastColumnWidth + lastColumnWidth + 1), height - lastRowHeight, 0.0f });
-            beakEdgeBorder.CenterPoint({ width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
+            pointerOcclusionGrid.CenterPoint({ width - (nextToLastColumnWidth + lastColumnWidth + 1), height - lastRowHeight, 0.0f });
+            pointerEdgeBorder.CenterPoint({ width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"TopEdgeAlignedLeft"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            beakOcclusionGrid.CenterPoint({ firstColumnWidth + secondColumnWidth + 1, firstRowHeight, 0.0f });
-            beakEdgeBorder.CenterPoint({ secondColumnWidth, 0.0f, 0.0f });
+            pointerOcclusionGrid.CenterPoint({ firstColumnWidth + secondColumnWidth + 1, firstRowHeight, 0.0f });
+            pointerEdgeBorder.CenterPoint({ secondColumnWidth, 0.0f, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToBottom();
+        UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"BottomEdgeAlignedRight"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            beakOcclusionGrid.CenterPoint({ width - (nextToLastColumnWidth + lastColumnWidth + 1), firstRowHeight, 0.0f });
-            beakEdgeBorder.CenterPoint({ width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
+            pointerOcclusionGrid.CenterPoint({ width - (nextToLastColumnWidth + lastColumnWidth + 1), firstRowHeight, 0.0f });
+            pointerEdgeBorder.CenterPoint({ width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToBottom();
+        UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"BottomEdgeAlignedLeft"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            beakOcclusionGrid.CenterPoint({ width - lastColumnWidth,  height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
-            beakEdgeBorder.CenterPoint({ 0.0f,  height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
+            pointerOcclusionGrid.CenterPoint({ width - lastColumnWidth,  height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
+            pointerEdgeBorder.CenterPoint({ 0.0f,  height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"LeftEdgeAlignedTop"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            beakOcclusionGrid.CenterPoint({ width - lastColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
-            beakEdgeBorder.CenterPoint({ 0.0f, secondRowHeight, 0.0f });
+            pointerOcclusionGrid.CenterPoint({ width - lastColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
+            pointerEdgeBorder.CenterPoint({ 0.0f, secondRowHeight, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToBottom();
+        UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"LeftEdgeAlignedBottom"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::RightEdgeAlignedTop:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            beakOcclusionGrid.CenterPoint({ firstColumnWidth, height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
-            beakEdgeBorder.CenterPoint({ 0.0f, height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
+            pointerOcclusionGrid.CenterPoint({ firstColumnWidth, height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
+            pointerEdgeBorder.CenterPoint({ 0.0f, height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToTop();
+        UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"RightEdgeAlignedTop"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            beakOcclusionGrid.CenterPoint({ firstColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
-            beakEdgeBorder.CenterPoint({ 0.0f, secondRowHeight, 0.0f });
+            pointerOcclusionGrid.CenterPoint({ firstColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
+            pointerEdgeBorder.CenterPoint({ 0.0f, secondRowHeight, 0.0f });
         }
-        UpdateDynamicBleedingContentPlacementToBottom();
+        UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"RightEdgeAlignedBottom"sv, false);
         break;
 
@@ -348,86 +370,79 @@ void TeachingTip::PositionTargetedPopup()
 {
     if (auto&& popup = m_popup.get())
     {
-        auto placement = DetermineEffectivePlacement();
+        UpdatePointer();
         auto offset = TargetOffset();
 
-        auto&& beakOcclusionGrid = m_beakOcclusionGrid.get();
-        double tipHeight = beakOcclusionGrid.ActualHeight();
-        double tipWidth = beakOcclusionGrid.ActualWidth();
+        auto&& pointerOcclusionGrid = m_pointerOcclusionGrid.get();
+        double tipHeight = pointerOcclusionGrid.ActualHeight();
+        double tipWidth = pointerOcclusionGrid.ActualWidth();
 
         // Depending on the effective placement mode of the tip we use a combination of the tip's size, the target's position within the app, the target's
         // size, and the target offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
-        switch (placement)
+        switch (m_currentEffectiveTipPlacementMode)
         {
         case winrt::TeachingTipPlacementMode::Top:
             popup.VerticalOffset(m_currentTargetBounds.Y - tipHeight - offset.Top);
-            popup.HorizontalOffset((((m_currentTargetBounds.X * 2)  + m_currentTargetBounds.Width - tipWidth) / 2));
+            popup.HorizontalOffset((((m_currentTargetBounds.X * 2.0f) + m_currentTargetBounds.Width - tipWidth) / 2.0f));
             break;
 
         case winrt::TeachingTipPlacementMode::Bottom:
-            popup.VerticalOffset(m_currentTargetBounds.Y + m_currentTargetBounds.Height + offset.Bottom);
-            popup.HorizontalOffset((((m_currentTargetBounds.X * 2) + m_currentTargetBounds.Width - tipWidth) / 2));
+            popup.VerticalOffset(m_currentTargetBounds.Y + m_currentTargetBounds.Height + static_cast<float>(offset.Bottom));
+            popup.HorizontalOffset((((m_currentTargetBounds.X * 2.0f) + m_currentTargetBounds.Width - tipWidth) / 2.0f));
             break;
 
         case winrt::TeachingTipPlacementMode::Left:
-            popup.VerticalOffset(((m_currentTargetBounds.Y * 2) + m_currentTargetBounds.Height - tipHeight) / 2);
+            popup.VerticalOffset(((m_currentTargetBounds.Y * 2.0f) + m_currentTargetBounds.Height - tipHeight) / 2.0f);
             popup.HorizontalOffset(m_currentTargetBounds.X - tipWidth - offset.Left);
             break;
 
         case winrt::TeachingTipPlacementMode::Right:
-            popup.VerticalOffset(((m_currentTargetBounds.Y * 2) + m_currentTargetBounds.Height - tipHeight) / 2);
-            popup.HorizontalOffset(m_currentTargetBounds.X + m_currentTargetBounds.Width + offset.Right);
+            popup.VerticalOffset(((m_currentTargetBounds.Y * 2.0f) + m_currentTargetBounds.Height - tipHeight) / 2.0f);
+            popup.HorizontalOffset(m_currentTargetBounds.X + m_currentTargetBounds.Width + static_cast<float>(offset.Right));
             break;
 
         case winrt::TeachingTipPlacementMode::TopEdgeAlignedRight:
             popup.VerticalOffset(m_currentTargetBounds.Y - tipHeight - offset.Top);
-            popup.HorizontalOffset(((((m_currentTargetBounds.X  * 2) + m_currentTargetBounds.Width) / 2) - MinimumTipEdgeToBeakCenter()));
+            popup.HorizontalOffset(((((m_currentTargetBounds.X  * 2.0f) + m_currentTargetBounds.Width) / 2.0f) - MinimumTipEdgeToPointerCenter()));
             break;
 
         case winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft:
             popup.VerticalOffset(m_currentTargetBounds.Y - tipHeight - offset.Top);
-            popup.HorizontalOffset(((((m_currentTargetBounds.X  * 2) + m_currentTargetBounds.Width) / 2) - tipWidth + MinimumTipEdgeToBeakCenter()));
+            popup.HorizontalOffset(((((m_currentTargetBounds.X  * 2.0f) + m_currentTargetBounds.Width) / 2.0f) - tipWidth + MinimumTipEdgeToPointerCenter()));
             break;
 
         case winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight:
-            popup.VerticalOffset(m_currentTargetBounds.Y + m_currentTargetBounds.Height + offset.Bottom);
-            popup.HorizontalOffset(((((m_currentTargetBounds.X * 2) + m_currentTargetBounds.Width) / 2) - MinimumTipEdgeToBeakCenter()));
+            popup.VerticalOffset(m_currentTargetBounds.Y + m_currentTargetBounds.Height + static_cast<float>(offset.Bottom));
+            popup.HorizontalOffset(((((m_currentTargetBounds.X * 2.0f) + m_currentTargetBounds.Width) / 2.0f) - MinimumTipEdgeToPointerCenter()));
             break;
 
         case winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft:
-            popup.VerticalOffset(m_currentTargetBounds.Y + m_currentTargetBounds.Height + offset.Bottom);
-            popup.HorizontalOffset(((((m_currentTargetBounds.X * 2) + m_currentTargetBounds.Width) / 2) - tipWidth + MinimumTipEdgeToBeakCenter()));
+            popup.VerticalOffset(m_currentTargetBounds.Y + m_currentTargetBounds.Height + static_cast<float>(offset.Bottom));
+            popup.HorizontalOffset(((((m_currentTargetBounds.X * 2.0f) + m_currentTargetBounds.Width) / 2.0f) - tipWidth + MinimumTipEdgeToPointerCenter()));
             break;
 
         case winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop:
-            popup.VerticalOffset((((m_currentTargetBounds.Y * 2) + m_currentTargetBounds.Height) / 2) - tipHeight + MinimumTipEdgeToBeakCenter());
+            popup.VerticalOffset((((m_currentTargetBounds.Y * 2.0f) + m_currentTargetBounds.Height) / 2.0f) - tipHeight + MinimumTipEdgeToPointerCenter());
             popup.HorizontalOffset(m_currentTargetBounds.X - tipWidth - offset.Left);
             break;
 
         case winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom:
-            popup.VerticalOffset((((m_currentTargetBounds.Y * 2) + m_currentTargetBounds.Height) / 2) - MinimumTipEdgeToBeakCenter());
+            popup.VerticalOffset((((m_currentTargetBounds.Y * 2.0f) + m_currentTargetBounds.Height) / 2.0f) - MinimumTipEdgeToPointerCenter());
             popup.HorizontalOffset(m_currentTargetBounds.X - tipWidth - offset.Left);
             break;
 
         case winrt::TeachingTipPlacementMode::RightEdgeAlignedTop:
-            popup.VerticalOffset((((m_currentTargetBounds.Y * 2) + m_currentTargetBounds.Height) / 2) - tipHeight + MinimumTipEdgeToBeakCenter());
-            popup.HorizontalOffset(m_currentTargetBounds.X + m_currentTargetBounds.Width + offset.Right);
+            popup.VerticalOffset((((m_currentTargetBounds.Y * 2.0f) + m_currentTargetBounds.Height) / 2.0f) - tipHeight + MinimumTipEdgeToPointerCenter());
+            popup.HorizontalOffset(m_currentTargetBounds.X + m_currentTargetBounds.Width + static_cast<float>(offset.Right));
             break;
 
         case winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom:
-            popup.VerticalOffset((((m_currentTargetBounds.Y * 2) + m_currentTargetBounds.Height) / 2) - MinimumTipEdgeToBeakCenter());
-            popup.HorizontalOffset(m_currentTargetBounds.X + m_currentTargetBounds.Width + offset.Right);
+            popup.VerticalOffset((((m_currentTargetBounds.Y * 2.0f) + m_currentTargetBounds.Height) / 2.0f) - MinimumTipEdgeToPointerCenter());
+            popup.HorizontalOffset(m_currentTargetBounds.X + m_currentTargetBounds.Width + static_cast<float>(offset.Right));
             break;
 
         default:
             MUX_FAIL_FAST();
-        }
-
-        if (placement != m_currentEffectivePlacementMode)
-        {
-            m_currentEffectivePlacementMode = placement;
-            TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
-            UpdateBeak();
         }
     }
 }
@@ -436,21 +451,18 @@ void TeachingTip::PositionUntargetedPopup()
 {
     auto windowBounds = m_useTestWindowBounds ? m_testWindowBounds : winrt::Window::Current().CoreWindow().Bounds();
 
-    auto&& beakOcclusionGrid = m_beakOcclusionGrid.get();
-    double finalTipHeight = beakOcclusionGrid.ActualHeight();
-    double finalTipWidth = beakOcclusionGrid.ActualWidth();
+    auto&& pointerOcclusionGrid = m_pointerOcclusionGrid.get();
+    double finalTipHeight = pointerOcclusionGrid.ActualHeight();
+    double finalTipWidth = pointerOcclusionGrid.ActualWidth();
 
-    // An effective placement of auto indicates that no beak should be shown.
-    m_currentEffectivePlacementMode = winrt::TeachingTipPlacementMode::Auto;
-    TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
-    UpdateBeak();
+    UpdatePointer();
 
     auto offset = TargetOffset();
 
     // Depending on the effective placement mode of the tip we use a combination of the tip's size, the window's size, and the target
     // offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
     auto&& popup = m_popup.get();
-    switch (Placement())
+    switch (PreferredPlacement())
     {
     case winrt::TeachingTipPlacementMode::Auto:
     case winrt::TeachingTipPlacementMode::Bottom:
@@ -526,7 +538,7 @@ void TeachingTip::UpdateSizeBasedTemplateSettings()
     auto height = contentRootGrid.ActualHeight();
     auto floatWidth = static_cast<float>(width);
     auto floatHeight = static_cast<float>(height);
-    switch (m_currentEffectivePlacementMode)
+    switch (m_currentEffectivePointerPlacementMode)
     {
     case winrt::TeachingTipPlacementMode::Top:
         templateSettings->TopRightHighlightMargin(OtherPlacementTopRightHighlightMargin(width, height));
@@ -585,111 +597,63 @@ void TeachingTip::UpdateSizeBasedTemplateSettings()
 
 void TeachingTip::UpdateButtonsState()
 {
-    hstring actionText = ActionButtonText();
-    hstring closeText = CloseButtonText();
-    switch (CloseButtonKind())
+    auto actionContent = ActionButtonContent();
+    auto closeContent = CloseButtonContent();
+    bool isLightDismiss = IsLightDismissEnabled();
+    if (actionContent && closeContent)
     {
-    case winrt::TeachingTipCloseButtonKind::Auto:
-        if (actionText.size() > 0 && closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
-            winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
-        }
-        else if (actionText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
-            winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
-        }
-        else if (closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
-            winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
-        }
-        else
-        {
-            winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
-            winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
-        }
-        break;
-    case winrt::TeachingTipCloseButtonKind::Header:
-        winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
-        if (actionText.size() > 0 && closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
-        }
-        else if (actionText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
-        }
-        else if (closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
-        }
-        else
-        {
-            winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
-        }
-        break;
-    case winrt::TeachingTipCloseButtonKind::Footer:
+        winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
         winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
-        if (actionText.size() > 0 && closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
-        }
-        else if (actionText.size() > 0)
-        {
-            if (IsLightDismissEnabled())
-            {
-                winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
-            }
-            else
-            {
-                // Without light dismiss we require that at least one close button be shown at all times.
-                winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
-            }
-        }
-        else if (closeText.size() > 0)
-        {
-            winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
-        }
-        else
-        {
-            if (IsLightDismissEnabled())
-            {
-                winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
-            }
-            else
-            {
-                // We require that at least one close button be shown at all times.
-                winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
-            }
-        }
-        break;
+    }
+    else if (actionContent && isLightDismiss)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
+    }
+    else if (actionContent)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"ActionButtonVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
+    }
+    else if (closeContent)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
+    }
+    else if (isLightDismiss)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"FooterCloseButton"sv, false);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, L"NoButtonsVisible"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"HeaderCloseButton"sv, false);
     }
 }
 
-void TeachingTip::UpdateDynamicBleedingContentPlacementToTop()
+void TeachingTip::UpdateDynamicHeroContentPlacementToTop()
 {
-    if (BleedingImagePlacement() == winrt::TeachingTipBleedingImagePlacementMode::Auto)
+    if (HeroContentPlacement() == winrt::TeachingTipHeroContentPlacementMode::Auto)
     {
-        winrt::VisualStateManager::GoToState(*this, L"BleedingContentTop"sv, false);
-        if (m_currentBleedingEffectivePlacementMode != winrt::TeachingTipBleedingImagePlacementMode::Top)
+        winrt::VisualStateManager::GoToState(*this, L"HeroContentTop"sv, false);
+        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
         {
-            m_currentBleedingEffectivePlacementMode = winrt::TeachingTipBleedingImagePlacementMode::Top;
-            TeachingTipTestHooks::NotifyEffectiveBleedingPlacementChanged(*this);
+            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
+            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
         }
     }
 }
 
-void TeachingTip::UpdateDynamicBleedingContentPlacementToBottom()
+void TeachingTip::UpdateDynamicHeroContentPlacementToBottom()
 {
-    if (BleedingImagePlacement() == winrt::TeachingTipBleedingImagePlacementMode::Auto)
+    if (HeroContentPlacement() == winrt::TeachingTipHeroContentPlacementMode::Auto)
     {
-        winrt::VisualStateManager::GoToState(*this, L"BleedingContentBottom"sv, false);
-        if (m_currentBleedingEffectivePlacementMode != winrt::TeachingTipBleedingImagePlacementMode::Bottom)
+        winrt::VisualStateManager::GoToState(*this, L"HeroContentBottom"sv, false);
+        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
         {
-            m_currentBleedingEffectivePlacementMode = winrt::TeachingTipBleedingImagePlacementMode::Bottom;
-            TeachingTipTestHooks::NotifyEffectiveBleedingPlacementChanged(*this);
+            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
+            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
         }
     }
 }
@@ -796,10 +760,15 @@ void TeachingTip::OnIsOpenChanged()
             }
         }
 
-        m_currentEffectivePlacementMode = winrt::TeachingTipPlacementMode::Auto;
+        m_currentEffectiveTipPlacementMode = winrt::TeachingTipPlacementMode::Auto;
         TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
     }
     TeachingTipTestHooks::NotifyOpenedStatusChanged(*this);
+}
+
+void TeachingTip::OnPointerModeChanged()
+{
+    UpdatePointer();
 }
 
 void TeachingTip::OnIconSourceChanged()
@@ -845,36 +814,37 @@ void TeachingTip::OnIsLightDismissEnabledChanged()
         }
         m_lightDismissIndicatorPopupClosedRevoker.revoke();
     }
+    UpdateButtonsState();
 }
 
-void TeachingTip::OnBleedingImagePlacementChanged()
+void TeachingTip::OnHeroContentPlacementChanged()
 {
-    switch (BleedingImagePlacement())
+    switch (HeroContentPlacement())
     {
-    case winrt::TeachingTipBleedingImagePlacementMode::Auto:
+    case winrt::TeachingTipHeroContentPlacementMode::Auto:
         break;
-    case winrt::TeachingTipBleedingImagePlacementMode::Top:
-        winrt::VisualStateManager::GoToState(*this, L"BleedingContentTop"sv, false);
-        if (m_currentBleedingEffectivePlacementMode != winrt::TeachingTipBleedingImagePlacementMode::Top)
+    case winrt::TeachingTipHeroContentPlacementMode::Top:
+        winrt::VisualStateManager::GoToState(*this, L"HeroContentTop"sv, false);
+        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
         {
-            m_currentBleedingEffectivePlacementMode = winrt::TeachingTipBleedingImagePlacementMode::Top;
-            TeachingTipTestHooks::NotifyEffectiveBleedingPlacementChanged(*this);
+            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
+            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
         }
         break;
-    case winrt::TeachingTipBleedingImagePlacementMode::Bottom:
-        winrt::VisualStateManager::GoToState(*this, L"BleedingContentBottom"sv, false);
-        if (m_currentBleedingEffectivePlacementMode != winrt::TeachingTipBleedingImagePlacementMode::Bottom)
+    case winrt::TeachingTipHeroContentPlacementMode::Bottom:
+        winrt::VisualStateManager::GoToState(*this, L"HeroContentBottom"sv, false);
+        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
         {
-            m_currentBleedingEffectivePlacementMode = winrt::TeachingTipBleedingImagePlacementMode::Bottom;
-            TeachingTipTestHooks::NotifyEffectiveBleedingPlacementChanged(*this);
+            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
+            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
         }
         break;
     }
 
-    // Setting m_currentEffectivePlacementMode to auto ensures that the next time position popup is called we'll rerun the DetermineEffectivePlacement
+    // Setting m_currentEffectiveTipPlacementMode to auto ensures that the next time position popup is called we'll rerun the DetermineEffectivePlacement
     // alogorithm. If we did not do this and the popup was opened the algorithm would maintain the current effective placement mode, which we don't want
-    // since the bleeding image placement contributes to the choice of tip placement mode.
-    m_currentEffectivePlacementMode = winrt::TeachingTipPlacementMode::Auto;
+    // since the hero content placement contributes to the choice of tip placement mode.
+    m_currentEffectiveTipPlacementMode = winrt::TeachingTipPlacementMode::Auto;
     TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
     if (IsOpen())
     {
@@ -917,10 +887,10 @@ void TeachingTip::OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&,
     IsOpen(false);
 }
 
-void TeachingTip::OnBeakOcclusionGridLoaded(const winrt::IInspectable&, const winrt::IInspectable&)
+void TeachingTip::OnPointerOcclusionGridLoaded(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     StartExpandToOpen();
-    m_beakOcclusionGridLoadedRevoker.revoke();
+    m_pointerOcclusionGridLoadedRevoker.revoke();
 }
 
 
@@ -986,7 +956,7 @@ void TeachingTip::ClosePopup()
     {
         lightDismissIndicatorPopup.IsOpen(false);
     }
-    if (auto && beakOcclusionGrid = m_beakOcclusionGrid.get())
+    if (auto && pointerOcclusionGrid = m_pointerOcclusionGrid.get())
     {
         if (SharedHelpers::IsRS5OrHigher())
         {
@@ -994,27 +964,27 @@ void TeachingTip::ClosePopup()
             // is shown again then its text would be rasterized at this small scale and blown up ~20x. To fix this we have to
             // reset the scale after the popup has closed so that if the teaching tip is reshown the render pass does not use the
             // small scale.
-            beakOcclusionGrid.Scale({ 1.0f,1.0f,1.0f });
+            pointerOcclusionGrid.Scale({ 1.0f,1.0f,1.0f });
         }
     }
 }
 
-void TeachingTip::SetTarget(const winrt::FrameworkElement& element)
+void TeachingTip::OnTargetChanged()
 {
     m_targetLayoutUpdatedRevoker.revoke();
     m_targetEffectiveViewportChangedRevoker.revoke();
 
-    m_target.set(element);
+    m_target.set(Target());
 
     if (IsOpen())
     {
-        if (element)
+        if (auto&& target = m_target.get())
         {
-            m_currentTargetBounds = element.TransformToVisual(nullptr).TransformBounds({
+            m_currentTargetBounds = target.TransformToVisual(nullptr).TransformBounds({
                 0.0,
                 0.0,
-                static_cast<float>(element.as<winrt::FrameworkElement>().ActualWidth()),
-                static_cast<float>(element.as<winrt::FrameworkElement>().ActualHeight())
+                static_cast<float>(target.ActualWidth()),
+                static_cast<float>(target.ActualHeight())
             });
         }
         SetViewportChangedEvent();
@@ -1087,10 +1057,10 @@ void TeachingTip::CreateExpandAnimation()
         m_expandEasingFunction.set(compositor.CreateCubicBezierEasingFunction(s_expandAnimationEasingCurveControlPoint1, s_expandAnimationEasingCurveControlPoint2));
     }
     auto expandAnimation = compositor.CreateVector3KeyFrameAnimation();
-    if (auto&& beakOcclusionGrid = m_beakOcclusionGrid.get())
+    if (auto&& pointerOcclusionGrid = m_pointerOcclusionGrid.get())
     {
-        expandAnimation.SetScalarParameter(L"Width", static_cast<float>(beakOcclusionGrid.ActualWidth()));
-        expandAnimation.SetScalarParameter(L"Height", static_cast<float>(beakOcclusionGrid.ActualHeight()));
+        expandAnimation.SetScalarParameter(L"Width", static_cast<float>(pointerOcclusionGrid.ActualWidth()));
+        expandAnimation.SetScalarParameter(L"Height", static_cast<float>(pointerOcclusionGrid.ActualHeight()));
     }
     else
     {
@@ -1122,10 +1092,10 @@ void TeachingTip::CreateContractAnimation()
     }
 
     auto contractAnimation = compositor.CreateVector3KeyFrameAnimation();
-    if (auto&& beakOcclusionGrid = m_beakOcclusionGrid.get())
+    if (auto&& pointerOcclusionGrid = m_pointerOcclusionGrid.get())
     {
-        contractAnimation.SetScalarParameter(L"Width", static_cast<float>(beakOcclusionGrid.ActualWidth()));
-        contractAnimation.SetScalarParameter(L"Height", static_cast<float>(beakOcclusionGrid.ActualHeight()));
+        contractAnimation.SetScalarParameter(L"Width", static_cast<float>(pointerOcclusionGrid.ActualWidth()));
+        contractAnimation.SetScalarParameter(L"Height", static_cast<float>(pointerOcclusionGrid.ActualHeight()));
     }
     else
     {
@@ -1158,9 +1128,9 @@ void TeachingTip::StartExpandToOpen()
         }
         auto scopedBatch = winrt::Window::Current().Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
         auto&& expandAnimation = m_expandAnimation.get();
-        if (auto&& beakOcclusionGrid = m_beakOcclusionGrid.get())
+        if (auto&& pointerOcclusionGrid = m_pointerOcclusionGrid.get())
         {
-            beakOcclusionGrid.StartAnimation(expandAnimation);
+            pointerOcclusionGrid.StartAnimation(expandAnimation);
             m_isExpandAnimationPlaying = true;
         }
         if (auto&& contentRootGrid = m_contentRootGrid.get())
@@ -1168,9 +1138,9 @@ void TeachingTip::StartExpandToOpen()
             contentRootGrid.StartAnimation(m_expandElevationAnimation.get());
             m_isExpandAnimationPlaying = true;
         }
-        if (auto&& beakEdgeBorder = m_beakEdgeBorder.get())
+        if (auto&& pointerEdgeBorder = m_pointerEdgeBorder.get())
         {
-            beakEdgeBorder.StartAnimation(expandAnimation);
+            pointerEdgeBorder.StartAnimation(expandAnimation);
             m_isExpandAnimationPlaying = true;
         }
         scopedBatch.End();
@@ -1207,9 +1177,9 @@ void TeachingTip::StartContractToClose()
 
         auto scopedBatch = winrt::Window::Current().Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
         auto&& contractAnimation = m_contractAnimation.get();
-        if (auto&& beakOcclusionGrid = m_beakOcclusionGrid.get())
+        if (auto&& pointerOcclusionGrid = m_pointerOcclusionGrid.get())
         {
-            beakOcclusionGrid.StartAnimation(contractAnimation);
+            pointerOcclusionGrid.StartAnimation(contractAnimation);
             m_isContractAnimationPlaying = true;
         }
         if (auto&& contentRootGrid = m_contentRootGrid.get())
@@ -1217,9 +1187,9 @@ void TeachingTip::StartContractToClose()
             contentRootGrid.StartAnimation(m_contractElevationAnimation.get());
             m_isContractAnimationPlaying = true;
         }
-        if (auto&& beakEdgeBorder = m_beakEdgeBorder.get())
+        if (auto&& pointerEdgeBorder = m_pointerEdgeBorder.get())
         {
-            beakEdgeBorder.StartAnimation(contractAnimation);
+            pointerEdgeBorder.StartAnimation(contractAnimation);
             m_isContractAnimationPlaying = true;
         }
         scopedBatch.End();
@@ -1240,16 +1210,16 @@ void TeachingTip::StartContractToClose()
 
 winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
 {
-    auto placement = Placement();
+    auto placement = PreferredPlacement();
     if (placement != winrt::TeachingTipPlacementMode::Auto)
     {
         return placement;
     }
     else
     {
-        if (IsOpen() && m_currentEffectivePlacementMode != winrt::TeachingTipPlacementMode::Auto)
+        if (IsOpen() && m_currentEffectiveTipPlacementMode != winrt::TeachingTipPlacementMode::Auto)
         {
-            return m_currentEffectivePlacementMode;
+            return m_currentEffectiveTipPlacementMode;
         }
         if (m_target)
         {
@@ -1274,30 +1244,30 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
                 targetBounds.Y -= windowBounds.Y;
             }
 
-            auto&& beakOcclusionGrid = m_beakOcclusionGrid.get();
-            double contentHeight = beakOcclusionGrid.ActualHeight();
-            double contentWidth = beakOcclusionGrid.ActualWidth();
-            double tipHeight = contentHeight + BeakShortSideLength();
-            double tipWidth = contentWidth + BeakShortSideLength();
+            auto&& pointerOcclusionGrid = m_pointerOcclusionGrid.get();
+            double contentHeight = pointerOcclusionGrid.ActualHeight();
+            double contentWidth = pointerOcclusionGrid.ActualWidth();
+            double tipHeight = contentHeight + PointerShortSideLength();
+            double tipWidth = contentWidth + PointerShortSideLength();
 
-            if (BleedingImageContent())
+            if (HeroContent())
             {
-                if (m_bleedingImageContentBorder.get().ActualHeight() > m_nonBleedingContentRootGrid.get().ActualHeight() - BeakLongSideActualLength())
+                if (m_heroContentBorder.get().ActualHeight() > m_nonHeroContentRootGrid.get().ActualHeight() - PointerLongSideActualLength())
                 {
                     leftCenterAvailable = false;
                     rightCenterAvailable = false;
                 }
 
-                switch(BleedingImagePlacement())
+                switch(HeroContentPlacement())
                 {
-                case winrt::TeachingTipBleedingImagePlacementMode::Bottom:
+                case winrt::TeachingTipHeroContentPlacementMode::Bottom:
                     topCenterAvailable = false;
                     topRightAvailable = false;
                     topLeftAvailable = false;
                     rightTopAvailable = false;
                     leftTopAvailable = false;
                     break;
-                case winrt::TeachingTipBleedingImagePlacementMode::Top:
+                case winrt::TeachingTipHeroContentPlacementMode::Top:
                     bottomCenterAvailable = false;
                     bottomLeftAvailable = false;
                     bottomRightAvailable = false;
@@ -1337,8 +1307,8 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
             }
 
             // If the horizontal midpoint is out of the window.
-            if (targetBounds.X + (targetBounds.Width / 2) < MinimumTipEdgeToBeakCenter() ||
-                targetBounds.X + (targetBounds.Width / 2) > windowBounds.Width - MinimumTipEdgeToBeakCenter())
+            if (targetBounds.X + (targetBounds.Width / 2) < MinimumTipEdgeToPointerCenter() ||
+                targetBounds.X + (targetBounds.Width / 2) > windowBounds.Width - MinimumTipEdgeToPointerCenter())
             {
                 topLeftAvailable = false;
                 topCenterAvailable = false;
@@ -1349,8 +1319,8 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
             }
 
             // If the vertical midpoint is out of the window.
-            if (targetBounds.Y + (targetBounds.Height / 2) < MinimumTipEdgeToBeakCenter() ||
-                targetBounds.Y + (targetBounds.Height / 2) > windowBounds.Height - MinimumTipEdgeToBeakCenter())
+            if (targetBounds.Y + (targetBounds.Height / 2) < MinimumTipEdgeToPointerCenter() ||
+                targetBounds.Y + (targetBounds.Height / 2) > windowBounds.Height - MinimumTipEdgeToPointerCenter())
             {
                 leftBottomAvailable = false;
                 leftCenterAvailable = false;
@@ -1368,26 +1338,26 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
                 topLeftAvailable = false;
             }
             // If the tip is too tall to fit between the center of the target and the top edge of the window.
-            if (contentHeight - MinimumTipEdgeToBeakCenter() > targetBounds.Y + (targetBounds.Height / 2))
+            if (contentHeight - MinimumTipEdgeToPointerCenter() > targetBounds.Y + (targetBounds.Height / 2.0f))
             {
                 rightTopAvailable = false;
                 leftTopAvailable = false;
             }
-            // If the tip is too tall to fit in the window when the beak is centered vertically on the target and the tip.
-            if (contentHeight / 2 > targetBounds.Y + targetBounds.Height / 2 ||
-                contentHeight / 2 > (windowBounds.Height - (targetBounds.Height + targetBounds.Y) + (targetBounds.Height / 2)))
+            // If the tip is too tall to fit in the window when the pointer is centered vertically on the target and the tip.
+            if (contentHeight / 2.0f > targetBounds.Y + targetBounds.Height / 2.0f ||
+                contentHeight / 2.0f > (windowBounds.Height - (targetBounds.Height + targetBounds.Y) + (targetBounds.Height / 2.0f)))
             {
                 rightCenterAvailable = false;
                 leftCenterAvailable = false;
             }
             // If the tip is too tall to fit between the center of the target and the bottom edge of the window.
-            if (contentHeight - MinimumTipEdgeToBeakCenter() > windowBounds.Height - (targetBounds.Y + (targetBounds.Height / 2)))
+            if (contentHeight - MinimumTipEdgeToPointerCenter() > windowBounds.Height - (targetBounds.Y + (targetBounds.Height / 2.0f)))
             {
                 rightBottomAvailable = false;
                 leftBottomAvailable = false;
             }
             // If the tip is too tall to fit between the bottom of the target and the bottom edge of the window.
-            if (tipHeight > windowBounds.Height - (targetBounds.Height + targetBounds.Y))
+            if (tipHeight > static_cast<float>(windowBounds.Height) - (targetBounds.Height + targetBounds.Y))
             {
                 bottomCenterAvailable = false;
                 bottomLeftAvailable = false;
@@ -1402,26 +1372,26 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
                 leftBottomAvailable = false;
             }
             // If the tip is too wide to fit between the center of the target and the left edge of the window.
-            if (contentWidth - MinimumTipEdgeToBeakCenter() > targetBounds.X + (targetBounds.Width / 2))
+            if (contentWidth - MinimumTipEdgeToPointerCenter() > targetBounds.X + (targetBounds.Width / 2.0f))
             {
                 topLeftAvailable = false;
                 bottomLeftAvailable = false;
             }
-            // If the tip is too wide to fit in the window when the beak is centerd horizontally on the target and the tip.
-            if (contentWidth / 2 > targetBounds.X + targetBounds.Width / 2 ||
-                contentWidth / 2 > (windowBounds.Width - (targetBounds.Width + targetBounds.X) + (targetBounds.Width / 2)))
+            // If the tip is too wide to fit in the window when the pointer is centered horizontally on the target and the tip.
+            if (contentWidth / 2.0f > targetBounds.X + targetBounds.Width / 2.0f ||
+                contentWidth / 2.0f > (windowBounds.Width - (targetBounds.Width + targetBounds.X) + (targetBounds.Width / 2.0f)))
             {
                 topCenterAvailable = false;
                 bottomCenterAvailable = false;
             }
             // If the tip is too wide to fit between the center of the target and the right edge of the window.
-            if (contentWidth - MinimumTipEdgeToBeakCenter() > windowBounds.Width - (targetBounds.X + (targetBounds.Width / 2)))
+            if (contentWidth - MinimumTipEdgeToPointerCenter() > windowBounds.Width - (targetBounds.X + (targetBounds.Width / 2.0f)))
             {
                 topRightAvailable = false;
                 bottomRightAvailable = false;
             }
             // If the tip is too wide to fit between the right edge of the target and the right edge of the window.
-            if (tipWidth > windowBounds.Width - (targetBounds.Width + targetBounds.X))
+            if (tipWidth > static_cast<float>(windowBounds.Width) - (targetBounds.Width + targetBounds.X))
             {
                 rightCenterAvailable = false;
                 rightTopAvailable = false;
@@ -1487,26 +1457,26 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
 void TeachingTip::EstablishShadows()
 {
 #ifdef USE_INSIDER_SDK
-#ifdef BEAK_SHADOW
+#ifdef POINTER_SHADOW
 #ifdef _DEBUG
-    if (winrt::IUIElement10 beakPolygon_uiElement10 = m_contentRootGrid.get())
+    if (winrt::IUIElement10 pointerPolygon_uiElement10 = m_pointerPolygon.get())
     {
         if (m_tipShadow)
         {
-            if (!beakPolygon_uiElement10.Shadow())
+            if (!pointerPolygon_uiElement10.Shadow())
             {
-                // This facilitates an experiment around faking a proper beak shadow, shadows are expensive though so we don't want it present for release builds.
-                auto beakShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
-                beakShadow.Receivers().Append(m_target.get());
-                beakPolygon_uiElement10.Shadow(beakShadow);
-                auto&& beakPolygon = m_beakPolygon.get();
-                auto&& beakPolygonTranslation = beakPolygon.Translation();
-                beakPolygon.Translation({ beakPolygonTranslation.x, beakPolygonTranslation.y, m_beakElevation });
+                // This facilitates an experiment around faking a proper pointer shadow, shadows are expensive though so we don't want it present for release builds.
+                auto pointerShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow{};
+                pointerShadow.Receivers().Append(m_target.get());
+                pointerPolygon_uiElement10.Shadow(pointerShadow);
+                auto&& pointerPolygon = m_pointerPolygon.get();
+                auto&& pointerPolygonTranslation = pointerPolygon.Translation();
+                pointerPolygon.Translation({ pointerPolygonTranslation.x, pointerPolygonTranslation.y, m_pointerElevation });
             }
         }
         else
         {
-            beakPolygon_uiElement10.Shadow(nullptr);
+            pointerPolygon_uiElement10.Shadow(nullptr);
         }
     }
 #endif
@@ -1535,42 +1505,7 @@ void TeachingTip::OnPropertyChanged(
     const winrt::DependencyObject& sender,
     const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    if (args.Property() == s_AttachProperty)
-    {
-        OnAttachPropertyChanged(sender, args);
-    }
-    else
-    {
-        winrt::get_self<TeachingTip>(sender.as<winrt::TeachingTip>())->OnPropertyChanged(args);
-    }
-}
-
-void TeachingTip::OnAttachPropertyChanged(
-    const winrt::DependencyObject& sender,
-    const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    auto oldTip = unbox_value<winrt::TeachingTip>(args.OldValue());
-    auto newTip = unbox_value<winrt::TeachingTip>(args.NewValue());
-
-    if (oldTip == newTip)
-    {
-        return;
-    }
-
-    winrt::TeachingTip::SetAttach(nullptr, oldTip);
-    winrt::TeachingTip::SetAttach(sender.try_as<winrt::UIElement>(), newTip);
-}
-
-void TeachingTip::SetAttach(const winrt::UIElement& element, const winrt::TeachingTip& teachingTip)
-{
-    MUX_ASSERT(teachingTip);
-    auto tip = winrt::get_self<TeachingTip>(teachingTip);
-    tip->SetTarget(element.as<winrt::FrameworkElement>());
-}
-
-winrt::TeachingTip TeachingTip::GetAttach(const winrt::UIElement& element)
-{
-    return unbox_value<winrt::TeachingTip>(element.GetValue(s_AttachProperty));
+    winrt::get_self<TeachingTip>(sender.as<winrt::TeachingTip>())->OnPropertyChanged(args);
 }
 
 ////////////////
@@ -1602,10 +1537,10 @@ void TeachingTip::SetContentElevation(float elevation)
     m_contentElevation = elevation;
     if (SharedHelpers::IsRS5OrHigher())
     {
-        if (auto&& beakOcclusionGrid = m_beakOcclusionGrid.get())
+        if (auto&& pointerOcclusionGrid = m_pointerOcclusionGrid.get())
         {
-            auto beakOcclusionGridTranslation = beakOcclusionGrid.Translation();
-            m_contentRootGrid.get().Translation({ beakOcclusionGridTranslation.x, beakOcclusionGridTranslation.y, m_contentElevation });
+            auto pointerOcclusionGridTranslation = pointerOcclusionGrid.Translation();
+            m_contentRootGrid.get().Translation({ pointerOcclusionGridTranslation.x, pointerOcclusionGridTranslation.y, m_contentElevation });
         }
         if (m_expandElevationAnimation)
         {
@@ -1614,15 +1549,15 @@ void TeachingTip::SetContentElevation(float elevation)
     }
 }
 
-void TeachingTip::SetBeakElevation(float elevation)
+void TeachingTip::SetPointerElevation(float elevation)
 {
-    m_beakElevation = elevation;
-    if (SharedHelpers::IsRS5OrHigher() && m_beakPolygon)
+    m_pointerElevation = elevation;
+    if (SharedHelpers::IsRS5OrHigher() && m_pointerPolygon)
     {
-        if (auto && beakPolygon = m_beakPolygon.get())
+        if (auto && pointerPolygon = m_pointerPolygon.get())
         {
-            auto beakPolygonTranslation = beakPolygon.Translation();
-            beakPolygon.Translation({ beakPolygonTranslation.x, beakPolygonTranslation.y, m_beakElevation });
+            auto pointerPolygonTranslation = pointerPolygon.Translation();
+            pointerPolygon.Translation({ pointerPolygonTranslation.x, pointerPolygonTranslation.y, m_pointerElevation });
         }
     }
 }
@@ -1686,12 +1621,12 @@ bool TeachingTip::GetIsIdle()
 
 winrt::TeachingTipPlacementMode TeachingTip::GetEffectivePlacement()
 {
-    return m_currentEffectivePlacementMode;
+    return m_currentEffectiveTipPlacementMode;
 }
 
-winrt::TeachingTipBleedingImagePlacementMode TeachingTip::GetEffectiveBleedingPlacement()
+winrt::TeachingTipHeroContentPlacementMode TeachingTip::GetEffectiveHeroContentPlacement()
 {
-    return m_currentBleedingEffectivePlacementMode;
+    return m_currentHeroContentEffectivePlacementMode;
 }
 
 double TeachingTip::GetHorizontalOffset()

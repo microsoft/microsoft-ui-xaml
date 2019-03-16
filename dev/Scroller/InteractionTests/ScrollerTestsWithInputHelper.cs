@@ -1152,22 +1152,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.IsTrue(PanUntilInputWorks(elements.scrollerOffset, elements.scrollerUIObject), "Pan inputs are moving the scroller!");
 
+                elements.txtMISnapPointValueUIObject.SetValue("0");
+                elements.btnAddMISnapPointUIObject.Invoke();
                 elements.txtMISnapPointValueUIObject.SetValue("600");
                 elements.btnAddMISnapPointUIObject.Invoke();
                 elements.txtMISnapPointValueUIObject.SetValue("1200");
                 elements.btnAddMISnapPointUIObject.Invoke();
-                elements.txtOISnapPointValueUIObject.SetValue("0");
-                elements.txtOISnapPointRangeUIObject.SetValue("1");
-                elements.btnAddOISnapPointUIObject.Invoke();
 
                 InputHelper.Tap(elements.scrollerUIObject);
 
                 warningCount = 0;
-                InputHelper.Pan(elements.scrollerUIObject, 25, Direction.North);
+                InputHelper.Pan(elements.scrollerUIObject, 75, Direction.North);
                 warningCount += WaitForOffsetUpdated(elements.scrollerOffset, 600.0, double.PositiveInfinity, 1200.0, 1200.0);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
-
-                InputHelper.Pan(elements.scrollerUIObject, 75, Direction.North);
+                InputHelper.Pan(elements.scrollerUIObject, 95, Direction.North);
                 warningCount += WaitForOffsetUpdated(elements.scrollerOffset, 600.0, double.PositiveInfinity, 1200.0, 1200.0);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
@@ -1244,6 +1242,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+#if ApplicableRangeType
         [TestMethod]
         [TestProperty("Description", "Apply a single optional irregular snap point to the scroller and pan the scroller towards and away from the snap point.")]
         public void PanOverAnOptionalIrregularSnapPoint()
@@ -2615,6 +2614,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        private void SnapPointsPageChangeOffset(SnapPointsTestPageElements elements, String amount, double value)
+        {
+            Log.Comment("SnapPointsPageChangeOffset with amount: " + amount + ", value: " + value);
+
+            elements.scrollerOffsetChangeAmount.SetValue(amount);
+            elements.changeScrollerOffset.Invoke();
+            WaitForOffsetUpdated(elements.scrollerOffset, value);
+        }
+
+        private void SnapPointsPageChangeOffset(SnapPointsTestPageElements elements, String amount, double minValue, double maxValue)
+        {
+            Log.Comment("SnapPointsPageChangeOffset with amount: " + amount + ", minValue: " + minValue + ", maxValue: " + maxValue);
+
+            elements.scrollerOffsetChangeAmount.SetValue(amount);
+            elements.changeScrollerOffset.Invoke();
+            WaitForOffsetUpdated(minValue, maxValue, elements.scrollerOffset);
+        }
+#endif
+
         private void GoToSimpleContentsPage()
         {
             Log.Comment("Navigating to ScrollersWithSimpleContentsPage");
@@ -2659,24 +2677,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
 
             return GatherSnapPointsTestPageElements();
-        }
-
-        private void SnapPointsPageChangeOffset(SnapPointsTestPageElements elements, String amount, double value)
-        {
-            Log.Comment("SnapPointsPageChangeOffset with amount: " + amount + ", value: " + value);
-
-            elements.scrollerOffsetChangeAmount.SetValue(amount);
-            elements.changeScrollerOffset.Invoke();
-            WaitForOffsetUpdated(elements.scrollerOffset, value);
-        }
-
-        private void SnapPointsPageChangeOffset(SnapPointsTestPageElements elements, String amount, double minValue, double maxValue)
-        {
-            Log.Comment("SnapPointsPageChangeOffset with amount: " + amount + ", minValue: " + minValue + ", maxValue: " + maxValue);
-
-            elements.scrollerOffsetChangeAmount.SetValue(amount);
-            elements.changeScrollerOffset.Invoke();
-            WaitForOffsetUpdated(minValue, maxValue, elements.scrollerOffset);
         }
 
         private int WaitForOffsetUpdated(
@@ -2729,6 +2729,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return warningCount;
         }
 
+#if ApplicableRangeType
         private void WaitForOptionalRegularOffsetUpdated(
             Edit text,
             double range,
@@ -2742,6 +2743,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Log.Comment("Final Offset value modulo interval " + interval + ": " + valueModuloInterval);
             Verify.IsTrue((valueModuloInterval > range && valueModuloInterval < interval - range) || valueModuloInterval == 0.0);
         }
+#endif
 
         private bool WaitForOffsetToSettle(Edit text, double millisecondsTimeout, bool failOnError)
         {
@@ -2996,14 +2998,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private SnapPointsTestPageElements GatherSnapPointsTestPageElements()
         {
+            Log.Comment("GatherSnapPointsTestPageElements - entry");
             var elements = new SnapPointsTestPageElements();
             
             elements.btnAddMISnapPointUIObject = new Button(FindElement.ByName("btnMIAddSnapPoint"));
             elements.txtMISnapPointValueUIObject = new Edit(FindElement.ByName("txtMISnapPointValue"));
 
+#if ApplicableRangeType
             elements.btnAddOISnapPointUIObject = new Button(FindElement.ByName("btnOIAddSnapPoint"));
             elements.txtOISnapPointValueUIObject = new Edit(FindElement.ByName("txtOISnapPointValue"));
             elements.txtOISnapPointRangeUIObject = new Edit(FindElement.ByName("txtOIApplicableRange"));
+#endif
 
             elements.btnAddMRSnapPointUIObject = new Button(FindElement.ByName("btnMRAddSnapPoint"));
             elements.txtMRSnapPointOffsetUIObject = new Edit(FindElement.ByName("txtMRSnapPointOffset"));
@@ -3011,12 +3016,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.txtMRSnapPointStartUIObject = new Edit(FindElement.ByName("txtMRSnapPointStart"));
             elements.txtMRSnapPointEndUIObject = new Edit(FindElement.ByName("txtMRSnapPointEnd"));
 
+#if ApplicableRangeType
             elements.btnAddORSnapPointUIObject = new Button(FindElement.ByName("btnORAddSnapPoint"));
             elements.txtORSnapPointOffsetUIObject = new Edit(FindElement.ByName("txtORSnapPointOffset"));
             elements.txtORSnapPointIntervalUIObject = new Edit(FindElement.ByName("txtORSnapPointInterval"));
             elements.txtORSnapPointStartUIObject = new Edit(FindElement.ByName("txtORSnapPointStart"));
             elements.txtORSnapPointEndUIObject = new Edit(FindElement.ByName("txtORSnapPointEnd"));
             elements.txtORSnapPointRangeUIObject = new Edit(FindElement.ByName("txtORApplicableRange"));
+#endif
 
             elements.scrollerUIObject = FindElement.ByName("markupScroller");
             Verify.IsNotNull(elements.scrollerUIObject, "Verifying that markupScroller was found");
@@ -3027,6 +3034,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             elements.scrollerOffset.SetValue("0");
 
+            Log.Comment("GatherSnapPointsTestPageElements - exit");
             return elements;
         }
 
@@ -3035,9 +3043,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             public Button btnAddMISnapPointUIObject;
             public Edit txtMISnapPointValueUIObject;
 
+#if ApplicableRangeType
             public Button btnAddOISnapPointUIObject;
             public Edit txtOISnapPointValueUIObject;
             public Edit txtOISnapPointRangeUIObject;
+#endif
 
             public Button btnAddMRSnapPointUIObject;
             public Edit txtMRSnapPointOffsetUIObject;
@@ -3045,12 +3055,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             public Edit txtMRSnapPointStartUIObject;
             public Edit txtMRSnapPointEndUIObject;
 
+#if ApplicableRangeType
             public Button btnAddORSnapPointUIObject;
             public Edit txtORSnapPointOffsetUIObject;
             public Edit txtORSnapPointIntervalUIObject;
             public Edit txtORSnapPointStartUIObject;
             public Edit txtORSnapPointEndUIObject;
             public Edit txtORSnapPointRangeUIObject;
+#endif
 
             public UIObject scrollerUIObject;
 

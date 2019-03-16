@@ -50,11 +50,11 @@ void TeachingTipTestHooks::SetContentElevation(const winrt::TeachingTip& teachin
     }
 }
 
-void TeachingTipTestHooks::SetBeakElevation(const winrt::TeachingTip& teachingTip, float elevation)
+void TeachingTipTestHooks::SetPointerElevation(const winrt::TeachingTip& teachingTip, float elevation)
 {
     if (teachingTip)
     {
-        winrt::get_self<TeachingTip>(teachingTip)->SetBeakElevation(elevation);
+        winrt::get_self<TeachingTip>(teachingTip)->SetPointerElevation(elevation);
     }
 }
 
@@ -180,34 +180,34 @@ winrt::TeachingTipPlacementMode TeachingTipTestHooks::GetEffectivePlacement(cons
     return winrt::TeachingTipPlacementMode::Auto;
 }
 
-void TeachingTipTestHooks::NotifyEffectiveBleedingPlacementChanged(const winrt::TeachingTip& sender)
+void TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(const winrt::TeachingTip& sender)
 {
     auto hooks = EnsureGlobalTestHooks();
-    if (hooks->m_effectiveBleedingPlacementChangedEventSource)
+    if (hooks->m_effectiveHeroContentPlacementChangedEventSource)
     {
-        hooks->m_effectiveBleedingPlacementChangedEventSource(sender, nullptr);
+        hooks->m_effectiveHeroContentPlacementChangedEventSource(sender, nullptr);
     }
 }
 
-winrt::event_token TeachingTipTestHooks::EffectiveBleedingPlacementChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value)
+winrt::event_token TeachingTipTestHooks::EffectiveHeroContentPlacementChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
-    return hooks->m_effectiveBleedingPlacementChangedEventSource.add(value);
+    return hooks->m_effectiveHeroContentPlacementChangedEventSource.add(value);
 }
 
-void TeachingTipTestHooks::EffectiveBleedingPlacementChanged(winrt::event_token const& token)
+void TeachingTipTestHooks::EffectiveHeroContentPlacementChanged(winrt::event_token const& token)
 {
     auto hooks = EnsureGlobalTestHooks();
-    hooks->m_effectiveBleedingPlacementChangedEventSource.remove(token);
+    hooks->m_effectiveHeroContentPlacementChangedEventSource.remove(token);
 }
 
-winrt::TeachingTipBleedingImagePlacementMode TeachingTipTestHooks::GetEffectiveBleedingPlacement(const winrt::TeachingTip& teachingTip)
+winrt::TeachingTipHeroContentPlacementMode TeachingTipTestHooks::GetEffectiveHeroContentPlacement(const winrt::TeachingTip& teachingTip)
 {
     if (teachingTip)
     {
-        return winrt::get_self<TeachingTip>(teachingTip)->GetEffectiveBleedingPlacement();
+        return winrt::get_self<TeachingTip>(teachingTip)->GetEffectiveHeroContentPlacement();
     }
-    return winrt::TeachingTipBleedingImagePlacementMode::Auto;
+    return winrt::TeachingTipHeroContentPlacementMode::Auto;
 }
 
 void TeachingTipTestHooks::NotifyOffsetChanged(const winrt::TeachingTip& sender)

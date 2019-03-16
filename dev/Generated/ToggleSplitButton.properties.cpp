@@ -28,7 +28,7 @@ void ToggleSplitButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::ToggleSplitButton>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnIsCheckedPropertyChanged));
     }
 }
 
@@ -38,7 +38,7 @@ void ToggleSplitButtonProperties::ClearProperties()
     SplitButton::ClearProperties();
 }
 
-void ToggleSplitButtonProperties::OnPropertyChanged(
+void ToggleSplitButtonProperties::OnIsCheckedPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

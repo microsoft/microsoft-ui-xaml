@@ -14,7 +14,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(XES_DFSDROP)' == ''">
     <PackageReference Include="MUXCustomBuildTasks">
-      <Version>1.0.38</Version>
+      <Version>1.0.39</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Net.Native.Compiler">
       <Version>2.2.1</Version>
@@ -38,6 +38,9 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="DiffPlex">
+      <Version>1.2.1</Version>
+    </PackageReference>
     <PackageReference Include="Win2D.uwp">
       <Version>1.22.0</Version>
     </PackageReference>

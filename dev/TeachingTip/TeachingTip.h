@@ -28,18 +28,15 @@ public:
 
     tracker_ref<winrt::FrameworkElement> m_target{ this };
 
-    static void SetAttach(const winrt::UIElement& element, const winrt::TeachingTip& teachingTip);
-    static winrt::TeachingTip GetAttach(const winrt::UIElement& element);
-
     // TestHooks
     void SetExpandEasingFunction(const winrt::CompositionEasingFunction& easingFunction);
     void SetContractEasingFunction(const winrt::CompositionEasingFunction& easingFunction);
     void SetTipShouldHaveShadow(bool tipShadow);
     void SetContentElevation(float elevation);
-    void SetBeakElevation(float elevation);
+    void SetPointerElevation(float elevation);
     bool GetIsIdle();
     winrt::TeachingTipPlacementMode GetEffectivePlacement();
-    winrt::TeachingTipBleedingImagePlacementMode GetEffectiveBleedingPlacement();
+    winrt::TeachingTipHeroContentPlacementMode GetEffectiveHeroContentPlacement();
     double GetHorizontalOffset();
     double GetVerticalOffset();
     void SetUseTestWindowBounds(bool useTestWindowBounds);
@@ -60,43 +57,40 @@ private:
     winrt::Popup::Closed_revoker m_popupClosedRevoker{};
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
     winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
-    winrt::Grid::Loaded_revoker m_beakOcclusionGridLoadedRevoker{};
+    winrt::Grid::Loaded_revoker m_pointerOcclusionGridLoadedRevoker{};
     void CreateLightDismissIndicatorPopup();
-    void UpdateBeak();
+    void UpdatePointer();
     void PositionPopup();
     void PositionTargetedPopup();
     void PositionUntargetedPopup();
     void UpdateSizeBasedTemplateSettings();
     void UpdateButtonsState();
-    void UpdateDynamicBleedingContentPlacementToTop();
-    void UpdateDynamicBleedingContentPlacementToBottom();
+    void UpdateDynamicHeroContentPlacementToTop();
+    void UpdateDynamicHeroContentPlacementToBottom();
 
     static void OnPropertyChanged(
         const winrt::DependencyObject& sender,
         const winrt::DependencyPropertyChangedEventArgs& args);
 
-    static void OnAttachPropertyChanged(
-        const winrt::DependencyObject& sender,
-        const winrt::DependencyPropertyChangedEventArgs& args);
-
     void OnIsOpenChanged();
+    void OnTargetChanged();
+    void OnPointerModeChanged();
     void OnIconSourceChanged();
     void OnTargetOffsetChanged();
     void OnIsLightDismissEnabledChanged();
-    void OnBleedingImagePlacementChanged();
+    void OnHeroContentPlacementChanged();
 
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&);
-    void OnBeakOcclusionGridLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnPointerOcclusionGridLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
 
     void RaiseClosingEvent();
     void ClosePopupWithAnimationIfAvailable();
     void ClosePopup();
 
-    void SetTarget(const winrt::FrameworkElement& element);
     void SetViewportChangedEvent();
     void RevokeViewportChangedEvent();
     void TargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&);
@@ -116,16 +110,16 @@ private:
     tracker_ref<winrt::Popup> m_lightDismissIndicatorPopup{ this };
 
     tracker_ref<winrt::UIElement> m_rootElement{ this };
-    tracker_ref<winrt::Grid> m_beakOcclusionGrid{ this };
+    tracker_ref<winrt::Grid> m_pointerOcclusionGrid{ this };
     tracker_ref<winrt::Grid> m_contentRootGrid{ this };
-    tracker_ref<winrt::Grid> m_nonBleedingContentRootGrid{ this };
-    tracker_ref<winrt::Border> m_bleedingImageContentBorder{ this };
+    tracker_ref<winrt::Grid> m_nonHeroContentRootGrid{ this };
+    tracker_ref<winrt::Border> m_heroContentBorder{ this };
     tracker_ref<winrt::Border> m_iconBorder{ this };
     tracker_ref<winrt::Button> m_actionButton{ this };
     tracker_ref<winrt::Button> m_alternateCloseButton{ this };
     tracker_ref<winrt::Button> m_closeButton{ this };
-    tracker_ref<winrt::Polygon> m_beakPolygon{ this };
-    tracker_ref<winrt::Grid> m_beakEdgeBorder{ this };
+    tracker_ref<winrt::Polygon> m_pointerPolygon{ this };
+    tracker_ref<winrt::Grid> m_pointerEdgeBorder{ this };
 
     tracker_ref<winrt::KeyFrameAnimation> m_expandAnimation{ this };
     tracker_ref<winrt::KeyFrameAnimation> m_contractAnimation{ this };
@@ -134,8 +128,9 @@ private:
     tracker_ref<winrt::CompositionEasingFunction> m_expandEasingFunction{ this };
     tracker_ref<winrt::CompositionEasingFunction> m_contractEasingFunction{ this };
 
-    winrt::TeachingTipPlacementMode m_currentEffectivePlacementMode{ winrt::TeachingTipPlacementMode::Auto };
-    winrt::TeachingTipBleedingImagePlacementMode m_currentBleedingEffectivePlacementMode{ winrt::TeachingTipBleedingImagePlacementMode::Auto };
+    winrt::TeachingTipPlacementMode m_currentEffectiveTipPlacementMode{ winrt::TeachingTipPlacementMode::Auto };
+    winrt::TeachingTipPlacementMode m_currentEffectivePointerPlacementMode{ winrt::TeachingTipPlacementMode::Auto };
+    winrt::TeachingTipHeroContentPlacementMode m_currentHeroContentEffectivePlacementMode{ winrt::TeachingTipHeroContentPlacementMode::Auto };
 
     winrt::Rect m_currentBounds{ 0,0,0,0 };
     winrt::Rect m_currentTargetBounds{ 0,0,0,0 };
@@ -153,8 +148,8 @@ private:
     bool m_tipFollowsTarget{ false };
 
     float m_contentElevation{ 32.0f };
-    float m_beakElevation{ 0.0f };
-    bool m_beakShadowTargetsShadowTarget{ false };
+    float m_pointerElevation{ 0.0f };
+    bool m_pointerShadowTargetsShadowTarget{ false };
 
     bool m_isIdle{ true };
 
@@ -164,16 +159,16 @@ private:
     winrt::TeachingTipCloseReason m_lastCloseReason{ winrt::TeachingTipCloseReason::Programmatic };
 
     // These values are shifted by one because this is the 1px highlight that sits adjacent to the tip border.
-    inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (BeakShortSideLength() - 1), 0, 1, 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToBeakEdgeMargin() + BeakLongSideLength() - 1, 0, 1, 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToBeakEdgeMargin() + 1), 0, 1, 0 }; }
+    inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (PointerShortSideLength() - 1.0f), 0, 1, 0 }; }
+    inline winrt::Thickness BottomEdgeAlignedRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToPointerEdgeMargin() + PointerLongSideLength() - 1.0f, 0, 1, 0 }; }
+    inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToPointerEdgeMargin() + 1.0f), 0, 1, 0 }; }
     static inline winrt::Thickness OtherPlacementTopRightHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
 
-    inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, (width / 2) + (BeakShortSideLength() - 1), 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedRightPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, width - (MinimumTipEdgeToBeakEdgeMargin() + 1), 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, MinimumTipEdgeToBeakEdgeMargin() + BeakLongSideLength() - 1, 0 }; }
+    inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, (width / 2) + (PointerShortSideLength() - 1.0f), 0 }; }
+    inline winrt::Thickness BottomEdgeAlignedRightPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, width - (MinimumTipEdgeToPointerEdgeMargin() + 1.0f), 0 }; }
+    inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, MinimumTipEdgeToPointerEdgeMargin() + PointerLongSideLength() - 1.0f, 0 }; }
     static inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 1, 0 }; }
-    // Shifted by one since the beak edge's border is not accounted for automatically.
+    // Shifted by one since the pointer edge's border is not accounted for automatically.
     static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 0, 0 }; }
     static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 0, 1, 1, 0 }; }
 
@@ -186,22 +181,22 @@ private:
 
     static constexpr wstring_view s_containerName{ L"Container"sv };
     static constexpr wstring_view s_popupName{ L"Popup"sv };
-    static constexpr wstring_view s_beakOcclusionGridName{ L"BeakOcclusionGrid"sv };
+    static constexpr wstring_view s_pointerOcclusionGridName{ L"PointerOcclusionGrid"sv };
     static constexpr wstring_view s_contentRootGridName{ L"ContentRootGrid"sv };
-    static constexpr wstring_view s_nonBleedingContentRootGridName{ L"NonBleedingContentRootGrid"sv };
+    static constexpr wstring_view s_nonHeroContentRootGridName{ L"NonHeroContentRootGrid"sv };
     static constexpr wstring_view s_shadowTargetName{ L"ShadowTarget"sv };
-    static constexpr wstring_view s_bleedingImageBorderName{ L"BleedingImageBorder"sv };
+    static constexpr wstring_view s_heroContentBorderName{ L"HeroContentBorder"sv };
     static constexpr wstring_view s_iconBorderName{ L"IconBorder"sv };
     static constexpr wstring_view s_titlesStackPanelName{ L"TitlesStackPanel"sv };
     static constexpr wstring_view s_titleTextBoxName{ L"TitleTextBlock"sv };
-    static constexpr wstring_view s_subtextTextBoxName{ L"SubtextTextBlock"sv };
+    static constexpr wstring_view s_subtitleTextBoxName{ L"SubtitleTextBlock"sv };
     static constexpr wstring_view s_alternateCloseButtonName{ L"AlternateCloseButton"sv };
     static constexpr wstring_view s_mainContentPresenterName{ L"MainContentPresenter"sv };
     static constexpr wstring_view s_actionButtonName{ L"ActionButton"sv };
     static constexpr wstring_view s_closeButtonName{ L"CloseButton"sv };
-    static constexpr wstring_view s_beakPolygonName{ L"BeakPolygon"sv };
-    static constexpr wstring_view s_beakEdgeBorderName{ L"BeakEdgeBorder"sv };
-    static constexpr wstring_view s_topBeakPolygonHighlightName{ L"TopBeakPolygonHighlight"sv };
+    static constexpr wstring_view s_pointerPolygonName{ L"PointerPolygon"sv };
+    static constexpr wstring_view s_pointerEdgeBorderName{ L"PointerEdgeBorder"sv };
+    static constexpr wstring_view s_topPointerPolygonHighlightName{ L"TopPointerPolygonHighlight"sv };
     static constexpr wstring_view s_topHighlightLeftName{ L"TopHighlightLeft"sv };
     static constexpr wstring_view s_topHighlightRightName{ L"TopHighlightRight"sv };
 
@@ -217,17 +212,28 @@ private:
     static constexpr float s_untargetedTipWindowEdgeMargin = 24;
     static constexpr float s_defaultTipHeightAndWidth = 320;
 
-    //Ideally this would be computed from playout but it is difficult to do.
-    static constexpr float s_beakOcclusionAmount = 2;
+    //Ideally this would be computed from layout but it is difficult to do.
+    static constexpr float s_pointerOcclusionAmount = 2;
 
-    // The beak is designed as an 8x16 pixel shape, however it is actual a 10x20 shape which is partially occluded by the tip content.
-    // This is done to get the border of the tip to follow the beak shape without drawing the border on the tip edge of the beak.
-    inline float MinimumTipEdgeToBeakEdgeMargin() { return static_cast<float>(m_beakOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() + s_beakOcclusionAmount); };
-    inline float MinimumTipEdgeToBeakCenter() { return static_cast<float>(m_beakOcclusionGrid.get().ColumnDefinitions().GetAt(0).ActualWidth() +
-                                                m_beakOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() +
-                                                (std::max(m_beakPolygon.get().ActualHeight(), m_beakPolygon.get().ActualWidth()) / 2)); }
+    // The pointer is designed as an 8x16 pixel shape, however it is actually a 10x20 shape which is partially occluded by the tip content.
+    // This is done to get the border of the tip to follow the pointer shape without drawing the border on the tip edge of the pointer.
+    inline float MinimumTipEdgeToPointerEdgeMargin()
+    {
+        return m_pointerOcclusionGrid.get().ColumnDefinitions().Size() > 1 ?
+            static_cast<float>(m_pointerOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() + s_pointerOcclusionAmount)
+            : 0.0f;
+    }
 
-    inline float BeakLongSideActualLength() { return static_cast<float>(std::max(m_beakPolygon.get().ActualHeight(), m_beakPolygon.get().ActualWidth())); }
-    inline float BeakLongSideLength() { return static_cast<float>(BeakLongSideActualLength() - (2 * s_beakOcclusionAmount)); }
-    inline float BeakShortSideLength() { return static_cast<float>(std::min(m_beakPolygon.get().ActualHeight(), m_beakPolygon.get().ActualWidth()) - s_beakOcclusionAmount); }
+    inline float MinimumTipEdgeToPointerCenter()
+    {
+        return m_pointerOcclusionGrid.get().ColumnDefinitions().Size() > 1 ?  
+            static_cast<float>(m_pointerOcclusionGrid.get().ColumnDefinitions().GetAt(0).ActualWidth() +
+                m_pointerOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() +
+                (std::max(m_pointerPolygon.get().ActualHeight(), m_pointerPolygon.get().ActualWidth()) / 2))
+            : 0.0f;
+    }
+
+    inline float PointerLongSideActualLength() { return static_cast<float>(std::max(m_pointerPolygon.get().ActualHeight(), m_pointerPolygon.get().ActualWidth())); }
+    inline float PointerLongSideLength() { return static_cast<float>(PointerLongSideActualLength() - (2 * s_pointerOcclusionAmount)); }
+    inline float PointerShortSideLength() { return static_cast<float>(std::min(m_pointerPolygon.get().ActualHeight(), m_pointerPolygon.get().ActualWidth()) - s_pointerOcclusionAmount); }
 };

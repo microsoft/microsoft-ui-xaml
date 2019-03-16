@@ -1,0 +1,24 @@
+[Windows.UI.Xaml.Controls.Grid]
+    Padding=MyValue0,0,0,0
+    BorderThickness=MyValue0,0,0,0
+    BorderBrush=MyValue[NULL]
+    Background=MyValue[NULL]
+    Name=MyValue
+    Margin=MyValue0,0,0,0
+    FocusVisualSecondaryThickness=MyValue1,1,1,1
+    FocusVisualSecondaryBrush=MyValue#99FFFFFF
+    FocusVisualPrimaryThickness=MyValue2,2,2,2
+    FocusVisualPrimaryBrush=MyValue#FF000000
+    Visibility=MyValueVisible
+    RenderSize=MyValue400,400
+  [Windows.UI.Xaml.Controls.TextBlock]
+      Padding=MyValue0,0,0,0
+      Foreground=MyValue#FF000000
+      Name=MyValue
+      Margin=MyValue0,0,0,0
+      FocusVisualSecondaryThickness=MyValue1,1,1,1
+      FocusVisualSecondaryBrush=MyValue#99FFFFFF
+      FocusVisualPrimaryThickness=MyValue2,2,2,2
+      FocusVisualPrimaryBrush=MyValue#FF000000
+      Visibility=MyValueVisible
+      RenderSize=MyValue400,400

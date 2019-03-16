@@ -38,7 +38,7 @@ public:
     winrt::UIElement GetRealizedElement(int dataIndex);
     void EnsureElementRealized(bool forward, int dataIndex, const wstring_view& layoutId);
 
-    bool IsWindowConnected(const winrt::Rect& window, const ScrollOrientation& orientation) const;
+    bool IsWindowConnected(const winrt::Rect& window, const ScrollOrientation& orientation, bool scrollOrientationSameAsFlow) const;
     void DataSourceChanged(const winrt::IInspectable& source, winrt::NotifyCollectionChangedEventArgs const& args);
     
     // we do not want copies of this type
