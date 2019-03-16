@@ -106,6 +106,10 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(MUXControlsTestApp.Samples.Selection.TreeViewSample));
             };
 
+            animatedScrollDemo.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(MUXControlsTestApp.Samples.ScaleAnimatedVerticalListDemo));
+            };
+
             noGroupingList.Click += delegate
             {
                 Frame.NavigateWithoutAnimation(typeof(ItemsViewWithDataPage),

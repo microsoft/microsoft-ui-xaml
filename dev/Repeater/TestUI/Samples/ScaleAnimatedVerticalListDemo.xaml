@@ -1,0 +1,21 @@
+﻿<Page
+    x:Class="MUXControlsTestApp.Samples.ScaleAnimatedVerticalListDemo"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <ScrollViewer x:Name="sv" Width="200" Height="150"  VerticalScrollBarVisibility="Hidden">
+            <mux:ItemsRepeater x:Name="repeater">
+                <mux:ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <Button Content="{Binding}" Height="30" Width="200" Click="OnItemClicked"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </mux:ItemsRepeater.ItemTemplate>
+            </mux:ItemsRepeater>
+        </ScrollViewer>
+    </Grid>
+</Page>
