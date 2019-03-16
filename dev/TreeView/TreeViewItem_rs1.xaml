@@ -98,7 +98,7 @@
                                 <VisualState x:Name="NotDragging" />
                                 <VisualState x:Name="MultipleDraggingPrimary">
                                     <VisualState.Setters>
-                                        <Setter Target="MultiArrangeOverlayTextBorder.Opacity" Value="1" />
+                                        <Setter Target="MultiArrangeOverlayTextBorder.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -230,7 +230,7 @@
                                                             </VisualState>
                                                         </VisualStateGroup>
                                                     </VisualStateManager.VisualStateGroups>
-                                                    <Grid VerticalAlignment="Stretch">
+                                                    <Grid VerticalAlignment="Stretch" HorizontalAlignment="Right">
                                                         <Rectangle x:Name="NormalRectangle" VerticalAlignment="Center" HorizontalAlignment="Center"
                                                         Fill="{ThemeResource CheckBoxCheckBackgroundFillUnchecked}"
                                                         Stroke="{ThemeResource CheckBoxCheckBackgroundStrokeUnchecked}"
@@ -267,7 +267,7 @@
                                             IsTabStop="False"
                                             AutomationProperties.AccessibilityView="Raw" />
                                 <Border x:Name="MultiArrangeOverlayTextBorder"
-                                    Opacity="0"
+                                    Visibility="Collapsed"
                                     IsHitTestVisible="False"
                                     MinWidth="20"
                                     Height="20"
