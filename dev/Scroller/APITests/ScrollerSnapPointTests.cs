@@ -19,7 +19,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
-using SnapPointBase = Microsoft.UI.Xaml.Controls.Primitives.SnapPointBase;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using RepeatedScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint;
 using ZoomSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint;
@@ -51,8 +50,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verify that overlapping regular snap points throw while adjacent ones do not.")]
-        public void OverlappingRegularSnapPointsThrow()
+        [TestProperty("Description", "Verify that overlapping repeated snap points throw while adjacent ones do not.")]
+        public void OverlappingRepeatedSnapPointsThrow()
         {
             RunOnUIThread.Execute(() =>
             {
@@ -75,6 +74,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Add and remove snap points and make sure the corresponding collections look correct.")]
         public void CanAddAndRemoveSnapPointsFromAScroller()
         {
+            CanAddAndRemoveSnapPointsFromAScroller(ScrollSnapPointsAlignment.Near);
+            CanAddAndRemoveSnapPointsFromAScroller(ScrollSnapPointsAlignment.Center);
+            CanAddAndRemoveSnapPointsFromAScroller(ScrollSnapPointsAlignment.Far);
+        }
+
+        private void CanAddAndRemoveSnapPointsFromAScroller(ScrollSnapPointsAlignment alignment)
+        { 
             Scroller scroller = null;
             ScrollSnapPoint snapPoint2 = null;
             RepeatedScrollSnapPoint snapPoint3 = null;
@@ -83,10 +89,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 scroller = new Scroller();
-                ScrollSnapPoint snapPoint1 = new ScrollSnapPoint(snapPointValue: 10, alignment: ScrollSnapPointsAlignment.Near);
-                snapPoint2 = new ScrollSnapPoint(snapPointValue: 10, alignment: ScrollSnapPointsAlignment.Near);
-                snapPoint3 = new RepeatedScrollSnapPoint(offset:  10, interval: 10, start:  10, end: 100, alignment: ScrollSnapPointsAlignment.Near);
-                snapPoint4 = new RepeatedScrollSnapPoint(offset: 100, interval: 10, start: 100, end: 200, alignment: ScrollSnapPointsAlignment.Near);
+                ScrollSnapPoint snapPoint1 = new ScrollSnapPoint(snapPointValue: 10, alignment: alignment);
+                snapPoint2 = new ScrollSnapPoint(snapPointValue: 10, alignment: alignment);
+                snapPoint3 = new RepeatedScrollSnapPoint(offset:  10, interval: 10, start:  10, end: 100, alignment: alignment);
+                snapPoint4 = new RepeatedScrollSnapPoint(offset: 100, interval: 10, start: 100, end: 200, alignment: alignment);
                 ZoomSnapPoint snapPoint5 = new ZoomSnapPoint(snapPointValue: 10);
                 scroller.HorizontalSnapPoints.Add(snapPoint1);
                 scroller.VerticalSnapPoints.Add(snapPoint1);

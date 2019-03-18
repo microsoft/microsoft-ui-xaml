@@ -1131,7 +1131,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Apply two mandatory regular snap points to the scroller and pan to the 4 interesting zones around them.")]
+        [TestProperty("Description", "Apply two mandatory irregular snap points to the scroller and pan to the 4 interesting zones around them.")]
         public void PanTowardsTwoManditoryIrregularSnapPoint()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
@@ -1140,6 +1140,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
+            PanTowardsTwoManditoryIrregularSnapPoint(alignmentIndex : 0); // Near alignment
+            PanTowardsTwoManditoryIrregularSnapPoint(alignmentIndex : 1); // Center alignment
+            PanTowardsTwoManditoryIrregularSnapPoint(alignmentIndex : 2); // Far alignment
+        }
+
+        private void PanTowardsTwoManditoryIrregularSnapPoint(int alignmentIndex)
+        {
             Log.Comment("Selecting Scroller tests");
 
             using (var setup = new TestSetupHelper("Scroller Tests"))
@@ -1147,33 +1154,68 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetOutputDebugStringLevel("Verbose");
 
                 var elements = GoToSnapPointsPage();
-                
+
                 int warningCount = 0;
+                const double viewportHeight = 500.0;
+                const double firstSnapPointOffset = 0.0;
+                const double secondSnapPointOffset = 600.0;
+                const double thirdSnapPointOffset = 1200.0;
+                double firstSnapPointValue = firstSnapPointOffset;
+                double secondSnapPointValue = secondSnapPointOffset;
+                double thirdSnapPointValue = thirdSnapPointOffset;
 
                 Verify.IsTrue(PanUntilInputWorks(elements.scrollerOffset, elements.scrollerUIObject), "Pan inputs are moving the scroller!");
 
-                elements.txtMISnapPointValueUIObject.SetValue("0");
+                if (alignmentIndex == 1)
+                {
+                    // Center alignment
+                    firstSnapPointValue += viewportHeight / 2.0;
+                    secondSnapPointValue += viewportHeight / 2.0;
+                    thirdSnapPointValue += viewportHeight / 2.0;
+
+                    Log.Comment("Changing alignment to Center");
+                    elements.cmbMISnapPointAlignment.SelectItemByName("Center");
+                    Log.Comment("Selection is now {0}", elements.cmbMISnapPointAlignment.Selection[0].Name);
+                }
+                else if (alignmentIndex == 2)
+                {
+                    // Far alignment
+                    firstSnapPointValue += viewportHeight;
+                    secondSnapPointValue += viewportHeight;
+                    thirdSnapPointValue += viewportHeight;
+
+                    Log.Comment("Changing alignment to Far");
+                    elements.cmbMISnapPointAlignment.SelectItemByName("Far");
+                    Log.Comment("Selection is now {0}", elements.cmbMISnapPointAlignment.Selection[0].Name);
+                }
+
+                Log.Comment("Adding irregular snap point at value " + firstSnapPointValue.ToString());
+                elements.txtMISnapPointValueUIObject.SetValue(firstSnapPointValue.ToString());
                 elements.btnAddMISnapPointUIObject.Invoke();
-                elements.txtMISnapPointValueUIObject.SetValue("600");
+
+                Log.Comment("Adding irregular snap point at value " + secondSnapPointValue.ToString());
+                elements.txtMISnapPointValueUIObject.SetValue(secondSnapPointValue.ToString());
                 elements.btnAddMISnapPointUIObject.Invoke();
-                elements.txtMISnapPointValueUIObject.SetValue("1200");
+
+                Log.Comment("Adding irregular snap point at value " + thirdSnapPointValue.ToString());
+                elements.txtMISnapPointValueUIObject.SetValue(thirdSnapPointValue.ToString());
                 elements.btnAddMISnapPointUIObject.Invoke();
 
                 InputHelper.Tap(elements.scrollerUIObject);
 
                 warningCount = 0;
                 InputHelper.Pan(elements.scrollerUIObject, 75, Direction.North);
-                warningCount += WaitForOffsetUpdated(elements.scrollerOffset, 600.0, double.PositiveInfinity, 1200.0, 1200.0);
+                warningCount += WaitForOffsetUpdated(elements.scrollerOffset, secondSnapPointOffset, double.PositiveInfinity, thirdSnapPointOffset, thirdSnapPointOffset);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
                 InputHelper.Pan(elements.scrollerUIObject, 95, Direction.North);
-                warningCount += WaitForOffsetUpdated(elements.scrollerOffset, 600.0, double.PositiveInfinity, 1200.0, 1200.0);
+                warningCount += WaitForOffsetUpdated(elements.scrollerOffset, secondSnapPointOffset, double.PositiveInfinity, thirdSnapPointOffset, thirdSnapPointOffset);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
                 InputHelper.Pan(elements.scrollerUIObject, 150, Direction.North);
-                warningCount += WaitForOffsetUpdated(elements.scrollerOffset, 1200.0, double.PositiveInfinity, 600.0, 600.0);
+                warningCount += WaitForOffsetUpdated(elements.scrollerOffset, thirdSnapPointOffset, double.PositiveInfinity, secondSnapPointOffset, secondSnapPointOffset);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
                 InputHelper.Pan(elements.scrollerUIObject, 200, Direction.North);
-                warningCount += WaitForOffsetUpdated(elements.scrollerOffset, 1200.0, double.PositiveInfinity, 600.0, 600.0);
+                warningCount += WaitForOffsetUpdated(elements.scrollerOffset, thirdSnapPointOffset, double.PositiveInfinity, secondSnapPointOffset, secondSnapPointOffset);
 
                 Verify.IsLessThan(warningCount, 4);
 
@@ -1183,20 +1225,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Apply a single mandatory Regular snap point across the extent, with Offset equal to Start, and pan within it.")]
-        public void PanWithinARegularMandatorySnapPoint()
-        {
-            PanWithinARegularMandatorySnapPoint(withOffsetEqualToStart: true);
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Apply a single mandatory Regular snap point across the extent, with Offset different from Start, and pan within it.")]
-        public void PanWithinARegularMandatorySnapPointWithDifferentOffset()
-        {
-            PanWithinARegularMandatorySnapPoint(withOffsetEqualToStart: false);
-        }
-
-        private void PanWithinARegularMandatorySnapPoint(bool withOffsetEqualToStart)
+        [TestProperty("Description", "Apply a single mandatory repeated snap point across the extent, with Offset equal to Start, and pan within it.")]
+        public void PanWithinARepeatedMandatorySnapPoint()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
             {
@@ -1204,6 +1234,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
+            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: true, alignmentIndex: 0); // Near alignment
+            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: true, alignmentIndex: 1); // Center alignment
+            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: true, alignmentIndex: 2); // Far alignment
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Apply a single mandatory repeated snap point across the extent, with Offset different from Start, and pan within it.")]
+        public void PanWithinARepeatedMandatorySnapPointWithDifferentOffset()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            {
+                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
+                return;
+            }
+
+            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignmentIndex: 0); // Near alignment
+            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignmentIndex: 1); // Center alignment
+            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignmentIndex: 2); // Far alignment
+        }
+
+        private void PanWithinARepeatedMandatorySnapPoint(bool withOffsetEqualToStart, int alignmentIndex)
+        {
             Log.Comment("Selecting Scroller tests");
 
             using (var setup = new TestSetupHelper("Scroller Tests"))
@@ -1214,28 +1266,60 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.IsTrue(PanUntilInputWorks(elements.scrollerOffset, elements.scrollerUIObject), "Pan inputs aren't moving the scroller...");
 
-                elements.txtMRSnapPointOffsetUIObject.SetValue(withOffsetEqualToStart ? "0" : "25");
+                const double viewportHeight = 500.0;
+                const double start = 0.0;
+                const double end = 9000.0;
+                double offset = withOffsetEqualToStart ? 0.0: 25.0;
+                double adjustedStart = start;
+                double adjustedEnd = end;
+                double adjustedOffset = offset;
+
+                if (alignmentIndex == 1)
+                {
+                    // Center alignment
+                    adjustedStart += viewportHeight / 2.0;
+                    adjustedEnd += viewportHeight / 2.0;
+                    adjustedOffset += viewportHeight / 2.0;
+
+                    Log.Comment("Changing alignment to Center");
+                    elements.cmbMRSnapPointAlignment.SelectItemByName("Center");
+                    Log.Comment("Selection is now {0}", elements.cmbMRSnapPointAlignment.Selection[0].Name);
+                }
+                else if (alignmentIndex == 2)
+                {
+                    // Far alignment
+                    adjustedStart += viewportHeight;
+                    adjustedEnd += viewportHeight;
+                    adjustedOffset += viewportHeight;
+
+                    Log.Comment("Changing alignment to Far");
+                    elements.cmbMRSnapPointAlignment.SelectItemByName("Far");
+                    Log.Comment("Selection is now {0}", elements.cmbMRSnapPointAlignment.Selection[0].Name);
+                }
+
+                Log.Comment("Adding repeated snap point with start=" + adjustedStart.ToString() + ", end=" + adjustedEnd.ToString() + ", offset=" + adjustedOffset.ToString() + ", interval=50.");
+                elements.txtMRSnapPointOffsetUIObject.SetValue(adjustedOffset.ToString());
                 elements.txtMRSnapPointIntervalUIObject.SetValue("50");
-                elements.txtMRSnapPointStartUIObject.SetValue("0");
-                elements.txtMRSnapPointEndUIObject.SetValue("9000");
+                elements.txtMRSnapPointStartUIObject.SetValue(adjustedStart.ToString());
+                elements.txtMRSnapPointEndUIObject.SetValue(adjustedEnd.ToString());
                 elements.btnAddMRSnapPointUIObject.Invoke();
 
                 InputHelper.Tap(elements.scrollerUIObject);
 
                 InputHelper.Pan(elements.scrollerUIObject, withOffsetEqualToStart ? 25 : 60, Direction.North);
-                WaitForOffsetUpdated(elements.scrollerOffset, withOffsetEqualToStart ? 0.0 : 25.0, 50.0);
+                WaitForOffsetUpdated(elements.scrollerOffset, offset, 50.0);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
-                InputHelper.Pan(elements.scrollerUIObject, withOffsetEqualToStart ? 75 : 90, Direction.North);
-                WaitForOffsetUpdated(elements.scrollerOffset, withOffsetEqualToStart ? 0.0 : 25.0, 50.0);
+                InputHelper.Pan(elements.scrollerUIObject, 50, Direction.North);
+                WaitForOffsetUpdated(elements.scrollerOffset, offset, 50.0);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
                 InputHelper.Pan(elements.scrollerUIObject, 150, Direction.North);
-                WaitForOffsetUpdated(elements.scrollerOffset, withOffsetEqualToStart ? 0.0 : 25.0, 50.0);
+                WaitForOffsetUpdated(elements.scrollerOffset, offset, 50.0);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
                 InputHelper.Pan(elements.scrollerUIObject, 200, Direction.North);
-                WaitForOffsetUpdated(elements.scrollerOffset, withOffsetEqualToStart ? 0.0 : 25.0, 50.0);
+                WaitForOffsetUpdated(elements.scrollerOffset, offset, 50.0);
 
                 Log.Comment("Returning to the main Scroller test page");
                 TestSetupHelper.GoBack();
@@ -2264,7 +2348,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Apply a mix of mandatory and optional snap points which are defined to have the same value and scroll precisely between them.")]
-        public void ChangeOffsetBetweenRegularSnapPointsStackedOnTopOfEachOther1()
+        public void ChangeOffsetBetweenRepeatedSnapPointsStackedOnTopOfEachOther1()
         {
             Log.Comment("Selecting Scroller tests");
 
@@ -2322,7 +2406,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Apply a mix of mandatory and optional snap points which are defined to have the same value and scroll precisely between them.")]
-        public void ChangeOffsetBetweenRegularSnapPointsStackedOnTopOfEachOther2()
+        public void ChangeOffsetBetweenRepeatedSnapPointsStackedOnTopOfEachOther2()
         {
             Log.Comment("Selecting Scroller tests");
 
@@ -2382,7 +2466,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Apply a mix of mandatory and optional snap points which are defined to have the same value and scroll precisely between them.")]
-        public void ChangeOffsetBetweenRegularSnapPointsStackedOnTopOfEachOther3()
+        public void ChangeOffsetBetweenRepeatedSnapPointsStackedOnTopOfEachOther3()
         {
             Log.Comment("Selecting Scroller tests");
 
@@ -2501,8 +2585,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Apply a single optional regular snap point across the extent and pan within it.")]
-        public void PanWithinARegularOptionalSnapPoint()
+        [TestProperty("Description", "Apply a single optional repeated snap point across the extent and pan within it.")]
+        public void PanWithinARepeatedOptionalSnapPoint()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
             {
@@ -2530,19 +2614,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(elements.scrollerUIObject);
 
                 InputHelper.Pan(elements.scrollerUIObject, 25, Direction.North);
-                WaitForOptionalRegularOffsetUpdated(elements.scrollerOffset, 25, 100);
+                WaitForOptionalRepeatedOffsetUpdated(elements.scrollerOffset, 25, 100);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
                 InputHelper.Pan(elements.scrollerUIObject, 75, Direction.North);
-                WaitForOptionalRegularOffsetUpdated(elements.scrollerOffset, 25, 100);
+                WaitForOptionalRepeatedOffsetUpdated(elements.scrollerOffset, 25, 100);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
                 InputHelper.Pan(elements.scrollerUIObject, 150, Direction.North);
-                WaitForOptionalRegularOffsetUpdated(elements.scrollerOffset, 25, 100);
+                WaitForOptionalRepeatedOffsetUpdated(elements.scrollerOffset, 25, 100);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
                 InputHelper.Pan(elements.scrollerUIObject, 200, Direction.North);
-                WaitForOptionalRegularOffsetUpdated(elements.scrollerOffset, 25, 100);
+                WaitForOptionalRepeatedOffsetUpdated(elements.scrollerOffset, 25, 100);
 
                 Log.Comment("Returning to the main Scroller test page");
                 TestSetupHelper.GoBack();
@@ -2730,7 +2814,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
 #if ApplicableRangeType
-        private void WaitForOptionalRegularOffsetUpdated(
+        private void WaitForOptionalRepeatedOffsetUpdated(
             Edit text,
             double range,
             double interval,
@@ -3003,6 +3087,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             
             elements.btnAddMISnapPointUIObject = new Button(FindElement.ByName("btnMIAddSnapPoint"));
             elements.txtMISnapPointValueUIObject = new Edit(FindElement.ByName("txtMISnapPointValue"));
+            elements.cmbMISnapPointAlignment = new ComboBox(FindElement.ByName("cmbMISnapPointAlignment"));
 
 #if ApplicableRangeType
             elements.btnAddOISnapPointUIObject = new Button(FindElement.ByName("btnOIAddSnapPoint"));
@@ -3015,6 +3100,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.txtMRSnapPointIntervalUIObject = new Edit(FindElement.ByName("txtMRSnapPointInterval"));
             elements.txtMRSnapPointStartUIObject = new Edit(FindElement.ByName("txtMRSnapPointStart"));
             elements.txtMRSnapPointEndUIObject = new Edit(FindElement.ByName("txtMRSnapPointEnd"));
+            elements.cmbMRSnapPointAlignment = new ComboBox(FindElement.ByName("cmbMRSnapPointAlignment"));
 
 #if ApplicableRangeType
             elements.btnAddORSnapPointUIObject = new Button(FindElement.ByName("btnORAddSnapPoint"));
@@ -3042,6 +3128,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             public Button btnAddMISnapPointUIObject;
             public Edit txtMISnapPointValueUIObject;
+            public ComboBox cmbMISnapPointAlignment;
 
 #if ApplicableRangeType
             public Button btnAddOISnapPointUIObject;
@@ -3054,6 +3141,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             public Edit txtMRSnapPointIntervalUIObject;
             public Edit txtMRSnapPointStartUIObject;
             public Edit txtMRSnapPointEndUIObject;
+            public ComboBox cmbMRSnapPointAlignment;
 
 #if ApplicableRangeType
             public Button btnAddORSnapPointUIObject;
