@@ -898,7 +898,7 @@ void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspec
     {
         if (auto teachingTipPeer = peer.as<winrt::TeachingTipAutomationPeer>())
         {
-            winrt::get_self<TeachingTipAutomationPeer>(teachingTipPeer)->MyRaiseWindowClosedEvent();
+            winrt::get_self<TeachingTipAutomationPeer>(teachingTipPeer)->RaiseWindowClosedEvent();
         }
     }
 }
