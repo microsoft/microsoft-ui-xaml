@@ -20,12 +20,10 @@ You can also build a WinUI package yourself from source. See [Contributing to th
 
 ## Documentation
 
-WinUI usage documentation can be found here:
-
+WinUI usage documentation can be found here:  
 https://docs.microsoft.com/uwp/toolkits/winui
 
-Release notes for Microsoft.UI.Xaml WinUI packages can be found here:
-
+Release notes for Microsoft.UI.Xaml WinUI packages can be found here:  
 https://docs.microsoft.com/uwp/toolkits/winui/release-notes/
 
 To view the WinUI controls in an interactive format, check out the Xaml Controls Gallery:
