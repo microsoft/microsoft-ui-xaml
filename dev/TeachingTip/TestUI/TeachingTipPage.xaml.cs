@@ -21,7 +21,7 @@ using TeachingTip = Microsoft.UI.Xaml.Controls.TeachingTip;
 using TeachingTipClosedEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs;
 using TeachingTipClosingEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs;
 using TeachingTipTestHooks = Microsoft.UI.Private.Controls.TeachingTipTestHooks;
-using TeachingTipPointerMode = Microsoft.UI.Xaml.Controls.TeachingTipPointerMode;
+using TeachingTipTailVisibility = Microsoft.UI.Xaml.Controls.TeachingTipTailVisibility;
 using TeachingTipHeroContentPlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode;
 using TeachingTipPlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
@@ -525,19 +525,19 @@ namespace MUXControlsTestApp
             getTeachingTip().PlacementMargin = new Thickness(Double.Parse(this.PlacementMarginTextBox.Text));
         }
 
-        public void OnSetPointerModeButtonClicked(object sender, RoutedEventArgs args)
+        public void OnSetTailVisibilityButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.PointerModeComboBox.SelectedItem == PointerModeAuto)
+            if (this.TailVisibilityComboBox.SelectedItem == TailVisibilityAuto)
             {
-                getTeachingTip().PointerMode = TeachingTipPointerMode.Auto;
+                getTeachingTip().TailVisibility = TeachingTipTailVisibility.Auto;
             }
-            else if (this.PointerModeComboBox.SelectedItem == PointerModeOn)
+            else if (this.TailVisibilityComboBox.SelectedItem == TailVisibilityVisible)
             {
-                getTeachingTip().PointerMode = TeachingTipPointerMode.On;
+                getTeachingTip().TailVisibility = TeachingTipTailVisibility.Visible;
             }
             else
             {
-                getTeachingTip().PointerMode = TeachingTipPointerMode.Off;
+                getTeachingTip().TailVisibility = TeachingTipTailVisibility.Collapsed;
             }
         }
 
@@ -663,9 +663,9 @@ namespace MUXControlsTestApp
             TeachingTipTestHooks.SetContentElevation(getTeachingTip(), (float)args.NewValue);
         }
 
-        public void PointerElevationSliderChanged(object sender, RangeBaseValueChangedEventArgs args)
+        public void TailElevationSliderChanged(object sender, RangeBaseValueChangedEventArgs args)
         {
-            TeachingTipTestHooks.SetPointerElevation(getTeachingTip(), (float)args.NewValue);
+            TeachingTipTestHooks.SetTailElevation(getTeachingTip(), (float)args.NewValue);
         }
 
         public void OnTipShadowChecked(object sender, RoutedEventArgs args)

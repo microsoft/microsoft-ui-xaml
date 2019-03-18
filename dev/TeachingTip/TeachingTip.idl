@@ -1,10 +1,10 @@
 ﻿[WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum TeachingTipPointerMode
+enum TeachingTipTailVisibility
 {
     Auto,
-    On,
-    Off,
+    Visible,
+    Collapsed,
 };
 
 [WUXC_VERSION_PREVIEW]
@@ -92,8 +92,8 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
 
     Windows.UI.Xaml.FrameworkElement Target;
 
-    [MUX_DEFAULT_VALUE("winrt::TeachingTipPointerMode::Auto")]
-    TeachingTipPointerMode PointerMode;
+    [MUX_DEFAULT_VALUE("winrt::TeachingTipTailVisibility::Auto")]
+    TeachingTipTailVisibility TailVisibility;
 
     Object ActionButtonContent;
     Windows.UI.Xaml.Style ActionButtonStyle;
@@ -127,7 +127,7 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
 
     static Windows.UI.Xaml.DependencyProperty TargetProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty PointerModeProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty TailVisibilityProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TitleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SubtitleProperty{ get; };

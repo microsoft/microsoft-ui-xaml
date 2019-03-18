@@ -17,9 +17,9 @@
                             <VisualStateGroup x:Name="LightDismissStates">
                                 <VisualState x:Name="LightDismiss">
                                     <VisualState.Setters>
-                                        <Setter Target="PointerEdgeBorder.Background" Value="{ThemeResource TeachingTipTransientBackground}"/>
-                                        <Setter Target="PointerPolygon.Fill" Value="{ThemeResource TeachingTipTransientBackground}"/>
-                                        <Setter Target="TopPointerPolygonHighlight.Fill" Value="{ThemeResource TeachingTipTransientBackground}"/>
+                                        <Setter Target="TailEdgeBorder.Background" Value="{ThemeResource TeachingTipTransientBackground}"/>
+                                        <Setter Target="TailPolygon.Fill" Value="{ThemeResource TeachingTipTransientBackground}"/>
+                                        <Setter Target="TopTailPolygonHighlight.Fill" Value="{ThemeResource TeachingTipTransientBackground}"/>
                                         <Setter Target="ContentRootGrid.Background" Value="{ThemeResource TeachingTipTransientBackground}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -115,289 +115,289 @@
                                 <VisualState x:Name="Top">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessTop}"/>
-                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Stretch"/>
-                                        <Setter Target="PointerEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="PointerEdgeBorder.Width" Value="Auto"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="4"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
-                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="TailEdgeBorder.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="TailEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="TailEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="TailEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Row)" Value="4"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Column)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.RowSpan)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
+                                        <Setter Target="TopTailPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Points" Value="0,0 10,10, 20,0"/>
-                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="4"/>
-                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="2"/>
-                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Center"/>
-                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginTop}"/>
+                                        <Setter Target="TailPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="TailPolygon.Points" Value="0,0 10,10, 20,0"/>
+                                        <Setter Target="TailPolygon.(Grid.Row)" Value="4"/>
+                                        <Setter Target="TailPolygon.(Grid.Column)" Value="2"/>
+                                        <Setter Target="TailPolygon.HorizontalAlignment" Value="Center"/>
+                                        <Setter Target="TailPolygon.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginTop}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Bottom">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessBottom}"/>
-                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Stretch"/>
-                                        <Setter Target="PointerEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="PointerEdgeBorder.Width" Value="Auto"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="0"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
-                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Visible"/>
-                                        <Setter Target="TopPointerPolygonHighlight.HorizontalAlignment" Value="Center"/>
+                                        <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="TailEdgeBorder.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="TailEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="TailEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="TailEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Row)" Value="0"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Column)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.RowSpan)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
+                                        <Setter Target="TopTailPolygonHighlight.Visibility" Value="Visible"/>
+                                        <Setter Target="TopTailPolygonHighlight.HorizontalAlignment" Value="Center"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Points" Value="0,10 10,0 20,10"/>
-                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="0"/>
-                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="2"/>
-                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Center"/>
-                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginBottom}"/>
+                                        <Setter Target="TailPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="TailPolygon.Points" Value="0,10 10,0 20,10"/>
+                                        <Setter Target="TailPolygon.(Grid.Row)" Value="0"/>
+                                        <Setter Target="TailPolygon.(Grid.Column)" Value="2"/>
+                                        <Setter Target="TailPolygon.HorizontalAlignment" Value="Center"/>
+                                        <Setter Target="TailPolygon.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginBottom}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Left">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessLeft}"/>
-                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Stretch"/>
-                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="PointerEdgeBorder.Height" Value="Auto"/>
-                                        <Setter Target="PointerEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="4"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="3"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
-                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="TailEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="TailEdgeBorder.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="TailEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="TailEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Row)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Column)" Value="4"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.RowSpan)" Value="3"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
+                                        <Setter Target="TopTailPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Points" Value="0,0 10,10 0,20"/>
-                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="2"/>
-                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="4"/>
-                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Center"/>
-                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginLeft}"/>
+                                        <Setter Target="TailPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="TailPolygon.Points" Value="0,0 10,10 0,20"/>
+                                        <Setter Target="TailPolygon.(Grid.Row)" Value="2"/>
+                                        <Setter Target="TailPolygon.(Grid.Column)" Value="4"/>
+                                        <Setter Target="TailPolygon.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="TailPolygon.VerticalAlignment" Value="Center"/>
+                                        <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginLeft}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Right">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessRight}"/>
-                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Stretch"/>
-                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="PointerEdgeBorder.Height" Value="Auto"/>
-                                        <Setter Target="PointerEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="0"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="3"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
-                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="TailEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="TailEdgeBorder.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="TailEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="TailEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Row)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Column)" Value="0"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.RowSpan)" Value="3"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
+                                        <Setter Target="TopTailPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Points" Value="10,0 0,10 10,20"/>
-                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="2"/>
-                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="0"/>
-                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Center"/>
-                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginRight}"/>
+                                        <Setter Target="TailPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="TailPolygon.Points" Value="10,0 0,10 10,20"/>
+                                        <Setter Target="TailPolygon.(Grid.Row)" Value="2"/>
+                                        <Setter Target="TailPolygon.(Grid.Column)" Value="0"/>
+                                        <Setter Target="TailPolygon.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="TailPolygon.VerticalAlignment" Value="Center"/>
+                                        <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginRight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="TopEdgeAlignedRight">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessTop}"/>
-                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Stretch"/>
-                                        <Setter Target="PointerEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="PointerEdgeBorder.Width" Value="Auto"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="4"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
-                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="TailEdgeBorder.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="TailEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="TailEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="TailEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Row)" Value="4"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Column)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.RowSpan)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
+                                        <Setter Target="TopTailPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Points" Value="0,0 10,10 20,0"/>
-                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="4"/>
-                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="2"/>
-                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginTop}"/>
+                                        <Setter Target="TailPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="TailPolygon.Points" Value="0,0 10,10 20,0"/>
+                                        <Setter Target="TailPolygon.(Grid.Row)" Value="4"/>
+                                        <Setter Target="TailPolygon.(Grid.Column)" Value="2"/>
+                                        <Setter Target="TailPolygon.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="TailPolygon.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginTop}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="TopEdgeAlignedLeft">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessTop}"/>
-                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Stretch"/>
-                                        <Setter Target="PointerEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="PointerEdgeBorder.Width" Value="Auto"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="4"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
-                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="TailEdgeBorder.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="TailEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="TailEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="TailEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Row)" Value="4"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Column)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.RowSpan)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
+                                        <Setter Target="TopTailPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Points" Value="0,0 10,10 20,0"/>
-                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="4"/>
-                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="2"/>
-                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginTop}"/>
+                                        <Setter Target="TailPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="TailPolygon.Points" Value="0,0 10,10 20,0"/>
+                                        <Setter Target="TailPolygon.(Grid.Row)" Value="4"/>
+                                        <Setter Target="TailPolygon.(Grid.Column)" Value="2"/>
+                                        <Setter Target="TailPolygon.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="TailPolygon.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginTop}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="BottomEdgeAlignedRight">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessBottom}"/>
-                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Stretch"/>
-                                        <Setter Target="PointerEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="PointerEdgeBorder.Width" Value="Auto"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="0"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
-                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Visible"/>
-                                        <Setter Target="TopPointerPolygonHighlight.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="TailEdgeBorder.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="TailEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="TailEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="TailEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Row)" Value="0"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Column)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.RowSpan)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
+                                        <Setter Target="TopTailPolygonHighlight.Visibility" Value="Visible"/>
+                                        <Setter Target="TopTailPolygonHighlight.HorizontalAlignment" Value="Left"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Points" Value="0,10 10,0 20,10"/>
-                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="0"/>
-                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="2"/>
-                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginBottom}"/>
+                                        <Setter Target="TailPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="TailPolygon.Points" Value="0,10 10,0 20,10"/>
+                                        <Setter Target="TailPolygon.(Grid.Row)" Value="0"/>
+                                        <Setter Target="TailPolygon.(Grid.Column)" Value="2"/>
+                                        <Setter Target="TailPolygon.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="TailPolygon.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginBottom}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="BottomEdgeAlignedLeft">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessBottom}"/>
-                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Stretch"/>
-                                        <Setter Target="PointerEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="PointerEdgeBorder.Width" Value="Auto"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="0"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
-                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Visible"/>
-                                        <Setter Target="TopPointerPolygonHighlight.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="TailEdgeBorder.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="TailEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="TailEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="TailEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Row)" Value="0"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Column)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.RowSpan)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
+                                        <Setter Target="TopTailPolygonHighlight.Visibility" Value="Visible"/>
+                                        <Setter Target="TopTailPolygonHighlight.HorizontalAlignment" Value="Right"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Points" Value="0,10 10,0 20,10"/>
-                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="0"/>
-                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="2"/>
-                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginBottom}"/>
+                                        <Setter Target="TailPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="TailPolygon.Points" Value="0,10 10,0 20,10"/>
+                                        <Setter Target="TailPolygon.(Grid.Row)" Value="0"/>
+                                        <Setter Target="TailPolygon.(Grid.Column)" Value="2"/>
+                                        <Setter Target="TailPolygon.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="TailPolygon.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginBottom}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftEdgeAlignedTop">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessLeft}"/>
-                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Stretch"/>
-                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="PointerEdgeBorder.Height" Value="Auto"/>
-                                        <Setter Target="PointerEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="4"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="3"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
-                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="TailEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="TailEdgeBorder.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="TailEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="TailEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Row)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Column)" Value="4"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.RowSpan)" Value="3"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
+                                        <Setter Target="TopTailPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Points" Value="0,0 10,10 0,20"/>
-                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="2"/>
-                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="4"/>
-                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginLeft}"/>
+                                        <Setter Target="TailPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="TailPolygon.Points" Value="0,0 10,10 0,20"/>
+                                        <Setter Target="TailPolygon.(Grid.Row)" Value="2"/>
+                                        <Setter Target="TailPolygon.(Grid.Column)" Value="4"/>
+                                        <Setter Target="TailPolygon.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="TailPolygon.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginLeft}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftEdgeAlignedBottom">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessLeft}"/>
-                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Stretch"/>
-                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="PointerEdgeBorder.Height" Value="Auto"/>
-                                        <Setter Target="PointerEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="4"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="3"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
-                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="TailEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="TailEdgeBorder.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="TailEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="TailEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Row)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Column)" Value="4"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.RowSpan)" Value="3"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
+                                        <Setter Target="TopTailPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Points" Value="0,0 10,10 0,20"/>
-                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="2"/>
-                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="4"/>
-                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginLeft}"/>
+                                        <Setter Target="TailPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="TailPolygon.Points" Value="0,0 10,10 0,20"/>
+                                        <Setter Target="TailPolygon.(Grid.Row)" Value="2"/>
+                                        <Setter Target="TailPolygon.(Grid.Column)" Value="4"/>
+                                        <Setter Target="TailPolygon.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="TailPolygon.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginLeft}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="RightEdgeAlignedTop">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessRight}"/>
-                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Stretch"/>
-                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="PointerEdgeBorder.Height" Value="Auto"/>
-                                        <Setter Target="PointerEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="0"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="3"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
-                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="TailEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="TailEdgeBorder.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="TailEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="TailEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Row)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Column)" Value="0"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.RowSpan)" Value="3"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
+                                        <Setter Target="TopTailPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Points" Value="10,0 0,10 10,20"/>
-                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="2"/>
-                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="0"/>
-                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Bottom"/>
-                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginRight}"/>
+                                        <Setter Target="TailPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="TailPolygon.Points" Value="10,0 0,10 10,20"/>
+                                        <Setter Target="TailPolygon.(Grid.Row)" Value="2"/>
+                                        <Setter Target="TailPolygon.(Grid.Column)" Value="0"/>
+                                        <Setter Target="TailPolygon.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="TailPolygon.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginRight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="RightEdgeAlignedBottom">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessRight}"/>
-                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerEdgeBorder.VerticalAlignment" Value="Stretch"/>
-                                        <Setter Target="PointerEdgeBorder.HorizontalAlignment" Value="Right"/>
-                                        <Setter Target="PointerEdgeBorder.Height" Value="Auto"/>
-                                        <Setter Target="PointerEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Row)" Value="1"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.Column)" Value="0"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.RowSpan)" Value="3"/>
-                                        <Setter Target="PointerEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
-                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="TailEdgeBorder.VerticalAlignment" Value="Stretch"/>
+                                        <Setter Target="TailEdgeBorder.HorizontalAlignment" Value="Right"/>
+                                        <Setter Target="TailEdgeBorder.Height" Value="Auto"/>
+                                        <Setter Target="TailEdgeBorder.Width" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Row)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Column)" Value="0"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.RowSpan)" Value="3"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.ColumnSpan)" Value="1"/>
+                                        <Setter Target="TopTailPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="PointerPolygon.Visibility" Value="Visible"/>
-                                        <Setter Target="PointerPolygon.Points" Value="10,0 0,10 10,20"/>
-                                        <Setter Target="PointerPolygon.(Grid.Row)" Value="2"/>
-                                        <Setter Target="PointerPolygon.(Grid.Column)" Value="0"/>
-                                        <Setter Target="PointerPolygon.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="PointerPolygon.VerticalAlignment" Value="Top"/>
-                                        <Setter Target="PointerPolygon.Margin" Value="{StaticResource TeachingTipPointerPolygonMarginRight}"/>
+                                        <Setter Target="TailPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="TailPolygon.Points" Value="10,0 0,10 10,20"/>
+                                        <Setter Target="TailPolygon.(Grid.Row)" Value="2"/>
+                                        <Setter Target="TailPolygon.(Grid.Column)" Value="0"/>
+                                        <Setter Target="TailPolygon.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="TailPolygon.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginRight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Untargeted">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessUntargeted}"/>
-                                        <Setter Target="PointerEdgeBorder.Visibility" Value="Collapsed"/>
-                                        <Setter Target="TopPointerPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TailEdgeBorder.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TopTailPolygonHighlight.Visibility" Value="Collapsed"/>
                                         <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
-                                        <Setter Target="PointerPolygon.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TailPolygon.Visibility" Value="Collapsed"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -408,32 +408,32 @@
                               MaxWidth="{ThemeResource TeachingTipMaxWidth}"
                               AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="{StaticResource TeachingTipPointerShortSideLength}"/>
-                                <ColumnDefinition Width="{StaticResource TeachingTipPointerMargin}"/>
+                                <ColumnDefinition Width="{StaticResource TeachingTipTailShortSideLength}"/>
+                                <ColumnDefinition Width="{StaticResource TeachingTipTailMargin}"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="{StaticResource TeachingTipPointerMargin}"/>
-                                <ColumnDefinition Width="{StaticResource TeachingTipPointerShortSideLength}"/>
+                                <ColumnDefinition Width="{StaticResource TeachingTipTailMargin}"/>
+                                <ColumnDefinition Width="{StaticResource TeachingTipTailShortSideLength}"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="{StaticResource TeachingTipPointerShortSideLength}"/>
-                                <RowDefinition Height="{StaticResource TeachingTipPointerMargin}"/>
+                                <RowDefinition Height="{StaticResource TeachingTipTailShortSideLength}"/>
+                                <RowDefinition Height="{StaticResource TeachingTipTailMargin}"/>
                                 <RowDefinition Height="*"/>
-                                <RowDefinition Height="{StaticResource TeachingTipPointerMargin}"/>
-                                <RowDefinition Height="{StaticResource TeachingTipPointerShortSideLength}"/>
+                                <RowDefinition Height="{StaticResource TeachingTipTailMargin}"/>
+                                <RowDefinition Height="{StaticResource TeachingTipTailShortSideLength}"/>
                             </Grid.RowDefinitions>
-                           <!-- This PointerEdgeBorder needs to be z ordered underneath the PointerPolygon while the PointerOcclusionGrid needs to be over it, hence declaring these parts
-                                 in this order. This is to achieve the desired occlusion of the pointer's content edge border. The pointer edge border is a low opacity highlight,
+                           <!-- This TailEdgeBorder needs to be z ordered underneath the TailPolygon while the TailOcclusionGrid needs to be over it, hence declaring these parts
+                                 in this order. This is to achieve the desired occlusion of the tail's content edge border. The tail edge border is a low opacity highlight,
                                  which means we need to have the background color present underneath the highlight, hence the double grid here. -->
-                            <Grid x:Name="PointerEdgeBorder" Background="{TemplateBinding Background}">
+                            <Grid x:Name="TailEdgeBorder" Background="{TemplateBinding Background}">
                                 <Grid Background="{ThemeResource TeachingTipBorderBrush}"/>
                             </Grid>
-                            <Polygon x:Name="PointerPolygon"
+                            <Polygon x:Name="TailPolygon"
                                      Fill="{TemplateBinding Background}"
                                      HorizontalAlignment="Left"
                                      VerticalAlignment="Top"
                                      Stroke="{ThemeResource TeachingTipBorderBrush}"
                                      StrokeThickness="{StaticResource TeachingTipBorderThickness}"/>
-                            <Grid x:Name="PointerOcclusionGrid" 
+                            <Grid x:Name="TailOcclusionGrid" 
                                   HorizontalAlignment="Left" 
                                   VerticalAlignment="Top" 
                                   MinHeight="{ThemeResource TeachingTipMinHeight}" 
@@ -443,20 +443,20 @@
                                   Grid.ColumnSpan="5"
                                   Grid.RowSpan="5">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="{StaticResource TeachingTipPointerShortSideLength}"/>
-                                    <ColumnDefinition Width="{StaticResource TeachingTipPointerMargin}"/>
+                                    <ColumnDefinition Width="{StaticResource TeachingTipTailShortSideLength}"/>
+                                    <ColumnDefinition Width="{StaticResource TeachingTipTailMargin}"/>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="{StaticResource TeachingTipPointerMargin}"/>
-                                    <ColumnDefinition Width="{StaticResource TeachingTipPointerShortSideLength}"/>
+                                    <ColumnDefinition Width="{StaticResource TeachingTipTailMargin}"/>
+                                    <ColumnDefinition Width="{StaticResource TeachingTipTailShortSideLength}"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="{StaticResource TeachingTipPointerShortSideLength}"/>
-                                    <RowDefinition Height="{StaticResource TeachingTipPointerMargin}"/>
+                                    <RowDefinition Height="{StaticResource TeachingTipTailShortSideLength}"/>
+                                    <RowDefinition Height="{StaticResource TeachingTipTailMargin}"/>
                                     <RowDefinition Height="*"/>
-                                    <RowDefinition Height="{StaticResource TeachingTipPointerMargin}"/>
-                                    <RowDefinition Height="{StaticResource TeachingTipPointerShortSideLength}"/>
+                                    <RowDefinition Height="{StaticResource TeachingTipTailMargin}"/>
+                                    <RowDefinition Height="{StaticResource TeachingTipTailShortSideLength}"/>
                                 </Grid.RowDefinitions>
-                                <Polygon x:Name="TopPointerPolygonHighlight"
+                                <Polygon x:Name="TopTailPolygonHighlight"
                                          Grid.Row="0"
                                          Grid.Column="2"
                                          Margin="{StaticResource TeachingTipTopHighlightOffsetForBorder}"
