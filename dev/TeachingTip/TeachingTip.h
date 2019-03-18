@@ -76,7 +76,7 @@ private:
     void OnTargetChanged();
     void OnPointerModeChanged();
     void OnIconSourceChanged();
-    void OnTargetOffsetChanged();
+    void OnPlacementMarginChanged();
     void OnIsLightDismissEnabledChanged();
     void OnHeroContentPlacementChanged();
 

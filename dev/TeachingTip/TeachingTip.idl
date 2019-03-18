@@ -105,7 +105,7 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     Windows.UI.Xaml.Input.ICommand CloseButtonCommand;
     Object CloseButtonCommandParameter;
 
-    Windows.UI.Xaml.Thickness TargetOffset;
+    Windows.UI.Xaml.Thickness PlacementMargin;
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsLightDismissEnabled;
     [MUX_DEFAULT_VALUE("winrt::TeachingTipPlacementMode::Auto")]
@@ -142,7 +142,7 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandParameterProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty TargetOffsetProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PlacementMarginProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsLightDismissEnabledProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty PreferredPlacementProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty HeroContentPlacementProperty{ get; };

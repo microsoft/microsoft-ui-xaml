@@ -520,9 +520,9 @@ namespace MUXControlsTestApp
             }
         }
 
-        public void OnSetTargetOffsetButtonClicked(object sender, RoutedEventArgs args)
+        public void OnSetPlacementMarginButtonClicked(object sender, RoutedEventArgs args)
         {
-            getTeachingTip().TargetOffset = new Thickness(Double.Parse(this.TargetOffsetTextBox.Text));
+            getTeachingTip().PlacementMargin = new Thickness(Double.Parse(this.PlacementMarginTextBox.Text));
         }
 
         public void OnSetPointerModeButtonClicked(object sender, RoutedEventArgs args)

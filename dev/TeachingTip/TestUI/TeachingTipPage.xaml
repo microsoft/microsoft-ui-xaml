@@ -343,9 +343,9 @@
             </ComboBox>
             <Button AutomationProperties.Name="IsLightDismissEnabledButton" Click="OnSetIsLightDismissEnabledButtonClicked" Grid.Row="3" Grid.Column="1">Set</Button>
 
-            <TextBlock Grid.Row="4" Text="TargetOffset:" Foreground="Red"/>
-            <TextBox x:Name="TargetOffsetTextBox" Grid.Row="5" MaxWidth="100" HorizontalAlignment="Left"/>
-            <Button Click="OnSetTargetOffsetButtonClicked" Grid.Row="5" Grid.Column="1">Set</Button>
+            <TextBlock Grid.Row="4" Text="PlacementMargin:" Foreground="Red"/>
+            <TextBox x:Name="PlacementMarginTextBox" Grid.Row="5" MaxWidth="100" HorizontalAlignment="Left"/>
+            <Button Click="OnSetPlacementMarginButtonClicked" Grid.Row="5" Grid.Column="1">Set</Button>
 
             <TextBlock Grid.Row="6" Text="Pointer Mode:" Foreground="Red"/>
             <ComboBox x:Name="PointerModeComboBox" Grid.Row="7">

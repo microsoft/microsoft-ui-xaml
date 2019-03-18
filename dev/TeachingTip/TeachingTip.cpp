@@ -117,9 +117,9 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         UpdateButtonsState();
     }
-    else if (property == s_TargetOffsetProperty)
+    else if (property == s_PlacementMarginProperty)
     {
-        OnTargetOffsetChanged();
+        OnPlacementMarginChanged();
     }
     else if (property == s_IsLightDismissEnabledProperty)
     {
@@ -371,7 +371,7 @@ void TeachingTip::PositionTargetedPopup()
     if (auto&& popup = m_popup.get())
     {
         UpdatePointer();
-        auto offset = TargetOffset();
+        auto offset = PlacementMargin();
 
         auto&& pointerOcclusionGrid = m_pointerOcclusionGrid.get();
         double tipHeight = pointerOcclusionGrid.ActualHeight();
@@ -457,7 +457,7 @@ void TeachingTip::PositionUntargetedPopup()
 
     UpdatePointer();
 
-    auto offset = TargetOffset();
+    auto offset = PlacementMargin();
 
     // Depending on the effective placement mode of the tip we use a combination of the tip's size, the window's size, and the target
     // offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
@@ -786,7 +786,7 @@ void TeachingTip::OnIconSourceChanged()
     }
 }
 
-void TeachingTip::OnTargetOffsetChanged()
+void TeachingTip::OnPlacementMarginChanged()
 {
     if (IsOpen())
     {
