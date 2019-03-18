@@ -29,6 +29,5 @@ jobs:
 
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
   parameters:
-    helixProjects: build\Helix\RunTestsInHelix.proj
     dependsOn: Build
     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')

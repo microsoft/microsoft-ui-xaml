@@ -1,7 +1,13 @@
-foreach($line in Get-Content ..\MUXControlsTestApp.dependencies.txt) {
-    Add-AppxPackage ..\$line
+Push-Location ..\
+
+$dependencyFiles = Get-ChildItem -Filter "*dependencies.txt"
+
+foreach($file in $dependencyFiles)
+{
+    foreach($line in Get-Content $file)
+    {
+        Add-AppxPackage $line
+    }
 }
 
-foreach($line in Get-Content ..\IXMPTestApp.dependencies.txt) {
-    Add-AppxPackage ..\$line
-}
+Pop-Location

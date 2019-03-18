@@ -108,6 +108,5 @@ jobs:
   - template: MUX-RunHelixTests-Job.yml
     parameters:
       name: ${{ parameters.runTestJobName }}
-      helixProjects: build\Helix\RunNugetTestsInHelix.proj
       dependsOn: ${{ parameters.buildJobName }}
   
