@@ -876,6 +876,14 @@ void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt:
 void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     StartExpandToOpen();
+
+    if (auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+    {
+        if (auto teachingTipPeer = peer.as<winrt::TeachingTipAutomationPeer>())
+        {
+            winrt::get_self<TeachingTipAutomationPeer>(teachingTipPeer)->RaiseWindowOpenedEvent();
+        }
+    }
 }
 
 void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
@@ -885,6 +893,14 @@ void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspec
     auto myArgs = winrt::make_self<TeachingTipClosedEventArgs>();
     myArgs->Reason(m_lastCloseReason);
     m_closedEventSource(*this, *myArgs);
+
+    if (auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+    {
+        if (auto teachingTipPeer = peer.as<winrt::TeachingTipAutomationPeer>())
+        {
+            winrt::get_self<TeachingTipAutomationPeer>(teachingTipPeer)->MyRaiseWindowClosedEvent();
+        }
+    }
 }
 
 void TeachingTip::OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)

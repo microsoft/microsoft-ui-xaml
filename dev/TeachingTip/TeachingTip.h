@@ -45,6 +45,8 @@ public:
     void SetExpandAnimationDuration(const winrt::TimeSpan& expandAnimationDuration);
     void SetContractAnimationDuration(const winrt::TimeSpan& contractAnimationDuration);
 
+    bool m_isIdle{ true };
+
 private:
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     winrt::Button::Click_revoker m_alternateCloseButtonClickedRevoker{};
@@ -150,8 +152,6 @@ private:
     float m_contentElevation{ 32.0f };
     float m_pointerElevation{ 0.0f };
     bool m_pointerShadowTargetsShadowTarget{ false };
-
-    bool m_isIdle{ true };
 
     winrt::TimeSpan m_expandAnimationDuration{ 300ms };
     winrt::TimeSpan m_contractAnimationDuration{ 200ms };
