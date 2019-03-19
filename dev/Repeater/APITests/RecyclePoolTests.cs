@@ -189,5 +189,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 }
             });
         }
+
+        // When the owner is not the same, the element we get out of the recycle
+        // pool should be disconnected from its previous parent.
+        [TestMethod]
+        public void ValidateChildRemovedFromParentWhenOwnerIsDifferent()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var element = new Button();
+                const string key1 = "Key1";
+                const string key2 = "Key2";
+
+                RecyclePool pool = new RecyclePool();
+                var parent1 = new StackPanel();
+                var child1 = new Button();
+                var child2 = new Button();
+                parent1.Children.Add(child1);
+                parent1.Children.Add(child2);
+                
+                pool.PutElement(child1, key1);
+                pool.PutElement(child2, key2);
+
+                var parent2 = new StackPanel();
+                // Recycle the second child for a different parent. It should be disconnected
+                var recycled1 = (FrameworkElement)pool.TryGetElement(key2, parent2);
+                Verify.IsNull(recycled1.Parent);
+                var recycled2 = (FrameworkElement)pool.TryGetElement(key1, parent2);
+                Verify.IsNull(recycled2.Parent);
+            });
+        }
     }
 }
