@@ -107,7 +107,7 @@ winrt::UIElement RecyclePool::TryGetElementCore(
                     bool found = panel.Children().IndexOf(elementInfo.Element(), childIndex);
                     if (!found)
                     {
-                        throw winrt::hresult_error(E_FAIL, L"Repeater's child not found in its Children collection.");
+                        throw winrt::hresult_error(E_FAIL, L"ItemsRepeater's child not found in its Children collection.");
                     }
 
                     panel.Children().RemoveAt(childIndex);
