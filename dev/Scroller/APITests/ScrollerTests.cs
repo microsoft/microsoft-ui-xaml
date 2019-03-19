@@ -335,7 +335,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsNotNull(visualInteractionSource);
 
                     Verify.AreEqual(visualInteractionSource.ManipulationRedirectionMode,
-                        PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4) ? VisualInteractionSourceRedirectionMode.CapableTouchpadAndPointerWheel : VisualInteractionSourceRedirectionMode.CapableTouchpadOnly);
+                        PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5) ? VisualInteractionSourceRedirectionMode.CapableTouchpadAndPointerWheel : VisualInteractionSourceRedirectionMode.CapableTouchpadOnly);
                     Verify.IsTrue(visualInteractionSource.IsPositionXRailsEnabled);
                     Verify.IsTrue(visualInteractionSource.IsPositionYRailsEnabled);
                     Verify.AreEqual(visualInteractionSource.PositionXChainingMode, InteractionChainingMode.Auto);

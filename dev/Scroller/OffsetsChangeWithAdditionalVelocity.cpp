@@ -8,12 +8,16 @@
 
 OffsetsChangeWithAdditionalVelocity::OffsetsChangeWithAdditionalVelocity(
     winrt::float2 offsetsVelocity,
+    winrt::float2 anticipatedOffsetsChange,
     winrt::IReference<winrt::float2> inertiaDecayRate) :
         m_offsetsVelocity(offsetsVelocity),
+        m_anticipatedOffsetsChange(anticipatedOffsetsChange),
         m_inertiaDecayRate(inertiaDecayRate)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this,
-        TypeLogging::Float2ToString(offsetsVelocity).c_str(), TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
+    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR_STR, METH_NAME, this,
+        TypeLogging::Float2ToString(offsetsVelocity).c_str(),
+        TypeLogging::Float2ToString(anticipatedOffsetsChange).c_str(),
+        TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
 }
 
 OffsetsChangeWithAdditionalVelocity::~OffsetsChangeWithAdditionalVelocity()
@@ -26,6 +30,13 @@ void OffsetsChangeWithAdditionalVelocity::OffsetsVelocity(winrt::float2 const& o
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::Float2ToString(offsetsVelocity).c_str());
 
     m_offsetsVelocity = offsetsVelocity;
+}
+
+void OffsetsChangeWithAdditionalVelocity::AnticipatedOffsetsChange(winrt::float2 const& anticipatedOffsetsChange)
+{
+    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::Float2ToString(anticipatedOffsetsChange).c_str());
+
+    m_anticipatedOffsetsChange = anticipatedOffsetsChange;
 }
 
 void OffsetsChangeWithAdditionalVelocity::InertiaDecayRate(winrt::IReference<winrt::float2> const& inertiaDecayRate)

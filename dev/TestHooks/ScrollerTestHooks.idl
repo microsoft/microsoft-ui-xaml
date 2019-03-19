@@ -30,7 +30,7 @@ runtimeclass ScrollerTestHooks
 {
     static Boolean AreAnchorNotificationsRaised { get; set; };
     static Boolean AreInteractionSourcesNotificationsRaised { get; set; };
-    static Boolean IsInteractionTrackerMouseWheelZoomingEnabled { get; set; };
+    static Boolean IsInteractionTrackerPointerWheelRedirectionEnabled{ get; set; };
     static Int32 MouseWheelDeltaForVelocityUnit { get; set; };
     static Single MouseWheelInertiaDecayRate { get; set; };
     static void GetOffsetsChangeVelocityParameters(out Int32 millisecondsPerUnit, out Int32 minMilliseconds, out Int32 maxMilliseconds);
