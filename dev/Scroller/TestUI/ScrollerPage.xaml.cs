@@ -92,7 +92,7 @@ namespace MUXControlsTestApp
 
                 txtMouseWheelInertiaDecayRate.Text = ScrollerTestHooks.MouseWheelInertiaDecayRate.ToString();
 
-                chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = (bool)ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
+                chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
             }
             catch (Exception ex)
             {

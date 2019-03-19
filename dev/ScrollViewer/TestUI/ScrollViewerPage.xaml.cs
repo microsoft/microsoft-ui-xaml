@@ -36,7 +36,7 @@ namespace MUXControlsTestApp
             navigateToScrollControllers.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewerWithScrollControllersPage), 0); };
             navigateToRTL.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewerWithRTLFlowDirectionPage), 0); };
 
-            chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = (bool) ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
+            chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
         }
 
         private void CmbScrollViewerOutputDebugStringLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
