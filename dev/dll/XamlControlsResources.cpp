@@ -24,7 +24,7 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
 {
     winrt::IDependencyProperty property = args.Property();
 
-    if (property == s_UseCompactDictionaryProperty)
+    if (property == s_UseCompactResourcesProperty)
     {
         UpdateSource();
     }
@@ -32,12 +32,12 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
 
 void XamlControlsResources::UpdateSource()
 {
-    bool useCompactDictionary = UseCompactDictionary();
+    bool useCompactResources = UseCompactResources();
     // At runtime choose the URI to use. If we're in a framework package and/or running on a different OS, 
     // we need to choose a different version because the URIs they have internally are different and this 
     // is the best we can do without conditional markup.
     winrt::Uri uri{
-        [useCompactDictionary]() -> hstring {
+        [useCompactResources]() -> hstring {
             // Our RS2 styles depend on XamlCompositionBrushBase so use that as the condition here.
             bool isRS2OrHigher = SharedHelpers::IsXamlCompositionBrushBaseAvailable();
             // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
@@ -48,7 +48,7 @@ void XamlControlsResources::UpdateSource()
 
             bool isInFrameworkPackage = SharedHelpers::IsInFrameworkPackage();
 
-            hstring compactPrefix = useCompactDictionary ? L"compact_" : L"";
+            hstring compactPrefix = useCompactResources ? L"compact_" : L"";
             hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
             hstring postfix = L"themeresources.xaml";
 

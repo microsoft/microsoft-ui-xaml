@@ -8,7 +8,7 @@
 
 CppWinRTActivatableClassWithDPFactory(XamlControlsResources)
 
-GlobalDependencyProperty XamlControlsResourcesProperties::s_UseCompactDictionaryProperty{ nullptr };
+GlobalDependencyProperty XamlControlsResourcesProperties::s_UseCompactResourcesProperty{ nullptr };
 
 XamlControlsResourcesProperties::XamlControlsResourcesProperties()
 {
@@ -17,25 +17,25 @@ XamlControlsResourcesProperties::XamlControlsResourcesProperties()
 
 void XamlControlsResourcesProperties::EnsureProperties()
 {
-    if (!s_UseCompactDictionaryProperty)
+    if (!s_UseCompactResourcesProperty)
     {
-        s_UseCompactDictionaryProperty =
+        s_UseCompactResourcesProperty =
             InitializeDependencyProperty(
-                L"UseCompactDictionary",
+                L"UseCompactResources",
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::XamlControlsResources>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
-                winrt::PropertyChangedCallback(&OnUseCompactDictionaryPropertyChanged));
+                winrt::PropertyChangedCallback(&OnUseCompactResourcesPropertyChanged));
     }
 }
 
 void XamlControlsResourcesProperties::ClearProperties()
 {
-    s_UseCompactDictionaryProperty = nullptr;
+    s_UseCompactResourcesProperty = nullptr;
 }
 
-void XamlControlsResourcesProperties::OnUseCompactDictionaryPropertyChanged(
+void XamlControlsResourcesProperties::OnUseCompactResourcesPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -43,12 +43,12 @@ void XamlControlsResourcesProperties::OnUseCompactDictionaryPropertyChanged(
     winrt::get_self<XamlControlsResources>(owner)->OnPropertyChanged(args);
 }
 
-void XamlControlsResourcesProperties::UseCompactDictionary(bool value)
+void XamlControlsResourcesProperties::UseCompactResources(bool value)
 {
-    static_cast<XamlControlsResources*>(this)->SetValue(s_UseCompactDictionaryProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    static_cast<XamlControlsResources*>(this)->SetValue(s_UseCompactResourcesProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
 }
 
-bool XamlControlsResourcesProperties::UseCompactDictionary()
+bool XamlControlsResourcesProperties::UseCompactResources()
 {
-    return ValueHelper<bool>::CastOrUnbox(static_cast<XamlControlsResources*>(this)->GetValue(s_UseCompactDictionaryProperty));
+    return ValueHelper<bool>::CastOrUnbox(static_cast<XamlControlsResources*>(this)->GetValue(s_UseCompactResourcesProperty));
 }

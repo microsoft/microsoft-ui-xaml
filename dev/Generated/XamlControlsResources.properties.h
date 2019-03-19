@@ -9,17 +9,17 @@ class XamlControlsResourcesProperties
 public:
     XamlControlsResourcesProperties();
 
-    void UseCompactDictionary(bool value);
-    bool UseCompactDictionary();
+    void UseCompactResources(bool value);
+    bool UseCompactResources();
 
-    static winrt::DependencyProperty UseCompactDictionaryProperty() { return s_UseCompactDictionaryProperty; }
+    static winrt::DependencyProperty UseCompactResourcesProperty() { return s_UseCompactResourcesProperty; }
 
-    static GlobalDependencyProperty s_UseCompactDictionaryProperty;
+    static GlobalDependencyProperty s_UseCompactResourcesProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnUseCompactDictionaryPropertyChanged(
+    static void OnUseCompactResourcesPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

@@ -344,8 +344,13 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SharedHelpers.cpp" />
+<<<<<<< HEAD
     <ClCompile Include="ThemeResources.cpp" />
     <ClCompile Include="ThemeResourcesFactory.cpp" />
+=======
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\XamlControlsResources.properties.cpp" />
+    <ClCompile Include="XamlControlsResources.cpp" />
+>>>>>>> rename and prepare the test
     <ClCompile Include="XamlMember.cpp" />
     <ClCompile Include="XamlMetadataDependencyLocator.cpp" Condition="$(BuildingWithBuildExe) == 'true'" />
     <ClCompile Include="XamlMetadataProvider.cpp" />
