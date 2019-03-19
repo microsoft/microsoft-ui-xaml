@@ -31,3 +31,4 @@ jobs:
   parameters:
     dependsOn: Build
     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+    testSuite: 'DevTestSuite'

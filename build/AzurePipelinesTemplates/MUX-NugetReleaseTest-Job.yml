@@ -109,4 +109,5 @@ jobs:
     parameters:
       name: ${{ parameters.runTestJobName }}
       dependsOn: ${{ parameters.buildJobName }}
+      testSuite: 'NugetTestSuite'
   
