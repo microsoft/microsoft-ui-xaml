@@ -49,7 +49,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ICommand>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnActionButtonCommandPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_ActionButtonCommandParameterProperty)
     {
@@ -60,7 +60,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnActionButtonCommandParameterPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_ActionButtonContentProperty)
     {
@@ -71,7 +71,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnActionButtonContentPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_ActionButtonStyleProperty)
     {
@@ -82,7 +82,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Style>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnActionButtonStylePropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_CloseButtonCommandProperty)
     {
@@ -93,7 +93,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ICommand>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnCloseButtonCommandPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_CloseButtonCommandParameterProperty)
     {
@@ -104,7 +104,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnCloseButtonCommandParameterPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_CloseButtonContentProperty)
     {
@@ -115,7 +115,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnCloseButtonContentPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_CloseButtonStyleProperty)
     {
@@ -126,7 +126,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Style>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnCloseButtonStylePropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_HeroContentProperty)
     {
@@ -137,7 +137,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnHeroContentPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_HeroContentPlacementProperty)
     {
@@ -148,7 +148,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::TeachingTipHeroContentPlacementMode>::BoxValueIfNecessary(winrt::TeachingTipHeroContentPlacementMode::Auto),
-                winrt::PropertyChangedCallback(&OnHeroContentPlacementPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_IconSourceProperty)
     {
@@ -159,7 +159,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IconSource>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnIconSourcePropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_IsLightDismissEnabledProperty)
     {
@@ -170,7 +170,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
-                winrt::PropertyChangedCallback(&OnIsLightDismissEnabledPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_IsOpenProperty)
     {
@@ -181,7 +181,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
-                winrt::PropertyChangedCallback(&OnIsOpenPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_PlacementMarginProperty)
     {
@@ -192,7 +192,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPlacementMarginPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_PreferredPlacementProperty)
     {
@@ -203,7 +203,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::TeachingTipPlacementMode>::BoxValueIfNecessary(winrt::TeachingTipPlacementMode::Auto),
-                winrt::PropertyChangedCallback(&OnPreferredPlacementPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_SubtitleProperty)
     {
@@ -214,7 +214,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnSubtitlePropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_TailVisibilityProperty)
     {
@@ -225,7 +225,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::TeachingTipTailVisibility>::BoxValueIfNecessary(winrt::TeachingTipTailVisibility::Auto),
-                winrt::PropertyChangedCallback(&OnTailVisibilityPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_TargetProperty)
     {
@@ -236,7 +236,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::FrameworkElement>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnTargetPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_TemplateSettingsProperty)
     {
@@ -247,7 +247,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::TeachingTipTemplateSettings>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnTemplateSettingsPropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
     if (!s_TitleProperty)
     {
@@ -258,7 +258,7 @@ void TeachingTipProperties::EnsureProperties()
                 winrt::name_of<winrt::TeachingTip>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnTitlePropertyChanged));
+                &TeachingTip::OnPropertyChanged);
     }
 }
 
@@ -286,159 +286,7 @@ void TeachingTipProperties::ClearProperties()
     s_TitleProperty = nullptr;
 }
 
-void TeachingTipProperties::OnActionButtonCommandPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnActionButtonCommandParameterPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnActionButtonContentPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnActionButtonStylePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnCloseButtonCommandPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnCloseButtonCommandParameterPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnCloseButtonContentPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnCloseButtonStylePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnHeroContentPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnHeroContentPlacementPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnIconSourcePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnIsLightDismissEnabledPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnIsOpenPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnPlacementMarginPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnPreferredPlacementPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnSubtitlePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnTailVisibilityPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnTargetPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnTemplateSettingsPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TeachingTip>();
-    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
-}
-
-void TeachingTipProperties::OnTitlePropertyChanged(
+void TeachingTipProperties::OnPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

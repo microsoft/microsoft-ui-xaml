@@ -15,6 +15,7 @@ class TeachingTip :
 
 public:
     TeachingTip();
+    ~TeachingTip();
 
     // IFrameworkElement
     void OnApplyTemplate();
@@ -48,6 +49,8 @@ public:
     bool m_isIdle{ true };
 
 private:
+    int64_t m_automationNameChangedCallback{ 0 };
+    int64_t m_automationIdChangedCallback{ 0 };
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     winrt::Button::Click_revoker m_alternateCloseButtonClickedRevoker{};
     winrt::Button::Click_revoker m_actionButtonClickedRevoker{};
@@ -82,6 +85,9 @@ private:
     void OnPlacementMarginChanged();
     void OnIsLightDismissEnabledChanged();
     void OnHeroContentPlacementChanged();
+
+    void OnAutomationNameChanged(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnAutomationIdChanged(const winrt::IInspectable&, const winrt::IInspectable&);
 
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);

@@ -34,11 +34,7 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnHasChildrenPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnIsExpandedPropertyChanged(
+    static void OnPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

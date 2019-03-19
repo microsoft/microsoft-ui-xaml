@@ -29,7 +29,7 @@ void SwipeControlProperties::EnsureProperties()
                 winrt::name_of<winrt::SwipeControl>(),
                 false /* isAttached */,
                 ValueHelper<winrt::SwipeItems>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnBottomItemsPropertyChanged));
+                &SwipeControl::OnPropertyChanged);
     }
     if (!s_LeftItemsProperty)
     {
@@ -40,7 +40,7 @@ void SwipeControlProperties::EnsureProperties()
                 winrt::name_of<winrt::SwipeControl>(),
                 false /* isAttached */,
                 ValueHelper<winrt::SwipeItems>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnLeftItemsPropertyChanged));
+                &SwipeControl::OnPropertyChanged);
     }
     if (!s_RightItemsProperty)
     {
@@ -51,7 +51,7 @@ void SwipeControlProperties::EnsureProperties()
                 winrt::name_of<winrt::SwipeControl>(),
                 false /* isAttached */,
                 ValueHelper<winrt::SwipeItems>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnRightItemsPropertyChanged));
+                &SwipeControl::OnPropertyChanged);
     }
     if (!s_TopItemsProperty)
     {
@@ -62,7 +62,7 @@ void SwipeControlProperties::EnsureProperties()
                 winrt::name_of<winrt::SwipeControl>(),
                 false /* isAttached */,
                 ValueHelper<winrt::SwipeItems>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnTopItemsPropertyChanged));
+                &SwipeControl::OnPropertyChanged);
     }
 }
 
@@ -74,31 +74,7 @@ void SwipeControlProperties::ClearProperties()
     s_TopItemsProperty = nullptr;
 }
 
-void SwipeControlProperties::OnBottomItemsPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::SwipeControl>();
-    winrt::get_self<SwipeControl>(owner)->OnPropertyChanged(args);
-}
-
-void SwipeControlProperties::OnLeftItemsPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::SwipeControl>();
-    winrt::get_self<SwipeControl>(owner)->OnPropertyChanged(args);
-}
-
-void SwipeControlProperties::OnRightItemsPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::SwipeControl>();
-    winrt::get_self<SwipeControl>(owner)->OnPropertyChanged(args);
-}
-
-void SwipeControlProperties::OnTopItemsPropertyChanged(
+void SwipeControlProperties::OnPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

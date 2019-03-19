@@ -29,7 +29,7 @@ void TreeViewNodeProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewNode>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                &TreeViewNode::OnPropertyChanged);
     }
     if (!s_DepthProperty)
     {
@@ -40,7 +40,7 @@ void TreeViewNodeProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewNode>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(-1),
-                nullptr);
+                &TreeViewNode::OnPropertyChanged);
     }
     if (!s_HasChildrenProperty)
     {
@@ -51,7 +51,7 @@ void TreeViewNodeProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewNode>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnHasChildrenPropertyChanged));
+                &TreeViewNode::OnPropertyChanged);
     }
     if (!s_IsExpandedProperty)
     {
@@ -62,7 +62,7 @@ void TreeViewNodeProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewNode>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnIsExpandedPropertyChanged));
+                &TreeViewNode::OnPropertyChanged);
     }
 }
 
@@ -74,15 +74,7 @@ void TreeViewNodeProperties::ClearProperties()
     s_IsExpandedProperty = nullptr;
 }
 
-void TreeViewNodeProperties::OnHasChildrenPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TreeViewNode>();
-    winrt::get_self<TreeViewNode>(owner)->OnPropertyChanged(args);
-}
-
-void TreeViewNodeProperties::OnIsExpandedPropertyChanged(
+void TreeViewNodeProperties::OnPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

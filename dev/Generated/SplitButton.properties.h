@@ -34,15 +34,7 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnCommandPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnCommandParameterPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnFlyoutPropertyChanged(
+    static void OnPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

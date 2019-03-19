@@ -50,7 +50,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Brush>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnBackgroundPropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_ContentProperty)
     {
@@ -61,7 +61,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnContentPropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_ContentOrientationProperty)
     {
@@ -72,7 +72,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ContentOrientation>::BoxValueIfNecessary(Scroller::s_defaultContentOrientation),
-                winrt::PropertyChangedCallback(&OnContentOrientationPropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_HorizontalAnchorRatioProperty)
     {
@@ -83,7 +83,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(Scroller::s_defaultAnchorRatio),
-                winrt::PropertyChangedCallback(&OnHorizontalAnchorRatioPropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_HorizontalScrollChainingModeProperty)
     {
@@ -94,7 +94,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(Scroller::s_defaultHorizontalScrollChainingMode),
-                winrt::PropertyChangedCallback(&OnHorizontalScrollChainingModePropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_HorizontalScrollModeProperty)
     {
@@ -105,7 +105,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ScrollMode>::BoxValueIfNecessary(Scroller::s_defaultHorizontalScrollMode),
-                winrt::PropertyChangedCallback(&OnHorizontalScrollModePropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_HorizontalScrollRailingModeProperty)
     {
@@ -116,7 +116,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<winrt::RailingMode>::BoxValueIfNecessary(Scroller::s_defaultHorizontalScrollRailingMode),
-                winrt::PropertyChangedCallback(&OnHorizontalScrollRailingModePropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_IgnoredInputKindProperty)
     {
@@ -127,7 +127,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<winrt::InputKind>::BoxValueIfNecessary(Scroller::s_defaultIgnoredInputKind),
-                winrt::PropertyChangedCallback(&OnIgnoredInputKindPropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_MaxZoomFactorProperty)
     {
@@ -138,7 +138,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(Scroller::s_defaultMaxZoomFactor),
-                winrt::PropertyChangedCallback(&OnMaxZoomFactorPropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_MinZoomFactorProperty)
     {
@@ -149,7 +149,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(Scroller::s_defaultMinZoomFactor),
-                winrt::PropertyChangedCallback(&OnMinZoomFactorPropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_VerticalAnchorRatioProperty)
     {
@@ -160,7 +160,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(Scroller::s_defaultAnchorRatio),
-                winrt::PropertyChangedCallback(&OnVerticalAnchorRatioPropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_VerticalScrollChainingModeProperty)
     {
@@ -171,7 +171,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(Scroller::s_defaultVerticalScrollChainingMode),
-                winrt::PropertyChangedCallback(&OnVerticalScrollChainingModePropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_VerticalScrollModeProperty)
     {
@@ -182,7 +182,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ScrollMode>::BoxValueIfNecessary(Scroller::s_defaultVerticalScrollMode),
-                winrt::PropertyChangedCallback(&OnVerticalScrollModePropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_VerticalScrollRailingModeProperty)
     {
@@ -193,7 +193,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<winrt::RailingMode>::BoxValueIfNecessary(Scroller::s_defaultVerticalScrollRailingMode),
-                winrt::PropertyChangedCallback(&OnVerticalScrollRailingModePropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_ZoomChainingModeProperty)
     {
@@ -204,7 +204,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ChainingMode>::BoxValueIfNecessary(Scroller::s_defaultZoomChainingMode),
-                winrt::PropertyChangedCallback(&OnZoomChainingModePropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
     if (!s_ZoomModeProperty)
     {
@@ -215,7 +215,7 @@ void ScrollerProperties::EnsureProperties()
                 winrt::name_of<winrt::Scroller>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ZoomMode>::BoxValueIfNecessary(Scroller::s_defaultZoomMode),
-                winrt::PropertyChangedCallback(&OnZoomModePropertyChanged));
+                &Scroller::OnPropertyChanged);
     }
 }
 
@@ -239,31 +239,14 @@ void ScrollerProperties::ClearProperties()
     s_ZoomModeProperty = nullptr;
 }
 
-void ScrollerProperties::OnBackgroundPropertyChanged(
+void ScrollerProperties::OnPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::Scroller>();
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
-
-void ScrollerProperties::OnContentPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::Scroller>();
-    winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
-}
-
-void ScrollerProperties::OnContentOrientationPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::Scroller>();
-    winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
-}
-
-void ScrollerProperties::OnHorizontalAnchorRatioPropertyChanged(
+void ScrollerProperties::OnPropertyChanged_ValidateAnchorRatio(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -280,40 +263,7 @@ void ScrollerProperties::OnHorizontalAnchorRatioPropertyChanged(
 
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
-
-void ScrollerProperties::OnHorizontalScrollChainingModePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::Scroller>();
-    winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
-}
-
-void ScrollerProperties::OnHorizontalScrollModePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::Scroller>();
-    winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
-}
-
-void ScrollerProperties::OnHorizontalScrollRailingModePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::Scroller>();
-    winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
-}
-
-void ScrollerProperties::OnIgnoredInputKindPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::Scroller>();
-    winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
-}
-
-void ScrollerProperties::OnMaxZoomFactorPropertyChanged(
+void ScrollerProperties::OnPropertyChanged_ValidateZoomFactoryBoundary(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -328,82 +278,6 @@ void ScrollerProperties::OnMaxZoomFactorPropertyChanged(
         return;
     }
 
-    winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
-}
-
-void ScrollerProperties::OnMinZoomFactorPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::Scroller>();
-
-    auto value = winrt::unbox_value<double>(args.NewValue());
-    auto coercedValue = value;
-    winrt::get_self<Scroller>(owner)->ValidateZoomFactoryBoundary(coercedValue);
-    if (std::memcmp(&value, &coercedValue, sizeof(value)) != 0) // use memcmp to avoid tripping over nan
-    {
-        sender.SetValue(args.Property(), winrt::box_value<double>(coercedValue));
-        return;
-    }
-
-    winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
-}
-
-void ScrollerProperties::OnVerticalAnchorRatioPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::Scroller>();
-
-    auto value = winrt::unbox_value<double>(args.NewValue());
-    auto coercedValue = value;
-    winrt::get_self<Scroller>(owner)->ValidateAnchorRatio(coercedValue);
-    if (std::memcmp(&value, &coercedValue, sizeof(value)) != 0) // use memcmp to avoid tripping over nan
-    {
-        sender.SetValue(args.Property(), winrt::box_value<double>(coercedValue));
-        return;
-    }
-
-    winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
-}
-
-void ScrollerProperties::OnVerticalScrollChainingModePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::Scroller>();
-    winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
-}
-
-void ScrollerProperties::OnVerticalScrollModePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::Scroller>();
-    winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
-}
-
-void ScrollerProperties::OnVerticalScrollRailingModePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::Scroller>();
-    winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
-}
-
-void ScrollerProperties::OnZoomChainingModePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::Scroller>();
-    winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
-}
-
-void ScrollerProperties::OnZoomModePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::Scroller>();
     winrt::get_self<Scroller>(owner)->OnPropertyChanged(args);
 }
 

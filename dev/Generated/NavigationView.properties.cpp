@@ -67,7 +67,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnAlwaysShowHeaderPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_AutoSuggestBoxProperty)
     {
@@ -78,7 +78,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::AutoSuggestBox>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnAutoSuggestBoxPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_CompactModeThresholdWidthProperty)
     {
@@ -89,7 +89,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(641.0),
-                winrt::PropertyChangedCallback(&OnCompactModeThresholdWidthPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_CompactPaneLengthProperty)
     {
@@ -100,7 +100,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(48.0),
-                winrt::PropertyChangedCallback(&OnCompactPaneLengthPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_ContentOverlayProperty)
     {
@@ -111,7 +111,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
-                nullptr);
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_DisplayModeProperty)
     {
@@ -122,7 +122,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::NavigationViewDisplayMode>::BoxValueIfNecessary(winrt::NavigationViewDisplayMode::Minimal),
-                winrt::PropertyChangedCallback(&OnDisplayModePropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_ExpandedModeThresholdWidthProperty)
     {
@@ -133,7 +133,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(1008.0),
-                winrt::PropertyChangedCallback(&OnExpandedModeThresholdWidthPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_HeaderProperty)
     {
@@ -144,7 +144,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnHeaderPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_HeaderTemplateProperty)
     {
@@ -155,7 +155,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnHeaderTemplatePropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_IsBackButtonVisibleProperty)
     {
@@ -166,7 +166,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::NavigationViewBackButtonVisible>::BoxValueIfNecessary(winrt::NavigationViewBackButtonVisible::Auto),
-                winrt::PropertyChangedCallback(&OnIsBackButtonVisiblePropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_IsBackEnabledProperty)
     {
@@ -177,7 +177,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnIsBackEnabledPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_IsPaneOpenProperty)
     {
@@ -188,7 +188,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnIsPaneOpenPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_IsPaneToggleButtonVisibleProperty)
     {
@@ -199,7 +199,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnIsPaneToggleButtonVisiblePropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_IsPaneVisibleProperty)
     {
@@ -210,7 +210,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnIsPaneVisiblePropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_IsSettingsVisibleProperty)
     {
@@ -221,7 +221,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnIsSettingsVisiblePropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_MenuItemContainerStyleProperty)
     {
@@ -232,7 +232,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Style>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnMenuItemContainerStylePropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_MenuItemContainerStyleSelectorProperty)
     {
@@ -243,7 +243,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::StyleSelector>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnMenuItemContainerStyleSelectorPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_MenuItemsProperty)
     {
@@ -254,7 +254,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnMenuItemsPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_MenuItemsSourceProperty)
     {
@@ -265,7 +265,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnMenuItemsSourcePropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_MenuItemTemplateProperty)
     {
@@ -276,7 +276,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnMenuItemTemplatePropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_MenuItemTemplateSelectorProperty)
     {
@@ -287,7 +287,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplateSelector>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnMenuItemTemplateSelectorPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_OpenPaneLengthProperty)
     {
@@ -298,7 +298,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(320.0),
-                winrt::PropertyChangedCallback(&OnOpenPaneLengthPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_OverflowLabelModeProperty)
     {
@@ -309,7 +309,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::NavigationViewOverflowLabelMode>::BoxValueIfNecessary(winrt::NavigationViewOverflowLabelMode::MoreLabel),
-                winrt::PropertyChangedCallback(&OnOverflowLabelModePropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_PaneCustomContentProperty)
     {
@@ -320,7 +320,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
-                nullptr);
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_PaneDisplayModeProperty)
     {
@@ -331,7 +331,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::NavigationViewPaneDisplayMode>::BoxValueIfNecessary(winrt::NavigationViewPaneDisplayMode::Auto),
-                winrt::PropertyChangedCallback(&OnPaneDisplayModePropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_PaneFooterProperty)
     {
@@ -342,7 +342,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPaneFooterPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_PaneHeaderProperty)
     {
@@ -353,7 +353,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
-                nullptr);
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_PaneTitleProperty)
     {
@@ -364,7 +364,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPaneTitlePropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_PaneToggleButtonStyleProperty)
     {
@@ -375,7 +375,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Style>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPaneToggleButtonStylePropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_SelectedItemProperty)
     {
@@ -386,7 +386,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnSelectedItemPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_SelectionFollowsFocusProperty)
     {
@@ -397,7 +397,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::NavigationViewSelectionFollowsFocus>::BoxValueIfNecessary(winrt::NavigationViewSelectionFollowsFocus::Disabled),
-                winrt::PropertyChangedCallback(&OnSelectionFollowsFocusPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_SettingsItemProperty)
     {
@@ -408,7 +408,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnSettingsItemPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_ShoulderNavigationEnabledProperty)
     {
@@ -419,7 +419,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::NavigationViewShoulderNavigationEnabled>::BoxValueIfNecessary(winrt::NavigationViewShoulderNavigationEnabled::Never),
-                winrt::PropertyChangedCallback(&OnShoulderNavigationEnabledPropertyChanged));
+                &NavigationView::OnPropertyChanged);
     }
     if (!s_TemplateSettingsProperty)
     {
@@ -430,7 +430,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::NavigationViewTemplateSettings>::BoxedDefaultValue(),
-                nullptr);
+                &NavigationView::OnPropertyChanged);
     }
 }
 
@@ -472,23 +472,14 @@ void NavigationViewProperties::ClearProperties()
     s_TemplateSettingsProperty = nullptr;
 }
 
-void NavigationViewProperties::OnAlwaysShowHeaderPropertyChanged(
+void NavigationViewProperties::OnPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
-
-void NavigationViewProperties::OnAutoSuggestBoxPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnCompactModeThresholdWidthPropertyChanged(
+void NavigationViewProperties::OnPropertyChanged_CoerceToGreaterThanZero(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -503,252 +494,6 @@ void NavigationViewProperties::OnCompactModeThresholdWidthPropertyChanged(
         return;
     }
 
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnCompactPaneLengthPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-
-    auto value = winrt::unbox_value<double>(args.NewValue());
-    auto coercedValue = value;
-    winrt::get_self<NavigationView>(owner)->CoerceToGreaterThanZero(coercedValue);
-    if (std::memcmp(&value, &coercedValue, sizeof(value)) != 0) // use memcmp to avoid tripping over nan
-    {
-        sender.SetValue(args.Property(), winrt::box_value<double>(coercedValue));
-        return;
-    }
-
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnDisplayModePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnExpandedModeThresholdWidthPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-
-    auto value = winrt::unbox_value<double>(args.NewValue());
-    auto coercedValue = value;
-    winrt::get_self<NavigationView>(owner)->CoerceToGreaterThanZero(coercedValue);
-    if (std::memcmp(&value, &coercedValue, sizeof(value)) != 0) // use memcmp to avoid tripping over nan
-    {
-        sender.SetValue(args.Property(), winrt::box_value<double>(coercedValue));
-        return;
-    }
-
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnHeaderPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnHeaderTemplatePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnIsBackButtonVisiblePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnIsBackEnabledPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnIsPaneOpenPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnIsPaneToggleButtonVisiblePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnIsPaneVisiblePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnIsSettingsVisiblePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnMenuItemContainerStylePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnMenuItemContainerStyleSelectorPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnMenuItemsPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnMenuItemsSourcePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnMenuItemTemplatePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnMenuItemTemplateSelectorPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnOpenPaneLengthPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-
-    auto value = winrt::unbox_value<double>(args.NewValue());
-    auto coercedValue = value;
-    winrt::get_self<NavigationView>(owner)->CoerceToGreaterThanZero(coercedValue);
-    if (std::memcmp(&value, &coercedValue, sizeof(value)) != 0) // use memcmp to avoid tripping over nan
-    {
-        sender.SetValue(args.Property(), winrt::box_value<double>(coercedValue));
-        return;
-    }
-
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnOverflowLabelModePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnPaneDisplayModePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnPaneFooterPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnPaneTitlePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnPaneToggleButtonStylePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnSelectedItemPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnSelectionFollowsFocusPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnSettingsItemPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnShoulderNavigationEnabledPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
     winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
 

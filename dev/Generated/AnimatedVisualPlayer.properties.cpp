@@ -34,7 +34,7 @@ void AnimatedVisualPlayerProperties::EnsureProperties()
                 winrt::name_of<winrt::AnimatedVisualPlayer>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnAutoPlayPropertyChanged));
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_DiagnosticsProperty)
     {
@@ -67,7 +67,7 @@ void AnimatedVisualPlayerProperties::EnsureProperties()
                 winrt::name_of<winrt::AnimatedVisualPlayer>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnFallbackContentPropertyChanged));
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_IsAnimatedVisualLoadedProperty)
     {
@@ -100,7 +100,7 @@ void AnimatedVisualPlayerProperties::EnsureProperties()
                 winrt::name_of<winrt::AnimatedVisualPlayer>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(1),
-                winrt::PropertyChangedCallback(&OnPlaybackRatePropertyChanged));
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_SourceProperty)
     {
@@ -111,7 +111,7 @@ void AnimatedVisualPlayerProperties::EnsureProperties()
                 winrt::name_of<winrt::AnimatedVisualPlayer>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IAnimatedVisualSource>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnSourcePropertyChanged));
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
     if (!s_StretchProperty)
     {
@@ -122,7 +122,7 @@ void AnimatedVisualPlayerProperties::EnsureProperties()
                 winrt::name_of<winrt::AnimatedVisualPlayer>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Stretch>::BoxValueIfNecessary(winrt::Stretch::Uniform),
-                winrt::PropertyChangedCallback(&OnStretchPropertyChanged));
+                winrt::PropertyChangedCallback(&OnPropertyChanged));
     }
 }
 
@@ -139,44 +139,12 @@ void AnimatedVisualPlayerProperties::ClearProperties()
     s_StretchProperty = nullptr;
 }
 
-void AnimatedVisualPlayerProperties::OnAutoPlayPropertyChanged(
+void AnimatedVisualPlayerProperties::OnPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::AnimatedVisualPlayer>();
-    winrt::get_self<AnimatedVisualPlayer>(owner)->OnAutoPlayPropertyChanged(args);
-}
-
-void AnimatedVisualPlayerProperties::OnFallbackContentPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::AnimatedVisualPlayer>();
-    winrt::get_self<AnimatedVisualPlayer>(owner)->OnFallbackContentPropertyChanged(args);
-}
-
-void AnimatedVisualPlayerProperties::OnPlaybackRatePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::AnimatedVisualPlayer>();
-    winrt::get_self<AnimatedVisualPlayer>(owner)->OnPlaybackRatePropertyChanged(args);
-}
-
-void AnimatedVisualPlayerProperties::OnSourcePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::AnimatedVisualPlayer>();
-    winrt::get_self<AnimatedVisualPlayer>(owner)->OnSourcePropertyChanged(args);
-}
-
-void AnimatedVisualPlayerProperties::OnStretchPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::AnimatedVisualPlayer>();
-    winrt::get_self<AnimatedVisualPlayer>(owner)->OnStretchPropertyChanged(args);
+    winrt::get_self<AnimatedVisualPlayer>(owner)->OnPropertyChanged(args);
 }
 
 void AnimatedVisualPlayerProperties::AutoPlay(bool value)

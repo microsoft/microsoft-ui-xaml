@@ -24,11 +24,7 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnGroupNamePropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnIsCheckedPropertyChanged(
+    static void OnPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

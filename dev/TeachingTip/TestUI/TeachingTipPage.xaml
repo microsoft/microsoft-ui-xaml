@@ -74,10 +74,15 @@
             </ScrollViewer>
         </Grid>
 
-        <!-- Change Content -->
+        <!-- TeachingTip APIs -->
         <ScrollViewer Grid.Column="1">
             <Grid Background="Bisque" Margin="5" MinWidth="300">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -201,234 +206,273 @@
                     <ComboBoxItem x:Name="HeroContentPlacementBottom">Bottom</ComboBoxItem>
                 </ComboBox>
                 <Button Click="OnSetBleeingImagePlacementButtonClicked" Grid.Row="17" Grid.Column="1">Set</Button>
-                <TextBlock Grid.Row="18" Text="--------------------------------------" Foreground="Red" Grid.ColumnSpan="2"/>
-                <TextBlock Grid.Row="19" Text="IsOpen:" Foreground="Red" VerticalAlignment="Center"/>
-                <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Grid.Row="19" Grid.Column="1" IsChecked="False" IsEnabled="False"/>
-                <TextBlock Grid.Row="20" Text="IsIdle:" Foreground="Red" VerticalAlignment="Center"/>
-                <CheckBox x:Name="IsIdleCheckBox" AutomationProperties.Name="IsIdleCheckBox" Grid.Row="20" Grid.Column="1" IsChecked="True" IsEnabled="False"/>
-                <TextBlock Grid.Row="21" Text="TargetBounds:" Foreground="Red"/>
-                <Button AutomationProperties.Name="GetTargetBoundsButton" Grid.Row="21" Grid.Column="1" Click="OnGetTargetBoundsButtonClicked">Get</Button>
-                <StackPanel Orientation="Horizontal" Grid.Row="22">
-                    <TextBlock Text="X: "/>
-                    <TextBlock x:Name="TargetXOffsetTextBlock" AutomationProperties.Name="TargetXOffsetTextBlock"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="22" Grid.Column="1">
-                    <TextBlock Text="Y: "/>
-                    <TextBlock x:Name="TargetYOffsetTextBlock" AutomationProperties.Name="TargetYOffsetTextBlock"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="23">
-                    <TextBlock Text="Width: "/>
-                    <TextBlock x:Name="TargetWidthTextBlock" AutomationProperties.Name="TargetWidthTextBlock"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="23" Grid.Column="1">
-                    <TextBlock Text="Height: "/>
-                    <TextBlock x:Name="TargetHeightTextBlock" AutomationProperties.Name="TargetHeightTextBlock"/>
-                </StackPanel>
-                <TextBlock Grid.Row="24" Text="Popup Offset:" Foreground="Red"/>
-                <StackPanel Orientation="Horizontal" Grid.Row="25">
-                    <TextBlock Text="Vert: "/>
-                    <TextBlock x:Name="PopupVerticalOffsetTextBlock" AutomationProperties.Name="PopupVerticalOffsetTextBlock"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="26" Grid.Column="1">
-                    <TextBlock Text="Hor: "/>
-                    <TextBlock x:Name="PopupHorizontalOffsetTextBlock" AutomationProperties.Name="PopupHorizontalOffsetTextBlock"/>
-                </StackPanel>
-                <TextBlock Grid.Row="27" Text="Teaching Tip Size:" Foreground="Red"/>
-                <StackPanel Orientation="Horizontal" Grid.Row="28">
-                    <TextBlock Text="Height: "/>
-                    <TextBlock x:Name="TipHeightTextBlock" AutomationProperties.Name="TipHeightTextBlock"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="28" Grid.Column="1">
-                    <TextBlock Text="Width: "/>
-                    <TextBlock x:Name="TipWidthTextBlock" AutomationProperties.Name="TipWidthTextBlock"/>
-                </StackPanel>
-                <TextBlock Grid.Row="29" Text="Effective Placement:"/>
-                <TextBlock x:Name="EffectivePlacementTextBlock" AutomationProperties.Name="EffectivePlacementTextBlock" Grid.Row="29" Grid.Column="1" />
-                <TextBlock Grid.Row="30" Text="Hero Placement:"/>
-                <TextBlock x:Name="EffectiveHeroContentPlacementTextBlock" AutomationProperties.Name="EffectiveHeroContentPlacementTextBlock" Grid.Row="30" Grid.Column="1" />
-                <TextBlock Grid.Row="31" Text="--------------------------------------" Foreground="Red" Grid.ColumnSpan="2"/>
-                <TextBlock Grid.Row="32" Text="ScrollViewerState" Foreground="Red"/>
-                <TextBlock Grid.Row="32" Grid.Column="1" x:Name="ScrollViewerStateTextBox" AutomationProperties.Name="ScrollViewerStateTextBox" Text="Idle"/>
-                <TextBlock Grid.Row="33" Text="ScrollViewerOffset:" Foreground="Red"/>
-                <TextBox x:Name="ScrollViewerOffsetTextBox" AutomationProperties.Name="ScrollViewerOffsetTextBox" Grid.Row="34" Text="750"/>
-                <Button AutomationProperties.Name="ScrollViewerOffsetButton" Grid.Row="34" Grid.Column="1" Click="OnSetScrollViewerOffsetButtonClicked" Margin="0,0,0,1">Set</Button>
-                <Button AutomationProperties.Name="BringTargetIntoViewButton" Grid.Row="35" Click="OnBringTargetIntoViewButtonClicked">BringIntoView</Button>
-                <TextBlock Text="UseTestWindowBounds:" Grid.Row="36" Foreground="Red"/>
-                <CheckBox x:Name="UseTestWindowBoundsCheckBox" AutomationProperties.Name="UseTestWindowBoundsCheckbox" Grid.Row="36" Grid.Column="1" Checked="OnUseTestWindowBoundsCheckBoxChecked" Unchecked="OnUseTestWindowBoundsCheckBoxUnchecked"/>
-                <StackPanel Orientation="Horizontal" Grid.Row="37">
-                    <TextBlock Text="X        :" VerticalAlignment="Center"/>
-                    <TextBox x:Name="TestWindowBoundsXTextBox" AutomationProperties.Name="TestWindowBoundsXTextBox" Text="0"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="37" Grid.Column="1">
-                    <TextBlock Text="Y         :" VerticalAlignment="Center"/>
-                    <TextBox x:Name="TestWindowBoundsYTextBox" AutomationProperties.Name="TestWindowBoundsYTextBox" Text="0"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="38">
-                    <TextBlock Text="Width:"/>
-                    <TextBox x:Name="TestWindowBoundsWidthTextBox" AutomationProperties.Name="TestWindowBoundsWidthTextBox" Text="0"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Grid.Row="38" Grid.Column="1">
-                    <TextBlock Text="Height:"/>
-                    <TextBox x:Name="TestWindowBoundsHeightTextBox" AutomationProperties.Name="TestWindowBoundsHeightTextBox" Text="0"/>
-                </StackPanel>
-                <TextBlock Text="TipFollowsTarget:" Grid.Row="39" Foreground="Red"/>
-                <CheckBox x:Name="TipFollowsTargetCheckBox" AutomationProperties.Name="TipFollowsTargetCheckBox" Grid.Row="39" Grid.Column="1" Checked="OnTipFollowsTargetCheckBoxChecked" Unchecked="OnTipFollowsTargetCheckBoxUnchecked"/>
+                <TextBlock Grid.Row="18" Text="PreferredPlacement:" Foreground="Red"/>
+                <ComboBox x:Name="PreferredPlacementComboBox" AutomationProperties.Name="PreferredPlacementComboBox" SelectedIndex="12" Grid.Row="19">
+                    <ComboBoxItem x:Name="PlacementTop">Top</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementBottom">Bottom</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementLeft">Left</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementRight">Right</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementTopEdgeRight">TopEdgeAlignedRight</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementTopEdgeLeft">TopEdgeAlignedLeft</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementBottomEdgeRight">BottomEdgeAlignedRight</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementBottomEdgeLeft">BottomEdgeAlignedLeft</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementLeftEdgeTop">LeftEdgeAlignedTop</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementLeftEdgeBottom">LeftEdgeAlignedBottom</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementRightEdgeTop">RightEdgeAlignedTop</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementRightEdgeBottom">RightEdgeAlignedBottom</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementAuto">Auto</ComboBoxItem>
+                </ComboBox>
+                <Button AutomationProperties.Name="SetPreferredPlacementButton" Click="OnSetPreferredPlacementButtonClicked" Grid.Row="19" Grid.Column="1">Set</Button>
+
+                <TextBlock Grid.Row="20" Text="IsLightDismissEnabled:" Foreground="Red"/>
+                <ComboBox x:Name="IsLightDismissEnabledComboBox" AutomationProperties.Name="IsLightDismissEnabledComboBox" SelectedIndex="0" Grid.Row="21">
+                    <ComboBoxItem x:Name="IsLightDismissFalse">False</ComboBoxItem>
+                    <ComboBoxItem x:Name="IsLightDismissTrue">True</ComboBoxItem>
+                </ComboBox>
+                <Button AutomationProperties.Name="IsLightDismissEnabledButton" Click="OnSetIsLightDismissEnabledButtonClicked" Grid.Row="21" Grid.Column="1">Set</Button>
+
+                <TextBlock Grid.Row="22" Text="PlacementMargin:" Foreground="Red"/>
+                <TextBox x:Name="PlacementMarginTextBox" Text="0" Grid.Row="23" MaxWidth="100" HorizontalAlignment="Left"/>
+                <Button Click="OnSetPlacementMarginButtonClicked" Grid.Row="23" Grid.Column="1">Set</Button>
+
+                <TextBlock Grid.Row="24" Text="Tail Visibility:" Foreground="Red"/>
+                <ComboBox x:Name="TailVisibilityComboBox" Grid.Row="25" SelectedIndex="0">
+                    <ComboBoxItem x:Name="TailVisibilityAuto">Auto</ComboBoxItem>
+                    <ComboBoxItem x:Name="TailVisibilityVisible">Visible</ComboBoxItem>
+                    <ComboBoxItem x:Name="TailVisibilityCollapsed">Collapsed</ComboBoxItem>
+                </ComboBox>
+                <Button Click="OnSetTailVisibilityButtonClicked" Grid.Row="25" Grid.Column="1">Set</Button>
+
+                <TextBlock Grid.Row="26" Text="Target:" Foreground="Red"/>
+                <Button Grid.Row="27" AutomationProperties.Name="SetTargetButton" Click="OnSetTargetButtonClicked">Target</Button>
+                <Button Grid.Row="27" Grid.Column="1" AutomationProperties.Name="RemoveTargetButton" Click="OnUntargetButtonClicked">Untarget</Button>
+
+                <TextBlock Grid.Row="28" Text="Show:" Foreground="Red"/>
+                <Button AutomationProperties.Name="ShowButton" Grid.Row="29" Click="OnShowButtonClicked">Show</Button>
+                <Button AutomationProperties.Name="CloseButton" Grid.Row="29" Grid.Column="1" Click="OnCloseButtonClicked">Close</Button>
+                <Button Grid.Row="30" Click="OnShowAfterDelayButtonClicked">ShowAfterDelay</Button>
+
+                <TextBlock Grid.Row="31" Grid.ColumnSpan="2" Text="----------Automation Properties----------" Foreground="Red"/>
+                
+                <TextBlock Grid.Row="32" Text="AutomationName:" Foreground="Red"/>
+                <TextBlock Grid.Row="33" Grid.Column="0" Text="{x:Bind TeachingTipInVisualTree.(AutomationProperties.Name), Mode=OneWay}"/>
+                <TextBlock Grid.Row="33" Grid.Column="1" Text="{x:Bind TeachingTipInResources.(AutomationProperties.Name), Mode=OneWay}"/>
+                <ComboBox x:Name="AutomationNameComboBox" Grid.Row="34" SelectedIndex="0">
+                    <ComboBoxItem x:Name="AutomationNameVisualTree">TeachingTipInVisualTree</ComboBoxItem>
+                    <ComboBoxItem x:Name="AutomationNameResources">TeachingTipInResources</ComboBoxItem>
+                    <ComboBoxItem x:Name="AutomationNameNone">None</ComboBoxItem>
+                </ComboBox>
+                <Button Click="OnSetAutomationNameButtonClicked" Grid.Row="34" Grid.Column="1">Set</Button>
             </Grid>
         </ScrollViewer>
 
-        <!-- NonContent API -->
-        <Grid Grid.Column="2" Margin="5" MinWidth="300">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <ScrollViewer Grid.Column="2">
+            <Grid Margin="5" MinWidth="300">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Row="0" Text="PreferredPlacement:" Foreground="Red"/>
-            <ComboBox x:Name="PreferredPlacementComboBox" AutomationProperties.Name="PreferredPlacementComboBox" Grid.Row="1">
-                <ComboBoxItem x:Name="PlacementTop">Top</ComboBoxItem>
-                <ComboBoxItem x:Name="PlacementBottom">Bottom</ComboBoxItem>
-                <ComboBoxItem x:Name="PlacementLeft">Left</ComboBoxItem>
-                <ComboBoxItem x:Name="PlacementRight">Right</ComboBoxItem>
-                <ComboBoxItem x:Name="PlacementTopEdgeRight">TopEdgeAlignedRight</ComboBoxItem>
-                <ComboBoxItem x:Name="PlacementTopEdgeLeft">TopEdgeAlignedLeft</ComboBoxItem>
-                <ComboBoxItem x:Name="PlacementBottomEdgeRight">BottomEdgeAlignedRight</ComboBoxItem>
-                <ComboBoxItem x:Name="PlacementBottomEdgeLeft">BottomEdgeAlignedLeft</ComboBoxItem>
-                <ComboBoxItem x:Name="PlacementLeftEdgeTop">LeftEdgeAlignedTop</ComboBoxItem>
-                <ComboBoxItem x:Name="PlacementLeftEdgeBottom">LeftEdgeAlignedBottom</ComboBoxItem>
-                <ComboBoxItem x:Name="PlacementRightEdgeTop">RightEdgeAlignedTop</ComboBoxItem>
-                <ComboBoxItem x:Name="PlacementRightEdgeBottom">RightEdgeAlignedBottom</ComboBoxItem>
-                <ComboBoxItem x:Name="PlacementAuto">Auto</ComboBoxItem>
-            </ComboBox>
-            <Button AutomationProperties.Name="SetPreferredPlacementButton" Click="OnSetPreferredPlacementButtonClicked" Grid.Row="1" Grid.Column="1">Set</Button>
+                <TextBlock Grid.Row="0" Text="IsOpen:" Foreground="Red" VerticalAlignment="Center"/>
+                <CheckBox x:Name="IsOpenCheckBox" AutomationProperties.Name="IsOpenCheckBox" Grid.Row="0" Grid.Column="1" IsChecked="False" IsEnabled="False"/>
+                <TextBlock Grid.Row="1" Text="IsIdle:" Foreground="Red" VerticalAlignment="Center"/>
+                <CheckBox x:Name="IsIdleCheckBox" AutomationProperties.Name="IsIdleCheckBox" Grid.Row="1" Grid.Column="1" IsChecked="True" IsEnabled="False"/>
+                <TextBlock Grid.Row="2" Text="TargetBounds:" Foreground="Red"/>
+                <Button AutomationProperties.Name="GetTargetBoundsButton" Grid.Row="2" Grid.Column="1" Click="OnGetTargetBoundsButtonClicked">Get</Button>
+                <StackPanel Orientation="Horizontal" Grid.Row="3">
+                    <TextBlock Text="X: "/>
+                    <TextBlock x:Name="TargetXOffsetTextBlock" AutomationProperties.Name="TargetXOffsetTextBlock"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1">
+                    <TextBlock Text="Y: "/>
+                    <TextBlock x:Name="TargetYOffsetTextBlock" AutomationProperties.Name="TargetYOffsetTextBlock"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Grid.Row="4">
+                    <TextBlock Text="Width: "/>
+                    <TextBlock x:Name="TargetWidthTextBlock" AutomationProperties.Name="TargetWidthTextBlock"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="1">
+                    <TextBlock Text="Height: "/>
+                    <TextBlock x:Name="TargetHeightTextBlock" AutomationProperties.Name="TargetHeightTextBlock"/>
+                </StackPanel>
+                <TextBlock Grid.Row="5" Text="Popup Offset:" Foreground="Red"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="6">
+                    <TextBlock Text="Vert: "/>
+                    <TextBlock x:Name="PopupVerticalOffsetTextBlock" AutomationProperties.Name="PopupVerticalOffsetTextBlock"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Grid.Row="7" Grid.Column="1">
+                    <TextBlock Text="Hor: "/>
+                    <TextBlock x:Name="PopupHorizontalOffsetTextBlock" AutomationProperties.Name="PopupHorizontalOffsetTextBlock"/>
+                </StackPanel>
+                <TextBlock Grid.Row="8" Text="Teaching Tip Size:" Foreground="Red"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="9">
+                    <TextBlock Text="Height: "/>
+                    <TextBlock x:Name="TipHeightTextBlock" AutomationProperties.Name="TipHeightTextBlock"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Grid.Row="9" Grid.Column="1">
+                    <TextBlock Text="Width: "/>
+                    <TextBlock x:Name="TipWidthTextBlock" AutomationProperties.Name="TipWidthTextBlock"/>
+                </StackPanel>
+                <TextBlock Grid.Row="10" Text="Effective Placement:"/>
+                <TextBlock x:Name="EffectivePlacementTextBlock" AutomationProperties.Name="EffectivePlacementTextBlock" Grid.Row="10" Grid.Column="1" />
+                <TextBlock Grid.Row="11" Text="Hero Placement:"/>
+                <TextBlock x:Name="EffectiveHeroContentPlacementTextBlock" AutomationProperties.Name="EffectiveHeroContentPlacementTextBlock" Grid.Row="11" Grid.Column="1" />
+                <TextBlock Grid.Row="12" Text="----------ScrollViewer/Window Knobs----------" Foreground="Red" Grid.ColumnSpan="2"/>
+                <TextBlock Grid.Row="13" Text="ScrollViewerState" Foreground="Red"/>
+                <TextBlock Grid.Row="13" Grid.Column="1" x:Name="ScrollViewerStateTextBox" AutomationProperties.Name="ScrollViewerStateTextBox" Text="Idle"/>
+                <TextBlock Grid.Row="14" Text="ScrollViewerOffset:" Foreground="Red"/>
+                <TextBox x:Name="ScrollViewerOffsetTextBox" AutomationProperties.Name="ScrollViewerOffsetTextBox" Grid.Row="15" Text="750"/>
+                <Button AutomationProperties.Name="ScrollViewerOffsetButton" Grid.Row="15" Grid.Column="1" Click="OnSetScrollViewerOffsetButtonClicked" Margin="0,0,0,1">Set</Button>
+                <Button AutomationProperties.Name="BringTargetIntoViewButton" Grid.Row="16" Click="OnBringTargetIntoViewButtonClicked">BringIntoView</Button>
+                <TextBlock Text="UseTestWindowBounds:" Grid.Row="17" Foreground="Red"/>
+                <CheckBox x:Name="UseTestWindowBoundsCheckBox" AutomationProperties.Name="UseTestWindowBoundsCheckbox" Grid.Row="17" Grid.Column="1" Checked="OnUseTestWindowBoundsCheckBoxChecked" Unchecked="OnUseTestWindowBoundsCheckBoxUnchecked"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="18">
+                    <TextBlock Text="X        :" VerticalAlignment="Center"/>
+                    <TextBox x:Name="TestWindowBoundsXTextBox" AutomationProperties.Name="TestWindowBoundsXTextBox" Text="0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Grid.Row="18" Grid.Column="1">
+                    <TextBlock Text="Y         :" VerticalAlignment="Center"/>
+                    <TextBox x:Name="TestWindowBoundsYTextBox" AutomationProperties.Name="TestWindowBoundsYTextBox" Text="0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Grid.Row="19">
+                    <TextBlock Text="Width:"/>
+                    <TextBox x:Name="TestWindowBoundsWidthTextBox" AutomationProperties.Name="TestWindowBoundsWidthTextBox" Text="0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Grid.Row="19" Grid.Column="1">
+                    <TextBlock Text="Height:"/>
+                    <TextBox x:Name="TestWindowBoundsHeightTextBox" AutomationProperties.Name="TestWindowBoundsHeightTextBox" Text="0"/>
+                </StackPanel>
+                <TextBlock Grid.Row="20" Grid.ColumnSpan="2" Text="----------------Target Knobs---------------" Foreground="Red"/>
+                <TextBlock Text="TipFollowsTarget:" Grid.Row="21" Foreground="Red"/>
+                <CheckBox x:Name="TipFollowsTargetCheckBox" AutomationProperties.Name="TipFollowsTargetCheckBox" Grid.Row="21" Grid.Column="1" Checked="OnTipFollowsTargetCheckBoxChecked" Unchecked="OnTipFollowsTargetCheckBoxUnchecked"/>
+                <TextBlock Grid.Row="22" Text="Target Vertical Alignment:" Foreground="Red"/>
+                <ComboBox x:Name="TargetVerticalAlignmentComboBox" Grid.Row="23">
+                    <ComboBoxItem x:Name="TargetVerticalAlignmentTop">Top</ComboBoxItem>
+                    <ComboBoxItem x:Name="TargetVerticalAlignmentCenter">Center</ComboBoxItem>
+                    <ComboBoxItem x:Name="TargetVerticalAlignmentBottom">Bottom</ComboBoxItem>
+                </ComboBox>
+                <Button Click="OnSetTargetVerticalAlignmentButtonClicked" Grid.Row="23" Grid.Column="1">Set</Button>
 
-            <TextBlock Grid.Row="2" Text="IsLightDismissEnabled:" Foreground="Red"/>
-            <ComboBox x:Name="IsLightDismissEnabledComboBox" AutomationProperties.Name="IsLightDismissEnabledComboBox" Grid.Row="3">
-                <ComboBoxItem x:Name="IsLightDismissFalse">False</ComboBoxItem>
-                <ComboBoxItem x:Name="IsLightDismissTrue">True</ComboBoxItem>
-            </ComboBox>
-            <Button AutomationProperties.Name="IsLightDismissEnabledButton" Click="OnSetIsLightDismissEnabledButtonClicked" Grid.Row="3" Grid.Column="1">Set</Button>
+                <TextBlock Grid.Row="24" Text="Target Horizontal Alignment:" Foreground="Red"/>
+                <ComboBox x:Name="TargetHorizontalAlignmentComboBox" Grid.Row="25">
+                    <ComboBoxItem x:Name="TargetHorizontalAlignmentLeft">Left</ComboBoxItem>
+                    <ComboBoxItem x:Name="TargetHorizontalAlignmentCenter">Center</ComboBoxItem>
+                    <ComboBoxItem x:Name="TargetHorizontalAlignmentRight">Right</ComboBoxItem>
+                </ComboBox>
+                <Button Click="OnSetTargetHorizontalAlignmentButtonClicked" Grid.Row="25" Grid.Column="1">Set</Button>
 
-            <TextBlock Grid.Row="4" Text="PlacementMargin:" Foreground="Red"/>
-            <TextBox x:Name="PlacementMarginTextBox" Grid.Row="5" MaxWidth="100" HorizontalAlignment="Left"/>
-            <Button Click="OnSetPlacementMarginButtonClicked" Grid.Row="5" Grid.Column="1">Set</Button>
+                <TextBlock Grid.Row="26" Grid.ColumnSpan="2" Text="---------------Animation Knobs---------------" Foreground="Red"/>
 
-            <TextBlock Grid.Row="6" Text="Tail Visibility:" Foreground="Red"/>
-            <ComboBox x:Name="TailVisibilityComboBox" Grid.Row="7">
-                <ComboBoxItem x:Name="TailVisibilityAuto">Auto</ComboBoxItem>
-                <ComboBoxItem x:Name="TailVisibilityVisible">Visible</ComboBoxItem>
-                <ComboBoxItem x:Name="TailVisibilityCollapsed">Collapsed</ComboBoxItem>
-            </ComboBox>
-            <Button Click="OnSetTailVisibilityButtonClicked" Grid.Row="7" Grid.Column="1">Set</Button>
+                <TextBlock Grid.Row="27" Text="Expand Animation Curve:" Foreground="Red"/>
+                <TextBlock Grid.Row="28" Text="Control Point 1:" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="28" Grid.Column="1">
+                    <TextBox x:Name="ExpandControlPoint1X" Margin="2" Text="0.1"/>
+                    <TextBox x:Name="ExpandControlPoint1Y" Margin="2" Text="0.9"/>
+                </StackPanel>
+                <TextBlock Grid.Row="29" Text="Control Point 2:" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="29" Grid.Column="1">
+                    <TextBox x:Name="ExpandControlPoint2X" Margin="2" Text="0.2"/>
+                    <TextBox x:Name="ExpandControlPoint2Y" Margin="2" Text="1.0"/>
+                </StackPanel>
 
-            <TextBlock Grid.Row="8" Text="Target:" Foreground="Red"/>
-            <Button Grid.Row="9" AutomationProperties.Name="SetTargetButton" Click="OnSetTargetButtonClicked">Target</Button>
-            <Button Grid.Row="9" Grid.Column="1" AutomationProperties.Name="RemoveTargetButton" Click="OnUntargetButtonClicked">Untarget</Button>
-                    
-            <TextBlock Grid.Row="10" Text="Show:" Foreground="Red"/>
-            <Button AutomationProperties.Name="ShowButton" Grid.Row="11" Click="OnShowButtonClicked">Show</Button>
-            <Button AutomationProperties.Name="CloseButton" Grid.Row="11" Grid.Column="1" Click="OnCloseButtonClicked">Close</Button>
+                <TextBlock Grid.Row="30" Text="Contract Animation Curve:" Foreground="Red"/>
+                <TextBlock Grid.Row="31" Text="Control Point 1:" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="31" Grid.Column="1">
+                    <TextBox x:Name="ContractControlPoint1X" Margin="2" Text="0.7"/>
+                    <TextBox x:Name="ContractControlPoint1Y" Margin="2" Text="0.0"/>
+                </StackPanel>
+                <TextBlock Grid.Row="32" Text="Control Point 2:" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="32" Grid.Column="1">
+                    <TextBox x:Name="ContractControlPoint2X" Margin="2" Text="1.0"/>
+                    <TextBox x:Name="ContractControlPoint2Y" Margin="2" Text="0.5"/>
+                </StackPanel>
+                <Button Click="OnSetAnimationParametersButtonClicked" Grid.Row="33">Set</Button>
 
-            <TextBlock Grid.Row="12" Grid.ColumnSpan="2" Text="-----------------------------------------------------" Foreground="Red"/>
-
-            <TextBlock Grid.Row="13" Text="Target Vertical Alignment:" Foreground="Red"/>
-            <ComboBox x:Name="TargetVerticalAlignmentComboBox" Grid.Row="14">
-                <ComboBoxItem x:Name="TargetVerticalAlignmentTop">Top</ComboBoxItem>
-                <ComboBoxItem x:Name="TargetVerticalAlignmentCenter">Center</ComboBoxItem>
-                <ComboBoxItem x:Name="TargetVerticalAlignmentBottom">Bottom</ComboBoxItem>
-            </ComboBox>
-            <Button Click="OnSetTargetVerticalAlignmentButtonClicked" Grid.Row="14" Grid.Column="1">Set</Button>
-
-            <TextBlock Grid.Row="15" Text="Target Horizontal Alignment:" Foreground="Red"/>
-            <ComboBox x:Name="TargetHorizontalAlignmentComboBox" Grid.Row="16">
-                <ComboBoxItem x:Name="TargetHorizontalAlignmentLeft">Left</ComboBoxItem>
-                <ComboBoxItem x:Name="TargetHorizontalAlignmentCenter">Center</ComboBoxItem>
-                <ComboBoxItem x:Name="TargetHorizontalAlignmentRight">Right</ComboBoxItem>
-            </ComboBox>
-            <Button Click="OnSetTargetHorizontalAlignmentButtonClicked" Grid.Row="16" Grid.Column="1">Set</Button>
-
-            <TextBlock Grid.Row="17" Grid.ColumnSpan="2" Text="-----------------------------------------------------" Foreground="Red"/>
-
-            <TextBlock Grid.Row="18" Text="Expand Animation Curve:" Foreground="Red"/>
-            <TextBlock Grid.Row="19" Text="Control Point 1:" VerticalAlignment="Center"/>
-            <StackPanel Orientation="Horizontal" Grid.Row="19" Grid.Column="1">
-                <TextBox x:Name="ExpandControlPoint1X" Margin="2" Text="0.1"/>
-                <TextBox x:Name="ExpandControlPoint1Y" Margin="2" Text="0.9"/>
-            </StackPanel>
-            <TextBlock Grid.Row="20" Text="Control Point 2:" VerticalAlignment="Center"/>
-            <StackPanel Orientation="Horizontal" Grid.Row="20" Grid.Column="1">
-                <TextBox x:Name="ExpandControlPoint2X" Margin="2" Text="0.2"/>
-                <TextBox x:Name="ExpandControlPoint2Y" Margin="2" Text="1.0"/>
-            </StackPanel>
-
-            <TextBlock Grid.Row="21" Text="Contract Animation Curve:" Foreground="Red"/>
-            <TextBlock Grid.Row="22" Text="Control Point 1:" VerticalAlignment="Center"/>
-            <StackPanel Orientation="Horizontal" Grid.Row="22" Grid.Column="1">
-                <TextBox x:Name="ContractControlPoint1X" Margin="2" Text="0.7"/>
-                <TextBox x:Name="ContractControlPoint1Y" Margin="2" Text="0.0"/>
-            </StackPanel>
-            <TextBlock Grid.Row="23" Text="Control Point 2:" VerticalAlignment="Center"/>
-            <StackPanel Orientation="Horizontal" Grid.Row="23" Grid.Column="1">
-                <TextBox x:Name="ContractControlPoint2X" Margin="2" Text="1.0"/>
-                <TextBox x:Name="ContractControlPoint2Y" Margin="2" Text="0.5"/>
-            </StackPanel>
-            <Button Click="OnSetAnimationParametersButtonClicked" Grid.Row="24">Set</Button>
-
-            <TextBlock Grid.Row="25" Text="Animation Durations:" Foreground="Red"/>
-            <StackPanel Orientation="Horizontal" Grid.Row="26">
-                <TextBlock Text="Expand: "  Margin="2"/>
-                <TextBox x:Name="ExpandAnimationDuration" Margin="2" Text="300"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Grid.Row="26" Grid.Column="1">
-                <TextBlock Text="Contract: " Margin="2" />
-                <TextBox x:Name="ContractAnimationDuration" Margin="2" Text="200"/>
-            </StackPanel>
-            <Button Click="OnSetAnimationDurationsButtonClicked" Grid.Row="27">Set</Button>
+                <TextBlock Grid.Row="34" Text="Animation Durations:" Foreground="Red"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="35">
+                    <TextBlock Text="Expand: "  Margin="2"/>
+                    <TextBox x:Name="ExpandAnimationDuration" Margin="2" Text="300"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Grid.Row="35" Grid.Column="1">
+                    <TextBlock Text="Contract: " Margin="2" />
+                    <TextBox x:Name="ContractAnimationDuration" Margin="2" Text="200"/>
+                </StackPanel>
+                <Button Click="OnSetAnimationDurationsButtonClicked" Grid.Row="36">Set</Button>
 
 
-            <TextBlock Grid.Row="28" Grid.ColumnSpan="2" Text="-----------------------------------------------------" Foreground="Red"/>
-            <TextBlock Grid.Row="29" Foreground="Red" Text="Content Elevation" VerticalAlignment="Center"/>
-            <Slider Grid.Row="30" Grid.ColumnSpan="2" Minimum="0" Maximum="50" ValueChanged="ContentElevationSliderChanged" Value="32"/>
-            <TextBlock Grid.Row="31" Foreground="Red" Text="Has Shadow: " VerticalAlignment="Center"/>
-            <CheckBox Grid.Row="31" Grid.Column="1" Checked="OnTipShadowChecked" Unchecked="OnTipShadowUnchecked" IsChecked="True"/>
-            <TextBlock Grid.Row="32" Foreground="Red" Text="Tail Elevation" VerticalAlignment="Center"/>
-            <Slider Grid.Row="33" Grid.ColumnSpan="2" Minimum="0" Maximum="100" ValueChanged="TailElevationSliderChanged" Value="0"/>
-        </Grid>
+                <TextBlock Grid.Row="37" Grid.ColumnSpan="2" Text="---------------Shadow Knobs----------------" Foreground="Red"/>
+                <TextBlock Grid.Row="38" Foreground="Red" Text="Content Elevation" VerticalAlignment="Center"/>
+                <Slider Grid.Row="39" Grid.ColumnSpan="2" Minimum="0" Maximum="50" ValueChanged="ContentElevationSliderChanged" Value="32"/>
+                <TextBlock Grid.Row="40" Foreground="Red" Text="Has Shadow: " VerticalAlignment="Center"/>
+                <CheckBox Grid.Row="40" Grid.Column="1" Checked="OnTipShadowChecked" Unchecked="OnTipShadowUnchecked" IsChecked="True"/>
+                <TextBlock Grid.Row="41" Foreground="Red" Text="Tail Elevation" VerticalAlignment="Center"/>
+                <Slider Grid.Row="42" Grid.ColumnSpan="2" Minimum="0" Maximum="100" ValueChanged="TailElevationSliderChanged" Value="0"/>
+            </Grid>
+        </ScrollViewer>
 
         <!-- Logging Output -->
         <Grid Grid.Column="3" Background="Bisque" Margin="5">

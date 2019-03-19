@@ -19,7 +19,7 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnModePropertyChanged(
+    static void OnPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

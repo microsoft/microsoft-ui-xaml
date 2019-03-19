@@ -29,7 +29,7 @@ void RevealBrushProperties::EnsureProperties()
                 winrt::name_of<winrt::RevealBrush>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnAlwaysUseFallbackPropertyChanged));
+                &RevealBrush::OnPropertyChanged);
     }
     if (!s_ColorProperty)
     {
@@ -40,7 +40,7 @@ void RevealBrushProperties::EnsureProperties()
                 winrt::name_of<winrt::RevealBrush>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Color>::BoxValueIfNecessary(RevealBrush::sc_defaultColor),
-                winrt::PropertyChangedCallback(&OnColorPropertyChanged));
+                &RevealBrush::OnPropertyChanged);
     }
     if (!s_StateProperty)
     {
@@ -62,7 +62,7 @@ void RevealBrushProperties::EnsureProperties()
                 winrt::name_of<winrt::RevealBrush>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ApplicationTheme>::BoxValueIfNecessary(winrt::ApplicationTheme::Light),
-                winrt::PropertyChangedCallback(&OnTargetThemePropertyChanged));
+                &RevealBrush::OnPropertyChanged);
     }
 }
 
@@ -74,23 +74,7 @@ void RevealBrushProperties::ClearProperties()
     s_TargetThemeProperty = nullptr;
 }
 
-void RevealBrushProperties::OnAlwaysUseFallbackPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::RevealBrush>();
-    winrt::get_self<RevealBrush>(owner)->OnPropertyChanged(args);
-}
-
-void RevealBrushProperties::OnColorPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::RevealBrush>();
-    winrt::get_self<RevealBrush>(owner)->OnPropertyChanged(args);
-}
-
-void RevealBrushProperties::OnTargetThemePropertyChanged(
+void RevealBrushProperties::OnPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -117,7 +101,6 @@ winrt::Color RevealBrushProperties::Color()
 {
     return ValueHelper<winrt::Color>::CastOrUnbox(static_cast<RevealBrush*>(this)->GetValue(s_ColorProperty));
 }
-
 
 void RevealBrushProperties::SetState(winrt::UIElement const& target, winrt::RevealBrushState const& value)
 {

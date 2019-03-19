@@ -24,7 +24,7 @@ public:
     bool WaitForInputIdle(int32_t milliseconds);
 
     void RaiseWindowClosedEvent();
-    void RaiseWindowOpenedEvent();
+    void RaiseWindowOpenedEvent(wstring_view automationName);
 
 private:
     winrt::TeachingTip GetTeachingTip();

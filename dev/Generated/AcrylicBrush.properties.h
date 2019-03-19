@@ -44,27 +44,15 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnAlwaysUseFallbackPropertyChanged(
+    static void OnPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnBackgroundSourcePropertyChanged(
+    static void OnPropertyChanged_CoerceToZeroOneRange(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnTintColorPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnTintLuminosityOpacityPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnTintOpacityPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnTintTransitionDurationPropertyChanged(
+    static void OnPropertyChanged_CoerceToZeroOneRange_Nullable(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

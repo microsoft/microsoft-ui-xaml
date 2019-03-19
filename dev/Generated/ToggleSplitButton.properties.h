@@ -24,7 +24,7 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnIsCheckedPropertyChanged(
+    static void OnPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

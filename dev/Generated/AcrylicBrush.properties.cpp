@@ -29,7 +29,7 @@ void AcrylicBrushProperties::EnsureProperties()
                 winrt::name_of<winrt::AcrylicBrush>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnAlwaysUseFallbackPropertyChanged));
+                &AcrylicBrush::OnPropertyChanged);
     }
     if (!s_BackgroundSourceProperty)
     {
@@ -40,7 +40,7 @@ void AcrylicBrushProperties::EnsureProperties()
                 winrt::name_of<winrt::AcrylicBrush>(),
                 false /* isAttached */,
                 ValueHelper<winrt::AcrylicBackgroundSource>::BoxValueIfNecessary(winrt::AcrylicBackgroundSource::Backdrop),
-                winrt::PropertyChangedCallback(&OnBackgroundSourcePropertyChanged));
+                &AcrylicBrush::OnPropertyChanged);
     }
     if (!s_TintColorProperty)
     {
@@ -51,7 +51,7 @@ void AcrylicBrushProperties::EnsureProperties()
                 winrt::name_of<winrt::AcrylicBrush>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Color>::BoxValueIfNecessary(AcrylicBrush::sc_defaultTintColor),
-                winrt::PropertyChangedCallback(&OnTintColorPropertyChanged));
+                &AcrylicBrush::OnPropertyChanged);
     }
     if (!s_TintLuminosityOpacityProperty)
     {
@@ -62,7 +62,7 @@ void AcrylicBrushProperties::EnsureProperties()
                 winrt::name_of<winrt::AcrylicBrush>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IReference<double>>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnTintLuminosityOpacityPropertyChanged));
+                &AcrylicBrush::OnPropertyChanged);
     }
     if (!s_TintOpacityProperty)
     {
@@ -73,7 +73,7 @@ void AcrylicBrushProperties::EnsureProperties()
                 winrt::name_of<winrt::AcrylicBrush>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(AcrylicBrush::sc_defaultTintOpacity),
-                winrt::PropertyChangedCallback(&OnTintOpacityPropertyChanged));
+                &AcrylicBrush::OnPropertyChanged);
     }
     if (!s_TintTransitionDurationProperty)
     {
@@ -84,7 +84,7 @@ void AcrylicBrushProperties::EnsureProperties()
                 winrt::name_of<winrt::AcrylicBrush>(),
                 false /* isAttached */,
                 ValueHelper<winrt::TimeSpan>::BoxValueIfNecessary(AcrylicBrush::sc_defaultTintTransitionDuration),
-                winrt::PropertyChangedCallback(&OnTintTransitionDurationPropertyChanged));
+                &AcrylicBrush::OnPropertyChanged);
     }
 }
 
@@ -98,49 +98,14 @@ void AcrylicBrushProperties::ClearProperties()
     s_TintTransitionDurationProperty = nullptr;
 }
 
-void AcrylicBrushProperties::OnAlwaysUseFallbackPropertyChanged(
+void AcrylicBrushProperties::OnPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::AcrylicBrush>();
     winrt::get_self<AcrylicBrush>(owner)->OnPropertyChanged(args);
 }
-
-void AcrylicBrushProperties::OnBackgroundSourcePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::AcrylicBrush>();
-    winrt::get_self<AcrylicBrush>(owner)->OnPropertyChanged(args);
-}
-
-void AcrylicBrushProperties::OnTintColorPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::AcrylicBrush>();
-    winrt::get_self<AcrylicBrush>(owner)->OnPropertyChanged(args);
-}
-
-void AcrylicBrushProperties::OnTintLuminosityOpacityPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::AcrylicBrush>();
-
-    auto value = winrt::unbox_value<winrt::IReference<double>>(args.NewValue());
-    auto coercedValue = value;
-    winrt::get_self<AcrylicBrush>(owner)->CoerceToZeroOneRange_Nullable(coercedValue);
-    if (value != coercedValue)
-    {
-        sender.SetValue(args.Property(), winrt::box_value<winrt::IReference<double>>(coercedValue));
-        return;
-    }
-
-    winrt::get_self<AcrylicBrush>(owner)->OnPropertyChanged(args);
-}
-
-void AcrylicBrushProperties::OnTintOpacityPropertyChanged(
+void AcrylicBrushProperties::OnPropertyChanged_CoerceToZeroOneRange(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -157,12 +122,21 @@ void AcrylicBrushProperties::OnTintOpacityPropertyChanged(
 
     winrt::get_self<AcrylicBrush>(owner)->OnPropertyChanged(args);
 }
-
-void AcrylicBrushProperties::OnTintTransitionDurationPropertyChanged(
+void AcrylicBrushProperties::OnPropertyChanged_CoerceToZeroOneRange_Nullable(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::AcrylicBrush>();
+
+    auto value = winrt::unbox_value<winrt::IReference<double>>(args.NewValue());
+    auto coercedValue = value;
+    winrt::get_self<AcrylicBrush>(owner)->CoerceToZeroOneRange_Nullable(coercedValue);
+    if (value != coercedValue)
+    {
+        sender.SetValue(args.Property(), winrt::box_value<winrt::IReference<double>>(coercedValue));
+        return;
+    }
+
     winrt::get_self<AcrylicBrush>(owner)->OnPropertyChanged(args);
 }
 

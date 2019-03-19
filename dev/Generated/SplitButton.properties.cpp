@@ -29,7 +29,7 @@ void SplitButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::SplitButton>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ICommand>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnCommandPropertyChanged));
+                &SplitButton::OnPropertyChanged);
     }
     if (!s_CommandParameterProperty)
     {
@@ -40,7 +40,7 @@ void SplitButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::SplitButton>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnCommandParameterPropertyChanged));
+                &SplitButton::OnPropertyChanged);
     }
     if (!s_FlyoutProperty)
     {
@@ -51,7 +51,7 @@ void SplitButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::SplitButton>(),
                 false /* isAttached */,
                 ValueHelper<winrt::FlyoutBase>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnFlyoutPropertyChanged));
+                &SplitButton::OnPropertyChanged);
     }
 }
 
@@ -62,23 +62,7 @@ void SplitButtonProperties::ClearProperties()
     s_FlyoutProperty = nullptr;
 }
 
-void SplitButtonProperties::OnCommandPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::SplitButton>();
-    winrt::get_self<SplitButton>(owner)->OnPropertyChanged(args);
-}
-
-void SplitButtonProperties::OnCommandParameterPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::SplitButton>();
-    winrt::get_self<SplitButton>(owner)->OnPropertyChanged(args);
-}
-
-void SplitButtonProperties::OnFlyoutPropertyChanged(
+void SplitButtonProperties::OnPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

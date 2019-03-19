@@ -13,7 +13,21 @@ TeachingTip::TeachingTip()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TeachingTip);
     SetDefaultStyleKey(this);
     EnsureProperties();
+    m_automationNameChangedCallback = RegisterPropertyChangedCallback(winrt::AutomationProperties::NameProperty(), { this, &TeachingTip::OnAutomationNameChanged });
+    m_automationIdChangedCallback = RegisterPropertyChangedCallback(winrt::AutomationProperties::AutomationIdProperty(), { this, &TeachingTip::OnAutomationIdChanged });
     SetValue(s_TemplateSettingsProperty, winrt::make<::TeachingTipTemplateSettings>());
+}
+
+TeachingTip::~TeachingTip()
+{
+    if (m_automationNameChangedCallback)
+    {
+        UnregisterPropertyChangedCallback(winrt::AutomationProperties::NameProperty(), m_automationNameChangedCallback);
+    }
+    if (m_automationIdChangedCallback)
+    {
+        UnregisterPropertyChangedCallback(winrt::AutomationProperties::AutomationIdProperty(), m_automationIdChangedCallback);
+    }
 }
 
 winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
@@ -884,6 +898,16 @@ void TeachingTip::OnHeroContentPlacementChanged()
     }
 }
 
+void TeachingTip::OnAutomationNameChanged(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+    SetPopupAutomationProperties();
+}
+
+void TeachingTip::OnAutomationIdChanged(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+    SetPopupAutomationProperties();
+}
+
 void TeachingTip::OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     m_closeButtonClickEventSource(*this, nullptr);
@@ -904,7 +928,7 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
     {
         if (auto teachingTipPeer = peer.as<winrt::TeachingTipAutomationPeer>())
         {
-            winrt::get_self<TeachingTipAutomationPeer>(teachingTipPeer)->RaiseWindowOpenedEvent();
+            winrt::get_self<TeachingTipAutomationPeer>(teachingTipPeer)->RaiseWindowOpenedEvent(L"New Tip:" + winrt::AutomationProperties::GetName(m_popup.get()));
         }
     }
 }

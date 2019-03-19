@@ -35,7 +35,6 @@ void RecyclePoolProperties::ClearProperties()
     s_PoolInstanceProperty = nullptr;
 }
 
-
 void RecyclePoolProperties::SetPoolInstance(winrt::DataTemplate const& target, winrt::RecyclePool const& value)
 {
     target.SetValue(s_PoolInstanceProperty, ValueHelper<winrt::RecyclePool>::BoxValueIfNecessary(value));
