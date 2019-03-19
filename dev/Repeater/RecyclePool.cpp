@@ -104,7 +104,12 @@ winrt::UIElement RecyclePool::TryGetElementCore(
                 if (panel)
                 {
                     unsigned int childIndex = 0;
-                    MUX_ASSERT(panel.Children().IndexOf(elementInfo.Element(), childIndex));
+                    bool found = panel.Children().IndexOf(elementInfo.Element(), childIndex);
+                    if (!found)
+                    {
+                        throw winrt::hresult_error(E_FAIL, L"Repeater's child not found in its Children collection.");
+                    }
+
                     panel.Children().RemoveAt(childIndex);
                 }
             }
