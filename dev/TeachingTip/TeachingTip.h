@@ -33,7 +33,7 @@ public:
     void SetContractEasingFunction(const winrt::CompositionEasingFunction& easingFunction);
     void SetTipShouldHaveShadow(bool tipShadow);
     void SetContentElevation(float elevation);
-    void SetPointerElevation(float elevation);
+    void SetTailElevation(float elevation);
     bool GetIsIdle();
     winrt::TeachingTipPlacementMode GetEffectivePlacement();
     winrt::TeachingTipHeroContentPlacementMode GetEffectiveHeroContentPlacement();
@@ -59,10 +59,10 @@ private:
     winrt::Popup::Closed_revoker m_popupClosedRevoker{};
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
     winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
-    winrt::Grid::Loaded_revoker m_pointerOcclusionGridLoadedRevoker{};
-    void SetPopupAutomationProperties();
+    winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
+	void SetPopupAutomationProperties();
     void CreateLightDismissIndicatorPopup();
-    void UpdatePointer();
+    void UpdateTail();
     void PositionPopup();
     void PositionTargetedPopup();
     void PositionUntargetedPopup();
@@ -77,9 +77,9 @@ private:
 
     void OnIsOpenChanged();
     void OnTargetChanged();
-    void OnPointerModeChanged();
+    void OnTailVisibilityChanged();
     void OnIconSourceChanged();
-    void OnTargetOffsetChanged();
+    void OnPlacementMarginChanged();
     void OnIsLightDismissEnabledChanged();
     void OnHeroContentPlacementChanged();
 
@@ -88,7 +88,7 @@ private:
     void OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&);
-    void OnPointerOcclusionGridLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnTailOcclusionGridLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
 
     void RaiseClosingEvent();
     void ClosePopupWithAnimationIfAvailable();
@@ -113,7 +113,7 @@ private:
     tracker_ref<winrt::Popup> m_lightDismissIndicatorPopup{ this };
 
     tracker_ref<winrt::UIElement> m_rootElement{ this };
-    tracker_ref<winrt::Grid> m_pointerOcclusionGrid{ this };
+    tracker_ref<winrt::Grid> m_tailOcclusionGrid{ this };
     tracker_ref<winrt::Grid> m_contentRootGrid{ this };
     tracker_ref<winrt::Grid> m_nonHeroContentRootGrid{ this };
     tracker_ref<winrt::Border> m_heroContentBorder{ this };
@@ -121,8 +121,8 @@ private:
     tracker_ref<winrt::Button> m_actionButton{ this };
     tracker_ref<winrt::Button> m_alternateCloseButton{ this };
     tracker_ref<winrt::Button> m_closeButton{ this };
-    tracker_ref<winrt::Polygon> m_pointerPolygon{ this };
-    tracker_ref<winrt::Grid> m_pointerEdgeBorder{ this };
+    tracker_ref<winrt::Polygon> m_tailPolygon{ this };
+    tracker_ref<winrt::Grid> m_tailEdgeBorder{ this };
 
     tracker_ref<winrt::KeyFrameAnimation> m_expandAnimation{ this };
     tracker_ref<winrt::KeyFrameAnimation> m_contractAnimation{ this };
@@ -132,7 +132,7 @@ private:
     tracker_ref<winrt::CompositionEasingFunction> m_contractEasingFunction{ this };
 
     winrt::TeachingTipPlacementMode m_currentEffectiveTipPlacementMode{ winrt::TeachingTipPlacementMode::Auto };
-    winrt::TeachingTipPlacementMode m_currentEffectivePointerPlacementMode{ winrt::TeachingTipPlacementMode::Auto };
+    winrt::TeachingTipPlacementMode m_currentEffectiveTailPlacementMode{ winrt::TeachingTipPlacementMode::Auto };
     winrt::TeachingTipHeroContentPlacementMode m_currentHeroContentEffectivePlacementMode{ winrt::TeachingTipHeroContentPlacementMode::Auto };
 
     winrt::Rect m_currentBounds{ 0,0,0,0 };
@@ -151,8 +151,8 @@ private:
     bool m_tipFollowsTarget{ false };
 
     float m_contentElevation{ 32.0f };
-    float m_pointerElevation{ 0.0f };
-    bool m_pointerShadowTargetsShadowTarget{ false };
+    float m_tailElevation{ 0.0f };
+    bool m_tailShadowTargetsShadowTarget{ false };
 
     winrt::TimeSpan m_expandAnimationDuration{ 300ms };
     winrt::TimeSpan m_contractAnimationDuration{ 200ms };
@@ -160,16 +160,16 @@ private:
     winrt::TeachingTipCloseReason m_lastCloseReason{ winrt::TeachingTipCloseReason::Programmatic };
 
     // These values are shifted by one because this is the 1px highlight that sits adjacent to the tip border.
-    inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (PointerShortSideLength() - 1.0f), 0, 1, 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToPointerEdgeMargin() + PointerLongSideLength() - 1.0f, 0, 1, 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToPointerEdgeMargin() + 1.0f), 0, 1, 0 }; }
+    inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (TailShortSideLength() - 1.0f), 0, 1, 0 }; }
+    inline winrt::Thickness BottomEdgeAlignedRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0, 1, 0 }; }
+    inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0, 1, 0 }; }
     static inline winrt::Thickness OtherPlacementTopRightHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
 
-    inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, (width / 2) + (PointerShortSideLength() - 1.0f), 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedRightPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, width - (MinimumTipEdgeToPointerEdgeMargin() + 1.0f), 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, MinimumTipEdgeToPointerEdgeMargin() + PointerLongSideLength() - 1.0f, 0 }; }
+    inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, (width / 2) + (TailShortSideLength() - 1.0f), 0 }; }
+    inline winrt::Thickness BottomEdgeAlignedRightPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0 }; }
+    inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0 }; }
     static inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 1, 0 }; }
-    // Shifted by one since the pointer edge's border is not accounted for automatically.
+    // Shifted by one since the tail edge's border is not accounted for automatically.
     static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 0, 0 }; }
     static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 0, 1, 1, 0 }; }
 
@@ -182,7 +182,7 @@ private:
 
     static constexpr wstring_view s_containerName{ L"Container"sv };
     static constexpr wstring_view s_popupName{ L"Popup"sv };
-    static constexpr wstring_view s_pointerOcclusionGridName{ L"PointerOcclusionGrid"sv };
+    static constexpr wstring_view s_tailOcclusionGridName{ L"TailOcclusionGrid"sv };
     static constexpr wstring_view s_contentRootGridName{ L"ContentRootGrid"sv };
     static constexpr wstring_view s_nonHeroContentRootGridName{ L"NonHeroContentRootGrid"sv };
     static constexpr wstring_view s_shadowTargetName{ L"ShadowTarget"sv };
@@ -195,9 +195,9 @@ private:
     static constexpr wstring_view s_mainContentPresenterName{ L"MainContentPresenter"sv };
     static constexpr wstring_view s_actionButtonName{ L"ActionButton"sv };
     static constexpr wstring_view s_closeButtonName{ L"CloseButton"sv };
-    static constexpr wstring_view s_pointerPolygonName{ L"PointerPolygon"sv };
-    static constexpr wstring_view s_pointerEdgeBorderName{ L"PointerEdgeBorder"sv };
-    static constexpr wstring_view s_topPointerPolygonHighlightName{ L"TopPointerPolygonHighlight"sv };
+    static constexpr wstring_view s_tailPolygonName{ L"TailPolygon"sv };
+    static constexpr wstring_view s_tailEdgeBorderName{ L"TailEdgeBorder"sv };
+    static constexpr wstring_view s_topTailPolygonHighlightName{ L"TopTailPolygonHighlight"sv };
     static constexpr wstring_view s_topHighlightLeftName{ L"TopHighlightLeft"sv };
     static constexpr wstring_view s_topHighlightRightName{ L"TopHighlightRight"sv };
 
@@ -214,27 +214,27 @@ private:
     static constexpr float s_defaultTipHeightAndWidth = 320;
 
     //Ideally this would be computed from layout but it is difficult to do.
-    static constexpr float s_pointerOcclusionAmount = 2;
+    static constexpr float s_tailOcclusionAmount = 2;
 
-    // The pointer is designed as an 8x16 pixel shape, however it is actually a 10x20 shape which is partially occluded by the tip content.
-    // This is done to get the border of the tip to follow the pointer shape without drawing the border on the tip edge of the pointer.
-    inline float MinimumTipEdgeToPointerEdgeMargin()
+    // The tail is designed as an 8x16 pixel shape, however it is actually a 10x20 shape which is partially occluded by the tip content.
+    // This is done to get the border of the tip to follow the tail shape without drawing the border on the tip edge of the tail.
+    inline float MinimumTipEdgeToTailEdgeMargin()
     {
-        return m_pointerOcclusionGrid.get().ColumnDefinitions().Size() > 1 ?
-            static_cast<float>(m_pointerOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() + s_pointerOcclusionAmount)
+        return m_tailOcclusionGrid.get().ColumnDefinitions().Size() > 1 ?
+            static_cast<float>(m_tailOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() + s_tailOcclusionAmount)
             : 0.0f;
     }
 
-    inline float MinimumTipEdgeToPointerCenter()
+    inline float MinimumTipEdgeToTailCenter()
     {
-        return m_pointerOcclusionGrid.get().ColumnDefinitions().Size() > 1 ?  
-            static_cast<float>(m_pointerOcclusionGrid.get().ColumnDefinitions().GetAt(0).ActualWidth() +
-                m_pointerOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() +
-                (std::max(m_pointerPolygon.get().ActualHeight(), m_pointerPolygon.get().ActualWidth()) / 2))
+        return m_tailOcclusionGrid.get().ColumnDefinitions().Size() > 1 ?  
+            static_cast<float>(m_tailOcclusionGrid.get().ColumnDefinitions().GetAt(0).ActualWidth() +
+                m_tailOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() +
+                (std::max(m_tailPolygon.get().ActualHeight(), m_tailPolygon.get().ActualWidth()) / 2))
             : 0.0f;
     }
 
-    inline float PointerLongSideActualLength() { return static_cast<float>(std::max(m_pointerPolygon.get().ActualHeight(), m_pointerPolygon.get().ActualWidth())); }
-    inline float PointerLongSideLength() { return static_cast<float>(PointerLongSideActualLength() - (2 * s_pointerOcclusionAmount)); }
-    inline float PointerShortSideLength() { return static_cast<float>(std::min(m_pointerPolygon.get().ActualHeight(), m_pointerPolygon.get().ActualWidth()) - s_pointerOcclusionAmount); }
+    inline float TailLongSideActualLength() { return static_cast<float>(std::max(m_tailPolygon.get().ActualHeight(), m_tailPolygon.get().ActualWidth())); }
+    inline float TailLongSideLength() { return static_cast<float>(TailLongSideActualLength() - (2 * s_tailOcclusionAmount)); }
+    inline float TailShortSideLength() { return static_cast<float>(std::min(m_tailPolygon.get().ActualHeight(), m_tailPolygon.get().ActualWidth()) - s_tailOcclusionAmount); }
 };

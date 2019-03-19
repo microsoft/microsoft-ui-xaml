@@ -228,7 +228,7 @@ void ElementManager::EnsureElementRealized(bool forward, int dataIndex, const ws
 }
 
 // Does the given window intersect the range of realized elements
-bool ElementManager::IsWindowConnected(const winrt::Rect& window, const ScrollOrientation& orientation) const
+bool ElementManager::IsWindowConnected(const winrt::Rect& window, const ScrollOrientation& orientation, bool scrollOrientationSameAsFlow) const
 {
     MUX_ASSERT(IsVirtualizingContext());
     bool intersects = false;
@@ -237,10 +237,15 @@ bool ElementManager::IsWindowConnected(const winrt::Rect& window, const ScrollOr
         auto firstElementBounds = GetLayoutBoundsForRealizedIndex(0);
         auto lastElementBounds = GetLayoutBoundsForRealizedIndex(GetRealizedElementCount() - 1);
 
-        auto windowStart = orientation == ScrollOrientation::Vertical ? window.Y : window.X;
-        auto windowEnd = orientation == ScrollOrientation::Vertical ? window.Y + window.Height : window.X + window.Width;
-        auto firstElementStart = orientation == ScrollOrientation::Vertical ? firstElementBounds.Y : firstElementBounds.X;
-        auto lastElementEnd = orientation == ScrollOrientation::Vertical ? lastElementBounds.Y + lastElementBounds.Height : lastElementBounds.X + lastElementBounds.Width;
+        auto effectiveOrientation = scrollOrientationSameAsFlow ?
+            (orientation == ScrollOrientation::Vertical ? ScrollOrientation::Horizontal : ScrollOrientation::Vertical) :
+            orientation;
+            
+
+        auto windowStart = effectiveOrientation == ScrollOrientation::Vertical ? window.Y : window.X;
+        auto windowEnd = effectiveOrientation == ScrollOrientation::Vertical ? window.Y + window.Height : window.X + window.Width;
+        auto firstElementStart = effectiveOrientation == ScrollOrientation::Vertical ? firstElementBounds.Y : firstElementBounds.X;
+        auto lastElementEnd = effectiveOrientation == ScrollOrientation::Vertical ? lastElementBounds.Y + lastElementBounds.Height : lastElementBounds.X + lastElementBounds.Width;
 
         intersects =
             firstElementStart <= windowEnd &&

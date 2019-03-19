@@ -36,6 +36,9 @@ winrt::Size FlowLayoutAlgorithm::Measure(
     const wstring_view& layoutId)
 {
     SetScrollOrientation(orientation);
+
+    // If minor size is infinity, there is only one line and no need to align that line.
+    m_scrollOrientationSameAsFlow = availableSize.*Minor() == std::numeric_limits<float>::infinity();
     const auto realizationRect = RealizationRect();
     REPEATER_TRACE_INFO(L"%ls: \tMeasureLayout Realization(%.0f,%.0f,%.0f,%.0f)\n",
         layoutId.data(),
@@ -151,7 +154,7 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
     }
     else
     {
-        bool isRealizationWindowConnected = m_elementManager.IsWindowConnected(RealizationRect(), GetScrollOrientation());
+        bool isRealizationWindowConnected = m_elementManager.IsWindowConnected(RealizationRect(), GetScrollOrientation(), m_scrollOrientationSameAsFlow);
         // Item spacing and size in non-virtualizing direction change can cause elements to reflow
         // and get a new column position. In that case we need the anchor to be positioned in the 
         // correct column.
@@ -596,40 +599,42 @@ void FlowLayoutAlgorithm::PerformLineAlignment(
     {
         auto bounds = m_elementManager.GetLayoutBoundsForRealizedIndex(rangeIndex);
 
-        // Note: Space at start could potentially be negative
-        if (spaceAtLineStart != 0 || spaceAtLineEnd != 0)
+        if (!m_scrollOrientationSameAsFlow)
         {
-            float totalSpace = spaceAtLineStart + spaceAtLineEnd;
-            switch (lineAlignment)
+            // Note: Space at start could potentially be negative
+            if (spaceAtLineStart != 0 || spaceAtLineEnd != 0)
             {
-            case FlowLayoutAlgorithm::LineAlignment::Start:
+                float totalSpace = spaceAtLineStart + spaceAtLineEnd;
+                switch (lineAlignment)
+                {
+                case FlowLayoutAlgorithm::LineAlignment::Start:
                 {
                     bounds.*MinorStart() -= spaceAtLineStart;
                     break;
                 }
 
-            case FlowLayoutAlgorithm::LineAlignment::End:
+                case FlowLayoutAlgorithm::LineAlignment::End:
                 {
                     bounds.*MinorStart() += spaceAtLineEnd;
                     break;
                 }
 
-            case FlowLayoutAlgorithm::LineAlignment::Center:
+                case FlowLayoutAlgorithm::LineAlignment::Center:
                 {
                     bounds.*MinorStart() -= spaceAtLineStart;
                     bounds.*MinorStart() += totalSpace / 2;
                     break;
                 }
-            
-            case FlowLayoutAlgorithm::LineAlignment::SpaceAround:
+
+                case FlowLayoutAlgorithm::LineAlignment::SpaceAround:
                 {
                     float interItemSpace = countInLine >= 1 ? totalSpace / (countInLine * 2) : 0;
                     bounds.*MinorStart() -= spaceAtLineStart;
-                    bounds.*MinorStart() += interItemSpace * ((rangeIndex - lineStartIndex + 1)*2 - 1);
+                    bounds.*MinorStart() += interItemSpace * ((rangeIndex - lineStartIndex + 1) * 2 - 1);
                     break;
                 }
 
-            case FlowLayoutAlgorithm::LineAlignment::SpaceBetween:
+                case FlowLayoutAlgorithm::LineAlignment::SpaceBetween:
                 {
                     float interItemSpace = countInLine > 1 ? totalSpace / (countInLine - 1) : 0;
                     bounds.*MinorStart() -= spaceAtLineStart;
@@ -637,12 +642,13 @@ void FlowLayoutAlgorithm::PerformLineAlignment(
                     break;
                 }
 
-            case FlowLayoutAlgorithm::LineAlignment::SpaceEvenly:
+                case FlowLayoutAlgorithm::LineAlignment::SpaceEvenly:
                 {
                     float interItemSpace = countInLine >= 1 ? totalSpace / (countInLine + 1) : 0;
                     bounds.*MinorStart() -= spaceAtLineStart;
                     bounds.*MinorStart() += interItemSpace * (rangeIndex - lineStartIndex + 1);
                     break;
+                }
                 }
             }
         }

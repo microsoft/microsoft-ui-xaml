@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestDeclaration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestFrame.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)VisualTreeDumper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Themes\Generic.xaml"  Condition="'$(MSBuildProjectName)' != 'MUXControlsTestAppWPF'">
