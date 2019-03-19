@@ -93,7 +93,7 @@ void TeachingTipAutomationPeer::RaiseWindowClosedEvent()
     if (winrt::get_self<TeachingTip>(GetTeachingTip())->IsLightDismissEnabled() &&
         winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::WindowClosed))
     {
-        UiaRaiseAutomationEvent(winrt::get_self<IRawElementProviderSimple>(ProviderFromPeer(this->try_as<winrt::AutomationPeer>())), 20017);
+        __super::RaiseAutomationEvent(winrt::AutomationEvents::WindowClosed);
     }
 }
 
@@ -103,7 +103,7 @@ void TeachingTipAutomationPeer::RaiseWindowOpenedEvent()
     if (winrt::get_self<TeachingTip>(GetTeachingTip())->IsLightDismissEnabled() &&
         winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::WindowOpened))
     {
-        UiaRaiseAutomationEvent(winrt::get_self<IRawElementProviderSimple>(ProviderFromPeer(this->try_as<winrt::AutomationPeer>())), 20016);
+        __super::RaiseAutomationEvent(winrt::AutomationEvents::WindowOpened);
     }
 }
 

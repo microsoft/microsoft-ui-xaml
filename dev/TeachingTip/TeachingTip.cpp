@@ -153,6 +153,13 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         OnIconSourceChanged();
     }
+    else if (property == s_TitleProperty
+        || property == winrt::AutomationProperties::AutomationIdProperty()
+        || property == winrt::AutomationProperties::NameProperty())
+    {
+        SetPopupAutomationProperties();
+    }
+
 }
 
 void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const winrt::IInspectable& newContent)
@@ -164,6 +171,21 @@ void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const 
     else
     {
         winrt::VisualStateManager::GoToState(*this, L"NoContent"sv, false);
+    }
+}
+
+void TeachingTip::SetPopupAutomationProperties()
+{
+    if (auto && popup = m_popup.get())
+    {
+        auto name = winrt::AutomationProperties::GetName(*this);
+        if (name.empty())
+        {
+            name = Title();
+        }
+        winrt::AutomationProperties::SetName(popup, name);
+
+        winrt::AutomationProperties::SetAutomationId(popup, winrt::AutomationProperties::GetAutomationId(*this));
     }
 }
 
@@ -725,6 +747,7 @@ void TeachingTip::OnIsOpenChanged()
             m_popupOpenedRevoker = popup.Opened(winrt::auto_revoke, { this, &TeachingTip::OnPopupOpened });
             m_popupClosedRevoker = popup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
             m_popup.set(popup);
+            SetPopupAutomationProperties();
         }
 
         auto&& popup = m_popup.get();

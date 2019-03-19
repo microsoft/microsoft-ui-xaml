@@ -60,6 +60,7 @@ private:
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
     winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
     winrt::Grid::Loaded_revoker m_pointerOcclusionGridLoadedRevoker{};
+    void SetPopupAutomationProperties();
     void CreateLightDismissIndicatorPopup();
     void UpdatePointer();
     void PositionPopup();
