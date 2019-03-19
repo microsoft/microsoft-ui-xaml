@@ -47,9 +47,7 @@ jobs:
   condition:
     in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
   pool:
-    name: Package ES Custom Demands Lab A
-    demands:
-      - ClientAlias -equals depcontrols2
+    name: Package ES Lab E
 
   steps:
   - task: PkgESSetupBuild@10
