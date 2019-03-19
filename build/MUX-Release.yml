@@ -40,7 +40,7 @@ jobs:
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
 
-  - template: AzurePipelinesTemplates\MUX-PublishDevProject-Steps.yml
+  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
 - job: SignBinariesAndPublishSymbols
   dependsOn: Build
