@@ -22,7 +22,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
@@ -35,7 +34,6 @@ using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs
 
 using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

@@ -14,7 +14,6 @@ using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
-#if !BUILD_WINDOWS
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
@@ -25,7 +24,6 @@ using ScrollControllerScrollToRequestedEventArgs = Microsoft.UI.Xaml.Controls.Pr
 using ScrollControllerScrollByRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs;
 using ScrollControllerScrollFromRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-#endif
 
 namespace MUXControlsTestApp
 {

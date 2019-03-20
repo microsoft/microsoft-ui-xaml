@@ -8,9 +8,7 @@
 
 #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
 #include "SwipeControlTrace.h"
-#ifndef BUILD_WINDOWS
 #include "ScrollViewerTrace.h"
-#endif
 #endif
 
 /*static*/
@@ -69,13 +67,11 @@ void MUXControlsTestHooks::SetOutputDebugStringLevelForTypeImpl(const wstring_vi
         SwipeControlTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
         SwipeControlTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
     }
-    #ifndef BUILD_WINDOWS
     if (type == L"ScrollViewer" || type.empty())
     {
         ScrollViewerTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
         ScrollViewerTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
     }
-    #endif
     #endif
 }
 

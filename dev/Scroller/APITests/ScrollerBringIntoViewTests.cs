@@ -20,7 +20,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
@@ -32,7 +31,6 @@ using ScrollerBringingIntoViewEventArgs = Microsoft.UI.Xaml.Controls.ScrollerBri
 
 using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

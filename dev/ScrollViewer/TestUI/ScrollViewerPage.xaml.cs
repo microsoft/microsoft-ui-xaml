@@ -14,10 +14,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -25,9 +23,7 @@ namespace MUXControlsTestApp
     {
         public ScrollViewerPage()
         {
-#if !BUILD_WINDOWS
             LogController.InitializeLogging();
-#endif
 
             this.InitializeComponent();
 

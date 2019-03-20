@@ -13,7 +13,6 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Windows.UI.Xaml.Navigation;
 
-#if !BUILD_WINDOWS
 using SnapPointBase = Microsoft.UI.Xaml.Controls.Primitives.SnapPointBase;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using RepeatedScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint;
@@ -26,7 +25,6 @@ using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
-#endif
 
 namespace MUXControlsTestApp
 {

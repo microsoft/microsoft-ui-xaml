@@ -17,7 +17,6 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using MUXControlsTestApp.Utilities;
 
-#if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
@@ -41,7 +40,6 @@ using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
-#endif
 
 namespace MUXControlsTestApp
 {

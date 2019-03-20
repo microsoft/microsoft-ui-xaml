@@ -111,7 +111,6 @@ winrt::hstring TypeLogging::ScrollingIndicatorModeToString(const winrt::Scrollin
 #pragma region ScrollViewer-specific section
 
 #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
-#ifndef BUILD_WINDOWS
 winrt::hstring TypeLogging::ScrollBarVisibilityToString(const winrt::ScrollBarVisibility& scrollBarVisibility)
 {
     switch (scrollBarVisibility)
@@ -127,7 +126,6 @@ winrt::hstring TypeLogging::ScrollBarVisibilityToString(const winrt::ScrollBarVi
         return L"";
     }
 }
-#endif
 #endif
 
 #pragma endregion

@@ -6,7 +6,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
-#if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
@@ -19,7 +18,6 @@ using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
-#endif
 
 namespace MUXControlsTestApp
 {
