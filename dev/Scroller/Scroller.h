@@ -75,13 +75,13 @@ public:
     static constexpr int s_zoomFactorChangeMinMs{ 50 };
     static constexpr int s_zoomFactorChangeMaxMs{ 1000 };
 
-    // Mouse-wheel-triggered zooming constants
+    // Mouse-wheel-triggered scrolling/zooming constants
     // Mouse wheel delta amount required per initial velocity unit
-    // 120 matches the built-in InteractionTracker zooming behavior introduced in RS5.
+    // 120 matches the built-in InteractionTracker scrolling/zooming behavior introduced in RS5.
     static constexpr int32_t s_mouseWheelDeltaForVelocityUnit = 120;
     // Inertia decay rate to achieve the c_zoomFactorChangePerVelocityUnit=0.1f zoom factor change per velocity unit
     static constexpr float s_mouseWheelInertiaDecayRateRS1 = 0.997361f;
-    // 0.999972 closely matches the built-in InteractionTracker zooming behavior introduced in RS5.
+    // 0.999972 closely matches the built-in InteractionTracker scrolling/zooming behavior introduced in RS5.
     static constexpr float s_mouseWheelInertiaDecayRate = 0.999972f;
 
     static const winrt::ScrollInfo s_noOpScrollInfo;
@@ -367,7 +367,7 @@ private:
     void UpdateScrollControllerValues(ScrollerDimension dimension);
     void UpdateVisualInteractionSourceMode(ScrollerDimension dimension);
     void UpdateManipulationRedirectionMode();
-    void UpdateKeyEvents();
+    void UpdateDisplayInformation(winrt::DisplayInformation const& displayInformation);
     void OnContentSizeChanged(
         const winrt::UIElement& content);
     void OnViewChanged(bool horizontalOffsetChanged, bool verticalOffsetChanged);
@@ -383,6 +383,7 @@ private:
         _Out_opt_ int32_t* viewChangeId);
     void ChangeOffsetsWithAdditionalVelocityPrivate(
         winrt::float2 offsetsVelocity,
+        winrt::float2 anticipatedOffsetsChange,
         winrt::IReference<winrt::float2> inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         _Out_opt_ int32_t* viewChangeId);
@@ -395,11 +396,24 @@ private:
         _Out_opt_ int32_t* viewChangeId);
     void ChangeZoomFactorWithAdditionalVelocityPrivate(
         float zoomFactorVelocity,
+        float anticipatedZoomFactorChange,
         winrt::IReference<winrt::float2> centerPoint,
         winrt::IReference<float> inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         _Out_opt_ int32_t* viewChangeId);
 
+    void ProcessPointerWheelScroll(
+        bool isHorizontalMouseWheel,
+        int32_t mouseWheelDelta,
+        float anticipatedEndOfInertiaPosition,
+        float minPosition,
+        float maxPosition);
+    void ProcessPointerWheelZoom(
+        winrt::PointerPoint const& pointerPoint,
+        int32_t mouseWheelDelta,
+        float anticipatedEndOfInertiaZoomFactor,
+        float minZoomFactor,
+        float maxZoomFactor);
     void ProcessDequeuedViewChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
     void ProcessOffsetsChange(
@@ -408,6 +422,7 @@ private:
         int32_t offsetsChangeId,
         bool isForAsyncOperation);
     void ProcessOffsetsChange(
+        InteractionTrackerAsyncOperationTrigger operationTrigger,
         std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity);
     void PostProcessOffsetsChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
@@ -415,6 +430,7 @@ private:
         std::shared_ptr<ZoomFactorChange> zoomFactorChange,
         int32_t zoomFactorChangeId);
     void ProcessZoomFactorChange(
+        InteractionTrackerAsyncOperationTrigger operationTrigger,
         std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity);
     void PostProcessZoomFactorChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
@@ -431,6 +447,8 @@ private:
         bool completePriorNonAnimatedOperations,
         bool completePriorAnimatedOperations);
     void CompleteDelayedOperations();
+    winrt::float2 GetMouseWheelAnticipatedOffsetsChange() const;
+    float GetMouseWheelAnticipatedZoomFactorChange() const;
     int GetInteractionTrackerOperationsTicksCountdownForTrigger(
         InteractionTrackerAsyncOperationTrigger operationTrigger) const;
     int GetInteractionTrackerOperationsCount(
@@ -438,7 +456,7 @@ private:
         bool includeNonAnimatedOperations) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromRequestId(
         int requestId) const;
-    std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTrackerOperationFromKinds(
+    std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromKinds(
         bool isOperationTypeForOffsetsChange,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         ScrollerViewKind const& viewKind,
@@ -503,6 +521,7 @@ private:
     }
 
     void HookCompositionTargetRendering();
+    void HookDpiChangedEvent();
     void HookScrollerEvents();
     void HookContentPropertyChanged(
         const winrt::UIElement& content);
@@ -520,9 +539,6 @@ private:
         const winrt::IScrollController& horizontalScrollController);
     void UnhookVerticalScrollControllerEvents(
         const winrt::IScrollController& verticalScrollController);
-
-    void SetKeyEvents();
-    void ResetKeyEvents();
 
     void RaiseInteractionSourcesChanged();
     void RaiseExtentChanged();
@@ -550,6 +566,9 @@ private:
         _Inout_ winrt::SnapPointsMode* snapPointsMode);
 
     // Event handlers
+    void OnDpiChanged(
+        const winrt::IInspectable& sender,
+        const winrt::IInspectable& args);
     void OnCompositionTargetRendering(
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);
@@ -697,7 +716,7 @@ private:
         const winrt::UIElement& descendant,
         const winrt::Rect& descendantRect);
 
-    static bool IsInteractionTrackerMouseWheelZoomingEnabled();
+    static bool IsInteractionTrackerPointerWheelRedirectionEnabled();
     static bool IsVisualTranslationPropertyAvailable();
     static wstring_view GetVisualTargetedPropertyName(ScrollerDimension dimension);
 
@@ -723,7 +742,11 @@ private:
     bool m_horizontalSnapPointsNeedViewportUpdates{ false }; // True when at least one horizontal snap point is not near aligned.
     bool m_verticalSnapPointsNeedViewportUpdates{ false }; // True when at least one vertical snap point is not near aligned.
     bool m_isAnchorElementDirty{ true }; // False when m_anchorElement is up-to-date, True otherwise.
-    bool m_isListeningToKeystrokes{ false }; // True when key-down/key-up handlers are used.
+
+    // Display information used for mouse-wheel scrolling on pre-RS5 Windows versions.
+    double m_rawPixelsPerViewPixel{};
+    uint32_t m_screenWidthInRawPixels{};
+    uint32_t m_screenHeightInRawPixels{};
 
     // For perf reasons, the value of ContentOrientation is cached.
     winrt::ContentOrientation m_contentOrientation{ s_defaultContentOrientation };
@@ -794,6 +817,9 @@ private:
     tracker_ref<winrt::IInspectable> m_onXamlRootKeyDownEventHandler{ this };
     tracker_ref<winrt::IInspectable> m_onXamlRootKeyUpEventHandler{ this };
 
+    // Used for mouse-wheel scrolling on pre-RS5 Windows versions.
+    winrt::DisplayInformation::DpiChanged_revoker m_dpiChangedRevoker{};
+
     // Used on platforms where we don't have XamlRoot.
     winrt::ICoreWindow::KeyDown_revoker m_coreWindowKeyDownRevoker{};
     winrt::ICoreWindow::KeyUp_revoker m_coreWindowKeyUpRevoker{};
@@ -808,6 +834,11 @@ private:
     std::set<winrt::ScrollSnapPointBase, winrtProjectionComparator> m_sortedConsolidatedHorizontalSnapPoints{};
     std::set<winrt::ScrollSnapPointBase, winrtProjectionComparator> m_sortedConsolidatedVerticalSnapPoints{};
     std::set<winrt::ZoomSnapPointBase, winrtProjectionComparator> m_sortedConsolidatedZoomSnapPoints{};
+
+    // Maximum difference for offsets to be considered equal. Used for pointer wheel scrolling.
+    static constexpr float s_offsetEqualityEpsilon{ 0.00001f };
+    // Maximum difference for zoom factors to be considered equal. Used for pointer wheel zooming.
+    static constexpr float s_zoomFactorEqualityEpsilon{ 0.00001f };
 
     // Property names being targeted for the Scroller.Content's Visual.
     // RedStone v1 case:

@@ -286,16 +286,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Scrolls a Rectangle in a Scroller, with the mouse wheel.")]
         public void ScrollWithMouseWheel()
         {
-            // This test relies on VisualInteractionSourceRedirectionMode::CapableTouchpadAndPointerWheel which was introduced late in RS4.
-            // Skip it if that enum value is not defined.
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4) ||
-                (PlatformConfiguration.IsOsVersion(OSVersion.Redstone4) &&
-                 !Windows.Foundation.Metadata.ApiInformation.IsEnumNamedValuePresent("Windows.UI.Composition.Interactions.VisualInteractionSourceRedirectionMode", "CapableTouchpadAndPointerWheel")))
-            {
-                Log.Warning("Skipping test on this OS build that does not include VisualInteractionSourceRedirectionMode::CapableTouchpadAndPointerWheel.");
-                return;
-            }
-
             const double minVerticalScrollPercent = 5.0;
 
             Log.Comment("Selecting Scroller tests");

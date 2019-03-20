@@ -10,6 +10,7 @@ class ZoomFactorChangeWithAdditionalVelocity : public ViewChangeBase
 public:
     ZoomFactorChangeWithAdditionalVelocity(
         float zoomFactorVelocity,
+        float anticipatedZoomFactorChange,
         winrt::IReference<winrt::float2> centerPoint,
         winrt::IReference<float> inertiaDecayRate);
     ~ZoomFactorChangeWithAdditionalVelocity();
@@ -20,6 +21,13 @@ public:
     }
 
     void ZoomFactorVelocity(float zoomFactorVelocity);
+
+    float AnticipatedZoomFactorChange() const
+    {
+        return m_anticipatedZoomFactorChange;
+    }
+
+    void AnticipatedZoomFactorChange(float anticipatedZoomFactorChange);
 
     winrt::IReference<winrt::float2> CenterPoint() const
     {
@@ -33,6 +41,7 @@ public:
 
 private:
     float m_zoomFactorVelocity{};
+    float m_anticipatedZoomFactorChange{};
     winrt::IReference<winrt::float2> m_centerPoint{};
     winrt::IReference<float> m_inertiaDecayRate{};
 };
