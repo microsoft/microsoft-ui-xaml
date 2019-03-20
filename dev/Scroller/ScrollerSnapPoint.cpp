@@ -71,7 +71,7 @@ winrt::SnapPointApplicableRangeType SnapPointBase::ApplicableRangeType()
 }
 #endif
 
-int SnapPointBase::CombinationCount()
+int SnapPointBase::CombinationCount() const
 {
     return m_combinationCount;
 }
@@ -88,7 +88,7 @@ void SnapPointBase::VisualizationColor(winrt::Color color)
 }
 #endif // _DEBUG
 
-std::tuple<double, double> SnapPointBase::ActualApplicableZone()
+std::tuple<double, double> SnapPointBase::ActualApplicableZone() const
 {
     return m_actualApplicableZone;
 }
@@ -217,12 +217,12 @@ void ScrollSnapPoint::DetermineActualApplicableZone(SnapPointBase* previousSnapP
     m_actualApplicableZone = std::tuple<double, double>{ DetermineMinActualApplicableZone(previousSnapPoint), DetermineMaxActualApplicableZone(nextSnapPoint) };
 }
 
-double ScrollSnapPoint::ActualValue()
+double ScrollSnapPoint::ActualValue() const
 {
     return m_value + m_alignmentAdjustment;
 }
 
-double ScrollSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint)
+double ScrollSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint) const
 {
     // If we are not passed a previousSnapPoint it means we are the first in the list, see if we expand to negative Infinity or stay put.
     if (!previousSnapPoint)
@@ -262,7 +262,7 @@ double ScrollSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previous
     }
 }
 
-double ScrollSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint)
+double ScrollSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint) const
 {
     // If we are not passed a nextSnapPoint it means we are the last in the list, see if we expand to Infinity or stay put.
     if (!nextSnapPoint)
@@ -302,7 +302,7 @@ double ScrollSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnap
     }
 }
 
-double ScrollSnapPoint::Influence(double edgeOfMidpoint)
+double ScrollSnapPoint::Influence(double edgeOfMidpoint) const
 {
     double actualValue = ActualValue();
     double midPoint = (actualValue + edgeOfMidpoint) / 2;
@@ -349,7 +349,7 @@ void ScrollSnapPoint::Combine(winrt::SnapPointBase const& snapPoint)
     }
 }
 
-double ScrollSnapPoint::Evaluate(double value)
+double ScrollSnapPoint::Evaluate(double value) const
 {
     if (value >= std::get<0>(m_actualApplicableZone) && value <= std::get<1>(m_actualApplicableZone))
     {
@@ -359,7 +359,7 @@ double ScrollSnapPoint::Evaluate(double value)
 }
 
 /////////////////////////////////////////////////////////////////////
-/////////////////    Repeated Snap Points    /////////////////////////
+/////////////////    Repeated Snap Points    ////////////////////////
 /////////////////////////////////////////////////////////////////////
 CppWinRTActivatableClassWithBasicFactory(RepeatedScrollSnapPoint);
 
@@ -549,22 +549,22 @@ void RepeatedScrollSnapPoint::DetermineActualApplicableZone(SnapPointBase* previ
     }
 }
 
-double RepeatedScrollSnapPoint::ActualOffset()
+double RepeatedScrollSnapPoint::ActualOffset() const
 {
     return m_offset + m_alignmentAdjustment;
 }
 
-double RepeatedScrollSnapPoint::ActualStart()
+double RepeatedScrollSnapPoint::ActualStart() const
 {
     return m_start + m_alignmentAdjustment;
 }
 
-double RepeatedScrollSnapPoint::ActualEnd()
+double RepeatedScrollSnapPoint::ActualEnd() const
 {
     return m_end + m_alignmentAdjustment;
 }
 
-double RepeatedScrollSnapPoint::DetermineFirstRepeatedSnapPointValue()
+double RepeatedScrollSnapPoint::DetermineFirstRepeatedSnapPointValue() const
 {
     double actualOffset = ActualOffset();
     double actualStart = ActualStart();
@@ -575,7 +575,7 @@ double RepeatedScrollSnapPoint::DetermineFirstRepeatedSnapPointValue()
     return actualOffset - std::floor((actualOffset - actualStart) / m_interval) * m_interval;
 }
 
-double RepeatedScrollSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint)
+double RepeatedScrollSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint) const
 {
     double actualStart = ActualStart();
 
@@ -588,7 +588,7 @@ double RepeatedScrollSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* 
     return actualStart;
 }
 
-double RepeatedScrollSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint)
+double RepeatedScrollSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint) const
 {
     double actualEnd = ActualEnd();
 
@@ -609,7 +609,7 @@ void RepeatedScrollSnapPoint::ValidateConstructorParameters(
     double offset,
     double interval,
     double start,
-    double end)
+    double end) const
 {
     if (end <= start)
     {
@@ -639,7 +639,7 @@ void RepeatedScrollSnapPoint::ValidateConstructorParameters(
 #endif
 }
 
-double RepeatedScrollSnapPoint::Influence(double edgeOfMidpoint)
+double RepeatedScrollSnapPoint::Influence(double edgeOfMidpoint) const
 {
     double actualStart = ActualStart();
     double actualEnd = ActualEnd();
@@ -669,7 +669,7 @@ void RepeatedScrollSnapPoint::Combine(winrt::SnapPointBase const& snapPoint)
     m_combinationCount++;
 }
 
-double RepeatedScrollSnapPoint::Evaluate(double value)
+double RepeatedScrollSnapPoint::Evaluate(double value) const
 {
     if (value >= ActualStart() && value <= ActualEnd())
     {
@@ -784,7 +784,7 @@ void ZoomSnapPoint::DetermineActualApplicableZone(SnapPointBase* previousSnapPoi
     m_actualApplicableZone = std::tuple<double, double>{ DetermineMinActualApplicableZone(previousSnapPoint), DetermineMaxActualApplicableZone(nextSnapPoint) };
 }
 
-double ZoomSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint)
+double ZoomSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint) const
 {
     // If we are not passed a previousSnapPoint it means we are the first in the list, see if we expand to negative Infinity or stay put.
     if (!previousSnapPoint)
@@ -824,7 +824,7 @@ double ZoomSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSn
     }
 }
 
-double ZoomSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint)
+double ZoomSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint) const
 {
     // If we are not passed a nextSnapPoint it means we are the last in the list, see if we expand to Infinity or stay put.
     if (!nextSnapPoint)
@@ -864,7 +864,7 @@ double ZoomSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPo
     }
 }
 
-double ZoomSnapPoint::Influence(double edgeOfMidpoint)
+double ZoomSnapPoint::Influence(double edgeOfMidpoint) const
 {
     double midPoint = (m_value + edgeOfMidpoint) / 2;
 
@@ -910,7 +910,7 @@ void ZoomSnapPoint::Combine(winrt::SnapPointBase const& snapPoint)
     }
 }
 
-double ZoomSnapPoint::Evaluate(double value)
+double ZoomSnapPoint::Evaluate(double value) const
 {
     if (value >= std::get<0>(m_actualApplicableZone) && value <= std::get<1>(m_actualApplicableZone))
     {
@@ -920,7 +920,7 @@ double ZoomSnapPoint::Evaluate(double value)
 }
 
 /////////////////////////////////////////////////////////////////////
-/////////////////    Repeated Snap Points    /////////////////////////
+/////////////////    Repeated Snap Points    ////////////////////////
 /////////////////////////////////////////////////////////////////////
 CppWinRTActivatableClassWithBasicFactory(RepeatedZoomSnapPoint);
 
@@ -1076,7 +1076,7 @@ void RepeatedZoomSnapPoint::DetermineActualApplicableZone(SnapPointBase* previou
     }
 }
 
-double RepeatedZoomSnapPoint::DetermineFirstRepeatedSnapPointValue()
+double RepeatedZoomSnapPoint::DetermineFirstRepeatedSnapPointValue() const
 {
     MUX_ASSERT(m_offset >= m_start);
     MUX_ASSERT(m_interval > 0.0);
@@ -1084,7 +1084,7 @@ double RepeatedZoomSnapPoint::DetermineFirstRepeatedSnapPointValue()
     return m_offset - std::floor((m_offset - m_start) / m_interval) * m_interval;
 }
 
-double RepeatedZoomSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint)
+double RepeatedZoomSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint) const
 {
     // The Influence() method of repeated snap points has a check to ensure the value does not fall within its range.
     // This call will ensure that we are not in the range of the previous snap point if it is.
@@ -1095,7 +1095,7 @@ double RepeatedZoomSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* pr
     return m_start;
 }
 
-double RepeatedZoomSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint)
+double RepeatedZoomSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint) const
 {
     // The Influence() method of repeated snap points has a check to ensure the value does not fall within its range.
     // This call will ensure that we are not in the range of the next snap point if it is.
@@ -1114,7 +1114,7 @@ void RepeatedZoomSnapPoint::ValidateConstructorParameters(
     double offset,
     double interval,
     double start,
-    double end)
+    double end) const
 {
     if (end <= start)
     {
@@ -1144,7 +1144,7 @@ void RepeatedZoomSnapPoint::ValidateConstructorParameters(
 #endif
 }
 
-double RepeatedZoomSnapPoint::Influence(double edgeOfMidpoint)
+double RepeatedZoomSnapPoint::Influence(double edgeOfMidpoint) const
 {
     if (edgeOfMidpoint <= m_start)
     {
@@ -1171,7 +1171,7 @@ void RepeatedZoomSnapPoint::Combine(winrt::SnapPointBase const& snapPoint)
     m_combinationCount++;
 }
 
-double RepeatedZoomSnapPoint::Evaluate(double value)
+double RepeatedZoomSnapPoint::Evaluate(double value) const
 {
     if (value >= m_start && value <= m_end)
     {

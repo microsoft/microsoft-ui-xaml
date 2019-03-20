@@ -51,19 +51,19 @@ public:
         winrt::hstring const& scale) = 0;
     virtual ScrollerSnapPointSortPredicate SortPredicate() = 0;
     virtual void DetermineActualApplicableZone(SnapPointBase* previousSnapPoint, SnapPointBase* nextSnapPoint) = 0;
-    virtual double Influence(double edgeOfMidpoint) = 0;
+    virtual double Influence(double edgeOfMidpoint) const = 0;
     virtual void Combine(winrt::SnapPointBase const& snapPoint) = 0;
-    virtual double Evaluate(double value) = 0;
+    virtual double Evaluate(double value) const = 0;
 
     // Returns True when this snap point is sensitive to the viewport size and is interested in future updates.
     virtual bool OnViewportChanged(double newViewport) = 0;
 
-    int CombinationCount();
+    int CombinationCount() const;
 #ifdef _DEBUG
     winrt::Color VisualizationColor();
     void VisualizationColor(winrt::Color color);
 #endif // _DEBUG
-    std::tuple<double, double> ActualApplicableZone();
+    std::tuple<double, double> ActualApplicableZone() const;
     void ActualApplicableZone(std::tuple<double, double> range);
 
 protected:
@@ -131,14 +131,14 @@ public:
         winrt::hstring const& scale);
     ScrollerSnapPointSortPredicate SortPredicate();
     void DetermineActualApplicableZone(SnapPointBase* previousSnapPoint, SnapPointBase* nextSnapPoint);
-    double Influence(double edgeOfMidpoint);
+    double Influence(double edgeOfMidpoint) const;
     void Combine(winrt::SnapPointBase const& snapPoint);
-    double Evaluate(double value);
+    double Evaluate(double value) const;
 
 private:
-    double ActualValue();
-    double DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint);
-    double DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint);
+    double ActualValue() const;
+    double DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint) const;
+    double DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint) const;
 
     double m_value{ 0.0 };
 };
@@ -180,17 +180,17 @@ public:
         winrt::hstring const& scale);
     ScrollerSnapPointSortPredicate SortPredicate();
     void DetermineActualApplicableZone(SnapPointBase* previousSnapPoint, SnapPointBase* nextSnapPoint);
-    double Influence(double edgeOfMidpoint);
+    double Influence(double edgeOfMidpoint) const;
     void Combine(winrt::SnapPointBase const& snapPoint);
-    double Evaluate(double value);
+    double Evaluate(double value) const;
 
 private:
-    double ActualOffset();
-    double ActualStart();
-    double ActualEnd();
-    double DetermineFirstRepeatedSnapPointValue();
-    double DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint);
-    double DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint);
+    double ActualOffset() const;
+    double ActualStart() const;
+    double ActualEnd() const;
+    double DetermineFirstRepeatedSnapPointValue() const;
+    double DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint) const;
+    double DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint) const;
     void ValidateConstructorParameters(
 #ifdef ApplicableRangeType
         bool applicableRangeToo,
@@ -199,7 +199,7 @@ private:
         double offset,
         double interval,
         double start,
-        double end);
+        double end) const;
 
     double m_offset{ 0.0f };
     double m_interval{ 0.0f };
@@ -243,13 +243,13 @@ public:
         winrt::hstring const& scale);
     ScrollerSnapPointSortPredicate SortPredicate();
     void DetermineActualApplicableZone(SnapPointBase* previousSnapPoint, SnapPointBase* nextSnapPoint);
-    double Influence(double edgeOfMidpoint);
+    double Influence(double edgeOfMidpoint) const;
     void Combine(winrt::SnapPointBase const& snapPoint);
-    double Evaluate(double value);
+    double Evaluate(double value) const;
 
 private:
-    double DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint);
-    double DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint);
+    double DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint) const;
+    double DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint) const;
 
     double m_value{ 0.0 };
 };
@@ -289,14 +289,14 @@ public:
         winrt::hstring const& scale);
     ScrollerSnapPointSortPredicate SortPredicate();
     void DetermineActualApplicableZone(SnapPointBase* previousSnapPoint, SnapPointBase* nextSnapPoint);
-    double Influence(double edgeOfMidpoint);
+    double Influence(double edgeOfMidpoint) const;
     void Combine(winrt::SnapPointBase const& snapPoint);
-    double Evaluate(double value);
+    double Evaluate(double value) const;
 
 private:
-    double DetermineFirstRepeatedSnapPointValue();
-    double DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint);
-    double DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint);
+    double DetermineFirstRepeatedSnapPointValue() const;
+    double DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint) const;
+    double DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint) const;
     void ValidateConstructorParameters(
 #ifdef ApplicableRangeType
         bool applicableRangeToo,
@@ -305,7 +305,7 @@ private:
         double offset,
         double interval,
         double start,
-        double end);
+        double end) const;
 
     double m_offset{ 0.0f };
     double m_interval{ 0.0f };

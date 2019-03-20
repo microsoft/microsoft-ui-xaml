@@ -39,6 +39,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
     [TestClass]
     public class ScrollerTestsWithInputHelper : ScrollerTestsBase
     {
+        private enum ScrollSnapPointsAlignment
+        {
+            Near = 0,
+            Center = 1,
+            Far = 2
+        }
+
         // Mouse wheel delta amount required per initial velocity unit
         // 120 matches the built-in InteractionTracker zooming behavior introduced in RS5.
         const int mouseWheelDeltaForVelocityUnit = 120;
@@ -1140,12 +1147,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            PanTowardsTwoManditoryIrregularSnapPoint(alignmentIndex : 0); // Near alignment
-            PanTowardsTwoManditoryIrregularSnapPoint(alignmentIndex : 1); // Center alignment
-            PanTowardsTwoManditoryIrregularSnapPoint(alignmentIndex : 2); // Far alignment
+            PanTowardsTwoManditoryIrregularSnapPoint(ScrollSnapPointsAlignment.Near);
+            PanTowardsTwoManditoryIrregularSnapPoint(ScrollSnapPointsAlignment.Center);
+            PanTowardsTwoManditoryIrregularSnapPoint(ScrollSnapPointsAlignment.Far);
         }
 
-        private void PanTowardsTwoManditoryIrregularSnapPoint(int alignmentIndex)
+        private void PanTowardsTwoManditoryIrregularSnapPoint(ScrollSnapPointsAlignment alignment)
         {
             Log.Comment("Selecting Scroller tests");
 
@@ -1166,7 +1173,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.IsTrue(PanUntilInputWorks(elements.scrollerOffset, elements.scrollerUIObject), "Pan inputs are moving the scroller!");
 
-                if (alignmentIndex == 1)
+                if (alignment == ScrollSnapPointsAlignment.Center)
                 {
                     // Center alignment
                     firstSnapPointValue += viewportHeight / 2.0;
@@ -1177,7 +1184,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     elements.cmbMISnapPointAlignment.SelectItemByName("Center");
                     Log.Comment("Selection is now {0}", elements.cmbMISnapPointAlignment.Selection[0].Name);
                 }
-                else if (alignmentIndex == 2)
+                else if (alignment == ScrollSnapPointsAlignment.Far)
                 {
                     // Far alignment
                     firstSnapPointValue += viewportHeight;
@@ -1234,9 +1241,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: true, alignmentIndex: 0); // Near alignment
-            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: true, alignmentIndex: 1); // Center alignment
-            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: true, alignmentIndex: 2); // Far alignment
+            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: true, alignment: ScrollSnapPointsAlignment.Near);
+            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: true, alignment: ScrollSnapPointsAlignment.Center);
+            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: true, alignment: ScrollSnapPointsAlignment.Far);
         }
 
         [TestMethod]
@@ -1249,12 +1256,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignmentIndex: 0); // Near alignment
-            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignmentIndex: 1); // Center alignment
-            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignmentIndex: 2); // Far alignment
+            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignment: ScrollSnapPointsAlignment.Near);
+            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignment: ScrollSnapPointsAlignment.Center);
+            PanWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignment: ScrollSnapPointsAlignment.Far);
         }
 
-        private void PanWithinARepeatedMandatorySnapPoint(bool withOffsetEqualToStart, int alignmentIndex)
+        private void PanWithinARepeatedMandatorySnapPoint(bool withOffsetEqualToStart, ScrollSnapPointsAlignment alignment)
         {
             Log.Comment("Selecting Scroller tests");
 
@@ -1274,7 +1281,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 double adjustedEnd = end;
                 double adjustedOffset = offset;
 
-                if (alignmentIndex == 1)
+                if (alignment == ScrollSnapPointsAlignment.Center)
                 {
                     // Center alignment
                     adjustedStart += viewportHeight / 2.0;
@@ -1285,7 +1292,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     elements.cmbMRSnapPointAlignment.SelectItemByName("Center");
                     Log.Comment("Selection is now {0}", elements.cmbMRSnapPointAlignment.Selection[0].Name);
                 }
-                else if (alignmentIndex == 2)
+                else if (alignment == ScrollSnapPointsAlignment.Far)
                 {
                     // Far alignment
                     adjustedStart += viewportHeight;

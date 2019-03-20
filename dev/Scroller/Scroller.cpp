@@ -4579,6 +4579,8 @@ void Scroller::SnapPointsVectorChangedHelper(
             // Newly inserted scroll snap point is provided the viewport size, for the case it's not near-aligned.
             bool snapPointNeedsViewportUpdates = snapPointBase->OnViewportChanged(viewportSize);
 
+            // When snapPointNeedsViewportUpdates is True, this newly inserted scroll snap point may be the first one
+            // that requires viewport updates.
             if (dimension == ScrollerDimension::HorizontalScroll)
             {
                 m_horizontalSnapPointsNeedViewportUpdates |= snapPointNeedsViewportUpdates;
@@ -4591,6 +4593,8 @@ void Scroller::SnapPointsVectorChangedHelper(
         else if (collectionChange == winrt::CollectionChange::Reset ||
                  collectionChange == winrt::CollectionChange::ItemChanged)
         {
+            // Globally reevaluate the need for viewport updates even for CollectionChange::ItemChanged since
+            // the old item may or may not have been the sole snap point requiring viewport updates.
             bool snapPointsNeedViewportUpdates = SnapPointsViewportChangedHelper(snapPoints, viewportSize);
 
             if (dimension == ScrollerDimension::HorizontalScroll)
@@ -4913,9 +4917,7 @@ void Scroller::UpdateUnzoomedExtentAndViewport(
     {
         // At least one horizontal scroll snap point is not near-aligned and is thus sensitive to the
         // viewport width. Regenerate and set up all horizontal scroll snap points.
-        winrt::IObservableVector<winrt::ScrollSnapPointBase> horizontalSnapPoints =
-            m_horizontalSnapPoints.try_as<winrt::IObservableVector<winrt::ScrollSnapPointBase>>();
-
+        auto horizontalSnapPoints = m_horizontalSnapPoints.try_as<winrt::IObservableVector<winrt::ScrollSnapPointBase>>();
         bool horizontalSnapPointsNeedViewportUpdates = SnapPointsViewportChangedHelper(
             horizontalSnapPoints,
             m_viewportWidth);
@@ -4929,9 +4931,7 @@ void Scroller::UpdateUnzoomedExtentAndViewport(
     {
         // At least one vertical scroll snap point is not near-aligned and is thus sensitive to the
         // viewport height. Regenerate and set up all vertical scroll snap points.
-        winrt::IObservableVector<winrt::ScrollSnapPointBase> verticalSnapPoints =
-            m_verticalSnapPoints.try_as<winrt::IObservableVector<winrt::ScrollSnapPointBase>>();
-
+        auto verticalSnapPoints = m_verticalSnapPoints.try_as<winrt::IObservableVector<winrt::ScrollSnapPointBase>>();
         bool verticalSnapPointsNeedViewportUpdates = SnapPointsViewportChangedHelper(
             verticalSnapPoints,
             m_viewportHeight);
