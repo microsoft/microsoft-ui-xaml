@@ -88,7 +88,8 @@ void XamlControlsResources::UpdateSource()
         }()
     };
 
-    //  Prior to RS5, when ResourceDictionary.Source property is changed, we forgot to clear ThemeDictionaries.
+    // Because of Compact, UpdateSource may be executed twice, but there is a bug in XAML and manually clear theme dictionaries here:
+    //  Prior to RS5, when ResourceDictionary.Source property is changed, XAML forgot to clear ThemeDictionaries.
     ThemeDictionaries().Clear();
 
     Source(uri);
