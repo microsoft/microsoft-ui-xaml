@@ -28,7 +28,7 @@ void SpectrumBrushProperties::EnsureProperties()
                 winrt::name_of<winrt::SpectrumBrush>(),
                 false /* isAttached */,
                 ValueHelper<winrt::LoadedImageSurface>::BoxedDefaultValue(),
-                &SpectrumBrush::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMaxSurfacePropertyChanged));
     }
     if (!s_MaxSurfaceOpacityProperty)
     {
@@ -39,7 +39,7 @@ void SpectrumBrushProperties::EnsureProperties()
                 winrt::name_of<winrt::SpectrumBrush>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(1.0),
-                &SpectrumBrush::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMaxSurfaceOpacityPropertyChanged));
     }
     if (!s_MinSurfaceProperty)
     {
@@ -50,7 +50,7 @@ void SpectrumBrushProperties::EnsureProperties()
                 winrt::name_of<winrt::SpectrumBrush>(),
                 false /* isAttached */,
                 ValueHelper<winrt::LoadedImageSurface>::BoxedDefaultValue(),
-                &SpectrumBrush::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMinSurfacePropertyChanged));
     }
 }
 
@@ -61,7 +61,23 @@ void SpectrumBrushProperties::ClearProperties()
     s_MinSurfaceProperty = nullptr;
 }
 
-void SpectrumBrushProperties::OnPropertyChanged(
+void SpectrumBrushProperties::OnMaxSurfacePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::SpectrumBrush>();
+    winrt::get_self<SpectrumBrush>(owner)->OnPropertyChanged(args);
+}
+
+void SpectrumBrushProperties::OnMaxSurfaceOpacityPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::SpectrumBrush>();
+    winrt::get_self<SpectrumBrush>(owner)->OnPropertyChanged(args);
+}
+
+void SpectrumBrushProperties::OnMinSurfacePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

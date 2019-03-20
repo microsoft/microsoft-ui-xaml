@@ -34,7 +34,7 @@ void TreeViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxValueIfNecessary(L"\uE76C"),
-                &TreeViewItem::OnPropertyChanged);
+                nullptr);
     }
     if (!s_ExpandedGlyphProperty)
     {
@@ -45,7 +45,7 @@ void TreeViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxValueIfNecessary(L"\uE70D"),
-                &TreeViewItem::OnPropertyChanged);
+                nullptr);
     }
     if (!s_GlyphBrushProperty)
     {
@@ -56,7 +56,7 @@ void TreeViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Brush>::BoxedDefaultValue(),
-                &TreeViewItem::OnPropertyChanged);
+                nullptr);
     }
     if (!s_GlyphOpacityProperty)
     {
@@ -67,7 +67,7 @@ void TreeViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewItem>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(1.0),
-                &TreeViewItem::OnPropertyChanged);
+                nullptr);
     }
     if (!s_GlyphSizeProperty)
     {
@@ -78,7 +78,7 @@ void TreeViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewItem>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(12.0),
-                &TreeViewItem::OnPropertyChanged);
+                nullptr);
     }
     if (!s_HasUnrealizedChildrenProperty)
     {
@@ -89,7 +89,7 @@ void TreeViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewItem>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                &TreeViewItem::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnHasUnrealizedChildrenPropertyChanged));
     }
     if (!s_IsExpandedProperty)
     {
@@ -100,7 +100,7 @@ void TreeViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewItem>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                &TreeViewItem::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnIsExpandedPropertyChanged));
     }
     if (!s_ItemsSourceProperty)
     {
@@ -111,7 +111,7 @@ void TreeViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                &TreeViewItem::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnItemsSourcePropertyChanged));
     }
     if (!s_TreeViewItemTemplateSettingsProperty)
     {
@@ -122,7 +122,7 @@ void TreeViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::TreeViewItemTemplateSettings>::BoxedDefaultValue(),
-                &TreeViewItem::OnPropertyChanged);
+                nullptr);
     }
 }
 
@@ -139,7 +139,23 @@ void TreeViewItemProperties::ClearProperties()
     s_TreeViewItemTemplateSettingsProperty = nullptr;
 }
 
-void TreeViewItemProperties::OnPropertyChanged(
+void TreeViewItemProperties::OnHasUnrealizedChildrenPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TreeViewItem>();
+    winrt::get_self<TreeViewItem>(owner)->OnPropertyChanged(args);
+}
+
+void TreeViewItemProperties::OnIsExpandedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TreeViewItem>();
+    winrt::get_self<TreeViewItem>(owner)->OnPropertyChanged(args);
+}
+
+void TreeViewItemProperties::OnItemsSourcePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

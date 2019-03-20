@@ -39,7 +39,7 @@ void TreeViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                &TreeView::OnPropertyChanged);
+                nullptr);
     }
     if (!s_CanReorderItemsProperty)
     {
@@ -50,7 +50,7 @@ void TreeViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                &TreeView::OnPropertyChanged);
+                nullptr);
     }
     if (!s_ItemContainerStyleProperty)
     {
@@ -61,7 +61,7 @@ void TreeViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Style>::BoxedDefaultValue(),
-                &TreeView::OnPropertyChanged);
+                nullptr);
     }
     if (!s_ItemContainerStyleSelectorProperty)
     {
@@ -72,7 +72,7 @@ void TreeViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::StyleSelector>::BoxedDefaultValue(),
-                &TreeView::OnPropertyChanged);
+                nullptr);
     }
     if (!s_ItemContainerTransitionsProperty)
     {
@@ -83,7 +83,7 @@ void TreeViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::TransitionCollection>::BoxedDefaultValue(),
-                &TreeView::OnPropertyChanged);
+                nullptr);
     }
     if (!s_ItemsSourceProperty)
     {
@@ -94,7 +94,7 @@ void TreeViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                &TreeView::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnItemsSourcePropertyChanged));
     }
     if (!s_ItemTemplateProperty)
     {
@@ -105,7 +105,7 @@ void TreeViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
-                &TreeView::OnPropertyChanged);
+                nullptr);
     }
     if (!s_ItemTemplateSelectorProperty)
     {
@@ -116,7 +116,7 @@ void TreeViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplateSelector>::BoxedDefaultValue(),
-                &TreeView::OnPropertyChanged);
+                nullptr);
     }
     if (!s_SelectionModeProperty)
     {
@@ -127,7 +127,7 @@ void TreeViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::TreeViewSelectionMode>::BoxValueIfNecessary(winrt::TreeViewSelectionMode::Single),
-                &TreeView::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnSelectionModePropertyChanged));
     }
 }
 
@@ -144,7 +144,15 @@ void TreeViewProperties::ClearProperties()
     s_SelectionModeProperty = nullptr;
 }
 
-void TreeViewProperties::OnPropertyChanged(
+void TreeViewProperties::OnItemsSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TreeView>();
+    winrt::get_self<TreeView>(owner)->OnPropertyChanged(args);
+}
+
+void TreeViewProperties::OnSelectionModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

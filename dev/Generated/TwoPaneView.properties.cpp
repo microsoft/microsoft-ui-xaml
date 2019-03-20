@@ -36,7 +36,7 @@ void TwoPaneViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TwoPaneView>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(c_defaultMinTallModeHeight),
-                &TwoPaneView::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMinTallModeHeightPropertyChanged));
     }
     if (!s_MinWideModeWidthProperty)
     {
@@ -47,7 +47,7 @@ void TwoPaneViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TwoPaneView>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(c_defaultMinWideModeWidth),
-                &TwoPaneView::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMinWideModeWidthPropertyChanged));
     }
     if (!s_ModeProperty)
     {
@@ -58,7 +58,7 @@ void TwoPaneViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TwoPaneView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::TwoPaneViewMode>::BoxValueIfNecessary(winrt::TwoPaneViewMode::SinglePane),
-                &TwoPaneView::OnPropertyChanged);
+                nullptr);
     }
     if (!s_Pane1Property)
     {
@@ -69,7 +69,7 @@ void TwoPaneViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TwoPaneView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
-                &TwoPaneView::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnPane1PropertyChanged));
     }
     if (!s_Pane1LengthProperty)
     {
@@ -80,7 +80,7 @@ void TwoPaneViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TwoPaneView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::GridLength>::BoxValueIfNecessary(c_pane1LengthDefault),
-                &TwoPaneView::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnPane1LengthPropertyChanged));
     }
     if (!s_Pane2Property)
     {
@@ -91,7 +91,7 @@ void TwoPaneViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TwoPaneView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
-                &TwoPaneView::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnPane2PropertyChanged));
     }
     if (!s_Pane2LengthProperty)
     {
@@ -102,7 +102,7 @@ void TwoPaneViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TwoPaneView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::GridLength>::BoxValueIfNecessary(c_pane2LengthDefault),
-                &TwoPaneView::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnPane2LengthPropertyChanged));
     }
     if (!s_PanePriorityProperty)
     {
@@ -113,7 +113,7 @@ void TwoPaneViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TwoPaneView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::TwoPaneViewPriority>::BoxValueIfNecessary(winrt::TwoPaneViewPriority::Pane1),
-                &TwoPaneView::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnPanePriorityPropertyChanged));
     }
     if (!s_TallModeConfigurationProperty)
     {
@@ -124,7 +124,7 @@ void TwoPaneViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TwoPaneView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::TwoPaneViewTallModeConfiguration>::BoxValueIfNecessary(winrt::TwoPaneViewTallModeConfiguration::TopBottom),
-                &TwoPaneView::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnTallModeConfigurationPropertyChanged));
     }
     if (!s_WideModeConfigurationProperty)
     {
@@ -135,7 +135,7 @@ void TwoPaneViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TwoPaneView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::TwoPaneViewWideModeConfiguration>::BoxValueIfNecessary(winrt::TwoPaneViewWideModeConfiguration::LeftRight),
-                &TwoPaneView::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnWideModeConfigurationPropertyChanged));
     }
 }
 
@@ -153,7 +153,71 @@ void TwoPaneViewProperties::ClearProperties()
     s_WideModeConfigurationProperty = nullptr;
 }
 
-void TwoPaneViewProperties::OnPropertyChanged(
+void TwoPaneViewProperties::OnMinTallModeHeightPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TwoPaneView>();
+    winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
+}
+
+void TwoPaneViewProperties::OnMinWideModeWidthPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TwoPaneView>();
+    winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
+}
+
+void TwoPaneViewProperties::OnPane1PropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TwoPaneView>();
+    winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
+}
+
+void TwoPaneViewProperties::OnPane1LengthPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TwoPaneView>();
+    winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
+}
+
+void TwoPaneViewProperties::OnPane2PropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TwoPaneView>();
+    winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
+}
+
+void TwoPaneViewProperties::OnPane2LengthPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TwoPaneView>();
+    winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
+}
+
+void TwoPaneViewProperties::OnPanePriorityPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TwoPaneView>();
+    winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
+}
+
+void TwoPaneViewProperties::OnTallModeConfigurationPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TwoPaneView>();
+    winrt::get_self<TwoPaneView>(owner)->OnPropertyChanged(args);
+}
+
+void TwoPaneViewProperties::OnWideModeConfigurationPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

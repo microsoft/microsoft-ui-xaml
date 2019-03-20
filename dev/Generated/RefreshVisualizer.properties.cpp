@@ -31,7 +31,7 @@ void RefreshVisualizerProperties::EnsureProperties()
                 winrt::name_of<winrt::RefreshVisualizer>(),
                 false /* isAttached */,
                 ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
-                &RefreshVisualizer::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnContentPropertyChanged));
     }
     if (!s_InfoProviderProperty)
     {
@@ -42,7 +42,7 @@ void RefreshVisualizerProperties::EnsureProperties()
                 winrt::name_of<winrt::RefreshVisualizer>(),
                 true /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                &RefreshVisualizer::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnInfoProviderPropertyChanged));
     }
     if (!s_OrientationProperty)
     {
@@ -53,7 +53,7 @@ void RefreshVisualizerProperties::EnsureProperties()
                 winrt::name_of<winrt::RefreshVisualizer>(),
                 false /* isAttached */,
                 ValueHelper<winrt::RefreshVisualizerOrientation>::BoxValueIfNecessary(winrt::RefreshVisualizerOrientation::Auto),
-                &RefreshVisualizer::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnOrientationPropertyChanged));
     }
     if (!s_StateProperty)
     {
@@ -64,7 +64,7 @@ void RefreshVisualizerProperties::EnsureProperties()
                 winrt::name_of<winrt::RefreshVisualizer>(),
                 false /* isAttached */,
                 ValueHelper<winrt::RefreshVisualizerState>::BoxValueIfNecessary(winrt::RefreshVisualizerState::Idle),
-                &RefreshVisualizer::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnStatePropertyChanged));
     }
 }
 
@@ -76,7 +76,31 @@ void RefreshVisualizerProperties::ClearProperties()
     s_StateProperty = nullptr;
 }
 
-void RefreshVisualizerProperties::OnPropertyChanged(
+void RefreshVisualizerProperties::OnContentPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RefreshVisualizer>();
+    winrt::get_self<RefreshVisualizer>(owner)->OnPropertyChanged(args);
+}
+
+void RefreshVisualizerProperties::OnInfoProviderPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RefreshVisualizer>();
+    winrt::get_self<RefreshVisualizer>(owner)->OnPropertyChanged(args);
+}
+
+void RefreshVisualizerProperties::OnOrientationPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RefreshVisualizer>();
+    winrt::get_self<RefreshVisualizer>(owner)->OnPropertyChanged(args);
+}
+
+void RefreshVisualizerProperties::OnStatePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -93,6 +117,7 @@ winrt::UIElement RefreshVisualizerProperties::Content()
 {
     return ValueHelper<winrt::UIElement>::CastOrUnbox(static_cast<RefreshVisualizer*>(this)->GetValue(s_ContentProperty));
 }
+
 
 void RefreshVisualizerProperties::Orientation(winrt::RefreshVisualizerOrientation const& value)
 {

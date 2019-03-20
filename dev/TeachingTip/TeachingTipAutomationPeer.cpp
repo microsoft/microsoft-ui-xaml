@@ -99,7 +99,7 @@ void TeachingTipAutomationPeer::RaiseWindowClosedEvent()
 
 void TeachingTipAutomationPeer::RaiseWindowOpenedEvent(wstring_view automationName)
 {
-    __super::RaiseNotificationEvent(winrt::Automation::Peers::AutomationNotificationKind::Other, winrt::Peers::AutomationNotificationProcessing::ImportantAll, automationName, L"1");
+    __super::RaiseNotificationEvent(winrt::Automation::Peers::AutomationNotificationKind::Other, winrt::Peers::AutomationNotificationProcessing::CurrentThenMostRecent, automationName, L"2");
     //We only report as a window when light dismiss is enabled.
     if (winrt::get_self<TeachingTip>(GetTeachingTip())->IsLightDismissEnabled() &&
         winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::WindowOpened))

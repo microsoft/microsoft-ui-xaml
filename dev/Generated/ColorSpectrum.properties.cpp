@@ -36,7 +36,7 @@ void ColorSpectrumProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorSpectrum>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Color>::BoxValueIfNecessary({ 255, 255, 255, 255 }),
-                &ColorSpectrum::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnColorPropertyChanged));
     }
     if (!s_ComponentsProperty)
     {
@@ -47,7 +47,7 @@ void ColorSpectrumProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorSpectrum>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ColorSpectrumComponents>::BoxValueIfNecessary(winrt::ColorSpectrumComponents::HueSaturation),
-                &ColorSpectrum::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnComponentsPropertyChanged));
     }
     if (!s_HsvColorProperty)
     {
@@ -58,7 +58,7 @@ void ColorSpectrumProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorSpectrum>(),
                 false /* isAttached */,
                 ValueHelper<winrt::float4>::BoxValueIfNecessary({ 0, 0, 1, 1 }),
-                &ColorSpectrum::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnHsvColorPropertyChanged));
     }
     if (!s_MaxHueProperty)
     {
@@ -69,7 +69,7 @@ void ColorSpectrumProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorSpectrum>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(359),
-                &ColorSpectrum::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMaxHuePropertyChanged));
     }
     if (!s_MaxSaturationProperty)
     {
@@ -80,7 +80,7 @@ void ColorSpectrumProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorSpectrum>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(100),
-                &ColorSpectrum::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMaxSaturationPropertyChanged));
     }
     if (!s_MaxValueProperty)
     {
@@ -91,7 +91,7 @@ void ColorSpectrumProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorSpectrum>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(100),
-                &ColorSpectrum::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMaxValuePropertyChanged));
     }
     if (!s_MinHueProperty)
     {
@@ -102,7 +102,7 @@ void ColorSpectrumProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorSpectrum>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(0),
-                &ColorSpectrum::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMinHuePropertyChanged));
     }
     if (!s_MinSaturationProperty)
     {
@@ -113,7 +113,7 @@ void ColorSpectrumProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorSpectrum>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(0),
-                &ColorSpectrum::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMinSaturationPropertyChanged));
     }
     if (!s_MinValueProperty)
     {
@@ -124,7 +124,7 @@ void ColorSpectrumProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorSpectrum>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(0),
-                &ColorSpectrum::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMinValuePropertyChanged));
     }
     if (!s_ShapeProperty)
     {
@@ -135,7 +135,7 @@ void ColorSpectrumProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorSpectrum>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ColorSpectrumShape>::BoxValueIfNecessary(winrt::ColorSpectrumShape::Box),
-                &ColorSpectrum::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnShapePropertyChanged));
     }
 }
 
@@ -153,7 +153,79 @@ void ColorSpectrumProperties::ClearProperties()
     s_ShapeProperty = nullptr;
 }
 
-void ColorSpectrumProperties::OnPropertyChanged(
+void ColorSpectrumProperties::OnColorPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorSpectrum>();
+    winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
+}
+
+void ColorSpectrumProperties::OnComponentsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorSpectrum>();
+    winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
+}
+
+void ColorSpectrumProperties::OnHsvColorPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorSpectrum>();
+    winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
+}
+
+void ColorSpectrumProperties::OnMaxHuePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorSpectrum>();
+    winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
+}
+
+void ColorSpectrumProperties::OnMaxSaturationPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorSpectrum>();
+    winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
+}
+
+void ColorSpectrumProperties::OnMaxValuePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorSpectrum>();
+    winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
+}
+
+void ColorSpectrumProperties::OnMinHuePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorSpectrum>();
+    winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
+}
+
+void ColorSpectrumProperties::OnMinSaturationPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorSpectrum>();
+    winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
+}
+
+void ColorSpectrumProperties::OnMinValuePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorSpectrum>();
+    winrt::get_self<ColorSpectrum>(owner)->OnPropertyChanged(args);
+}
+
+void ColorSpectrumProperties::OnShapePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

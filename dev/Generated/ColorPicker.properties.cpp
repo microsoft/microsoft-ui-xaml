@@ -45,7 +45,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Color>::BoxValueIfNecessary({ 255, 255, 255, 255 }),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnColorPropertyChanged));
     }
     if (!s_ColorSpectrumComponentsProperty)
     {
@@ -56,7 +56,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ColorSpectrumComponents>::BoxValueIfNecessary(winrt::ColorSpectrumComponents::HueSaturation),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnColorSpectrumComponentsPropertyChanged));
     }
     if (!s_ColorSpectrumShapeProperty)
     {
@@ -67,7 +67,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ColorSpectrumShape>::BoxValueIfNecessary(winrt::ColorSpectrumShape::Box),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnColorSpectrumShapePropertyChanged));
     }
     if (!s_IsAlphaEnabledProperty)
     {
@@ -78,7 +78,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnIsAlphaEnabledPropertyChanged));
     }
     if (!s_IsAlphaSliderVisibleProperty)
     {
@@ -89,7 +89,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnIsAlphaSliderVisiblePropertyChanged));
     }
     if (!s_IsAlphaTextInputVisibleProperty)
     {
@@ -100,7 +100,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnIsAlphaTextInputVisiblePropertyChanged));
     }
     if (!s_IsColorChannelTextInputVisibleProperty)
     {
@@ -111,7 +111,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnIsColorChannelTextInputVisiblePropertyChanged));
     }
     if (!s_IsColorPreviewVisibleProperty)
     {
@@ -122,7 +122,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnIsColorPreviewVisiblePropertyChanged));
     }
     if (!s_IsColorSliderVisibleProperty)
     {
@@ -133,7 +133,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnIsColorSliderVisiblePropertyChanged));
     }
     if (!s_IsColorSpectrumVisibleProperty)
     {
@@ -144,7 +144,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnIsColorSpectrumVisiblePropertyChanged));
     }
     if (!s_IsHexInputVisibleProperty)
     {
@@ -155,7 +155,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnIsHexInputVisiblePropertyChanged));
     }
     if (!s_IsMoreButtonVisibleProperty)
     {
@@ -166,7 +166,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnIsMoreButtonVisiblePropertyChanged));
     }
     if (!s_MaxHueProperty)
     {
@@ -177,7 +177,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(359),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMaxHuePropertyChanged));
     }
     if (!s_MaxSaturationProperty)
     {
@@ -188,7 +188,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(100),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMaxSaturationPropertyChanged));
     }
     if (!s_MaxValueProperty)
     {
@@ -199,7 +199,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(100),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMaxValuePropertyChanged));
     }
     if (!s_MinHueProperty)
     {
@@ -210,7 +210,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(0),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMinHuePropertyChanged));
     }
     if (!s_MinSaturationProperty)
     {
@@ -221,7 +221,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(0),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMinSaturationPropertyChanged));
     }
     if (!s_MinValueProperty)
     {
@@ -232,7 +232,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxValueIfNecessary(0),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnMinValuePropertyChanged));
     }
     if (!s_PreviousColorProperty)
     {
@@ -243,7 +243,7 @@ void ColorPickerProperties::EnsureProperties()
                 winrt::name_of<winrt::ColorPicker>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IReference<winrt::Color>>::BoxedDefaultValue(),
-                &ColorPicker::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnPreviousColorPropertyChanged));
     }
 }
 
@@ -270,7 +270,151 @@ void ColorPickerProperties::ClearProperties()
     s_PreviousColorProperty = nullptr;
 }
 
-void ColorPickerProperties::OnPropertyChanged(
+void ColorPickerProperties::OnColorPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnColorSpectrumComponentsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnColorSpectrumShapePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnIsAlphaEnabledPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnIsAlphaSliderVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnIsAlphaTextInputVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnIsColorChannelTextInputVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnIsColorPreviewVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnIsColorSliderVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnIsColorSpectrumVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnIsHexInputVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnIsMoreButtonVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnMaxHuePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnMaxSaturationPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnMaxValuePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnMinHuePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnMinSaturationPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnMinValuePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
+void ColorPickerProperties::OnPreviousColorPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

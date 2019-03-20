@@ -28,7 +28,7 @@ void RefreshContainerProperties::EnsureProperties()
                 winrt::name_of<winrt::RefreshContainer>(),
                 false /* isAttached */,
                 ValueHelper<winrt::RefreshPullDirection>::BoxValueIfNecessary(winrt::RefreshPullDirection::TopToBottom),
-                &RefreshContainer::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnPullDirectionPropertyChanged));
     }
     if (!s_VisualizerProperty)
     {
@@ -39,7 +39,7 @@ void RefreshContainerProperties::EnsureProperties()
                 winrt::name_of<winrt::RefreshContainer>(),
                 false /* isAttached */,
                 ValueHelper<winrt::RefreshVisualizer>::BoxedDefaultValue(),
-                &RefreshContainer::OnPropertyChanged);
+                winrt::PropertyChangedCallback(&OnVisualizerPropertyChanged));
     }
 }
 
@@ -49,7 +49,15 @@ void RefreshContainerProperties::ClearProperties()
     s_VisualizerProperty = nullptr;
 }
 
-void RefreshContainerProperties::OnPropertyChanged(
+void RefreshContainerProperties::OnPullDirectionPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::RefreshContainer>();
+    winrt::get_self<RefreshContainer>(owner)->OnPropertyChanged(args);
+}
+
+void RefreshContainerProperties::OnVisualizerPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
