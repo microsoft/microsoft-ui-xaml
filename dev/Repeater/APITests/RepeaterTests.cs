@@ -26,6 +26,8 @@ using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFacto
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
+using System.Collections.ObjectModel;
+using System.Threading;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
@@ -167,6 +169,76 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater.Background = blueBrush;
                 Verify.AreSame(blueBrush, repeater.Background);
             });
+        }
+
+        // Ensure that scrolling a nested repeater works when the 
+        // Itemtemplates are data templates.
+        [TestMethod]
+        public void NestedRepeaterWithDataTemplateScenario()
+        {
+            ItemsRepeater rootRepeater = null;
+            ScrollViewer scrollViewer = null;
+            ManualResetEvent viewChanged = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                var anchorProvider = (ScrollAnchorProvider)XamlReader.Load(
+                  @"<controls:ScrollAnchorProvider Width='400' Height='600'
+                     xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                     xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                    <controls:ScrollAnchorProvider.Resources>
+                        <DataTemplate x:Key='ItemTemplate' >
+                            <TextBlock Text='{Binding}' />
+                        </DataTemplate>
+                        <DataTemplate x:Key='GroupTemplate'>
+                            <StackPanel>
+                                <TextBlock Text='{Binding}' />
+                                <controls:ItemsRepeater ItemTemplate='{StaticResource ItemTemplate}' ItemsSource='{Binding}' VerticalCacheLength='0'/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </controls:ScrollAnchorProvider.Resources>
+                    <ScrollViewer x:Name='scrollviewer'>
+                        <controls:ItemsRepeater x:Name='rootRepeater' ItemTemplate='{StaticResource GroupTemplate}' VerticalCacheLength='0' />
+                    </ScrollViewer>
+                </controls:ScrollAnchorProvider>");
+
+                rootRepeater = (ItemsRepeater)anchorProvider.FindName("rootRepeater");
+                scrollViewer = (ScrollViewer)anchorProvider.FindName("scrollviewer");
+                scrollViewer.ViewChanged += (sender, args) =>
+                {
+                    if (!args.IsIntermediate)
+                    {
+                        viewChanged.Set();
+                    }
+                };
+
+                var itemsSource = new ObservableCollection<ObservableCollection<int>>();
+                for (int i = 0; i < 100; i++)
+                {
+                    itemsSource.Add(new ObservableCollection<int>(Enumerable.Range(0, 5)));
+                };
+
+                rootRepeater.ItemsSource = itemsSource;
+                Content = anchorProvider;
+            });
+
+            // scroll down several times to cause recycling of elements
+            for (int i = 1; i < 10; i++)
+            {
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    scrollViewer.ChangeView(null, i * 200, null);
+                });
+
+                Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS));
+                viewChanged.Reset();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(i * 200, scrollViewer.VerticalOffset);
+                });
+            }
         }
     }
 }
