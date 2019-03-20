@@ -28,13 +28,7 @@ public:
 
     void VerticalAnchorRatio(double value);
 
-    void StartBringIntoView(
-        winrt::UIElement const& element,
-        double alignmentX,
-        double alignmentY,
-        double offsetX,
-        double offsetY,
-        bool animate);
+    winrt::UIElement AnchorElement();
 
 #pragma endregion
 
@@ -43,8 +37,6 @@ public:
     bool IsHorizontallyScrollable();
 
     bool IsVerticallyScrollable();
-
-    winrt::UIElement AnchorElement();
 
     winrt::event_token ViewportChanged(winrt::ViewportChangedEventHandler const& value);
 
@@ -66,6 +58,14 @@ public:
         winrt::UIElement const& element);
 
 #pragma endregion
+
+    void StartBringIntoView(
+        winrt::UIElement const& element,
+        double alignmentX,
+        double alignmentY,
+        double offsetX,
+        double offsetY,
+        bool animate);
 
 private:
     void ApplyPendingChangeView(const winrt::FxScrollViewer& scrollViewer);

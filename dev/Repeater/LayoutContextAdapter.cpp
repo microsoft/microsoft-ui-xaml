@@ -53,7 +53,7 @@ winrt::IInspectable LayoutContextAdapter::GetItemAtCore(int index)
     return nullptr;
 }
 
-winrt::UIElement LayoutContextAdapter::GetElementAtCore(int index, winrt::ElementRealizationOptions const& options)
+winrt::UIElement LayoutContextAdapter::GetOrCreateElementAtCore(int index, winrt::ElementRealizationOptions const& options)
 {
     if (auto context = m_nonVirtualizingContext.get())
     {

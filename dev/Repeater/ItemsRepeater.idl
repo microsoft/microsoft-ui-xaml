@@ -252,7 +252,7 @@ unsealed runtimeclass VirtualizingLayoutContext : LayoutContext
 
     overridable Windows.Foundation.Rect RealizationRectCore();
 
-    overridable Windows.UI.Xaml.UIElement GetElementAtCore(Int32 index, ElementRealizationOptions options);
+    overridable Windows.UI.Xaml.UIElement GetOrCreateElementAtCore(Int32 index, ElementRealizationOptions options);
     overridable void RecycleElementCore(Windows.UI.Xaml.UIElement element);
 
     overridable Int32 RecommendedAnchorIndexCore{ get; };
@@ -334,11 +334,13 @@ unsealed runtimeclass ElementAnimator
     protected void OnBoundsChangeAnimationCompleted(Windows.UI.Xaml.UIElement element);
 }
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass ScrollAnchorProvider : Windows.UI.Xaml.Controls.ContentControl
 {
     ScrollAnchorProvider();
+
+    Windows.UI.Xaml.UIElement AnchorElement{ get; };
 
     Double HorizontalAnchorRatio { get; set; };
     Double VerticalAnchorRatio { get; set; };
