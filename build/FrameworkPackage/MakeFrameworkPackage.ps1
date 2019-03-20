@@ -71,7 +71,7 @@ ForEach ($input in ($inputs -split ";"))
     $foundationWinmdPath = gci -Recurse $sdkReferencesPath"\Windows.Foundation.FoundationContract" -Filter "Windows.Foundation.FoundationContract.winmd" | select -ExpandProperty FullName
     $universalWinmdPath = gci -Recurse $sdkReferencesPath"\Windows.Foundation.UniversalApiContract" -Filter "Windows.Foundation.UniversalApiContract.winmd" | select -ExpandProperty FullName
     $refrenceWinmds = $foundationWinmdPath + ";" + $universalWinmdPath
-    $classes = Get-ActivatableTypes $inputBasePath\$inputBaseFileName.winmd  $refrenceWinmds     
+    $classes = Get-ActivatableTypes $inputBasePath\$inputBaseFileName.winmd  $refrenceWinmds  | Sort-Object -Property FullName
     Write-Host $classes.Length Types found.
 @"
 "$inputBaseFileName.dll" "$inputBaseFileName.dll"

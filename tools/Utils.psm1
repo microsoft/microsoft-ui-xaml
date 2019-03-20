@@ -89,16 +89,21 @@ namespace WinmdHelper
             List<Type> activatableTypes = new List<Type>();
             foreach(var type in exportedTypes)
             {
-                if(!type.IsEnum && 
-                   !type.IsValueType &&
-                   !type.IsAbstract)
-                   {
-                     activatableTypes.Add(type);
-                   }
+                var attributes = CustomAttributeData.GetCustomAttributes(type);
+                foreach(var attrib in attributes)
+                {
+                    var attributeString = attrib.ToString();
+                    if(attributeString.Contains("Windows.Foundation.Metadata.ComposableAttribute") ||
+                       attributeString.Contains("Windows.Foundation.Metadata.ActivatableAttribute") ||
+                       attributeString.Contains("Windows.Foundation.Metadata.StaticAttribute"))
+                    {
+                        activatableTypes.Add(type);       
+                        break;
+                    }   
+                }
             }
 
             return activatableTypes;
-            
         }
     }
 }
