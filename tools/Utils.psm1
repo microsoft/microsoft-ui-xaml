@@ -97,7 +97,7 @@ namespace WinmdHelper
                        attributeString.Contains("Windows.Foundation.Metadata.ActivatableAttribute") ||
                        attributeString.Contains("Windows.Foundation.Metadata.StaticAttribute"))
                     {
-                        activatableTypes.Add(type);       
+                        activatableTypes.Add(type);
                         break;
                     }   
                 }

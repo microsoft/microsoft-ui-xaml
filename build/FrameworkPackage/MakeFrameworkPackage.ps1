@@ -66,7 +66,7 @@ ForEach ($input in ($inputs -split ";"))
     Copy-IntoNewDirectory -IfExists $inputBasePath\Themes $fullOutputPath\PackageContents\Microsoft.UI.Xaml
 
     [xml]$sdkPropsContent = Get-Content $PSScriptRoot\..\..\sdkversion.props
-    $highestSdkVersion = $sdkPropsContent.GetElementsByTagName("*").'#text' -match "10." | Sort-Object | Select-Object -Last 1    
+    $highestSdkVersion = $sdkPropsContent.GetElementsByTagName("*").'#text' -match "10." | Sort-Object | Select-Object -Last 1
     $sdkReferencesPath=$kitsRoot10 + "References\" + $highestSdkVersion;    
     $foundationWinmdPath = gci -Recurse $sdkReferencesPath"\Windows.Foundation.FoundationContract" -Filter "Windows.Foundation.FoundationContract.winmd" | select -ExpandProperty FullName
     $universalWinmdPath = gci -Recurse $sdkReferencesPath"\Windows.Foundation.UniversalApiContract" -Filter "Windows.Foundation.UniversalApiContract.winmd" | select -ExpandProperty FullName
