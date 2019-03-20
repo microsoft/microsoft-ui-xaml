@@ -14,6 +14,7 @@ Param(
     [string]$BasePackageName,
     [string]$PackageNameSuffix)
 
+Import-Module $PSScriptRoot\..\..\tools\Utils.psm1 -DisableNameChecking
 
 function Copy-IntoNewDirectory {
     Param($source, $destinationDir, [switch]$IfExists = $false)
@@ -49,16 +50,6 @@ $scriptDirectory = Split-Path -Path $script:MyInvocation.MyCommand.Path -Parent
 
 $ActivatableTypes = ""
 
-$activatableTypeEntries = @{}
-
-$testAppManifestContents = Get-Content $TestAppManifest -Raw
-ForEach ($match in ($testAppManifestContents | Select-String '(?s)(\<Extension Category.*?\</Extension\>)' -AllMatches).Matches)
-{
-    $value = $match.Value
-    $dllPath = ($value | Select-String  '\<Path\>(.*?)\</Path\>').Matches[0].Groups[1]
-    $activatableTypeEntries[$dllPath.Value.ToLower()] = $value
-}
-
 # Copy over and add to the manifest file list the .dll, .winmd for the inputs. Also copy the .pri
 # but don't list it because it will be merged together.
 ForEach ($input in ($inputs -split ";"))
@@ -74,39 +65,38 @@ ForEach ($input in ($inputs -split ";"))
     Write-Verbose "Copying $inputBasePath\Themes"
     Copy-IntoNewDirectory -IfExists $inputBasePath\Themes $fullOutputPath\PackageContents\Microsoft.UI.Xaml
 
+    [xml]$sdkPropsContent = Get-Content $PSScriptRoot\..\..\sdkversion.props
+    $highestSdkVersion = $sdkPropsContent.GetElementsByTagName("*").'#text' -match "10." | Sort-Object | Select-Object -Last 1
+    $sdkReferencesPath=$kitsRoot10 + "References\" + $highestSdkVersion;    
+    $foundationWinmdPath = gci -Recurse $sdkReferencesPath"\Windows.Foundation.FoundationContract" -Filter "Windows.Foundation.FoundationContract.winmd" | select -ExpandProperty FullName
+    $universalWinmdPath = gci -Recurse $sdkReferencesPath"\Windows.Foundation.UniversalApiContract" -Filter "Windows.Foundation.UniversalApiContract.winmd" | select -ExpandProperty FullName
+    $refrenceWinmds = $foundationWinmdPath + ";" + $universalWinmdPath
+    $classes = Get-ActivatableTypes $inputBasePath\$inputBaseFileName.winmd  $refrenceWinmds  | Sort-Object -Property FullName
+    Write-Host $classes.Length Types found.
 @"
 "$inputBaseFileName.dll" "$inputBaseFileName.dll"
-"$inputBaseFileName.winmd" "$inputBaseFileName.winmd"
+"$inputBaseFileName.winmd" "$inputBaseFileName.winmd" 
 "@ | Out-File -Append -Encoding "UTF8" $fullOutputPath\PackageContents\FrameworkPackageFiles.txt
 
-    $ActivatableTypes += $activatableTypeEntries["$($inputBaseFileName.ToLower()).dll"]
+    $ActivatableTypes += @"
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>$inputBaseFileName.dll</Path>
 
-    # NOTE: Build machines don't have ILDAsm or .NET SDK so we have to do this differently.
-#    # Get the activatable types out of each WinMD
-#    $ildasmCommand = "`"ildasm.exe`" /classlist `"$inputBasePath\$inputBaseFileName.winmd`" /text"
-#    Write-Host "cmd /c $ildasmCommand"
-#    $classes = cmd /c $ildasmCommand | where {$_.Contains(".class public")}
-#    $classes = $classes -replace '.* ([\w\.]+)$',"`$1"
+"@
+    ForEach ($class in $classes)
+    {
+        $className = $class.fullname
+        #Write-Host "Activatable type : $className"
+        $ActivatableTypes += "        <ActivatableClass ActivatableClassId=`"$className`" ThreadingModel=`"both`" />`r`n"
+    }
 
-#    $ActivatableTypes += @"
-#    <Extension Category="windows.activatableClass.inProcessServer">
-#      <InProcessServer>
-#        <Path>$inputBaseFileName.dll</Path>
+    $ActivatableTypes += @"
+      </InProcessServer>
+    </Extension>
 
-#"@
-#    ForEach ($class in $classes)
-#    {
-#        Write-Host "Activatable type : $class"
-#        $ActivatableTypes += "        <ActivatableClass ActivatableClassId=`"$class`" ThreadingModel=`"both`" />`r`n"
-#    }
-
-#    $ActivatableTypes += @"
-#      </InProcessServer>
-#    </Extension>
-
-#"@
+"@
 }
-
 
 Copy-IntoNewDirectory ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png $fullOutputPath\Assets
 
