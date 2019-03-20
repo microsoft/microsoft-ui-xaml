@@ -171,6 +171,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Ensure that scrolling a nested repeater works when the 
+        // Itemtemplates are data templates.
         [TestMethod]
         public void NestedRepeaterWithDataTemplateScenario()
         {
@@ -220,6 +222,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Content = anchorProvider;
             });
 
+            // scroll down several times to cause recycling of elements
             for (int i = 1; i < 10; i++)
             {
                 IdleSynchronizer.Wait();
