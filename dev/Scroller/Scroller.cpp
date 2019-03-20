@@ -4584,7 +4584,7 @@ bool Scroller::SnapPointsViewportChangedHelper(
         winrt::SnapPointBase winrtSnapPointBase = safe_cast<winrt::SnapPointBase>(snapPoint);
         SnapPointBase* snapPointBase = winrt::get_self<SnapPointBase>(winrtSnapPointBase);
 
-        snapPointsNeedViewportUpdates |= snapPointBase->OnViewportChanged(viewport);
+        snapPointsNeedViewportUpdates |= snapPointBase->OnUpdateViewport(viewport);
     }
 
     return snapPointsNeedViewportUpdates;
@@ -4616,7 +4616,7 @@ void Scroller::SnapPointsVectorChangedHelper(
             SnapPointBase* snapPointBase = winrt::get_self<SnapPointBase>(winrtSnapPointBase);
 
             // Newly inserted scroll snap point is provided the viewport size, for the case it's not near-aligned.
-            bool snapPointNeedsViewportUpdates = snapPointBase->OnViewportChanged(viewportSize);
+            bool snapPointNeedsViewportUpdates = snapPointBase->OnUpdateViewport(viewportSize);
 
             // When snapPointNeedsViewportUpdates is True, this newly inserted scroll snap point may be the first one
             // that requires viewport updates.

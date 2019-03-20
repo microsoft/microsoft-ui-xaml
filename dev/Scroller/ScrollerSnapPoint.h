@@ -56,7 +56,7 @@ public:
     virtual double Evaluate(double value) const = 0;
 
     // Returns True when this snap point is sensitive to the viewport size and is interested in future updates.
-    virtual bool OnViewportChanged(double newViewport) = 0;
+    virtual bool OnUpdateViewport(double newViewport) = 0;
 
     int CombinationCount() const;
 #ifdef _DEBUG
@@ -93,7 +93,7 @@ class ScrollSnapPointBase :
 public:
     winrt::ScrollSnapPointsAlignment Alignment();
 
-    bool OnViewportChanged(double newViewport);
+    bool OnUpdateViewport(double newViewport);
 
 protected:
     // Needed as work around for Modern Idl inheritance bug
@@ -210,7 +210,7 @@ private:
 class ZoomSnapPointBase :
     public winrt::implementation::ZoomSnapPointBaseT<ZoomSnapPointBase, SnapPointBase>
 {
-    bool OnViewportChanged(double newViewport);
+    bool OnUpdateViewport(double newViewport);
 
 protected:
     // Needed as work around for Modern Idl inheritance bug

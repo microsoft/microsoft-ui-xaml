@@ -144,5 +144,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual<int>(1, scroller.ZoomSnapPoints.Count);
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Add scroll snap points with various alignments.")]
+        public void CanAddScrollSnapPointsWithMixedAlignments()
+        {
+            Scroller scroller = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                scroller = new Scroller();
+                ScrollSnapPoint nearSnapPoint = new ScrollSnapPoint(snapPointValue: 10, alignment: ScrollSnapPointsAlignment.Near);
+                ScrollSnapPoint centerSnapPoint = new ScrollSnapPoint(snapPointValue: 20, alignment: ScrollSnapPointsAlignment.Center);
+                ScrollSnapPoint farSnapPoint = new ScrollSnapPoint(snapPointValue: 30, alignment: ScrollSnapPointsAlignment.Far);
+                RepeatedScrollSnapPoint nearRepeatedScrollSnapPoint = new RepeatedScrollSnapPoint(offset: 50, interval: 10, start: 50, end: 100, alignment: ScrollSnapPointsAlignment.Near);
+                RepeatedScrollSnapPoint centerRepeatedScrollSnapPoint = new RepeatedScrollSnapPoint(offset: 180, interval: 10, start: 175, end: 225, alignment: ScrollSnapPointsAlignment.Center);
+                RepeatedScrollSnapPoint farRepeatedScrollSnapPoint = new RepeatedScrollSnapPoint(offset: 280, interval: 5, start: 280, end: 300, alignment: ScrollSnapPointsAlignment.Far);
+                scroller.HorizontalSnapPoints.Add(nearSnapPoint);
+                scroller.HorizontalSnapPoints.Add(centerSnapPoint);
+                scroller.HorizontalSnapPoints.Add(farSnapPoint);
+                scroller.VerticalSnapPoints.Add(nearSnapPoint);
+                scroller.VerticalSnapPoints.Add(centerSnapPoint);
+                scroller.VerticalSnapPoints.Add(farSnapPoint);
+                scroller.HorizontalSnapPoints.Add(nearRepeatedScrollSnapPoint);
+                scroller.HorizontalSnapPoints.Add(centerRepeatedScrollSnapPoint);
+                scroller.HorizontalSnapPoints.Add(farRepeatedScrollSnapPoint);
+                scroller.VerticalSnapPoints.Add(nearRepeatedScrollSnapPoint);
+                scroller.VerticalSnapPoints.Add(centerRepeatedScrollSnapPoint);
+                scroller.VerticalSnapPoints.Add(farRepeatedScrollSnapPoint);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual<int>(6, scroller.HorizontalSnapPoints.Count);
+                Verify.AreEqual<int>(6, scroller.VerticalSnapPoints.Count);
+            });
+        }
     }
 }

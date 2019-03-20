@@ -114,7 +114,7 @@ winrt::ScrollSnapPointsAlignment ScrollSnapPointBase::Alignment()
 }
 
 // Returns True when this snap point is sensitive to the viewport size and is interested in future updates.
-bool ScrollSnapPointBase::OnViewportChanged(double newViewport)
+bool ScrollSnapPointBase::OnUpdateViewport(double newViewport)
 {
     switch (m_alignment)
     {
@@ -706,7 +706,7 @@ ZoomSnapPointBase::ZoomSnapPointBase()
     // throw (ERROR_CALL_NOT_IMPLEMENTED);
 }
 
-bool ZoomSnapPointBase::OnViewportChanged(double newViewport)
+bool ZoomSnapPointBase::OnUpdateViewport(double newViewport)
 {
     return false;
 }
