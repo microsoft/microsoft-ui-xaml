@@ -31,17 +31,6 @@ if (!$BuildOutput)
     Exit 1
 }
 
-if (!$env:NUGETCMD) {
-
-    cmd /c where /Q nuget.exe
-    if ($lastexitcode -ne 0) {
-        Write-Host "nuget not found on path. Either add it to path or set NUGETCMD environment variable." -ForegroundColor Red
-        Exit 1
-    }
-
-    $env:NUGETCMD = "nuget.exe"
-}
-
 if ($VersionOverride)
 {
     $version = $VersionOverride
@@ -132,7 +121,8 @@ $CommonNugetArgs = "-properties `"BuildOutput=$BuildOutput``;ID=$nupkgtitle``;RU
 
 $NugetArgs = "$CommonNugetArgs -OutputDirectory $OutputDir"
 
-$NugetCmdLine = "$env:NUGETCMD pack MUXControls.nuspec $NugetArgs -version $version"
+$nugetExe = "$scriptDirectory\..\..\tools\NugetWrapper.cmd"
+$NugetCmdLine = "$nugetExe pack MUXControls.nuspec $NugetArgs -version $version"
 Write-Host $NugetCmdLine
 Invoke-Expression $NugetCmdLine
 if ($lastexitcode -ne 0)
