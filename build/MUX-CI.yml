@@ -24,43 +24,33 @@ jobs:
         buildConfiguration: 'Release'
 
   variables:
-  - name: appxPackageDir
-    value: $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
-  - name: buildOutputDir
-    value: $(Build.SourcesDirectory)\BuildOutput
-  - name: publishDir
-    value: $(Build.ArtifactStagingDirectory)
+    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+    publishDir : $(Build.ArtifactStagingDirectory)
 
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
   
-  - template: AzurePipelinesTemplates\MUX-PublishDevProject-Steps.yml
+  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
   parameters:
     jobName: CreateNugetPackage
     dependsOn: Build
-    # To publish the package to vsts feed, set queue time variable NuGetFeed = d62f8eac-f05c-4c25-bccb-21f98b95c95f
-    # This is the magic GUID from the pipeline visual designer for this feed: https://dev.azure.com/ms/microsoft-ui-xaml/_packaging?_a=feed&feed=MUX-CI
-    ${{ if ne(variables['NuGetFeed'], '') }}:
-      publishVstsFeed: $(NuGetFeed)
  
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
+    buildJobName: 'BuildNugetPkgTests'
+    runTestJobName: 'RunNugetPkgTestsInHelix'
     dependsOn: CreateNugetPackage
-    useNupkgFromArtifacts: true
-    matrix: 
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
-      Debug_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Debug'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-      Release_arm:
-        buildPlatform: 'arm'
-        buildConfiguration: 'Release'
+    pkgArtifactPath: '$(artifactDownloadPath)\drop'
+   
+# Framework package tests
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildFrameworkPkgTests'
+    runTestJobName: 'RunFrameworkPkgTestsInHelix'
+    dependsOn: CreateNugetPackage
+    pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'

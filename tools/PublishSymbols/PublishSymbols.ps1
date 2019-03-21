@@ -1,3 +1,9 @@
+[CmdLetBinding()]
+Param(
+    [Parameter(Mandatory=$true, Position=0)]
+    [string]$localDirectory
+)
+
 Push-Location $PSScriptRoot
 
 [xml]$customProps = (Get-Content ..\..\custom.props)
@@ -14,21 +20,20 @@ $buildVersion = $versionMajor + "." + $versionMinor + "." + $env:BUILD_BUILDNUMB
 
 Write-Host "Build = $buildVersion"
 
-$buildId="$($env:BUILD_BUILDNUMBER)_$($env:BUILDCONFIGURATION)_$($env:BUILDPLATFORM)"
-$localDirectory=$env:BUILD_BINARIESDIRECTORY + "\" + $env:BUILDCONFIGURATION + "\" + $env:BUILDPLATFORM + "\Microsoft.UI.Xaml"
-$directory = "$env:XES_DFSDROP\$env:XES_RELATIVEOUTPUTROOT\Microsoft.UI.Xaml"
+$buildId="$($env:BUILD_BUILDNUMBER)"
+$directory = "$env:XES_DFSDROP"
 
 Write-Host "Local path: '$localDirectory'"
 Write-Host "Build share: '$directory'"
 
-Copy-Item -Recurse "$localDirectory" "$directory"
+Copy-Item -Recurse -Verbose "$localDirectory" "$directory"
 
 Write-Host "buildId = $buildId"
 
 Copy-Item pdb_index_template.ini pdb_index.ini
 Add-Content pdb_index.ini "Build=$buildVersion"
 
-\\symbols\Tools\createrequest.cmd -i .\pdb_index.ini -d .\requests -c -a -b $buildId -e Release -g $directory
+\\symbols\Tools\createrequest.cmd -i .\pdb_index.ini -d .\requests -c -a -b $buildId -e Release -g $directory -r
 
 if ($lastexitcode -ne 0)
 {
