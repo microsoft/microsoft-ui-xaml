@@ -121,4 +121,16 @@
     <value>Close</value>
     <comment>This is the automation name of the alternate close button.</comment>
   </data>
+  <data name="TeachingTipAlternateCloseButtonTooltip" xml:space="preserve">
+    <value>Close</value>
+    <comment>This is the string used for the alternate close button's tooltip</comment>
+  </data>
+  <data name="TeachingTipCustomLandmarkName" xml:space="preserve">
+    <value>Tip</value>
+    <comment>This is the custom landmark used to denote a tip to narrator.</comment>
+  </data>
+  <data name="TeachingTipNotification" xml:space="preserve">
+    <value>Press F6 to move to new notification from</value>
+    <comment>This is the string read by narrator when a new tip is opened.</comment>
+  </data>
 </root>

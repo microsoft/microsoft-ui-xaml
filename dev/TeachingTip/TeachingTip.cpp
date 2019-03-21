@@ -13,7 +13,22 @@ TeachingTip::TeachingTip()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TeachingTip);
     SetDefaultStyleKey(this);
     EnsureProperties();
+    m_automationNameChangedCallback = RegisterPropertyChangedCallback(winrt::AutomationProperties::NameProperty(), { this, &TeachingTip::OnAutomationNameChanged });
+    m_automationIdChangedCallback = RegisterPropertyChangedCallback(winrt::AutomationProperties::AutomationIdProperty(), { this, &TeachingTip::OnAutomationIdChanged });
     SetValue(s_TemplateSettingsProperty, winrt::make<::TeachingTipTemplateSettings>());
+}
+
+TeachingTip::~TeachingTip()
+{
+    m_previouslyFocusedElement.set(nullptr);
+    if (m_automationNameChangedCallback)
+    {
+        UnregisterPropertyChangedCallback(winrt::AutomationProperties::NameProperty(), m_automationNameChangedCallback);
+    }
+    if (m_automationIdChangedCallback)
+    {
+        UnregisterPropertyChangedCallback(winrt::AutomationProperties::AutomationIdProperty(), m_automationIdChangedCallback);
+    }
 }
 
 winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
@@ -23,6 +38,7 @@ winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
 
 void TeachingTip::OnApplyTemplate()
 {
+    m_acceleratorKeyActivatedRevoker.revoke();
     m_effectiveViewportChangedRevoker.revoke();
     m_contentSizeChangedRevoker.revoke();
     m_closeButtonClickedRevoker.revoke();
@@ -43,6 +59,8 @@ void TeachingTip::OnApplyTemplate()
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
     m_tailEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_tailEdgeBorderName, controlProtected));
     m_tailPolygon.set(GetTemplateChildT<winrt::Polygon>(s_tailPolygonName, controlProtected));
+
+    m_acceleratorKeyActivatedRevoker = Dispatcher().AcceleratorKeyActivated(winrt::auto_revoke, { this, &TeachingTip::OnF6AcceleratorKeyClicked });
 
     if (auto && container = m_container.get())
     {
@@ -79,6 +97,11 @@ void TeachingTip::OnApplyTemplate()
         });
     }
 
+    if (auto && contentRootGrid = m_contentRootGrid.get())
+    {
+        winrt::AutomationProperties::SetLocalizedLandmarkType(contentRootGrid, ResourceAccessor::GetLocalizedStringResource(SR_TeachingTipCustomLandmarkName));
+    }
+
     if (auto&& closeButton = m_closeButton.get())
     {
         m_closeButtonClickedRevoker = closeButton.Click(winrt::auto_revoke, {this, &TeachingTip::OnCloseButtonClicked });
@@ -86,15 +109,19 @@ void TeachingTip::OnApplyTemplate()
     if (auto&& alternateCloseButton = m_alternateCloseButton.get())
     {
         winrt::AutomationProperties::SetName(alternateCloseButton, ResourceAccessor::GetLocalizedStringResource(SR_TeachingTipAlternateCloseButtonName));
+        winrt::ToolTip tooltip = winrt::ToolTip();
+        tooltip.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_TeachingTipAlternateCloseButtonTooltip)));
+        winrt::ToolTipService::SetToolTip(alternateCloseButton, tooltip);
         m_alternateCloseButtonClickedRevoker = alternateCloseButton.Click(winrt::auto_revoke, {this, &TeachingTip::OnCloseButtonClicked });
     }
-
     if (auto&& actionButton = m_actionButton.get())
     {
         m_actionButtonClickedRevoker = actionButton.Click(winrt::auto_revoke, {this, &TeachingTip::OnActionButtonClicked });
     }
     UpdateButtonsState();
+
     OnIconSourceChanged();
+
     EstablishShadows();
 
     m_isTemplateApplied = true;
@@ -144,6 +171,13 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         OnIconSourceChanged();
     }
+    else if (property == s_TitleProperty
+        || property == winrt::AutomationProperties::AutomationIdProperty()
+        || property == winrt::AutomationProperties::NameProperty())
+    {
+        SetPopupAutomationProperties();
+    }
+
 }
 
 void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const winrt::IInspectable& newContent)
@@ -155,6 +189,21 @@ void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const 
     else
     {
         winrt::VisualStateManager::GoToState(*this, L"NoContent"sv, false);
+    }
+}
+
+void TeachingTip::SetPopupAutomationProperties()
+{
+    if (auto && popup = m_popup.get())
+    {
+        auto name = winrt::AutomationProperties::GetName(*this);
+        if (name.empty())
+        {
+            name = Title();
+        }
+        winrt::AutomationProperties::SetName(popup, name);
+
+        winrt::AutomationProperties::SetAutomationId(popup, winrt::AutomationProperties::GetAutomationId(*this));
     }
 }
 
@@ -716,6 +765,7 @@ void TeachingTip::OnIsOpenChanged()
             m_popupOpenedRevoker = popup.Opened(winrt::auto_revoke, { this, &TeachingTip::OnPopupOpened });
             m_popupClosedRevoker = popup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
             m_popup.set(popup);
+            SetPopupAutomationProperties();
         }
 
         auto&& popup = m_popup.get();
@@ -852,6 +902,57 @@ void TeachingTip::OnHeroContentPlacementChanged()
     }
 }
 
+void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args)
+{
+    if (args.VirtualKey() == winrt::VirtualKey::F6)
+    {
+        auto&& closeButton = m_closeButton.get();
+        auto&& alternateCloseButton = m_alternateCloseButton.get();
+        if (CloseButtonContent())
+        {
+            if (closeButton && closeButton.Visibility() == winrt::Visibility::Visible)
+            {
+                m_closeButtonGettingFocusFromF6Revoker = closeButton.GettingFocus(winrt::auto_revoke, { this, &TeachingTip::OnCloseButtonGettingFocusFromF6 });
+                closeButton.Focus(winrt::FocusState::Keyboard);
+            }
+            else if (alternateCloseButton && alternateCloseButton.Visibility() == winrt::Visibility::Visible)
+            {
+                m_closeButtonGettingFocusFromF6Revoker = alternateCloseButton.GettingFocus(winrt::auto_revoke, { this, &TeachingTip::OnCloseButtonGettingFocusFromF6 });
+                alternateCloseButton.Focus(winrt::FocusState::Keyboard);
+            }
+        }
+        else
+        {
+            if (alternateCloseButton && alternateCloseButton.Visibility() == winrt::Visibility::Visible)
+            {
+                m_closeButtonGettingFocusFromF6Revoker = alternateCloseButton.GettingFocus(winrt::auto_revoke, { this, &TeachingTip::OnCloseButtonGettingFocusFromF6 });
+                alternateCloseButton.Focus(winrt::FocusState::Keyboard);
+            }
+            else if (closeButton && closeButton.Visibility() == winrt::Visibility::Visible)
+            {
+                m_closeButtonGettingFocusFromF6Revoker = closeButton.GettingFocus(winrt::auto_revoke, { this, &TeachingTip::OnCloseButtonGettingFocusFromF6 });
+                closeButton.Focus(winrt::FocusState::Keyboard);
+            }
+        }
+    }
+}
+
+void TeachingTip::OnCloseButtonGettingFocusFromF6(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args)
+{
+    m_previouslyFocusedElement.set(args.OldFocusedElement().try_as<winrt::Control>());
+    m_closeButtonGettingFocusFromF6Revoker.revoke();
+}
+
+void TeachingTip::OnAutomationNameChanged(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+    SetPopupAutomationProperties();
+}
+
+void TeachingTip::OnAutomationIdChanged(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+    SetPopupAutomationProperties();
+}
+
 void TeachingTip::OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     m_closeButtonClickEventSource(*this, nullptr);
@@ -867,6 +968,17 @@ void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt:
 void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     StartExpandToOpen();
+
+    if (auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+    {
+        if (auto teachingTipPeer = peer.as<winrt::TeachingTipAutomationPeer>())
+        {
+            winrt::get_self<TeachingTipAutomationPeer>(teachingTipPeer)->RaiseWindowOpenedEvent(
+                ResourceAccessor::GetLocalizedStringResource(SR_TeachingTipNotification) + L" "
+                + winrt::ApplicationModel::Package::Current().DisplayName() + L", "
+                + winrt::AutomationProperties::GetName(m_popup.get()));
+        }
+    }
 }
 
 void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
@@ -876,6 +988,25 @@ void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspec
     auto myArgs = winrt::make_self<TeachingTipClosedEventArgs>();
     myArgs->Reason(m_lastCloseReason);
     m_closedEventSource(*this, *myArgs);
+
+    //If we were closed by the close button and we have tracked a previously focused element because F6 was used
+    //To give the tip focus, then we return focus when the popup closes.
+    if (m_lastCloseReason == winrt::TeachingTipCloseReason::CloseButton)
+    {
+        if (auto&& perviouslyFocusedElement = m_previouslyFocusedElement.get())
+        {
+            perviouslyFocusedElement.Focus(winrt::FocusState::Keyboard);
+        }
+    }
+    m_previouslyFocusedElement.set(nullptr);
+
+    if (auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+    {
+        if (auto teachingTipPeer = peer.as<winrt::TeachingTipAutomationPeer>())
+        {
+            winrt::get_self<TeachingTipAutomationPeer>(teachingTipPeer)->RaiseWindowClosedEvent();
+        }
+    }
 }
 
 void TeachingTip::OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
