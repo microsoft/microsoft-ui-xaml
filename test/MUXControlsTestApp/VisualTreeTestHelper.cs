@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Markup;
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 using static MUXControls.TestAppUtils.VisualTreeDumper;
+using System.Diagnostics;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -40,18 +41,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     // Like debug information, it's too big and we should not show to customer. You can change the setting by _shouldLogDebugInfo
     class VisualTreeLog
     {
-        private static bool _shouldLogDebugInfo = false;
         public static void LogInfo(string info)
         {
             Log.Comment(info);
         }
 
+        [Conditional("DebugInfoON")]
         public static void LogDebugInfo(string debugInfo) 
         {
-            if (_shouldLogDebugInfo)
-            {
-                Log.Comment(info);  
-            }    
+            Log.Comment(debugInfo);  
         }
     }
 
