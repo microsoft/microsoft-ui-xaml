@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include "ScrollAnchorProvider.g.h"
+#include "ItemsRepeaterScrollHost.g.h"
 
 // TODO: move to framework level element tracking.
-class ScrollAnchorProvider :
-    public ReferenceTracker<ScrollAnchorProvider, winrt::implementation::ScrollAnchorProviderT, winrt::cloaked<winrt::IRepeaterScrollingSurface>, winrt::composable>
+class ItemsRepeaterScrollHost :
+    public ReferenceTracker<ItemsRepeaterScrollHost, DeriveFromPanelHelper_base, winrt::ItemsRepeaterScrollHost, winrt::cloaked<winrt::IRepeaterScrollingSurface>>
 {
 public:
-    ScrollAnchorProvider();
+    ItemsRepeaterScrollHost();
 
 #pragma region IFrameworkElementOverrides
 
@@ -28,7 +28,11 @@ public:
 
     void VerticalAnchorRatio(double value);
 
-    winrt::UIElement AnchorElement();
+    winrt::UIElement CurrentAnchor();
+
+    winrt::FxScrollViewer ScrollViewer();
+    
+    void ScrollViewer(winrt::FxScrollViewer const& value);
 
 #pragma endregion
 
@@ -37,6 +41,8 @@ public:
     bool IsHorizontallyScrollable();
 
     bool IsVerticallyScrollable();
+
+    winrt::UIElement AnchorElement();
 
     winrt::event_token ViewportChanged(winrt::ViewportChangedEventHandler const& value);
 

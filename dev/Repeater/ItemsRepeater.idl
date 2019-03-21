@@ -6,7 +6,7 @@ runtimeclass VirtualizingLayoutContext;
 runtimeclass Layout;
 runtimeclass VirtualizingLayout;
 runtimeclass ElementAnimator;
-runtimeclass ScrollAnchorProvider;
+runtimeclass ItemsRepeaterScrollHost;
 runtimeclass ItemsRepeaterElementPreparedEventArgs;
 runtimeclass ItemsRepeaterElementClearingEventArgs;
 runtimeclass ItemsRepeaterElementIndexChangedEventArgs;
@@ -336,11 +336,14 @@ unsealed runtimeclass ElementAnimator
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
-runtimeclass ScrollAnchorProvider : Windows.UI.Xaml.Controls.ContentControl
+[contentproperty("ScrollViewer")]
+runtimeclass ItemsRepeaterScrollHost : Windows.UI.Xaml.FrameworkElement
 {
-    ScrollAnchorProvider();
+    ItemsRepeaterScrollHost();
 
-    Windows.UI.Xaml.UIElement AnchorElement{ get; };
+    Windows.UI.Xaml.Controls.ScrollViewer ScrollViewer { get; set; };
+
+    Windows.UI.Xaml.UIElement CurrentAnchor{ get; };
 
     Double HorizontalAnchorRatio { get; set; };
     Double VerticalAnchorRatio { get; set; };

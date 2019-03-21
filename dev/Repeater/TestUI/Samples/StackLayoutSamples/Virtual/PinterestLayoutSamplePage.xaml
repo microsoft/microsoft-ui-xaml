@@ -36,7 +36,7 @@
             <TextBlock x:Name="tb">10</TextBlock>
             <Button Content="BringIntoView" x:Name="bringIntoView"/>
         </StackPanel>
-        <controls:ScrollAnchorProvider x:Name="tracker" Grid.Row="1" >
+        <controls:ItemsRepeaterScrollHost x:Name="tracker" Grid.Row="1" >
             <ScrollViewer>
                 <controls:ItemsRepeater x:Name="repeater">
                     <controls:ItemsRepeater.Layout>
@@ -44,6 +44,6 @@
                     </controls:ItemsRepeater.Layout>
                 </controls:ItemsRepeater>
             </ScrollViewer>
-        </controls:ScrollAnchorProvider>
+        </controls:ItemsRepeaterScrollHost>
     </Grid>
 </Page>

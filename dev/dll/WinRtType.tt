@@ -96,6 +96,12 @@
                 case "IObservableVector`1":
                     name = "IObservableVector";
                     break;
+				case "ScrollViewer":
+					if(winmdType.FullName == "Windows.UI.Xaml.Controls.ScrollViewer")
+					{
+						name = "FxScrollViewer";
+					}
+					break;
             }
 
             return name;

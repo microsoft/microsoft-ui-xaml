@@ -243,7 +243,7 @@ private:
     static constexpr std::wstring_view s_horizontalScrollBarPartName{ L"PART_HorizontalScrollBar"sv };
     static constexpr std::wstring_view s_verticalScrollBarPartName{ L"PART_VerticalScrollBar"sv };
     static constexpr std::wstring_view s_scrollBarsSeparatorPartName{ L"PART_ScrollBarsSeparator"sv };
-    static constexpr std::wstring_view s_iScrollAnchorProviderNotImpl{ L"Template part named PART_Scroller does not implement IScrollAnchorProvider."sv };
+    static constexpr std::wstring_view s_IScrollAnchorProviderNotImpl{ L"Template part named PART_Scroller does not implement IScrollAnchorProvider."sv };
     static constexpr std::wstring_view s_noScrollerPart{ L"No template part named PART_Scroller was loaded."sv };
 
     winrt::com_ptr<ScrollBarController> m_horizontalScrollBarController{ nullptr };

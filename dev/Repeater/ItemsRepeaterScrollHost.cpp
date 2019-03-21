@@ -4,19 +4,43 @@
 #include <pch.h>
 #include <common.h>
 #include "ItemsRepeater.common.h"
-#include "ScrollAnchorProvider.h"
+#include "ItemsRepeaterScrollHost.h"
 #include "DoubleUtil.h"
 
-CppWinRTActivatableClassWithBasicFactory(ScrollAnchorProvider)
+CppWinRTActivatableClassWithBasicFactory(ItemsRepeaterScrollHost)
 
-ScrollAnchorProvider::ScrollAnchorProvider()
+ItemsRepeaterScrollHost::ItemsRepeaterScrollHost()
 {
-    IsTabStop(false);
+}
+
+winrt::UIElement ItemsRepeaterScrollHost::CurrentAnchor()
+{
+    return GetAnchorElement();
+}
+
+winrt::FxScrollViewer ItemsRepeaterScrollHost::ScrollViewer()
+{
+    winrt::FxScrollViewer value = nullptr;
+    auto children = Children();
+    if (children.Size() > 0)
+    {
+        value = children.GetAt(0).try_as<winrt::FxScrollViewer>();
+    }
+
+    return value;
+}
+
+void ItemsRepeaterScrollHost::ScrollViewer(winrt::FxScrollViewer const& value)
+{
+    m_scrollViewer.set(value);
+    auto children = Children();
+    children.Clear();
+    children.Append(value);
 }
 
 #pragma region IFrameworkElementOverrides
 
-winrt::Size ScrollAnchorProvider::ArrangeOverride(winrt::Size const& finalSize)
+winrt::Size ItemsRepeaterScrollHost::ArrangeOverride(winrt::Size const& finalSize)
 {
     winrt::Size result;
     if (SharedHelpers::IsRS5OrHigher())
@@ -71,28 +95,28 @@ winrt::Size ScrollAnchorProvider::ArrangeOverride(winrt::Size const& finalSize)
 
 #pragma region IScrollAnchorProvider
 
-double ScrollAnchorProvider::HorizontalAnchorRatio()
+double ItemsRepeaterScrollHost::HorizontalAnchorRatio()
 {
     return m_horizontalEdge;
 }
 
-void ScrollAnchorProvider::HorizontalAnchorRatio(double value)
+void ItemsRepeaterScrollHost::HorizontalAnchorRatio(double value)
 {
     m_horizontalEdge = value;
 }
 
-double ScrollAnchorProvider::VerticalAnchorRatio()
+double ItemsRepeaterScrollHost::VerticalAnchorRatio()
 {
     return m_verticalEdge;
 }
 
-void ScrollAnchorProvider::VerticalAnchorRatio(double value)
+void ItemsRepeaterScrollHost::VerticalAnchorRatio(double value)
 {
     m_verticalEdge = value;
 }
 
 // TODO: this API should go on UIElement.
-void ScrollAnchorProvider::StartBringIntoView(
+void ItemsRepeaterScrollHost::StartBringIntoView(
     winrt::UIElement const& element,
     double alignmentX,
     double alignmentY,
@@ -111,53 +135,54 @@ void ScrollAnchorProvider::StartBringIntoView(
         !!animate };
 }
 
-bool ScrollAnchorProvider::IsHorizontallyScrollable()
+bool ItemsRepeaterScrollHost::IsHorizontallyScrollable()
 {
     return true;
 }
 
-bool ScrollAnchorProvider::IsVerticallyScrollable()
+bool ItemsRepeaterScrollHost::IsVerticallyScrollable()
 {
     return true;
 }
 
-winrt::UIElement ScrollAnchorProvider::AnchorElement()
+winrt::UIElement ItemsRepeaterScrollHost::AnchorElement()
 {
     return GetAnchorElement();
 }
 
-winrt::event_token ScrollAnchorProvider::ViewportChanged(winrt::ViewportChangedEventHandler const& value)
+
+winrt::event_token ItemsRepeaterScrollHost::ViewportChanged(winrt::ViewportChangedEventHandler const& value)
 {
     return m_viewportChanged.add(value);
 }
 
-void ScrollAnchorProvider::ViewportChanged(winrt::event_token const& token)
+void ItemsRepeaterScrollHost::ViewportChanged(winrt::event_token const& token)
 {
     m_viewportChanged.remove(token);
 }
 
-winrt::event_token ScrollAnchorProvider::PostArrange(winrt::PostArrangeEventHandler const& value)
+winrt::event_token ItemsRepeaterScrollHost::PostArrange(winrt::PostArrangeEventHandler const& value)
 {
     return m_postArrange.add(value);
 }
 
-void ScrollAnchorProvider::PostArrange(winrt::event_token const& token)
+void ItemsRepeaterScrollHost::PostArrange(winrt::event_token const& token)
 {
     m_postArrange.remove(token);
 }
 
-winrt::event_token ScrollAnchorProvider::ConfigurationChanged(
+winrt::event_token ItemsRepeaterScrollHost::ConfigurationChanged(
     winrt::ConfigurationChangedEventHandler const& /*value*/)
 {
     return {};
 }
 
-void ScrollAnchorProvider::ConfigurationChanged(
+void ItemsRepeaterScrollHost::ConfigurationChanged(
     winrt::event_token const& /*token*/)
 {
 }
 
-void ScrollAnchorProvider::RegisterAnchorCandidate(winrt::UIElement const& element)
+void ItemsRepeaterScrollHost::RegisterAnchorCandidate(winrt::UIElement const& element)
 {
     if (HorizontalAnchorRatio() != DoubleUtil::NaN || VerticalAnchorRatio() != DoubleUtil::NaN)
     {
@@ -184,7 +209,7 @@ void ScrollAnchorProvider::RegisterAnchorCandidate(winrt::UIElement const& eleme
     }
 }
 
-void ScrollAnchorProvider::UnregisterAnchorCandidate(winrt::UIElement const& element)
+void ItemsRepeaterScrollHost::UnregisterAnchorCandidate(winrt::UIElement const& element)
 {
     const auto elem = element;
     const auto it = std::find_if(m_candidates.cbegin(), m_candidates.cend(), [&elem](const CandidateInfo& c) { return c.Element() == elem; });
@@ -196,7 +221,7 @@ void ScrollAnchorProvider::UnregisterAnchorCandidate(winrt::UIElement const& ele
     }
 }
 
-winrt::Rect ScrollAnchorProvider::GetRelativeViewport(
+winrt::Rect ItemsRepeaterScrollHost::GetRelativeViewport(
     winrt::UIElement const& element)
 {
     const auto scrollViewer = TryGetScrollViewer();
@@ -230,7 +255,7 @@ winrt::Rect ScrollAnchorProvider::GetRelativeViewport(
 
 #pragma endregion
 
-void ScrollAnchorProvider::ApplyPendingChangeView(const winrt::FxScrollViewer& scrollViewer)
+void ItemsRepeaterScrollHost::ApplyPendingChangeView(const winrt::FxScrollViewer& scrollViewer)
 {
     auto bringIntoView = m_pendingBringIntoView;
     MUX_ASSERT(!bringIntoView.ChangeViewCalled());
@@ -260,7 +285,7 @@ void ScrollAnchorProvider::ApplyPendingChangeView(const winrt::FxScrollViewer& s
             scrollViewer.ExtentHeight() - scrollViewer.ViewportHeight()))) };
     bringIntoView.ChangeViewOffset(changeViewOffset);
 
-    REPEATER_TRACE_INFO(L"ScrollAnchorProvider scroll to absolute offset (%.0f, %.0f) \n", changeViewOffset.X, changeViewOffset.Y);
+    REPEATER_TRACE_INFO(L"ItemsRepeaterScrollHost scroll to absolute offset (%.0f, %.0f) \n", changeViewOffset.X, changeViewOffset.Y);
     scrollViewer.ChangeView(
         box_value(static_cast<double>(changeViewOffset.X)).as<winrt::IReference<double>>(),
         box_value(static_cast<double>(changeViewOffset.Y)).as<winrt::IReference<double>>(),
@@ -270,7 +295,7 @@ void ScrollAnchorProvider::ApplyPendingChangeView(const winrt::FxScrollViewer& s
     m_pendingBringIntoView = std::move(bringIntoView);
 }
 
-double ScrollAnchorProvider::TrackElement(const winrt::UIElement& element, winrt::Rect previousBounds, const winrt::FxScrollViewer& scrollViewer)
+double ItemsRepeaterScrollHost::TrackElement(const winrt::UIElement& element, winrt::Rect previousBounds, const winrt::FxScrollViewer& scrollViewer)
 {
     const auto bounds = winrt::LayoutInformation::GetLayoutSlot(element.as<winrt::FrameworkElement>());
     const auto transformer = element.TransformToVisual(scrollViewer.ContentTemplateRoot());
@@ -334,25 +359,23 @@ double ScrollAnchorProvider::TrackElement(const winrt::UIElement& element, winrt
     return pendingViewportShift;
 }
 
-winrt::FxScrollViewer ScrollAnchorProvider::TryGetScrollViewer()
+winrt::FxScrollViewer ItemsRepeaterScrollHost::TryGetScrollViewer()
 {
     if (!m_scrollViewer)
     {
         // PERF: This operation is expensive especially since it gets invoked every time
         // CalculateDistance is called.
-        m_scrollViewer.set(Content().try_as<winrt::FxScrollViewer>());
-
         if (m_scrollViewer)
         {
-            m_scrollViewer.get().ViewChanging({ this, &ScrollAnchorProvider::OnScrollViewerViewChanging });
-            m_scrollViewer.get().ViewChanged({ this, &ScrollAnchorProvider::OnScrollViewerViewChanged });
-            m_scrollViewer.get().SizeChanged({ this, &ScrollAnchorProvider::OnScrollViewerSizeChanged });
+            m_scrollViewer.get().ViewChanging({ this, &ItemsRepeaterScrollHost::OnScrollViewerViewChanging });
+            m_scrollViewer.get().ViewChanged({ this, &ItemsRepeaterScrollHost::OnScrollViewerViewChanged });
+            m_scrollViewer.get().SizeChanged({ this, &ItemsRepeaterScrollHost::OnScrollViewerSizeChanged });
         }
     }
     return m_scrollViewer.get();
 }
 
-winrt::UIElement ScrollAnchorProvider::GetAnchorElement(_Out_opt_ winrt::Rect* relativeBounds)
+winrt::UIElement ItemsRepeaterScrollHost::GetAnchorElement(_Out_opt_ winrt::Rect* relativeBounds)
 {
     if (m_isAnchorElementDirty)
     {
@@ -418,14 +441,14 @@ winrt::UIElement ScrollAnchorProvider::GetAnchorElement(_Out_opt_ winrt::Rect* r
     return m_anchorElement.get();
 }
 
-void ScrollAnchorProvider::OnScrollViewerViewChanging(
+void ItemsRepeaterScrollHost::OnScrollViewerViewChanging(
     const winrt::IInspectable& sender,
     const winrt::ScrollViewerViewChangingEventArgs& args)
 {
     m_viewportChanged(*this, false /* isFinal */);
 }
 
-void ScrollAnchorProvider::OnScrollViewerViewChanged(
+void ItemsRepeaterScrollHost::OnScrollViewerViewChanged(
     winrt::IInspectable const&,
     winrt::ScrollViewerViewChangedEventArgs const& args)
 {
@@ -445,7 +468,7 @@ void ScrollAnchorProvider::OnScrollViewerViewChanged(
     m_viewportChanged(*this, isFinal);
 }
 
-void ScrollAnchorProvider::OnScrollViewerSizeChanged(
+void ItemsRepeaterScrollHost::OnScrollViewerSizeChanged(
     const winrt::IInspectable& sender,
     const winrt::SizeChangedEventArgs& args)
 {
