@@ -257,12 +257,12 @@
                 <TextBlock Grid.Row="32" Text="AutomationName:" Foreground="Red"/>
                 <TextBlock Grid.Row="33" Grid.Column="0" Text="{x:Bind TeachingTipInVisualTree.(AutomationProperties.Name), Mode=OneWay}"/>
                 <TextBlock Grid.Row="33" Grid.Column="1" Text="{x:Bind TeachingTipInResources.(AutomationProperties.Name), Mode=OneWay}"/>
-                <ComboBox x:Name="AutomationNameComboBox" Grid.Row="34" SelectedIndex="0">
+                <ComboBox x:Name="AutomationNameComboBox" AutomationProperties.Name="AutomationNameComboBox" Grid.Row="34" SelectedIndex="0">
                     <ComboBoxItem x:Name="AutomationNameVisualTree">TeachingTipInVisualTree</ComboBoxItem>
                     <ComboBoxItem x:Name="AutomationNameResources">TeachingTipInResources</ComboBoxItem>
                     <ComboBoxItem x:Name="AutomationNameNone">None</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetAutomationNameButtonClicked" Grid.Row="34" Grid.Column="1">Set</Button>
+                <Button AutomationProperties.Name="SetAutomationNameButton" Click="OnSetAutomationNameButtonClicked" Grid.Row="34" Grid.Column="1">Set</Button>
             </Grid>
         </ScrollViewer>
 

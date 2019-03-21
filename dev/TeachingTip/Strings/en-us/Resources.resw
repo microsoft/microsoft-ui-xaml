@@ -129,4 +129,8 @@
     <value>Tip</value>
     <comment>This is the custom landmark used to denote a tip to narrator.</comment>
   </data>
+  <data name="TeachingTipNotification" xml:space="preserve">
+    <value>Press F6 to move to new notification from</value>
+    <comment>This is the string read by narrator when a new tip is opened.</comment>
+  </data>
 </root>
