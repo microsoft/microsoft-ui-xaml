@@ -14,7 +14,7 @@ using Windows.UI.Xaml.Shapes;
 using Windows.UI.Xaml.Navigation;
 
 #if !BUILD_WINDOWS
-using SnapPointBase = Microsoft.UI.Xaml.Controls.Primitives.SnapPointBase;
+using ScrollSnapPointBase = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointBase;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using RepeatedScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
@@ -325,9 +325,9 @@ namespace MUXControlsTestApp
         private void FixConsolidatedView()
         {
             consolidatedView.Children.Clear();
-            foreach (SnapPointBase snapPoint in ScrollerTestHooks.GetConsolidatedVerticalScrollSnapPoints(markupScroller))
+            foreach (ScrollSnapPointBase snapPoint in ScrollerTestHooks.GetConsolidatedVerticalScrollSnapPoints(markupScroller))
             {
-                Vector2 zone = ScrollerTestHooks.GetSnapPointActualApplicableZone(snapPoint);
+                Vector2 zone = ScrollerTestHooks.GetVerticalSnapPointActualApplicableZone(markupScroller, snapPoint);
                 zone.X = Math.Max(0, zone.X);
                 zone.Y = Math.Min(snapPointColumnHeight, zone.Y);
                 Rectangle rangeRectangle = new Rectangle();

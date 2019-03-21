@@ -3,6 +3,7 @@
 
 using MUXControlsTestApp.Utilities;
 using System;
+using System.Numerics;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Common;
@@ -22,7 +23,10 @@ using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSn
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using RepeatedScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint;
 using ZoomSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint;
+
+using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 #endif
+
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -180,6 +184,107 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual<int>(6, scroller.HorizontalSnapPoints.Count);
                 Verify.AreEqual<int>(6, scroller.VerticalSnapPoints.Count);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Add the same snap points to multiple collections and ensure they use collection-specific data.")]
+        public void CanShareSnapPointsInMultipleCollections()
+        {
+            Scroller scroller1 = null;
+            Scroller scroller2 = null;
+            Scroller scroller3 = null;
+
+            ScrollSnapPoint scrollSnapPoint1 = null;
+            ScrollSnapPoint scrollSnapPoint2 = null;
+            ScrollSnapPoint scrollSnapPoint3 = null;
+
+            RepeatedScrollSnapPoint repeatedScrollSnapPoint1 = null;
+            RepeatedScrollSnapPoint repeatedScrollSnapPoint2 = null;
+            RepeatedScrollSnapPoint repeatedScrollSnapPoint3 = null;
+
+            ZoomSnapPoint zoomSnapPoint1 = null;
+            ZoomSnapPoint zoomSnapPoint2 = null;
+            ZoomSnapPoint zoomSnapPoint3 = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                scroller1 = new Scroller();
+                scroller2 = new Scroller();
+                scroller3 = new Scroller();
+
+                scrollSnapPoint1 = new ScrollSnapPoint(snapPointValue: 10, alignment: ScrollSnapPointsAlignment.Near);
+                scrollSnapPoint2 = new ScrollSnapPoint(snapPointValue: 20, alignment: ScrollSnapPointsAlignment.Near);
+                scrollSnapPoint3 = new ScrollSnapPoint(snapPointValue: 30, alignment: ScrollSnapPointsAlignment.Near);
+
+                repeatedScrollSnapPoint1 = new RepeatedScrollSnapPoint(offset:  10, interval: 10, start:  10, end: 100, alignment: ScrollSnapPointsAlignment.Near);
+                repeatedScrollSnapPoint2 = new RepeatedScrollSnapPoint(offset: 200, interval: 10, start: 110, end: 200, alignment: ScrollSnapPointsAlignment.Near);
+                repeatedScrollSnapPoint3 = new RepeatedScrollSnapPoint(offset: 300, interval: 10, start: 210, end: 300, alignment: ScrollSnapPointsAlignment.Near);
+
+                zoomSnapPoint1 = new ZoomSnapPoint(snapPointValue: 1);
+                zoomSnapPoint2 = new ZoomSnapPoint(snapPointValue: 2);
+                zoomSnapPoint3 = new ZoomSnapPoint(snapPointValue: 3);
+
+                scroller1.HorizontalSnapPoints.Add(scrollSnapPoint1);
+                scroller1.HorizontalSnapPoints.Add(scrollSnapPoint2);
+                scroller1.VerticalSnapPoints.Add(scrollSnapPoint1);
+                scroller1.VerticalSnapPoints.Add(scrollSnapPoint3);
+
+                scroller2.HorizontalSnapPoints.Add(repeatedScrollSnapPoint1);
+                scroller2.HorizontalSnapPoints.Add(repeatedScrollSnapPoint2);
+                scroller2.VerticalSnapPoints.Add(repeatedScrollSnapPoint1);
+                scroller2.VerticalSnapPoints.Add(repeatedScrollSnapPoint3);
+
+                scroller1.ZoomSnapPoints.Add(zoomSnapPoint1);
+                scroller1.ZoomSnapPoints.Add(zoomSnapPoint2);
+                scroller2.ZoomSnapPoints.Add(zoomSnapPoint1);
+                scroller2.ZoomSnapPoints.Add(zoomSnapPoint3);
+
+                scroller3.HorizontalSnapPoints.Add(scrollSnapPoint1);
+                scroller3.HorizontalSnapPoints.Add(scrollSnapPoint1);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Vector2 horizontalScrollSnapPoint11ApplicableZone = ScrollerTestHooks.GetHorizontalSnapPointActualApplicableZone(scroller1, scrollSnapPoint1);
+                Vector2 verticalScrollSnapPoint11ApplicableZone = ScrollerTestHooks.GetVerticalSnapPointActualApplicableZone(scroller1, scrollSnapPoint1);
+                Log.Comment("horizontalScrollSnapPoint11ApplicableZone=" + horizontalScrollSnapPoint11ApplicableZone.ToString());
+                Log.Comment("verticalScrollSnapPoint11ApplicableZone=" + verticalScrollSnapPoint11ApplicableZone.ToString());
+
+                Vector2 horizontalScrollSnapPoint21ApplicableZone = ScrollerTestHooks.GetHorizontalSnapPointActualApplicableZone(scroller2, repeatedScrollSnapPoint1);
+                Vector2 verticalScrollSnapPoint21ApplicableZone = ScrollerTestHooks.GetVerticalSnapPointActualApplicableZone(scroller2, repeatedScrollSnapPoint1);
+                Log.Comment("horizontalScrollSnapPoint21ApplicableZone=" + horizontalScrollSnapPoint21ApplicableZone.ToString());
+                Log.Comment("verticalScrollSnapPoint21ApplicableZone=" + verticalScrollSnapPoint21ApplicableZone.ToString());
+
+                Vector2 zoomSnapPoint11ApplicableZone = ScrollerTestHooks.GetZoomSnapPointActualApplicableZone(scroller1, zoomSnapPoint1);
+                Vector2 zoomSnapPoint21ApplicableZone = ScrollerTestHooks.GetZoomSnapPointActualApplicableZone(scroller2, zoomSnapPoint1);
+                Log.Comment("zoomSnapPoint11ApplicableZone=" + zoomSnapPoint11ApplicableZone.ToString());
+                Log.Comment("zoomSnapPoint21ApplicableZone=" + zoomSnapPoint21ApplicableZone.ToString());
+
+                int combinationCount11 = ScrollerTestHooks.GetHorizontalSnapPointCombinationCount(scroller1, scrollSnapPoint1);
+                int combinationCount31 = ScrollerTestHooks.GetHorizontalSnapPointCombinationCount(scroller3, scrollSnapPoint1);
+                Log.Comment("combinationCount11=" + combinationCount11);
+                Log.Comment("combinationCount31=" + combinationCount31);
+
+                Log.Comment("Expecting different applicable zones for ScrollSnapPoint in horizontal and vertical collections");
+                Verify.AreEqual<float>(15.0f, horizontalScrollSnapPoint11ApplicableZone.Y);
+                Verify.AreEqual<float>(20.0f, verticalScrollSnapPoint11ApplicableZone.Y);
+
+                Log.Comment("Expecting identical applicable zones for RepeatedScrollSnapPoint in horizontal and vertical collections");
+                Verify.AreEqual<float>(10.0f, horizontalScrollSnapPoint21ApplicableZone.X);
+                Verify.AreEqual<float>(10.0f, verticalScrollSnapPoint21ApplicableZone.X);
+                Verify.AreEqual<float>(100.0f, horizontalScrollSnapPoint21ApplicableZone.Y);
+                Verify.AreEqual<float>(100.0f, verticalScrollSnapPoint21ApplicableZone.Y);
+
+                Log.Comment("Expecting different applicable zones for ZoomSnapPoint in two zoom collections");
+                Verify.AreEqual<float>(1.5f, zoomSnapPoint11ApplicableZone.Y);
+                Verify.AreEqual<float>(2.0f, zoomSnapPoint21ApplicableZone.Y);
+
+                Log.Comment("Expecting different combination counts for ScrollSnapPoint in two horizontal collections");
+                Verify.AreEqual<int>(0, combinationCount11);
+                Verify.AreEqual<int>(1, combinationCount31);
             });
         }
     }
