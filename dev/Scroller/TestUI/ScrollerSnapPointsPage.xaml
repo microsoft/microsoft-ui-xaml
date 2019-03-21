@@ -43,6 +43,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -54,8 +55,16 @@
                 Grid.Row="1" Margin="2"/>
             <TextBox x:Name="txtMISnapPointValue" AutomationProperties.Name="txtMISnapPointValue" Text="50" VerticalAlignment="Center"
                 Grid.Row="1" Grid.Column="1" Margin="2"/>
+            <TextBlock Text="Alignment:" VerticalAlignment="Center"
+                Grid.Row="2" Margin="2"/>
+            <ComboBox x:Name="cmbMISnapPointAlignment" AutomationProperties.Name="cmbMISnapPointAlignment" SelectedIndex="0" VerticalAlignment="Center"
+                Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Margin="2">
+                <ComboBoxItem>Near</ComboBoxItem>
+                <ComboBoxItem>Center</ComboBoxItem>
+                <ComboBoxItem>Far</ComboBoxItem>
+            </ComboBox>
             <Button x:Name="btnMIAddSnapPoint" AutomationProperties.Name="btnMIAddSnapPoint" Content="Add Snap Point" Click="BtnMIAddSnapPoint_Click"
-                Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="2"/>
+                Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="2"/>
         </Grid>
 
         <!-- Dependent on ApplicableRangeType
@@ -93,12 +102,13 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Mandatory Regular Snap Points"
+            <TextBlock Text="Mandatory Repeated Snap Points"
                 Foreground="Red" Grid.ColumnSpan="2"/>
             <TextBlock Text="Offset:" VerticalAlignment="Center"
                 Grid.Row="1" Margin="2"/>
@@ -116,8 +126,16 @@
                 Grid.Row="4" Margin="2"/>
             <TextBox x:Name="txtMRSnapPointEnd" AutomationProperties.Name="txtMRSnapPointEnd" Text="320" VerticalAlignment="Center"
                 Grid.Row="4" Grid.Column="1" Margin="2"/>
+            <TextBlock Text="Alignment:" VerticalAlignment="Center"
+                Grid.Row="5" Margin="2"/>
+            <ComboBox x:Name="cmbMRSnapPointAlignment" AutomationProperties.Name="cmbMRSnapPointAlignment" SelectedIndex="0" VerticalAlignment="Center"
+                Grid.Row="5" Grid.Column="1" HorizontalAlignment="Stretch" Margin="2">
+                <ComboBoxItem>Near</ComboBoxItem>
+                <ComboBoxItem>Center</ComboBoxItem>
+                <ComboBoxItem>Far</ComboBoxItem>
+            </ComboBox>
             <Button x:Name="btnMRAddSnapPoint" AutomationProperties.Name="btnMRAddSnapPoint" Content="Add Snap Point" Click="BtnMRAddSnapPoint_Click"
-                Grid.Row="5" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="2"/>
+                Grid.Row="6" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="2"/>
         </Grid>
 
         <!-- Dependent on ApplicableRangeType
@@ -135,7 +153,7 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Optional Regular Snap Points"
+            <TextBlock Text="Optional Repeated Snap Points"
                 Foreground="Red" Grid.ColumnSpan="2"/>
             <TextBlock Text="Offset:" VerticalAlignment="Center"
                 Grid.Row="1" Margin="2"/>

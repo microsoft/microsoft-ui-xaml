@@ -624,13 +624,16 @@ private:
         const winrt::IObservableVector<winrt::ZoomSnapPointBase>& sender,
         const winrt::IVectorChangedEventArgs event);
 
+    template <typename T> bool SnapPointsViewportChangedHelper(
+        winrt::IObservableVector<T> const& snapPoints,
+        double viewport);
     template <typename T> void SnapPointsVectorChangedHelper(
         winrt::IObservableVector<T> const& scrollSnapPoints,
         winrt::IVectorChangedEventArgs const& args,
         std::set<T, winrtProjectionComparator>* snapPointsSet,
         ScrollerDimension dimension);
     template <typename T> void SnapPointsVectorItemInsertedHelper(
-        T changedItem,
+        T insertedItem,
         std::set<T, winrtProjectionComparator>* snapPointsSet);
     template <typename T> void RegenerateSnapPointsSet(
         winrt::IObservableVector<T> const& userVector,
@@ -736,6 +739,8 @@ private:
     double m_unzoomedExtentHeight{ 0.0 };
     double m_viewportWidth{ 0.0 };
     double m_viewportHeight{ 0.0 };
+    bool m_horizontalSnapPointsNeedViewportUpdates{ false }; // True when at least one horizontal snap point is not near aligned.
+    bool m_verticalSnapPointsNeedViewportUpdates{ false }; // True when at least one vertical snap point is not near aligned.
     bool m_isAnchorElementDirty{ true }; // False when m_anchorElement is up-to-date, True otherwise.
 
     // Display information used for mouse-wheel scrolling on pre-RS5 Windows versions.

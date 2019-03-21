@@ -85,7 +85,7 @@ namespace MUXControlsTestApp
             try
             {
                 double value = Convert.ToDouble(txtMISnapPointValue.Text);
-                ScrollSnapPoint newSnapPoint = new ScrollSnapPoint(value, ScrollSnapPointsAlignment.Near);
+                ScrollSnapPoint newSnapPoint = new ScrollSnapPoint(value, (ScrollSnapPointsAlignment)cmbMISnapPointAlignment.SelectedIndex);
                 Color fillColor = GetNewColor();
                 ScrollerTestHooks.SetSnapPointVisualizationColor(newSnapPoint, fillColor);
                 markupScroller.VerticalSnapPoints.Add(newSnapPoint);
@@ -131,12 +131,12 @@ namespace MUXControlsTestApp
                 double interval = Convert.ToDouble(txtMRSnapPointInterval.Text);
                 double start = Convert.ToDouble(txtMRSnapPointStart.Text);
                 double end = Convert.ToDouble(txtMRSnapPointEnd.Text);
-                RepeatedScrollSnapPoint newSnapPoint = new RepeatedScrollSnapPoint(offset, interval, start, end, ScrollSnapPointsAlignment.Near);
+                RepeatedScrollSnapPoint newSnapPoint = new RepeatedScrollSnapPoint(offset, interval, start, end, (ScrollSnapPointsAlignment)cmbMRSnapPointAlignment.SelectedIndex);
                 Color fillColor = GetNewColor();
                 ScrollerTestHooks.SetSnapPointVisualizationColor(newSnapPoint, fillColor);
                 markupScroller.VerticalSnapPoints.Add(newSnapPoint);
 
-                double value = GetFirstRegularSnapPoint(offset, interval, start);
+                double value = GetFirstRepeatedSnapPoint(offset, interval, start);
                 List<double> values = new List<double>();
 
                 while (value <= end)
@@ -171,7 +171,7 @@ namespace MUXControlsTestApp
                 ScrollerTestHooks.SetSnapPointVisualizationColor(newSnapPoint, fillColor);
                 markupScroller.VerticalSnapPoints.Add(newSnapPoint);
 
-                double value = GetFirstRegularSnapPoint(offset, interval, start);
+                double value = GetFirstRepeatedSnapPoint(offset, interval, start);
                 
                 int minColumn = FillSnapPoint(new List<double>(), start, end, fillColor);
                 while (value <= end)
@@ -340,7 +340,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private double GetFirstRegularSnapPoint(double offset, double interval, double start)
+        private double GetFirstRepeatedSnapPoint(double offset, double interval, double start)
         {
             Debug.Assert(offset >= start);
             Debug.Assert(interval > 0);
