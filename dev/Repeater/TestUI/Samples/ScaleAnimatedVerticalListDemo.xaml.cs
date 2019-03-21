@@ -17,43 +17,42 @@ namespace MUXControlsTestApp.Samples
         private void OnElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
         {
             var item = ElementCompositionPreview.GetElementVisual(args.Element);
+            var svVisual = ElementCompositionPreview.GetElementVisual(sv);
             var scrollProperties = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(sv);
+
             var scaleExpresion = scrollProperties.Compositor.CreateExpressionAnimation();
-
-            scaleExpresion.SetReferenceParameter("sv", scrollProperties);
+            scaleExpresion.SetReferenceParameter("svVisual", svVisual);
+            scaleExpresion.SetReferenceParameter("scrollProperties", scrollProperties);
             scaleExpresion.SetReferenceParameter("item", item);
-            scaleExpresion.SetScalarParameter("svHeight", 150);
-            scaleExpresion.SetScalarParameter("itemHeight", 30);
 
-            scaleExpresion.Expression = "1 - abs((svHeight/2 - sv.Translation.Y) - (item.Offset.Y + itemHeight/2))*(.25/(svHeight/2))";
-
-
+            // scale the item based on the distance of the item relative to the center of the viewport.
+            scaleExpresion.Expression = "1 - abs((svVisual.Size.Y/2 - scrollProperties.Translation.Y) - (item.Offset.Y + item.Size.Y/2))*(.25/(svVisual.Size.Y/2))";
             item.StartAnimation("Scale.X", scaleExpresion);
             item.StartAnimation("Scale.Y", scaleExpresion);
 
-            var itemContent = ElementCompositionPreview.GetElementVisual((args.Element as Panel).Children[0]);
+            var centerPointExpression = scrollProperties.Compositor.CreateExpressionAnimation();
+            centerPointExpression.SetReferenceParameter("item", item);
+            centerPointExpression.Expression = "Vector3(item.Size.X/2, item.Size.Y/2, 0)";
+            item.StartAnimation("CenterPoint", centerPointExpression);
+        }
 
-            var offsetAnimation = scrollProperties.Compositor.CreateExpressionAnimation();
-            offsetAnimation.SetReferenceParameter("sv", scrollProperties);
-            offsetAnimation.SetReferenceParameter("item", item);
-            offsetAnimation.SetScalarParameter("svHeight", 150);
-            offsetAnimation.SetScalarParameter("itemHeight", 30);
-            offsetAnimation.SetScalarParameter("itemWidth", 200);
-
-            offsetAnimation.Expression = "abs((svHeight/2 - sv.Translation.Y) - (item.Offset.Y + itemHeight/2)) * itemWidth * (.18/(svHeight/2)) ";
-            itemContent.StartAnimation("Offset.X", offsetAnimation);
+        private void OnItemGotFocus(object sender, RoutedEventArgs e)
+        {
+            ScrollToCenterOfViewport(sender);
         }
 
         private void OnItemClicked(object sender, RoutedEventArgs e)
         {
-            var button = sender as FrameworkElement;
-            var item = button.Parent as UIElement;
+            ScrollToCenterOfViewport(sender);
+        }
 
+        private static void ScrollToCenterOfViewport(object sender)
+        {
+            var item = sender as FrameworkElement;
             item.StartBringIntoView(new BringIntoViewOptions() {
                 VerticalAlignmentRatio = 0.5,
                 AnimationDesired = true,
             });
-
         }
     }
 }

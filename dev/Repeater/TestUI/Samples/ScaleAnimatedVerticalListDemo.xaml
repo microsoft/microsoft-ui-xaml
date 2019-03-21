@@ -6,13 +6,11 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <ScrollViewer x:Name="sv" Width="200" Height="150"  VerticalScrollBarVisibility="Hidden">
+        <ScrollViewer x:Name="sv" Width="200" Height="150" >
             <mux:ItemsRepeater x:Name="repeater">
                 <mux:ItemsRepeater.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel>
-                            <Button Content="{Binding}" Height="30" Width="200" Click="OnItemClicked"/>
-                        </StackPanel>
+                        <Button Content="{Binding}" Click="OnItemClicked" GotFocus="OnItemGotFocus" HorizontalAlignment="Stretch"/>
                     </DataTemplate>
                 </mux:ItemsRepeater.ItemTemplate>
             </mux:ItemsRepeater>
