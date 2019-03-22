@@ -76,10 +76,10 @@ namespace MUXControlsAdhocApp.RepeaterPages
 
             repeater.VerticalCacheLength = 4.0;
             repeater.XYFocusKeyboardNavigation = Windows.UI.Xaml.Input.XYFocusKeyboardNavigationMode.Enabled;
-            var tracker = new ScrollAnchorProvider();
+            var tracker = new ItemsRepeaterScrollHost();
             var scrollViewer = new Windows.UI.Xaml.Controls.ScrollViewer();
             
-            tracker.Content = scrollViewer;
+            tracker.ScrollViewer = scrollViewer;
             scrollViewer.Content = repeater;
             scrollViewer.IsTabStop = false;
             host.Child = tracker;

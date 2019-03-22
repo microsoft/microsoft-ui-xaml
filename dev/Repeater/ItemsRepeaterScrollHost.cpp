@@ -32,60 +32,85 @@ winrt::FxScrollViewer ItemsRepeaterScrollHost::ScrollViewer()
 
 void ItemsRepeaterScrollHost::ScrollViewer(winrt::FxScrollViewer const& value)
 {
-    m_scrollViewer.set(value);
+    m_scrollViewerViewChanging.revoke();
+    m_scrollViewerViewChanged.revoke();
+    m_scrollViewerSizeChanged.revoke();
+
     auto children = Children();
     children.Clear();
     children.Append(value);
+
+    // We don't want to listen to events in RS5+ since this guy is a no-op.
+    if (!SharedHelpers::IsRS5OrHigher())
+    {
+        m_scrollViewerViewChanging = value.ViewChanging(winrt::auto_revoke, { this, &ItemsRepeaterScrollHost::OnScrollViewerViewChanging });
+        m_scrollViewerViewChanged = value.ViewChanged(winrt::auto_revoke, { this, &ItemsRepeaterScrollHost::OnScrollViewerViewChanged });
+        m_scrollViewerSizeChanged = value.SizeChanged(winrt::auto_revoke, { this, &ItemsRepeaterScrollHost::OnScrollViewerSizeChanged });
+    }
 }
 
 #pragma region IFrameworkElementOverrides
 
+winrt::Size ItemsRepeaterScrollHost::MeasureOverride(winrt::Size const& availableSize)
+{
+    winrt::Size desiredSize = {};
+    if (auto scrollViewer = ScrollViewer())
+    {
+        scrollViewer.Measure(availableSize);
+        desiredSize = scrollViewer.DesiredSize();
+    }
+
+    return desiredSize;
+}
+
 winrt::Size ItemsRepeaterScrollHost::ArrangeOverride(winrt::Size const& finalSize)
 {
-    winrt::Size result;
-    if (SharedHelpers::IsRS5OrHigher())
+    winrt::Size result = finalSize;
+    if (auto scrollViewer = ScrollViewer())
     {
-        // No-op when running on RS5 and above. ScrollViewer can do anchoring on its own.
-        result = __super::ArrangeOverride(finalSize);
-    }
-    else
-    {
-        const auto scrollViewer = TryGetScrollViewer();
-        const auto shouldApplyPendingChangeView = scrollViewer && HasPendingBringIntoView() && !m_pendingBringIntoView.ChangeViewCalled();
-
-        winrt::Rect anchorElementRelativeBounds{};
-        const auto anchorElement =
-            // BringIntoView takes precedence over tracking.
-            shouldApplyPendingChangeView ?
-            nullptr :
-            // Pick the best candidate depending on HorizontalAnchorRatio and VerticalAnchorRatio.
-            // The best candidate is the element that's the closest to the edge of interest.
-            GetAnchorElement(&anchorElementRelativeBounds);
-
-        result = __super::ArrangeOverride(finalSize);
-
-        m_pendingViewportShift = 0.0;
-
-
-        if (shouldApplyPendingChangeView)
+        if (SharedHelpers::IsRS5OrHigher())
         {
-            ApplyPendingChangeView(scrollViewer);
+            // No-op when running on RS5 and above. ScrollViewer can do anchoring on its own.
+            scrollViewer.Arrange({ 0, 0, finalSize.Width, finalSize.Height });
         }
-        else if (anchorElement)
+        else
         {
-            // The anchor element might have changed its position relative to us.
-            // If that's the case, we should shift the viewport to follow it as much as possible.
-            m_pendingViewportShift = TrackElement(anchorElement, anchorElementRelativeBounds, scrollViewer);
-        }
-        else if (!scrollViewer)
-        {
-            m_pendingBringIntoView.Reset();
-        }
+            const auto shouldApplyPendingChangeView = scrollViewer && HasPendingBringIntoView() && !m_pendingBringIntoView.ChangeViewCalled();
 
-        m_candidates.clear();
-        m_isAnchorElementDirty = true;
+            winrt::Rect anchorElementRelativeBounds{};
+            const auto anchorElement =
+                // BringIntoView takes precedence over tracking.
+                shouldApplyPendingChangeView ?
+                nullptr :
+                // Pick the best candidate depending on HorizontalAnchorRatio and VerticalAnchorRatio.
+                // The best candidate is the element that's the closest to the edge of interest.
+                GetAnchorElement(&anchorElementRelativeBounds);
 
-        m_postArrange(*this);
+            scrollViewer.Arrange({ 0, 0, finalSize.Width, finalSize.Height });
+            
+            m_pendingViewportShift = 0.0;
+
+
+            if (shouldApplyPendingChangeView)
+            {
+                ApplyPendingChangeView(scrollViewer);
+            }
+            else if (anchorElement)
+            {
+                // The anchor element might have changed its position relative to us.
+                // If that's the case, we should shift the viewport to follow it as much as possible.
+                m_pendingViewportShift = TrackElement(anchorElement, anchorElementRelativeBounds, scrollViewer);
+            }
+            else if (!scrollViewer)
+            {
+                m_pendingBringIntoView.Reset();
+            }
+
+            m_candidates.clear();
+            m_isAnchorElementDirty = true;
+
+            m_postArrange(*this);
+        }
     }
 
     return result;
@@ -186,8 +211,7 @@ void ItemsRepeaterScrollHost::RegisterAnchorCandidate(winrt::UIElement const& el
 {
     if (HorizontalAnchorRatio() != DoubleUtil::NaN || VerticalAnchorRatio() != DoubleUtil::NaN)
     {
-        const auto scrollViewer = TryGetScrollViewer();
-        if (scrollViewer)
+        if (const auto scrollViewer = ScrollViewer())
         {
 
 #ifdef _DEBUG
@@ -224,8 +248,7 @@ void ItemsRepeaterScrollHost::UnregisterAnchorCandidate(winrt::UIElement const& 
 winrt::Rect ItemsRepeaterScrollHost::GetRelativeViewport(
     winrt::UIElement const& element)
 {
-    const auto scrollViewer = TryGetScrollViewer();
-    if (scrollViewer)
+    if (const auto scrollViewer = ScrollViewer())
     {
         const auto elem = element;
         const bool hasLockedViewport = HasPendingBringIntoView();
@@ -359,29 +382,11 @@ double ItemsRepeaterScrollHost::TrackElement(const winrt::UIElement& element, wi
     return pendingViewportShift;
 }
 
-winrt::FxScrollViewer ItemsRepeaterScrollHost::TryGetScrollViewer()
-{
-    if (!m_scrollViewer)
-    {
-        // PERF: This operation is expensive especially since it gets invoked every time
-        // CalculateDistance is called.
-        if (m_scrollViewer)
-        {
-            m_scrollViewer.get().ViewChanging({ this, &ItemsRepeaterScrollHost::OnScrollViewerViewChanging });
-            m_scrollViewer.get().ViewChanged({ this, &ItemsRepeaterScrollHost::OnScrollViewerViewChanged });
-            m_scrollViewer.get().SizeChanged({ this, &ItemsRepeaterScrollHost::OnScrollViewerSizeChanged });
-        }
-    }
-    return m_scrollViewer.get();
-}
-
 winrt::UIElement ItemsRepeaterScrollHost::GetAnchorElement(_Out_opt_ winrt::Rect* relativeBounds)
 {
     if (m_isAnchorElementDirty)
     {
-        winrt::FxScrollViewer scrollViewer = TryGetScrollViewer();
-
-        if (scrollViewer)
+        if (const auto scrollViewer = ScrollViewer())
         {
             // ScrollViewer.ChangeView is not synchronous, so we need to account for the pending ChangeView call
             // and make sure we are locked on the target viewport.

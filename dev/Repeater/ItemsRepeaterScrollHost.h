@@ -14,6 +14,7 @@ public:
 
 #pragma region IFrameworkElementOverrides
 
+    winrt::Size MeasureOverride(winrt::Size const& availableSize);
     winrt::Size ArrangeOverride(winrt::Size const& finalSize);
 
 #pragma endregion
@@ -76,7 +77,6 @@ public:
 private:
     void ApplyPendingChangeView(const winrt::FxScrollViewer& scrollViewer);
     double TrackElement(const winrt::UIElement& element, winrt::Rect previousBounds, const winrt::FxScrollViewer& scrollViewer);
-    winrt::FxScrollViewer TryGetScrollViewer();
     winrt::UIElement GetAnchorElement(_Out_opt_ winrt::Rect* relativeBounds = nullptr);
 
     void OnScrollViewerViewChanging(const winrt::IInspectable& sender, const winrt::ScrollViewerViewChangingEventArgs& args);
@@ -157,7 +157,6 @@ private:
 
     std::vector<CandidateInfo> m_candidates;
 
-    tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ this };
     tracker_ref<winrt::UIElement> m_anchorElement{ this };
     winrt::Rect m_anchorElementRelativeBounds{};
     // Whenever the m_candidates list changes, we set this to true.
@@ -183,4 +182,9 @@ private:
 
     event_source<winrt::ViewportChangedEventHandler> m_viewportChanged{ this };
     event_source<winrt::PostArrangeEventHandler> m_postArrange{ this };
+
+    winrt::FxScrollViewer::ViewChanging_revoker m_scrollViewerViewChanging{};
+    winrt::FxScrollViewer::ViewChanged_revoker m_scrollViewerViewChanged{};
+    winrt::FxScrollViewer::SizeChanged_revoker m_scrollViewerSizeChanged{};
+
 };
