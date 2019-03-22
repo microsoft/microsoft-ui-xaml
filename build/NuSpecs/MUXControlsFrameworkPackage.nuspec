@@ -10,12 +10,13 @@
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <tags>Windows WinUI UWP XAML Fluent Controls Downlevel Compatibility TreeView ColorPicker NavigationView MenuBar</tags>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
-    <licenseUrl>https://aka.ms/winui_license </licenseUrl>
+    <license type="file">license.txt</license>
     <projectUrl>https://aka.ms/winui</projectUrl>
     <iconUrl>https://aka.ms/winui_icon</iconUrl>
   </metadata>
   <files>
     <file src="readme.txt"/>
+    <file src="license.txt"/>
 
     <file target="lib\uap10.0" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml\sdk\Microsoft.UI.Xaml.winmd"/>
     <file target="lib\uap10.0" src="Intellisense\Microsoft.UI.Xaml.xml"/>
