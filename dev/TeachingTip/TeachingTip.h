@@ -78,6 +78,7 @@ private:
     void OnIconSourceChanged();
     void OnPlacementMarginChanged();
     void OnIsLightDismissEnabledChanged();
+    void OnShouldConstrainToRootBoundsChanged();
     void OnHeroContentPlacementChanged();
 
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);

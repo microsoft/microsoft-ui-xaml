@@ -125,6 +125,10 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         OnIsLightDismissEnabledChanged();
     }
+    //else if (property == s_ShouldConstrainToRootBoundsProperty)
+    //{
+     //   OnShouldConstrainToRootBoundsChanged();
+    //}
     else if (property == s_TailVisibilityProperty)
     {
         OnTailVisibilityChanged();
@@ -715,6 +719,7 @@ void TeachingTip::OnIsOpenChanged()
             auto popup = winrt::Popup();
             m_popupOpenedRevoker = popup.Opened(winrt::auto_revoke, { this, &TeachingTip::OnPopupOpened });
             m_popupClosedRevoker = popup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
+            popup.ShouldConstrainToRootBounds(false);
             m_popup.set(popup);
         }
 
@@ -815,6 +820,14 @@ void TeachingTip::OnIsLightDismissEnabledChanged()
         m_lightDismissIndicatorPopupClosedRevoker.revoke();
     }
     UpdateButtonsState();
+}
+
+void TeachingTip::OnShouldConstrainToRootBoundsChanged()
+{
+    if (auto&& popup = m_popup.get())
+    {
+        //popup.ShouldConstrainToRootBounds(ShouldConstrainToRootBounds());
+    }
 }
 
 void TeachingTip::OnHeroContentPlacementChanged()

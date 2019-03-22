@@ -106,6 +106,8 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     Object CloseButtonCommandParameter;
 
     Windows.UI.Xaml.Thickness PlacementMargin;
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean ShouldConstrainToRootBounds;
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsLightDismissEnabled;
     [MUX_DEFAULT_VALUE("winrt::TeachingTipPlacementMode::Auto")]
