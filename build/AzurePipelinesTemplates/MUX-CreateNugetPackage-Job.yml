@@ -19,7 +19,6 @@ jobs:
     pool:
       name: Package ES Lab E
 
-
   steps:
   - ${{if parameters.signConfig }}:
     - task: PkgESSetupBuild@10
@@ -30,7 +29,7 @@ jobs:
         nugetVer: true
 
   - template: MUX-PopulateBuildDateAndRevision-Steps.yml
-  
+
   - script: |
       echo parameters.jobName '${{ parameters.jobName }}'
       echo parameters.buildOutputDir '${{ parameters.buildOutputDir }}'
@@ -46,6 +45,19 @@ jobs:
       downloadPath: '$(Build.SourcesDirectory)\Artifacts'
 
   - template: MUX-InstallNuget-Steps.yml
+
+  - ${{if parameters.signConfig }}:
+    # Install SDK since the custom appx generation needs to resolve winmd types from it.
+    - template: MUX-InstallWindowsSDK-Steps.yml
+
+    # Re-create framework packages because 
+    - template: MUX-MakeFrameworkPackages-Steps.yml
+
+    - task: CopyFiles@2
+      inputs:
+        targetFolder: '${{ parameters.nupkgdir }}'
+        sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop'
+        Contents: '**\Microsoft.UI.Xaml*.appx'
 
   - task: powershell@2
     displayName: 'build-nupkg.ps1'
