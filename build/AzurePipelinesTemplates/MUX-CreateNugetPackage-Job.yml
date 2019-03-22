@@ -50,9 +50,10 @@ jobs:
     # Install SDK since the custom appx generation needs to resolve winmd types from it.
     - template: MUX-InstallWindowsSDK-Steps.yml
 
-    # Re-create framework packages because 
+    # Re-create framework packages because we made them in the build step against unsigned binaries.
     - template: MUX-MakeFrameworkPackages-Steps.yml
 
+    # Copy the re-made framework packages into the same location in the artifact drop to be republished at the end of the job.
     - task: CopyFiles@2
       inputs:
         targetFolder: '${{ parameters.nupkgdir }}'
