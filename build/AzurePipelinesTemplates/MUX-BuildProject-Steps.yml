@@ -14,11 +14,6 @@ steps:
       echo parameters.buildOutputDir = '${{ parameters.buildOutputDir }}'
     displayName: 'BuildProject: Display parameters'
 
-  - task: CmdLine@1
-    displayName: 'Display build machine environment variables'
-    inputs:
-      filename: 'set'
-
   - task: powershell@2
     inputs:
       targetType: filePath
@@ -27,6 +22,11 @@ steps:
     displayName: 'Install Insider SDK (18323)'
 
   - template: MUX-InstallNuget-Steps.yml
+
+  - task: CmdLine@1
+    displayName: 'Display build machine environment variables'
+    inputs:
+      filename: 'set'
 
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
     displayName: 'NuGet restore ${{ parameters.solutionPath }}'
