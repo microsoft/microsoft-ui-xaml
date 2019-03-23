@@ -42,10 +42,10 @@
             var winRtTypeName = MapToWinRtName(winmdType);
             CppAbiName = MapToAbiName(winmdType);
             CppAbiInterfaceName = MapToAbiInterfaceName(winmdType);
-
+			var cppFullTypeName = (CppNamespace != null ? (CppNamespace + "::" ) : "") + winRtTypeName;
             WinRtFullName = string.Join(".", winRtNamespace, winRtTypeName).TrimStart('.');
             MetadataFullName = GetMetadataFullName(WinRtFullName);
-            CppWinRtName = winmdType.IsPrimitive ? GetPrimitiveTypeName(winRtTypeName) : string.Format("winrt::{0}", winRtTypeName);
+            CppWinRtName = winmdType.IsPrimitive ? GetPrimitiveTypeName(winRtTypeName) : string.Format("winrt::{0}", cppFullTypeName);
 
             ListWinRtTypes = GetCollectionTypes(winmdType, typeof(IList<>));
             MapWinRtTypes = GetCollectionTypes(winmdType, typeof(IDictionary<,>));
@@ -96,12 +96,6 @@
                 case "IObservableVector`1":
                     name = "IObservableVector";
                     break;
-				case "ScrollViewer":
-					if(winmdType.FullName == "Windows.UI.Xaml.Controls.ScrollViewer")
-					{
-						name = "FxScrollViewer";
-					}
-					break;
             }
 
             return name;
