@@ -29,20 +29,19 @@ if "%TFS_BUILDCONFIGURATION%" EQU "" (
 
 set BasePackageName=Microsoft.UI.Xaml
 
-if "%XES_OUTDIR%" == "" (
-	set WinMDInputs=%CD%\..\BuildOutput\%TFS_BUILDCONFIGURATION%\%TFS_PLATFORM%\Microsoft.UI.Xaml\Microsoft.UI.Xaml.winmd
+echo BUILDOUTPUT_OVERRIDE = %BUILDOUTPUT_OVERRIDE%
+if "%BUILDOUTPUT_OVERRIDE%" == "" (
+	set InputDirectory=%CD%\..\BuildOutput\%TFS_BUILDCONFIGURATION%\%TFS_PLATFORM%\Microsoft.UI.Xaml
 	set OutputDirectory=%CD%\..\BuildOutput\%TFS_BUILDCONFIGURATION%\%TFS_PLATFORM%\FrameworkPackage
-	set TestAppManifest=%CD%\..\BuildOutput\%TFS_BUILDCONFIGURATION%\%TFS_PLATFORM%\MUXControlsTestApp\AppxManifest.xml
 ) else (
-	set WinMDInputs=%XES_OUTDIR%\Microsoft.UI.Xaml\Microsoft.UI.Xaml.winmd
-	set OutputDirectory=%XES_OUTDIR%\FrameworkPackage
-	set TestAppManifest=%XES_OUTDIR%\MUXControlsTestApp\AppxManifest.xml
+	set InputDirectory=%BUILDOUTPUT_OVERRIDE%\Microsoft.UI.Xaml
+	set OutputDirectory=%BUILDOUTPUT_OVERRIDE%\FrameworkPackage
 )
 
-call ..\build\FrameworkPackage\MakeFrameworkPackage.cmd -Inputs '%WinMDInputs%' ^
+call ..\build\FrameworkPackage\MakeFrameworkPackage.cmd -InputDirectory '%InputDirectory%' ^
 -OutputDirectory '%OutputDirectory%' -BasePackageName '%BasePackageName%' -PackageNameSuffix 2.1 ^
 -Platform %TFS_PLATFORM% -Configuration %TFS_BUILDCONFIGURATION% ^
--TestAppManifest %TestAppManifest% %3 %4 %5 %6 %7 %8 %9
+ %3 %4 %5 %6 %7 %8 %9
 
 if %ERRORLEVEL% NEQ 0 (
 	@echo ##vso[task.logissue type=error;] MakeFrameworkPackage failed with exit code %ERRORLEVEL%
