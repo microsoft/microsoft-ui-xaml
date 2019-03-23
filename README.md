@@ -86,7 +86,7 @@ and
 
 Prerelease Microsoft.UI.Xaml packages also include previews of features and controls that we are still working on, like:
 * [LayoutPanel](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.layoutpanel),
-[Repeater](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.repeater),
+[ItemsRepeater](https://docs.microsoft.com/windows/uwp/design/controls-and-patterns/items-repeater),
 [Scroller](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scroller),
 and
 [ScrollViewer](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollviewer),
