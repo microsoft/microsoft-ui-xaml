@@ -22,6 +22,8 @@ public:
     static void SetTipShouldHaveShadow(const winrt::TeachingTip& teachingTip, bool tipShadow);
     static void SetContentElevation(const winrt::TeachingTip& teachingTip, float elevation);
     static void SetTailElevation(const winrt::TeachingTip& teachingTip, float elevation);
+    static void SetUseTestScreenBounds(const winrt::TeachingTip& teachingTip, bool useTestScreenBounds);
+    static void SetTestScreenBounds(const winrt::TeachingTip& teachingTip, const winrt::Rect& testScreenBounds);
     static void SetUseTestWindowBounds(const winrt::TeachingTip& teachingTip, bool useTestWindowBounds);
     static void SetTestWindowBounds(const winrt::TeachingTip& teachingTip, const winrt::Rect& testWindowBounds);
     static void SetTipFollowsTarget(const winrt::TeachingTip& teachingTIp, bool tipFollowsTarget);

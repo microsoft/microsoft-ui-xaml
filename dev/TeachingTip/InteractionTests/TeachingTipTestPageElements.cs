@@ -119,6 +119,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Edit testWindowBoundsHeightTextBox;
 
+        public CheckBox GetUseTestScreenBoundsCheckbox()
+        {
+            return GetElement(ref useTestScreenBoundsCheckbox, "UseTestScreenBoundsCheckbox");
+        }
+        private CheckBox useTestScreenBoundsCheckbox;
+
+        public Edit GetTestScreenBoundsXTextBox()
+        {
+            return GetElement(ref testScreenBoundsXTextBox, "TestScreenBoundsXTextBox");
+        }
+        private Edit testScreenBoundsXTextBox;
+
+        public Edit GetTestScreenBoundsYTextBox()
+        {
+            return GetElement(ref testScreenBoundsYTextBox, "TestScreenBoundsYTextBox");
+        }
+        private Edit testScreenBoundsYTextBox;
+
+        public Edit GetTestScreenBoundsWidthTextBox()
+        {
+            return GetElement(ref testScreenBoundsWidthTextBox, "TestScreenBoundsWidthTextBox");
+        }
+        private Edit testScreenBoundsWidthTextBox;
+
+        public Edit GetTestScreenBoundsHeightTextBox()
+        {
+            return GetElement(ref testScreenBoundsHeightTextBox, "TestScreenBoundsHeightTextBox");
+        }
+        private Edit testScreenBoundsHeightTextBox;
+
         public TextBlock GetTipWidthTextBlock()
         {
             return GetElement(ref tipWidthTextBlock, "TipWidthTextBlock");
@@ -208,6 +238,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return GetElement(ref isLightDismissEnabledButton, "IsLightDismissEnabledButton");
         }
         private Button isLightDismissEnabledButton;
+
+        public ComboBox GetShouldConstrainToRootBoundsComboBox()
+        {
+            return GetElement(ref shouldConstrainToRootBoundsComboBox, "ShouldConstrainToRootBoundsComboBox");
+        }
+        private ComboBox shouldConstrainToRootBoundsComboBox;
+
+        public Button GetShouldConstrainToRootBoundsButton()
+        {
+            return GetElement(ref shouldConstrainToRootBoundsButton, "ShouldConstrainToRootBoundsButton");
+        }
+        private Button shouldConstrainToRootBoundsButton;
 
         public Button GetShowButton()
         {

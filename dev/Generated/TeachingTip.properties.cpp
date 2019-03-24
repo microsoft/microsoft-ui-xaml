@@ -23,6 +23,7 @@ GlobalDependencyProperty TeachingTipProperties::s_IsLightDismissEnabledProperty{
 GlobalDependencyProperty TeachingTipProperties::s_IsOpenProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_PlacementMarginProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_PreferredPlacementProperty{ nullptr };
+GlobalDependencyProperty TeachingTipProperties::s_ShouldConstrainToRootBoundsProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_SubtitleProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_TailVisibilityProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_TargetProperty{ nullptr };
@@ -205,6 +206,17 @@ void TeachingTipProperties::EnsureProperties()
                 ValueHelper<winrt::TeachingTipPlacementMode>::BoxValueIfNecessary(winrt::TeachingTipPlacementMode::Auto),
                 winrt::PropertyChangedCallback(&OnPreferredPlacementPropertyChanged));
     }
+    if (!s_ShouldConstrainToRootBoundsProperty)
+    {
+        s_ShouldConstrainToRootBoundsProperty =
+            InitializeDependencyProperty(
+                L"ShouldConstrainToRootBounds",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TeachingTip>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnShouldConstrainToRootBoundsPropertyChanged));
+    }
     if (!s_SubtitleProperty)
     {
         s_SubtitleProperty =
@@ -279,6 +291,7 @@ void TeachingTipProperties::ClearProperties()
     s_IsOpenProperty = nullptr;
     s_PlacementMarginProperty = nullptr;
     s_PreferredPlacementProperty = nullptr;
+    s_ShouldConstrainToRootBoundsProperty = nullptr;
     s_SubtitleProperty = nullptr;
     s_TailVisibilityProperty = nullptr;
     s_TargetProperty = nullptr;
@@ -399,6 +412,14 @@ void TeachingTipProperties::OnPlacementMarginPropertyChanged(
 }
 
 void TeachingTipProperties::OnPreferredPlacementPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TeachingTip>();
+    winrt::get_self<TeachingTip>(owner)->OnPropertyChanged(args);
+}
+
+void TeachingTipProperties::OnShouldConstrainToRootBoundsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -594,6 +615,16 @@ void TeachingTipProperties::PreferredPlacement(winrt::TeachingTipPlacementMode c
 winrt::TeachingTipPlacementMode TeachingTipProperties::PreferredPlacement()
 {
     return ValueHelper<winrt::TeachingTipPlacementMode>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_PreferredPlacementProperty));
+}
+
+void TeachingTipProperties::ShouldConstrainToRootBounds(bool value)
+{
+    static_cast<TeachingTip*>(this)->SetValue(s_ShouldConstrainToRootBoundsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool TeachingTipProperties::ShouldConstrainToRootBounds()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TeachingTip*>(this)->GetValue(s_ShouldConstrainToRootBoundsProperty));
 }
 
 void TeachingTipProperties::Subtitle(winrt::hstring const& value)

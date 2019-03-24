@@ -41,6 +41,8 @@ public:
     double GetVerticalOffset();
     void SetUseTestWindowBounds(bool useTestWindowBounds);
     void SetTestWindowBounds(const winrt::Rect& testWindowBounds);
+    void SetUseTestScreenBounds(bool useTestScreenBounds);
+    void SetTestScreenBounds(const winrt::Rect& testScreenBounds);
     void SetTipFollowsTarget(bool tipFollowsTarget);
     void SetExpandAnimationDuration(const winrt::TimeSpan& expandAnimationDuration);
     void SetContractAnimationDuration(const winrt::TimeSpan& contractAnimationDuration);
@@ -88,7 +90,7 @@ private:
     void OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnTailOcclusionGridLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
 
-    void RaiseClosingEvent();
+    void RaiseClosingEvent(bool attachDefferalCompletedHandler);
     void ClosePopupWithAnimationIfAvailable();
     void ClosePopup();
 
@@ -137,12 +139,17 @@ private:
     winrt::Rect m_currentTargetBounds{ 0,0,0,0 };
 
     bool m_isTemplateApplied{ false };
+    bool m_createNewPopupOnOpen{ false };
+
+    bool m_tipDoesNotFit{ false };
 
     bool m_isExpandAnimationPlaying{ false };
     bool m_isContractAnimationPlaying{ false };
 
     bool m_useTestWindowBounds{ false };
     winrt::Rect m_testWindowBounds{ 0,0,0,0 };
+    bool m_useTestScreenBounds{ false };
+    winrt::Rect m_testScreenBounds{ 0,0,0,0 };
 
     bool m_tipShouldHaveShadow{ true };
 

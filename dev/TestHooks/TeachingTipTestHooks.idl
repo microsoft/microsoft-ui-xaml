@@ -8,6 +8,8 @@ runtimeclass TeachingTipTestHooks
     static void SetTipShouldHaveShadow(MU_XC_NAMESPACE.TeachingTip teachingTip, Boolean tipShouldHaveShadow);
     static void SetContentElevation(MU_XC_NAMESPACE.TeachingTip teachingTip, Single elevation);
     static void SetTailElevation(MU_XC_NAMESPACE.TeachingTip teachingTip, Single elevation);
+    static void SetUseTestScreenBounds(MU_XC_NAMESPACE.TeachingTip teachingTip, Boolean useTestScreenBounds);
+    static void SetTestScreenBounds(MU_XC_NAMESPACE.TeachingTip teachingTip, Windows.Foundation.Rect testScreenBounds);
     static void SetUseTestWindowBounds(MU_XC_NAMESPACE.TeachingTip teachingTip, Boolean useTestWindowBounds);
     static void SetTestWindowBounds(MU_XC_NAMESPACE.TeachingTip teachingTip, Windows.Foundation.Rect testWindowBounds);
     static void SetTipFollowsTarget(MU_XC_NAMESPACE.TeachingTip teachingTip, Boolean tipFollowsTarget);

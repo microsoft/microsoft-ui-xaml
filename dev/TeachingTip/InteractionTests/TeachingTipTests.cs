@@ -191,58 +191,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     ScrollTargetIntoView();
                     ScrollBy(10);
                     var targetRect = GetTargetBounds();
-                    UseTestWindowBounds(targetRect.W - 329, targetRect.X - 340, targetRect.Y + 656, targetRect.Z + 680);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("Top"));
-                    CloseTeachingTipProgrammatically();
-                    UseTestWindowBounds(targetRect.W - 329, targetRect.X - 336, targetRect.Y + 656, targetRect.Z + 680);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("Bottom"));
-                    CloseTeachingTipProgrammatically();
-                    UseTestWindowBounds(targetRect.W - 329, targetRect.X - 318, targetRect.Y + 658, targetRect.Z + 640);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedTop"));
-                    CloseTeachingTipProgrammatically();
-                    UseTestWindowBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 658, targetRect.Z + 403);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("RightEdgeAlignedBottom"));
-                    CloseTeachingTipProgrammatically();
-                    UseTestWindowBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 643, targetRect.Z + 403);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedBottom"));
-                    CloseTeachingTipProgrammatically();
-                    UseTestWindowBounds(targetRect.W - 329, targetRect.X - 300, targetRect.Y + 643, targetRect.Z + 603);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("LeftEdgeAlignedTop"));
-                    CloseTeachingTipProgrammatically();
-                    UseTestWindowBounds(targetRect.W - 328, targetRect.X - 340, targetRect.Y + 348, targetRect.Z + 608);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedLeft"));
-                    CloseTeachingTipProgrammatically();
-                    UseTestWindowBounds(targetRect.W - 20, targetRect.X - 340, targetRect.Y + 348, targetRect.Z + 608);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("TopEdgeAlignedRight"));
-                    CloseTeachingTipProgrammatically();
-                    UseTestWindowBounds(targetRect.W - 328, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 444);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedLeft"));
-                    CloseTeachingTipProgrammatically();
-                    UseTestWindowBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 348, targetRect.Z + 444);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("BottomEdgeAlignedRight"));
-                    CloseTeachingTipProgrammatically();
+                    TestAutoPlacementForWindowOrScreenBounds(targetRect, true);
+                    
+                    SetShouldConstrainToRootBounds(false);
 
-                    // Remove the hero content;
-                    SetHeroContent(HeroContentOptions.NoContent);
-
-                    UseTestWindowBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("Left"));
-                    CloseTeachingTipProgrammatically();
-                    UseTestWindowBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("Right"));
-                    CloseTeachingTipProgrammatically();
+                    TestAutoPlacementForWindowOrScreenBounds(targetRect, false);
                 }
             }
         }
@@ -348,6 +301,117 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void CanSwitchShouldConstrainToRootBounds()
+        {
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+
+                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
+
+                    ScrollTargetIntoView();
+                    ScrollBy(10);
+                    OpenTeachingTip();
+                    CloseTeachingTipProgrammatically();
+                    SetShouldConstrainToRootBounds(false);
+                    OpenTeachingTip();
+                    CloseTeachingTipProgrammatically();
+                    SetShouldConstrainToRootBounds(true);
+                    OpenTeachingTip();
+                    CloseTeachingTipProgrammatically();
+                    OpenTeachingTip();
+                    SetShouldConstrainToRootBounds(false);
+                    CloseTeachingTipProgrammatically();
+                    OpenTeachingTip();
+                    SetShouldConstrainToRootBounds(true);
+                    CloseTeachingTipProgrammatically();
+                    OpenTeachingTip();
+                    CloseTeachingTipProgrammatically();
+                }
+            }
+        }
+
+
+        [TestMethod]
+        public void TipsWhichDoNotFitDoNotOpen()
+        {
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+
+                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
+
+                    ScrollTargetIntoView();
+                    ScrollBy(10);
+                    UseTestWindowBounds(10, 10, 10, 10);
+
+                    elements.GetShowButton().Invoke();
+
+                    var message1 = GetTeachingTipDebugMessage(1);
+                    Verify.IsTrue(message1.ToString().Contains("Closed"));
+                    Verify.IsTrue(message1.ToString().Contains("Programmatic"));
+
+                    UseTestScreenBounds(10, 10, 10, 10);
+                    SetShouldConstrainToRootBounds(false);
+
+                    elements.GetShowButton().Invoke();
+
+                    var message3 = GetTeachingTipDebugMessage(3);
+                    Verify.IsTrue(message3.ToString().Contains("Closed"));
+                    Verify.IsTrue(message3.ToString().Contains("Programmatic"));
+
+                    ClearTeachingTipDebugMessages();
+                }
+            }
+        }
+
+        private void TestAutoPlacementForWindowOrScreenBounds(Vector4 targetRect, bool forWindowBounds)
+        {
+
+            UseTestBounds(targetRect.W - 329, targetRect.X - 340, targetRect.Y + 656, targetRect.Z + 680, targetRect, forWindowBounds);
+            VerifyPlacement("Top");
+            UseTestBounds(targetRect.W - 329, targetRect.X - 336, targetRect.Y + 656, targetRect.Z + 680, targetRect, forWindowBounds);
+            VerifyPlacement("Bottom");
+            UseTestBounds(targetRect.W - 329, targetRect.X - 318, targetRect.Y + 659, targetRect.Z + 640, targetRect, forWindowBounds);
+            VerifyPlacement("RightEdgeAlignedTop");
+            UseTestBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 659, targetRect.Z + 403, targetRect, forWindowBounds);
+            VerifyPlacement("RightEdgeAlignedBottom");
+            UseTestBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 643, targetRect.Z + 403, targetRect, forWindowBounds);
+            VerifyPlacement("LeftEdgeAlignedBottom");
+            UseTestBounds(targetRect.W - 329, targetRect.X - 300, targetRect.Y + 643, targetRect.Z + 603, targetRect, forWindowBounds);
+            VerifyPlacement("LeftEdgeAlignedTop");
+            UseTestBounds(targetRect.W - 327, targetRect.X - 340, targetRect.Y + 349, targetRect.Z + 608, targetRect, forWindowBounds);
+            VerifyPlacement("TopEdgeAlignedLeft");
+            UseTestBounds(targetRect.W - 20, targetRect.X - 340, targetRect.Y + 348, targetRect.Z + 608, targetRect, forWindowBounds);
+            VerifyPlacement("TopEdgeAlignedRight");
+            UseTestBounds(targetRect.W - 327, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 444, targetRect, forWindowBounds);
+            VerifyPlacement("BottomEdgeAlignedLeft");
+            UseTestBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 444, targetRect, forWindowBounds);
+            VerifyPlacement("BottomEdgeAlignedRight");
+
+            // Remove the hero content;
+            SetHeroContent(HeroContentOptions.NoContent);
+
+            UseTestBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20, targetRect, forWindowBounds);
+            VerifyPlacement("Left");
+            UseTestBounds(targetRect.W - 19, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20, targetRect, forWindowBounds);
+            VerifyPlacement("Right");
+
+            SetHeroContent(HeroContentOptions.RedSquare);
+        }
+
+        private void VerifyPlacement(String placement)
+        {
+            OpenTeachingTip();
+            Verify.IsTrue(GetEffectivePlacement().Equals(placement));
+            CloseTeachingTipProgrammatically();
+        }
+
         private void ScrollTargetIntoView()
         {
             elements.GetBringTargetIntoViewButton().Invoke();
@@ -358,7 +422,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if(elements.GetIsOpenCheckBox().ToggleState != ToggleState.On)
             {
-                elements.GetShowButton().Tap();
+                elements.GetShowButton().Invoke();
                 if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
                 {
                     WaitForUnchecked(elements.GetIsIdleCheckBox());
@@ -444,6 +508,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 elements.GetIsLightDismissEnabledComboBox().SelectItemByName("False");
             }
             elements.GetIsLightDismissEnabledButton().Invoke();
+        }
+
+        private void SetShouldConstrainToRootBounds(bool constrain)
+        {
+            if(constrain)
+            {
+                elements.GetShouldConstrainToRootBoundsComboBox().SelectItemByName("True");
+            }
+            else
+            {
+                elements.GetShouldConstrainToRootBoundsComboBox().SelectItemByName("False");
+            }
+            elements.GetShouldConstrainToRootBoundsButton().Invoke();
         }
 
         private void SetCloseButtonContent(CloseButtonContentOptions closeButtonContent)
@@ -572,7 +649,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.GetScrollViewerOffsetTextBox().SetValue((initialOffset + ammount).ToString());
             elements.GetScrollViewerOffsetButton().Invoke();
         }
-        
+
+        private void UseTestBounds(double x, double y, double width, double height, Vector4 targetRect, bool forWindowBounds)
+        {
+            if (forWindowBounds)
+            {
+                UseTestWindowBounds(x, y, width, height);
+            }
+            else
+            {
+                UseTestWindowBounds(targetRect.W - x - 1, targetRect.X - y - 1, targetRect.Y + 1, targetRect.Z + 1);
+                UseTestScreenBounds(x, y, width, height);
+            }
+        }
+
         private void UseTestWindowBounds(double x, double y, double width, double height)
         {
             elements.GetTestWindowBoundsXTextBox().SetValue(x.ToString());
@@ -581,6 +671,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.GetTestWindowBoundsHeightTextBox().SetValue(height.ToString());
 
             elements.GetUseTestWindowBoundsCheckbox().Uncheck();
+            elements.GetUseTestWindowBoundsCheckbox().Check();
+        }
+
+        private void UseTestScreenBounds(double x, double y, double width, double height)
+        {
+            elements.GetTestScreenBoundsXTextBox().SetValue(x.ToString());
+            elements.GetTestScreenBoundsYTextBox().SetValue(y.ToString());
+            elements.GetTestScreenBoundsWidthTextBox().SetValue(width.ToString());
+            elements.GetTestScreenBoundsHeightTextBox().SetValue(height.ToString());
+
+            elements.GetUseTestWindowBoundsCheckbox().Uncheck();
+            elements.GetUseTestScreenBoundsCheckbox().Uncheck();
+            elements.GetUseTestScreenBoundsCheckbox().Check();
             elements.GetUseTestWindowBoundsCheckbox().Check();
         }
 
