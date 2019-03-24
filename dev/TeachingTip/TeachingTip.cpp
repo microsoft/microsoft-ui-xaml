@@ -897,29 +897,28 @@ void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const 
 {
     if (args.VirtualKey() == winrt::VirtualKey::F6)
     {
-        auto f6Button = F6Button();
+        winrt::Button f6Button = [this]() -> winrt::Button
+        {
+            auto firstButton = m_closeButton.get();
+            auto secondButton = m_alternateCloseButton.get();
+            if (CloseButtonContent())
+            {
+                std::swap(firstButton, secondButton);
+            }
+            if (firstButton && firstButton.Visibility() == winrt::Visibility::Visible)
+            {
+                return firstButton;
+            }
+            else if (secondButton && secondButton.Visibility() == winrt::Visibility::Visible)
+            {
+                return secondButton;
+            }
+            return nullptr;
+        }();
+
         m_closeButtonGettingFocusFromF6Revoker = f6Button.GettingFocus(winrt::auto_revoke, { this, &TeachingTip::OnCloseButtonGettingFocusFromF6 });
         f6Button.Focus(winrt::FocusState::Keyboard);
     }
-}
-
-winrt::Button TeachingTip::F6Button()
-{
-    auto firstButton = m_closeButton.get();
-    auto secondButton = m_alternateCloseButton.get();
-    if (CloseButtonContent())
-    {
-        std::swap(firstButton, secondButton);
-    }
-    if (firstButton && firstButton.Visibility() == winrt::Visibility::Visible)
-    {
-        return firstButton;
-    }
-    else if (secondButton && secondButton.Visibility() == winrt::Visibility::Visible)
-    {
-        return secondButton;
-    }
-    return nullptr;
 }
 
 void TeachingTip::OnCloseButtonGettingFocusFromF6(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args)
