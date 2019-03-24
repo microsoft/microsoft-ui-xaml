@@ -957,10 +957,21 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
     {
         if (auto teachingTipPeer = peer.as<winrt::TeachingTipAutomationPeer>())
         {
-            auto notificationString = StringUtil::FormatString(
-                ResourceAccessor::GetLocalizedStringResource(SR_TeachingTipNotification),
-                winrt::ApplicationModel::Package::Current().DisplayName().data(),
-                winrt::AutomationProperties::GetName(m_popup.get()).data());
+            winrt::hstring notificationString;
+            auto appName = winrt::ApplicationModel::Package::Current().DisplayName();
+            if (appName.size() > 0)
+            {
+                notificationString = StringUtil::FormatString(
+                    ResourceAccessor::GetLocalizedStringResource(SR_TeachingTipNotification),
+                    appName.data(),
+                    winrt::AutomationProperties::GetName(m_popup.get()).data());
+            }
+            else
+            {
+                notificationString = StringUtil::FormatString(
+                    ResourceAccessor::GetLocalizedStringResource(SR_TeachingTipNotificationWithoutAppName),
+                    winrt::AutomationProperties::GetName(m_popup.get()).data());
+            }
             winrt::get_self<TeachingTipAutomationPeer>(teachingTipPeer)->RaiseWindowOpenedEvent(notificationString);
         }
     }
