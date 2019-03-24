@@ -102,8 +102,7 @@ void TeachingTipAutomationPeer::RaiseWindowOpenedEvent(wstring_view displayStrin
     __super::RaiseNotificationEvent(winrt::Automation::Peers::AutomationNotificationKind::Other,
         winrt::Peers::AutomationNotificationProcessing::CurrentThenMostRecent,
         displayString,
-        // This string cannot be empty
-        L" ");
+        L"TeachingTipOpenedActivityId");
 
     // We only report as a window when light dismiss is enabled.
     if (winrt::get_self<TeachingTip>(GetTeachingTip())->IsLightDismissEnabled() &&
