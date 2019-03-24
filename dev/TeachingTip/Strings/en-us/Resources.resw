@@ -130,7 +130,7 @@
     <comment>This is the custom landmark used to denote a tip to narrator.</comment>
   </data>
   <data name="TeachingTipNotification" xml:space="preserve">
-    <value>Press F6 to move to new notification from</value>
-    <comment>This is the string read by narrator when a new tip is opened.</comment>
+    <value>Press F6 to go to new notification from %1!s!, %2!s!.</value>
+    <comment>This is the format string read by narrator when a new tip is opened. It is "Press F6 to go to new notification from 'AppName', 'TipTitle'.</comment>
   </data>
 </root>

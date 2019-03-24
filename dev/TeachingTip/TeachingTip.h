@@ -49,8 +49,8 @@ public:
     bool m_isIdle{ true };
 
 private:
-    int64_t m_automationNameChangedCallback{ 0 };
-    int64_t m_automationIdChangedCallback{ 0 };
+    PropertyChanged_revoker m_automationNameChangedRevoker{};
+    PropertyChanged_revoker m_automationIdChangedRevoker{};
     winrt::CoreDispatcher::AcceleratorKeyActivated_revoker m_acceleratorKeyActivatedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_closeButtonGettingFocusFromF6Revoker{};
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
@@ -92,6 +92,7 @@ private:
     void OnAutomationIdChanged(const winrt::IInspectable&, const winrt::IInspectable&);
 
     void OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args);
+    winrt::Button F6Button();
     void OnCloseButtonGettingFocusFromF6(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args);
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
