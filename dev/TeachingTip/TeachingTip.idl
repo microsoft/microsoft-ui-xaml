@@ -25,14 +25,14 @@ enum TeachingTipPlacementMode
     Bottom,
     Left,
     Right,
-    TopEdgeAlignedRight,
-    TopEdgeAlignedLeft,
-    BottomEdgeAlignedRight,
-    BottomEdgeAlignedLeft,
-    LeftEdgeAlignedTop,
-    LeftEdgeAlignedBottom,
-    RightEdgeAlignedTop,
-    RightEdgeAlignedBottom,
+    TopRight,
+    TopLeft,
+    BottomRight,
+    BottomLeft,
+    LeftTop,
+    LeftBottom,
+    RightTop,
+    RightBottom,
 };
 
 [WUXC_VERSION_PREVIEW]

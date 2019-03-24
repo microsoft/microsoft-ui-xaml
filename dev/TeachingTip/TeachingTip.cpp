@@ -272,7 +272,7 @@ void TeachingTip::UpdateTail()
         winrt::VisualStateManager::GoToState(*this, L"Right"sv, false);
         break;
 
-    case winrt::TeachingTipPlacementMode::TopEdgeAlignedRight:
+    case winrt::TeachingTipPlacementMode::TopRight:
         if (SharedHelpers::IsRS5OrHigher())
         {
             tailOcclusionGrid.CenterPoint({ firstColumnWidth + secondColumnWidth + 1, height - lastRowHeight, 0.0f });
@@ -282,7 +282,7 @@ void TeachingTip::UpdateTail()
         winrt::VisualStateManager::GoToState(*this, L"TopEdgeAlignedRight"sv, false);
         break;
 
-    case winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft:
+    case winrt::TeachingTipPlacementMode::TopLeft:
         if (SharedHelpers::IsRS5OrHigher())
         {
             tailOcclusionGrid.CenterPoint({ width - (nextToLastColumnWidth + lastColumnWidth + 1), height - lastRowHeight, 0.0f });
@@ -292,7 +292,7 @@ void TeachingTip::UpdateTail()
         winrt::VisualStateManager::GoToState(*this, L"TopEdgeAlignedLeft"sv, false);
         break;
 
-    case winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight:
+    case winrt::TeachingTipPlacementMode::BottomRight:
         if (SharedHelpers::IsRS5OrHigher())
         {
             tailOcclusionGrid.CenterPoint({ firstColumnWidth + secondColumnWidth + 1, firstRowHeight, 0.0f });
@@ -302,7 +302,7 @@ void TeachingTip::UpdateTail()
         winrt::VisualStateManager::GoToState(*this, L"BottomEdgeAlignedRight"sv, false);
         break;
 
-    case winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft:
+    case winrt::TeachingTipPlacementMode::BottomLeft:
         if (SharedHelpers::IsRS5OrHigher())
         {
             tailOcclusionGrid.CenterPoint({ width - (nextToLastColumnWidth + lastColumnWidth + 1), firstRowHeight, 0.0f });
@@ -312,7 +312,7 @@ void TeachingTip::UpdateTail()
         winrt::VisualStateManager::GoToState(*this, L"BottomEdgeAlignedLeft"sv, false);
         break;
 
-    case winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop:
+    case winrt::TeachingTipPlacementMode::LeftTop:
         if (SharedHelpers::IsRS5OrHigher())
         {
             tailOcclusionGrid.CenterPoint({ width - lastColumnWidth,  height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
@@ -322,7 +322,7 @@ void TeachingTip::UpdateTail()
         winrt::VisualStateManager::GoToState(*this, L"LeftEdgeAlignedTop"sv, false);
         break;
 
-    case winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom:
+    case winrt::TeachingTipPlacementMode::LeftBottom:
         if (SharedHelpers::IsRS5OrHigher())
         {
             tailOcclusionGrid.CenterPoint({ width - lastColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
@@ -332,7 +332,7 @@ void TeachingTip::UpdateTail()
         winrt::VisualStateManager::GoToState(*this, L"LeftEdgeAlignedBottom"sv, false);
         break;
 
-    case winrt::TeachingTipPlacementMode::RightEdgeAlignedTop:
+    case winrt::TeachingTipPlacementMode::RightTop:
         if (SharedHelpers::IsRS5OrHigher())
         {
             tailOcclusionGrid.CenterPoint({ firstColumnWidth, height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
@@ -342,7 +342,7 @@ void TeachingTip::UpdateTail()
         winrt::VisualStateManager::GoToState(*this, L"RightEdgeAlignedTop"sv, false);
         break;
 
-    case winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom:
+    case winrt::TeachingTipPlacementMode::RightBottom:
         if (SharedHelpers::IsRS5OrHigher())
         {
             tailOcclusionGrid.CenterPoint({ firstColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
@@ -411,42 +411,42 @@ void TeachingTip::PositionTargetedPopup()
             popup.HorizontalOffset(m_currentTargetBounds.X + m_currentTargetBounds.Width + static_cast<float>(offset.Right));
             break;
 
-        case winrt::TeachingTipPlacementMode::TopEdgeAlignedRight:
+        case winrt::TeachingTipPlacementMode::TopRight:
             popup.VerticalOffset(m_currentTargetBounds.Y - tipHeight - offset.Top);
             popup.HorizontalOffset(((((m_currentTargetBounds.X  * 2.0f) + m_currentTargetBounds.Width) / 2.0f) - MinimumTipEdgeToTailCenter()));
             break;
 
-        case winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft:
+        case winrt::TeachingTipPlacementMode::TopLeft:
             popup.VerticalOffset(m_currentTargetBounds.Y - tipHeight - offset.Top);
             popup.HorizontalOffset(((((m_currentTargetBounds.X  * 2.0f) + m_currentTargetBounds.Width) / 2.0f) - tipWidth + MinimumTipEdgeToTailCenter()));
             break;
 
-        case winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight:
+        case winrt::TeachingTipPlacementMode::BottomRight:
             popup.VerticalOffset(m_currentTargetBounds.Y + m_currentTargetBounds.Height + static_cast<float>(offset.Bottom));
             popup.HorizontalOffset(((((m_currentTargetBounds.X * 2.0f) + m_currentTargetBounds.Width) / 2.0f) - MinimumTipEdgeToTailCenter()));
             break;
 
-        case winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft:
+        case winrt::TeachingTipPlacementMode::BottomLeft:
             popup.VerticalOffset(m_currentTargetBounds.Y + m_currentTargetBounds.Height + static_cast<float>(offset.Bottom));
             popup.HorizontalOffset(((((m_currentTargetBounds.X * 2.0f) + m_currentTargetBounds.Width) / 2.0f) - tipWidth + MinimumTipEdgeToTailCenter()));
             break;
 
-        case winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop:
+        case winrt::TeachingTipPlacementMode::LeftTop:
             popup.VerticalOffset((((m_currentTargetBounds.Y * 2.0f) + m_currentTargetBounds.Height) / 2.0f) - tipHeight + MinimumTipEdgeToTailCenter());
             popup.HorizontalOffset(m_currentTargetBounds.X - tipWidth - offset.Left);
             break;
 
-        case winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom:
+        case winrt::TeachingTipPlacementMode::LeftBottom:
             popup.VerticalOffset((((m_currentTargetBounds.Y * 2.0f) + m_currentTargetBounds.Height) / 2.0f) - MinimumTipEdgeToTailCenter());
             popup.HorizontalOffset(m_currentTargetBounds.X - tipWidth - offset.Left);
             break;
 
-        case winrt::TeachingTipPlacementMode::RightEdgeAlignedTop:
+        case winrt::TeachingTipPlacementMode::RightTop:
             popup.VerticalOffset((((m_currentTargetBounds.Y * 2.0f) + m_currentTargetBounds.Height) / 2.0f) - tipHeight + MinimumTipEdgeToTailCenter());
             popup.HorizontalOffset(m_currentTargetBounds.X + m_currentTargetBounds.Width + static_cast<float>(offset.Right));
             break;
 
-        case winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom:
+        case winrt::TeachingTipPlacementMode::RightBottom:
             popup.VerticalOffset((((m_currentTargetBounds.Y * 2.0f) + m_currentTargetBounds.Height) / 2.0f) - MinimumTipEdgeToTailCenter());
             popup.HorizontalOffset(m_currentTargetBounds.X + m_currentTargetBounds.Width + static_cast<float>(offset.Right));
             break;
@@ -495,42 +495,42 @@ void TeachingTip::PositionUntargetedPopup()
         popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBounds.Width, finalTipWidth, offset.Right));
         break;
 
-    case winrt::TeachingTipPlacementMode::TopEdgeAlignedRight:
+    case winrt::TeachingTipPlacementMode::TopRight:
         popup.VerticalOffset(UntargetedTipNearPlacementOffset(offset.Top));
         popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBounds.Width,finalTipWidth, offset.Right));
         break;
 
-    case winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft:
+    case winrt::TeachingTipPlacementMode::TopLeft:
         popup.VerticalOffset(UntargetedTipNearPlacementOffset(offset.Top));
         popup.HorizontalOffset(UntargetedTipNearPlacementOffset(offset.Left));
         break;
 
-    case winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight:
+    case winrt::TeachingTipPlacementMode::BottomRight:
         popup.VerticalOffset(UntargetedTipFarPlacementOffset(windowBounds.Height,finalTipHeight, offset.Bottom));
         popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBounds.Width,finalTipWidth, offset.Right));
         break;
 
-    case winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft:
+    case winrt::TeachingTipPlacementMode::BottomLeft:
         popup.VerticalOffset(UntargetedTipFarPlacementOffset(windowBounds.Height,finalTipHeight, offset.Bottom));
         popup.HorizontalOffset(UntargetedTipNearPlacementOffset(offset.Left));
         break;
 
-    case winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop:
+    case winrt::TeachingTipPlacementMode::LeftTop:
         popup.VerticalOffset(UntargetedTipNearPlacementOffset(offset.Top));
         popup.HorizontalOffset(UntargetedTipNearPlacementOffset(offset.Left));
         break;
 
-    case winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom:
+    case winrt::TeachingTipPlacementMode::LeftBottom:
         popup.VerticalOffset(UntargetedTipFarPlacementOffset(windowBounds.Height,finalTipHeight, offset.Bottom));
         popup.HorizontalOffset(UntargetedTipNearPlacementOffset(offset.Left));
         break;
 
-    case winrt::TeachingTipPlacementMode::RightEdgeAlignedTop:
+    case winrt::TeachingTipPlacementMode::RightTop:
         popup.VerticalOffset(UntargetedTipNearPlacementOffset(offset.Top));
         popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBounds.Width, finalTipWidth, offset.Right));
         break;
 
-    case winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom:
+    case winrt::TeachingTipPlacementMode::RightBottom:
         popup.VerticalOffset(UntargetedTipFarPlacementOffset(windowBounds.Height, finalTipHeight, offset.Bottom));
         popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBounds.Width, finalTipWidth, offset.Right));
         break;
@@ -566,35 +566,35 @@ void TeachingTip::UpdateSizeBasedTemplateSettings()
         templateSettings->TopRightHighlightMargin(OtherPlacementTopRightHighlightMargin(width, height));
         templateSettings->TopLeftHighlightMargin(RightEdgePlacementTopLeftHighlightMargin(width, height));
         break;
-    case winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft:
+    case winrt::TeachingTipPlacementMode::TopLeft:
         templateSettings->TopRightHighlightMargin(OtherPlacementTopRightHighlightMargin(width, height));
         templateSettings->TopLeftHighlightMargin(TopEdgePlacementTopLeftHighlightMargin(width, height));
         break;
-    case winrt::TeachingTipPlacementMode::TopEdgeAlignedRight:
+    case winrt::TeachingTipPlacementMode::TopRight:
         templateSettings->TopRightHighlightMargin(OtherPlacementTopRightHighlightMargin(width, height));
         templateSettings->TopLeftHighlightMargin(TopEdgePlacementTopLeftHighlightMargin(width, height));
         break;
-    case winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft:
+    case winrt::TeachingTipPlacementMode::BottomLeft:
         templateSettings->TopRightHighlightMargin(BottomEdgeAlignedLeftPlacementTopRightHighlightMargin(width, height));
         templateSettings->TopLeftHighlightMargin(BottomEdgeAlignedLeftPlacementTopLeftHighlightMargin(width, height));
         break;
-    case winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight:
+    case winrt::TeachingTipPlacementMode::BottomRight:
         templateSettings->TopRightHighlightMargin(BottomEdgeAlignedRightPlacementTopRightHighlightMargin(width, height));
         templateSettings->TopLeftHighlightMargin(BottomEdgeAlignedRightPlacementTopLeftHighlightMargin(width, height));
         break;
-    case winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop:
+    case winrt::TeachingTipPlacementMode::LeftTop:
         templateSettings->TopRightHighlightMargin(OtherPlacementTopRightHighlightMargin(width, height));
         templateSettings->TopLeftHighlightMargin(LeftEdgePlacementTopLeftHighlightMargin(width, height));
         break;
-    case winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom:
+    case winrt::TeachingTipPlacementMode::LeftBottom:
         templateSettings->TopRightHighlightMargin(OtherPlacementTopRightHighlightMargin(width, height));
         templateSettings->TopLeftHighlightMargin(LeftEdgePlacementTopLeftHighlightMargin(width, height));
         break;
-    case winrt::TeachingTipPlacementMode::RightEdgeAlignedTop:
+    case winrt::TeachingTipPlacementMode::RightTop:
         templateSettings->TopRightHighlightMargin(OtherPlacementTopRightHighlightMargin(width, height));
         templateSettings->TopLeftHighlightMargin(RightEdgePlacementTopLeftHighlightMargin(width, height));
         break;
-    case winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom:
+    case winrt::TeachingTipPlacementMode::RightBottom:
         templateSettings->TopRightHighlightMargin(OtherPlacementTopRightHighlightMargin(width, height));
         templateSettings->TopLeftHighlightMargin(RightEdgePlacementTopLeftHighlightMargin(width, height));
         break;
@@ -1480,35 +1480,35 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
             }
             else if (topRightAvailable)
             {
-                return winrt::TeachingTipPlacementMode::TopEdgeAlignedRight;
+                return winrt::TeachingTipPlacementMode::TopRight;
             }
             else if (topLeftAvailable)
             {
-                return winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft;
+                return winrt::TeachingTipPlacementMode::TopLeft;
             }
             else if (bottomRightAvailable)
             {
-                return winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight;
+                return winrt::TeachingTipPlacementMode::BottomRight;
             }
             else if (bottomLeftAvailable)
             {
-                return winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft;
+                return winrt::TeachingTipPlacementMode::BottomLeft;
             }
             else if (rightTopAvailable)
             {
-                return winrt::TeachingTipPlacementMode::RightEdgeAlignedTop;
+                return winrt::TeachingTipPlacementMode::RightTop;
             }
             else if (rightBottomAvailable)
             {
-                return winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom;
+                return winrt::TeachingTipPlacementMode::RightBottom;
             }
             else if (leftTopAvailable)
             {
-                return winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop;
+                return winrt::TeachingTipPlacementMode::LeftTop;
             }
             else if (leftBottomAvailable)
             {
-                return winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom;
+                return winrt::TeachingTipPlacementMode::LeftBottom;
             }
         }
     }
