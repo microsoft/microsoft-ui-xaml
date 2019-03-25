@@ -932,7 +932,7 @@ void TeachingTip::RaiseClosingEvent(bool attachDeferralCompletedHandler)
     auto args = winrt::make_self<TeachingTipClosingEventArgs>();
     args->Reason(m_lastCloseReason);
 
-    if (attachDefferalCompletedHandler)
+    if (attachDeferralCompletedHandler)
     {
         com_ptr<TeachingTip> strongThis = get_strong();
         winrt::DeferralCompletedHandler instance{ [strongThis, args]()
