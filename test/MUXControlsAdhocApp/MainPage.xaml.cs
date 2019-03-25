@@ -16,6 +16,11 @@ namespace MUXControlsAdhocApp
                 Frame.Navigate(typeof(RepeaterPages.PerfComparisonPage));
             };
 
+            flexbox.Click += delegate (object sender, RoutedEventArgs args)
+            {
+                Frame.Navigate(typeof(FlexboxPages.FlexboxPage));
+            };
+
 #if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
             Button commandBarFlyoutButton = new Button() { Margin = new Thickness(10), Content = "CommandBarFlyout" };
             

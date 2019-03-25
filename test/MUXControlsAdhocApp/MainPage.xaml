@@ -11,6 +11,7 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel x:Name="MainStackPanel">
             <Button x:Name="repeater" Margin="10" Content="ItemsRepeater" />
+            <Button x:Name="flexbox" Margin="10" Content="Flexbox" />
         </StackPanel>
     </Grid>
 </Page>

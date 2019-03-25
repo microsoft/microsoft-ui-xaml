@@ -14,7 +14,7 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">$(MuxSdkVersion)</TargetPlatformVersion>
-    <TargetPlatformMinVersion>$(MuxSdkVersion)</TargetPlatformMinVersion>
+    <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
     <!-- This needs to be RS3 for the xaml markup compiler to generate IDataTemplateComponent code -->
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
@@ -127,6 +127,10 @@
     <Compile Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" Include="CommandBarFlyoutPages\CommandBarFlyoutPage.xaml.cs">
       <DependentUpon>CommandBarFlyoutPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FlexboxPages\Flexbox.cs" />
+    <Compile Include="FlexboxPages\FlexboxPage.xaml.cs">
+      <DependentUpon>FlexboxPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -159,6 +163,10 @@
     <Page Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" Include="CommandBarFlyoutPages\CommandBarFlyoutPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="FlexboxPages\FlexboxPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
