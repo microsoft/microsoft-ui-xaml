@@ -927,7 +927,7 @@ void TeachingTip::OnTailOcclusionGridLoaded(const winrt::IInspectable&, const wi
 }
 
 
-void TeachingTip::RaiseClosingEvent(bool attachDefferalCompletedHandler)
+void TeachingTip::RaiseClosingEvent(bool attachDeferralCompletedHandler)
 {
     auto args = winrt::make_self<TeachingTipClosingEventArgs>();
     args->Reason(m_lastCloseReason);
