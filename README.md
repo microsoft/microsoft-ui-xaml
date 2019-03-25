@@ -20,16 +20,16 @@ You can also build a WinUI package yourself from source. See [Contributing to th
 
 ## Documentation
 
-WinUI usage documentation can be found here:  
+**WinUI usage documentation**:  
 https://docs.microsoft.com/uwp/toolkits/winui
 
-Release notes for Microsoft.UI.Xaml WinUI packages can be found here:  
+**Release notes**:  
 https://docs.microsoft.com/uwp/toolkits/winui/release-notes/
 
+**Sample code**:  
 To view the WinUI controls in an interactive format, check out the Xaml Controls Gallery:
 * Get the XAML Controls Gallery app from the [Microsoft Store](https://www.microsoft.com/store/productId/9MSVH128X2ZT)
 * Get the source code on [GitHub](https://github.com/Microsoft/Xaml-Controls-Gallery)
-
 
 ## Contributing to WinUI
 The WinUI team welcomes feedback and contributions!
@@ -64,36 +64,6 @@ Your app's users can be on any of the following supported Windows versions:
 * Anniversary Update (14393)
 
 Some features may have a reduced or slightly different user experience on older versions, particularly on builds before 15063. This should not impact overall usability.
-
-### Contents
-
-The **Microsoft.UI.Xaml** 2.0 stable package includes:
-
-* Fluent Design control styles for all XAML controls (from both WinUI and the standard Windows 10 SDK)
-* Fluent materials and styles including [Fluent Acrylic](https://docs.microsoft.com/windows/uwp/design/style/acrylic) and [Fluent Reveal](https://docs.microsoft.com/windows/uwp/design/style/reveal)
-* Many new and popular controls like 
-[ColorPicker](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.colorpicker),
-[MenuBar](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.menubar),
-[NavigationView](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.navigationview),
-[ParallaxView](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.parallaxview),
-[PersonPicture](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.personpicture),
-[RatingControl](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.ratingcontrol),
-[RefreshContainer](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.refreshcontainer),
-[SplitButton](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.splitbutton),
-[SwipeControl](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.swipecontrol),
-and
-[TreeView](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.treeview)
-
-Prerelease Microsoft.UI.Xaml packages also include previews of features and controls that we are still working on, like:
-* [LayoutPanel](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.layoutpanel),
-[ItemsRepeater](https://docs.microsoft.com/windows/uwp/design/controls-and-patterns/items-repeater),
-[Scroller](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scroller),
-and
-[ScrollViewer](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollviewer),
-
-The **Microsoft.UI.Xaml.Core.Direct** package includes:
-
-* [XamlDirect](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.core.direct) and related APIs to improve performance for middleware components
 
 ## Roadmap
 
