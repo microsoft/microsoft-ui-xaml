@@ -92,17 +92,10 @@ namespace MUXControlsTestApp
             CompactTestResult.Text = simpleVerify.ToString();
         }
 
-        private void EnableCompactInAppLevel_Click(object sender, RoutedEventArgs e)
+        private void ToggleCompactInAppLevel_Click(object sender, RoutedEventArgs e)
         {
             var dict = Application.Current.Resources.MergedDictionaries.First() as controls.XamlControlsResources;
-            if (dict.UseCompactResources)
-            {
-                dict.UseCompactResources = false;
-            }
-            else
-            {
-                dict.UseCompactResources = true;
-            }
+            dict.UseCompactResources = !dict.UseCompactResources;
         }
     }
 }
