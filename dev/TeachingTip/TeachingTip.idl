@@ -33,6 +33,7 @@ enum TeachingTipPlacementMode
     LeftBottom,
     RightTop,
     RightBottom,
+    Center
 };
 
 [WUXC_VERSION_PREVIEW]

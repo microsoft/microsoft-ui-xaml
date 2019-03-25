@@ -355,6 +355,7 @@
                 <ComboBoxItem x:Name="PlacementLeftBottom">LeftBottom</ComboBoxItem>
                 <ComboBoxItem x:Name="PlacementRightTop">RightTop</ComboBoxItem>
                 <ComboBoxItem x:Name="PlacementRightBottom">RightBottom</ComboBoxItem>
+                <ComboBoxItem x:Name="PlacementCenter">Center</ComboBoxItem>
                 <ComboBoxItem x:Name="PlacementAuto">Auto</ComboBoxItem>
             </ComboBox>
             <Button AutomationProperties.Name="SetPreferredPlacementButton" Click="OnSetPreferredPlacementButtonClicked" Grid.Row="1" Grid.Column="1">Set</Button>

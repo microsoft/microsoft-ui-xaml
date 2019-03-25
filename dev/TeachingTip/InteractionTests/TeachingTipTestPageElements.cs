@@ -334,14 +334,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Bottom,
             Left,
             Right,
-            TopEdgeAlignedRight,
-            TopEdgeAlignedLeft,
-            BottomEdgeAlignedRight,
-            BottomEdgeAlignedLeft,
-            LeftEdgeAlignedTop,
-            LeftEdgeAlignedBottom,
-            RightEdgeAlignedTop,
-            RightEdgeAlignedBottom,
+            TopRight,
+            TopLeft,
+            BottomRight,
+            BottomLeft,
+            LeftTop,
+            LeftBottom,
+            RightTop,
+            RightBottom,
+            Center,
             Auto
         }
 

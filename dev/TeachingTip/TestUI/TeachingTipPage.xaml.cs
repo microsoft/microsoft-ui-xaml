@@ -543,6 +543,10 @@ namespace MUXControlsTestApp
             {
                 getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.RightBottom;
             }
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementCenter)
+            {
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Center;
+            }
             else
             {
                 getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Auto;

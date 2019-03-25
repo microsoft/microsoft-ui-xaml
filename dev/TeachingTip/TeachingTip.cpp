@@ -279,7 +279,7 @@ void TeachingTip::UpdateTail()
             tailEdgeBorder.CenterPoint({ secondColumnWidth, 0.0f, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"TopEdgeAlignedRight"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"TopRight"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::TopLeft:
@@ -289,7 +289,7 @@ void TeachingTip::UpdateTail()
             tailEdgeBorder.CenterPoint({ width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"TopEdgeAlignedLeft"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"TopLeft"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::BottomRight:
@@ -299,7 +299,7 @@ void TeachingTip::UpdateTail()
             tailEdgeBorder.CenterPoint({ secondColumnWidth, 0.0f, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToBottom();
-        winrt::VisualStateManager::GoToState(*this, L"BottomEdgeAlignedRight"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"BottomRight"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::BottomLeft:
@@ -309,7 +309,7 @@ void TeachingTip::UpdateTail()
             tailEdgeBorder.CenterPoint({ width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToBottom();
-        winrt::VisualStateManager::GoToState(*this, L"BottomEdgeAlignedLeft"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"BottomLeft"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::LeftTop:
@@ -319,7 +319,7 @@ void TeachingTip::UpdateTail()
             tailEdgeBorder.CenterPoint({ 0.0f,  height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         }
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"LeftEdgeAlignedTop"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"LeftTop"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::LeftBottom:
@@ -329,7 +329,7 @@ void TeachingTip::UpdateTail()
             tailEdgeBorder.CenterPoint({ 0.0f, secondRowHeight, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToBottom();
-        winrt::VisualStateManager::GoToState(*this, L"LeftEdgeAlignedBottom"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"LeftBottom"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::RightTop:
@@ -339,7 +339,7 @@ void TeachingTip::UpdateTail()
             tailEdgeBorder.CenterPoint({ 0.0f, height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         }
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"RightEdgeAlignedTop"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"RightTop"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::RightBottom:
@@ -349,7 +349,17 @@ void TeachingTip::UpdateTail()
             tailEdgeBorder.CenterPoint({ 0.0f, secondRowHeight, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToBottom();
-        winrt::VisualStateManager::GoToState(*this, L"RightEdgeAlignedBottom"sv, false);
+        winrt::VisualStateManager::GoToState(*this, L"RightBottom"sv, false);
+        break;
+
+    case winrt::TeachingTipPlacementMode::Center:
+        if (SharedHelpers::IsRS5OrHigher())
+        {
+            tailOcclusionGrid.CenterPoint({ width / 2, height - lastRowHeight, 0.0f });
+            tailEdgeBorder.CenterPoint({ (width / 2) - firstColumnWidth, 0.0f, 0.0f });
+        }
+        UpdateDynamicHeroContentPlacementToTop();
+        winrt::VisualStateManager::GoToState(*this, L"Center"sv, false);
         break;
 
     default:
@@ -451,6 +461,11 @@ void TeachingTip::PositionTargetedPopup()
             popup.HorizontalOffset(m_currentTargetBounds.X + m_currentTargetBounds.Width + static_cast<float>(offset.Right));
             break;
 
+        case winrt::TeachingTipPlacementMode::Center:
+            popup.VerticalOffset(m_currentTargetBounds.Y + (m_currentTargetBounds.Height / 2.0f) - tipHeight - offset.Top);
+            popup.HorizontalOffset((((m_currentTargetBounds.X * 2.0f) + m_currentTargetBounds.Width - tipWidth) / 2.0f));
+            break;
+
         default:
             MUX_FAIL_FAST();
         }
@@ -535,6 +550,11 @@ void TeachingTip::PositionUntargetedPopup()
         popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBounds.Width, finalTipWidth, offset.Right));
         break;
 
+    case winrt::TeachingTipPlacementMode::Center:
+        popup.VerticalOffset(UntargetedTipCenterPlacementOffset(windowBounds.Height, finalTipHeight, offset.Top, offset.Bottom));
+        popup.HorizontalOffset(UntargetedTipCenterPlacementOffset(windowBounds.Width, finalTipWidth, offset.Left, offset.Right));
+        break;
+
     default:
         MUX_FAIL_FAST();
     }
@@ -599,6 +619,10 @@ void TeachingTip::UpdateSizeBasedTemplateSettings()
         templateSettings->TopLeftHighlightMargin(RightEdgePlacementTopLeftHighlightMargin(width, height));
         break;
     case winrt::TeachingTipPlacementMode::Auto:
+        templateSettings->TopRightHighlightMargin(OtherPlacementTopRightHighlightMargin(width, height));
+        templateSettings->TopLeftHighlightMargin(TopEdgePlacementTopLeftHighlightMargin(width, height));
+        break;
+    case winrt::TeachingTipPlacementMode::Center:
         templateSettings->TopRightHighlightMargin(OtherPlacementTopRightHighlightMargin(width, height));
         templateSettings->TopLeftHighlightMargin(TopEdgePlacementTopLeftHighlightMargin(width, height));
         break;
@@ -1278,6 +1302,7 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
             bool leftCenterAvailable = true;
             bool leftTopAvailable = true;
             bool leftBottomAvailable = true;
+            bool centerAvailable = true;
             auto screenSize = winrt::Size({ 0.0f, 0.0f });
             if (!shouldConstrainToRootBounds)
             {
@@ -1329,6 +1354,7 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
                     topLeftAvailable = false;
                     rightTopAvailable = false;
                     leftTopAvailable = false;
+                    centerAvailable = false;
                     break;
                 case winrt::TeachingTipHeroContentPlacementMode::Top:
                     bottomCenterAvailable = false;
@@ -1379,6 +1405,7 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
                 bottomLeftAvailable = false;
                 bottomCenterAvailable = false;
                 bottomRightAvailable = false;
+                centerAvailable = false;
             }
 
             // If the vertical midpoint is out of the window.
@@ -1391,6 +1418,7 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
                 rightBottomAvailable = false;
                 rightCenterAvailable = false;
                 rightTopAvailable = false;
+                centerAvailable = false;
             }
 
             // If the tip is too tall to fit between the top of the target and the top edge of the window or screen.
@@ -1399,6 +1427,11 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
                 topCenterAvailable = false;
                 topRightAvailable = false;
                 topLeftAvailable = false;
+            }
+            // If the total tip is too tall to fit between the center of the target and the top of the window.
+            if (tipHeight > targetBounds.Y + (targetBounds.Height / 2.0f) + (shouldConstrainToRootBounds ? 0.0 : windowBounds.Y))
+            {
+                centerAvailable = false;
             }
             // If the tip is too tall to fit between the center of the target and the top edge of the window.
             if (contentHeight - MinimumTipEdgeToTailCenter() > targetBounds.Y + (targetBounds.Height / 2.0f) + (shouldConstrainToRootBounds ? 0.0 : windowBounds.Y))
@@ -1446,6 +1479,7 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
             {
                 topCenterAvailable = false;
                 bottomCenterAvailable = false;
+                centerAvailable = false;
             }
             // If the tip is too wide to fit between the center of the target and the right edge of the window.
             if (contentWidth - MinimumTipEdgeToTailCenter() > (shouldConstrainToRootBounds ? windowBounds.Width : screenSize.Width - windowBounds.X) - (targetBounds.X + (targetBounds.Width / 2.0f)))
@@ -1509,6 +1543,10 @@ winrt::TeachingTipPlacementMode TeachingTip::DetermineEffectivePlacement()
             else if (leftBottomAvailable)
             {
                 return winrt::TeachingTipPlacementMode::LeftBottom;
+            }
+            else if (centerAvailable)
+            {
+                return winrt::TeachingTipPlacementMode::Center;
             }
         }
     }
