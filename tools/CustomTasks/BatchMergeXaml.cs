@@ -41,6 +41,7 @@ namespace CustomTasks
         }
 
         private List<string> filesWritten = new List<string>();
+        
         private string postfixForPrefixedGeneratedFile;
 
         // When generating merged file for RS5, we don't need to parse RS1-RS4 pages again, but put it in nextBaseFile like rs4_themeresources.prefix.xaml, then make it as the base of next merge.
