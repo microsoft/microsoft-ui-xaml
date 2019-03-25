@@ -97,7 +97,7 @@ void TeachingTipAutomationPeer::RaiseWindowClosedEvent()
     }
 }
 
-void TeachingTipAutomationPeer::RaiseWindowOpenedEvent(wstring_view displayString)
+void TeachingTipAutomationPeer::RaiseWindowOpenedEvent(wstring_view const& displayString)
 {
     __super::RaiseNotificationEvent(winrt::Automation::Peers::AutomationNotificationKind::Other,
         winrt::Peers::AutomationNotificationProcessing::CurrentThenMostRecent,
