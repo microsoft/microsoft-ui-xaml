@@ -31,7 +31,6 @@ To view the WinUI controls in an interactive format, check out the Xaml Controls
 * Get the XAML Controls Gallery app from the [Microsoft Store](https://www.microsoft.com/store/productId/9MSVH128X2ZT)
 * Get the source code on [GitHub](https://github.com/Microsoft/Xaml-Controls-Gallery)
 
-
 ## Contributing to WinUI
 The WinUI team welcomes feedback and contributions!
 

@@ -25,7 +25,7 @@ using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
-using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
+using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 using System.Collections.ObjectModel;
 using System.Threading;
 #endif
@@ -60,11 +60,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     // Layout = new StackLayout(),
                 };
 
-                Content = new ScrollAnchorProvider()
+                Content = new ItemsRepeaterScrollHost()
                 {
                     Width = 400,
                     Height = 800,
-                    Content = new ScrollViewer
+                    ScrollViewer = new ScrollViewer
                     {
                         Content = repeater
                     }
@@ -94,10 +94,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     ItemsSource = Enumerable.Range(0, 10).Select(i => string.Format("Item #{0}", i)),
                 };
 
-                Content = new ScrollAnchorProvider() {
+                Content = new ItemsRepeaterScrollHost() {
                     Width = 400,
                     Height = 800,
-                    Content = new ScrollViewer {
+                    ScrollViewer = new ScrollViewer {
                         Content = repeater
                     }
                 };
@@ -171,6 +171,69 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void VerifyCurrentAnchor()
+        {
+            ItemsRepeater rootRepeater = null;
+            ScrollViewer scrollViewer = null;
+            ItemsRepeaterScrollHost scrollhost = null;
+            ManualResetEvent viewChanged = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                scrollhost = (ItemsRepeaterScrollHost)XamlReader.Load(
+                  @"<controls:ItemsRepeaterScrollHost Width='400' Height='600'
+                     xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                     xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                    <controls:ItemsRepeaterScrollHost.Resources>
+                        <DataTemplate x:Key='ItemTemplate' >
+                            <TextBlock Text='{Binding}' Height='50'/>
+                        </DataTemplate>
+                    </controls:ItemsRepeaterScrollHost.Resources>
+                    <ScrollViewer x:Name='scrollviewer'>
+                        <controls:ItemsRepeater x:Name='rootRepeater' ItemTemplate='{StaticResource ItemTemplate}' VerticalCacheLength='0' />
+                    </ScrollViewer>
+                </controls:ItemsRepeaterScrollHost>");
+
+                rootRepeater = (ItemsRepeater)scrollhost.FindName("rootRepeater");
+                scrollViewer = (ScrollViewer)scrollhost.FindName("scrollviewer");
+                scrollViewer.ViewChanged += (sender, args) =>
+                {
+                    if (!args.IsIntermediate)
+                    {
+                        viewChanged.Set();
+                    }
+                };
+
+                rootRepeater.ItemsSource = Enumerable.Range(0, 500);
+                Content = scrollhost;
+            });
+
+            // scroll down several times and validate current anchor
+            for (int i = 1; i < 10; i++)
+            {
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    scrollViewer.ChangeView(null, i * 200, null);
+                });
+
+                Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS));
+                viewChanged.Reset();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(i * 200, scrollViewer.VerticalOffset);
+                    var anchor = PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5) ?
+                            scrollhost.CurrentAnchor :
+                            scrollViewer.CurrentAnchor;
+                    var anchorIndex = rootRepeater.GetElementIndex(anchor);
+                    Log.Comment("CurrentAnchor: " + anchorIndex);
+                    Verify.AreEqual(i * 4, anchorIndex);
+                });
+            }
+        }
+
         // Ensure that scrolling a nested repeater works when the 
         // Itemtemplates are data templates.
         [TestMethod]
@@ -181,12 +244,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             ManualResetEvent viewChanged = new ManualResetEvent(false);
             RunOnUIThread.Execute(() =>
             {
-                var anchorProvider = (ScrollAnchorProvider)XamlReader.Load(
-                  @"<controls:ScrollAnchorProvider Width='400' Height='600'
+                var anchorProvider = (ItemsRepeaterScrollHost)XamlReader.Load(
+                  @"<controls:ItemsRepeaterScrollHost Width='400' Height='600'
                      xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
                      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                      xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
-                    <controls:ScrollAnchorProvider.Resources>
+                    <controls:ItemsRepeaterScrollHost.Resources>
                         <DataTemplate x:Key='ItemTemplate' >
                             <TextBlock Text='{Binding}' />
                         </DataTemplate>
@@ -196,11 +259,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                                 <controls:ItemsRepeater ItemTemplate='{StaticResource ItemTemplate}' ItemsSource='{Binding}' VerticalCacheLength='0'/>
                             </StackPanel>
                         </DataTemplate>
-                    </controls:ScrollAnchorProvider.Resources>
+                    </controls:ItemsRepeaterScrollHost.Resources>
                     <ScrollViewer x:Name='scrollviewer'>
                         <controls:ItemsRepeater x:Name='rootRepeater' ItemTemplate='{StaticResource GroupTemplate}' VerticalCacheLength='0' />
                     </ScrollViewer>
-                </controls:ScrollAnchorProvider>");
+                </controls:ItemsRepeaterScrollHost>");
 
                 rootRepeater = (ItemsRepeater)anchorProvider.FindName("rootRepeater");
                 scrollViewer = (ScrollViewer)anchorProvider.FindName("scrollviewer");

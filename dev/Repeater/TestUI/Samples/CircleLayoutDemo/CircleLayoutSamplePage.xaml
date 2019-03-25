@@ -29,7 +29,7 @@
             </LinearGradientBrush>
         </Grid.Background>
 
-        <controls:ScrollAnchorProvider x:Name="tracker">
+        <controls:ItemsRepeaterScrollHost x:Name="tracker">
             <ScrollViewer>
                 <StackPanel>
                     <Button x:Name="bringIntoView">Bring Into View</Button>
@@ -49,6 +49,6 @@
                     </Grid>
                 </StackPanel>
             </ScrollViewer>
-        </controls:ScrollAnchorProvider>
+        </controls:ItemsRepeaterScrollHost>
     </Grid>
 </Page>

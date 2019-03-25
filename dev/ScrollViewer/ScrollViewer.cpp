@@ -176,7 +176,7 @@ void ScrollViewer::RegisterAnchorCandidate(winrt::UIElement const& element)
             scrollerAsAnchorProvider.RegisterAnchorCandidate(element);
             return;
         }
-        throw winrt::hresult_error(E_INVALID_OPERATION, s_iScrollAnchorProviderNotImpl);
+        throw winrt::hresult_error(E_INVALID_OPERATION, s_IScrollAnchorProviderNotImpl);
     }
     throw winrt::hresult_error(E_INVALID_OPERATION, s_noScrollerPart);
 }
@@ -192,7 +192,7 @@ void ScrollViewer::UnregisterAnchorCandidate(winrt::UIElement const& element)
             scrollerAsAnchorProvider.UnregisterAnchorCandidate(element);
             return;
         }
-        throw winrt::hresult_error(E_INVALID_OPERATION, s_iScrollAnchorProviderNotImpl);
+        throw winrt::hresult_error(E_INVALID_OPERATION, s_IScrollAnchorProviderNotImpl);
     }
     throw winrt::hresult_error(E_INVALID_OPERATION, s_noScrollerPart);
 }

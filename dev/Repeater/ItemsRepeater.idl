@@ -6,7 +6,7 @@ runtimeclass VirtualizingLayoutContext;
 runtimeclass Layout;
 runtimeclass VirtualizingLayout;
 runtimeclass ElementAnimator;
-runtimeclass ScrollAnchorProvider;
+runtimeclass ItemsRepeaterScrollHost;
 runtimeclass ItemsRepeaterElementPreparedEventArgs;
 runtimeclass ItemsRepeaterElementClearingEventArgs;
 runtimeclass ItemsRepeaterElementIndexChangedEventArgs;
@@ -252,7 +252,7 @@ unsealed runtimeclass VirtualizingLayoutContext : LayoutContext
 
     overridable Windows.Foundation.Rect RealizationRectCore();
 
-    overridable Windows.UI.Xaml.UIElement GetElementAtCore(Int32 index, ElementRealizationOptions options);
+    overridable Windows.UI.Xaml.UIElement GetOrCreateElementAtCore(Int32 index, ElementRealizationOptions options);
     overridable void RecycleElementCore(Windows.UI.Xaml.UIElement element);
 
     overridable Int32 RecommendedAnchorIndexCore{ get; };
@@ -334,11 +334,16 @@ unsealed runtimeclass ElementAnimator
     protected void OnBoundsChangeAnimationCompleted(Windows.UI.Xaml.UIElement element);
 }
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
-runtimeclass ScrollAnchorProvider : Windows.UI.Xaml.Controls.ContentControl
+[contentproperty("ScrollViewer")]
+runtimeclass ItemsRepeaterScrollHost : Windows.UI.Xaml.FrameworkElement
 {
-    ScrollAnchorProvider();
+    ItemsRepeaterScrollHost();
+
+    Windows.UI.Xaml.Controls.ScrollViewer ScrollViewer { get; set; };
+
+    Windows.UI.Xaml.UIElement CurrentAnchor{ get; };
 
     Double HorizontalAnchorRatio { get; set; };
     Double VerticalAnchorRatio { get; set; };

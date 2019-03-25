@@ -3,17 +3,18 @@
 
 #pragma once
 
-#include "ScrollAnchorProvider.g.h"
+#include "ItemsRepeaterScrollHost.g.h"
 
 // TODO: move to framework level element tracking.
-class ScrollAnchorProvider :
-    public ReferenceTracker<ScrollAnchorProvider, winrt::implementation::ScrollAnchorProviderT, winrt::cloaked<winrt::IRepeaterScrollingSurface>, winrt::composable>
+class ItemsRepeaterScrollHost :
+    public ReferenceTracker<ItemsRepeaterScrollHost, DeriveFromPanelHelper_base, winrt::ItemsRepeaterScrollHost, winrt::cloaked<winrt::IRepeaterScrollingSurface>>
 {
 public:
-    ScrollAnchorProvider();
+    ItemsRepeaterScrollHost();
 
 #pragma region IFrameworkElementOverrides
 
+    winrt::Size MeasureOverride(winrt::Size const& availableSize);
     winrt::Size ArrangeOverride(winrt::Size const& finalSize);
 
 #pragma endregion
@@ -28,13 +29,11 @@ public:
 
     void VerticalAnchorRatio(double value);
 
-    void StartBringIntoView(
-        winrt::UIElement const& element,
-        double alignmentX,
-        double alignmentY,
-        double offsetX,
-        double offsetY,
-        bool animate);
+    winrt::UIElement CurrentAnchor();
+
+    winrt::FxScrollViewer ScrollViewer();
+    
+    void ScrollViewer(winrt::FxScrollViewer const& value);
 
 #pragma endregion
 
@@ -67,10 +66,17 @@ public:
 
 #pragma endregion
 
+    void StartBringIntoView(
+        winrt::UIElement const& element,
+        double alignmentX,
+        double alignmentY,
+        double offsetX,
+        double offsetY,
+        bool animate);
+
 private:
     void ApplyPendingChangeView(const winrt::FxScrollViewer& scrollViewer);
     double TrackElement(const winrt::UIElement& element, winrt::Rect previousBounds, const winrt::FxScrollViewer& scrollViewer);
-    winrt::FxScrollViewer TryGetScrollViewer();
     winrt::UIElement GetAnchorElement(_Out_opt_ winrt::Rect* relativeBounds = nullptr);
 
     void OnScrollViewerViewChanging(const winrt::IInspectable& sender, const winrt::ScrollViewerViewChangingEventArgs& args);
@@ -151,7 +157,6 @@ private:
 
     std::vector<CandidateInfo> m_candidates;
 
-    tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ this };
     tracker_ref<winrt::UIElement> m_anchorElement{ this };
     winrt::Rect m_anchorElementRelativeBounds{};
     // Whenever the m_candidates list changes, we set this to true.
@@ -177,4 +182,9 @@ private:
 
     event_source<winrt::ViewportChangedEventHandler> m_viewportChanged{ this };
     event_source<winrt::PostArrangeEventHandler> m_postArrange{ this };
+
+    winrt::FxScrollViewer::ViewChanging_revoker m_scrollViewerViewChanging{};
+    winrt::FxScrollViewer::ViewChanged_revoker m_scrollViewerViewChanged{};
+    winrt::FxScrollViewer::SizeChanged_revoker m_scrollViewerSizeChanged{};
+
 };

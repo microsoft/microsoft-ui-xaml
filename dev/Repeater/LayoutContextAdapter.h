@@ -24,7 +24,7 @@ public:
 
     int32_t ItemCountCore();
     winrt::IInspectable GetItemAtCore(int index);
-    winrt::UIElement GetElementAtCore(int index, winrt::ElementRealizationOptions const& options);
+    winrt::UIElement GetOrCreateElementAtCore(int index, winrt::ElementRealizationOptions const& options);
     void RecycleElementCore(winrt::UIElement const& element);
     int32_t GetElementIndexCore(winrt::UIElement const& element);
 

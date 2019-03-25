@@ -14,12 +14,7 @@ steps:
       echo parameters.buildOutputDir = '${{ parameters.buildOutputDir }}'
     displayName: 'BuildProject: Display parameters'
 
-  - task: powershell@2
-    inputs:
-      targetType: filePath
-      filePath: build\Install-WindowsSdkISO.ps1
-      arguments: 18323
-    displayName: 'Install Insider SDK (18323)'
+  - template: MUX-InstallWindowsSDK-Steps.yml
 
   - template: MUX-InstallNuget-Steps.yml
 
