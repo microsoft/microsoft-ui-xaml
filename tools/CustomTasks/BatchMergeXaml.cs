@@ -27,6 +27,8 @@ namespace CustomTasks
         public ITaskItem[] N19H1Pages { get; set; }
 
         [Required]
+        // The output file format is like rs1_themeresources.xaml, rs2_generic.xaml, rs2_compact_generic.xaml.
+        // then PostfixForGeneratedFile is themeresources/generic/compact_generic here.
         public string PostfixForGeneratedFile { get; set; }
 
         [Required]
@@ -91,10 +93,10 @@ namespace CustomTasks
 
             string content = mergedDictionary.ToString();
 
-            string name = targetOSVersion + PostfixForGeneratedFile;
+            string name = targetOSVersion + "_" + PostfixForGeneratedFile + ".xaml";
             string fullPath = Path.Combine(OutputDirectory, name);
 
-            string prefixedName = targetOSVersion + postfixForPrefixedGeneratedFile;
+            string prefixedName = targetOSVersion + "_" + postfixForPrefixedGeneratedFile + ".xaml";
             string prefixedFullPath = Path.Combine(OutputDirectory, prefixedName);
 
             string strippedContent = StripNamespaces.StripNamespaceForAPIVersion(content, apiVersion);
@@ -112,12 +114,12 @@ namespace CustomTasks
                 Log.LogError("OutputDirectory is empty or not existing");
             }
 
-            if (string.IsNullOrEmpty(PostfixForGeneratedFile) || !PostfixForGeneratedFile.EndsWith(".xaml"))
+            if (string.IsNullOrEmpty(PostfixForGeneratedFile))
             {
-                Log.LogError("PostfixForGeneratedFile is empty or extension name is not .xaml");
+                Log.LogError("PostfixForGeneratedFile is empty");
             }
 
-            postfixForPrefixedGeneratedFile = PostfixForGeneratedFile.Substring(0, PostfixForGeneratedFile.Length - 5) + ".prefixed.xaml";
+            postfixForPrefixedGeneratedFile = PostfixForGeneratedFile + ".prefixed";
 
             if (!Log.HasLoggedErrors)
             {
