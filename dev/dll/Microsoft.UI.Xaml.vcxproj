@@ -505,7 +505,7 @@
   <Target Name="ComputeXamlGeneratedCompileInputs" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\packages\Microsoft.Gsl.0.1.2.1\build\native\Microsoft.Gsl.targets" Condition="Exists('..\..\packages\Microsoft.Gsl.0.1.2.1\build\native\Microsoft.Gsl.targets')" />
-    <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.39\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.39\build\native\MUXCustomBuildTasks.targets')" />
+    <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.44\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.44\build\native\MUXCustomBuildTasks.targets')" />
   </ImportGroup>
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
@@ -550,212 +550,23 @@
   <PropertyGroup Condition="$(BuildingWithBuildExe) != 'true'">
     <GenerateXamlFileBeforeTargets>BeforeBuildGenerateSources;CompileXaml;Prep_ComputeProcessXamlFiles;CompilePageRequiringCustomCompilation</GenerateXamlFileBeforeTargets>
   </PropertyGroup>
-  <Target Name="GenerateRS1GenericXamlFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1StylePage)" Outputs="$(OutDir)Generic.xaml;$(OutDir)Generic.prefixed.xaml">
-    <Message Text="Generating default style XAML file for RS1..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)Generic.prefixed.xaml&quot; -XamlFileList &quot;@(RS1StylePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)Generic.prefixed.xaml" />
-    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)Generic.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)Generic.prefixed.xaml&quot; -ForVersion RS1" FilesWritten="$(OutDir)Generic.xaml" />
-    <ItemGroup>
-      <FileReads Include="@(RS1StylePage)" />
-      <FileWrites Include="$(OutDir)Generic.xaml" />
-    </ItemGroup>
+ 
+  <Target Name="GenerateGenericResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" 
+    Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage)" 
+    Outputs="$(OutDir)Generic.xaml;$(OutDir)rs1_generic.xaml;$(OutDir)rs2_generic.xaml;$(OutDir)rs3_generic.xaml;$(OutDir)rs4_generic.xaml;$(OutDir)rs5_generic.xaml;$(OutDir)19h1_generic.xaml;">
+      <Message Text="Generating generic resources XAML file " />
+      <BatchMergeXaml RS1Pages="@(RS1StylePage)" RS2Pages="@(RS2StylePage)"  RS3Pages="@(RS3StylePage)" 
+                      RS4Pages="@(RS4StylePage)" RS5Pages="@(RS5StylePage)"  N19H1Pages="@(NineteenH1StylePage)" 
+                      PostfixForGeneratedFile="generic" OutputDirectory="$(OutDir)" />
+       <Copy SourceFiles="$(OutDir)rs1_generic.xaml" DestinationFiles="$(OutDir)Generic.xaml" />
   </Target>
-  <Target Name="GenerateRS2GenericXamlFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1StylePage);@(RS2StylePage)" Outputs="$(OutDir)rs2_generic.xaml;$(OutDir)rs2_generic.prefixed.xaml">
-    <Message Text="Generating default style XAML file for RS2..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs2_generic.prefixed.xaml&quot; -XamlFileList &quot;@(RS1StylePage);@(RS2StylePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs2_generic.prefixed.xaml" />
-    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs2_generic.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs2_generic.prefixed.xaml&quot; -ForVersion RS2" FilesWritten="$(OutDir)rs2_generic.xaml" />
-    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
-         PropertyGroup values are always evaluated even when their enclosing target is skipped,
-         whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
-         to only set a property if the target actually runs. -->
-    <CreateProperty Value="True">
-      <Output TaskParameter="ValueSetByTask" PropertyName="RS2GenericXamlFileNeedsCompilation" />
-    </CreateProperty>
-    <ItemGroup>
-      <FileReads Include="@(RS1StylePage)" />
-      <FileReads Include="@(RS2StylePage)" />
-      <FileWrites Include="$(OutDir)rs2_generic.xaml" />
-    </ItemGroup>
-  </Target>
-  <Target Name="GenerateRS3GenericXamlFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage)" Outputs="$(OutDir)rs3_generic.xaml;$(OutDir)rs3_generic.prefixed.xaml">
-    <Message Text="Generating default style XAML file for RS3..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs3_generic.prefixed.xaml&quot; -XamlFileList &quot;@(RS1StylePage);@(RS2StylePage);@(RS3StylePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs3_generic.prefixed.xaml" />
-    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs3_generic.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs3_generic.prefixed.xaml&quot; -ForVersion RS3" FilesWritten="$(OutDir)rs3_generic.xaml" />
-    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
-         PropertyGroup values are always evaluated even when their enclosing target is skipped,
-         whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
-         to only set a property if the target actually runs. -->
-    <CreateProperty Value="True">
-      <Output TaskParameter="ValueSetByTask" PropertyName="RS3GenericXamlFileNeedsCompilation" />
-    </CreateProperty>
-    <ItemGroup>
-      <FileReads Include="@(RS1StylePage)" />
-      <FileReads Include="@(RS2StylePage)" />
-      <FileReads Include="@(RS3StylePage)" />
-      <FileWrites Include="$(OutDir)rs3_generic.xaml" />
-    </ItemGroup>
-  </Target>
-  <Target Name="GenerateRS4GenericXamlFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage)" Outputs="$(OutDir)rs4_generic.xaml;$(OutDir)rs4_generic.prefixed.xaml">
-    <Message Text="Generating default style XAML file for RS4..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs4_generic.prefixed.xaml&quot; -XamlFileList &quot;@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs4_generic.prefixed.xaml" />
-    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs4_generic.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs4_generic.prefixed.xaml&quot; -ForVersion RS4" FilesWritten="$(OutDir)rs4_generic.xaml" />
-    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
-         PropertyGroup values are always evaluated even when their enclosing target is skipped,
-         whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
-         to only set a property if the target actually runs. -->
-    <CreateProperty Value="True">
-      <Output TaskParameter="ValueSetByTask" PropertyName="RS4GenericXamlFileNeedsCompilation" />
-    </CreateProperty>
-    <ItemGroup>
-      <FileReads Include="@(RS1StylePage)" />
-      <FileReads Include="@(RS2StylePage)" />
-      <FileReads Include="@(RS3StylePage)" />
-      <FileReads Include="@(RS4StylePage)" />
-      <FileWrites Include="$(OutDir)rs4_generic.xaml" />
-    </ItemGroup>
-  </Target>
-  <Target Name="GenerateRS5GenericXamlFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage)" Outputs="$(OutDir)rs5_generic.xaml;$(OutDir)rs5_generic.prefixed.xaml">
-    <Message Text="Generating default style XAML file for RS5..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs5_generic.prefixed.xaml&quot; -XamlFileList &quot;@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs5_generic.prefixed.xaml" />
-    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs5_generic.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs5_generic.prefixed.xaml&quot; -ForVersion RS5" FilesWritten="$(OutDir)rs5_generic.xaml" />
-    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
-         PropertyGroup values are always evaluated even when their enclosing target is skipped,
-         whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
-         to only set a property if the target actually runs. -->
-    <CreateProperty Value="True">
-      <Output TaskParameter="ValueSetByTask" PropertyName="RS5GenericXamlFileNeedsCompilation" />
-    </CreateProperty>
-    <ItemGroup>
-      <FileReads Include="@(RS1StylePage)" />
-      <FileReads Include="@(RS2StylePage)" />
-      <FileReads Include="@(RS3StylePage)" />
-      <FileReads Include="@(RS4StylePage)" />
-      <FileReads Include="@(RS5StylePage)" />
-      <FileWrites Include="$(OutDir)rs5_generic.xaml" />
-    </ItemGroup>
-  </Target>
-  <Target Name="Generate19H1GenericXamlFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage)" Outputs="$(OutDir)19h1_generic.xaml;">
-    <Message Text="Generating default style XAML file for 19H1..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)19h1_generic.xaml&quot; -XamlFileList &quot;@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)19h1_generic.xaml" />
-    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
-         PropertyGroup values are always evaluated even when their enclosing target is skipped,
-         whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
-         to only set a property if the target actually runs. -->
-    <CreateProperty Value="True">
-      <Output TaskParameter="ValueSetByTask" PropertyName="NineteenH1GenericXamlFileNeedsCompilation" />
-    </CreateProperty>
-    <ItemGroup>
-      <FileReads Include="@(RS1StylePage)" />
-      <FileReads Include="@(RS2StylePage)" />
-      <FileReads Include="@(RS3StylePage)" />
-      <FileReads Include="@(RS4StylePage)" />
-      <FileReads Include="@(RS5StylePage)" />
-      <FileReads Include="@(NineteenH1StylePage)" />
-      <FileWrites Include="$(OutDir)19h1_generic.xaml" />
-    </ItemGroup>
-  </Target>
-  <Target Name="GenerateRS1ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage)" Outputs="$(OutDir)rs1_themeresources.xaml;$(OutDir)rs1_themeresources.prefixed.xaml">
-    <Message Text="Generating theme resources XAML file for RS1..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs1_themeresources.prefixed.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs1_themeresources.prefixed.xaml" />
-    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs1_themeresources.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs1_themeresources.prefixed.xaml&quot; -ForVersion RS1" FilesWritten="$(OutDir)rs1_themeresources.xaml" />
-    <ItemGroup>
-      <FileReads Include="@(RS1ThemeResourcePage)" />
-      <FileWrites Include="$(OutDir)rs1_themeresources.xaml" />
-    </ItemGroup>
-  </Target>
-  <Target Name="GenerateRS2ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage)" Outputs="$(OutDir)rs2_themeresources.xaml;$(OutDir)rs2_themeresources.prefixed.xaml">
-    <Message Text="Generating theme resources XAML file for RS2..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs2_themeresources.prefixed.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs2_themeresources.prefixed.xaml" />
-    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs2_themeresources.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs2_themeresources.prefixed.xaml&quot; -ForVersion RS2" FilesWritten="$(OutDir)rs2_themeresources.xaml" />
-    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
-         PropertyGroup values are always evaluated even when their enclosing target is skipped,
-         whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
-         to only set a property if the target actually runs. -->
-    <CreateProperty Value="True">
-      <Output TaskParameter="ValueSetByTask" PropertyName="RS2ThemeResourceFileNeedsCompilation" />
-    </CreateProperty>
-    <ItemGroup>
-      <FileReads Include="@(RS1ThemeResourcePage)" />
-      <FileReads Include="@(RS2ThemeResourcePage)" />
-      <FileWrites Include="$(OutDir)rs2_themeresources.xaml" />
-    </ItemGroup>
-  </Target>
-  <Target Name="GenerateRS3ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage)" Outputs="$(OutDir)rs3_themeresources.xaml;$(OutDir)rs3_themeresources.prefixed.xaml">
-    <Message Text="Generating theme resources XAML files for RS3..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs3_themeresources.prefixed.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs3_themeresources.prefixed.xaml" />
-    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs3_themeresources.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs3_themeresources.prefixed.xaml&quot; -ForVersion RS3" FilesWritten="$(OutDir)rs3_themeresources.xaml" />
-    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
-         PropertyGroup values are always evaluated even when their enclosing target is skipped,
-         whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
-         to only set a property if the target actually runs. -->
-    <CreateProperty Value="True">
-      <Output TaskParameter="ValueSetByTask" PropertyName="RS3ThemeResourceFileNeedsCompilation" />
-    </CreateProperty>
-    <ItemGroup>
-      <FileReads Include="@(RS1ThemeResourcePage)" />
-      <FileReads Include="@(RS2ThemeResourcePage)" />
-      <FileReads Include="@(RS3ThemeResourcePage)" />
-      <FileWrites Include="$(OutDir)rs3_themeresources.xaml" />
-    </ItemGroup>
-  </Target>
-  <Target Name="GenerateRS4ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage)" Outputs="$(OutDir)rs4_themeresources.xaml;$(OutDir)rs4_themeresources.prefixed.xaml">
-    <Message Text="Generating theme resources XAML files for RS4..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs4_themeresources.prefixed.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs4_themeresources.prefixed.xaml" />
-    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs4_themeresources.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs4_themeresources.prefixed.xaml&quot; -ForVersion RS4" FilesWritten="$(OutDir)rs4_themeresources.xaml" />
-    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
-         PropertyGroup values are always evaluated even when their enclosing target is skipped,
-         whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
-         to only set a property if the target actually runs. -->
-    <CreateProperty Value="True">
-      <Output TaskParameter="ValueSetByTask" PropertyName="RS4ThemeResourceFileNeedsCompilation" />
-    </CreateProperty>
-    <ItemGroup>
-      <FileReads Include="@(RS1ThemeResourcePage)" />
-      <FileReads Include="@(RS2ThemeResourcePage)" />
-      <FileReads Include="@(RS3ThemeResourcePage)" />
-      <FileReads Include="@(RS4ThemeResourcePage)" />
-      <FileWrites Include="$(OutDir)rs4_themeresources.xaml" />
-    </ItemGroup>
-  </Target>
-  <Target Name="GenerateRS5ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage)" Outputs="$(OutDir)rs5_themeresources.xaml;$(OutDir)rs5_themeresources.prefixed.xaml">
-    <Message Text="Generating theme resources XAML file for RS5..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)rs5_themeresources.prefixed.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)rs5_themeresources.prefixed.xaml" />
-    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)rs5_themeresources.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)rs5_themeresources.prefixed.xaml&quot; -ForVersion RS5" FilesWritten="$(OutDir)rs5_themeresources.xaml" />
-    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
-         PropertyGroup values are always evaluated even when their enclosing target is skipped,
-         whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
-         to only set a property if the target actually runs. -->
-    <CreateProperty Value="True">
-      <Output TaskParameter="ValueSetByTask" PropertyName="RS5ThemeResourceFileNeedsCompilation" />
-    </CreateProperty>
-    <ItemGroup>
-      <FileReads Include="@(RS1ThemeResourcePage)" />
-      <FileReads Include="@(RS2ThemeResourcePage)" />
-      <FileReads Include="@(RS3ThemeResourcePage)" />
-      <FileReads Include="@(RS4ThemeResourcePage)" />
-      <FileReads Include="@(RS5ThemeResourcePage)" />
-      <FileWrites Include="$(OutDir)rs5_themeresources.xaml" />
-    </ItemGroup>
-  </Target>
-  <Target Name="Generate19H1ThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)" Outputs="$(OutDir)19h1_themeresources.xaml;$(OutDir)19h1_themeresources.prefixed.xaml">
-    <Message Text="Generating theme resources XAML file for 19H1..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)19h1_themeresources.prefixed.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)19h1_themeresources.prefixed.xaml" />
-    <RunPowershellScript Path="$(ScriptPath)StripConditionalXaml.ps1" Parameters="-ThemeResourceOutputFile &quot;$(OutDir)19h1_themeresources.xaml&quot; -ThemeResourceInputFile &quot;$(OutDir)19h1_themeresources.prefixed.xaml&quot; -ForVersion 19H1" FilesWritten="$(OutDir)19h1_themeresources.xaml" />
-    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
-         PropertyGroup values are always evaluated even when their enclosing target is skipped,
-         whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
-         to only set a property if the target actually runs. -->
-    <CreateProperty Value="True">
-      <Output TaskParameter="ValueSetByTask" PropertyName="NineteenH1ThemeResourceFileNeedsCompilation" />
-    </CreateProperty>
-    <ItemGroup>
-      <FileReads Include="@(RS1ThemeResourcePage)" />
-      <FileReads Include="@(RS2ThemeResourcePage)" />
-      <FileReads Include="@(RS3ThemeResourcePage)" />
-      <FileReads Include="@(RS4ThemeResourcePage)" />
-      <FileReads Include="@(RS5ThemeResourcePage)" />
-      <FileReads Include="@(NineteenH1ThemeResourcePage)" />
-      <FileWrites Include="$(OutDir)19h1_themeresources.xaml" />
-    </ItemGroup>
+  <Target Name="GenerateThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" 
+    Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)" 
+    Outputs="$(OutDir)rs1_themeresources.xaml;$(OutDir)rs2_themeresources.xaml;$(OutDir)rs3_themeresources.xaml;$(OutDir)rs4_themeresources.xaml;$(OutDir)rs5_themeresources.xaml;$(OutDir)19h1_themeresources.xaml;">
+      <Message Text="Generating theme resources XAML file " />
+      <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage)" RS2Pages="@(RS2ThemeResourcePage)"  RS3Pages="@(RS3ThemeResourcePage)" 
+                      RS4Pages="@(RS4ThemeResourcePage)" RS5Pages="@(RS5ThemeResourcePage)"  N19H1Pages="@(NineteenH1ThemeResourcePage)" 
+                      PostfixForGeneratedFile="themeresources" OutputDirectory="$(OutDir)" />
   </Target>
   <Target Name="GenerateWUXCGenericXamlFile" DependsOnTargets="CategorizeSharedPages" Condition="$(BuildingWithBuildExe) == 'true'">
     <PropertyGroup>
@@ -1049,7 +860,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\..\packages\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Gsl.0.1.2.1\build\native\Microsoft.Gsl.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Gsl.0.1.2.1\build\native\Microsoft.Gsl.targets'))" />
-    <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.39\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.39\build\native\MUXCustomBuildTasks.targets'))" />
+    <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.44\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.44\build\native\MUXCustomBuildTasks.targets'))" />
   </Target>
   <Target Name="RunBinSkim" AfterTargets="AfterBuild" Condition="'$(Configuration)'=='Release' And $(BuildingWithBuildExe) != 'true'">
     <PropertyGroup>
