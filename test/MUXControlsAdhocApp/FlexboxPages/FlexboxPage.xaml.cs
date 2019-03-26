@@ -13,7 +13,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
         {
             this.InitializeComponent();
 
-            _contentFrame.Navigate(typeof(FlexboxPlayground));
+            _contentFrame.Navigate(typeof(FlexboxPlaygroundPage));
         }
 
         private void NavigationView_BackRequested(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewBackRequestedEventArgs args)
@@ -27,11 +27,11 @@ namespace MUXControlsAdhocApp.FlexboxPages
             switch (tag)
             {
                 case "Home":
-                    _contentFrame.Navigate(typeof(FlexboxPlayground));
+                    _contentFrame.Navigate(typeof(FlexboxPlaygroundPage));
                     break;
 
                 case "Order":
-                    _contentFrame.Navigate(typeof(FlexboxOrder));
+                    _contentFrame.Navigate(typeof(FlexboxOrderPage));
                     break;
 
                 case "Direction":
