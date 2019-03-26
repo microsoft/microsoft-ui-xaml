@@ -167,6 +167,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
             _rows.Clear();
 
             uint itemsInRow = 0;
+            double growInRow = 0.0;
 
             double usedInCurrentMainAxis = 0;
             double usedInCurrentCrossAxis = 0;
@@ -180,8 +181,10 @@ namespace MUXControlsAdhocApp.FlexboxPages
                     MainAxis = usedInCurrentMainAxis,
                     CrossAxis = usedInCurrentCrossAxis,
                     Count = itemsInRow,
+                    Grow = growInRow,
                 });
                 itemsInRow = 0;
+                growInRow = 0.0;
                 usedMainAxis = Math.Max(usedMainAxis, usedInCurrentMainAxis);
                 usedInCurrentMainAxis = 0;
                 usedCrossAxis += usedInCurrentCrossAxis;
@@ -223,6 +226,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
                 usedInCurrentMainAxis += MainAxis(childDesiredSize);
                 usedInCurrentCrossAxis = Math.Max(usedInCurrentCrossAxis, CrossAxis(childDesiredSize));
                 itemsInRow++;
+                growInRow += GetGrow(child);
             }
 
             // Incorporate any contribution from the pending row into our total calculation
@@ -244,6 +248,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
             public double MainAxis;
             public double CrossAxis;
             public uint Count;
+            public double Grow;
         }
         private List<RowMeasureInfo> _rows = new List<RowMeasureInfo>();
 
@@ -293,6 +298,21 @@ namespace MUXControlsAdhocApp.FlexboxPages
 
                 double mainOffset = usedInCurrentMainAxis;
                 double excessMainAxis = (MainAxis(finalSize) - info.MainAxis);
+
+                // Remove excess according to growing items
+                double growSlice = 0.0;
+                if (info.Grow > 0.0)
+                {
+                    growSlice = excessMainAxis / info.Grow;
+                    excessMainAxis = 0.0;
+                }
+
+                // Grow to take up leftover space according to the grow ratio
+                double grow = GetGrow(child);
+                if (grow > 0.0)
+                {
+                    childDesiredSize = CreateSize(MainAxis(childDesiredSize) + (grow * growSlice), CrossAxis(childDesiredSize));
+                }
 
                 switch (JustifyContent)
                 {

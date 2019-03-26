@@ -54,6 +54,14 @@ namespace MUXControlsAdhocApp.FlexboxPages
                     _contentFrame.Navigate(typeof(FlexboxOrderPage));
                     break;
 
+                case "Grow":
+                    _contentFrame.Navigate(typeof(FlexboxGrowPage));
+                    break;
+
+                case "Shrink":
+                    _contentFrame.Navigate(typeof(FlexboxShrinkPage));
+                    break;
+
                 case "AlignSelf":
                     _contentFrame.Navigate(typeof(FlexboxAlignSelfPage));
                     break;
