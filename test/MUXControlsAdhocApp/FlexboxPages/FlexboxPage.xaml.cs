@@ -30,10 +30,6 @@ namespace MUXControlsAdhocApp.FlexboxPages
                     _contentFrame.Navigate(typeof(FlexboxPlaygroundPage));
                     break;
 
-                case "Order":
-                    _contentFrame.Navigate(typeof(FlexboxOrderPage));
-                    break;
-
                 case "Direction":
                     _contentFrame.Navigate(typeof(FlexboxDirectionPage));
                     break;
@@ -53,8 +49,16 @@ namespace MUXControlsAdhocApp.FlexboxPages
                 case "AlignContent":
                     _contentFrame.Navigate(typeof(FlexboxAlignContentPage));
                     break;
+
+                case "Order":
+                    _contentFrame.Navigate(typeof(FlexboxOrderPage));
+                    break;
+
+                case "AlignSelf":
+                    _contentFrame.Navigate(typeof(FlexboxAlignSelfPage));
+                    break;
+
             }
-            
         }
     }
 }

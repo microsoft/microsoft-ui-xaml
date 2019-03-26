@@ -11,19 +11,22 @@
 
     <controls:NavigationView x:Name="_navView"
             IsBackEnabled="True"
-            PaneDisplayMode="Top"
+            PaneDisplayMode="Left"
             ItemInvoked="NavigationView_ItemInvoked"
             BackRequested="NavigationView_BackRequested">
         <controls:NavigationView.MenuItems>
-            <controls:NavigationViewItem Tag="Home" Icon="Home" Content="Playground"/>
+            <controls:NavigationViewItem Tag="Home" Icon="Play" Content="Playground"/>
             <controls:NavigationViewItemSeparator/>
+            <controls:NavigationViewItemHeader>Container Properties</controls:NavigationViewItemHeader>
             <controls:NavigationViewItem Tag="Direction" Icon="Switch" Content="Direction"/>
-            <controls:NavigationViewItem Tag="Wrap" Icon="Home" Content="Wrap"/>
+            <controls:NavigationViewItem Tag="Wrap" Icon="FullScreen" Content="Wrap"/>
             <controls:NavigationViewItem Tag="JustifyContent" Icon="AlignCenter" Content="JustifyContent"/>
             <controls:NavigationViewItem Tag="AlignItems" Icon="AlignLeft" Content="AlignItems"/>
-            <controls:NavigationViewItem Tag="AlignContent" Icon="AlignRight" Content="AlignContent"/>
+            <controls:NavigationViewItem Tag="AlignContent" Icon="NewWindow" Content="AlignContent"/>
             <controls:NavigationViewItemSeparator/>
+            <controls:NavigationViewItemHeader>Item Properties</controls:NavigationViewItemHeader>
             <controls:NavigationViewItem Tag="Order" Icon="AllApps" Content="Order"/>
+            <controls:NavigationViewItem Tag="AlignSelf" Icon="ContactInfo" Content="AlignSelf"/>
         </controls:NavigationView.MenuItems>
 
         <ScrollViewer>

@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="MUXControlsAdhocApp.FlexboxPages.FlexboxWrapPage"
+    x:Class="MUXControlsAdhocApp.FlexboxPages.FlexboxAlignSelfPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsAdhocApp.FlexboxPages"
@@ -15,13 +15,12 @@
                 <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="HorizontalAlignment" Value="Center"/>
                 <Setter Property="FontWeight" Value="Bold"/>
-                <Setter Property="FontSize" Value="24"/>
+                <Setter Property="FontSize" Value="18"/>
             </Style>
             <Style TargetType="Grid">
                 <Setter Property="Background" Value="Orange"/>
-                <Setter Property="MinWidth" Value="120"/>
                 <Setter Property="MinHeight" Value="50"/>
-                <Setter Property="Margin" Value="6"/>
+                <Setter Property="Margin" Value="4"/>
                 <Setter Property="CornerRadius" Value="6"/>
                 <Setter Property="BorderBrush" Value="Black"/>
                 <Setter Property="BorderThickness" Value="2"/>
@@ -31,17 +30,22 @@
                 <Setter Property="Margin" Value="0,0,0,20"/>
                 <Setter Property="HorizontalAlignment" Value="Left"/>
             </Style>
+            <Style x:Key="HeaderStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+            </Style>
         </StackPanel.Resources>
 
-        <local:Flexbox Direction="Row" Wrap="True" MaxWidth="500">
-            <Grid MinWidth="60"/>
-            <Grid MinWidth="60"/>
-            <Grid MinWidth="100"/>
-            <Grid MinWidth="120"/>
-            <Grid MinWidth="120"/>
-            <Grid MinWidth="60"/>
-            <Grid MinWidth="60"/>
-            <Grid MinWidth="100"/>
+        <TextBlock Style="{StaticResource HeaderStyle}">Start</TextBlock>
+
+        <local:Flexbox Wrap="True" MinHeight="100" VerticalAlignment="Stretch" AlignItems="Start">
+            <Grid MinWidth="80"/>
+            <Grid MinWidth="40"/>
+            <Grid MinWidth="100" local:Flexbox.AlignSelf="End">
+                <TextBlock>End</TextBlock>
+            </Grid>
+            <Grid MinWidth="80"/>
         </local:Flexbox>
+
     </StackPanel>
 </Page>
