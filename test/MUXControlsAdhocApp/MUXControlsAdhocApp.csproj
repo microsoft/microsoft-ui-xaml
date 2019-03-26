@@ -128,8 +128,17 @@
       <DependentUpon>CommandBarFlyoutPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="FlexboxPages\Flexbox.cs" />
+    <Compile Include="FlexboxPages\FlexboxAlignContentPage.xaml.cs">
+      <DependentUpon>FlexboxAlignContentPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FlexboxPages\FlexboxAlignItemsPage.xaml.cs">
+      <DependentUpon>FlexboxAlignItemsPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FlexboxPages\FlexboxDirectionPage.xaml.cs">
       <DependentUpon>FlexboxDirectionPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FlexboxPages\FlexboxJustifyContentPage.xaml.cs">
+      <DependentUpon>FlexboxJustifyContentPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="FlexboxPages\FlexboxOrderPage.xaml.cs">
       <DependentUpon>FlexboxOrderPage.xaml</DependentUpon>
@@ -139,6 +148,9 @@
     </Compile>
     <Compile Include="FlexboxPages\FlexboxPlaygroundPage.xaml.cs">
       <DependentUpon>FlexboxPlaygroundPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FlexboxPages\FlexboxWrapPage.xaml.cs">
+      <DependentUpon>FlexboxWrapPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -173,7 +185,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="FlexboxPages\FlexboxAlignContentPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FlexboxPages\FlexboxAlignItemsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="FlexboxPages\FlexboxDirectionPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FlexboxPages\FlexboxJustifyContentPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -186,6 +210,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="FlexboxPages\FlexboxPlaygroundPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FlexboxPages\FlexboxWrapPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

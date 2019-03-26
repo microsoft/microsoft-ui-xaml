@@ -37,6 +37,22 @@ namespace MUXControlsAdhocApp.FlexboxPages
                 case "Direction":
                     _contentFrame.Navigate(typeof(FlexboxDirectionPage));
                     break;
+
+                case "Wrap":
+                    _contentFrame.Navigate(typeof(FlexboxWrapPage));
+                    break;
+
+                case "JustifyContent":
+                    _contentFrame.Navigate(typeof(FlexboxJustifyContentPage));
+                    break;
+
+                case "AlignItems":
+                    _contentFrame.Navigate(typeof(FlexboxAlignItemsPage));
+                    break;
+
+                case "AlignContent":
+                    _contentFrame.Navigate(typeof(FlexboxAlignContentPage));
+                    break;
             }
             
         }
