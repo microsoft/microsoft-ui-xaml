@@ -2,9 +2,9 @@
 
 namespace MUXControlsAdhocApp.FlexboxPages
 {
-    public sealed partial class FlexboxAlignSelfPage : Page
+    public sealed partial class FlexboxShrinkPage : Page
     {
-        public FlexboxAlignSelfPage()
+        public FlexboxShrinkPage()
         {
             this.InitializeComponent();
         }
