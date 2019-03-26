@@ -27,7 +27,7 @@ namespace MUXControlsAdhocApp
             };
 
 #if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
-            Button commandBarFlyoutButton = new Button() { Margin = new Thickness(10), Content = "CommandBarFlyout" };
+            Button commandBarFlyoutButton = new Button() { Content = "CommandBarFlyout" };
             
             commandBarFlyoutButton.Click += delegate (object sender, RoutedEventArgs args)
             {

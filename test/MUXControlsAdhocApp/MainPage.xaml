@@ -10,9 +10,14 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel x:Name="MainStackPanel">
-            <Button x:Name="repeater" Margin="10" Content="ItemsRepeater" />
-            <Button x:Name="flexbox" Margin="10" Content="Flexbox" />
-            <Button x:Name="grid" Margin="10" Content="Grid" />
+            <StackPanel.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Margin" Value="10"/>
+                </Style>
+            </StackPanel.Resources>
+            <Button x:Name="repeater" Content="ItemsRepeater" />
+            <Button x:Name="flexbox" Content="Flexbox" />
+            <Button x:Name="grid" Content="Grid" />
         </StackPanel>
     </Grid>
 </Page>
