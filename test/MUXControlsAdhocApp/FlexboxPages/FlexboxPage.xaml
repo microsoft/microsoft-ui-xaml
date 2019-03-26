@@ -16,11 +16,19 @@
             BackRequested="NavigationView_BackRequested">
         <controls:NavigationView.MenuItems>
             <controls:NavigationViewItem Tag="Home" Icon="Home" Content="Playground"/>
-            <controls:NavigationViewItem Tag="Order" Icon="ContactInfo" Content="Order"/>
+            <controls:NavigationViewItemSeparator/>
             <controls:NavigationViewItem Tag="Direction" Icon="Switch" Content="Direction"/>
+            <controls:NavigationViewItem Tag="Wrap" Icon="Home" Content="Wrap"/>
+            <controls:NavigationViewItem Tag="JustifyContent" Icon="AlignCenter" Content="JustifyContent"/>
+            <controls:NavigationViewItem Tag="AlignItems" Icon="AlignLeft" Content="AlignItems"/>
+            <controls:NavigationViewItem Tag="AlignContent" Icon="AlignRight" Content="AlignContent"/>
+            <controls:NavigationViewItemSeparator/>
+            <controls:NavigationViewItem Tag="Order" Icon="AllApps" Content="Order"/>
         </controls:NavigationView.MenuItems>
 
-        <Frame x:Name="_contentFrame"/>
+        <ScrollViewer>
+            <Frame x:Name="_contentFrame"/>
+        </ScrollViewer>
 
     </controls:NavigationView>
     

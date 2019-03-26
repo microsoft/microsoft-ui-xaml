@@ -1,0 +1,86 @@
+﻿<Page
+    x:Class="MUXControlsAdhocApp.FlexboxPages.FlexboxJustifyContentPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsAdhocApp.FlexboxPages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel Width="500" HorizontalAlignment="Stretch">
+        <StackPanel.Resources>
+
+            <Style TargetType="Grid">
+                <Setter Property="Background" Value="Orange"/>
+                <Setter Property="MinWidth" Value="80"/>
+                <Setter Property="MinHeight" Value="50"/>
+                <Setter Property="Margin" Value="6"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="BorderBrush" Value="Black"/>
+                <Setter Property="BorderThickness" Value="2"/>
+            </Style>
+            <Style TargetType="local:Flexbox">
+                <Setter Property="Background" Value="Purple"/>
+                <Setter Property="Margin" Value="0,0,0,20"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+            </Style>
+            <Style x:Key="HeaderStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+            </Style>
+        </StackPanel.Resources>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">Start</TextBlock>
+
+        <local:Flexbox Background="Purple" JustifyContent="Start">
+            <Grid MinWidth="120"/>
+            <Grid MinWidth="60"/>
+            <Grid MinWidth="120"/>
+        </local:Flexbox>
+
+        
+        <TextBlock Style="{StaticResource HeaderStyle}">End</TextBlock>
+
+        <local:Flexbox Background="Purple" JustifyContent="End">
+            <Grid MinWidth="120"/>
+            <Grid MinWidth="60"/>
+            <Grid MinWidth="120"/>
+        </local:Flexbox>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">Center</TextBlock>
+
+        <local:Flexbox Background="Purple" JustifyContent="Center">
+            <Grid MinWidth="120"/>
+            <Grid MinWidth="60"/>
+            <Grid MinWidth="120"/>
+        </local:Flexbox>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">SpaceBetween</TextBlock>
+
+        <local:Flexbox Background="Purple" JustifyContent="SpaceBetween">
+            <Grid MinWidth="120"/>
+            <Grid MinWidth="60"/>
+            <Grid MinWidth="120"/>
+        </local:Flexbox>
+
+        
+        <TextBlock Style="{StaticResource HeaderStyle}">SpaceAround</TextBlock>
+
+        <local:Flexbox Background="Purple" JustifyContent="SpaceAround">
+            <Grid MinWidth="120"/>
+            <Grid MinWidth="60"/>
+            <Grid MinWidth="120"/>
+        </local:Flexbox>
+
+        
+        <TextBlock Style="{StaticResource HeaderStyle}">SpaceEvenly</TextBlock>
+
+        <local:Flexbox Background="Purple" JustifyContent="SpaceEvenly">
+            <Grid MinWidth="120"/>
+            <Grid MinWidth="60"/>
+            <Grid MinWidth="120"/>
+        </local:Flexbox>
+    </StackPanel>
+
+</Page>
