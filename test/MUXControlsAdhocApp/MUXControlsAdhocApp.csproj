@@ -134,6 +134,9 @@
     <Compile Include="FlexboxPages\FlexboxAlignItemsPage.xaml.cs">
       <DependentUpon>FlexboxAlignItemsPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FlexboxPages\FlexboxAlignSelfPage.xaml.cs">
+      <DependentUpon>FlexboxAlignSelfPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FlexboxPages\FlexboxDirectionPage.xaml.cs">
       <DependentUpon>FlexboxDirectionPage.xaml</DependentUpon>
     </Compile>
@@ -190,6 +193,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="FlexboxPages\FlexboxAlignItemsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FlexboxPages\FlexboxAlignSelfPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
