@@ -61,7 +61,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
               "Order",
               typeof(int),
               typeof(Flexbox),
-              new PropertyMetadata(0)
+              new PropertyMetadata(0, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
             );
         public static void SetOrder(UIElement element, int value)
         {
@@ -71,14 +71,14 @@ namespace MUXControlsAdhocApp.FlexboxPages
         {
             return (int)element.GetValue(OrderProperty);
         }
-
+        
         // Grow (number, >= 0)
         public static readonly DependencyProperty GrowProperty =
             DependencyProperty.RegisterAttached(
               "Grow",
               typeof(double),
               typeof(Flexbox),
-              new PropertyMetadata(0.0)
+              new PropertyMetadata(0.0, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
             );
         public static void SetGrow(UIElement element, double value)
         {
@@ -95,7 +95,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
               "Shrink",
               typeof(double),
               typeof(Flexbox),
-              new PropertyMetadata(0.0)
+              new PropertyMetadata(0.0, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
             );
         public static void SetShrink(UIElement element, double value)
         {
@@ -114,7 +114,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
               "AlignSelf",
               typeof(FlexboxAlignSelf),
               typeof(Flexbox),
-              new PropertyMetadata(FlexboxAlignSelf.Auto)
+              new PropertyMetadata(FlexboxAlignSelf.Auto, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
             );
         public static void SetAlignSelf(UIElement element, FlexboxAlignSelf value)
         {
@@ -123,6 +123,15 @@ namespace MUXControlsAdhocApp.FlexboxPages
         public static FlexboxAlignSelf GetAlignSelf(UIElement element)
         {
             return (FlexboxAlignSelf)element.GetValue(AlignSelfProperty);
+        }
+
+        private static void InvalidateMeasureOnChildPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs args)
+        {
+            Flexbox parent = Windows.UI.Xaml.Media.VisualTreeHelper.GetParent(source) as Flexbox;
+            if (parent != null)
+            {
+                parent.InvalidateMeasure();
+            }
         }
 
         private double MainAxis(Size value)
