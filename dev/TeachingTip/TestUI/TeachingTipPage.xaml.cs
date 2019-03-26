@@ -493,6 +493,16 @@ namespace MUXControlsTestApp
             TeachingTipTestHooks.SetTipFollowsTarget(getTeachingTip(), false);
         }
 
+        public void OnReturnTopForOutOfWindowPlacementCheckBoxChecked(object sender, RoutedEventArgs args)
+        {
+            TeachingTipTestHooks.SetReturnTopForOutOfWindowPlacement(getTeachingTip(), true);
+        }
+
+        public void OnReturnTopForOutOfWindowPlacementCheckBoxUnchecked(object sender, RoutedEventArgs args)
+        {
+            TeachingTipTestHooks.SetReturnTopForOutOfWindowPlacement(getTeachingTip(), false);
+        }
+
         public void OnSetPreferredPlacementButtonClicked(object sender, RoutedEventArgs args)
         {
             if (this.PreferredPlacementComboBox.SelectedItem == PlacementTop)

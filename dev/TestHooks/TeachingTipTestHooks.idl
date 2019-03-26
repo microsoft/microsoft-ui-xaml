@@ -13,6 +13,7 @@ runtimeclass TeachingTipTestHooks
     static void SetUseTestWindowBounds(MU_XC_NAMESPACE.TeachingTip teachingTip, Boolean useTestWindowBounds);
     static void SetTestWindowBounds(MU_XC_NAMESPACE.TeachingTip teachingTip, Windows.Foundation.Rect testWindowBounds);
     static void SetTipFollowsTarget(MU_XC_NAMESPACE.TeachingTip teachingTip, Boolean tipFollowsTarget);
+    static void SetReturnTopForOutOfWindowPlacement(MU_XC_NAMESPACE.TeachingTip teachingTip, Boolean returnTopForOutOfWindowPlacement);
     static void SetExpandAnimationDuration(MU_XC_NAMESPACE.TeachingTip teachingTip, Windows.Foundation.TimeSpan animationDurationMultiplier);
     static void SetContractAnimationDuration(MU_XC_NAMESPACE.TeachingTip teachingTip, Windows.Foundation.TimeSpan animationDurationMultiplier);
 

@@ -121,6 +121,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -294,6 +295,8 @@
                 </StackPanel>
                 <TextBlock Text="TipFollowsTarget:" Grid.Row="42" Foreground="Red"/>
                 <CheckBox x:Name="TipFollowsTargetCheckBox" AutomationProperties.Name="TipFollowsTargetCheckBox" Grid.Row="42" Grid.Column="1" Checked="OnTipFollowsTargetCheckBoxChecked" Unchecked="OnTipFollowsTargetCheckBoxUnchecked"/>
+                <TextBlock Text="ReturnTopForOutOfWindowPlacement:" Grid.Row="43" Foreground="Red"/>
+                <CheckBox x:Name="ReturnTopForOutOfWindowPlacementCheckBox" AutomationProperties.Name="ReturnTopForOutOfWindowPlacementCheckBox" Grid.Row="43" Grid.Column="1" IsChecked="true" Checked="OnReturnTopForOutOfWindowPlacementCheckBoxChecked" Unchecked="OnReturnTopForOutOfWindowPlacementCheckBoxUnchecked"/>
             </Grid>
         </ScrollViewer>
 
