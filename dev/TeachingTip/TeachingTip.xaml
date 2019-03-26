@@ -523,7 +523,7 @@
                                                 Background="Transparent"
                                                 VerticalAlignment="Top"
                                                 HorizontalAlignment="Right"
-                                                BorderThickness="{StaticResource TeachingTipAlternateCloseButtonBorderThickness}">
+                                                BorderThickness="{ThemeResource TeachingTipAlternateCloseButtonBorderThickness}">
                                             <Viewbox Width="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}"
                                                      Height="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}">
                                                 <SymbolIcon Symbol="Cancel"/>
