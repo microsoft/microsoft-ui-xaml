@@ -194,8 +194,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     TestAutoPlacementForWindowOrScreenBounds(targetRect, true);
                     
                     SetShouldConstrainToRootBounds(false);
+                    TestAutoPlacementForWindowOrScreenBounds(targetRect, false, "Top");
 
+                    SetReturnTopForOutOfWindowPlacement(false);
                     TestAutoPlacementForWindowOrScreenBounds(targetRect, false);
+
+                    SetReturnTopForOutOfWindowPlacement(true);
                 }
             }
         }
@@ -214,70 +218,159 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     ScrollTargetIntoView();
                     ScrollBy(10);
 
+                    SetHeroContent(HeroContentOptions.NoContent);
+
+                    var targetRect = GetTargetBounds();
+
+                    // All positions are valid
+                    UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 1000, targetRect.Z + 1000, targetRect, true);
+
                     SetPreferredPlacement(PlacementOptions.Top);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("Top"));
-                    CloseTeachingTipProgrammatically();
-
+                    VerifyPlacement("Top");
                     SetPreferredPlacement(PlacementOptions.Bottom);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("Bottom"));
-                    CloseTeachingTipProgrammatically();
-
+                    VerifyPlacement("Bottom");
                     SetPreferredPlacement(PlacementOptions.Left);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("Left"));
-                    CloseTeachingTipProgrammatically();
-
+                    VerifyPlacement("Left");
                     SetPreferredPlacement(PlacementOptions.Right);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("Right"));
-                    CloseTeachingTipProgrammatically();
-
+                    VerifyPlacement("Right");
                     SetPreferredPlacement(PlacementOptions.TopRight);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("TopRight"));
-                    CloseTeachingTipProgrammatically();
-
+                    VerifyPlacement("TopRight");
                     SetPreferredPlacement(PlacementOptions.TopLeft);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("TopLeft"));
-                    CloseTeachingTipProgrammatically();
-
+                    VerifyPlacement("TopLeft");
                     SetPreferredPlacement(PlacementOptions.BottomRight);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("BottomRight"));
-                    CloseTeachingTipProgrammatically();
-
+                    VerifyPlacement("BottomRight");
                     SetPreferredPlacement(PlacementOptions.BottomLeft);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("BottomLeft"));
-                    CloseTeachingTipProgrammatically();
-
+                    VerifyPlacement("BottomLeft");
                     SetPreferredPlacement(PlacementOptions.LeftTop);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("LeftTop"));
-                    CloseTeachingTipProgrammatically();
-
+                    VerifyPlacement("LeftTop");
                     SetPreferredPlacement(PlacementOptions.LeftBottom);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("LeftBottom"));
-                    CloseTeachingTipProgrammatically();
-
+                    VerifyPlacement("LeftBottom");
                     SetPreferredPlacement(PlacementOptions.RightTop);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("RightTop"));
-                    CloseTeachingTipProgrammatically();
-
+                    VerifyPlacement("RightTop");
                     SetPreferredPlacement(PlacementOptions.RightBottom);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("RightBottom"));
-                    CloseTeachingTipProgrammatically();
-
+                    VerifyPlacement("RightBottom");
                     SetPreferredPlacement(PlacementOptions.Center);
-                    OpenTeachingTip();
-                    Verify.IsTrue(GetEffectivePlacement().Equals("Center"));
-                    CloseTeachingTipProgrammatically();
+                    VerifyPlacement("Center");
+
+                    // Eliminate left of the target
+                    UseTestBounds(targetRect.W - 120, targetRect.X - 500, targetRect.Y + 1000, targetRect.Z + 1000, targetRect, true);
+
+                    SetPreferredPlacement(PlacementOptions.Top);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.Bottom);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.Left);
+                    VerifyPlacement("Right");
+                    SetPreferredPlacement(PlacementOptions.Right);
+                    VerifyPlacement("Right");
+                    SetPreferredPlacement(PlacementOptions.TopRight);
+                    VerifyPlacement("TopRight");
+                    SetPreferredPlacement(PlacementOptions.TopLeft);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.BottomRight);
+                    VerifyPlacement("BottomRight");
+                    SetPreferredPlacement(PlacementOptions.BottomLeft);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.LeftTop);
+                    VerifyPlacement("Right");
+                    SetPreferredPlacement(PlacementOptions.LeftBottom);
+                    VerifyPlacement("Right");
+                    SetPreferredPlacement(PlacementOptions.RightTop);
+                    VerifyPlacement("RightTop");
+                    SetPreferredPlacement(PlacementOptions.RightBottom);
+                    VerifyPlacement("RightBottom");
+                    SetPreferredPlacement(PlacementOptions.Center);
+                    VerifyPlacement("Center");
+
+                    // Eliminate top of the target
+                    UseTestBounds(targetRect.W - 500, targetRect.X - 1, targetRect.Y + 1000, targetRect.Z + 1000, targetRect, true);
+
+                    SetPreferredPlacement(PlacementOptions.Top);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.Bottom);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.Left);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.Right);
+                    VerifyPlacement("Right");
+                    SetPreferredPlacement(PlacementOptions.TopRight);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.TopLeft);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.BottomRight);
+                    VerifyPlacement("BottomRight");
+                    SetPreferredPlacement(PlacementOptions.BottomLeft);
+                    VerifyPlacement("BottomLeft");
+                    SetPreferredPlacement(PlacementOptions.LeftTop);
+                    VerifyPlacement("LeftTop");
+                    SetPreferredPlacement(PlacementOptions.LeftBottom);
+                    VerifyPlacement("LeftBottom");
+                    SetPreferredPlacement(PlacementOptions.RightTop);
+                    VerifyPlacement("RightTop");
+                    SetPreferredPlacement(PlacementOptions.RightBottom);
+                    VerifyPlacement("RightBottom");
+                    SetPreferredPlacement(PlacementOptions.Center);
+                    VerifyPlacement("Bottom");
+
+                    // Eliminate right of the target
+                    UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 620, targetRect.Z + 1000, targetRect, true);
+
+                    SetPreferredPlacement(PlacementOptions.Top);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.Bottom);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.Left);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.Right);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.TopRight);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.TopLeft);
+                    VerifyPlacement("TopLeft");
+                    SetPreferredPlacement(PlacementOptions.BottomRight);
+                    VerifyPlacement("Bottom");
+                    SetPreferredPlacement(PlacementOptions.BottomLeft);
+                    VerifyPlacement("BottomLeft");
+                    SetPreferredPlacement(PlacementOptions.LeftTop);
+                    VerifyPlacement("LeftTop");
+                    SetPreferredPlacement(PlacementOptions.LeftBottom);
+                    VerifyPlacement("LeftBottom");
+                    SetPreferredPlacement(PlacementOptions.RightTop);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.RightBottom);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.Center);
+                    VerifyPlacement("Center");
+
+                    // Eliminate bottom of target
+                    UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 1000, targetRect.Z + 501, targetRect, true);
+
+                    SetPreferredPlacement(PlacementOptions.Top);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.Bottom);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.Left);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.Right);
+                    VerifyPlacement("Right");
+                    SetPreferredPlacement(PlacementOptions.TopRight);
+                    VerifyPlacement("TopRight");
+                    SetPreferredPlacement(PlacementOptions.TopLeft);
+                    VerifyPlacement("TopLeft");
+                    SetPreferredPlacement(PlacementOptions.BottomRight);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.BottomLeft);
+                    VerifyPlacement("Top");
+                    SetPreferredPlacement(PlacementOptions.LeftTop);
+                    VerifyPlacement("LeftTop");
+                    SetPreferredPlacement(PlacementOptions.LeftBottom);
+                    VerifyPlacement("LeftBottom");
+                    SetPreferredPlacement(PlacementOptions.RightTop);
+                    VerifyPlacement("RightTop");
+                    SetPreferredPlacement(PlacementOptions.RightBottom);
+                    VerifyPlacement("RightBottom");
+                    SetPreferredPlacement(PlacementOptions.Center);
+                    VerifyPlacement("Center");
                 }
             }
         }
@@ -377,27 +470,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void TestAutoPlacementForWindowOrScreenBounds(Vector4 targetRect, bool forWindowBounds)
         {
+            TestAutoPlacementForWindowOrScreenBounds(targetRect, forWindowBounds, "");
+        }
 
+        private void TestAutoPlacementForWindowOrScreenBounds(Vector4 targetRect, bool forWindowBounds, string valueOverride)
+        {
+            bool hasValueOverride = valueOverride.Length > 0;
             UseTestBounds(targetRect.W - 329, targetRect.X - 340, targetRect.Y + 656, targetRect.Z + 680, targetRect, forWindowBounds);
-            VerifyPlacement("Top");
+            VerifyPlacement(hasValueOverride ? valueOverride : "Top");
             UseTestBounds(targetRect.W - 329, targetRect.X - 336, targetRect.Y + 656, targetRect.Z + 680, targetRect, forWindowBounds);
-            VerifyPlacement("Bottom");
+            VerifyPlacement(hasValueOverride ? valueOverride : "Bottom");
             UseTestBounds(targetRect.W - 329, targetRect.X - 318, targetRect.Y + 659, targetRect.Z + 640, targetRect, forWindowBounds);
-            VerifyPlacement("RightTop");
+            VerifyPlacement(hasValueOverride ? valueOverride : "LeftTop");
             UseTestBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 659, targetRect.Z + 403, targetRect, forWindowBounds);
-            VerifyPlacement("RightBottom");
-            UseTestBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 643, targetRect.Z + 403, targetRect, forWindowBounds);
-            VerifyPlacement("LeftBottom");
-            UseTestBounds(targetRect.W - 329, targetRect.X - 300, targetRect.Y + 643, targetRect.Z + 603, targetRect, forWindowBounds);
-            VerifyPlacement("LeftTop");
+            VerifyPlacement(hasValueOverride ? valueOverride : "LeftBottom");
+            UseTestBounds(targetRect.W - 327, targetRect.X - 100, targetRect.Y + 659, targetRect.Z + 403, targetRect, forWindowBounds);
+            VerifyPlacement(hasValueOverride ? valueOverride : "RightBottom");
+            UseTestBounds(targetRect.W - 327, targetRect.X - 300, targetRect.Y + 659, targetRect.Z + 603, targetRect, forWindowBounds);
+            VerifyPlacement(hasValueOverride ? valueOverride : "RightTop");
             UseTestBounds(targetRect.W - 327, targetRect.X - 340, targetRect.Y + 349, targetRect.Z + 608, targetRect, forWindowBounds);
-            VerifyPlacement("TopLeft");
+            VerifyPlacement(hasValueOverride ? valueOverride : "TopLeft");
             UseTestBounds(targetRect.W - 20, targetRect.X - 340, targetRect.Y + 348, targetRect.Z + 608, targetRect, forWindowBounds);
-            VerifyPlacement("TopRight");
+            VerifyPlacement(hasValueOverride ? valueOverride : "TopRight");
             UseTestBounds(targetRect.W - 327, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 444, targetRect, forWindowBounds);
-            VerifyPlacement("BottomLeft");
+            VerifyPlacement(hasValueOverride ? valueOverride : "BottomLeft");
             UseTestBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 444, targetRect, forWindowBounds);
-            VerifyPlacement("BottomRight");
+            VerifyPlacement(hasValueOverride ? valueOverride : "BottomRight");
             UseTestBounds(targetRect.W - 327, targetRect.X - 318, targetRect.Y + 650, targetRect.Z + 444, targetRect, forWindowBounds);
             VerifyPlacement("Center");
 
@@ -405,9 +503,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             SetHeroContent(HeroContentOptions.NoContent);
 
             UseTestBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20, targetRect, forWindowBounds);
-            VerifyPlacement("Left");
+            VerifyPlacement(hasValueOverride ? valueOverride : "Left");
             UseTestBounds(targetRect.W - 19, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20, targetRect, forWindowBounds);
-            VerifyPlacement("Right");
+            VerifyPlacement(hasValueOverride ? valueOverride : "Right");
 
             SetHeroContent(HeroContentOptions.RedSquare);
         }
@@ -706,6 +804,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             else
             {
                 elements.GetTipFollowsTargetCheckBox().Uncheck();
+            }
+        }
+
+        private void SetReturnTopForOutOfWindowPlacement(bool returnTopForOutOfWindowPlacement)
+        {
+            if (returnTopForOutOfWindowPlacement)
+            {
+                elements.GetReturnTopForOutOfWindowPlacementCheckBox().Check();
+            }
+            else
+            {
+                elements.GetReturnTopForOutOfWindowPlacementCheckBox().Uncheck();
             }
         }
 

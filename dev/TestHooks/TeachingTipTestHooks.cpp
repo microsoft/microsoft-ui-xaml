@@ -98,6 +98,14 @@ void TeachingTipTestHooks::SetTipFollowsTarget(const winrt::TeachingTip& teachin
     }
 }
 
+void TeachingTipTestHooks::SetReturnTopForOutOfWindowPlacement(const winrt::TeachingTip& teachingTip, bool returnTopForOutOfWindowPlacement)
+{
+    if (teachingTip)
+    {
+        winrt::get_self<TeachingTip>(teachingTip)->SetReturnTopForOutOfWindowPlacement(returnTopForOutOfWindowPlacement);
+    }
+}
+
 void TeachingTipTestHooks::SetExpandAnimationDuration(const winrt::TeachingTip& teachingTip, const winrt::TimeSpan& expandAnimationDuration)
 {
     if (teachingTip)

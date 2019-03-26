@@ -287,6 +287,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox tipFollowsTargetCheckBox;
 
+        public CheckBox GetReturnTopForOutOfWindowPlacementCheckBox()
+        {
+            return GetElement(ref returnTopForOutOfWindowPlacementCheckBox, "ReturnTopForOutOfWindowPlacementCheckBox");
+        }
+        private CheckBox returnTopForOutOfWindowPlacementCheckBox;
+
         public ComboBox GetIconComboBox()
         {
             return GetElement(ref iconComboBox, "IconComboBox");
