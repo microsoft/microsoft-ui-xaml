@@ -26,6 +26,8 @@
             <controls:NavigationViewItemSeparator/>
             <controls:NavigationViewItemHeader>Item Properties</controls:NavigationViewItemHeader>
             <controls:NavigationViewItem Tag="Order" Icon="AllApps" Content="Order"/>
+            <controls:NavigationViewItem Tag="Grow" Icon="ZoomIn" Content="Grow"/>
+            <controls:NavigationViewItem Tag="Shrink" Icon="ZoomOut" Content="Shrink"/>
             <controls:NavigationViewItem Tag="AlignSelf" Icon="ContactInfo" Content="AlignSelf"/>
         </controls:NavigationView.MenuItems>
 

@@ -1,0 +1,85 @@
+﻿<Page
+    x:Class="MUXControlsAdhocApp.FlexboxPages.FlexboxGrowPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsAdhocApp.FlexboxPages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel>
+        <StackPanel.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="FontSize" Value="24"/>
+            </Style>
+            <Style TargetType="Grid">
+                <Setter Property="Background" Value="Orange"/>
+                <Setter Property="MinWidth" Value="80"/>
+                <Setter Property="MinHeight" Value="50"/>
+                <Setter Property="Margin" Value="6"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="BorderBrush" Value="Black"/>
+                <Setter Property="BorderThickness" Value="2"/>
+            </Style>
+            <Style TargetType="local:Flexbox">
+                <Setter Property="Background" Value="Purple"/>
+                <Setter Property="Margin" Value="0,0,0,20"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+            </Style>
+        </StackPanel.Resources>
+
+        <local:Flexbox MinWidth="500">
+            <Grid local:Flexbox.Grow="0">
+                <TextBlock>0</TextBlock>
+            </Grid>
+            <Grid local:Flexbox.Grow="0">
+                <TextBlock>0</TextBlock>
+            </Grid>
+            <Grid local:Flexbox.Grow="0">
+                <TextBlock>0</TextBlock>
+            </Grid>
+        </local:Flexbox>
+
+        <local:Flexbox MinWidth="500">
+            <Grid local:Flexbox.Grow="0">
+                <TextBlock>0</TextBlock>
+            </Grid>
+            <Grid local:Flexbox.Grow="1">
+                <TextBlock>1</TextBlock>
+            </Grid>
+            <Grid local:Flexbox.Grow="0">
+                <TextBlock>0</TextBlock>
+            </Grid>
+        </local:Flexbox>
+        
+        <local:Flexbox MinWidth="500">
+            <Grid local:Flexbox.Grow="1">
+                <TextBlock>1</TextBlock>
+            </Grid>
+            <Grid local:Flexbox.Grow="1">
+                <TextBlock>1</TextBlock>
+            </Grid>
+            <Grid local:Flexbox.Grow="1">
+                <TextBlock>1</TextBlock>
+            </Grid>
+        </local:Flexbox>
+
+        <local:Flexbox MinWidth="500">
+            <Grid local:Flexbox.Grow="1">
+                <TextBlock>1</TextBlock>
+            </Grid>
+            <Grid local:Flexbox.Grow="2">
+                <TextBlock>2</TextBlock>
+            </Grid>
+            <Grid local:Flexbox.Grow="1">
+                <TextBlock>1</TextBlock>
+            </Grid>
+        </local:Flexbox>
+    </StackPanel>
+    
+</Page>
