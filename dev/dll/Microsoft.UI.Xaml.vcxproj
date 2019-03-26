@@ -3,7 +3,6 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildProjectDirectory)\..\..\mux.controls.props') And $(BuildingWithBuildExe) != 'true'" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\environment.props" />
-  <Import Project="$(MSBuildProjectDirectory)\..\..\SdkVersion.props" Condition="$(BuildingWithBuildExe) == 'true'" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\ProjectConfigurations.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</ProjectGuid>
@@ -28,16 +27,6 @@
     <DisableEmbeddedXbf Condition="'$(Configuration)'=='Release'">false</DisableEmbeddedXbf>
     <AppxBundlePlatforms>x86|x64|arm|arm64</AppxBundlePlatforms>
   </PropertyGroup>
-  <!-- Temporary hack: This should really go into the product-common props/targets file -->
-  <PropertyGroup Condition="$(BuildingWithBuildExe) == 'true'">
-    <DefaultBuildArchName>x86</DefaultBuildArchName>
-    <BuildArchName Condition="'$(Platform)' == 'Win32'">x86</BuildArchName>
-    <BuildArchName Condition="'$(Platform)' == 'x64'">amd64</BuildArchName>
-    <BuildArchName Condition="'$(Platform)' == 'arm'">arm</BuildArchName>
-    <BuildArchName Condition="'$(Platform)' == 'arm64'">arm64</BuildArchName>
-    <BuildArchName Condition="'$(Platform)' == 'AnyCPU'">$(DefaultBuildArchName)</BuildArchName>
-    <BuildArchName Condition="'$(BuildArchName)' == ''">$(DefaultBuildArchName)</BuildArchName>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Use64BitLinker)' == 'true' AND '$(BuildingWithBuildExe)' == 'true'">
     <OacrLinkTool>$(OSBuildToolsRoot)\vc\HostX64\$(BuildArchName)\link.exe</OacrLinkTool>
     <LinkToolPath>$(OSBuildToolsRoot)\vc\HostX64\$(BuildArchName)</LinkToolPath>
@@ -47,10 +36,6 @@
       <LinkTrackerFrameworkPath>$(MSBuildToolsPath)\amd64</LinkTrackerFrameworkPath>
       <LinkTrackerSdkPath>$(MSBuildToolsPath)\amd64</LinkTrackerSdkPath>
   </PropertyGroup> -->
-  <PropertyGroup Condition="$(BuildingWithBuildExe) == 'true'">
-    <!-- Needed to binplace the DLLs and PDBs to the binaries directory. -->
-    <TargetDestination>retail</TargetDestination>
-  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -193,39 +178,15 @@
     </Midl>
     <Link>
       <ModuleDefinitionFile>Microsoft.UI.Xaml.def</ModuleDefinitionFile>
-      <GenerateDebugInformation Condition="'$(Configuration)'=='Debug' Or $(BuildingWithBuildExe) == 'true'">$(GenerateDebugInformation)</GenerateDebugInformation>
+      <GenerateDebugInformation Condition="'$(Configuration)'=='Debug'">$(GenerateDebugInformation)</GenerateDebugInformation>
       <AdditionalDependencies Condition="$(BuildingWithBuildExe) != 'true'">dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!-- Microsoft.UI.winmd will contain the definition of both public, preview and private types. -->
       <WindowsMetadataFile Condition="$(BuildingWithBuildExe) != 'true'">$(OutDir)\Microsoft.UI.winmd</WindowsMetadataFile>
-      <AdditionalDependencies Condition="$(BuildingWithBuildExe) == 'true'">
-        $(OneCoreBaseLibPath)\bcp47langs.lib;
-        $(OneCoreComLibPath)\combasep.lib;
-        $(OneCorePrivSdkLibPath)\onecoreuap_internal.lib;
-        $(OneCoreShellLibPath)\calleridentity.lib;
-        $(MinCoreSdkLibPath)\mincore.lib;
-        $(MinCoreSdkLibPath)\mincore_legacy.lib;
-        $(MinCoreSdkLibPath)\mincore_obsolete.lib;
-        $(MinWinSdkLibPath)\ntdll.lib;
-        $(SdkLibPath)\dxguid.lib;
-        $(SdkLibPath)\muiload.lib;
-        $(OBJECT_ROOT)\onecoreuap\windows\dxaml\xcp\components\allocation\lib\$(ObjectDirectory)\Windows.UI.Xaml.Allocation.lib;
-        $(OBJECT_ROOT)\onecoreuap\windows\dxaml\xcp\components\allocation\stubs\$(ObjectDirectory)\Windows.UI.Xaml.Allocation.stubs.lib;
-        $(OBJECT_ROOT)\onecoreuap\windows\dxaml\xcp\components\base\lib\$(ObjectDirectory)\Windows.UI.Xaml.Base.lib;
-        $(OBJECT_ROOT)\onecoreuap\windows\dxaml\xcp\components\criticalsection\lib\$(ObjectDirectory)\Windows.UI.Xaml.CriticalSection.lib;
-        $(OBJECT_ROOT)\onecoreuap\windows\dxaml\xcp\components\dependencyLocator\lib\$(ObjectDirectory)\Windows.UI.Xaml.DependencyLocator.lib;
-        $(OBJECT_ROOT)\onecoreuap\windows\dxaml\xcp\components\math\lib\$(ObjectDirectory)\Windows.UI.Xaml.Math.lib;
-        $(OBJECT_ROOT)\onecoreuap\windows\dxaml\xcp\components\quirks\lib\$(ObjectDirectory)\Windows.UI.Xaml.Quirks.lib;
-        $(OBJECT_ROOT)\onecoreuap\windows\dxaml\xcp\components\runtimeenabledfeatures\lib\$(ObjectDirectory)\Windows.UI.Xaml.RuntimeEnabledFeatures.lib;
-        $(OBJECT_ROOT)\onecoreuap\windows\dxaml\xcp\components\terminateProcessOnOOM\lib\$(ObjectDirectory)\Windows.UI.Xaml.TerminateProcessOnOOM.lib;
-        %(AdditionalDependencies)
-      </AdditionalDependencies>
-      <AppContainer Condition="$(BuildingWithBuildExe) == 'true'">no</AppContainer>
       <GenerateMapFile>true</GenerateMapFile>
       <LinkTimeCodeGeneration Condition="'$(Configuration)'=='Release'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <ClCompile>
       <DisableSpecificWarnings>4100;4189;4467;4702;6326;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <DisableSpecificWarnings Condition="$(BuildingWithBuildExe) == 'true'">4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>
         %(AdditionalIncludeDirectories);
         $(MSBuildProjectDirectory)\..\inc;
@@ -246,30 +207,6 @@
         %(AdditionalIncludeDirectories);
         $(MiniWindowsSDKIncludePath);
       </AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="$(BuildingWithBuildExe) == 'true'">
-        %(AdditionalIncludeDirectories);
-        $(MSBuildProjectDirectory)\..\..;
-        $(ObjectPath)\..\..\winrt\$(ObjectDirectory)\Platform;
-        $(ObjectPath)\..\..\winrt\$(ObjectDirectory)\Component;
-        $(ObjectPath)\..\..\winrt\$(ObjectDirectory)\Component\Automation\Peers;
-        $(ObjectPath)\..\..\winrt\$(ObjectDirectory)\Component\Controls;
-        $(ObjectPath)\..\..\winrt\$(ObjectDirectory)\Component\Controls\Primitives;
-        $(ObjectPath)\..\..\winrt\$(ObjectDirectory)\Component\Media;
-        $(ObjectPath)\..\..\winrt\$(ObjectDirectory)\Component\Microsoft\UI\Composition\Effects;
-        $(PUBLIC_ROOT)\internal\onecorebase\inc;
-        $(PUBLIC_ROOT)\internal\onecorecom\inc;
-        $(PUBLIC_ROOT)\onecore\private\com\inc;
-        $(PUBLIC_ROOT)\internal\onecoreuapwindows\inc;
-        $(PUBLIC_ROOT)\internal\sdk\inc\wil;
-        $(PUBLIC_ROOT)\internal\minwin\priv_sdk\inc;
-        $(PUBLIC_ROOT)\internal\mincore\priv_sdk\inc;
-        $(MinCoreInternalPrivSdkIncPathL);
-        $(SDXROOT)\onecoreuap\windows\dxaml\xcp\components\dependencyLocator\inc;
-        $(SDXROOT)\onecoreuap\windows\dxaml\xcp\components\base\inc;
-        $(SDXROOT)\onecoreuap\windows\dxaml\xcp\components\SatelliteBase\inc;
-        $(SDXROOT)\onecoreuap\windows\dxaml\xcp\inc;
-      </AdditionalIncludeDirectories>
-      <MultiProcessorCompilation Condition="$(BuildingWithBuildExe) == 'true'">true</MultiProcessorCompilation>
       <AdditionalOptions>/std:c++17 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="$(BuildingWithBuildExe) != 'true'">/Wv:18 /Zm1000 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
@@ -282,25 +219,12 @@
       <ControlFlowGuard Condition="'$(Configuration)'=='Release'">Guard</ControlFlowGuard>
       <StringPooling Condition="'$(Configuration)'=='Release'">true</StringPooling>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">DEBUG;DBG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="$(BuildingWithBuildExe) == 'true'">_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE;WIN32_LEAN_AND_MEAN;UNICODE;_UNICODE;__WRL_STRICT__;__WRL_FORCE_INSPECTABLE_CLASS_MACRO__;_WCTYPE_INLINE_DEFINED;_STL140_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(BuildingWithBuildExe) != 'true'">DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">MinSpace</Optimization>
     </ClCompile>
-    <ResourceCompile Condition="$(BuildingWithBuildExe) == 'true'">
-      <AdditionalIncludeDirectories>
-        %(AdditionalIncludeDirectories);
-        $(SDXROOT)\onecoreuap\windows\dxaml\xcp\components\SatelliteBase\inc;
-      </AdditionalIncludeDirectories>
-      <!--
-      We need to provide rc.exe with an rc config file in order to produce a .muires file alongside
-      the main res file. The former contains the language dependent resources while the latter contains
-      the language neutral resources. The rc config file tells rc.exe how to split the resources between
-      the two. -->
-      <AdditionalOptions>%(AdditionalOptions) -q $(RazzleToolPath)\MUI.RCConfig</AdditionalOptions>
-    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\BoxHelpers.h" />
@@ -321,15 +245,12 @@
     <ClInclude Include="..\inc\CollectionHelper.h" />
     <ClInclude Include="MUXControlsFactory.h" Condition="$(BuildingWithBuildExe) != 'true'" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="ResourceHelper.h" Condition="$(BuildingWithBuildExe) == 'true'" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="XamlControlsResources.h" />
     <ClInclude Include="XamlMember.h" />
     <ClInclude Include="XamlMetadataProvider.h" />
     <ClInclude Include="XamlMetadataProviderGenerated.h" />
     <ClInclude Include="XamlType.h" />
-    <None Include="$(OutDir)ResourceHelper.Images.g.h" Condition="$(BuildingWithBuildExe) == 'true'" />
-    <None Include="$(OutDir)ResourceHelper.Strings.g.h" Condition="$(BuildingWithBuildExe) == 'true'" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommandingHelpers.cpp" />
@@ -338,7 +259,6 @@
     <ClCompile Include="DoubleUtil.cpp" />
     <ClCompile Include="DownlevelHelper.cpp" />
     <ClCompile Include="FloatUtil.cpp" />
-    <ClCompile Include="ResourceHelper.cpp" Condition="$(BuildingWithBuildExe) == 'true'" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -346,7 +266,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\XamlControlsResources.properties.cpp" />
     <ClCompile Include="XamlControlsResources.cpp" />
     <ClCompile Include="XamlMember.cpp" />
-    <ClCompile Include="XamlMetadataDependencyLocator.cpp" Condition="$(BuildingWithBuildExe) == 'true'" />
     <ClCompile Include="XamlMetadataProvider.cpp" />
     <ClCompile Include="$(OutDir)XamlMetadataProviderGenerated.cpp" />
     <ClCompile Include="XamlType.cpp" />
@@ -464,13 +383,6 @@
       <Value>$(OutDir)\sdk\Microsoft.UI.Xaml.winmd</Value>
     </T4ParameterValues>
   </ItemGroup>
-  <ItemGroup Condition="$(BuildingWithBuildExe) == 'true'">
-    <ResourceCompile Include="Microsoft.UI.Xaml.rc" />
-    <PublishGenerated Include="$(OutDir)MUXControls.xaml">
-      <DestinationFile>$(PUBLIC_ROOT)\internal\onecoreuapwindows\inc\DEPControls.xaml</DestinationFile>
-    </PublishGenerated>
-    <BinplaceLinked Include="$(ObjectPath)\$(ObjectDirectory)$(TargetFileName)" />
-  </ItemGroup>
   <ItemGroup>
     <!-- This natvis support is not ready for prime time 
     <Natvis Include="$(IntermediateOutputPath)CppWinRT\Platform\winrt\cppwinrt.natvis" Condition="$(BuildingWithBuildExe) != 'true'">
@@ -563,7 +475,15 @@
       <BatchMergeXaml RS1Pages="@(RS1StylePage)" RS2Pages="@(RS2StylePage)"  RS3Pages="@(RS3StylePage)" 
                       RS4Pages="@(RS4StylePage)" RS5Pages="@(RS5StylePage)"  N19H1Pages="@(NineteenH1StylePage)" 
                       PostfixForGeneratedFile="generic" OutputDirectory="$(OutDir)" />
-       <Copy SourceFiles="$(OutDir)rs1_generic.xaml" DestinationFiles="$(OutDir)Generic.xaml" />
+      <Copy SourceFiles="$(OutDir)rs1_generic.xaml" DestinationFiles="$(OutDir)Generic.xaml" />
+
+      <!-- NB: We have to use CreateProperty here instead of PropertyGroup.	
+      PropertyGroup values are always evaluated even when their enclosing target is skipped,	
+      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used	
+      to only set a property if the target actually runs. -->	
+      <CreateProperty Value="True">	
+        <Output TaskParameter="ValueSetByTask" PropertyName="GenericXamlFileNeedsCompilation" />	
+      </CreateProperty>	  
   </Target>
   <Target Name="GenerateThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" 
     Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)" 
@@ -572,7 +492,7 @@
       <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage)" RS2Pages="@(RS2ThemeResourcePage)"  RS3Pages="@(RS3ThemeResourcePage)" 
                       RS4Pages="@(RS4ThemeResourcePage)" RS5Pages="@(RS5ThemeResourcePage)"  N19H1Pages="@(NineteenH1ThemeResourcePage)" 
                       PostfixForGeneratedFile="themeresources" OutputDirectory="$(OutDir)" />
-  </Target>
+
   <Target Name="GenerateCompactThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" 
     Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(CompactPage)" 
     Outputs="$(OutDir)rs1_compact_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml;">
@@ -580,84 +500,14 @@
       <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage);@(CompactPage)" RS2Pages="@(RS2ThemeResourcePage);@(CompactPage)"  RS3Pages="@(RS3ThemeResourcePage);@(CompactPage)" 
                       RS4Pages="@(RS4ThemeResourcePage);@(CompactPage)" RS5Pages="@(RS5ThemeResourcePage);@(CompactPage)"  N19H1Pages="@(NineteenH1ThemeResourcePage);@(CompactPage)" 
                       PostfixForGeneratedFile="compact_themeresources" OutputDirectory="$(OutDir)" />
+     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.	
+      PropertyGroup values are always evaluated even when their enclosing target is skipped,	
+      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used	
+      to only set a property if the target actually runs. -->	
+      <CreateProperty Value="True">	
+        <Output TaskParameter="ValueSetByTask" PropertyName="ThemeResourceFileNeedsCompilation" />	
+      </CreateProperty>	
   </Target>
-  <Target Name="GenerateWUXCGenericXamlFile" DependsOnTargets="CategorizeSharedPages" Condition="$(BuildingWithBuildExe) == 'true'">
-    <PropertyGroup>
-      <GenericWuxcPath>$(OutDir)\GenericWuxcXaml</GenericWuxcPath>
-    </PropertyGroup>
-    <ItemGroup>
-      <!-- The WUXC generic.xaml file shouldn't include any non-public types. -->
-      <RS1StylePage Remove="@(RS1StylePage)" Condition="'%(IsPublic)' != 'true'" />
-      <RS2StylePage Remove="@(RS2StylePage)" Condition="'%(IsPublic)' != 'true'" />
-      <RS3StylePage Remove="@(RS3StylePage)" Condition="'%(IsPublic)' != 'true'" />
-      <RS4StylePage Remove="@(RS4StylePage)" Condition="'%(IsPublic)' != 'true'" />
-      <RS5StylePage Remove="@(RS5StylePage)" Condition="'%(IsPublic)' != 'true'" />
-      <NineteenH1StylePage Remove="@(NineteenH1StylePage)" Condition="'%(IsPublic)' != 'true'" />
-      <RS1ThemeResourcePage Remove="@(RS1ThemeResourcePage)" Condition="'%(IsPublic)' != 'true'" />
-      <RS2ThemeResourcePage Remove="@(RS2ThemeResourcePage)" Condition="'%(IsPublic)' != 'true'" />
-      <RS3ThemeResourcePage Remove="@(RS3ThemeResourcePage)" Condition="'%(IsPublic)' != 'true'" />
-      <RS4ThemeResourcePage Remove="@(RS4ThemeResourcePage)" Condition="'%(IsPublic)' != 'true'" />
-      <RS5ThemeResourcePage Remove="@(RS5ThemeResourcePage)" Condition="'%(IsPublic)' != 'true'" />
-      <NineteenH1ThemeResourcePage Remove="@(NineteenH1ThemeResourcePage)" Condition="'%(IsPublic)' != 'true'" />
-    </ItemGroup>
-    <MakeDir Directories="$(GenericWuxcPath)" Condition="!Exists('$(GenericWuxcPath)')" />
-    <Message Text="Generating $(GenericWuxcPath)\generic_wuxc_rs1.xaml..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(GenericWuxcPath)\generic_wuxc_rs1.xaml&quot; -XamlFileList &quot;@(RS1StylePage)&quot; -DependencyHandling Reorder -RemoveComments -RemoveMUXPrefixFromResourceKeys" FilesWritten="$(OutDir)generic_wuxc_rs1.xaml" />
-    <Message Text="Generating $(GenericWuxcPath)\generic_wuxc_rs2.xaml..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(GenericWuxcPath)\generic_wuxc_rs2.xaml&quot; -XamlFileList &quot;$(GenericWuxcPath)\generic_wuxc_rs1.xaml;@(RS2StylePage)&quot; -DependencyHandling Reorder -RemoveComments -RemoveMUXPrefixFromResourceKeys" FilesWritten="$(OutDir)generic_wuxc_rs2.xaml" />
-    <Message Text="Generating $(GenericWuxcPath)\generic_wuxc_rs3.xaml..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(GenericWuxcPath)\generic_wuxc_rs3.xaml&quot; -XamlFileList &quot;$(GenericWuxcPath)\generic_wuxc_rs2.xaml;@(RS3StylePage)&quot; -DependencyHandling Reorder -RemoveComments -RemoveMUXPrefixFromResourceKeys" FilesWritten="$(OutDir)generic_wuxc_rs3.xaml" />
-    <Message Text="Generating $(GenericWuxcPath)\generic_wuxc_rs4.xaml..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(GenericWuxcPath)\generic_wuxc_rs4.xaml&quot; -XamlFileList &quot;$(GenericWuxcPath)\generic_wuxc_rs3.xaml;@(RS4StylePage)&quot; -DependencyHandling Reorder -RemoveComments -RemoveMUXPrefixFromResourceKeys" FilesWritten="$(OutDir)generic_wuxc_rs4.xaml" />
-    <Message Text="Generating $(GenericWuxcPath)\generic_wuxc_rs5.xaml..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(GenericWuxcPath)\generic_wuxc_rs5.xaml&quot; -XamlFileList &quot;$(GenericWuxcPath)\generic_wuxc_rs4.xaml;@(RS5StylePage)&quot; -DependencyHandling Reorder -RemoveComments -RemoveMUXPrefixFromResourceKeys" FilesWritten="$(OutDir)generic_wuxc_rs5.xaml" />
-    <Message Text="Generating $(GenericWuxcPath)\generic_wuxc_19h1.xaml..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(GenericWuxcPath)\generic_wuxc_19h1.xaml&quot; -XamlFileList &quot;$(GenericWuxcPath)\generic_wuxc_rs5.xaml;@(NineteenH1StylePage)&quot; -DependencyHandling Reorder -RemoveComments -RemoveMUXPrefixFromResourceKeys" FilesWritten="$(OutDir)generic_wuxc_19h1.xaml" />
-    <Message Text="Generating $(GenericWuxcPath)\generic_wuxc_rs1_themeresources.xaml..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(GenericWuxcPath)\generic_wuxc_rs1_themeresources.xaml&quot; -XamlFileList &quot;@(RS1ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments -RemoveMUXPrefixFromResourceKeys" FilesWritten="$(OutDir)generic_wuxc_rs1_themeresources.xaml" />
-    <Message Text="Generating $(GenericWuxcPath)\generic_wuxc_rs2_themeresources.xaml..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(GenericWuxcPath)\generic_wuxc_rs2_themeresources.xaml&quot; -XamlFileList &quot;$(GenericWuxcPath)\generic_wuxc_rs1.xaml;@(RS2ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments -RemoveMUXPrefixFromResourceKeys" FilesWritten="$(OutDir)generic_wuxc_rs2_themeresources.xaml" />
-    <Message Text="Generating $(GenericWuxcPath)\generic_wuxc_rs3_themeresources.xaml..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(GenericWuxcPath)\generic_wuxc_rs3_themeresources.xaml&quot; -XamlFileList &quot;$(GenericWuxcPath)\generic_wuxc_rs2.xaml;@(RS3ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments -RemoveMUXPrefixFromResourceKeys" FilesWritten="$(OutDir)generic_wuxc_rs3_themeresources.xaml" />
-    <Message Text="Generating $(GenericWuxcPath)\generic_wuxc_rs4_themeresources.xaml..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(GenericWuxcPath)\generic_wuxc_rs4_themeresources.xaml&quot; -XamlFileList &quot;$(GenericWuxcPath)\generic_wuxc_rs3.xaml;@(RS4ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments -RemoveMUXPrefixFromResourceKeys" FilesWritten="$(OutDir)generic_wuxc_rs4_themeresources.xaml" />
-    <Message Text="Generating $(GenericWuxcPath)\generic_wuxc_rs5_themeresources.xaml..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(GenericWuxcPath)\generic_wuxc_rs5_themeresources.xaml&quot; -XamlFileList &quot;$(GenericWuxcPath)\generic_wuxc_rs4.xaml;@(RS5ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments -RemoveMUXPrefixFromResourceKeys" FilesWritten="$(OutDir)generic_wuxc_rs5_themeresources.xaml" />
-    <Message Text="Generating $(GenericWuxcPath)\generic_wuxc_19h1_themeresources.xaml..." />
-    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(GenericWuxcPath)\generic_wuxc_19h1_themeresources.xaml&quot; -XamlFileList &quot;$(GenericWuxcPath)\generic_wuxc_rs5.xaml;@(NineteenH1ThemeResourcePage)&quot; -DependencyHandling Reorder -RemoveComments -RemoveMUXPrefixFromResourceKeys" FilesWritten="$(OutDir)generic_wuxc_19h1_themeresources.xaml" />
-  </Target>
-  <Target Name="GeneratePrivateXamlFiles" BeforeTargets="PublishFilesGenerated" Condition="$(BuildingWithBuildExe) == 'true'" Inputs="@(SharedPage)" Outputs="$(OutDir)MUXControls.xaml">
-    <ItemGroup>
-      <PrivateSharedPage Include="@(SharedPage)" Condition="'%(IsPublic)' != 'true' And '%(IncludeInWindowsAppx)' == 'true'" />
-    </ItemGroup>
-    <!-- If there are private shared pages, we'll merge them into MUXControls.xaml.
-         Otherwise, we'll just output a blank MUXControls.xaml file. -->
-    <Message Condition="'@(PrivateSharedPage)' != ''" Text="Generating merged private XAML file for WUXC..." />
-    <RunPowershellScript Condition="'@(PrivateSharedPage)' != ''" Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-MergedXamlFilePath &quot;$(OutDir)MUXControls.xaml&quot; -XamlFileList &quot;@(PrivateSharedPage)&quot; -DependencyHandling Reorder -RemoveComments" FilesWritten="$(OutDir)MUXControls.xaml" />
-    <CopyWithReplacements Condition="'@(PrivateSharedPage)' != ''" SourceFiles="$(OutDir)MUXControls.xaml" DestinationFiles="$(OutDir)MUXControls.xaml" Patterns="Microsoft.UI.Xaml;Microsoft.UI.Private.Controls;Microsoft.UI.Private.Media" Replacements="Windows.UI.Xaml;Windows.UI.Xaml.Controls;Windows.UI.Xaml.Media" />
-    <Message Condition="'@(PrivateSharedPage)' == ''" Text="No private XAML files. Outputting a blank private XAML file for WUXC..." />
-    <Delete Condition="'@(PrivateSharedPage)' == '' And Exists('$(OutDir)MUXControls.xaml')" Files="$(OutDir)MUXControls.xaml" />
-    <Touch Condition="'@(PrivateSharedPage)' == ''" Files="$(OutDir)MUXControls.xaml" AlwaysCreate="True" />
-    <ItemGroup>
-      <FileWrites Include="$(OutDir)MUXControls.xaml" />
-    </ItemGroup>
-  </Target>
-  <Target Name="RemoveXamlFiles" BeforeTargets="MarkupCompilePass1" Condition="$(BuildingWithBuildExe) == 'true'">
-    <ItemGroup>
-      <!-- On the Windows side, we bake our public XAML into WUX's generic.xaml and publish our private XAML to be included by apps,
-           so we don't want to actually compile any XAML files there. -->
-      <Page Remove="@(Page)" />
-      <!-- Xaml compiler complains if it gets *no* pages, so throw it a bone and leave a simple one in, 
-           it doesn't matter which one as long as it doesn't have a file name the same as a type in the project. -->
-      <Page Include="$(MSBuildThisFileDirectory)..\Common\Common_themeresources.xaml" />
-    </ItemGroup>
-  </Target>
-  <Target Name="RemoveXamlFilesBeforeCreateWinMD" BeforeTargets="CreateWinMD" Condition="$(BuildingWithBuildExe) == 'true'">
-    <ItemGroup>
-      <!-- On the Windows side, we bake our public XAML into WUX's generic.xaml and publish our private XAML to be included by apps,
-           so we don't want to actually compile any XAML files there. -->
-      <Page Remove="@(Page)" />
-    </ItemGroup>
   </Target>
   <Target Name="RemovePageRequiringCustomCompilation" AfterTargets="BeforeBuildGenerateSources" BeforeTargets="MarkupCompilePass2" Condition="'@(PageRequiringCustomCompilation)' != '' And $(BuildingWithBuildExe) != 'true'">
     <Message Text="RemovePageRequiringCustomCompilation" />
@@ -697,16 +547,16 @@
       <XamlReferencesToCompile Condition="'$(Language)'!='C++'" Include="@(ReferencePath)" />
     </ItemGroup>
     <ItemGroup>
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs2_generic' And ('$(RS2GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs2_generic.xbf'))" />
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs3_generic' And ('$(RS3GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs3_generic.xbf'))" />
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs4_generic' And ('$(RS4GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs4_generic.xbf'))" />
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs5_generic' And ('$(RS5GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs5_generic.xbf'))" />
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '19h1_generic' And ('$(NineteenH1GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\19h1_generic.xbf'))" />
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs2_themeresources' And ('$(RS2ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs2_themeresources.xbf'))" />
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs3_themeresources' And ('$(RS3ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs3_themeresources.xbf'))" />
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs4_themeresources' And ('$(RS4ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs4_themeresources.xbf'))" />
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs5_themeresources' And ('$(RS5ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs5_themeresources.xbf'))" />
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '19h1_themeresources' And ('$(NineteenH1ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\19h1_themeresources.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs2_generic' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs2_generic.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs3_generic' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs3_generic.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs4_generic' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs4_generic.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs5_generic' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs5_generic.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '19h1_generic' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\19h1_generic.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs2_themeresources' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs2_themeresources.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs3_themeresources' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs3_themeresources.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs4_themeresources' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs4_themeresources.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs5_themeresources' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs5_themeresources.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '19h1_themeresources' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\19h1_themeresources.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs2_compact_themeresources' And ('$(RS2ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs2_compact_themeresources.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs3_compact_themeresources' And ('$(RS3ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs3_compact_themeresources.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs4_compact_themeresources' And ('$(RS4ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs4_compact_themeresources.xbf'))" />
@@ -828,43 +678,6 @@
   </Target>
   <Target Name="RunDependencyPropertyCodeGen" AfterTargets="CreateReferenceWinmds" BeforeTargets="ClCompile" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="$(OutDir)Microsoft.UI.winmd" Outputs="@(DependencyPropertyCodeGenOutputs);$(MSBuildProjectDirectory)\..\Generated\AcrylicBrush.properties.cpp">
     <DependencyPropertyCodeGen WinMDInput="$(OutDir)Microsoft.UI.winmd" References="@(ProjectionWinMD)" OutputDirectory="$(MSBuildProjectDirectory)\..\Generated" />
-  </Target>
-  <Target Name="XamlMetadataCodeGenWUXC" AfterTargets="MarkupCompilePass1" BeforeTargets="ClCompile" Condition="$(BuildingWithBuildExe) == 'true'" Inputs="$(ObjectPath)\..\..\idl\$(ObjectDirectory)\microsoft.ui.xaml.winmd;$(ObjectPath)\..\..\idl\$(ObjectDirectory)\microsoft.ui.private.winmd;$(ObjectPath)\..\..\idl\$(ObjectDirectory)\muxcontrolscontract.winmd;$(ObjectPath)\..\..\idl\$(ObjectDirectory)\effects.winmd;$(SdkMetadataPath)\windows.winmd;XamlMetadataProviderGenerated.tt;CommonHelpers.tt;WinRtType.tt" Outputs="$(OutDir)XamlMetadataProviderGenerated.cpp">
-    <PropertyGroup>
-      <LocalWinmdPath>$(ObjectPath)\..\..\idl\$(ObjectDirectory)</LocalWinmdPath>
-    </PropertyGroup>
-    <ItemGroup>
-      <MetadataWinmd Include="$(SdkMetadataPath)\windows.winmd" />
-      <MetadataWinmd Include="$(SdkMetadataPath)\internal\windows.ui.winmd" />
-    </ItemGroup>
-    <ItemGroup>
-      <ReferenceWinmd Include="$(LocalWinmdPath)\microsoft.ui.xaml.winmd" />
-      <ReferenceWinmd Include="$(LocalWinmdPath)\effects.winmd" />
-      <ReferenceWinmd Include="$(SdkMetadataPath)\windows.winmd" />
-      <ReferenceWinmd Include="$(SdkMetadataPath)\internal\*.winmd" />
-    </ItemGroup>
-    <ItemGroup>
-      <TypeHintWinmd Include="$(LocalWinmdPath)\microsoft.ui.xaml.winmd" />
-    </ItemGroup>
-    <PropertyGroup>
-      <ParameterValuesString>-ParameterValuesString 'MetadataWinmdPaths=@(MetadataWinmd),ReferenceWinmds=@(ReferenceWinmd),TypeHintWinmds=@(TypeHintWinmd)'</ParameterValuesString>
-    </PropertyGroup>
-    <RunPowershellScript Path="$(ScriptPath)ProcessTextTemplate.ps1" Parameters="-FilePath XamlMetadataProviderGenerated.tt -OutputPath $(OutDir)XamlMetadataProviderGenerated.cpp $(ParameterValuesString)" />
-    <ItemGroup>
-      <FileWrites Include="$(OutDir)XamlMetadataProviderGenerated.cpp" />
-    </ItemGroup>
-  </Target>
-  <Target Name="GenerateResourceDefinitions" BeforeTargets="PrepareForBuild" Condition="$(BuildingWithBuildExe) == 'true'" Inputs="@(PRIResource);$(ScriptPath)GenerateSystemDllStringResources.ps1;$(ScriptPath)GenerateSystemDllImageResources.ps1" Outputs="$(OutDir)Microsoft.UI.Xaml.Strings.g.rc;$(OutDir)Microsoft.UI.Xaml.Images.g.rc;$(OutDir)ResourceHelper.Strings.g.h;$(OutDir)ResourceHelper.Images.g.h">
-    <Message Text="Generating resource definitions..." />
-    <MakeDir Directories="$(OutDir)" Condition="!Exists('$(OutDir)')" />
-    <RunPowershellScript Path="$(ScriptPath)GenerateSystemDllStringResources.ps1" Parameters="-ReswPaths &quot;@(PRIResource-&gt;WithMetadataValue('IsPreviewResource', 'False'))&quot; -OutputPath &quot;$(OutDir)Microsoft.UI.Xaml.Strings.g.rc&quot; -ResourceHelperOutputPath &quot;$(OutDir)ResourceHelper.Strings.g.h&quot;" FilesWritten="$(OutDir)Microsoft.UI.Xaml.Strings.g.rc;$(OutDir)ResourceHelper.Strings.g.h" />
-    <RunPowershellScript Path="$(ScriptPath)GenerateSystemDllImageResources.ps1" Parameters="-ImagePaths &quot;@(Image)&quot; -OutputPath &quot;$(OutDir)Microsoft.UI.Xaml.Images.g.rc&quot; -ResourceHelperOutputPath &quot;$(OutDir)ResourceHelper.Images.g.h&quot;" FilesWritten="$(OutDir)Microsoft.UI.Xaml.Images.g.rc;$(OutDir)ResourceHelper.Images.g.h" />
-    <ItemGroup>
-      <FileWrites Include="$(OutDir)Microsoft.UI.Xaml.Images.g.rc" />
-      <FileWrites Include="$(OutDir)Microsoft.UI.Xaml.Strings.g.rc" />
-      <FileWrites Include="$(OutDir)ResourceHelper.Images.g.h" />
-      <FileWrites Include="$(OutDir)ResourceHelper.Strings.g.h" />
-    </ItemGroup>
   </Target>
   <Target Name="WorkAroundFastUpToDateCheckBug" AfterTargets="_GenerateProjectPriFileCore" Inputs="$(OutDir)$(TargetName).pri" Outputs="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).winmd;$(OutDir)Microsoft.UI.winmd" Condition="Exists('$(OutDir)$(TargetName).dll') And $(BuildingWithBuildExe) != 'true'">
     <Message Text="Touching '$(OutDir)$(TargetName).dll' because pri file changed to work around DevDiv bug https://devdiv.visualstudio.com/DevDiv/_workitems?id=297204" />
