@@ -14,7 +14,6 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="1">
-            <TextBlock>Before</TextBlock>
             <Grid>
                 <Grid Background="#88FFDDDD" Width="500" Height="500" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                 <Grid Background="#88DDFFDD" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
@@ -61,7 +60,6 @@
                     </local:Flexbox>
                 </Grid>
             </Grid>
-            <TextBlock>After</TextBlock>
         </StackPanel>
         <StackPanel Grid.Column="0">
             <Button Click="InvalidateButton_Click" Content="Invalidate"/>

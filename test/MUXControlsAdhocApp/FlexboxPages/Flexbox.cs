@@ -132,6 +132,94 @@ namespace MUXControlsAdhocApp.FlexboxPages
             return (FlexboxAlignSelf)element.GetValue(AlignSelfProperty);
         }
 
+        public FlexboxWrap Wrap
+        {
+            get
+            {
+                return _wrap;
+            }
+            set
+            {
+                if (_wrap != value)
+                {
+                    _wrap = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private FlexboxWrap _wrap = FlexboxWrap.NoWrap;
+
+        public FlexboxDirection Direction
+        {
+            get
+            {
+                return _direction;
+            }
+            set
+            {
+                if (_direction != value)
+                {
+                    _direction = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private FlexboxDirection _direction = FlexboxDirection.Row;
+
+        // Main-axis alignment of the entire box
+        public FlexboxJustifyContent JustifyContent
+        {
+            get
+            {
+                return _justifyContent;
+            }
+            set
+            {
+                if (_justifyContent != value)
+                {
+                    _justifyContent = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private FlexboxJustifyContent _justifyContent = FlexboxJustifyContent.Start;
+
+        // Cross-axis alignment of items
+        public FlexboxAlignItems AlignItems
+        {
+            get
+            {
+                return _alignItems;
+            }
+            set
+            {
+                if (_alignItems != value)
+                {
+                    _alignItems = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private FlexboxAlignItems _alignItems = FlexboxAlignItems.Start;
+
+        // Cross-axis alignment of lines
+        public FlexboxAlignContent AlignContent
+        {
+            get
+            {
+                return _alignContent;
+            }
+            set
+            {
+                if (_alignContent != value)
+                {
+                    _alignContent = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private FlexboxAlignContent _alignContent = FlexboxAlignContent.Start;
+
         private static void InvalidateMeasureOnChildPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs args)
         {
             Flexbox parent = Windows.UI.Xaml.Media.VisualTreeHelper.GetParent(source) as Flexbox;
@@ -492,93 +580,5 @@ namespace MUXControlsAdhocApp.FlexboxPages
                 return (Wrap != FlexboxWrap.NoWrap);
             }
         }
-
-        public FlexboxWrap Wrap
-        {
-            get
-            {
-                return _wrap;
-            }
-            set
-            {
-                if (_wrap != value)
-                {
-                    _wrap = value;
-                    InvalidateMeasure();
-                }
-            }
-        }
-        private FlexboxWrap _wrap = FlexboxWrap.NoWrap;
-
-        public FlexboxDirection Direction
-        {
-            get
-            {
-                return _direction;
-            }
-            set
-            {
-                if (_direction != value)
-                {
-                    _direction = value;
-                    InvalidateMeasure();
-                }
-            }
-        }
-        private FlexboxDirection _direction = FlexboxDirection.Row;
-
-        // Main-axis alignment of the entire box
-        public FlexboxJustifyContent JustifyContent
-        {
-            get
-            {
-                return _justifyContent;
-            }
-            set
-            {
-                if (_justifyContent != value)
-                {
-                    _justifyContent = value;
-                    InvalidateMeasure();
-                }
-            }
-        }
-        private FlexboxJustifyContent _justifyContent = FlexboxJustifyContent.Start;
-
-        // Cross-axis alignment of items
-        public FlexboxAlignItems AlignItems
-        {
-            get
-            {
-                return _alignItems;
-            }
-            set
-            {
-                if (_alignItems != value)
-                {
-                    _alignItems = value;
-                    InvalidateMeasure();
-                }
-            }
-        }
-        private FlexboxAlignItems _alignItems = FlexboxAlignItems.Start;
-
-        // Cross-axis alignment of lines
-        public FlexboxAlignContent AlignContent
-        {
-            get
-            {
-                return _alignContent;
-            }
-            set
-            {
-                if (_alignContent != value)
-                {
-                    _alignContent = value;
-                    InvalidateMeasure();
-                }
-            }
-        }
-        private FlexboxAlignContent _alignContent = FlexboxAlignContent.Start;
     }
 }
