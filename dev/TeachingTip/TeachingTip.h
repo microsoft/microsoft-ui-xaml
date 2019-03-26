@@ -170,34 +170,34 @@ private:
 
     static bool isPlacementTop(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Top ||
-            placement == winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft ||
-            placement == winrt::TeachingTipPlacementMode::TopEdgeAlignedRight;
+            placement == winrt::TeachingTipPlacementMode::TopLeft ||
+            placement == winrt::TeachingTipPlacementMode::TopRight;
     }
     static bool isPlacementBottom(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Bottom ||
-            placement == winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft ||
-            placement == winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight;
+            placement == winrt::TeachingTipPlacementMode::BottomLeft ||
+            placement == winrt::TeachingTipPlacementMode::BottomRight;
     }
     static bool isPlacementLeft(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Left ||
-            placement == winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop ||
-            placement == winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom;
+            placement == winrt::TeachingTipPlacementMode::LeftTop ||
+            placement == winrt::TeachingTipPlacementMode::LeftBottom;
     }
     static bool isPlacementRight(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Right ||
-            placement == winrt::TeachingTipPlacementMode::RightEdgeAlignedTop ||
-            placement == winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom;
+            placement == winrt::TeachingTipPlacementMode::RightTop ||
+            placement == winrt::TeachingTipPlacementMode::RightBottom;
     }
 
     // These values are shifted by one because this is the 1px highlight that sits adjacent to the tip border.
     inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (TailShortSideLength() - 1.0f), 0, 1, 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0, 1, 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0, 1, 0 }; }
+    inline winrt::Thickness BottomRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0, 1, 0 }; }
+    inline winrt::Thickness BottomLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0, 1, 0 }; }
     static inline winrt::Thickness OtherPlacementTopRightHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
 
     inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, (width / 2) + (TailShortSideLength() - 1.0f), 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedRightPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0 }; }
+    inline winrt::Thickness BottomRightPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0 }; }
+    inline winrt::Thickness BottomLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0 }; }
     static inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 1, 0 }; }
     // Shifted by one since the tail edge's border is not accounted for automatically.
     static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 0, 0 }; }

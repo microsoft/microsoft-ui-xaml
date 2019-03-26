@@ -310,7 +310,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     SetPreferredPlacement(PlacementOptions.RightBottom);
                     VerifyPlacement("RightBottom");
                     SetPreferredPlacement(PlacementOptions.Center);
-                    VerifyPlacement("Bottom");
+                    VerifyPlacement("Center");
 
                     // Eliminate right of the target
                     UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 620, targetRect.Z + 1000, targetRect, true);
