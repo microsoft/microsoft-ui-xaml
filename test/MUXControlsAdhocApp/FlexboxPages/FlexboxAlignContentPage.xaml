@@ -31,7 +31,7 @@
 
         <TextBlock Style="{StaticResource HeaderStyle}">Start</TextBlock>
 
-        <local:Flexbox Wrap="True" MaxWidth="300" MinHeight="180" AlignContent="Start">
+        <local:Flexbox Wrap="Wrap" MaxWidth="300" MinHeight="180" AlignContent="Start">
             <Grid MinWidth="80"/>
             <Grid MinWidth="100"/>
             <Grid MinWidth="50"/>
@@ -45,7 +45,7 @@
 
         <TextBlock Style="{StaticResource HeaderStyle}">End</TextBlock>
 
-        <local:Flexbox Wrap="True" MaxWidth="300" MinHeight="180" AlignContent="End">
+        <local:Flexbox Wrap="Wrap" MaxWidth="300" MinHeight="180" AlignContent="End">
             <Grid MinWidth="80"/>
             <Grid MinWidth="100"/>
             <Grid MinWidth="50"/>
@@ -59,7 +59,7 @@
 
         <TextBlock Style="{StaticResource HeaderStyle}">Center</TextBlock>
 
-        <local:Flexbox Wrap="True" MaxWidth="300" MinHeight="180" AlignContent="Center">
+        <local:Flexbox Wrap="Wrap" MaxWidth="300" MinHeight="180" AlignContent="Center">
             <Grid MinWidth="80"/>
             <Grid MinWidth="100"/>
             <Grid MinWidth="50"/>
@@ -73,7 +73,7 @@
 
         <TextBlock Style="{StaticResource HeaderStyle}">Stretch</TextBlock>
 
-        <local:Flexbox Wrap="True" MaxWidth="300" MinHeight="180" AlignContent="Stretch">
+        <local:Flexbox Wrap="Wrap" MaxWidth="300" MinHeight="180" AlignContent="Stretch">
             <Grid MinWidth="80"/>
             <Grid MinWidth="100"/>
             <Grid MinWidth="50"/>
@@ -87,7 +87,7 @@
 
         <TextBlock Style="{StaticResource HeaderStyle}">SpaceBetween</TextBlock>
 
-        <local:Flexbox Wrap="True" MaxWidth="300" MinHeight="180" AlignContent="SpaceBetween">
+        <local:Flexbox Wrap="Wrap" MaxWidth="300" MinHeight="180" AlignContent="SpaceBetween">
             <Grid MinWidth="80"/>
             <Grid MinWidth="100"/>
             <Grid MinWidth="50"/>
@@ -101,7 +101,7 @@
 
         <TextBlock Style="{StaticResource HeaderStyle}">SpaceAround</TextBlock>
 
-        <local:Flexbox Wrap="True" MaxWidth="300" MinHeight="180" AlignContent="SpaceAround">
+        <local:Flexbox Wrap="Wrap" MaxWidth="300" MinHeight="180" AlignContent="SpaceAround">
             <Grid MinWidth="80"/>
             <Grid MinWidth="100"/>
             <Grid MinWidth="50"/>

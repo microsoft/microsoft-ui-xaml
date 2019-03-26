@@ -21,6 +21,11 @@ namespace MUXControlsAdhocApp.FlexboxPages
             _flexbox.Direction = EnumValueFromComboBox<FlexboxDirection>(sender);
         }
 
+        private void WrapComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            _flexbox.Wrap = EnumValueFromComboBox<FlexboxWrap>(sender);
+        }
+
         private void JustifyContentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             _flexbox.JustifyContent = EnumValueFromComboBox<FlexboxJustifyContent>(sender);

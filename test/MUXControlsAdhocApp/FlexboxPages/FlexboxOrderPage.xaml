@@ -33,8 +33,7 @@
             </Style>
         </StackPanel.Resources>
 
-        <local:Flexbox Wrap="False">
-            
+        <local:Flexbox>
             <Grid local:Flexbox.Order="1">
                 <TextBlock>1</TextBlock>
             </Grid>
@@ -52,7 +51,7 @@
             </Grid>
         </local:Flexbox>
 
-        <local:Flexbox Wrap="False">
+        <local:Flexbox>
             <Grid local:Flexbox.Order="5">
                 <TextBlock>5</TextBlock>
             </Grid>
@@ -67,7 +66,7 @@
             </Grid>
         </local:Flexbox>
 
-        <local:Flexbox Direction="Column" Wrap="False">
+        <local:Flexbox Direction="Column">
             <Grid local:Flexbox.Order="2">
                 <TextBlock>2</TextBlock>
             </Grid>
