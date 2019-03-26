@@ -6,7 +6,7 @@
         <ResourceDictionary x:Key="Default">
             <StaticResource x:Key="TeachingTipBorderBrush" ResourceKey="SystemControlTransientBorderBrush"/>
             <SolidColorBrush x:Key="TeachingTipTopHighlightBrush" Color="#0DFFFFFF"/>
-            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemControlTransientBackgroundBrush"/>
+            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
             <StaticResource x:Key="TeachingTipForegroundBrush" ResourceKey="SystemControlForegroundBaseHighBrush"/>
             <StaticResource x:Key="TeachingTipBackgroundBrush" ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
             <Thickness x:Key="TeachingTipAlternateCloseButtonBorderThickness">0</Thickness>
@@ -14,7 +14,7 @@
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="TeachingTipBorderBrush" ResourceKey="SystemControlTransientBorderBrush"/>
             <SolidColorBrush x:Key="TeachingTipTopHighlightBrush" Color="#99FFFFFF"/>
-            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemControlTransientBackgroundBrush"/>
+            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
             <StaticResource x:Key="TeachingTipForegroundBrush" ResourceKey="SystemControlForegroundBaseHighBrush"/>
             <StaticResource x:Key="TeachingTipBackgroundBrush" ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
             <Thickness x:Key="TeachingTipAlternateCloseButtonBorderThickness">0</Thickness>
@@ -22,7 +22,7 @@
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="TeachingTipBorderBrush" ResourceKey="SystemControlTransientBorderBrush"/>
             <SolidColorBrush x:Key="TeachingTipTopHighlightBrush" Color="Transparent"/>
-            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemControlTransientBackgroundBrush"/>
+            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
             <StaticResource x:Key="TeachingTipForegroundBrush" ResourceKey="SystemControlForegroundBaseHighBrush"/>
             <StaticResource x:Key="TeachingTipBackgroundBrush" ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
             <Thickness x:Key="TeachingTipAlternateCloseButtonBorderThickness">2</Thickness>
