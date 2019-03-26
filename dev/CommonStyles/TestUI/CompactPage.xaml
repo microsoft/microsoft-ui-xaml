@@ -14,6 +14,7 @@
     </local:TestPage.Resources>
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel>
+            <Button Content="Toggle Compact In AppLevel For Manual Testing" Click="ToggleCompactInAppLevel_Click"/>
             <muxc:NavigationView x:Name="Nav">
                 <muxc:NavigationView.MenuItems>
                     <muxc:NavigationViewItem x:Name="NavItem1" Icon="Accept" Content="OK" />

@@ -16,6 +16,7 @@ using MUXControls.TestAppUtils;
 using PlatformConfiguration = Common.PlatformConfiguration;
 using OSVersion = Common.OSVersion;
 using System.Collections.Generic;
+using XamlControlsResources = Microsoft.UI.Xaml.Controls.XamlControlsResources;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -26,10 +27,34 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-
-
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
+    [TestClass]
+    public class CommonStylesApiTests
+    {
+        [TestMethod]
+        public void VerifyUseCompactResourcesAPI()
+        {
+            //Verify there is no crash and TreeViewItemMinHeight is not the same when changing UseCompactResources.
+            RunOnUIThread.Execute(() =>
+            {
+                var dict = new XamlControlsResources();
+                var height = dict["TreeViewItemMinHeight"].ToString();
+
+                dict.UseCompactResources = true;
+                var compactHeight = dict["TreeViewItemMinHeight"].ToString();
+                Verify.AreNotEqual(height, compactHeight, "Height in Compact is not the same as default");
+                Verify.AreEqual("24", compactHeight, "Height in 24 in Compact");
+
+                dict.UseCompactResources = false;
+                var height2 = dict["TreeViewItemMinHeight"].ToString();
+                Verify.AreEqual(height, height2, "Height are the same after disabled compact");
+            });
+
+            MUXControlsTestApp.Utilities.IdleSynchronizer.Wait();
+        }
+    }
+
     [TestClass]
     public class CommonStylesVisualTreeTestSamples
     {

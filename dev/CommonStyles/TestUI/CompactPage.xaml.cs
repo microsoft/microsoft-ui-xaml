@@ -11,6 +11,7 @@ using Common;
 using MUXControlsTestApp.Utilities;
 using TreeViewItem = Microsoft.UI.Xaml.Controls.TreeViewItem;
 using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
+using controls = Microsoft.UI.Xaml.Controls;
 using System;
 
 namespace MUXControlsTestApp
@@ -89,6 +90,12 @@ namespace MUXControlsTestApp
             VerifyChildHeight(simpleVerify, DatePicker, "FlyoutButton", 24, "DatePicker");
 
             CompactTestResult.Text = simpleVerify.ToString();
+        }
+
+        private void ToggleCompactInAppLevel_Click(object sender, RoutedEventArgs e)
+        {
+            var dict = Application.Current.Resources.MergedDictionaries.First() as controls.XamlControlsResources;
+            dict.UseCompactResources = !dict.UseCompactResources;
         }
     }
 }
