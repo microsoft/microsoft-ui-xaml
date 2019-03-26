@@ -14,6 +14,13 @@ namespace MUXControlsAdhocApp.FlexboxPages
         ColumnReverse,
     }
 
+    public enum FlexboxWrap
+    {
+        NoWrap,
+        Wrap,
+        WrapReverse,
+    }
+
     public enum FlexboxJustifyContent
     {
         Start,
@@ -193,7 +200,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
                 if (usedInCurrentMainAxis + MainAxis(childDesiredSize) > MainAxis(availableSize))
                 {
                     // Not enough space, time for a new row
-                    if (Wrap)
+                    if (IsWrapping)
                     {
                         completeRow();
 
@@ -247,6 +254,13 @@ namespace MUXControlsAdhocApp.FlexboxPages
             double crossOffsetForCurrentRow = 0;
             double usedInCurrentCrossAxis = 0;
 
+            // In reverse wrap mode we work our way from the bottom up
+            // TODO: Using finalSize here is causing us to right/bottom align, which probably isn't correct.
+            if ((Wrap == FlexboxWrap.WrapReverse) && (_rows.Count > 1))
+            {
+                crossOffsetForCurrentRow = CrossAxis(finalSize) - (_rows[_rows.Count - 1].CrossAxis);
+            }
+
             List<UIElement> sortedChildren = ChildrenSortedByOrder();
             foreach (UIElement child in sortedChildren)
             {
@@ -255,7 +269,8 @@ namespace MUXControlsAdhocApp.FlexboxPages
                 Size childDesiredSize = child.DesiredSize;
                 if (usedInCurrentMainAxis + MainAxis(childDesiredSize) > MainAxis(finalSize))
                 {
-                    if (!Wrap)
+                    // If we're not wrapping just hide all the remaining elements
+                    if (!IsWrapping)
                     {
                         usedInCurrentMainAxis = MainAxis(finalSize);
                         child.Arrange(new Rect(new Point(0, 0), new Size(0, 0)));
@@ -263,7 +278,15 @@ namespace MUXControlsAdhocApp.FlexboxPages
                     }
 
                     usedInCurrentMainAxis = 0;
-                    crossOffsetForCurrentRow += (usedInCurrentCrossAxis > 0 ? usedInCurrentCrossAxis : info.CrossAxis);
+                    double effectiveUsedInCurrentCrossAxis = (usedInCurrentCrossAxis > 0 ? usedInCurrentCrossAxis : info.CrossAxis);
+                    if (Wrap == FlexboxWrap.WrapReverse)
+                    {
+                        crossOffsetForCurrentRow -= effectiveUsedInCurrentCrossAxis;
+                    }
+                    else
+                    {
+                        crossOffsetForCurrentRow += effectiveUsedInCurrentCrossAxis;
+                    }
                     rowIndex++;
                     info = _rows[rowIndex];
                 }
@@ -400,6 +423,13 @@ namespace MUXControlsAdhocApp.FlexboxPages
                         break;
                 }
 
+                // In Reversed mode we need to swap the coordinates so that items grom from right/bottom to left/top
+                // TODO: Using finalSize here means things will become right/bottom aligned, which doesn't seem right
+                if (IsReversed)
+                {
+                    mainOffset = MainAxis(finalSize) - mainOffset - MainAxis(childDesiredSize);
+                }
+
                 child.Arrange(new Rect(CreatePoint(mainOffset, crossOffset), childDesiredSize));
 
                 usedInCurrentMainAxis += MainAxis(childDesiredSize);
@@ -413,10 +443,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
 
             sorted.Sort((UIElement a, UIElement b) =>
             {
-                // That's not actually what this means. It's not about order reversal, but about LTR versus RTL. I _think_
-                return IsReversed ?
-                    (GetOrder(b) - GetOrder(a)) :
-                    (GetOrder(a) - GetOrder(b));
+                return (GetOrder(a) - GetOrder(b));
             });
 
             return sorted;
@@ -438,8 +465,15 @@ namespace MUXControlsAdhocApp.FlexboxPages
             }
         }
 
-        // TODO: (nowrap | wrap | wrap-reverse (grows up instead of down))
-        public bool Wrap
+        private bool IsWrapping
+        {
+            get
+            {
+                return (Wrap != FlexboxWrap.NoWrap);
+            }
+        }
+
+        public FlexboxWrap Wrap
         {
             get
             {
@@ -454,7 +488,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
                 }
             }
         }
-        private bool _wrap = true;
+        private FlexboxWrap _wrap = FlexboxWrap.NoWrap;
 
         public FlexboxDirection Direction
         {
