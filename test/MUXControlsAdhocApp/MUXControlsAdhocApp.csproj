@@ -161,6 +161,13 @@
     <Compile Include="FlexboxPages\FlexboxWrapPage.xaml.cs">
       <DependentUpon>FlexboxWrapPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GridPages\Grid.cs" />
+    <Compile Include="GridPages\GridPage.xaml.cs">
+      <DependentUpon>GridPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GridPages\GridPlaygroundPage.xaml.cs">
+      <DependentUpon>GridPlaygroundPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -235,6 +242,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="FlexboxPages\FlexboxWrapPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GridPages\GridPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GridPages\GridPlaygroundPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
