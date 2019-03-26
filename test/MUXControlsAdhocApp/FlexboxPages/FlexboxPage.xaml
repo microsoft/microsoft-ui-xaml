@@ -9,97 +9,18 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <controls:NavigationView IsBackEnabled="True" PaneDisplayMode="Top" BackRequested="NavigationView_BackRequested">
+    <controls:NavigationView x:Name="_navView"
+            IsBackEnabled="True"
+            PaneDisplayMode="Top"
+            ItemInvoked="NavigationView_ItemInvoked"
+            BackRequested="NavigationView_BackRequested">
+        <controls:NavigationView.MenuItems>
+            <controls:NavigationViewItem Tag="Home" Icon="Home" Content="Playground"/>
+            <controls:NavigationViewItem Tag="Order" Icon="ContactInfo" Content="Order"/>
+            <controls:NavigationViewItem Tag="Direction" Icon="Switch" Content="Direction"/>
+        </controls:NavigationView.MenuItems>
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="1">
-                <TextBlock>Before</TextBlock>
-                <Grid>
-                    <Grid Background="#88FFDDDD" Width="500" Height="500" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                    <Grid Background="#88DDFFDD" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <Grid.Resources>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="HorizontalAlignment" Value="Center"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                            </Style>
-                        </Grid.Resources>
-                        <local:Flexbox x:Name="_flexbox" MaxWidth="500" MaxHeight="500" MinHeight="300">
-                            <Grid Background="Red" MinWidth="150" MinHeight="100" local:Flexbox.Order="1">
-                                <TextBlock>1(1)</TextBlock>
-                            </Grid>
-                            <Grid Background="Green" MinWidth="100" MinHeight="100" local:Flexbox.Order="-1">
-                                <TextBlock>2(-1)</TextBlock>
-                            </Grid>
-                            <Grid Background="Blue" MinWidth="200" MinHeight="100" local:Flexbox.Order="4">
-                                <TextBlock>3(4)</TextBlock>
-                            </Grid>
-                            <Grid Background="Magenta" MinWidth="200" MinHeight="100" local:Flexbox.Order="2">
-                                <TextBlock>4(2)</TextBlock>
-                            </Grid>
-                            <Grid Background="Cyan" MinWidth="50" MinHeight="50">
-                                <TextBlock>5</TextBlock>
-                            </Grid>
-                            <Grid Background="Yellow" MinWidth="100" MinHeight="100">
-                                <TextBlock>6</TextBlock>
-                            </Grid>
-                            <Grid x:Name="_alignSelf" Background="Gray" MinWidth="100" MinHeight="50">
-                                <StackPanel>
-                                    <TextBlock>7</TextBlock>
-                                    <ComboBox Header="AlignSelf" SelectionChanged="AlignSelfComboBox_SelectionChanged" SelectedItem="Auto">
-                                        <x:String>Auto</x:String>
-                                        <x:String>Start</x:String>
-                                        <x:String>End</x:String>
-                                        <x:String>Center</x:String>
-                                        <x:String>Baseline</x:String>
-                                        <x:String>Stretch</x:String>
-                                    </ComboBox>
-                                </StackPanel>
-                            </Grid>
-                        </local:Flexbox>
-                    </Grid>
-                </Grid>
-                <TextBlock>After</TextBlock>
-            </StackPanel>
-            <StackPanel Grid.Column="0">
-                <Button Click="InvalidateButton_Click" Content="Invalidate"/>
-                <ComboBox Header="Direction" SelectionChanged="DirectionComboBox_SelectionChanged" SelectedItem="Row">
-                    <x:String>Row</x:String>
-                    <x:String>RowReverse</x:String>
-                    <x:String>Column</x:String>
-                    <x:String>ColumnReverse</x:String>
-                </ComboBox>
-                <ToggleSwitch Header="Wrap" IsOn="{x:Bind _flexbox.Wrap, Mode=TwoWay}"/>
-                <ComboBox Header="JustifyContent" SelectionChanged="JustifyContentComboBox_SelectionChanged" SelectedItem="Start">
-                    <x:String>Start</x:String>
-                    <x:String>End</x:String>
-                    <x:String>Center</x:String>
-                    <x:String>SpaceBetween</x:String>
-                    <x:String>SpaceAround</x:String>
-                    <x:String>SpaceEvenly</x:String>
-                </ComboBox>
-                <ComboBox Header="AlignItems" SelectionChanged="AlignItemsComboBox_SelectionChanged" SelectedItem="Start">
-                    <x:String>Start</x:String>
-                    <x:String>End</x:String>
-                    <x:String>Center</x:String>
-                    <x:String>Stretch</x:String>
-                    <x:String>Baseline</x:String>
-                </ComboBox>
-                <ComboBox Header="AlignContent" SelectionChanged="AlignContentComboBox_SelectionChanged" SelectedItem="Start">
-                    <x:String>Start</x:String>
-                    <x:String>End</x:String>
-                    <x:String>Center</x:String>
-                    <x:String>Stretch</x:String>
-                    <x:String>SpaceBetween</x:String>
-                    <x:String>SpaceAround</x:String>
-                </ComboBox>
-            </StackPanel>
-        </Grid>
+        <Frame x:Name="_contentFrame"/>
 
     </controls:NavigationView>
     
