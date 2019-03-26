@@ -131,14 +131,14 @@
     <Compile Include="FlexboxPages\FlexboxDirectionPage.xaml.cs">
       <DependentUpon>FlexboxDirectionPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="FlexboxPages\FlexboxOrder.xaml.cs">
-      <DependentUpon>FlexboxOrder.xaml</DependentUpon>
+    <Compile Include="FlexboxPages\FlexboxOrderPage.xaml.cs">
+      <DependentUpon>FlexboxOrderPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="FlexboxPages\FlexboxPage.xaml.cs">
       <DependentUpon>FlexboxPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="FlexboxPages\FlexboxPlayground.xaml.cs">
-      <DependentUpon>FlexboxPlayground.xaml</DependentUpon>
+    <Compile Include="FlexboxPages\FlexboxPlaygroundPage.xaml.cs">
+      <DependentUpon>FlexboxPlaygroundPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -177,7 +177,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="FlexboxPages\FlexboxOrder.xaml">
+    <Page Include="FlexboxPages\FlexboxOrderPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -185,7 +185,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="FlexboxPages\FlexboxPlayground.xaml">
+    <Page Include="FlexboxPages\FlexboxPlaygroundPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

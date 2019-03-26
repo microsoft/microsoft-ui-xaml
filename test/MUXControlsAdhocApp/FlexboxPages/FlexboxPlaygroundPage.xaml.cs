@@ -4,9 +4,9 @@ using Windows.UI.Xaml.Controls;
 
 namespace MUXControlsAdhocApp.FlexboxPages
 {
-    public sealed partial class FlexboxPlayground : Page
+    public sealed partial class FlexboxPlaygroundPage : Page
     {
-        public FlexboxPlayground()
+        public FlexboxPlaygroundPage()
         {
             this.InitializeComponent();
         }
