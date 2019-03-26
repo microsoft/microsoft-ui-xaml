@@ -31,7 +31,13 @@
                 <Setter Property="Margin" Value="0,0,0,20"/>
                 <Setter Property="HorizontalAlignment" Value="Left"/>
             </Style>
+            <Style x:Key="HeaderStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+            </Style>
         </StackPanel.Resources>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">Row</TextBlock>
 
         <local:Flexbox Direction="Row">
             <Grid>
@@ -48,6 +54,8 @@
             </Grid>
         </local:Flexbox>
 
+        <TextBlock Style="{StaticResource HeaderStyle}">RowReverse</TextBlock>
+
         <local:Flexbox Direction="RowReverse">
             <Grid>
                 <TextBlock>1</TextBlock>
@@ -63,6 +71,8 @@
             </Grid>
         </local:Flexbox>
 
+        <TextBlock Style="{StaticResource HeaderStyle}">Column</TextBlock>
+
         <local:Flexbox Direction="Column">
             <Grid>
                 <TextBlock>1</TextBlock>
@@ -77,6 +87,8 @@
                 <TextBlock>4</TextBlock>
             </Grid>
         </local:Flexbox>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">ColumnReverse</TextBlock>
 
         <local:Flexbox Direction="ColumnReverse">
             <Grid>

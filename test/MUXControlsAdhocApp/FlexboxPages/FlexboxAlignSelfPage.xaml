@@ -38,7 +38,7 @@
 
         <TextBlock Style="{StaticResource HeaderStyle}">Start</TextBlock>
 
-        <local:Flexbox Wrap="True" MinHeight="100" VerticalAlignment="Stretch" AlignItems="Start">
+        <local:Flexbox Wrap="Wrap" MinHeight="100" VerticalAlignment="Stretch" AlignItems="Start">
             <Grid MinWidth="80"/>
             <Grid MinWidth="40"/>
             <Grid MinWidth="100" local:Flexbox.AlignSelf="End">

@@ -71,7 +71,11 @@
                 <x:String>Column</x:String>
                 <x:String>ColumnReverse</x:String>
             </ComboBox>
-            <ToggleSwitch Header="Wrap" IsOn="{x:Bind _flexbox.Wrap, Mode=TwoWay}"/>
+            <ComboBox Header="Wrap" SelectionChanged="WrapComboBox_SelectionChanged" SelectedItem="NoWrap">
+                <x:String>NoWrap</x:String>
+                <x:String>Wrap</x:String>
+                <x:String>WrapReverse</x:String>
+            </ComboBox>
             <ComboBox Header="JustifyContent" SelectionChanged="JustifyContentComboBox_SelectionChanged" SelectedItem="Start">
                 <x:String>Start</x:String>
                 <x:String>End</x:String>

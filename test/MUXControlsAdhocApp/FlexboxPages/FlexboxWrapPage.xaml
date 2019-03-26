@@ -31,17 +31,97 @@
                 <Setter Property="Margin" Value="0,0,0,20"/>
                 <Setter Property="HorizontalAlignment" Value="Left"/>
             </Style>
+            <Style x:Key="HeaderStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+            </Style>
         </StackPanel.Resources>
 
-        <local:Flexbox Direction="Row" Wrap="True" MaxWidth="500">
-            <Grid MinWidth="60"/>
-            <Grid MinWidth="60"/>
-            <Grid MinWidth="100"/>
-            <Grid MinWidth="120"/>
-            <Grid MinWidth="120"/>
-            <Grid MinWidth="60"/>
-            <Grid MinWidth="60"/>
-            <Grid MinWidth="100"/>
+        <TextBlock Style="{StaticResource HeaderStyle}">NoWrap</TextBlock>
+
+        <local:Flexbox Direction="Row" Wrap="NoWrap" MaxWidth="500">
+            <Grid MinWidth="60">
+                <TextBlock>1</TextBlock>
+            </Grid>
+            <Grid MinWidth="60">
+                <TextBlock>2</TextBlock>
+            </Grid>
+            <Grid MinWidth="100">
+                <TextBlock>3</TextBlock>
+            </Grid>
+            <Grid MinWidth="120">
+                <TextBlock>4</TextBlock>
+            </Grid>
+            <Grid MinWidth="120">
+                <TextBlock>5</TextBlock>
+            </Grid>
+            <Grid MinWidth="60">
+                <TextBlock>6</TextBlock>
+            </Grid>
+            <Grid MinWidth="60">
+                <TextBlock>7</TextBlock>
+            </Grid>
+            <Grid MinWidth="100">
+                <TextBlock>8</TextBlock>
+            </Grid>
+        </local:Flexbox>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">Wrap</TextBlock>
+
+        <local:Flexbox Direction="Row" Wrap="Wrap" MaxWidth="500">
+            <Grid MinWidth="60">
+                <TextBlock>1</TextBlock>
+            </Grid>
+            <Grid MinWidth="60">
+                <TextBlock>2</TextBlock>
+            </Grid>
+            <Grid MinWidth="100">
+                <TextBlock>3</TextBlock>
+            </Grid>
+            <Grid MinWidth="120">
+                <TextBlock>4</TextBlock>
+            </Grid>
+            <Grid MinWidth="120">
+                <TextBlock>5</TextBlock>
+            </Grid>
+            <Grid MinWidth="60">
+                <TextBlock>6</TextBlock>
+            </Grid>
+            <Grid MinWidth="60">
+                <TextBlock>7</TextBlock>
+            </Grid>
+            <Grid MinWidth="100">
+                <TextBlock>8</TextBlock>
+            </Grid>
+        </local:Flexbox>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">WrapReverse</TextBlock>
+
+        <local:Flexbox Direction="Row" Wrap="WrapReverse" MaxWidth="500">
+            <Grid MinWidth="60">
+                <TextBlock>1</TextBlock>
+            </Grid>
+            <Grid MinWidth="60">
+                <TextBlock>2</TextBlock>
+            </Grid>
+            <Grid MinWidth="100">
+                <TextBlock>3</TextBlock>
+            </Grid>
+            <Grid MinWidth="120">
+                <TextBlock>4</TextBlock>
+            </Grid>
+            <Grid MinWidth="120">
+                <TextBlock>5</TextBlock>
+            </Grid>
+            <Grid MinWidth="60">
+                <TextBlock>6</TextBlock>
+            </Grid>
+            <Grid MinWidth="60">
+                <TextBlock>7</TextBlock>
+            </Grid>
+            <Grid MinWidth="100">
+                <TextBlock>8</TextBlock>
+            </Grid>
         </local:Flexbox>
     </StackPanel>
 </Page>
