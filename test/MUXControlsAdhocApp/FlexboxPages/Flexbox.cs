@@ -6,7 +6,54 @@ using Windows.UI.Xaml.Controls;
 
 namespace MUXControlsAdhocApp.FlexboxPages
 {
-    class Flexbox : Panel
+    public enum FlexboxDirection
+    {
+        Row,
+        RowReverse,
+        Column,
+        ColumnReverse,
+    }
+
+    public enum FlexboxJustifyContent
+    {
+        Start,
+        End,
+        Center,
+        SpaceBetween,
+        SpaceAround,
+        SpaceEvenly,
+    }
+
+    public enum FlexboxAlignItems
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+        Baseline,
+    }
+
+    public enum FlexboxAlignContent
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+        SpaceBetween,
+        SpaceAround,
+    }
+
+    public enum FlexboxAlignSelf
+    {
+        Auto,
+        Start,
+        End,
+        Center,
+        Baseline,
+        Stretch,
+    }
+
+    public class Flexbox : Panel
     {
         // Order (number)
         public static readonly DependencyProperty OrderProperty =
@@ -461,52 +508,5 @@ namespace MUXControlsAdhocApp.FlexboxPages
             }
         }
         private FlexboxAlignContent _alignContent = FlexboxAlignContent.Start;
-    }
-
-    public enum FlexboxDirection
-    {
-        Row,
-        RowReverse,
-        Column,
-        ColumnReverse,
-    }
-
-    public enum FlexboxJustifyContent
-    {
-        Start,
-        End,
-        Center,
-        SpaceBetween,
-        SpaceAround,
-        SpaceEvenly,
-    }
-
-    public enum FlexboxAlignItems
-    {
-        Start,
-        End,
-        Center,
-        Stretch,
-        Baseline,
-    }
-
-    public enum FlexboxAlignContent
-    {
-        Start,
-        End,
-        Center,
-        Stretch,
-        SpaceBetween,
-        SpaceAround,
-    }
-
-    public enum FlexboxAlignSelf
-    {
-        Auto,
-        Start,
-        End,
-        Center,
-        Baseline,
-        Stretch,
     }
 }

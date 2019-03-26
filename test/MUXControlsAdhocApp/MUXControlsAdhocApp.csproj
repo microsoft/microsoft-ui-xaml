@@ -128,8 +128,17 @@
       <DependentUpon>CommandBarFlyoutPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="FlexboxPages\Flexbox.cs" />
+    <Compile Include="FlexboxPages\FlexboxDirectionPage.xaml.cs">
+      <DependentUpon>FlexboxDirectionPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FlexboxPages\FlexboxOrder.xaml.cs">
+      <DependentUpon>FlexboxOrder.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FlexboxPages\FlexboxPage.xaml.cs">
       <DependentUpon>FlexboxPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FlexboxPages\FlexboxPlayground.xaml.cs">
+      <DependentUpon>FlexboxPlayground.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -164,7 +173,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="FlexboxPages\FlexboxDirectionPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FlexboxPages\FlexboxOrder.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="FlexboxPages\FlexboxPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FlexboxPages\FlexboxPlayground.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
