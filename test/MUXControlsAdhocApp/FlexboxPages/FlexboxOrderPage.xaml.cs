@@ -2,9 +2,9 @@
 
 namespace MUXControlsAdhocApp.FlexboxPages
 {
-    public sealed partial class FlexboxOrder : Page
+    public sealed partial class FlexboxOrderPage : Page
     {
-        public FlexboxOrder()
+        public FlexboxOrderPage()
         {
             this.InitializeComponent();
         }
