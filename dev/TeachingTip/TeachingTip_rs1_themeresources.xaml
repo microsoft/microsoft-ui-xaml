@@ -4,22 +4,25 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <SolidColorBrush x:Key="TeachingTipBorderBrush" Color="#5C000000"/>
+            <StaticResource x:Key="TeachingTipBorderBrush" ResourceKey="SystemControlTransientBorderBrush"/>
             <SolidColorBrush x:Key="TeachingTipTopHighlightBrush" Color="#0DFFFFFF"/>
-            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemChromeMediumHighColor"/>
-            <SolidColorBrush x:Key="TeachingTipStaticBackgroundBrush" Color="{ThemeResource SystemChromeLowColor}"/>
+            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemControlTransientBackgroundBrush"/>
+            <StaticResource x:Key="TeachingTipForegroundBrush" ResourceKey="SystemControlForegroundBaseHighBrush"/>
+            <StaticResource x:Key="TeachingTipBackgroundBrush" ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <SolidColorBrush x:Key="TeachingTipBorderBrush" Color="#24000000"/>
+            <StaticResource x:Key="TeachingTipBorderBrush" ResourceKey="SystemControlTransientBorderBrush"/>
             <SolidColorBrush x:Key="TeachingTipTopHighlightBrush" Color="#99FFFFFF"/>
-            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemChromeMediumHighColor"/>
-            <SolidColorBrush x:Key="TeachingTipStaticBackgroundBrush" Color="{ThemeResource SystemChromeLowColor}"/>
+            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemControlTransientBackgroundBrush"/>
+            <StaticResource x:Key="TeachingTipForegroundBrush" ResourceKey="SystemControlForegroundBaseHighBrush"/>
+            <StaticResource x:Key="TeachingTipBackgroundBrush" ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <SolidColorBrush x:Key="TeachingTipBorderBrush" Color="Red"/>
-            <SolidColorBrush x:Key="TeachingTipTopHighlightBrush" Color="Black"/>
-            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemChromeMediumHighColor"/>
-            <SolidColorBrush x:Key="TeachingTipStaticBackgroundBrush" Color="{ThemeResource SystemChromeLowColor}"/>
+            <StaticResource x:Key="TeachingTipBorderBrush" ResourceKey="SystemControlTransientBorderBrush"/>
+            <SolidColorBrush x:Key="TeachingTipTopHighlightBrush" Color="Transparent"/>
+            <StaticResource x:Key="TeachingTipTransientBackground" ResourceKey="SystemControlTransientBackgroundBrush"/>
+            <StaticResource x:Key="TeachingTipForegroundBrush" ResourceKey="SystemControlForegroundBaseHighBrush"/>
+            <StaticResource x:Key="TeachingTipBackgroundBrush" ResourceKey="SystemControlPageBackgroundChromeLowBrush"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
