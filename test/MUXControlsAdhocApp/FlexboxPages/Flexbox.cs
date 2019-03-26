@@ -299,7 +299,16 @@ namespace MUXControlsAdhocApp.FlexboxPages
                 }
 
                 double crossOffset = crossOffsetForCurrentRow;
-                double excessCrossAxisInRow = (info.CrossAxis - CrossAxis(childDesiredSize));
+                double excessCrossAxisInRow;
+                // If there's only one row then the cross axis size is actually the final arrange size
+                if (_rows.Count == 1)
+                {
+                    excessCrossAxisInRow = CrossAxis(finalSize) - CrossAxis(childDesiredSize);
+                }
+                else
+                {
+                    excessCrossAxisInRow = (info.CrossAxis - CrossAxis(childDesiredSize));
+                }
 
                 double totalCrossAxis = 0.0;
                 _rows.ForEach(row => { totalCrossAxis += row.CrossAxis; });
