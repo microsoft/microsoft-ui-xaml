@@ -39,8 +39,6 @@ namespace MUXControlsAdhocApp.FlexboxPages
         private void AlignSelfComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             Flexbox.SetAlignSelf(_alignSelf, EnumValueFromComboBox<FlexboxAlignSelf>(sender));
-            // TODO: How does an attached child property invalidate layout?
-            _flexbox.InvalidateMeasure();
         }
 
         private T EnumValueFromComboBox<T>(object sender) where T : struct, IComparable
