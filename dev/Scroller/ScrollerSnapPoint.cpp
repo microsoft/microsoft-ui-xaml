@@ -12,7 +12,7 @@ SnapPointBase::SnapPointBase()
     // throw (ERROR_CALL_NOT_IMPLEMENTED);
 }
 
-winrt::hstring SnapPointBase::GetTargetExpression(winrt::hstring target) const
+winrt::hstring SnapPointBase::GetTargetExpression(winrt::hstring const& target) const
 {
     return StringUtil::FormatString(L"this.Target.%1!s!", target.data());
 }
@@ -71,7 +71,7 @@ winrt::SnapPointApplicableRangeType SnapPointBase::ApplicableRangeType()
 }
 #endif
 
-int SnapPointBase::CombinationCount()
+int SnapPointBase::CombinationCount() const
 {
     return m_combinationCount;
 }
@@ -88,7 +88,7 @@ void SnapPointBase::VisualizationColor(winrt::Color color)
 }
 #endif // _DEBUG
 
-std::tuple<double, double> SnapPointBase::ActualApplicableZone()
+std::tuple<double, double> SnapPointBase::ActualApplicableZone() const
 {
     return m_actualApplicableZone;
 }
@@ -113,9 +113,22 @@ winrt::ScrollSnapPointsAlignment ScrollSnapPointBase::Alignment()
     return m_alignment;
 }
 
-void ScrollSnapPointBase::Alignment(winrt::ScrollSnapPointsAlignment alignment)
+// Returns True when this snap point is sensitive to the viewport size and is interested in future updates.
+bool ScrollSnapPointBase::OnUpdateViewport(double newViewport)
 {
-    m_alignment = alignment;
+    switch (m_alignment)
+    {
+    case winrt::ScrollSnapPointsAlignment::Near:
+        MUX_ASSERT(m_alignmentAdjustment == 0.0);
+        return false;
+    case winrt::ScrollSnapPointsAlignment::Center:
+        m_alignmentAdjustment = -newViewport / 2.0;
+        break;
+    case winrt::ScrollSnapPointsAlignment::Far:
+        m_alignmentAdjustment = -newViewport;
+        break;
+    }
+    return true;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -127,8 +140,7 @@ ScrollSnapPoint::ScrollSnapPoint(
     double snapPointValue,
     winrt::ScrollSnapPointsAlignment alignment)
 {
-    m_specifiedValue = snapPointValue;
-    m_actualValue = snapPointValue;
+    m_value = snapPointValue;
     m_alignment = alignment;
 }
 
@@ -143,8 +155,7 @@ ScrollSnapPoint::ScrollSnapPoint(
         throw winrt::hresult_invalid_argument(L"'applicableRange' must be strictly positive.");
     }
 
-    m_specifiedValue = snapPointValue;
-    m_actualValue = snapPointValue;
+    m_value = snapPointValue;
     m_alignment = alignment;
     m_specifiedApplicableRange = applicableRange;
     m_actualApplicableZone = std::tuple<double, double>{ snapPointValue - applicableRange, snapPointValue + applicableRange};
@@ -154,21 +165,25 @@ ScrollSnapPoint::ScrollSnapPoint(
 
 double ScrollSnapPoint::Value()
 {
-    return m_specifiedValue;
+    return m_value;
 }
 
 winrt::ExpressionAnimation ScrollSnapPoint::CreateRestingPointExpression(
-    winrt::Compositor compositor, winrt::hstring, winrt::hstring scale)
+    winrt::Compositor const& compositor,
+    winrt::hstring const& target,
+    winrt::hstring const& scale)
 {
     winrt::hstring expression = StringUtil::FormatString(L"snapPointValue * %1!s!", scale.data());
     winrt::ExpressionAnimation restingPointExpressionAnimation = compositor.CreateExpressionAnimation(expression);
 
-    restingPointExpressionAnimation.SetScalarParameter(L"snapPointValue", static_cast<float>(m_actualValue));
+    restingPointExpressionAnimation.SetScalarParameter(L"snapPointValue", static_cast<float>(ActualValue()));
     return restingPointExpressionAnimation;
 }
 
 winrt::ExpressionAnimation ScrollSnapPoint::CreateConditionalExpression(
-    winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale)
+    winrt::Compositor const& compositor,
+    winrt::hstring const& target,
+    winrt::hstring const& scale)
 {
     winrt::hstring targetExpression = GetTargetExpression(target);
     winrt::hstring scaledMinApplicableRange = StringUtil::FormatString(
@@ -191,8 +206,10 @@ winrt::ExpressionAnimation ScrollSnapPoint::CreateConditionalExpression(
 
 ScrollerSnapPointSortPredicate ScrollSnapPoint::SortPredicate()
 {
-    // Irregular snap point should be sorted before regular snap points so it give a tertiary sort value of 0 (regular snap points get 1)
-    return ScrollerSnapPointSortPredicate{ m_actualValue, m_actualValue, 0 };
+    double actualValue = ActualValue();
+
+    // Irregular snap point should be sorted before repeated snap points so it gives a tertiary sort value of 0 (repeated snap points get 1)
+    return ScrollerSnapPointSortPredicate{ actualValue, actualValue, 0 };
 }
 
 void ScrollSnapPoint::DetermineActualApplicableZone(SnapPointBase* previousSnapPoint, SnapPointBase* nextSnapPoint)
@@ -200,7 +217,12 @@ void ScrollSnapPoint::DetermineActualApplicableZone(SnapPointBase* previousSnapP
     m_actualApplicableZone = std::tuple<double, double>{ DetermineMinActualApplicableZone(previousSnapPoint), DetermineMaxActualApplicableZone(nextSnapPoint) };
 }
 
-double ScrollSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint)
+double ScrollSnapPoint::ActualValue() const
+{
+    return m_value + m_alignmentAdjustment;
+}
+
+double ScrollSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint) const
 {
     // If we are not passed a previousSnapPoint it means we are the first in the list, see if we expand to negative Infinity or stay put.
     if (!previousSnapPoint)
@@ -212,7 +234,7 @@ double ScrollSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previous
         }
         else
         {
-            return m_actualValue - m_specifiedApplicableRange;
+            return ActualValue() - m_specifiedApplicableRange;
         }
 #else
         return -INFINITY;
@@ -221,13 +243,13 @@ double ScrollSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previous
     // If we are passed a previousSnapPoint then we need to account for its influence on us.
     else
     {
-        double previousMaxInfluence = previousSnapPoint->Influence(m_actualValue);
+        double previousMaxInfluence = previousSnapPoint->Influence(ActualValue());
 
 #ifdef ApplicableRangeType
         switch (m_applicableRangeType)
         {
         case winrt::SnapPointApplicableRangeType::Optional:
-            return std::max(previousMaxInfluence, m_actualValue - m_specifiedApplicableRange);
+            return std::max(previousMaxInfluence, ActualValue() - m_specifiedApplicableRange);
         case winrt::SnapPointApplicableRangeType::Mandatory:
             return previousMaxInfluence;
         default:
@@ -240,7 +262,7 @@ double ScrollSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previous
     }
 }
 
-double ScrollSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint)
+double ScrollSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint) const
 {
     // If we are not passed a nextSnapPoint it means we are the last in the list, see if we expand to Infinity or stay put.
     if (!nextSnapPoint)
@@ -252,7 +274,7 @@ double ScrollSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnap
         }
         else
         {
-            return m_actualValue + m_specifiedApplicableRange;
+            return ActualValue() + m_specifiedApplicableRange;
         }
 #else
         return INFINITY;
@@ -261,13 +283,13 @@ double ScrollSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnap
     // If we are passed a nextSnapPoint then we need to account for its influence on us.
     else
     {
-        double nextMinInfluence = nextSnapPoint->Influence(m_actualValue);
+        double nextMinInfluence = nextSnapPoint->Influence(ActualValue());
 
 #ifdef ApplicableRangeType
         switch (m_applicableRangeType)
         {
         case winrt::SnapPointApplicableRangeType::Optional:
-            return std::min(m_actualValue + m_specifiedApplicableRange, nextMinInfluence);
+            return std::min(ActualValue() + m_specifiedApplicableRange, nextMinInfluence);
         case winrt::SnapPointApplicableRangeType::Mandatory:
             return nextMinInfluence;
         default:
@@ -280,21 +302,22 @@ double ScrollSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnap
     }
 }
 
-double ScrollSnapPoint::Influence(double edgeOfMidpoint)
+double ScrollSnapPoint::Influence(double edgeOfMidpoint) const
 {
-    double midPoint = (m_actualValue + edgeOfMidpoint) / 2;
+    double actualValue = ActualValue();
+    double midPoint = (actualValue + edgeOfMidpoint) / 2;
 
 #ifdef ApplicableRangeType
     switch (m_applicableRangeType)
     {
     case winrt::SnapPointApplicableRangeType::Optional:
-        if (m_actualValue <= edgeOfMidpoint)
+        if (actualValue <= edgeOfMidpoint)
         {
-            return std::min(m_actualValue + m_specifiedApplicableRange, midPoint);
+            return std::min(actualValue + m_specifiedApplicableRange, midPoint);
         }
         else
         {
-            return std::max(m_actualValue - m_specifiedApplicableRange, midPoint);
+            return std::max(actualValue - m_specifiedApplicableRange, midPoint);
         }
     case winrt::SnapPointApplicableRangeType::Mandatory:
         return midPoint;
@@ -326,17 +349,17 @@ void ScrollSnapPoint::Combine(winrt::SnapPointBase const& snapPoint)
     }
 }
 
-double ScrollSnapPoint::Evaluate(double value)
+double ScrollSnapPoint::Evaluate(double value) const
 {
     if (value >= std::get<0>(m_actualApplicableZone) && value <= std::get<1>(m_actualApplicableZone))
     {
-        return m_actualValue;
+        return ActualValue();
     }
     return value;
 }
 
 /////////////////////////////////////////////////////////////////////
-/////////////////    Regular Snap Points    /////////////////////////
+/////////////////    Repeated Snap Points    ////////////////////////
 /////////////////////////////////////////////////////////////////////
 CppWinRTActivatableClassWithBasicFactory(RepeatedScrollSnapPoint);
 
@@ -359,10 +382,9 @@ RepeatedScrollSnapPoint::RepeatedScrollSnapPoint(
 
     m_offset = offset;
     m_interval = interval;
-    m_specifiedStart = start;
-    m_actualStart = start;
-    m_specifiedEnd = end;
-    m_actualEnd = end;
+    m_start = start;
+    m_end = end;
+    m_alignment = alignment;
 }
 
 #ifdef ApplicableRangeType
@@ -384,12 +406,11 @@ RepeatedScrollSnapPoint::RepeatedScrollSnapPoint(
     
     m_offset = offset;
     m_interval = interval;
-    m_specifiedStart = start;
-    m_actualStart = start;
-    m_specifiedEnd = end;
-    m_actualEnd = end;
+    m_start = start;
+    m_end = end;
     m_specifiedApplicableRange = applicableRange;
     m_applicableRangeType = winrt::SnapPointApplicableRangeType::Optional;
+    m_alignment = alignment;
 }
 #endif
 
@@ -405,28 +426,31 @@ double RepeatedScrollSnapPoint::Interval()
 
 double RepeatedScrollSnapPoint::Start()
 {
-    return m_specifiedStart;
+    return m_start;
 }
 
 double RepeatedScrollSnapPoint::End()
 {
-    return m_specifiedEnd;
+    return m_end;
 }
 
-winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateRestingPointExpression(winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale)
+winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateRestingPointExpression(
+    winrt::Compositor const& compositor,
+    winrt::hstring const& target,
+    winrt::hstring const& scale)
 {
     /*
     ((Abs(target -                                         //The absolute value of the natural resting point minus
     ((Floor((target - scaledFirst) / scaledInterval)       //How many intervals the natural resting point has passed
-     * scaledInterval) + scaledFirst)                      //The location of the regular snap point just before the natural resting point
+     * scaledInterval) + scaledFirst)                      //The location of the repeated snap point just before the natural resting point
     ) >= Abs(target -                                      //If it's greater than the absolute value of the natural resting point minus
     ((Ceil((target - scaledFirst) / scaledInterval)
-     * scaledInterval) + scaledFirst)                      //The location of the regular snap point just after the natural resting point
+     * scaledInterval) + scaledFirst)                      //The location of the repeated snap point just after the natural resting point
     )) && (((Ceil((target - scaledFirst) / scaledInterval)
-     * scaledInterval) + scaledFirst) <= scaledEnd)        //And the location of the regular snap point just after the natural resting point is before the end value
-    ) ? ((Ceil((target - scaledFirst) / scaledInterval)    //Then return the location of the regular snap point just after the natural resting point
+     * scaledInterval) + scaledFirst) <= scaledEnd)        //And the location of the repeated snap point just after the natural resting point is before the end value
+    ) ? ((Ceil((target - scaledFirst) / scaledInterval)    //Then return the location of the repeated snap point just after the natural resting point
      * scaledInterval) + scaledFirst)
-     : ((Floor((target - scaledFirst) / scaledInterval)    //Otherwise return the location of the regular snap point just before the natural resting point 
+     : ((Floor((target - scaledFirst) / scaledInterval)    //Otherwise return the location of the repeated snap point just before the natural resting point 
      * scaledInterval) + scaledFirst)
     */
 
@@ -449,21 +473,24 @@ winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateRestingPointExpression
     winrt::ExpressionAnimation restingPointExpressionAnimation = compositor.CreateExpressionAnimation(expression);
 
     restingPointExpressionAnimation.SetScalarParameter(L"itv", static_cast<float>(m_interval));
-    restingPointExpressionAnimation.SetScalarParameter(L"end", static_cast<float>(m_actualEnd));
+    restingPointExpressionAnimation.SetScalarParameter(L"end", static_cast<float>(ActualEnd()));
     restingPointExpressionAnimation.SetScalarParameter(L"first", static_cast<float>(DetermineFirstRepeatedSnapPointValue()));
     return restingPointExpressionAnimation;
 }
 
-winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateConditionalExpression(winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale)
+winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateConditionalExpression(
+    winrt::Compositor const& compositor,
+    winrt::hstring const& target,
+    winrt::hstring const& scale)
 {
     /*
     target >= scaledStart &&
     target <= scaledEnd &&                                  //If we are within the start and end and...
     (((((Floor((target - scaledFirst) / scaledInterval)     //How many intervals the natural resting point has passed
-     * scaledInterval) + scaledFirst)                       //The location of the regular snap point just before the natural resting point
+     * scaledInterval) + scaledFirst)                       //The location of the repeated snap point just before the natural resting point
      + scaledApplicableRange) >= target) || (               //Plus the applicable range is greater than the natural resting point or... 
     ((((Ceil((target - scaledFirst) / scaledInterval)
-     * scaledInterval) + scaledFirst)                       //The location of the regular snap point just after the natural resting point
+     * scaledInterval) + scaledFirst)                       //The location of the repeated snap point just after the natural resting point
      - scaledApplicableRange) <= target)                    //Minus the applicable range is less than the natural resting point.
      && (((Ceil((target - scaledFirst) / scaledInterval)    //And the snap point after the natural resting point is less than or equal to the end value
      * scaledInterval) + scaledFirst) <= scaledEnd)))
@@ -496,8 +523,8 @@ winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateConditionalExpression(
     winrt::ExpressionAnimation conditionExpressionAnimation = compositor.CreateExpressionAnimation(expression);
 
     conditionExpressionAnimation.SetScalarParameter(L"itv", static_cast<float>(m_interval));
-    conditionExpressionAnimation.SetScalarParameter(L"start", static_cast<float>(m_actualStart));
-    conditionExpressionAnimation.SetScalarParameter(L"end", static_cast<float>(m_actualEnd));
+    conditionExpressionAnimation.SetScalarParameter(L"start", static_cast<float>(ActualStart()));
+    conditionExpressionAnimation.SetScalarParameter(L"end", static_cast<float>(ActualEnd()));
     conditionExpressionAnimation.SetScalarParameter(L"applicableRange", static_cast<float>(m_specifiedApplicableRange));
     conditionExpressionAnimation.SetScalarParameter(L"first", static_cast<float>(DetermineFirstRepeatedSnapPointValue()));
     return conditionExpressionAnimation;
@@ -505,15 +532,15 @@ winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateConditionalExpression(
 
 ScrollerSnapPointSortPredicate RepeatedScrollSnapPoint::SortPredicate()
 {
-    // Regular snap points should be sorted after irregular snap points, so give it a tertiary sort value of 1 (irregular snap points get 0)
-    return ScrollerSnapPointSortPredicate{ m_actualStart, m_actualEnd, 1 };
+    // Repeated snap points should be sorted after irregular snap points, so give it a tertiary sort value of 1 (irregular snap points get 0)
+    return ScrollerSnapPointSortPredicate{ ActualStart(), ActualEnd(), 1 };
 }
 
 void RepeatedScrollSnapPoint::DetermineActualApplicableZone(SnapPointBase* previousSnapPoint, SnapPointBase* nextSnapPoint)
 {
     m_actualApplicableZone = std::tuple<double, double>{ DetermineMinActualApplicableZone(previousSnapPoint), DetermineMaxActualApplicableZone(nextSnapPoint) };
 
-    // Influence() will not have thrown if either of the adjacent snap points are also regular snap points which have the same start and end, however this is not allowed.
+    // Influence() will not have thrown if either of the adjacent snap points are also repeated snap points which have the same start and end, however this is not allowed.
     // We only need to check the nextSnapPoint because of the symmetry in the algorithm.
     if (nextSnapPoint && *static_cast<SnapPointBase*>(this) == (nextSnapPoint))
     {
@@ -522,34 +549,56 @@ void RepeatedScrollSnapPoint::DetermineActualApplicableZone(SnapPointBase* previ
     }
 }
 
-double RepeatedScrollSnapPoint::DetermineFirstRepeatedSnapPointValue()
+double RepeatedScrollSnapPoint::ActualOffset() const
 {
-    MUX_ASSERT(m_offset >= m_actualStart);
-    MUX_ASSERT(m_interval > 0.0);
-
-    return m_offset - std::floor((m_offset - m_actualStart) / m_interval) * m_interval;
+    return m_offset + m_alignmentAdjustment;
 }
 
-double RepeatedScrollSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint)
+double RepeatedScrollSnapPoint::ActualStart() const
 {
-    // The Influence() method of regular snap points has a check to ensure the value does not fall within its range.
+    return m_start + m_alignmentAdjustment;
+}
+
+double RepeatedScrollSnapPoint::ActualEnd() const
+{
+    return m_end + m_alignmentAdjustment;
+}
+
+double RepeatedScrollSnapPoint::DetermineFirstRepeatedSnapPointValue() const
+{
+    double actualOffset = ActualOffset();
+    double actualStart = ActualStart();
+
+    MUX_ASSERT(actualOffset >= actualStart);
+    MUX_ASSERT(m_interval > 0.0);
+
+    return actualOffset - std::floor((actualOffset - actualStart) / m_interval) * m_interval;
+}
+
+double RepeatedScrollSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint) const
+{
+    double actualStart = ActualStart();
+
+    // The Influence() method of repeated snap points has a check to ensure the value does not fall within its range.
     // This call will ensure that we are not in the range of the previous snap point if it is.
     if (previousSnapPoint)
     {
-        previousSnapPoint->Influence(m_actualStart);
+        previousSnapPoint->Influence(actualStart);
     }
-    return m_actualStart;
+    return actualStart;
 }
 
-double RepeatedScrollSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint)
-{    
-    // The Influence() method of regular snap points has a check to ensure the value does not fall within its range.
+double RepeatedScrollSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint) const
+{
+    double actualEnd = ActualEnd();
+
+    // The Influence() method of repeated snap points has a check to ensure the value does not fall within its range.
     // This call will ensure that we are not in the range of the next snap point if it is.
     if (nextSnapPoint)
     {
-        nextSnapPoint->Influence(m_actualEnd);
+        nextSnapPoint->Influence(actualEnd);
     }
-    return m_actualEnd;
+    return actualEnd;
 }
 
 void RepeatedScrollSnapPoint::ValidateConstructorParameters(
@@ -560,7 +609,7 @@ void RepeatedScrollSnapPoint::ValidateConstructorParameters(
     double offset,
     double interval,
     double start,
-    double end)
+    double end) const
 {
     if (end <= start)
     {
@@ -590,19 +639,22 @@ void RepeatedScrollSnapPoint::ValidateConstructorParameters(
 #endif
 }
 
-double RepeatedScrollSnapPoint::Influence(double edgeOfMidpoint)
+double RepeatedScrollSnapPoint::Influence(double edgeOfMidpoint) const
 {
-    if (edgeOfMidpoint <= m_actualStart)
+    double actualStart = ActualStart();
+    double actualEnd = ActualEnd();
+
+    if (edgeOfMidpoint <= actualStart)
     {
-        return m_actualStart;
+        return actualStart;
     }
-    else if (edgeOfMidpoint >= m_actualEnd)
+    else if (edgeOfMidpoint >= actualEnd)
     {
-        return m_actualEnd;
+        return actualEnd;
     }
     else
     {
-        // Snap points are not allowed within the bounds (Start thru End) of regular snap points
+        // Snap points are not allowed within the bounds (Start thru End) of repeated snap points
         // TODO: Provide custom error message
         throw winrt::hresult_error(E_INVALIDARG);
     }
@@ -611,15 +663,15 @@ double RepeatedScrollSnapPoint::Influence(double edgeOfMidpoint)
 
 void RepeatedScrollSnapPoint::Combine(winrt::SnapPointBase const& snapPoint)
 {
-    // Snap points are not allowed within the bounds (Start thru End) of regular snap points
+    // Snap points are not allowed within the bounds (Start thru End) of repeated snap points
     // TODO: Provide custom error message
     throw winrt::hresult_error(E_INVALIDARG);
     m_combinationCount++;
 }
 
-double RepeatedScrollSnapPoint::Evaluate(double value)
+double RepeatedScrollSnapPoint::Evaluate(double value) const
 {
-    if (value >= m_actualStart && value <= m_actualEnd)
+    if (value >= ActualStart() && value <= ActualEnd())
     {
         double firstSnapPointValue = DetermineFirstRepeatedSnapPointValue();
         double passedSnapPoints = std::floor((value - firstSnapPointValue) / m_interval);
@@ -644,26 +696,6 @@ double RepeatedScrollSnapPoint::Evaluate(double value)
     return value;
 }
 
-double RepeatedScrollSnapPoint::ActualStart()
-{
-    return m_actualStart;
-}
-
-void RepeatedScrollSnapPoint::ActualStart(double start)
-{
-    m_actualStart = start;
-}
-
-double RepeatedScrollSnapPoint::ActualEnd()
-{
-    return m_actualEnd;
-}
-
-void RepeatedScrollSnapPoint::ActualEnd(double end)
-{
-    m_actualEnd = end;
-}
-
 /////////////////////////////////////////////////////////////////////
 /////////////////       Zoom Snap Points      ///////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -674,6 +706,11 @@ ZoomSnapPointBase::ZoomSnapPointBase()
     // throw (ERROR_CALL_NOT_IMPLEMENTED);
 }
 
+bool ZoomSnapPointBase::OnUpdateViewport(double newViewport)
+{
+    return false;
+}
+
 /////////////////////////////////////////////////////////////////////
 //////////////     Irregular Zoom Snap Points    ////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -682,8 +719,7 @@ CppWinRTActivatableClassWithBasicFactory(ZoomSnapPoint);
 ZoomSnapPoint::ZoomSnapPoint(
     double snapPointValue)
 {
-    m_specifiedValue = snapPointValue;
-    m_actualValue = snapPointValue;
+    m_value = snapPointValue;
 }
 
 #ifdef ApplicableRangeType
@@ -696,8 +732,7 @@ ZoomSnapPoint::ZoomSnapPoint(
         throw winrt::hresult_invalid_argument(L"'applicableRange' must be strictly positive.");
     }
 
-    m_specifiedValue = snapPointValue;
-    m_actualValue = snapPointValue;
+    m_value = snapPointValue;
     m_specifiedApplicableRange = applicableRange;
     m_actualApplicableZone = std::tuple<double, double>{ snapPointValue - applicableRange, snapPointValue + applicableRange };
     m_applicableRangeType = winrt::SnapPointApplicableRangeType::Optional;
@@ -706,22 +741,26 @@ ZoomSnapPoint::ZoomSnapPoint(
 
 double ZoomSnapPoint::Value()
 {
-    return m_specifiedValue;
+    return m_value;
 }
 
 // For zoom snap points scale == L"1.0".
 winrt::ExpressionAnimation ZoomSnapPoint::CreateRestingPointExpression(
-    winrt::Compositor compositor, winrt::hstring, winrt::hstring scale)
+    winrt::Compositor const& compositor,
+    winrt::hstring const& target,
+    winrt::hstring const& scale)
 {
     winrt::ExpressionAnimation restingPointExpressionAnimation = compositor.CreateExpressionAnimation(L"snapPointValue");
 
-    restingPointExpressionAnimation.SetScalarParameter(L"snapPointValue", static_cast<float>(m_actualValue));
+    restingPointExpressionAnimation.SetScalarParameter(L"snapPointValue", static_cast<float>(m_value));
     return restingPointExpressionAnimation;
 }
 
 // For zoom snap points scale == L"1.0".
 winrt::ExpressionAnimation ZoomSnapPoint::CreateConditionalExpression(
-    winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale)
+    winrt::Compositor const& compositor,
+    winrt::hstring const& target,
+    winrt::hstring const& scale)
 {
     winrt::hstring targetExpression = GetTargetExpression(target);
     winrt::hstring expression = StringUtil::FormatString(
@@ -736,8 +775,8 @@ winrt::ExpressionAnimation ZoomSnapPoint::CreateConditionalExpression(
 
 ScrollerSnapPointSortPredicate ZoomSnapPoint::SortPredicate()
 {
-    // Irregular snap point should be sorted before regular snap points so it give a tertiary sort value of 0 (regular snap points get 1)
-    return ScrollerSnapPointSortPredicate{ m_actualValue, m_actualValue, 0 };
+    // Irregular snap point should be sorted before repeated snap points so it gives a tertiary sort value of 0 (repeated snap points get 1)
+    return ScrollerSnapPointSortPredicate{ m_value, m_value, 0 };
 }
 
 void ZoomSnapPoint::DetermineActualApplicableZone(SnapPointBase* previousSnapPoint, SnapPointBase* nextSnapPoint)
@@ -745,7 +784,7 @@ void ZoomSnapPoint::DetermineActualApplicableZone(SnapPointBase* previousSnapPoi
     m_actualApplicableZone = std::tuple<double, double>{ DetermineMinActualApplicableZone(previousSnapPoint), DetermineMaxActualApplicableZone(nextSnapPoint) };
 }
 
-double ZoomSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint)
+double ZoomSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint) const
 {
     // If we are not passed a previousSnapPoint it means we are the first in the list, see if we expand to negative Infinity or stay put.
     if (!previousSnapPoint)
@@ -757,7 +796,7 @@ double ZoomSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSn
         }
         else
         {
-            return m_actualValue - m_specifiedApplicableRange;
+            return m_value - m_specifiedApplicableRange;
         }
 #else
         return -INFINITY;
@@ -766,13 +805,13 @@ double ZoomSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSn
     // If we are passed a previousSnapPoint then we need to account for its influence on us.
     else
     {
-        double previousMaxInfluence = previousSnapPoint->Influence(m_actualValue);
+        double previousMaxInfluence = previousSnapPoint->Influence(m_value);
 
 #ifdef ApplicableRangeType
         switch (m_applicableRangeType)
         {
         case winrt::SnapPointApplicableRangeType::Optional:
-            return std::max(previousMaxInfluence, m_actualValue - m_specifiedApplicableRange);
+            return std::max(previousMaxInfluence, m_value - m_specifiedApplicableRange);
         case winrt::SnapPointApplicableRangeType::Mandatory:
             return previousMaxInfluence;
         default:
@@ -785,7 +824,7 @@ double ZoomSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSn
     }
 }
 
-double ZoomSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint)
+double ZoomSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint) const
 {
     // If we are not passed a nextSnapPoint it means we are the last in the list, see if we expand to Infinity or stay put.
     if (!nextSnapPoint)
@@ -797,7 +836,7 @@ double ZoomSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPo
         }
         else
         {
-            return m_actualValue + m_specifiedApplicableRange;
+            return m_value + m_specifiedApplicableRange;
         }
 #else
         return INFINITY;
@@ -806,13 +845,13 @@ double ZoomSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPo
     // If we are passed a nextSnapPoint then we need to account for its influence on us.
     else
     {
-        double nextMinInfluence = nextSnapPoint->Influence(m_actualValue);
+        double nextMinInfluence = nextSnapPoint->Influence(m_value);
 
 #ifdef ApplicableRangeType
         switch (m_applicableRangeType)
         {
         case winrt::SnapPointApplicableRangeType::Optional:
-            return std::min(m_actualValue + m_specifiedApplicableRange, nextMinInfluence);
+            return std::min(m_value + m_specifiedApplicableRange, nextMinInfluence);
         case winrt::SnapPointApplicableRangeType::Mandatory:
             return nextMinInfluence;
         default:
@@ -825,21 +864,21 @@ double ZoomSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPo
     }
 }
 
-double ZoomSnapPoint::Influence(double edgeOfMidpoint)
+double ZoomSnapPoint::Influence(double edgeOfMidpoint) const
 {
-    double midPoint = (m_actualValue + edgeOfMidpoint) / 2;
+    double midPoint = (m_value + edgeOfMidpoint) / 2;
 
 #ifdef ApplicableRangeType
     switch (m_applicableRangeType)
     {
     case winrt::SnapPointApplicableRangeType::Optional:
-        if (m_actualValue <= edgeOfMidpoint)
+        if (m_value <= edgeOfMidpoint)
         {
-            return std::min(m_actualValue + m_specifiedApplicableRange, midPoint);
+            return std::min(m_value + m_specifiedApplicableRange, midPoint);
         }
         else
         {
-            return std::max(m_actualValue - m_specifiedApplicableRange, midPoint);
+            return std::max(m_value - m_specifiedApplicableRange, midPoint);
         }
     case winrt::SnapPointApplicableRangeType::Mandatory:
         return midPoint;
@@ -871,17 +910,17 @@ void ZoomSnapPoint::Combine(winrt::SnapPointBase const& snapPoint)
     }
 }
 
-double ZoomSnapPoint::Evaluate(double value)
+double ZoomSnapPoint::Evaluate(double value) const
 {
     if (value >= std::get<0>(m_actualApplicableZone) && value <= std::get<1>(m_actualApplicableZone))
     {
-        return m_actualValue;
+        return m_value;
     }
     return value;
 }
 
 /////////////////////////////////////////////////////////////////////
-/////////////////    Regular Snap Points    /////////////////////////
+/////////////////    Repeated Snap Points    ////////////////////////
 /////////////////////////////////////////////////////////////////////
 CppWinRTActivatableClassWithBasicFactory(RepeatedZoomSnapPoint);
 
@@ -903,10 +942,8 @@ RepeatedZoomSnapPoint::RepeatedZoomSnapPoint(
 
     m_offset = offset;
     m_interval = interval;
-    m_specifiedStart = start;
-    m_actualStart = start;
-    m_specifiedEnd = end;
-    m_actualEnd = end;
+    m_start = start;
+    m_end = end;
 }
 
 #ifdef ApplicableRangeType
@@ -927,10 +964,8 @@ RepeatedZoomSnapPoint::RepeatedZoomSnapPoint(
 
     m_offset = offset;
     m_interval = interval;
-    m_specifiedStart = start;
-    m_actualStart = start;
-    m_specifiedEnd = end;
-    m_actualEnd = end;
+    m_start = start;
+    m_end = end;
     m_specifiedApplicableRange = applicableRange;
     m_applicableRangeType = winrt::SnapPointApplicableRangeType::Optional;
 }
@@ -948,29 +983,32 @@ double RepeatedZoomSnapPoint::Interval()
 
 double RepeatedZoomSnapPoint::Start()
 {
-    return m_specifiedStart;
+    return m_start;
 }
 
 double RepeatedZoomSnapPoint::End()
 {
-    return m_specifiedEnd;
+    return m_end;
 }
 
 // For zoom snap points scale == L"1.0".
-winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateRestingPointExpression(winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale)
+winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateRestingPointExpression(
+    winrt::Compositor const& compositor,
+    winrt::hstring const& target,
+    winrt::hstring const& scale)
 {
     /*
     ((Abs(target -                             //The absolute value of the natural resting point minus
     ((Floor((target - first) / interval)       //How many intervals the natural resting point has passed
-     * interval) + first)                      //The location of the regular snap point just before the natural resting point
+     * interval) + first)                      //The location of the repeated snap point just before the natural resting point
     ) >= Abs(target -                          //If it's greater than the absolute value of the natural resting point minus
     ((Ceil((target - first) / interval)
-     * interval) + first)                      //The location of the regular snap point just after the natural resting point
+     * interval) + first)                      //The location of the repeated snap point just after the natural resting point
     )) && (((Ceil((target - first) / interval)
-     * interval) + first) <= end)              //And the location of the regular snap point just after the natural resting point is before the end value
-    ) ? ((Ceil((target - first) / interval)    //Then return the location of the regular snap point just after the natural resting point
+     * interval) + first) <= end)              //And the location of the repeated snap point just after the natural resting point is before the end value
+    ) ? ((Ceil((target - first) / interval)    //Then return the location of the repeated snap point just after the natural resting point
      * interval) + first)
-     : ((Floor((target - first) / interval)    //Otherwise return the location of the regular snap point just before the natural resting point
+     : ((Floor((target - first) / interval)    //Otherwise return the location of the repeated snap point just before the natural resting point
      * interval) + first)
     */
 
@@ -981,22 +1019,25 @@ winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateRestingPointExpression(w
     winrt::ExpressionAnimation restingPointExpressionAnimation = compositor.CreateExpressionAnimation(expression);
 
     restingPointExpressionAnimation.SetScalarParameter(L"itv", static_cast<float>(m_interval));
-    restingPointExpressionAnimation.SetScalarParameter(L"end", static_cast<float>(m_actualEnd));
+    restingPointExpressionAnimation.SetScalarParameter(L"end", static_cast<float>(m_end));
     restingPointExpressionAnimation.SetScalarParameter(L"first", static_cast<float>(DetermineFirstRepeatedSnapPointValue()));
     return restingPointExpressionAnimation;
 }
 
 // For zoom snap points scale == L"1.0".
-winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateConditionalExpression(winrt::Compositor compositor, winrt::hstring target, winrt::hstring scale)
+winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateConditionalExpression(
+    winrt::Compositor const& compositor,
+    winrt::hstring const& target,
+    winrt::hstring const& scale)
 {
     /*
     target >= start &&
     target <= end &&                            //If we are within the start and end and...
     (((((Floor((target - first) / interval)     //How many intervals the natural resting point has passed
-     * interval) + first)                       //The location of the regular snap point just before the natural resting point
+     * interval) + first)                       //The location of the repeated snap point just before the natural resting point
      + applicableRange) >= target) || (         //Plus the applicable range is greater than the natural resting point or...
     ((((Ceil((target - first) / interval)
-     * interval) + first)                       //The location of the regular snap point just after the natural resting point
+     * interval) + first)                       //The location of the repeated snap point just after the natural resting point
      - applicableRange) <= target)              //Minus the applicable range is less than the natural resting point.
      && (((Ceil((target - first) / interval)    //And the snap point after the natural resting point is less than or equal to the end value
      * interval) + first) <= end)))
@@ -1009,8 +1050,8 @@ winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateConditionalExpression(wi
     winrt::ExpressionAnimation conditionExpressionAnimation = compositor.CreateExpressionAnimation(expression);
 
     conditionExpressionAnimation.SetScalarParameter(L"itv", static_cast<float>(m_interval));
-    conditionExpressionAnimation.SetScalarParameter(L"start", static_cast<float>(m_actualStart));
-    conditionExpressionAnimation.SetScalarParameter(L"end", static_cast<float>(m_actualEnd));
+    conditionExpressionAnimation.SetScalarParameter(L"start", static_cast<float>(m_start));
+    conditionExpressionAnimation.SetScalarParameter(L"end", static_cast<float>(m_end));
     conditionExpressionAnimation.SetScalarParameter(L"applicableRange", static_cast<float>(m_specifiedApplicableRange));
     conditionExpressionAnimation.SetScalarParameter(L"first", static_cast<float>(DetermineFirstRepeatedSnapPointValue()));
     return conditionExpressionAnimation;
@@ -1018,15 +1059,15 @@ winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateConditionalExpression(wi
 
 ScrollerSnapPointSortPredicate RepeatedZoomSnapPoint::SortPredicate()
 {
-    // Regular snap points should be sorted after irregular snap points, so give it a tertiary sort value of 1 (irregular snap points get 0)
-    return ScrollerSnapPointSortPredicate{ m_actualStart, m_actualEnd, 1 };
+    // Repeated snap points should be sorted after irregular snap points, so give it a tertiary sort value of 1 (irregular snap points get 0)
+    return ScrollerSnapPointSortPredicate{ m_start, m_end, 1 };
 }
 
 void RepeatedZoomSnapPoint::DetermineActualApplicableZone(SnapPointBase* previousSnapPoint, SnapPointBase* nextSnapPoint)
 {
     m_actualApplicableZone = std::tuple<double, double>{ DetermineMinActualApplicableZone(previousSnapPoint), DetermineMaxActualApplicableZone(nextSnapPoint) };
 
-    // Influence() will not have thrown if either of the adjacent snap points are also regular snap points which have the same start and end, however this is not allowed.
+    // Influence() will not have thrown if either of the adjacent snap points are also repeated snap points which have the same start and end, however this is not allowed.
     // We only need to check the nextSnapPoint because of the symmetry in the algorithm.
     if (nextSnapPoint && *static_cast<SnapPointBase*>(this) == (nextSnapPoint))
     {
@@ -1035,34 +1076,34 @@ void RepeatedZoomSnapPoint::DetermineActualApplicableZone(SnapPointBase* previou
     }
 }
 
-double RepeatedZoomSnapPoint::DetermineFirstRepeatedSnapPointValue()
+double RepeatedZoomSnapPoint::DetermineFirstRepeatedSnapPointValue() const
 {
-    MUX_ASSERT(m_offset >= m_actualStart);
+    MUX_ASSERT(m_offset >= m_start);
     MUX_ASSERT(m_interval > 0.0);
 
-    return m_offset - std::floor((m_offset - m_actualStart) / m_interval) * m_interval;
+    return m_offset - std::floor((m_offset - m_start) / m_interval) * m_interval;
 }
 
-double RepeatedZoomSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint)
+double RepeatedZoomSnapPoint::DetermineMinActualApplicableZone(SnapPointBase* previousSnapPoint) const
 {
-    // The Influence() method of regular snap points has a check to ensure the value does not fall within its range.
+    // The Influence() method of repeated snap points has a check to ensure the value does not fall within its range.
     // This call will ensure that we are not in the range of the previous snap point if it is.
     if (previousSnapPoint)
     {
-        previousSnapPoint->Influence(m_actualStart);
+        previousSnapPoint->Influence(m_start);
     }
-    return m_actualStart;
+    return m_start;
 }
 
-double RepeatedZoomSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint)
+double RepeatedZoomSnapPoint::DetermineMaxActualApplicableZone(SnapPointBase* nextSnapPoint) const
 {
-    // The Influence() method of regular snap points has a check to ensure the value does not fall within its range.
+    // The Influence() method of repeated snap points has a check to ensure the value does not fall within its range.
     // This call will ensure that we are not in the range of the next snap point if it is.
     if (nextSnapPoint)
     {
-        nextSnapPoint->Influence(m_actualEnd);
+        nextSnapPoint->Influence(m_end);
     }
-    return m_actualEnd;
+    return m_end;
 }
 
 void RepeatedZoomSnapPoint::ValidateConstructorParameters(
@@ -1073,7 +1114,7 @@ void RepeatedZoomSnapPoint::ValidateConstructorParameters(
     double offset,
     double interval,
     double start,
-    double end)
+    double end) const
 {
     if (end <= start)
     {
@@ -1103,19 +1144,19 @@ void RepeatedZoomSnapPoint::ValidateConstructorParameters(
 #endif
 }
 
-double RepeatedZoomSnapPoint::Influence(double edgeOfMidpoint)
+double RepeatedZoomSnapPoint::Influence(double edgeOfMidpoint) const
 {
-    if (edgeOfMidpoint <= m_actualStart)
+    if (edgeOfMidpoint <= m_start)
     {
-        return m_actualStart;
+        return m_start;
     }
-    else if (edgeOfMidpoint >= m_actualEnd)
+    else if (edgeOfMidpoint >= m_end)
     {
-        return m_actualEnd;
+        return m_end;
     }
     else
     {
-        // Snap points are not allowed within the bounds (Start thru End) of regular snap points
+        // Snap points are not allowed within the bounds (Start thru End) of repeated snap points
         // TODO: Provide custom error message
         throw winrt::hresult_error(E_INVALIDARG);
     }
@@ -1124,15 +1165,15 @@ double RepeatedZoomSnapPoint::Influence(double edgeOfMidpoint)
 
 void RepeatedZoomSnapPoint::Combine(winrt::SnapPointBase const& snapPoint)
 {
-    // Snap points are not allowed within the bounds (Start thru End) of regular snap points
+    // Snap points are not allowed within the bounds (Start thru End) of repeated snap points
     // TODO: Provide custom error message
     throw winrt::hresult_error(E_INVALIDARG);
     m_combinationCount++;
 }
 
-double RepeatedZoomSnapPoint::Evaluate(double value)
+double RepeatedZoomSnapPoint::Evaluate(double value) const
 {
-    if (value >= m_actualStart && value <= m_actualEnd)
+    if (value >= m_start && value <= m_end)
     {
         double firstSnapPointValue = DetermineFirstRepeatedSnapPointValue();
         double passedSnapPoints = std::floor((value - firstSnapPointValue) / m_interval);
@@ -1155,24 +1196,4 @@ double RepeatedZoomSnapPoint::Evaluate(double value)
         }
     }
     return value;
-}
-
-double RepeatedZoomSnapPoint::ActualStart()
-{
-    return m_actualStart;
-}
-
-void RepeatedZoomSnapPoint::ActualStart(double start)
-{
-    m_actualStart = start;
-}
-
-double RepeatedZoomSnapPoint::ActualEnd()
-{
-    return m_actualEnd;
-}
-
-void RepeatedZoomSnapPoint::ActualEnd(double end)
-{
-    m_actualEnd = end;
 }

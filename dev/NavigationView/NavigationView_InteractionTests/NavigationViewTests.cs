@@ -3763,6 +3763,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Test for issue 450 https://github.com/Microsoft/microsoft-ui-xaml/issues/450
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "D")]
+        public void CompactModeAutoPaneClosingTest()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                // Unmaximize the window
+                KeyboardHelper.PressKey(Key.Down, ModifierKey.Windows, 1);
+
+                // Resize window quickly
+                KeyboardHelper.PressDownModifierKey(ModifierKey.Windows);
+                KeyboardHelper.PressKeySequence(new[] { Key.Left, Key.Right, Key.Left, Key.Right, Key.Left });
+                KeyboardHelper.ReleaseModifierKey(ModifierKey.Windows);
+
+                Wait.ForIdle();
+
+                CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
+                Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+
+                // Maximize the window
+                KeyboardHelper.PressKey(Key.Right, ModifierKey.Windows, 1);
+                KeyboardHelper.PressKey(Key.Up, ModifierKey.Windows, 1);
+            }
+        }
+
         private void EnsurePaneHeaderCanBeModifiedHelper(RegressionTestType navviewMode)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))

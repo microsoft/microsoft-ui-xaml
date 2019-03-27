@@ -70,8 +70,8 @@ jobs:
     inputs: 
       buildType: specific
       buildVersionToDownload: specific
-      project: 'f05f4dbf-3077-427d-91e0-b66d9e4ca374'
-      pipeline: 35915
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
       buildId: $(useBuildOutputFromBuildId)
       artifactName: drop 
       downloadPath: '$(Build.ArtifactStagingDirectory)'

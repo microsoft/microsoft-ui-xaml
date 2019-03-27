@@ -26,7 +26,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
-using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
+using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
@@ -161,11 +161,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 root.Children.Add(repeater1);
                 root.Children.Add(repeater2);
 
-                Content = new ScrollAnchorProvider()
+                Content = new ItemsRepeaterScrollHost()
                 {
                     Width = 400,
                     Height = 400,
-                    Content = new ScrollViewer()
+                    ScrollViewer = new ScrollViewer()
                     {
                         Content = root
                     }

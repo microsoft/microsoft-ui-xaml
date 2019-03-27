@@ -35,7 +35,7 @@ using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using FlowLayout = Microsoft.UI.Xaml.Controls.FlowLayout;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
-using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
+using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext;
 using ElementRealizationOptions = Microsoft.UI.Xaml.Controls.ElementRealizationOptions;
 using LayoutContext = Microsoft.UI.Xaml.Controls.LayoutContext;
@@ -129,7 +129,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        private ScrollAnchorProvider CreateAndInitializeRepeater(
+        private ItemsRepeaterScrollHost CreateAndInitializeRepeater(
            object itemsSource,
            VirtualizingLayout layout,
            object elementFactory,
@@ -154,11 +154,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Content = repeater
             };
 
-            return new ScrollAnchorProvider()
+            return new ItemsRepeaterScrollHost()
             {
                 Width = 400,
                 Height = 400,
-                Content = scrollViewer
+                ScrollViewer = scrollViewer
             };
         }
 

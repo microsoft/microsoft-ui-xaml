@@ -19,6 +19,7 @@
             </ResourceDictionary.ThemeDictionaries>
             <ResourceDictionary.MergedDictionaries>
                 <controls:XamlControlsResources/>
+
                 <!-- NOTE: If you change this entry, you must update App.StyleOverridesPlaceholder -->
                 <ResourceDictionary x:Name="_styleOverridesPlaceholder"/>
             </ResourceDictionary.MergedDictionaries>

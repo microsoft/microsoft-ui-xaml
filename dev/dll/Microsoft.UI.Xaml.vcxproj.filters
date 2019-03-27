@@ -22,14 +22,14 @@
     <ClCompile Include="XamlType.cpp" />
     <ClCompile Include="SharedHelpers.cpp" />
     <ClCompile Include="MUXControlsFactory.cpp" />
-    <ClCompile Include="ThemeResources.cpp" />
     <ClCompile Include="DownlevelHelper.cpp" />
     <ClCompile Include="XamlMetadataProvider.cpp" />
     <ClCompile Include="$(OutDir)XamlMetadataProviderGenerated.cpp" />
     <ClCompile Include="DoubleUtil.cpp" />
     <ClCompile Include="FloatUtil.cpp" />
-    <ClCompile Include="ThemeResourcesFactory.cpp" />
     <ClCompile Include="CommandingHelpers.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\XamlControlsResources.properties.cpp" />
+    <ClCompile Include="XamlControlsResources.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -64,7 +64,6 @@
     <ClInclude Include="..\inc\CastHelpers.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="ThemeResources.h" />
     <ClInclude Include="MUXControlsFactory.h" />
     <ClInclude Include="..\inc\DownlevelHelper.h">
       <Filter>inc</Filter>
@@ -76,7 +75,6 @@
     <ClInclude Include="..\inc\TypeHelper.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="ThemeResourcesFactory.h" />
     <ClInclude Include="..\inc\GlobalDependencyProperty.h">
       <Filter>inc</Filter>
     </ClInclude>
@@ -87,6 +85,7 @@
     <ClInclude Include="..\inc\DispatcherHelper.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="XamlControlsResources.h" />
     <ClInclude Include="..\inc\enum_array.h">
       <Filter>inc</Filter>
     </ClInclude>
@@ -116,25 +115,6 @@
     <Page Include="@(PageRequiringCustomCompilation)" />
     <Page Include="$(MSBuildProjectDirectory)\DensityStyles\Compact.xaml" />
     <Page Include="$(MSBuildProjectDirectory)\DensityStyles\CompactDatePickerTimePickerFlyout.xaml" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
     <Page Include="@(PageRequiringCustomCompilation)" />
   </ItemGroup>
 </Project>

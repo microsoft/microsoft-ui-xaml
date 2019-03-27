@@ -459,6 +459,12 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -556,22 +562,45 @@
                     </StackPanel>
 
                     <TextBlock Text="Snaps Points" Margin="2,4,2,2" Grid.Row="27" Grid.ColumnSpan="2"/>
-                    <TextBlock Text="Value:" Grid.Column="0" Grid.Row="28" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtSnapPointValue" Grid.Column="1" Grid.Row="28" VerticalAlignment="Center"/>
-                    <!--
-                    <TextBlock Text="ApplicableValueRange:" Grid.Column="0" Grid.Row="29" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtSnapPointValueRange" Text="0, 100000" Grid.Column="1" Grid.Row="29" VerticalAlignment="Center"/>
-                    -->
-                    <TextBlock Text="SnapPointKind:" Grid.Column="0" Grid.Row="30" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbSnapPointKind" Grid.Column="1" Grid.Row="30" VerticalAlignment="Center" SelectedIndex="0">
+
+                    <TextBlock Text="SnapPointKind:" Grid.Column="0" Grid.Row="28" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="cmbSnapPointKind" Grid.Column="1" Grid.Row="28" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0"
+                        SelectionChanged="CmbSnapPointKind_SelectionChanged">
                         <ComboBoxItem>Vertical</ComboBoxItem>
                         <ComboBoxItem>Horizontal</ComboBoxItem>
                         <ComboBoxItem>Zoom</ComboBoxItem>
                     </ComboBox>
-                    <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="31">
-                        <Button x:Name="btnAddSnapPoint" Content="Add Snap Point" Margin="2" Click="BtnAddSnapPoint_Click"/>
-                        <Button x:Name="btnClearSnapPoints" Content="Clear Snap Points" Margin="2" Click="BtnClearSnapPoints_Click"/>
-                    </StackPanel>
+
+                    <Button x:Name="btnClearSnapPoints" Content="Clear Snap Points" HorizontalAlignment="Stretch"
+                        Grid.Row="29" Grid.ColumnSpan="2" Margin="2" Click="BtnClearSnapPoints_Click"/>
+
+                    <TextBlock Text="Alignment:" Grid.Column="0" Grid.Row="30" VerticalAlignment="Center" Margin="0,2,0,0"/>
+                    <ComboBox x:Name="cmbSnapPointAlignment" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0"
+                        Grid.Column="1" Grid.Row="30" >
+                        <ComboBoxItem>Near</ComboBoxItem>
+                        <ComboBoxItem>Center</ComboBoxItem>
+                        <ComboBoxItem>Far</ComboBoxItem>
+                    </ComboBox>
+
+                    <TextBlock Text="Value:" Grid.Column="0" Grid.Row="31" VerticalAlignment="Center" Margin="0,2,0,0"/>
+                    <TextBox x:Name="txtIrregularSnapPointValue" Grid.Column="1" Grid.Row="31" VerticalAlignment="Center" Margin="0,2,0,0"/>
+                    <!--
+                    <TextBlock Text="ApplicableValueRange:" Grid.Column="0" Grid.Row="" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtSnapPointValueRange" Text="0, 100000" Grid.Column="1" Grid.Row="" VerticalAlignment="Center"/>
+                    -->
+                    <Button x:Name="btnAddIrregularSnapPoint" Content="Add Irregular Snap Point" HorizontalAlignment="Stretch"
+                            Grid.Row="32" Grid.ColumnSpan="2" Margin="2" Click="BtnAddIrregularSnapPoint_Click"/>
+
+                    <TextBlock Text="Offset:" Grid.Column="0" Grid.Row="33" VerticalAlignment="Center" Margin="0,2,0,0"/>
+                    <TextBox x:Name="txtRepeatedSnapPointOffset" Grid.Column="1" Grid.Row="33" VerticalAlignment="Center"/>
+                    <TextBlock Text="Interval:" Grid.Column="0" Grid.Row="34" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtRepeatedSnapPointInterval" Grid.Column="1" Grid.Row="34" VerticalAlignment="Center"/>
+                    <TextBlock Text="Start:" Grid.Column="0" Grid.Row="35" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtRepeatedSnapPointStart" Grid.Column="1" Grid.Row="35" VerticalAlignment="Center"/>
+                    <TextBlock Text="End:" Grid.Column="0" Grid.Row="36" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtRepeatedSnapPointEnd" Grid.Column="1" Grid.Row="36" VerticalAlignment="Center"/>
+                    <Button x:Name="btnAddRepeatedSnapPoint" Content="Add Repeated Snap Point" HorizontalAlignment="Stretch"
+                            Grid.Row="37" Grid.ColumnSpan="2" Margin="2" Click="BtnAddRepeatedSnapPoint_Click"/>
                 </Grid>
             </Grid>
         </ScrollViewer>

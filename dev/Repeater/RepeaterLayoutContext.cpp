@@ -24,7 +24,7 @@ int32_t RepeaterLayoutContext::ItemCountCore()
     return 0;
 }
 
-winrt::UIElement RepeaterLayoutContext::GetElementAtCore(int index, winrt::ElementRealizationOptions const& options)
+winrt::UIElement RepeaterLayoutContext::GetOrCreateElementAtCore(int index, winrt::ElementRealizationOptions const& options)
 {
     return winrt::get_self<ItemsRepeater>(GetOwner())->GetElementImpl(index, 
         (options & winrt::ElementRealizationOptions::ForceCreate) == winrt::ElementRealizationOptions::ForceCreate,

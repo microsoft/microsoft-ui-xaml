@@ -4,7 +4,6 @@
 #pragma once
 
 #include "tracker_ref.h"
-#include "TypeHelper.h"
 #include "DispatcherHelper.h"
 
 

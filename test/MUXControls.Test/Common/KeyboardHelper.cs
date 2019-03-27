@@ -124,6 +124,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             Wait.ForIdle();
         }
 
+        public static void PressKeySequence(Key[] keys)
+        {
+            string keystrokes = string.Empty;
+
+            foreach (var key in keys)
+            {
+                keystrokes += keyToKeyStringDictionary[key];
+            }
+
+            Log.Comment("Send text '{0}'.", keystrokes);
+            TextInput.SendText(keystrokes);
+            Wait.ForIdle();
+        }
+
         public static void PressDownModifierKey(ModifierKey modifierKey)
         {
             string keystrokes = string.Empty;
