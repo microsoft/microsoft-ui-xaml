@@ -15,6 +15,7 @@ class TeachingTip :
 
 public:
     TeachingTip();
+    ~TeachingTip();
 
     // IFrameworkElement
     void OnApplyTemplate();
@@ -48,7 +49,13 @@ public:
     void SetExpandAnimationDuration(const winrt::TimeSpan& expandAnimationDuration);
     void SetContractAnimationDuration(const winrt::TimeSpan& contractAnimationDuration);
 
+    bool m_isIdle{ true };
+
 private:
+    PropertyChanged_revoker m_automationNameChangedRevoker{};
+    PropertyChanged_revoker m_automationIdChangedRevoker{};
+    winrt::CoreDispatcher::AcceleratorKeyActivated_revoker m_acceleratorKeyActivatedRevoker{};
+    winrt::UIElement::GettingFocus_revoker m_closeButtonGettingFocusFromF6Revoker{};
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     winrt::Button::Click_revoker m_alternateCloseButtonClickedRevoker{};
     winrt::Button::Click_revoker m_actionButtonClickedRevoker{};
@@ -61,6 +68,7 @@ private:
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
     winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
+	void SetPopupAutomationProperties();
     void CreateLightDismissIndicatorPopup();
     bool UpdateTail();
     void PositionPopup();
@@ -84,6 +92,11 @@ private:
     void OnShouldConstrainToRootBoundsChanged();
     void OnHeroContentPlacementChanged();
 
+    void OnAutomationNameChanged(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnAutomationIdChanged(const winrt::IInspectable&, const winrt::IInspectable&);
+
+    void OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args);
+    void OnCloseButtonGettingFocusFromF6(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args);
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&);
@@ -114,6 +127,7 @@ private:
 
     tracker_ref<winrt::Popup> m_popup{ this };
     tracker_ref<winrt::Popup> m_lightDismissIndicatorPopup{ this };
+    tracker_ref<winrt::ContentControl> m_popupContentControl{ this };
 
     tracker_ref<winrt::UIElement> m_rootElement{ this };
     tracker_ref<winrt::Grid> m_tailOcclusionGrid{ this };
@@ -126,6 +140,8 @@ private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::Polygon> m_tailPolygon{ this };
     tracker_ref<winrt::Grid> m_tailEdgeBorder{ this };
+
+    tracker_ref<winrt::Control> m_previouslyFocusedElement{ this };
 
     tracker_ref<winrt::KeyFrameAnimation> m_expandAnimation{ this };
     tracker_ref<winrt::KeyFrameAnimation> m_contractAnimation{ this };
@@ -160,8 +176,6 @@ private:
     float m_contentElevation{ 32.0f };
     float m_tailElevation{ 0.0f };
     bool m_tailShadowTargetsShadowTarget{ false };
-
-    bool m_isIdle{ true };
 
     winrt::TimeSpan m_expandAnimationDuration{ 300ms };
     winrt::TimeSpan m_contractAnimationDuration{ 200ms };

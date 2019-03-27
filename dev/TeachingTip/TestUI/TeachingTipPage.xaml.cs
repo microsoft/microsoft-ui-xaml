@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Automation;
 
 
 #if !BUILD_WINDOWS
@@ -38,6 +39,7 @@ namespace MUXControlsTestApp
     {
         Deferral deferral;
         DispatcherTimer timer;
+        DispatcherTimer showTimer;
         Popup testWindowBounds;
         Popup testScreenBounds;
         TipLocation tipLocation = TipLocation.VisualTree;
@@ -193,6 +195,7 @@ namespace MUXControlsTestApp
                     tipLocation = TipLocation.VisualTree;
                 }
                 tipLocation = TipLocation.VisualTree;
+                AutomationNameComboBox.SelectedItem = AutomationNameVisualTree;
             }
             else
             {
@@ -202,7 +205,9 @@ namespace MUXControlsTestApp
                     tipLocation = TipLocation.Resources;
                 }
                 tipLocation = TipLocation.Resources;
+                AutomationNameComboBox.SelectedItem = AutomationNameResources;
             }
+            OnSetAutomationNameButtonClicked(null, null);
         }
 
         public void OnSetHeroContentButtonClicked(object sender, RoutedEventArgs args)
@@ -644,6 +649,21 @@ namespace MUXControlsTestApp
             }
         }
 
+        public void OnShowAfterDelayButtonClicked(object sender, RoutedEventArgs args)
+        {
+            showTimer = new DispatcherTimer();
+            showTimer.Interval = new TimeSpan(0, 0, 2);
+            showTimer.Tick += ShowTimerTick;
+            showTimer.Start();
+        }
+
+        private void ShowTimerTick(object sender, object e)
+        {
+            showTimer.Tick -= ShowTimerTick;
+            showTimer.Stop();
+            OnShowButtonClicked(null, null);
+        }
+
         private void TeachingTipInResourcesRoot_Loaded(object sender, RoutedEventArgs e)
         {
             ((FrameworkElement)sender).Loaded -= TeachingTipInResourcesRoot_Loaded;
@@ -663,6 +683,23 @@ namespace MUXControlsTestApp
         public void OnCloseButtonClicked(object sender, RoutedEventArgs args)
         {
             getTeachingTip().IsOpen = false;
+        }
+
+        public void OnSetAutomationNameButtonClicked(object sender, RoutedEventArgs args)
+        {
+            var tip = getTeachingTip();
+            if(this.AutomationNameComboBox.SelectedItem == AutomationNameVisualTree)
+            {
+                AutomationProperties.SetName(tip, "TeachingTipInVisualTree");
+            }
+            else if(this.AutomationNameComboBox.SelectedItem == AutomationNameResources)
+            {
+                AutomationProperties.SetName(tip, "TeachingTipInResources");
+            }
+            else
+            {
+                AutomationProperties.SetName(tip, "");
+            }
         }
 
         public void OnSetTargetVerticalAlignmentButtonClicked(object sender, RoutedEventArgs args)
