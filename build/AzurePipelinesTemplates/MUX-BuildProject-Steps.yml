@@ -39,9 +39,22 @@ steps:
       configuration: '$(buildConfiguration)'
       msbuildArgs: '/p:AppxPackageDir="${{ parameters.appxPackageDir }}" /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:$(Build.SourcesDirectory)/${{ parameters.solutionPath }}.$(buildPlatform).$(buildConfiguration).binlog '
 
+  - powershell: |
+      if(Test-Path $(Build.SourcesDirectory)/${{ parameters.solutionPath }}.$(buildPlatform).$(buildConfiguration).binlog)
+      {
+        Write-Host "Binlog found"
+        Write-Host "##vso[task.setvariable variable=binlogExists;isOutput=true;]'true'"
+      }
+      else
+      {
+        Write-host "Binlog doesn't exist"
+        Write-Host "##vso[task.setvariable variable=binlogExists;isOutput=true;]'false'"
+      }
+    displayName: 'Check binlog existence'
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish ${{ parameters.solutionPath }} binlog'
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables['binlogExists'], 'true'))
     inputs:
       PathtoPublish: $(Build.SourcesDirectory)/${{ parameters.solutionPath }}.$(buildPlatform).$(buildConfiguration).binlog
       artifactName: 'drop'
