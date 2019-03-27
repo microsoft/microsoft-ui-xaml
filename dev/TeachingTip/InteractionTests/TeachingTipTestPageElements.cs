@@ -275,6 +275,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private UIObject teachingTipCloseButton;
 
+        public ComboBox GetAutomationNameComboBox()
+        {
+            return GetElement(ref automationNameComboBox, "AutomationNameComboBox");
+        }
+        private ComboBox automationNameComboBox;
+
+        public Button GetSetAutomationNameButton()
+        {
+            return GetElement(ref setAutomationNameButton, "SetAutomationNameButton");
+        }
+        private Button setAutomationNameButton;
+
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)
@@ -328,6 +340,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             NoText,
             ShortText,
             LongText
+        }
+
+        public enum AutomationNameOptions
+        {
+            VisualTree,
+            Resources,
+            None
         }
     }
 }
