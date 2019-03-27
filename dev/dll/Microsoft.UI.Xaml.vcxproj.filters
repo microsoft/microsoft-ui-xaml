@@ -87,6 +87,12 @@
     <ClInclude Include="..\inc\DispatcherHelper.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="..\inc\enum_array.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\enum_vector.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Microsoft.UI.Xaml.def" />
@@ -110,6 +116,16 @@
     <Page Include="@(PageRequiringCustomCompilation)" />
     <Page Include="$(MSBuildProjectDirectory)\DensityStyles\Compact.xaml" />
     <Page Include="$(MSBuildProjectDirectory)\DensityStyles\CompactDatePickerTimePickerFlyout.xaml" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
     <Page Include="@(PageRequiringCustomCompilation)" />
     <Page Include="@(PageRequiringCustomCompilation)" />
     <Page Include="@(PageRequiringCustomCompilation)" />

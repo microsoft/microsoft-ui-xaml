@@ -7,7 +7,7 @@
 #include "TeachingTipClosedEventArgs.h"
 #include "TeachingTipTestHooks.h"
 #include "TeachingTipAutomationPeer.h"
-#include "../Collections/Vector.h"
+#include <enum_array.h>
 
 TeachingTip::TeachingTip()
 {
@@ -1266,14 +1266,14 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
     {
         if (placement == winrt::TeachingTipPlacementMode::Auto)
         {
-            return std::tuple<winrt::TeachingTipPlacementMode, bool>(winrt::TeachingTipPlacementMode::Top, false);
+            return std::make_tuple(winrt::TeachingTipPlacementMode::Top, false);
         }
-        return std::tuple<winrt::TeachingTipPlacementMode, bool>(placement, false);
+        return std::make_tuple(placement, false);
     }
 
     if (IsOpen() && m_currentEffectiveTipPlacementMode != winrt::TeachingTipPlacementMode::Auto)
     {
-        return std::tuple<winrt::TeachingTipPlacementMode, bool>(m_currentEffectiveTipPlacementMode, false);
+        return std::make_tuple(m_currentEffectiveTipPlacementMode, false);
     }
 
     if (m_target)
@@ -1282,18 +1282,20 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
 
         // These variables will track which positions the tip will fit in. They all start true and are
         // flipped to false when we find a display condition that is not met.
-        bool topCenterAvailable = true;
-        bool topLeftAvailable = true;
-        bool topRightAvailable = true;
-        bool bottomCenterAvailable = true;
-        bool bottomLeftAvailable = true;
-        bool bottomRightAvailable = true;
-        bool rightCenterAvailable = true;
-        bool rightTopAvailable = true;
-        bool rightBottomAvailable = true;
-        bool leftCenterAvailable = true;
-        bool leftTopAvailable = true;
-        bool leftBottomAvailable = true;
+        enum_array <winrt::TeachingTipPlacementMode, bool, 13> availability;
+        availability[winrt::TeachingTipPlacementMode::Auto] = false;
+        availability[winrt::TeachingTipPlacementMode::Top] = true;
+        availability[winrt::TeachingTipPlacementMode::Bottom] = true;
+        availability[winrt::TeachingTipPlacementMode::Right] = true;
+        availability[winrt::TeachingTipPlacementMode::Left] = true;
+        availability[winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft] = true;
+        availability[winrt::TeachingTipPlacementMode::TopEdgeAlignedRight] = true;
+        availability[winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft] = true;
+        availability[winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight] = true;
+        availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop] = true;
+        availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom] = true;
+        availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedTop] = true;
+        availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom] = true;
 
         auto&& tailOcclusionGrid = m_tailOcclusionGrid.get();
         double contentHeight = tailOcclusionGrid.ActualHeight();
@@ -1306,211 +1308,170 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
         {
             if (m_heroContentBorder.get().ActualHeight() > m_nonHeroContentRootGrid.get().ActualHeight() - TailLongSideActualLength())
             {
-                leftCenterAvailable = false;
-                rightCenterAvailable = false;
+                availability[winrt::TeachingTipPlacementMode::Left] = false;
+                availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop] = false;
+                availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom] = false;
+                availability[winrt::TeachingTipPlacementMode::Right] = false;
+                availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedTop] = false;
+                availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom] = false;
             }
 
             switch (HeroContentPlacement())
             {
             case winrt::TeachingTipHeroContentPlacementMode::Bottom:
-                topCenterAvailable = false;
-                topRightAvailable = false;
-                topLeftAvailable = false;
-                rightTopAvailable = false;
-                leftTopAvailable = false;
+                availability[winrt::TeachingTipPlacementMode::Top] = false;
+                availability[winrt::TeachingTipPlacementMode::TopEdgeAlignedRight] = false;
+                availability[winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft] = false;
+                availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedTop] = false;
+                availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop] = false;
                 break;
             case winrt::TeachingTipHeroContentPlacementMode::Top:
-                bottomCenterAvailable = false;
-                bottomLeftAvailable = false;
-                bottomRightAvailable = false;
-                rightBottomAvailable = false;
-                leftBottomAvailable = false;
+                availability[winrt::TeachingTipPlacementMode::Bottom] = false;
+                availability[winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft] = false;
+                availability[winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight] = false;
+                availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom] = false;
+                availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom] = false;
                 break;
             }
         }
 
-        // When ShouldConstrainToRootBounds is false screenSpaceAroundTarget = windowSpaceAroundTarget
-        // We have to separate them because there are checks which care about windowSpaceAroundTarget event when
-        // ShouldConstrainToRootBounds is true.
-        auto [targetBounds, windowSpaceAroundTarget, screenSpaceAroundTarget] = DetermineSpaceAroundTarget();
+        // When ShouldConstrainToRootBounds is true clippedTargetBounds == availableBoundsAroundTarget
+        // We have to separate them because there are checks which care about both.
+        auto [targetBounds, clippedTargetBounds, availableBoundsAroundTarget] = DetermineSpaceAroundTarget();
 
         // If the edge of the target isn't in the window.
-        if (windowSpaceAroundTarget.Left < 0)
+        if (clippedTargetBounds.Left < 0)
         {
-            leftBottomAvailable = false;
-            leftCenterAvailable = false;
-            leftTopAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom] = false;
+            availability[winrt::TeachingTipPlacementMode::Left] = false;
+            availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop] = false;
         }
         // If the right edge of the target isn't in the window.
-        if (windowSpaceAroundTarget.Right < 0)
+        if (clippedTargetBounds.Right < 0)
         {
-            rightBottomAvailable = false;
-            rightCenterAvailable = false;
-            rightTopAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom] = false;
+            availability[winrt::TeachingTipPlacementMode::Right] = false;
+            availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedTop] = false;
         }
         // If the top edge of the target isn't in the window.
-        if (windowSpaceAroundTarget.Top < 0)
+        if (clippedTargetBounds.Top < 0)
         {
-            topLeftAvailable = false;
-            topCenterAvailable = false;
-            topRightAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft] = false;
+            availability[winrt::TeachingTipPlacementMode::Top] = false;
+            availability[winrt::TeachingTipPlacementMode::TopEdgeAlignedRight] = false;
         }
         // If the bottom edge of the target isn't in the window
-        if (windowSpaceAroundTarget.Bottom < 0)
+        if (clippedTargetBounds.Bottom < 0)
         {
-            bottomLeftAvailable = false;
-            bottomCenterAvailable = false;
-            bottomRightAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft] = false;
+            availability[winrt::TeachingTipPlacementMode::Bottom] = false;
+            availability[winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight] = false;
         }
 
         // If the horizontal midpoint is out of the window.
-        if (windowSpaceAroundTarget.Left < -targetBounds.Width / 2 ||
-            windowSpaceAroundTarget.Right < -targetBounds.Width / 2)
+        if (clippedTargetBounds.Left < -targetBounds.Width / 2 ||
+            clippedTargetBounds.Right < -targetBounds.Width / 2)
         {
-            topLeftAvailable = false;
-            topCenterAvailable = false;
-            topRightAvailable = false;
-            bottomLeftAvailable = false;
-            bottomCenterAvailable = false;
-            bottomRightAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft] = false;
+            availability[winrt::TeachingTipPlacementMode::Top] = false;
+            availability[winrt::TeachingTipPlacementMode::TopEdgeAlignedRight] = false;
+            availability[winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft] = false;
+            availability[winrt::TeachingTipPlacementMode::Bottom] = false;
+            availability[winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight] = false;
         }
 
         // If the vertical midpoint is out of the window.
-        if (windowSpaceAroundTarget.Top < -targetBounds.Height / 2 ||
-            windowSpaceAroundTarget.Bottom < -targetBounds.Height / 2)
+        if (clippedTargetBounds.Top < -targetBounds.Height / 2 ||
+            clippedTargetBounds.Bottom < -targetBounds.Height / 2)
         {
-            leftBottomAvailable = false;
-            leftCenterAvailable = false;
-            leftTopAvailable = false;
-            rightBottomAvailable = false;
-            rightCenterAvailable = false;
-            rightTopAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom] = false;
+            availability[winrt::TeachingTipPlacementMode::Left] = false;
+            availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop] = false;
+            availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom] = false;
+            availability[winrt::TeachingTipPlacementMode::Right] = false;
+            availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedTop] = false;
         }
 
         // If the tip is too tall to fit between the top of the target and the top edge of the window or screen.
-        if (tipHeight > screenSpaceAroundTarget.Top)
+        if (tipHeight > availableBoundsAroundTarget.Top)
         {
-            topCenterAvailable = false;
-            topRightAvailable = false;
-            topLeftAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::Top] = false;
+            availability[winrt::TeachingTipPlacementMode::TopEdgeAlignedRight] = false;
+            availability[winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft] = false;
         }
         // If the tip is too tall to fit between the center of the target and the top edge of the window.
-        if (contentHeight - MinimumTipEdgeToTailCenter() > screenSpaceAroundTarget.Top + (targetBounds.Height / 2.0f))
+        if (contentHeight - MinimumTipEdgeToTailCenter() > availableBoundsAroundTarget.Top + (targetBounds.Height / 2.0f))
         {
-            rightTopAvailable = false;
-            leftTopAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedTop] = false;
+            availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop] = false;
         }
         // If the tip is too tall to fit in the window when the tail is centered vertically on the target and the tip.
-        if (contentHeight / 2.0f > screenSpaceAroundTarget.Top + (targetBounds.Height / 2.0f) ||
-            contentHeight / 2.0f > screenSpaceAroundTarget.Bottom + (targetBounds.Height / 2.0f))
+        if (contentHeight / 2.0f > availableBoundsAroundTarget.Top + (targetBounds.Height / 2.0f) ||
+            contentHeight / 2.0f > availableBoundsAroundTarget.Bottom + (targetBounds.Height / 2.0f))
         {
-            rightCenterAvailable = false;
-            leftCenterAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::Right] = false;
+            availability[winrt::TeachingTipPlacementMode::Left] = false;
         }
         // If the tip is too tall to fit between the center of the target and the bottom edge of the window.
-        if (contentHeight - MinimumTipEdgeToTailCenter() > screenSpaceAroundTarget.Bottom + (targetBounds.Height / 2.0f))
+        if (contentHeight - MinimumTipEdgeToTailCenter() > availableBoundsAroundTarget.Bottom + (targetBounds.Height / 2.0f))
         {
-            rightBottomAvailable = false;
-            leftBottomAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom] = false;
+            availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom] = false;
         }
         // If the tip is too tall to fit between the bottom of the target and the bottom edge of the window.
-        if (tipHeight > screenSpaceAroundTarget.Bottom)
+        if (tipHeight > availableBoundsAroundTarget.Bottom)
         {
-            bottomCenterAvailable = false;
-            bottomLeftAvailable = false;
-            bottomRightAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::Bottom] = false;
+            availability[winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft] = false;
+            availability[winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight] = false;
         }
 
         // If the tip is too wide to fit between the left edge of the target and the left edge of the window.
-        if (tipWidth > screenSpaceAroundTarget.Left)
+        if (tipWidth > availableBoundsAroundTarget.Left)
         {
-            leftCenterAvailable = false;
-            leftTopAvailable = false;
-            leftBottomAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::Left] = false;
+            availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop] = false;
+            availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom] = false;
         }
         // If the tip is too wide to fit between the center of the target and the left edge of the window.
-        if (contentWidth - MinimumTipEdgeToTailCenter() > screenSpaceAroundTarget.Left + (targetBounds.Width / 2.0f))
+        if (contentWidth - MinimumTipEdgeToTailCenter() > availableBoundsAroundTarget.Left + (targetBounds.Width / 2.0f))
         {
-            topLeftAvailable = false;
-            bottomLeftAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft] = false;
+            availability[winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft] = false;
         }
         // If the tip is too wide to fit in the window when the tail is centered horizontally on the target and the tip.
-        if (contentWidth / 2.0f > screenSpaceAroundTarget.Left + (targetBounds.Width / 2.0f) ||
-            contentWidth / 2.0f > screenSpaceAroundTarget.Right + (targetBounds.Width / 2.0f))
+        if (contentWidth / 2.0f > availableBoundsAroundTarget.Left + (targetBounds.Width / 2.0f) ||
+            contentWidth / 2.0f > availableBoundsAroundTarget.Right + (targetBounds.Width / 2.0f))
         {
-            topCenterAvailable = false;
-            bottomCenterAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::Top] = false;
+            availability[winrt::TeachingTipPlacementMode::Bottom] = false;
         }
         // If the tip is too wide to fit between the center of the target and the right edge of the window.
-        if (contentWidth - MinimumTipEdgeToTailCenter() > screenSpaceAroundTarget.Right + (targetBounds.Width / 2.0f))
+        if (contentWidth - MinimumTipEdgeToTailCenter() > availableBoundsAroundTarget.Right + (targetBounds.Width / 2.0f))
         {
-            topRightAvailable = false;
-            bottomRightAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::TopEdgeAlignedRight] = false;
+            availability[winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight] = false;
         }
         // If the tip is too wide to fit between the right edge of the target and the right edge of the window.
-        if (tipWidth > screenSpaceAroundTarget.Right)
+        if (tipWidth > availableBoundsAroundTarget.Right)
         {
-            rightCenterAvailable = false;
-            rightTopAvailable = false;
-            rightBottomAvailable = false;
+            availability[winrt::TeachingTipPlacementMode::Right] = false;
+            availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedTop] = false;
+            availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom] = false;
         }
 
         auto priorities = GetPlacementFallbackOrder(placement);
 
-        for each (winrt::TeachingTipPlacementMode mode in priorities)
+        for (auto mode : priorities)
         {
-            if (mode == winrt::TeachingTipPlacementMode::Top && topCenterAvailable)
+            if (availability[mode])
             {
-                return std::tuple<winrt::TeachingTipPlacementMode, bool>(winrt::TeachingTipPlacementMode::Top, false);
-            }
-            if (mode == winrt::TeachingTipPlacementMode::Bottom && bottomCenterAvailable)
-            {
-                return std::tuple<winrt::TeachingTipPlacementMode, bool>(winrt::TeachingTipPlacementMode::Bottom, false);
-            }
-            if (mode == winrt::TeachingTipPlacementMode::Left && leftCenterAvailable)
-            {
-                return std::tuple<winrt::TeachingTipPlacementMode, bool>(winrt::TeachingTipPlacementMode::Left, false);
-            }
-            if (mode == winrt::TeachingTipPlacementMode::Right && rightCenterAvailable)
-            {
-                return std::tuple<winrt::TeachingTipPlacementMode, bool>(winrt::TeachingTipPlacementMode::Right, false);
-            }
-            if (mode == winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft && topLeftAvailable)
-            {
-                return std::tuple<winrt::TeachingTipPlacementMode, bool>(winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft, false);
-            }
-            if (mode == winrt::TeachingTipPlacementMode::TopEdgeAlignedRight && topRightAvailable)
-            {
-                return std::tuple<winrt::TeachingTipPlacementMode, bool>(winrt::TeachingTipPlacementMode::TopEdgeAlignedRight, false);
-            }
-            if (mode == winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft && bottomLeftAvailable)
-            {
-                return std::tuple<winrt::TeachingTipPlacementMode, bool>(winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft, false);
-            }
-            if (mode == winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight && bottomRightAvailable)
-            {
-                return std::tuple<winrt::TeachingTipPlacementMode, bool>(winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight, false);
-            }
-            if (mode == winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop && leftTopAvailable)
-            {
-                return std::tuple<winrt::TeachingTipPlacementMode, bool>(winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop, false);
-            }
-            if (mode == winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom && leftBottomAvailable)
-            {
-                return std::tuple<winrt::TeachingTipPlacementMode, bool>(winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom, false);
-            }
-            if (mode == winrt::TeachingTipPlacementMode::RightEdgeAlignedTop && rightTopAvailable)
-            {
-                return std::tuple<winrt::TeachingTipPlacementMode, bool>(winrt::TeachingTipPlacementMode::RightEdgeAlignedTop, false);
-            }
-            if (mode == winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom && rightBottomAvailable)
-            {
-                return std::tuple<winrt::TeachingTipPlacementMode, bool>(winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom, false);
+                return std::make_tuple(mode, false);
             }
         }
     }
     // The teaching tip wont fit anywhere, set tipDoesNotFit to indicate that we should not open.
-    return std::tuple<winrt::TeachingTipPlacementMode, bool>(winrt::TeachingTipPlacementMode::Top, true);
+    return std::make_tuple(winrt::TeachingTipPlacementMode::Top, true);
 }
 
 std::tuple<winrt::Rect, winrt::Thickness, winrt::Thickness> TeachingTip::DetermineSpaceAroundTarget()
@@ -1563,81 +1524,73 @@ std::tuple<winrt::Rect, winrt::Thickness, winrt::Thickness> TeachingTip::Determi
                                                   screenBounds.Width - (windowBounds.X + targetBounds.X + targetBounds.Width),
                                                   screenBounds.Height - (windowBounds.Y + targetBounds.Y + targetBounds.Height) };
 
-        return std::tuple<winrt::Rect, winrt::Thickness, winrt::Thickness>(targetBounds, windowSpaceAroundTarget, screenSpaceAroundTarget);
+        return std::make_tuple(targetBounds, windowSpaceAroundTarget, screenSpaceAroundTarget);
     }
     else
     {
-        return std::tuple<winrt::Rect, winrt::Thickness, winrt::Thickness>(targetBounds, windowSpaceAroundTarget, windowSpaceAroundTarget);
+        return std::make_tuple(targetBounds, windowSpaceAroundTarget, windowSpaceAroundTarget);
     }
 }
 
-std::list<winrt::TeachingTipPlacementMode> TeachingTip::GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPlacement)
+std::array<winrt::TeachingTipPlacementMode, 12> TeachingTip::GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPlacement)
 {
-    auto priority1 = winrt::TeachingTipPlacementMode::Top;
-    auto priority2 = winrt::TeachingTipPlacementMode::Bottom;
-    auto priority3 = winrt::TeachingTipPlacementMode::Left;
-    auto priority4 = winrt::TeachingTipPlacementMode::Right;
-    auto priority5 = winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft;
-    auto priority6 = winrt::TeachingTipPlacementMode::TopEdgeAlignedRight;
-    auto priority7 = winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft;
-    auto priority8 = winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight;
-    auto priority9 = winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop;
-    auto priority10 = winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom;
-    auto priority11 = winrt::TeachingTipPlacementMode::RightEdgeAlignedTop;
-    auto priority12 = winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom;
+    auto priorityList = std::array<winrt::TeachingTipPlacementMode, 12>();
+    priorityList[0] = winrt::TeachingTipPlacementMode::Top;
+    priorityList[1] = winrt::TeachingTipPlacementMode::Bottom;
+    priorityList[2] = winrt::TeachingTipPlacementMode::Left;
+    priorityList[3] = winrt::TeachingTipPlacementMode::Right;
+    priorityList[4] = winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft;
+    priorityList[5] = winrt::TeachingTipPlacementMode::TopEdgeAlignedRight;
+    priorityList[6] = winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft;
+    priorityList[7] = winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight;
+    priorityList[8] = winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop;
+    priorityList[9] = winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom;
+    priorityList[10] = winrt::TeachingTipPlacementMode::RightEdgeAlignedTop;
+    priorityList[11] = winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom;
 
 
-    if (isPlacementBottom(preferredPlacement))
+    if (IsPlacementBottom(preferredPlacement))
     {
         // Swap to bottom > top
-        std::swap(priority1, priority2);
-        std::swap(priority5, priority7);
-        std::swap(priority6, priority8);
+        std::swap(priorityList[0], priorityList[1]);
+        std::swap(priorityList[4], priorityList[6]);
+        std::swap(priorityList[5], priorityList[7]);
     }
-    else if (isPlacementLeft(preferredPlacement))
+    else if (IsPlacementLeft(preferredPlacement))
     {
         // swap to lateral > vertical
-        std::swap(priority1, priority3);
-        std::swap(priority2, priority4);
-        std::swap(priority5, priority9);
-        std::swap(priority6, priority10);
-        std::swap(priority7, priority11);
-        std::swap(priority8, priority12);
+        std::swap(priorityList[0], priorityList[2]);
+        std::swap(priorityList[1], priorityList[3]);
+        std::swap(priorityList[4], priorityList[8]);
+        std::swap(priorityList[5], priorityList[9]);
+        std::swap(priorityList[6], priorityList[10]);
+        std::swap(priorityList[7], priorityList[11]);
     }
-    else if (isPlacementRight(preferredPlacement))
+    else if (IsPlacementRight(preferredPlacement))
     {
         // swap to lateral > vertical
-        std::swap(priority1, priority3);
-        std::swap(priority2, priority4);
-        std::swap(priority5, priority9);
-        std::swap(priority6, priority10);
-        std::swap(priority7, priority11);
-        std::swap(priority8, priority12);
+        std::swap(priorityList[0], priorityList[2]);
+        std::swap(priorityList[1], priorityList[3]);
+        std::swap(priorityList[4], priorityList[8]);
+        std::swap(priorityList[5], priorityList[9]);
+        std::swap(priorityList[6], priorityList[10]);
+        std::swap(priorityList[7], priorityList[11]);
 
         // swap to right > left
-        std::swap(priority1, priority2);
-        std::swap(priority5, priority7);
-        std::swap(priority6, priority8);
+        std::swap(priorityList[0], priorityList[1]);
+        std::swap(priorityList[4], priorityList[6]);
+        std::swap(priorityList[5], priorityList[7]);
     }
 
-    auto priorityList = std::list<winrt::TeachingTipPlacementMode>();
-    priorityList.push_back(priority1);
-    priorityList.push_back(priority2);
-    priorityList.push_back(priority3);
-    priorityList.push_back(priority4);
-    priorityList.push_back(priority5);
-    priorityList.push_back(priority6);
-    priorityList.push_back(priority7);
-    priorityList.push_back(priority8);
-    priorityList.push_back(priority9);
-    priorityList.push_back(priority10);
-    priorityList.push_back(priority11);
-    priorityList.push_back(priority12);
-
     //Switch the preferred placement to first.
-    uint32_t index = 0;
-    priorityList.remove(preferredPlacement);
-    priorityList.insert(priorityList.begin(), preferredPlacement);
+    auto pivot = std::find_if(priorityList.begin(),
+        priorityList.end(),
+        [preferredPlacement](const winrt::TeachingTipPlacementMode mode) -> bool {
+            return mode == preferredPlacement;
+        });
+    if (pivot != priorityList.end()) {
+        std::rotate(priorityList.begin(), pivot, pivot + 1);
+    }
 
     return priorityList;
 }

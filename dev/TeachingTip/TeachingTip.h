@@ -107,7 +107,7 @@ private:
 
     std::tuple<winrt::TeachingTipPlacementMode, bool> DetermineEffectivePlacement();
     std::tuple<winrt::Rect, winrt::Thickness, winrt::Thickness> DetermineSpaceAroundTarget();
-    std::list<winrt::TeachingTipPlacementMode> GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPalcement);
+    static std::array<winrt::TeachingTipPlacementMode, 12> GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPalcement);
     void EstablishShadows();
 
     tracker_ref<winrt::Border> m_container{ this };
@@ -168,22 +168,22 @@ private:
 
     winrt::TeachingTipCloseReason m_lastCloseReason{ winrt::TeachingTipCloseReason::Programmatic };
 
-    static bool isPlacementTop(winrt::TeachingTipPlacementMode placement) {
+    static bool IsPlacementTop(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Top ||
             placement == winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft ||
             placement == winrt::TeachingTipPlacementMode::TopEdgeAlignedRight;
     }
-    static bool isPlacementBottom(winrt::TeachingTipPlacementMode placement) {
+    static bool IsPlacementBottom(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Bottom ||
             placement == winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft ||
             placement == winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight;
     }
-    static bool isPlacementLeft(winrt::TeachingTipPlacementMode placement) {
+    static bool IsPlacementLeft(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Left ||
             placement == winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop ||
             placement == winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom;
     }
-    static bool isPlacementRight(winrt::TeachingTipPlacementMode placement) {
+    static bool IsPlacementRight(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Right ||
             placement == winrt::TeachingTipPlacementMode::RightEdgeAlignedTop ||
             placement == winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom;
