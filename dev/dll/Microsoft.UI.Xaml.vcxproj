@@ -231,6 +231,8 @@
     <ClInclude Include="..\inc\CppWinRTHelpers.h" />
     <ClInclude Include="..\inc\CppWinRTIncludes.h" />
     <ClInclude Include="..\inc\DispatcherHelper.h" />
+    <ClInclude Include="..\inc\enum_array.h" />
+    <ClInclude Include="..\inc\enum_vector.h" />
     <ClInclude Include="..\inc\GlobalDependencyProperty.h" />
     <ClInclude Include="..\inc\DownlevelHelper.h" />
     <ClInclude Include="..\inc\ErrorHandling.h" />

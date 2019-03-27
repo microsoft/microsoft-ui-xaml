@@ -42,7 +42,10 @@ public:
     double GetVerticalOffset();
     void SetUseTestWindowBounds(bool useTestWindowBounds);
     void SetTestWindowBounds(const winrt::Rect& testWindowBounds);
+    void SetUseTestScreenBounds(bool useTestScreenBounds);
+    void SetTestScreenBounds(const winrt::Rect& testScreenBounds);
     void SetTipFollowsTarget(bool tipFollowsTarget);
+    void SetReturnTopForOutOfWindowPlacement(bool useScreenBoundsForAutoPlacement);
     void SetExpandAnimationDuration(const winrt::TimeSpan& expandAnimationDuration);
     void SetContractAnimationDuration(const winrt::TimeSpan& contractAnimationDuration);
 
@@ -67,10 +70,10 @@ private:
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
 	void SetPopupAutomationProperties();
     void CreateLightDismissIndicatorPopup();
-    void UpdateTail();
+    bool UpdateTail();
     void PositionPopup();
-    void PositionTargetedPopup();
-    void PositionUntargetedPopup();
+    bool PositionTargetedPopup();
+    bool PositionUntargetedPopup();
     void UpdateSizeBasedTemplateSettings();
     void UpdateButtonsState();
     void UpdateDynamicHeroContentPlacementToTop();
@@ -86,6 +89,7 @@ private:
     void OnIconSourceChanged();
     void OnPlacementMarginChanged();
     void OnIsLightDismissEnabledChanged();
+    void OnShouldConstrainToRootBoundsChanged();
     void OnHeroContentPlacementChanged();
 
     void OnAutomationNameChanged(const winrt::IInspectable&, const winrt::IInspectable&);
@@ -100,7 +104,7 @@ private:
     void OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnTailOcclusionGridLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
 
-    void RaiseClosingEvent();
+    void RaiseClosingEvent(bool attachDeferralCompletedHandler);
     void ClosePopupWithAnimationIfAvailable();
     void ClosePopup();
 
@@ -114,7 +118,9 @@ private:
     void StartExpandToOpen();
     void StartContractToClose();
 
-    winrt::TeachingTipPlacementMode DetermineEffectivePlacement();
+    std::tuple<winrt::TeachingTipPlacementMode, bool> DetermineEffectivePlacement();
+    std::tuple<winrt::Rect, winrt::Thickness, winrt::Thickness> DetermineSpaceAroundTarget();
+    static std::array<winrt::TeachingTipPlacementMode, 13> GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPalcement);
     void EstablishShadows();
 
     tracker_ref<winrt::Border> m_container{ this };
@@ -152,16 +158,20 @@ private:
     winrt::Rect m_currentTargetBounds{ 0,0,0,0 };
 
     bool m_isTemplateApplied{ false };
+    bool m_createNewPopupOnOpen{ false };
 
     bool m_isExpandAnimationPlaying{ false };
     bool m_isContractAnimationPlaying{ false };
 
     bool m_useTestWindowBounds{ false };
     winrt::Rect m_testWindowBounds{ 0,0,0,0 };
+    bool m_useTestScreenBounds{ false };
+    winrt::Rect m_testScreenBounds{ 0,0,0,0 };
 
     bool m_tipShouldHaveShadow{ true };
 
     bool m_tipFollowsTarget{ false };
+    bool m_returnTopForOutOfWindowPlacement{ true };
 
     float m_contentElevation{ 32.0f };
     float m_tailElevation{ 0.0f };
@@ -172,15 +182,36 @@ private:
 
     winrt::TeachingTipCloseReason m_lastCloseReason{ winrt::TeachingTipCloseReason::Programmatic };
 
+    static bool IsPlacementTop(winrt::TeachingTipPlacementMode placement) {
+        return placement == winrt::TeachingTipPlacementMode::Top ||
+            placement == winrt::TeachingTipPlacementMode::TopLeft ||
+            placement == winrt::TeachingTipPlacementMode::TopRight;
+    }
+    static bool IsPlacementBottom(winrt::TeachingTipPlacementMode placement) {
+        return placement == winrt::TeachingTipPlacementMode::Bottom ||
+            placement == winrt::TeachingTipPlacementMode::BottomLeft ||
+            placement == winrt::TeachingTipPlacementMode::BottomRight;
+    }
+    static bool IsPlacementLeft(winrt::TeachingTipPlacementMode placement) {
+        return placement == winrt::TeachingTipPlacementMode::Left ||
+            placement == winrt::TeachingTipPlacementMode::LeftTop ||
+            placement == winrt::TeachingTipPlacementMode::LeftBottom;
+    }
+    static bool IsPlacementRight(winrt::TeachingTipPlacementMode placement) {
+        return placement == winrt::TeachingTipPlacementMode::Right ||
+            placement == winrt::TeachingTipPlacementMode::RightTop ||
+            placement == winrt::TeachingTipPlacementMode::RightBottom;
+    }
+
     // These values are shifted by one because this is the 1px highlight that sits adjacent to the tip border.
     inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (TailShortSideLength() - 1.0f), 0, 1, 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0, 1, 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0, 1, 0 }; }
+    inline winrt::Thickness BottomRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0, 1, 0 }; }
+    inline winrt::Thickness BottomLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0, 1, 0 }; }
     static inline winrt::Thickness OtherPlacementTopRightHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
 
     inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, (width / 2) + (TailShortSideLength() - 1.0f), 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedRightPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0 }; }
-    inline winrt::Thickness BottomEdgeAlignedLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0 }; }
+    inline winrt::Thickness BottomRightPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0 }; }
+    inline winrt::Thickness BottomLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0 }; }
     static inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 1, 0 }; }
     // Shifted by one since the tail edge's border is not accounted for automatically.
     static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 0, 0 }; }

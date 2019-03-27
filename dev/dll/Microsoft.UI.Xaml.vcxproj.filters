@@ -86,6 +86,12 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="XamlControlsResources.h" />
+    <ClInclude Include="..\inc\enum_array.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\enum_vector.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Microsoft.UI.Xaml.def" />
