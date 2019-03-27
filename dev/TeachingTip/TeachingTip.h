@@ -120,6 +120,8 @@ private:
 
     std::tuple<winrt::TeachingTipPlacementMode, bool> DetermineEffectivePlacement();
     std::tuple<winrt::Rect, winrt::Thickness, winrt::Thickness> DetermineSpaceAroundTarget();
+    winrt::Rect GetEffectiveWindowBounds();
+    winrt::Rect GetEffectiveScreenBounds();
     static std::array<winrt::TeachingTipPlacementMode, 13> GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPalcement);
     void EstablishShadows();
 

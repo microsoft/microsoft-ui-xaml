@@ -1413,11 +1413,12 @@ void TeachingTip::StartContractToClose()
 std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectivePlacement()
 {
     auto placement = PreferredPlacement();
+    bool shouldConstrainToRootBounds = ShouldConstrainToRootBounds();
     // Because we do not have access to APIs to give us details about multi monitor scenarios we do not have the ability to correctly
     // Place the tip in scenarios where we have an out of root bounds tip. Since this is the case we have decided to do no special
     // calculations and return the provided value or top if auto was set. This behavior can be removed via the
     // SetReturnTopForOutOfWindowBounds test hook.
-    if (!ShouldConstrainToRootBounds() && m_returnTopForOutOfWindowPlacement)
+    if (!shouldConstrainToRootBounds && m_returnTopForOutOfWindowPlacement)
     {
         if (placement == winrt::TeachingTipPlacementMode::Auto)
         {
@@ -1431,10 +1432,12 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
         return std::make_tuple(m_currentEffectiveTipPlacementMode, false);
     }
 
+    auto&& tailOcclusionGrid = m_tailOcclusionGrid.get();
+    double contentHeight = tailOcclusionGrid.ActualHeight();
+    double contentWidth = tailOcclusionGrid.ActualWidth();
+
     if (m_target)
     {
-        bool shouldConstrainToRootBounds = ShouldConstrainToRootBounds();
-
         // These variables will track which positions the tip will fit in. They all start true and are
         // flipped to false when we find a display condition that is not met.
         enum_array <winrt::TeachingTipPlacementMode, bool, 14> availability;
@@ -1453,9 +1456,6 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
         availability[winrt::TeachingTipPlacementMode::RightBottom] = true;
 		availability[winrt::TeachingTipPlacementMode::Center] = true;
 
-        auto&& tailOcclusionGrid = m_tailOcclusionGrid.get();
-        double contentHeight = tailOcclusionGrid.ActualHeight();
-        double contentWidth = tailOcclusionGrid.ActualWidth();
         double tipHeight = contentHeight + TailShortSideLength();
         double tipWidth = contentWidth + TailShortSideLength();
 
@@ -1629,49 +1629,41 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
                 return std::make_tuple(mode, false);
             }
         }
+        // The teaching tip wont fit anywhere, set tipDoesNotFit to indicate that we should not open.
+        return std::make_tuple(winrt::TeachingTipPlacementMode::Top, true);
     }
-    // The teaching tip wont fit anywhere, set tipDoesNotFit to indicate that we should not open.
-    return std::make_tuple(winrt::TeachingTipPlacementMode::Top, true);
+    else // Untargeted
+    {
+        if (shouldConstrainToRootBounds)
+        {
+            auto const screenBounds = GetEffectiveScreenBounds();
+            if (screenBounds.Height < contentHeight && screenBounds.Width < contentWidth)
+            {
+                return std::make_tuple(winrt::TeachingTipPlacementMode::Bottom, false);
+            }
+        }
+        else
+        {
+            auto const windowBounds = GetEffectiveWindowBounds();
+            if (windowBounds.Height < contentHeight && windowBounds.Width < contentWidth)
+            {
+                return std::make_tuple(winrt::TeachingTipPlacementMode::Bottom, false);
+            }
+        }
+
+        // The teaching tip doesn't fit in the window/screen set tipDoesNotFit to indicate that we should not open.
+        return std::make_tuple(winrt::TeachingTipPlacementMode::Top, true);
+    }
 }
 
 std::tuple<winrt::Rect, winrt::Thickness, winrt::Thickness> TeachingTip::DetermineSpaceAroundTarget()
 {
     auto const shouldConstrainToRootBounds = ShouldConstrainToRootBounds();
-    // We use the current window/XamlRoot bounds to determine how much space is between the bottom and left edge of the target
-    // and the bottom and left edge of the window/XamlRoot.
-    auto const windowBounds = [this]()
-    {
-        if (m_useTestWindowBounds)
-        {
-            return m_testWindowBounds;
-        }
-#ifdef USE_INSIDER_SDK
-        if (winrt::IUIElement10 uiElement10 = *this)
-        {
-            if (auto xamlRoot = uiElement10.XamlRoot())
-            {
-                return winrt::Rect{ 0,0,xamlRoot.Size().Width, xamlRoot.Size().Height };
-            }
-        }
-#endif // USE_INSIDER_SDK
-        return winrt::Window::Current().CoreWindow().Bounds();
-    }();
+    auto const windowBounds = GetEffectiveWindowBounds();
 
     // We use the screen's size to determine how much space is available between the bottom and right edges of the window/root and the screen
     // This is only necessary if we are displaying in a popup which is not constrained to the root bounds.
-    auto const screenBounds = [this, shouldConstrainToRootBounds]()
-    {
-        if (!m_useTestScreenBounds && !shouldConstrainToRootBounds)
-        {
-            auto displayInfo = winrt::DisplayInformation::GetForCurrentView();
-            auto scaleFactor = displayInfo.RawPixelsPerViewPixel();
-            return winrt::Rect(0.0f,
-                               0.0f,
-                               displayInfo.ScreenHeightInRawPixels() / static_cast<float>(scaleFactor),
-                               displayInfo.ScreenWidthInRawPixels() / static_cast<float>(scaleFactor));
-        }
-        return m_testScreenBounds;
-    }();
+    auto const screenBounds = GetEffectiveScreenBounds();
 
 
     auto const targetBounds = [this, windowBounds, screenBounds]()
@@ -1708,6 +1700,38 @@ std::tuple<winrt::Rect, winrt::Thickness, winrt::Thickness> TeachingTip::Determi
     {
         return std::make_tuple(targetBounds, windowSpaceAroundTarget, windowSpaceAroundTarget);
     }
+}
+
+winrt::Rect TeachingTip::GetEffectiveWindowBounds()
+{
+    if (m_useTestWindowBounds)
+    {
+        return m_testWindowBounds;
+    }
+#ifdef USE_INSIDER_SDK
+    if (winrt::IUIElement10 uiElement10 = *this)
+    {
+        if (auto xamlRoot = uiElement10.XamlRoot())
+        {
+            return winrt::Rect{ 0,0,xamlRoot.Size().Width, xamlRoot.Size().Height };
+        }
+    }
+#endif // USE_INSIDER_SDK
+    return winrt::Window::Current().CoreWindow().Bounds();
+}
+
+winrt::Rect TeachingTip::GetEffectiveScreenBounds()
+{
+    if (!m_useTestScreenBounds && !ShouldConstrainToRootBounds())
+    {
+        auto displayInfo = winrt::DisplayInformation::GetForCurrentView();
+        auto scaleFactor = displayInfo.RawPixelsPerViewPixel();
+        return winrt::Rect(0.0f,
+            0.0f,
+            displayInfo.ScreenHeightInRawPixels() / static_cast<float>(scaleFactor),
+            displayInfo.ScreenWidthInRawPixels() / static_cast<float>(scaleFactor));
+    }
+    return m_testScreenBounds;
 }
 
 std::array<winrt::TeachingTipPlacementMode, 13> TeachingTip::GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPlacement)
