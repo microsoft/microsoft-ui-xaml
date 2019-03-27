@@ -113,6 +113,7 @@ jobs:
     jobName: CreateNugetPackage
     dependsOn: SignBinariesAndPublishSymbols
     signConfig: '$(Build.SourcesDirectory)\build\NuGetSignConfig.xml'
+    releasePackage: '$(MUXFinalRelease)'
  
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml

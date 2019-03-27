@@ -8,6 +8,7 @@ parameters:
   primaryBuildArch: x86
   buildFlavor: Release
   signConfig: ''
+  releasePackage: 'false'
 
 jobs:
 - job: ${{ parameters.jobName }}
@@ -37,6 +38,7 @@ jobs:
       echo parameters.publishPath '${{ parameters.publishPath }}'
       echo buildrevision=$(buildrevision)
       echo builddate=$(builddate)
+      echo releasePackage=${{ parameters.releasePackage }}
     displayName: 'CreateNugetPackage: Display parameters'
 
   - task: DownloadBuildArtifacts@0 
@@ -60,19 +62,20 @@ jobs:
         sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop'
         Contents: '**\Microsoft.UI.Xaml*.appx'
 
-  - task: powershell@2
-    displayName: 'build-nupkg.ps1'
-    inputs:
-      targetType: filePath
-      filePath: build\NuSpecs\build-nupkg.ps1
-      arguments: > 
-        -BuildOutput '$(Build.SourcesDirectory)\Artifacts\drop' 
-        -OutputDir '${{ parameters.nupkgdir }}' 
-        -prereleaseversion prerelease 
-        -DateOverride '$(builddate)'
-        -Subversion '$(buildrevision)' 
-        -BuildArch ${{ parameters.primaryBuildArch }}
+  - powershell: |
+      $prereleaseTag = "prerelease"
+      if ("${{ parameters.releasePackage}}" -eq [bool]::TrueString) { $prereleaseTag = "" }
+
+      & "$env:Build_SourcesDirectory\build\NuSpecs\build-nupkg.ps1" `
+        -BuildOutput '$(Build.SourcesDirectory)\Artifacts\drop' `
+        -OutputDir '${{ parameters.nupkgdir }}' `
+        -prereleaseversion "$prereleaseTag" `
+        -DateOverride '$(builddate)' `
+        -Subversion '$(buildrevision)' `
+        -BuildArch ${{ parameters.primaryBuildArch }} `
         -BuildFlavor ${{ parameters.buildFlavor }}
+
+    displayName: 'build-nupkg.ps1'
 
   - ${{if parameters.signConfig }}:
     - task: PkgESCodeSign@10
