@@ -58,7 +58,8 @@ private:
     void ValidateCacheLength(double cacheLength);
     void RegisterCacheBuildWork();
     void TryInvalidateMeasure();
-    
+    winrt::Rect GetLayoutVisibleWindowDiscardAnchor() const;
+
     winrt::hstring GetLayoutId() const;
 
     ItemsRepeater* m_owner{ nullptr };

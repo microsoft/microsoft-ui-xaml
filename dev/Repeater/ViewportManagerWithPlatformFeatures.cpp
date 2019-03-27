@@ -80,6 +80,19 @@ void ViewportManagerWithPlatformFeatures::VerticalCacheLength(double value)
     }
 }
 
+winrt::Rect ViewportManagerWithPlatformFeatures::GetLayoutVisibleWindowDiscardAnchor() const
+{
+    auto visibleWindow = m_visibleWindow;
+
+    if (HasScroller())
+    {
+        visibleWindow.X += m_layoutExtent.X + m_expectedViewportShift.X;
+        visibleWindow.Y += m_layoutExtent.Y + m_expectedViewportShift.Y;
+    }
+
+    return visibleWindow;
+}
+
 winrt::Rect ViewportManagerWithPlatformFeatures::GetLayoutVisibleWindow() const
 {
     auto visibleWindow = m_visibleWindow;
@@ -163,7 +176,9 @@ void ViewportManagerWithPlatformFeatures::OnLayoutChanged()
 
 void ViewportManagerWithPlatformFeatures::OnElementPrepared(const winrt::UIElement& element)
 {
-    element.CanBeScrollAnchor(true);
+    // If we have an anchor element, we do not want the
+    // scroll anchor provider to start anchoring some other element.
+    element.CanBeScrollAnchor(!m_makeAnchorElement);
 }
 
 void ViewportManagerWithPlatformFeatures::OnElementCleared(const winrt::UIElement& element)
@@ -263,6 +278,35 @@ void ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged(winrt::Fram
 {
     REPEATER_TRACE_INFO(L"%ls: \tEffectiveViewportChanged event callback \n", GetLayoutId().data());
     UpdateViewport(args.EffectiveViewport());
+
+    // As long as the make_anchor element is within the visible window, force it as the anchor.
+    // As soon as it goes outside, stop forcing it to be the anchor and
+    // let the anchor provider pick a new anchor.
+    if (auto makeAnchorElement = m_makeAnchorElement.get())
+    {
+        auto visibleWindow = GetLayoutVisibleWindowDiscardAnchor();
+        auto layoutSlot = winrt::LayoutInformation::GetLayoutSlot(makeAnchorElement.as<winrt::FrameworkElement>());
+        auto adjustedLayoutSlot = winrt::Rect(layoutSlot.X + m_layoutExtent.X, layoutSlot.Y + m_layoutExtent.Y, layoutSlot.Width, layoutSlot.Height);
+        bool doesNotOverlap = (adjustedLayoutSlot.X + adjustedLayoutSlot.Width) < visibleWindow.X ||
+            (visibleWindow.X + visibleWindow.Width) < adjustedLayoutSlot.X ||
+            (adjustedLayoutSlot.Y + adjustedLayoutSlot.Height) < visibleWindow.Y ||
+            (visibleWindow.Y + visibleWindow.Height) < adjustedLayoutSlot.Y;
+        if (doesNotOverlap)
+        {
+            m_makeAnchorElement.set(nullptr);
+
+            // Now that the anchor is gone, any item can be the anchor.
+            auto children = m_owner->Children();
+            for (unsigned i = 0u; i < children.Size(); ++i)
+            {
+                auto child = children.GetAt(i);
+                if (!child.CanBeScrollAnchor() && ItemsRepeater::GetVirtualizationInfo(child)->IsRealized())
+                {
+                    child.CanBeScrollAnchor(true);
+                }
+            }
+        }
+    }
 
     m_pendingViewportShift = {};
     if (m_visibleWindow == winrt::Rect())
