@@ -1604,63 +1604,71 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
 
 std::tuple<winrt::Rect, winrt::Thickness, winrt::Thickness> TeachingTip::DetermineSpaceAroundTarget()
 {
-    auto shouldConstrainToRootBounds = ShouldConstrainToRootBounds();
+    auto const shouldConstrainToRootBounds = ShouldConstrainToRootBounds();
     // We use the current window/XamlRoot bounds to determine how much space is between the bottom and left edge of the target
     // and the bottom and left edge of the window/XamlRoot.
-    auto windowBounds = m_testWindowBounds;
-    if (!m_useTestWindowBounds)
+    auto const windowBounds = [this]()
     {
-        windowBounds = winrt::Window::Current().CoreWindow().Bounds();
+        if (m_useTestWindowBounds)
+        {
+            return m_testWindowBounds;
+        }
 #ifdef USE_INSIDER_SDK
         if (winrt::IUIElement10 uiElement10 = *this)
         {
             if (auto xamlRoot = uiElement10.XamlRoot())
             {
-                windowBounds.Width = xamlRoot.Size().Width;
-                windowBounds.Height = xamlRoot.Size().Height;
+                return winrt::Rect{ 0,0,xamlRoot.Size().Width, xamlRoot.Size().Height };
             }
         }
 #endif // USE_INSIDER_SDK
-    }
+        return winrt::Window::Current().CoreWindow().Bounds();
+    }();
 
     // We use the screen's size to determine how much space is available between the bottom and right edges of the window/root and the screen
     // This is only necessary if we are displaying in a popup which is not constrained to the root bounds.
-    auto screenBounds = m_testScreenBounds;
-
-    if (!m_useTestScreenBounds && !shouldConstrainToRootBounds)
+    auto const screenBounds = [this, shouldConstrainToRootBounds]()
     {
-        auto displayInfo = winrt::DisplayInformation::GetForCurrentView();
-        auto scaleFactor = displayInfo.RawPixelsPerViewPixel();
-        screenBounds = winrt::Rect(0.0f,
-            0.0f,
-            displayInfo.ScreenHeightInRawPixels() / static_cast<float>(scaleFactor),
-            displayInfo.ScreenWidthInRawPixels() / static_cast<float>(scaleFactor));
-    }
+        if (!m_useTestScreenBounds && !shouldConstrainToRootBounds)
+        {
+            auto displayInfo = winrt::DisplayInformation::GetForCurrentView();
+            auto scaleFactor = displayInfo.RawPixelsPerViewPixel();
+            return winrt::Rect(0.0f,
+                               0.0f,
+                               displayInfo.ScreenHeightInRawPixels() / static_cast<float>(scaleFactor),
+                               displayInfo.ScreenWidthInRawPixels() / static_cast<float>(scaleFactor));
+        }
+        return m_testScreenBounds;
+    }();
 
 
-    auto targetBounds = m_currentTargetBounds;
-    if (m_useTestWindowBounds)
+    auto const targetBounds = [this, windowBounds, screenBounds]()
     {
-        targetBounds.X -= windowBounds.X;
-        targetBounds.Y -= windowBounds.Y;
-    }
-    if (m_useTestScreenBounds)
-    {
-        targetBounds.X -= screenBounds.X;
-        targetBounds.Y -= screenBounds.Y;
-    }
+        auto targetBounds = m_currentTargetBounds;
+        if (m_useTestWindowBounds)
+        {
+            targetBounds.X -= windowBounds.X;
+            targetBounds.Y -= windowBounds.Y;
+        }
+        if (m_useTestScreenBounds)
+        {
+            targetBounds.X -= screenBounds.X;
+            targetBounds.Y -= screenBounds.Y;
+        }
+        return targetBounds;
+    }();
 
-    winrt::Thickness windowSpaceAroundTarget{ targetBounds.X,
-                                              targetBounds.Y,
-                                              windowBounds.Width - (targetBounds.X + targetBounds.Width),
-                                              windowBounds.Height - (targetBounds.Y + targetBounds.Height) };
+    const winrt::Thickness windowSpaceAroundTarget{ targetBounds.X,
+                                                    targetBounds.Y,
+                                                    windowBounds.Width - (targetBounds.X + targetBounds.Width),
+                                                    windowBounds.Height - (targetBounds.Y + targetBounds.Height) };
 
     if (!shouldConstrainToRootBounds)
     {
-        winrt::Thickness screenSpaceAroundTarget{ targetBounds.X + windowBounds.X,
-                                                  targetBounds.Y + windowBounds.Y,
-                                                  screenBounds.Width - (windowBounds.X + targetBounds.X + targetBounds.Width),
-                                                  screenBounds.Height - (windowBounds.Y + targetBounds.Y + targetBounds.Height) };
+        const winrt::Thickness screenSpaceAroundTarget{ targetBounds.X + windowBounds.X,
+                                                        targetBounds.Y + windowBounds.Y,
+                                                        screenBounds.Width - (windowBounds.X + targetBounds.X + targetBounds.Width),
+                                                        screenBounds.Height - (windowBounds.Y + targetBounds.Y + targetBounds.Height) };
 
         return std::make_tuple(targetBounds, windowSpaceAroundTarget, screenSpaceAroundTarget);
     }
