@@ -1441,11 +1441,7 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
             if (m_heroContentBorder.get().ActualHeight() > m_nonHeroContentRootGrid.get().ActualHeight() - TailLongSideActualLength())
             {
                 availability[winrt::TeachingTipPlacementMode::Left] = false;
-                availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop] = false;
-                availability[winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom] = false;
                 availability[winrt::TeachingTipPlacementMode::Right] = false;
-                availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedTop] = false;
-                availability[winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom] = false;
             }
 
             switch (HeroContentPlacement())

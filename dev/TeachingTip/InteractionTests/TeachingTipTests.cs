@@ -449,9 +449,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     elements.GetShowButton().Invoke();
 
-                    var message3 = GetTeachingTipDebugMessage(3);
-                    Verify.IsTrue(message3.ToString().Contains("Closed"));
-                    Verify.IsTrue(message3.ToString().Contains("Programmatic"));
+                    VerifyPlacement("Top");
 
                     ClearTeachingTipDebugMessages();
                 }
