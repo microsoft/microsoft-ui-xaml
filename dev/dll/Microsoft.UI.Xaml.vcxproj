@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildProjectDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildProjectDirectory)\..\..\mux.controls.props') And $(BuildingWithBuildExe) != 'true'" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildProjectDirectory)\..\..\mux.controls.props')" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\environment.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\ProjectConfigurations.props" />
   <PropertyGroup Label="Globals">
@@ -26,10 +26,6 @@
     <!-- XBF is no longer embedded to improve F5 times but we need it embedded for the Nuget package PRI file, turn it on for release builds -->
     <DisableEmbeddedXbf Condition="'$(Configuration)'=='Release'">false</DisableEmbeddedXbf>
     <AppxBundlePlatforms>x86|x64|arm|arm64</AppxBundlePlatforms>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Use64BitLinker)' == 'true' AND '$(BuildingWithBuildExe)' == 'true'">
-    <OacrLinkTool>$(OSBuildToolsRoot)\vc\HostX64\$(BuildArchName)\link.exe</OacrLinkTool>
-    <LinkToolPath>$(OSBuildToolsRoot)\vc\HostX64\$(BuildArchName)</LinkToolPath>
   </PropertyGroup>
   <!-- <PropertyGroup Condition="'$(Use64BitLinker)' == 'true' AND '$(BuildingWithBuildExe)' != 'true'">
       <LinkToolPath>$(OSBuildToolsRoot)\vc\HostX64\$(BuildArchName)</LinkToolPath>
@@ -84,7 +80,7 @@
     <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared" />
     <Import Project="..\ParallaxView\ParallaxView.vcxitems" Label="Shared" />
     <Import Project="..\Scroller\Scroller.vcxitems" Label="Shared" />
-    <Import Project="..\ScrollViewer\ScrollViewer.vcxitems" Label="Shared" Condition="$(BuildingWithBuildExe) != 'true' And $(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <Import Project="..\ScrollViewer\ScrollViewer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\Lights\Lights.vcxitems" Label="Shared" />
     <Import Project="..\Repeater\Repeater.vcxitems" Label="Shared" />
     <Import Project="..\SwipeControl\SwipeControl.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
@@ -96,16 +92,16 @@
     <Import Project="..\DropDownButton\DropDownButton.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\RadioButtons\RadioButtons.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <!-- IconSource is implemented in Windows.UI.Xaml.dll in the OS repo, so we don't want to include it on that side. -->
-    <Import Project="..\IconSource\IconSource.vcxitems" Label="Shared" Condition="$(BuildingWithBuildExe) != 'true'" />
+    <Import Project="..\IconSource\IconSource.vcxitems" Label="Shared" />
     <!-- These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
          We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
          to non-public types.  So for now we'll just exclude these from the OS repo. -->
-    <Import Project="..\Interactions\ButtonInteraction\ButtonInteraction.vcxitems" Label="Shared" Condition="$(BuildingWithBuildExe) != 'true' And $(UseInternalSDK) == 'true'" />
-    <Import Project="..\Interactions\SliderInteraction\SliderInteraction.vcxitems" Label="Shared" Condition="$(BuildingWithBuildExe) != 'true' And $(UseInternalSDK) == 'true'" />
+    <Import Project="..\Interactions\ButtonInteraction\ButtonInteraction.vcxitems" Label="Shared" Condition="$(UseInternalSDK) == 'true'" />
+    <Import Project="..\Interactions\SliderInteraction\SliderInteraction.vcxitems" Label="Shared" Condition="$(UseInternalSDK) == 'true'" />
     <Import Project="..\MenuFlyout\MenuFlyout.vcxitems" Label="Shared" />
     <Import Project="..\TeachingTip\TeachingTip.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' and $(BuildingWithBuildExe) != 'true' And $(UseInsiderSDK) == 'true'" />
+    <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' and $(UseInsiderSDK) == 'true'" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -134,7 +130,7 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <PropertyGroup Condition="$(BuildingWithBuildExe) != 'true'">
+  <PropertyGroup>
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
   </PropertyGroup>
@@ -158,7 +154,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
-    <Midl Condition="$(BuildingWithBuildExe) != 'true'">
+    <Midl>
       <MetadataFileName>$(OutDir)Unmerged\%(Filename)_Unmerged.winmd</MetadataFileName>
       <AdditionalOptions>/no_stamp /no_settings_comment /nomidl %(AdditionalOptions)</AdditionalOptions>
       <!-- TODO: Remove Configuration==Debug from these once this is fixed: Bug 17488419: MIDL "import winmd" behavior doesn't carry through parameter names of methods on implemented interfaces -->
@@ -179,9 +175,9 @@
     <Link>
       <ModuleDefinitionFile>Microsoft.UI.Xaml.def</ModuleDefinitionFile>
       <GenerateDebugInformation Condition="'$(Configuration)'=='Debug'">$(GenerateDebugInformation)</GenerateDebugInformation>
-      <AdditionalDependencies Condition="$(BuildingWithBuildExe) != 'true'">dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!-- Microsoft.UI.winmd will contain the definition of both public, preview and private types. -->
-      <WindowsMetadataFile Condition="$(BuildingWithBuildExe) != 'true'">$(OutDir)\Microsoft.UI.winmd</WindowsMetadataFile>
+      <WindowsMetadataFile>$(OutDir)\Microsoft.UI.winmd</WindowsMetadataFile>
       <GenerateMapFile>true</GenerateMapFile>
       <LinkTimeCodeGeneration Condition="'$(Configuration)'=='Release'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -193,7 +189,7 @@
         $(MSBuildProjectDirectory)\..\Generated;
         $(OutDir);
       </AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="$(BuildingWithBuildExe) != 'true'">
+      <AdditionalIncludeDirectories>
         $(IntermediateOutputPath)\CppWinRT\Platform;
         $(IntermediateOutputPath)\CppWinRT\Component;
         $(IntermediateOutputPath)\CppWinRT\Component\Automation\Peers;
@@ -208,18 +204,18 @@
         $(MiniWindowsSDKIncludePath);
       </AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++17 /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="$(BuildingWithBuildExe) != 'true'">/Wv:18 /Zm1000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Wv:18 /Zm1000 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <EnablePREfast Condition="'$(Configuration)'=='Release' And $(BuildingWithBuildExe) != 'true'">true</EnablePREfast>
+      <EnablePREfast Condition="'$(Configuration)'=='Release'">true</EnablePREfast>
       <ShowIncludes>false</ShowIncludes>
       <!-- Disable RTTI to keep binary size down (adds about 50% to release dll size) -->
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <ControlFlowGuard Condition="'$(Configuration)'=='Release'">Guard</ControlFlowGuard>
       <StringPooling Condition="'$(Configuration)'=='Release'">true</StringPooling>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">DEBUG;DBG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="$(BuildingWithBuildExe) != 'true'">DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
@@ -243,7 +239,7 @@
     <ClInclude Include="..\inc\tracker_ref.h" />
     <ClInclude Include="..\inc\TypeHelper.h" />
     <ClInclude Include="..\inc\CollectionHelper.h" />
-    <ClInclude Include="MUXControlsFactory.h" Condition="$(BuildingWithBuildExe) != 'true'" />
+    <ClInclude Include="MUXControlsFactory.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="XamlControlsResources.h" />
@@ -254,7 +250,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommandingHelpers.cpp" />
-    <ClCompile Include="MUXControlsFactory.cpp" Condition="$(BuildingWithBuildExe) != 'true'" />
+    <ClCompile Include="MUXControlsFactory.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="DoubleUtil.cpp" />
     <ClCompile Include="DownlevelHelper.cpp" />
@@ -269,7 +265,7 @@
     <ClCompile Include="XamlMetadataProvider.cpp" />
     <ClCompile Include="$(OutDir)XamlMetadataProviderGenerated.cpp" />
     <ClCompile Include="XamlType.cpp" />
-    <None Include="$(OutDir)XamlMetadataProviderWindowsCodeGen.cs" Condition="$(BuildingWithBuildExe) != 'true'" />
+    <None Include="$(OutDir)XamlMetadataProviderWindowsCodeGen.cs" />
     <None Include="WinRtType.tt" />
   </ItemGroup>
   <ItemGroup>
@@ -277,7 +273,7 @@
     <None Include="Microsoft.UI.Xaml.rc" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+  <ItemGroup>
     <Page Include="$(OutDir)Generic.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
@@ -367,10 +363,10 @@
     <Page Include="@(PageRequiringCustomCompilation)" />
     <CompactPage Include="$(MSBuildThisFileDirectory)DensityStyles\Compact.xaml" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+  <ItemGroup>
     <Midl Include="..\..\idl\Microsoft.UI.Xaml.idl" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+  <ItemGroup>
     <None Include="XamlMetadataProviderGenerated.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>$(OutDir)XamlMetadataProviderGenerated.cpp</LastGenOutput>
@@ -385,14 +381,14 @@
   </ItemGroup>
   <ItemGroup>
     <!-- This natvis support is not ready for prime time 
-    <Natvis Include="$(IntermediateOutputPath)CppWinRT\Platform\winrt\cppwinrt.natvis" Condition="$(BuildingWithBuildExe) != 'true'">
+    <Natvis Include="$(IntermediateOutputPath)CppWinRT\Platform\winrt\cppwinrt.natvis">
     </Natvis>
-    <Natvis Include="$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.natvis" Condition="$(BuildingWithBuildExe) != 'true'">
+    <Natvis Include="$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.natvis">
     </Natvis>
     -->
   </ItemGroup>
   <Import Project="$(CppTargetsFilePath)" />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" Condition="$(BuildingWithBuildExe) != 'true'" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\CustomInlineTasks.targets" />
   <!-- We make it so that devs just include the en-us version of their string resources in the project. This is because
        we only want people editing the en-us version (it's the only file that's input to the localization process) and
@@ -464,11 +460,11 @@
       <NineteenH1ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Version)' == '19H1' And '%(Type)' == 'ThemeResources'" />
     </ItemGroup>
   </Target>
-  <PropertyGroup Condition="$(BuildingWithBuildExe) != 'true'">
+  <PropertyGroup>
     <GenerateXamlFileBeforeTargets>BeforeBuildGenerateSources;CompileXaml;Prep_ComputeProcessXamlFiles;CompilePageRequiringCustomCompilation</GenerateXamlFileBeforeTargets>
   </PropertyGroup>
  
-  <Target Name="GenerateGenericResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" 
+  <Target Name="GenerateGenericResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" 
     Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage)" 
     Outputs="$(OutDir)Generic.xaml;$(OutDir)rs1_generic.xaml;$(OutDir)rs2_generic.xaml;$(OutDir)rs3_generic.xaml;$(OutDir)rs4_generic.xaml;$(OutDir)rs5_generic.xaml;$(OutDir)19h1_generic.xaml;">
       <Message Text="Generating generic resources XAML file " />
@@ -485,15 +481,22 @@
         <Output TaskParameter="ValueSetByTask" PropertyName="GenericXamlFileNeedsCompilation" />	
       </CreateProperty>	  
   </Target>
-  <Target Name="GenerateThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" 
+  <Target Name="GenerateThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" 
     Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)" 
     Outputs="$(OutDir)rs1_themeresources.xaml;$(OutDir)rs2_themeresources.xaml;$(OutDir)rs3_themeresources.xaml;$(OutDir)rs4_themeresources.xaml;$(OutDir)rs5_themeresources.xaml;$(OutDir)19h1_themeresources.xaml;">
       <Message Text="Generating theme resources XAML file " />
       <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage)" RS2Pages="@(RS2ThemeResourcePage)"  RS3Pages="@(RS3ThemeResourcePage)" 
                       RS4Pages="@(RS4ThemeResourcePage)" RS5Pages="@(RS5ThemeResourcePage)"  N19H1Pages="@(NineteenH1ThemeResourcePage)" 
                       PostfixForGeneratedFile="themeresources" OutputDirectory="$(OutDir)" />
-
-  <Target Name="GenerateCompactThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Condition="$(BuildingWithBuildExe) != 'true'" 
+     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.	
+      PropertyGroup values are always evaluated even when their enclosing target is skipped,	
+      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used	
+      to only set a property if the target actually runs. -->	
+      <CreateProperty Value="True">	
+        <Output TaskParameter="ValueSetByTask" PropertyName="ThemeResourceFileNeedsCompilation" />	
+      </CreateProperty>	
+  </Target>
+  <Target Name="GenerateCompactThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" 
     Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(CompactPage)" 
     Outputs="$(OutDir)rs1_compact_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml;">
       <Message Text="Generating theme resources XAML file " />
@@ -505,17 +508,16 @@
       whereas CreateProperty has the TaskParameter ValueSetByTask that can be used	
       to only set a property if the target actually runs. -->	
       <CreateProperty Value="True">	
-        <Output TaskParameter="ValueSetByTask" PropertyName="ThemeResourceFileNeedsCompilation" />	
+        <Output TaskParameter="ValueSetByTask" PropertyName="CompactThemeResourceFileNeedsCompilation" />	
       </CreateProperty>	
   </Target>
-  </Target>
-  <Target Name="RemovePageRequiringCustomCompilation" AfterTargets="BeforeBuildGenerateSources" BeforeTargets="MarkupCompilePass2" Condition="'@(PageRequiringCustomCompilation)' != '' And $(BuildingWithBuildExe) != 'true'">
+  <Target Name="RemovePageRequiringCustomCompilation" AfterTargets="BeforeBuildGenerateSources" BeforeTargets="MarkupCompilePass2" Condition="'@(PageRequiringCustomCompilation)' != ''">
     <Message Text="RemovePageRequiringCustomCompilation" />
     <ItemGroup>
       <Page Remove="@(PageRequiringCustomCompilation)" />
     </ItemGroup>
   </Target>
-  <Target Name="AddPageRequiringCustomCompilation" BeforeTargets="CompilePageRequiringCustomCompilation" AfterTargets="MarkupCompilePass2" Condition="'@(PageRequiringCustomCompilation)' != '' And $(BuildingWithBuildExe) != 'true'">
+  <Target Name="AddPageRequiringCustomCompilation" BeforeTargets="CompilePageRequiringCustomCompilation" AfterTargets="MarkupCompilePass2" Condition="'@(PageRequiringCustomCompilation)' != ''">
     <Message Text="AddPageRequiringCustomCompilation" />
     <ItemGroup>
       <Page Include="@(PageRequiringCustomCompilation)" />
@@ -524,7 +526,7 @@
   <!-- The CompilePageRequiringCustomCompilation contents are mostly copied from the
        definition of the MarkupCompilePass2 target from Microsoft.Windows.UI.Xaml.Common.targets.
        We use it to run the same XAML compilation functionality, except against a different SDK. -->
-  <Target Name="CompilePageRequiringCustomCompilation" AfterTargets="MarkupCompilePass2" DependsOnTargets="$(MarkupCompilePass2DependsOn)" Condition="$(BuildingWithBuildExe) != 'true'">
+  <Target Name="CompilePageRequiringCustomCompilation" AfterTargets="MarkupCompilePass2" DependsOnTargets="$(MarkupCompilePass2DependsOn)" >
     <PropertyGroup>
       <WarningLevel>$(PrevWarningLevel)</WarningLevel>
       <WarningLevel Condition="'$(WarningLevel)' == '' and '$(ExplicitResetWarningSuppression)' == 'true'">1</WarningLevel>
@@ -557,11 +559,11 @@
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs4_themeresources' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs4_themeresources.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs5_themeresources' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs5_themeresources.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '19h1_themeresources' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\19h1_themeresources.xbf'))" />
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs2_compact_themeresources' And ('$(RS2ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs2_compact_themeresources.xbf'))" />
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs3_compact_themeresources' And ('$(RS3ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs3_compact_themeresources.xbf'))" />
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs4_compact_themeresources' And ('$(RS4ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs4_compact_themeresources.xbf'))" />
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs5_compact_themeresources' And ('$(RS5ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs5_compact_themeresources.xbf'))" />
-      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '19h1_compact_themeresources' And ('$(NineteenH1ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\19h1_compact_themeresources.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs2_compact_themeresources' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs2_compact_themeresources.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs3_compact_themeresources' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs3_compact_themeresources.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs4_compact_themeresources' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs4_compact_themeresources.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'rs5_compact_themeresources' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\rs5_compact_themeresources.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == '19h1_compact_themeresources' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(IntDir)\Generated Files\Themes\19h1_compact_themeresources.xbf'))" />
     </ItemGroup>
     <Message Condition="'@(PageToBeCompiled)' != ''" Text="CustomCompile with min version %(PageToBeCompiled.MinSDKVersionRequired) for Pages: @(PageToBeCompiled)" />
     <CompileXaml Condition="'@(PageToBeCompiled)' != ''" LanguageSourceExtension="$(DefaultLanguageSourceExtension)" Language="$(Language)" RootNamespace="$(RootNamespace)" XamlPages="@(PageToBeCompiled)" XamlApplications="@(ApplicationDefinition)" SdkXamlPages="@(SdkXamlItems)" PriIndexName="$(PriIndexName)" ProjectName="$(XamlProjectName)" IsPass1="False" DisableXbfGeneration="False" CodeGenerationControlFlags="$(XamlCodeGenerationControlFlags)" ClIncludeFiles="@(ClInclude)" CIncludeDirectories="$(XamlCppIncludeDirectories)" LocalAssembly="$(LocalAssembly)" ProjectPath="$(MSBuildProjectFullPath)" OutputPath="$(XamlGeneratedOutputPath)" OutputType="$(OutputType)" ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)" ReferenceAssemblies="@(XamlReferencesToCompile)" ForceSharedStateShutdown="False" CompileMode="RealBuildPass2" XAMLFingerprint="$(XAMLFingerprint)" FingerprintIgnorePaths="$(XAMLFingerprintIgnorePaths)" VCInstallDir="$(VCInstallDir)" WindowsSdkPath="$(WindowsSdkPath)" GenXbf32Path="$(GenXbfPath)" SavedStateFile="$(XamlSavedStateFilePath)" RootsLog="$(XamlRootsLog)" SuppressWarnings="$(SuppressXamlWarnings)" XamlResourceMapName="$(XamlResourceMapName)" XamlComponentResourceLocation="$(XamlComponentResourceLocation)" TargetPlatformMinVersion="%(PageToBeCompiled.MinSDKVersionRequired)" PlatformXmlDir="$(PlatformXmlDir)">
@@ -593,7 +595,7 @@
       </ClCompile>
     </ItemGroup>
   </Target>
-  <Target Name="mdmerge" AfterTargets="Midl" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="@(Midl -> '%(MetadataFileName)')" Outputs="$(OutDir)Microsoft.UI.winmd;$(OutDir)\sdk\Microsoft.UI.Xaml.winmd;$(IntermediateOutputPath)CppWinRT\Platform\winrt\base.h;$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.Controls.h">
+  <Target Name="mdmerge" AfterTargets="Midl" Inputs="@(Midl -> '%(MetadataFileName)')" Outputs="$(OutDir)Microsoft.UI.winmd;$(OutDir)\sdk\Microsoft.UI.Xaml.winmd;$(IntermediateOutputPath)CppWinRT\Platform\winrt\base.h;$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.Controls.h">
     <PropertyGroup>
       <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
       <!-- using an older version of cpp winrt to avoid compiler issues -->
@@ -657,14 +659,14 @@
       <FileWrites Include="$(OutDir)Microsoft.UI.Composition.winmd" />
     </ItemGroup>
   </Target>
-  <Target Name="CreateReferenceWinmds" AfterTargets="mdmerge" BeforeTargets="XamlMetadataCodeGenMUX" Condition="$(BuildingWithBuildExe) != 'true'">
+  <Target Name="CreateReferenceWinmds" AfterTargets="mdmerge" BeforeTargets="XamlMetadataCodeGenMUX">
     <ItemGroup>
       <T4ParameterValues Include="ReferenceWinmds">
         <Value>@(ProjectionWinMD);@(ComponentWinMD)</Value>
       </T4ParameterValues>
     </ItemGroup>
   </Target>
-  <Target Name="XamlMetadataCodeGenMUX" AfterTargets="CreateReferenceWinmds" BeforeTargets="ClCompile" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="$(MetadataWinmdPaths);XamlMetadataProviderGenerated.tt;CommonHelpers.tt;WinRtType.tt" Outputs="$(OutDir)XamlMetadataProviderGenerated.cpp">
+  <Target Name="XamlMetadataCodeGenMUX" AfterTargets="CreateReferenceWinmds" BeforeTargets="ClCompile" Inputs="$(MetadataWinmdPaths);XamlMetadataProviderGenerated.tt;CommonHelpers.tt;WinRtType.tt" Outputs="$(OutDir)XamlMetadataProviderGenerated.cpp">
     <!-- Run XamlMetadataProviderGenerated.tt t4 template to generate XamlMetadataProviderGenerated.cpp from the winmd file -->
     <CallTarget Targets="TransformAll" />
     <ItemGroup>
@@ -676,16 +678,16 @@
       <Output TaskParameter="Include" ItemName="DependencyPropertyCodeGenOutputs" />
     </CreateItem>
   </Target>
-  <Target Name="RunDependencyPropertyCodeGen" AfterTargets="CreateReferenceWinmds" BeforeTargets="ClCompile" Condition="$(BuildingWithBuildExe) != 'true'" Inputs="$(OutDir)Microsoft.UI.winmd" Outputs="@(DependencyPropertyCodeGenOutputs);$(MSBuildProjectDirectory)\..\Generated\AcrylicBrush.properties.cpp">
+  <Target Name="RunDependencyPropertyCodeGen" AfterTargets="CreateReferenceWinmds" BeforeTargets="ClCompile" Inputs="$(OutDir)Microsoft.UI.winmd" Outputs="@(DependencyPropertyCodeGenOutputs);$(MSBuildProjectDirectory)\..\Generated\AcrylicBrush.properties.cpp">
     <DependencyPropertyCodeGen WinMDInput="$(OutDir)Microsoft.UI.winmd" References="@(ProjectionWinMD)" OutputDirectory="$(MSBuildProjectDirectory)\..\Generated" />
   </Target>
-  <Target Name="WorkAroundFastUpToDateCheckBug" AfterTargets="_GenerateProjectPriFileCore" Inputs="$(OutDir)$(TargetName).pri" Outputs="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).winmd;$(OutDir)Microsoft.UI.winmd" Condition="Exists('$(OutDir)$(TargetName).dll') And $(BuildingWithBuildExe) != 'true'">
+  <Target Name="WorkAroundFastUpToDateCheckBug" AfterTargets="_GenerateProjectPriFileCore" Inputs="$(OutDir)$(TargetName).pri" Outputs="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).winmd;$(OutDir)Microsoft.UI.winmd" Condition="Exists('$(OutDir)$(TargetName).dll')">
     <Message Text="Touching '$(OutDir)$(TargetName).dll' because pri file changed to work around DevDiv bug https://devdiv.visualstudio.com/DevDiv/_workitems?id=297204" />
     <Touch Files="$(OutDir)$(TargetName).dll" />
     <Touch Files="$(OutDir)$(TargetName).winmd" />
     <Touch Files="$(OutDir)Microsoft.UI.winmd" />
   </Target>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild" Condition="$(BuildingWithBuildExe) != 'true'">
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
@@ -693,7 +695,7 @@
     <Error Condition="!Exists('..\..\packages\Microsoft.Gsl.0.1.2.1\build\native\Microsoft.Gsl.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Gsl.0.1.2.1\build\native\Microsoft.Gsl.targets'))" />
     <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.44\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.44\build\native\MUXCustomBuildTasks.targets'))" />
   </Target>
-  <Target Name="RunBinSkim" AfterTargets="AfterBuild" Condition="'$(Configuration)'=='Release' And $(BuildingWithBuildExe) != 'true'">
+  <Target Name="RunBinSkim" AfterTargets="AfterBuild" Condition="'$(Configuration)'=='Release'">
     <PropertyGroup>
       <BinSkimCommand>..\..\packages\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe analyze "$(TargetPath)"</BinSkimCommand>
     </PropertyGroup>
@@ -703,7 +705,7 @@
     </Exec>
     <Error Text="BinSkim task failed." Condition="'$(ExitCode)'=='0'" />
   </Target>
-  <Target Name="CheckCompatibility" BeforeTargets="PrepareForBuild" Condition="'$(Configuration)'=='Release' And $(BuildingWithBuildExe) != 'true'">
+  <Target Name="CheckCompatibility" BeforeTargets="PrepareForBuild" Condition="'$(Configuration)'=='Release'">
     <Message Text="Running CheckCompatibility to ensure that no known incompatibilities between the WinUI and Windows depots have been introduced." />
     <RunPowershellScript Path="$(ScriptPath)CheckCompatibility.ps1" />
   </Target>
@@ -711,7 +713,7 @@
        since we need to re-link Microsoft.UI.Xaml.dll for code coverage.
        We can't get it from any environment variable, so let's write it to a text file as a workaround.
        We'll also output the MSVC tools directory for the same reason. -->
-  <Target Name="AfterBuild" Condition="$(BuildingWithBuildExe) != 'true' And (!Exists('$(OutDir)IntermediateDirectoryLocation.txt') Or !Exists('$(OutDir)VCToolsInstallDirectoryLocation.txt'))">
+  <Target Name="AfterBuild" Condition="(!Exists('$(OutDir)IntermediateDirectoryLocation.txt') Or !Exists('$(OutDir)VCToolsInstallDirectoryLocation.txt'))">
     <WriteLinesToFile File="$(OutDir)IntermediateDirectoryLocation.txt" Lines="$(IntermediateOutputPath)" Overwrite="true" Encoding="Ascii" />
     <WriteLinesToFile File="$(OutDir)VCToolsInstallDirectoryLocation.txt" Lines="$(VCToolsInstallDir)" Overwrite="true" Encoding="Ascii" />
     <ItemGroup>
