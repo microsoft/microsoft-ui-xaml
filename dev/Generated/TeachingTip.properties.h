@@ -54,6 +54,9 @@ public:
     void PreferredPlacement(winrt::TeachingTipPlacementMode const& value);
     winrt::TeachingTipPlacementMode PreferredPlacement();
 
+    void ShouldConstrainToRootBounds(bool value);
+    bool ShouldConstrainToRootBounds();
+
     void Subtitle(winrt::hstring const& value);
     winrt::hstring Subtitle();
 
@@ -84,6 +87,7 @@ public:
     static winrt::DependencyProperty IsOpenProperty() { return s_IsOpenProperty; }
     static winrt::DependencyProperty PlacementMarginProperty() { return s_PlacementMarginProperty; }
     static winrt::DependencyProperty PreferredPlacementProperty() { return s_PreferredPlacementProperty; }
+    static winrt::DependencyProperty ShouldConstrainToRootBoundsProperty() { return s_ShouldConstrainToRootBoundsProperty; }
     static winrt::DependencyProperty SubtitleProperty() { return s_SubtitleProperty; }
     static winrt::DependencyProperty TailVisibilityProperty() { return s_TailVisibilityProperty; }
     static winrt::DependencyProperty TargetProperty() { return s_TargetProperty; }
@@ -105,6 +109,7 @@ public:
     static GlobalDependencyProperty s_IsOpenProperty;
     static GlobalDependencyProperty s_PlacementMarginProperty;
     static GlobalDependencyProperty s_PreferredPlacementProperty;
+    static GlobalDependencyProperty s_ShouldConstrainToRootBoundsProperty;
     static GlobalDependencyProperty s_SubtitleProperty;
     static GlobalDependencyProperty s_TailVisibilityProperty;
     static GlobalDependencyProperty s_TargetProperty;
@@ -185,6 +190,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnPreferredPlacementPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnShouldConstrainToRootBoundsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
