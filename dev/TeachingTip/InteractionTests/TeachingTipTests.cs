@@ -459,9 +459,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     elements.GetShowButton().Invoke();
 
-                    var message3 = GetTeachingTipDebugMessage(3);
-                    Verify.IsTrue(message3.ToString().Contains("Closed"));
-                    Verify.IsTrue(message3.ToString().Contains("Programmatic"));
+                    VerifyPlacement("Top");
 
                     ClearTeachingTipDebugMessages();
                 }
@@ -515,6 +513,61 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             OpenTeachingTip();
             Verify.IsTrue(GetEffectivePlacement().Equals(placement));
             CloseTeachingTipProgrammatically();
+        }
+
+        [TestMethod]
+        public void AutomationNameIsForwordedToPopup()
+        {
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+                foreach(TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
+
+                    ScrollTargetIntoView();
+                    ScrollBy(10);
+                    OpenTeachingTip();
+                    Verify.IsNotNull(FindElement.ByNameAndClassName(location == TipLocationOptions.VisualTree ? "TeachingTipInVisualTree" : "TeachingTipInResources", "Popup"));
+                    SetAutomationName(AutomationNameOptions.None);
+                    Verify.IsNotNull(FindElement.ByNameAndClassName("We've Added Auto Saving!", "Popup"));
+                    SetAutomationName(location == TipLocationOptions.VisualTree ? AutomationNameOptions.VisualTree : AutomationNameOptions.Resources);
+                    CloseTeachingTipProgrammatically();
+                }
+            }
+        }
+
+        [TestMethod]
+        public void F6PutsFocusOnCloseButton()
+        {
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
+
+                    ScrollTargetIntoView();
+                    ScrollBy(10);
+                    OpenTeachingTip();
+                    CloseOpenAndCloseWithJustKeyboardViaF6();
+                    SetCloseButtonContent(CloseButtonContentOptions.ShortText);
+                    OpenTeachingTip();
+                    CloseOpenAndCloseWithJustKeyboardViaF6();
+                }
+            }
+        }
+
+        private void CloseOpenAndCloseWithJustKeyboardViaF6()
+        {
+            KeyboardHelper.PressKey(Key.F6);
+            KeyboardHelper.PressKey(Key.Enter);
+            WaitForTipClosed();
+            KeyboardHelper.PressKey(Key.Enter);
+            WaitForTipOpened();
+            KeyboardHelper.PressKey(Key.F6);
+            KeyboardHelper.PressKey(Key.Enter);
+            WaitForTipClosed();
         }
 
         private void ScrollTargetIntoView()
@@ -571,6 +624,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(elements.GetTeachingTipCloseButton());
                 WaitForTipClosed();
             }
+        }
+
+        private void WaitForTipOpened()
+        {
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                WaitForUnchecked(elements.GetIsIdleCheckBox());
+            }
+            WaitForChecked(elements.GetIsOpenCheckBox());
+            WaitForChecked(elements.GetIsIdleCheckBox());
         }
 
         private void WaitForTipClosed()
@@ -834,6 +897,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private string GetEffectivePlacement()
         {
             return elements.GetEffectivePlacementTextBlock().GetText();
+        }
+
+        private void SetAutomationName(AutomationNameOptions automationName)
+        {
+            switch(automationName)
+            {
+                case AutomationNameOptions.VisualTree:
+                    elements.GetAutomationNameComboBox().SelectItemByName("TeachingTipInVisualTree");
+                    break;
+                case AutomationNameOptions.Resources:
+                    elements.GetAutomationNameComboBox().SelectItemByName("TeachingTipInResources");
+                    break;
+                default:
+                    elements.GetAutomationNameComboBox().SelectItemByName("None");
+                    break;
+            }
+            elements.GetSetAutomationNameButton().Invoke();
         }
 
         // The test UI has a list box which the teaching tip populates with messages about which events have fired and other useful

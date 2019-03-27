@@ -157,12 +157,12 @@
             <Button x:Name="scrollButton" Margin="20 0 0 0">Scroll</Button>
         </StackPanel>
 
-        <!--With ScrollAnchorProvider for testing downlevel-->
-        <controls:ScrollAnchorProvider x:Name="tracker" Grid.Row="1" >
+        <!--With ItemsRepeaterScrollHost for testing downlevel-->
+        <controls:ItemsRepeaterScrollHost x:Name="tracker" Grid.Row="1" >
             <ScrollViewer x:Name="scrollViewer">
                 <controls:ItemsRepeater x:Name="rootRepeater" VerticalCacheLength="0" />
             </ScrollViewer>
-        </controls:ScrollAnchorProvider>
+        </controls:ItemsRepeaterScrollHost>
 
         <!-- No Element Tracker for RS5+. ScrollViewer can do the anchoring itself -->
         <!--<ScrollViewer x:Name="scrollViewer" Grid.Row="1">

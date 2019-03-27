@@ -37,7 +37,7 @@ unsealed runtimeclass SnapPointBase
 unsealed runtimeclass ScrollSnapPointBase
     : SnapPointBase
 {
-    ScrollSnapPointsAlignment Alignment { get; set; };
+    ScrollSnapPointsAlignment Alignment { get; };
 }
 
 [WUXC_VERSION_PREVIEW]

@@ -5,7 +5,9 @@
     xmlns:media="using:Microsoft.UI.Xaml.Media">
 
     <Style TargetType="local:TeachingTip">
-        <Setter Property="Background" Value="{ThemeResource TeachingTipStaticBackgroundBrush}"/>
+        <Setter Property="Background" Value="{ThemeResource TeachingTipBackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{ThemeResource TeachingTipForegroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{ThemeResource TeachingTipBorderBrush}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TeachingTip">
@@ -448,13 +450,13 @@
                                  in this order. This is to achieve the desired occlusion of the tail's content edge border. The tail edge border is a low opacity highlight,
                                  which means we need to have the background color present underneath the highlight, hence the double grid here. -->
                             <Grid x:Name="TailEdgeBorder" Background="{TemplateBinding Background}">
-                                <Grid Background="{ThemeResource TeachingTipBorderBrush}"/>
+                                <Grid Background="{TemplateBinding BorderBrush}"/>
                             </Grid>
                             <Polygon x:Name="TailPolygon"
                                      Fill="{TemplateBinding Background}"
                                      HorizontalAlignment="Left"
                                      VerticalAlignment="Top"
-                                     Stroke="{ThemeResource TeachingTipBorderBrush}"
+                                     Stroke="{TemplateBinding BorderBrush}"
                                      StrokeThickness="{StaticResource TeachingTipBorderThickness}"/>
                             <Grid x:Name="TailOcclusionGrid" 
                                   HorizontalAlignment="Left" 
@@ -489,8 +491,9 @@
                                          StrokeThickness="{StaticResource TeachingTipTopHighlightHeight}"
                                          Points="0,10 10,0 20,10"/>
                                 <Grid x:Name="ContentRootGrid"
+                                      AutomationProperties.LandmarkType="Custom"
                                       Background="{TemplateBinding Background}"
-                                      BorderBrush="{ThemeResource TeachingTipBorderBrush}"
+                                      BorderBrush="{TemplateBinding BorderBrush}"
                                       Grid.Row="1"
                                       Grid.Column="1"
                                       Grid.ColumnSpan="3"
@@ -523,11 +526,13 @@
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
                                                     <Button x:Name="ActionButton"
+                                                            HorizontalAlignment="Stretch"
                                                             Content="{TemplateBinding ActionButtonContent}"
                                                             Style="{TemplateBinding ActionButtonStyle}" 
                                                             Command="{TemplateBinding ActionButtonCommand}"
                                                             CommandParameter="{TemplateBinding ActionButtonCommandParameter}"/>
                                                     <Button x:Name="CloseButton"
+                                                            HorizontalAlignment="Stretch"
                                                             Content="{TemplateBinding CloseButtonContent}"
                                                             Style="{TemplateBinding CloseButtonStyle}"
                                                             Command="{TemplateBinding CloseButtonCommand}"
@@ -542,7 +547,7 @@
                                                 Background="Transparent"
                                                 VerticalAlignment="Top"
                                                 HorizontalAlignment="Right"
-                                                BorderThickness="{StaticResource TeachingTipAlternateCloseButtonBorderThickness}">
+                                                BorderThickness="{ThemeResource TeachingTipAlternateCloseButtonBorderThickness}">
                                             <Viewbox Width="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}"
                                                      Height="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}">
                                                 <SymbolIcon Symbol="Cancel"/>

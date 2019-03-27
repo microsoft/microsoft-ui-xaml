@@ -15,6 +15,7 @@ class TeachingTip :
 
 public:
     TeachingTip();
+    ~TeachingTip();
 
     // IFrameworkElement
     void OnApplyTemplate();
@@ -48,7 +49,13 @@ public:
     void SetExpandAnimationDuration(const winrt::TimeSpan& expandAnimationDuration);
     void SetContractAnimationDuration(const winrt::TimeSpan& contractAnimationDuration);
 
+    bool m_isIdle{ true };
+
 private:
+    PropertyChanged_revoker m_automationNameChangedRevoker{};
+    PropertyChanged_revoker m_automationIdChangedRevoker{};
+    winrt::CoreDispatcher::AcceleratorKeyActivated_revoker m_acceleratorKeyActivatedRevoker{};
+    winrt::UIElement::GettingFocus_revoker m_closeButtonGettingFocusFromF6Revoker{};
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     winrt::Button::Click_revoker m_alternateCloseButtonClickedRevoker{};
     winrt::Button::Click_revoker m_actionButtonClickedRevoker{};
@@ -61,6 +68,7 @@ private:
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
     winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
+	void SetPopupAutomationProperties();
     void CreateLightDismissIndicatorPopup();
     bool UpdateTail();
     void PositionPopup();
@@ -84,6 +92,11 @@ private:
     void OnShouldConstrainToRootBoundsChanged();
     void OnHeroContentPlacementChanged();
 
+    void OnAutomationNameChanged(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnAutomationIdChanged(const winrt::IInspectable&, const winrt::IInspectable&);
+
+    void OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args);
+    void OnCloseButtonGettingFocusFromF6(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args);
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&);
@@ -107,13 +120,14 @@ private:
 
     std::tuple<winrt::TeachingTipPlacementMode, bool> DetermineEffectivePlacement();
     std::tuple<winrt::Rect, winrt::Thickness, winrt::Thickness> DetermineSpaceAroundTarget();
-    std::list<winrt::TeachingTipPlacementMode> GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPalcement);
+    static std::array<winrt::TeachingTipPlacementMode, 12> GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPalcement);
     void EstablishShadows();
 
     tracker_ref<winrt::Border> m_container{ this };
 
     tracker_ref<winrt::Popup> m_popup{ this };
     tracker_ref<winrt::Popup> m_lightDismissIndicatorPopup{ this };
+    tracker_ref<winrt::ContentControl> m_popupContentControl{ this };
 
     tracker_ref<winrt::UIElement> m_rootElement{ this };
     tracker_ref<winrt::Grid> m_tailOcclusionGrid{ this };
@@ -126,6 +140,8 @@ private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::Polygon> m_tailPolygon{ this };
     tracker_ref<winrt::Grid> m_tailEdgeBorder{ this };
+
+    tracker_ref<winrt::Control> m_previouslyFocusedElement{ this };
 
     tracker_ref<winrt::KeyFrameAnimation> m_expandAnimation{ this };
     tracker_ref<winrt::KeyFrameAnimation> m_contractAnimation{ this };
@@ -161,29 +177,27 @@ private:
     float m_tailElevation{ 0.0f };
     bool m_tailShadowTargetsShadowTarget{ false };
 
-    bool m_isIdle{ true };
-
     winrt::TimeSpan m_expandAnimationDuration{ 300ms };
     winrt::TimeSpan m_contractAnimationDuration{ 200ms };
 
     winrt::TeachingTipCloseReason m_lastCloseReason{ winrt::TeachingTipCloseReason::Programmatic };
 
-    static bool isPlacementTop(winrt::TeachingTipPlacementMode placement) {
+    static bool IsPlacementTop(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Top ||
             placement == winrt::TeachingTipPlacementMode::TopLeft ||
             placement == winrt::TeachingTipPlacementMode::TopRight;
     }
-    static bool isPlacementBottom(winrt::TeachingTipPlacementMode placement) {
+    static bool IsPlacementBottom(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Bottom ||
             placement == winrt::TeachingTipPlacementMode::BottomLeft ||
             placement == winrt::TeachingTipPlacementMode::BottomRight;
     }
-    static bool isPlacementLeft(winrt::TeachingTipPlacementMode placement) {
+    static bool IsPlacementLeft(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Left ||
             placement == winrt::TeachingTipPlacementMode::LeftTop ||
             placement == winrt::TeachingTipPlacementMode::LeftBottom;
     }
-    static bool isPlacementRight(winrt::TeachingTipPlacementMode placement) {
+    static bool IsPlacementRight(winrt::TeachingTipPlacementMode placement) {
         return placement == winrt::TeachingTipPlacementMode::Right ||
             placement == winrt::TeachingTipPlacementMode::RightTop ||
             placement == winrt::TeachingTipPlacementMode::RightBottom;

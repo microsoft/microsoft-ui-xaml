@@ -857,24 +857,7 @@ void {0}Properties::{1}(winrt::event_token const& token)
 
         private void RewriteFileIfNecessary(string path, string contents)
         {
-            bool rewrite = true;
-            var fullPath = Path.GetFullPath(path);
-            try
-            {
-                string existingContents = File.ReadAllText(fullPath);
-                if (String.Equals(existingContents, contents))
-                {
-                    rewrite = false;
-                }
-            }
-            catch
-            {
-            }
-
-            if (rewrite)
-            {
-                File.WriteAllText(fullPath, contents);
-            }
+            var fullPath = Utils.RewriteFileIfNecessary(path, contents);
 
             _pendingFilesWritten.Add(fullPath);
         }

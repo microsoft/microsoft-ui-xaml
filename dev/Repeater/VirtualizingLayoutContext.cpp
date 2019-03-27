@@ -23,16 +23,16 @@ winrt::IInspectable VirtualizingLayoutContext::GetItemAt(int index)
 
 winrt::UIElement VirtualizingLayoutContext::GetOrCreateElementAt(int index)
 {
-    // Calling this way because GetElementAtCore is ambiguous.
+    // Calling this way because GetOrCreateElementAtCore is ambiguous.
     // Use .as instead of try_as because try_as uses non-delegating inner and we need to call the outer for overrides.
-    return get_strong().as<winrt::IVirtualizingLayoutContextOverrides>().GetElementAtCore(index, winrt::ElementRealizationOptions::None);
+    return get_strong().as<winrt::IVirtualizingLayoutContextOverrides>().GetOrCreateElementAtCore(index, winrt::ElementRealizationOptions::None);
 }
 
 winrt::UIElement VirtualizingLayoutContext::GetOrCreateElementAt(int index, winrt::ElementRealizationOptions const& options)
 {
-    // Calling this way because GetElementAtCore is ambiguous.
+    // Calling this way because GetOrCreateElementAtCore is ambiguous.
     // Use .as instead of try_as because try_as uses non-delegating inner and we need to call the outer for overrides.
-    return get_strong().as<winrt::IVirtualizingLayoutContextOverrides>().GetElementAtCore(index, options);
+    return get_strong().as<winrt::IVirtualizingLayoutContextOverrides>().GetOrCreateElementAtCore(index, options);
 }
 
 void VirtualizingLayoutContext::RecycleElement(winrt::UIElement const& element)
@@ -69,7 +69,7 @@ winrt::IInspectable VirtualizingLayoutContext::GetItemAtCore(int /*index*/)
     throw winrt::hresult_not_implemented();
 }
 
-winrt::UIElement VirtualizingLayoutContext::GetElementAtCore(int /*index*/, winrt::ElementRealizationOptions const& /* options */)
+winrt::UIElement VirtualizingLayoutContext::GetOrCreateElementAtCore(int /*index*/, winrt::ElementRealizationOptions const& /* options */)
 {
     throw winrt::hresult_not_implemented();
 }

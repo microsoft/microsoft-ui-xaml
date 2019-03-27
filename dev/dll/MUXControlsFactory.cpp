@@ -5,7 +5,6 @@
 #include "common.h"
 #include "XamlMetadataProvider.h"
 #include "MUXControlsFactory.h"
-#include "ThemeResourcesFactory.h"
 #include "RevealBrush.h"
 
 bool MUXControlsFactory::s_initialized{ false };

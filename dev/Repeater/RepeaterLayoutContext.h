@@ -28,7 +28,7 @@ public:
 #pragma region IVirtualizingLayoutContextOverrides
 
     int32_t ItemCountCore();
-    winrt::UIElement GetElementAtCore(int index, winrt::ElementRealizationOptions const& options);
+    winrt::UIElement GetOrCreateElementAtCore(int index, winrt::ElementRealizationOptions const& options);
 
     winrt::IInspectable GetItemAtCore(int index);
     void RecycleElementCore(winrt::UIElement const& element);

@@ -22,7 +22,7 @@
         </Grid.ColumnDefinitions>
         <StackPanel>
             <TextBlock>DataTemplate Sample:</TextBlock>
-            <controls:ScrollAnchorProvider Height="400" Width="150">
+            <controls:ItemsRepeaterScrollHost Height="400" Width="150">
                 <ScrollViewer>
                     <controls:ItemsRepeater x:Name="repeater0"
                                             ItemsSource="{x:Bind Data}"
@@ -34,11 +34,11 @@
                         </controls:ItemsRepeater.ItemTemplate>
                     </controls:ItemsRepeater>
                 </ScrollViewer>
-            </controls:ScrollAnchorProvider>
+            </controls:ItemsRepeaterScrollHost>
         </StackPanel>
         <StackPanel Grid.Column="1">
             <TextBlock>DataTemplateSelector Sample:</TextBlock>
-            <controls:ScrollAnchorProvider Height="400" Width="150">
+            <controls:ItemsRepeaterScrollHost Height="400" Width="150">
                 <ScrollViewer>
                     <controls:ItemsRepeater x:Name="repeater1" 
                                             ItemsSource="{x:Bind Data}"
@@ -59,11 +59,11 @@
                         </controls:ItemsRepeater.ItemTemplate>
                     </controls:ItemsRepeater>
                 </ScrollViewer>
-            </controls:ScrollAnchorProvider>
+            </controls:ItemsRepeaterScrollHost>
         </StackPanel>
         <StackPanel Grid.Column="2">
             <TextBlock>ElementFactory Single Template Sample:</TextBlock>
-            <controls:ScrollAnchorProvider Height="400" Width="150">
+            <controls:ItemsRepeaterScrollHost Height="400" Width="150">
                 <ScrollViewer>
                     <controls:ItemsRepeater x:Name="repeater2" 
                                             ItemsSource="{x:Bind Data}"
@@ -77,11 +77,11 @@
                         </controls:ItemsRepeater.ItemTemplate>
                     </controls:ItemsRepeater>
                 </ScrollViewer>
-            </controls:ScrollAnchorProvider>
+            </controls:ItemsRepeaterScrollHost>
         </StackPanel>
         <StackPanel Grid.Column="3">
             <TextBlock>ElementFactory Multiple Template Sample:</TextBlock>
-            <controls:ScrollAnchorProvider Height="400" Width="150">
+            <controls:ItemsRepeaterScrollHost Height="400" Width="150">
                 <ScrollViewer>
                     <controls:ItemsRepeater x:Name="repeater3" 
                                             ItemsSource="{x:Bind Data}"
@@ -100,7 +100,7 @@
                         </controls:ItemsRepeater.ItemTemplate>
                     </controls:ItemsRepeater>
                 </ScrollViewer>
-            </controls:ScrollAnchorProvider>
+            </controls:ItemsRepeaterScrollHost>
         </StackPanel>
     </Grid>
 </Page>

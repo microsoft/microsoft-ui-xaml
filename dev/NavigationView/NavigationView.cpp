@@ -580,7 +580,7 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
         MUX_FAIL_FAST();
     }
 
-
+    auto previousMode = DisplayMode();
     SetDisplayMode(displayMode, forceSetDisplayMode);
 
     if (displayMode == winrt::NavigationViewDisplayMode::Expanded && IsPaneVisible())
@@ -589,7 +589,13 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
         {
             OpenPane();
         }
-    }     
+    }
+
+    if (previousMode == winrt::NavigationViewDisplayMode::Expanded
+        && displayMode == winrt::NavigationViewDisplayMode::Compact)
+    {
+        ClosePane();
+    }
 }
 
 void NavigationView::OnPaneToggleButtonClick(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)

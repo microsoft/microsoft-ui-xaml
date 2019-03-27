@@ -36,7 +36,7 @@ using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using FlowLayout = Microsoft.UI.Xaml.Controls.FlowLayout;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
-using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
+using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext;
 using LayoutContext = Microsoft.UI.Xaml.Controls.LayoutContext;
 using LayoutPanel = Microsoft.UI.Xaml.Controls.LayoutPanel;
@@ -846,11 +846,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         };
 
                         SetUpScrollViewerOrientation(scrollViewer, scrollOrientation);
-                        Content = new ScrollAnchorProvider()
+                        Content = new ItemsRepeaterScrollHost()
                         {
                             Width = 400,
                             Height = 400,
-                            Content = scrollViewer
+                            ScrollViewer = scrollViewer
                         };
 
                         Content.UpdateLayout();
@@ -918,8 +918,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     scrollViewer.Content = repeater;
                     scrollViewer.Width = scrollViewer.Height = 600;
 
-                    var tracker = new ScrollAnchorProvider();
-                    tracker.Content = scrollViewer;
+                    var tracker = new ItemsRepeaterScrollHost();
+                    tracker.ScrollViewer = scrollViewer;
 
                     Content = tracker;
                     Content.UpdateLayout();
@@ -1016,8 +1016,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         scrollViewer.Width = scrollViewer.Height = 200;
                         SetUpScrollViewerOrientation(scrollViewer, scrollOrientation);
 
-                        var tracker = new ScrollAnchorProvider();
-                        tracker.Content = scrollViewer;
+                        var tracker = new ItemsRepeaterScrollHost();
+                        tracker.ScrollViewer = scrollViewer;
                         Content = tracker;
 
                         repeater.ElementPrepared += (o, e) =>
@@ -1094,8 +1094,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Height = 200,
                 };
 
-                var anchorProvier = new ScrollAnchorProvider() {
-                    Content = scrollViewer
+                var anchorProvier = new ItemsRepeaterScrollHost() {
+                    ScrollViewer = scrollViewer
                 };
 
                 Content = anchorProvier;
@@ -1258,7 +1258,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         </DataTemplate>", content));
         }
 
-        private ScrollAnchorProvider CreateAndInitializeRepeater(
+        private ItemsRepeaterScrollHost CreateAndInitializeRepeater(
            OrientationBasedMeasures om,
            object itemsSource,
            VirtualizingLayout layout,
@@ -1285,11 +1285,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             };
 
             SetUpScrollViewerOrientation(scrollViewer, om.ScrollOrientation);
-            return new ScrollAnchorProvider()
+            return new ItemsRepeaterScrollHost()
             {
                 Width = 400,
                 Height = 400,
-                Content = scrollViewer
+                ScrollViewer = scrollViewer
             };
         }
 
