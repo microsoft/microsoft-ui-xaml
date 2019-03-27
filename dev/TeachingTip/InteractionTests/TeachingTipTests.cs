@@ -495,7 +495,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             UseTestBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 444, targetRect, forWindowBounds);
             VerifyPlacement(hasValueOverride ? valueOverride : "BottomRight");
             UseTestBounds(targetRect.W - 327, targetRect.X - 318, targetRect.Y + 650, targetRect.Z + 444, targetRect, forWindowBounds);
-            VerifyPlacement("Center");
+            VerifyPlacement(hasValueOverride ? valueOverride : "Center");
 
             // Remove the hero content;
             SetHeroContent(HeroContentOptions.NoContent);

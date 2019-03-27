@@ -1555,7 +1555,7 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
             availability[winrt::TeachingTipPlacementMode::TopLeft] = false;
         }
 		// If the total tip is too tall to fit between the center of the target and the top of the window.
-		if (tipHeight > screenSpaceAroundTarget.Top + (targetBounds.Height / 2.0f))
+		if (tipHeight > availableBoundsAroundTarget.Top + (targetBounds.Height / 2.0f))
 		{
 			availability[winrt::TeachingTipPlacementMode::Center] = false;
 		}
@@ -1710,21 +1710,21 @@ std::tuple<winrt::Rect, winrt::Thickness, winrt::Thickness> TeachingTip::Determi
     }
 }
 
-std::array<winrt::TeachingTipPlacementMode, 12> TeachingTip::GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPlacement)
+std::array<winrt::TeachingTipPlacementMode, 13> TeachingTip::GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPlacement)
 {
     auto priorityList = std::array<winrt::TeachingTipPlacementMode, 13>();
     priorityList[0] = winrt::TeachingTipPlacementMode::Top;
     priorityList[1] = winrt::TeachingTipPlacementMode::Bottom;
     priorityList[2] = winrt::TeachingTipPlacementMode::Left;
     priorityList[3] = winrt::TeachingTipPlacementMode::Right;
-    priorityList[4] = winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft;
-    priorityList[5] = winrt::TeachingTipPlacementMode::TopEdgeAlignedRight;
-    priorityList[6] = winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft;
-    priorityList[7] = winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight;
-    priorityList[8] = winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop;
-    priorityList[9] = winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom;
-    priorityList[10] = winrt::TeachingTipPlacementMode::RightEdgeAlignedTop;
-    priorityList[11] = winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom;
+    priorityList[4] = winrt::TeachingTipPlacementMode::TopLeft;
+    priorityList[5] = winrt::TeachingTipPlacementMode::TopRight;
+    priorityList[6] = winrt::TeachingTipPlacementMode::BottomLeft;
+    priorityList[7] = winrt::TeachingTipPlacementMode::BottomRight;
+    priorityList[8] = winrt::TeachingTipPlacementMode::LeftTop;
+    priorityList[9] = winrt::TeachingTipPlacementMode::LeftBottom;
+    priorityList[10] = winrt::TeachingTipPlacementMode::RightTop;
+    priorityList[11] = winrt::TeachingTipPlacementMode::RightBottom;
 	priorityList[12] = winrt::TeachingTipPlacementMode::Center;
 
 
