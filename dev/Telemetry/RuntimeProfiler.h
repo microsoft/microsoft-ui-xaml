@@ -47,6 +47,7 @@ namespace RuntimeProfiler
     typedef enum
     {
         ProfMemberId_Acrylic_TintLuminosityOpacity_Changed = 0,
+        ProfMemberId_TeachingTip_F6AccessKey_Invoked,
         ProfMemberId_Size
     } ProfilerMemberId;
 
