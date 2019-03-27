@@ -1611,6 +1611,16 @@ std::tuple<winrt::Rect, winrt::Thickness, winrt::Thickness> TeachingTip::Determi
     if (!m_useTestWindowBounds)
     {
         windowBounds = winrt::Window::Current().CoreWindow().Bounds();
+#ifdef USE_INSIDER_SDK
+        if (winrt::IUIElement10 uiElement10 = *this)
+        {
+            if (auto xamlRoot = uiElement10.XamlRoot())
+            {
+                windowBounds.Width = xamlRoot.Size().Width;
+                windowBounds.Height = xamlRoot.Size().Height;
+            }
+        }
+#endif // USE_INSIDER_SDK
     }
 
     // We use the screen's size to determine how much space is available between the bottom and right edges of the window/root and the screen
