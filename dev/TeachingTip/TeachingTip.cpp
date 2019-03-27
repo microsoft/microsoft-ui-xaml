@@ -959,7 +959,7 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
         {
             if (auto && package = winrt::ApplicationModel::Package::Current())
             {
-                return winrt::ApplicationModel::Package::Current().DisplayName();
+                return package.DisplayName();
             }
             return winrt::hstring{};
         }();
