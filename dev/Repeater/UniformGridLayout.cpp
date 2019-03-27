@@ -105,17 +105,8 @@ void UniformGridLayout::OnItemsChangedCore(
 
 winrt::Size UniformGridLayout::Algorithm_GetMeasureSize(int index, const winrt::Size & availableSize, const winrt::VirtualizingLayoutContext& context)
 {
-    // The first element should always take as much space it wants, all the others should be limited to the size of the first one.
-    // We pass along all the available size so that it has the option to grow/shrink everytime it's resized rather than having a static size from the first time.
-    if (index == 0)
-    {
-        return availableSize;
-    }
-    else
-    {
-        const auto gridState = GetAsGridState(context.LayoutState());
-        return winrt::Size{ static_cast<float>(gridState->EffectiveItemWidth()),static_cast<float>(gridState->EffectiveItemHeight()) };
-    }
+    const auto gridState = GetAsGridState(context.LayoutState());
+    return winrt::Size{ static_cast<float>(gridState->EffectiveItemWidth()),static_cast<float>(gridState->EffectiveItemHeight()) };
 }
 
 winrt::Size UniformGridLayout::Algorithm_GetProvisionalArrangeSize(int /*index*/, const winrt::Size & /*measureSize*/, winrt::Size const& /*desiredSize*/, const winrt::VirtualizingLayoutContext& context)
