@@ -898,7 +898,15 @@ void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const 
     if (args.VirtualKey() == winrt::VirtualKey::F6)
     {
         //  Logging usage telemetry
-        __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_TeachingTip, RuntimeProfiler::ProfMemberId_TeachingTip_F6AccessKey_Invoked);
+        if (m_hasF6BeenInvoked)
+        {
+            __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_TeachingTip, RuntimeProfiler::ProfMemberId_TeachingTip_F6AccessKey_SubsequentInvocation);
+        }
+        else
+        {
+            __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_TeachingTip, RuntimeProfiler::ProfMemberId_TeachingTip_F6AccessKey_FirstInvocation);
+            m_hasF6BeenInvoked = true;
+        }
 
         winrt::Button f6Button = [this]() -> winrt::Button
         {

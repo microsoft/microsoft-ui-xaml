@@ -156,6 +156,8 @@ private:
     bool m_isExpandAnimationPlaying{ false };
     bool m_isContractAnimationPlaying{ false };
 
+    bool m_hasF6BeenInvoked{ false };
+
     bool m_useTestWindowBounds{ false };
     winrt::Rect m_testWindowBounds{ 0,0,0,0 };
 
