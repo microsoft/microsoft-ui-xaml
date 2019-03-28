@@ -41,6 +41,8 @@ namespace MUXControlsAdhocApp.GridPages
         public int Index { get; set; } = -1;
 
         public string LineName { get; set; }
+
+        public int Span { get; set; } = 0;
 }
 
     public class Grid : Panel
@@ -214,20 +216,10 @@ namespace MUXControlsAdhocApp.GridPages
         {
             foreach (UIElement child in Children)
             {
-                // Read preferences off the child
-                GridLocation colStart = GetColumnStart(child);
-                GridLocation rowStart = GetRowStart(child);
-                GridLocation colEnd = GetColumnEnd(child);
-                GridLocation rowEnd = GetRowEnd(child);
-
-                // Map those to our grid lines
-                GridTrackInfo colStartTrack = GetTrack(measureHorizontal.Template, colStart);
-                GridTrackInfo rowStartTrack = GetTrack(measureVertical.Template, rowStart);
-                GridTrackInfo colEndTrack = GetTrack(measureHorizontal.Template, colStart);
-                GridTrackInfo rowEndTrack = GetTrack(measureVertical.Template, rowStart);
+                ChildGridLocations childLocation = GetChildGridLocations(child);
 
                 // If none of the grid tracks are Auto then we can skip this item
-                if (!colStartTrack.Auto && !rowStartTrack.Auto)
+                if (!childLocation.ColStart.Auto && !childLocation.RowStart.Auto)
                 {
                     continue;
                 }
@@ -250,8 +242,8 @@ namespace MUXControlsAdhocApp.GridPages
                         }
                     }
                 };
-                updateAutoBasedOnMeasured(colStartTrack, measureHorizontal, child.DesiredSize.Width);
-                updateAutoBasedOnMeasured(rowStartTrack, measureVertical, child.DesiredSize.Height);
+                updateAutoBasedOnMeasured(childLocation.ColStart, measureHorizontal, child.DesiredSize.Width);
+                updateAutoBasedOnMeasured(childLocation.RowStart, measureVertical, child.DesiredSize.Height);
             }
 
             // TODO: Do we do anything with Remaining? Or is that left to be handled in Arrange?
@@ -303,6 +295,33 @@ namespace MUXControlsAdhocApp.GridPages
             return offset;
         }
 
+        private struct ChildGridLocations
+        {
+            public GridTrackInfo ColStart;
+            public GridTrackInfo RowStart;
+            public GridTrackInfo ColEnd;
+            public GridTrackInfo RowEnd;
+        }
+
+        private ChildGridLocations GetChildGridLocations(UIElement child)
+        {
+            ChildGridLocations result;
+
+            // Read preferences off the child
+            GridLocation colStart = GetColumnStart(child);
+            GridLocation rowStart = GetRowStart(child);
+            GridLocation colEnd = GetColumnEnd(child);
+            GridLocation rowEnd = GetRowEnd(child);
+
+            // Map those to our grid lines
+            result.ColStart = GetTrack(_templateColumns, colStart);
+            result.RowStart = GetTrack(_templateRows, rowStart);
+            result.ColEnd = GetTrack(_templateColumns, colEnd, result.ColStart);
+            result.RowEnd = GetTrack(_templateRows, rowEnd, result.RowStart);
+
+            return result;
+        }
+
         private GridTrackInfo GetTrack(List<GridTrackInfo> list, GridLocation location, GridTrackInfo previous = null)
         {
             if (location == null)
@@ -332,7 +351,12 @@ namespace MUXControlsAdhocApp.GridPages
             // Span relative to previous track
             if (previous != null)
             {
-                int span = 1;
+                int span = location.Span;
+                if (span == 0)
+                {
+                    span = 1;
+                }
+
                 int previousIndex = list.IndexOf(previous);
                 if (previousIndex >= 0)
                 {
@@ -421,18 +445,10 @@ namespace MUXControlsAdhocApp.GridPages
 
             foreach (UIElement child in Children)
             {
-                GridLocation colStart = GetColumnStart(child);
-                GridLocation rowStart = GetRowStart(child);
-                GridLocation colEnd = GetColumnEnd(child);
-                GridLocation rowEnd = GetRowEnd(child);
+                ChildGridLocations childLocation = GetChildGridLocations(child);
 
-                GridTrackInfo colStartTrack = GetTrack(_templateColumns, colStart);
-                GridTrackInfo rowStartTrack = GetTrack(_templateRows, rowStart);
-                GridTrackInfo colEndTrack = GetTrack(_templateColumns, colEnd, colStartTrack);
-                GridTrackInfo rowEndTrack = GetTrack(_templateRows, rowEnd, rowStartTrack);
-
-                MeasureInfo colMeasure = GetMeasureInfo(colStartTrack, _columns);
-                MeasureInfo rowMeasure = GetMeasureInfo(rowStartTrack, _rows);
+                MeasureInfo colMeasure = GetMeasureInfo(childLocation.ColStart, _columns);
+                MeasureInfo rowMeasure = GetMeasureInfo(childLocation.RowStart, _rows);
 
                 // TODO: Relate to availableSize
                 Size measureSize = new Size(colMeasure.Size, rowMeasure.Size);
@@ -463,32 +479,24 @@ namespace MUXControlsAdhocApp.GridPages
         {
             foreach (UIElement child in Children)
             {
-                GridLocation colStart = GetColumnStart(child);
-                GridLocation rowStart = GetRowStart(child);
-                GridLocation colEnd = GetColumnEnd(child);
-                GridLocation rowEnd = GetRowEnd(child);
+                ChildGridLocations childLocation = GetChildGridLocations(child);
 
-                GridTrackInfo colStartTrack = GetTrack(_templateColumns, colStart);
-                GridTrackInfo rowStartTrack = GetTrack(_templateRows, rowStart);
-                GridTrackInfo colEndTrack = GetTrack(_templateColumns, colEnd, colStartTrack);
-                GridTrackInfo rowEndTrack = GetTrack(_templateRows, rowEnd, rowStartTrack);
-
-                MeasureInfo colMeasure = GetMeasureInfo(colStartTrack, _columns);
-                MeasureInfo rowMeasure = GetMeasureInfo(rowStartTrack, _rows);
+                MeasureInfo colMeasure = GetMeasureInfo(childLocation.ColStart, _columns);
+                MeasureInfo rowMeasure = GetMeasureInfo(childLocation.RowStart, _rows);
 
                 double left = colMeasure.Start;
                 double top = rowMeasure.Start;
                 double right = left + colMeasure.Size;
                 double bottom = top + rowMeasure.Size;
 
-                if (colEndTrack != null)
+                if (childLocation.ColEnd!= null)
                 {
-                    MeasureInfo colEndMesure = GetMeasureInfo(colEndTrack, _columns);
+                    MeasureInfo colEndMesure = GetMeasureInfo(childLocation.ColEnd, _columns);
                     right = colEndMesure.Start;
                 }
-                if (rowEndTrack != null)
+                if (childLocation.RowEnd != null)
                 {
-                    MeasureInfo colEndMesure = GetMeasureInfo(rowEndTrack, _rows);
+                    MeasureInfo colEndMesure = GetMeasureInfo(childLocation.RowEnd, _rows);
                     right = colEndMesure.Start;
                 }
 

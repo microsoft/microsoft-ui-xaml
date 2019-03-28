@@ -196,8 +196,7 @@
                         <local:GridLocation Index="1"/>
                     </local:Grid.RowStart>
                     <local:Grid.RowEnd>
-                        <!-- TODO: Span 2 -->
-                        <local:GridLocation Index="3"/>
+                        <local:GridLocation Span="2"/>
                     </local:Grid.RowEnd>
                     <TextBlock>item-a</TextBlock>
                 </Grid>
