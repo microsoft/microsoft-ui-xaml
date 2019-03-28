@@ -233,22 +233,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     VerifyPlacement("Left");
                     SetPreferredPlacement(PlacementOptions.Right);
                     VerifyPlacement("Right");
-                    SetPreferredPlacement(PlacementOptions.TopEdgeAlignedRight);
-                    VerifyPlacement("TopEdgeAlignedRight");
-                    SetPreferredPlacement(PlacementOptions.TopEdgeAlignedLeft);
-                    VerifyPlacement("TopEdgeAlignedLeft");
-                    SetPreferredPlacement(PlacementOptions.BottomEdgeAlignedRight);
-                    VerifyPlacement("BottomEdgeAlignedRight");
-                    SetPreferredPlacement(PlacementOptions.BottomEdgeAlignedLeft);
-                    VerifyPlacement("BottomEdgeAlignedLeft");
-                    SetPreferredPlacement(PlacementOptions.LeftEdgeAlignedTop);
-                    VerifyPlacement("LeftEdgeAlignedTop");
-                    SetPreferredPlacement(PlacementOptions.LeftEdgeAlignedBottom);
-                    VerifyPlacement("LeftEdgeAlignedBottom");
-                    SetPreferredPlacement(PlacementOptions.RightEdgeAlignedTop);
-                    VerifyPlacement("RightEdgeAlignedTop");
-                    SetPreferredPlacement(PlacementOptions.RightEdgeAlignedBottom);
-                    VerifyPlacement("RightEdgeAlignedBottom");
+                    SetPreferredPlacement(PlacementOptions.TopRight);
+                    VerifyPlacement("TopRight");
+                    SetPreferredPlacement(PlacementOptions.TopLeft);
+                    VerifyPlacement("TopLeft");
+                    SetPreferredPlacement(PlacementOptions.BottomRight);
+                    VerifyPlacement("BottomRight");
+                    SetPreferredPlacement(PlacementOptions.BottomLeft);
+                    VerifyPlacement("BottomLeft");
+                    SetPreferredPlacement(PlacementOptions.LeftTop);
+                    VerifyPlacement("LeftTop");
+                    SetPreferredPlacement(PlacementOptions.LeftBottom);
+                    VerifyPlacement("LeftBottom");
+                    SetPreferredPlacement(PlacementOptions.RightTop);
+                    VerifyPlacement("RightTop");
+                    SetPreferredPlacement(PlacementOptions.RightBottom);
+                    VerifyPlacement("RightBottom");
+                    SetPreferredPlacement(PlacementOptions.Center);
+                    VerifyPlacement("Center");
 
                     // Eliminate left of the target
                     UseTestBounds(targetRect.W - 120, targetRect.X - 500, targetRect.Y + 1000, targetRect.Z + 1000, targetRect, true);
@@ -261,22 +263,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     VerifyPlacement("Right");
                     SetPreferredPlacement(PlacementOptions.Right);
                     VerifyPlacement("Right");
-                    SetPreferredPlacement(PlacementOptions.TopEdgeAlignedRight);
-                    VerifyPlacement("TopEdgeAlignedRight");
-                    SetPreferredPlacement(PlacementOptions.TopEdgeAlignedLeft);
+                    SetPreferredPlacement(PlacementOptions.TopRight);
+                    VerifyPlacement("TopRight");
+                    SetPreferredPlacement(PlacementOptions.TopLeft);
                     VerifyPlacement("Top");
-                    SetPreferredPlacement(PlacementOptions.BottomEdgeAlignedRight);
-                    VerifyPlacement("BottomEdgeAlignedRight");
-                    SetPreferredPlacement(PlacementOptions.BottomEdgeAlignedLeft);
+                    SetPreferredPlacement(PlacementOptions.BottomRight);
+                    VerifyPlacement("BottomRight");
+                    SetPreferredPlacement(PlacementOptions.BottomLeft);
                     VerifyPlacement("Bottom");
-                    SetPreferredPlacement(PlacementOptions.LeftEdgeAlignedTop);
+                    SetPreferredPlacement(PlacementOptions.LeftTop);
                     VerifyPlacement("Right");
-                    SetPreferredPlacement(PlacementOptions.LeftEdgeAlignedBottom);
+                    SetPreferredPlacement(PlacementOptions.LeftBottom);
                     VerifyPlacement("Right");
-                    SetPreferredPlacement(PlacementOptions.RightEdgeAlignedTop);
-                    VerifyPlacement("RightEdgeAlignedTop");
-                    SetPreferredPlacement(PlacementOptions.RightEdgeAlignedBottom);
-                    VerifyPlacement("RightEdgeAlignedBottom");
+                    SetPreferredPlacement(PlacementOptions.RightTop);
+                    VerifyPlacement("RightTop");
+                    SetPreferredPlacement(PlacementOptions.RightBottom);
+                    VerifyPlacement("RightBottom");
+                    SetPreferredPlacement(PlacementOptions.Center);
+                    VerifyPlacement("Center");
 
                     // Eliminate top of the target
                     UseTestBounds(targetRect.W - 500, targetRect.X - 1, targetRect.Y + 1000, targetRect.Z + 1000, targetRect, true);
@@ -289,49 +293,53 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     VerifyPlacement("Left");
                     SetPreferredPlacement(PlacementOptions.Right);
                     VerifyPlacement("Right");
-                    SetPreferredPlacement(PlacementOptions.TopEdgeAlignedRight);
+                    SetPreferredPlacement(PlacementOptions.TopRight);
                     VerifyPlacement("Bottom");
-                    SetPreferredPlacement(PlacementOptions.TopEdgeAlignedLeft);
+                    SetPreferredPlacement(PlacementOptions.TopLeft);
                     VerifyPlacement("Bottom");
-                    SetPreferredPlacement(PlacementOptions.BottomEdgeAlignedRight);
-                    VerifyPlacement("BottomEdgeAlignedRight");
-                    SetPreferredPlacement(PlacementOptions.BottomEdgeAlignedLeft);
-                    VerifyPlacement("BottomEdgeAlignedLeft");
-                    SetPreferredPlacement(PlacementOptions.LeftEdgeAlignedTop);
-                    VerifyPlacement("LeftEdgeAlignedTop");
-                    SetPreferredPlacement(PlacementOptions.LeftEdgeAlignedBottom);
-                    VerifyPlacement("LeftEdgeAlignedBottom");
-                    SetPreferredPlacement(PlacementOptions.RightEdgeAlignedTop);
-                    VerifyPlacement("RightEdgeAlignedTop");
-                    SetPreferredPlacement(PlacementOptions.RightEdgeAlignedBottom);
-                    VerifyPlacement("RightEdgeAlignedBottom");
+                    SetPreferredPlacement(PlacementOptions.BottomRight);
+                    VerifyPlacement("BottomRight");
+                    SetPreferredPlacement(PlacementOptions.BottomLeft);
+                    VerifyPlacement("BottomLeft");
+                    SetPreferredPlacement(PlacementOptions.LeftTop);
+                    VerifyPlacement("LeftTop");
+                    SetPreferredPlacement(PlacementOptions.LeftBottom);
+                    VerifyPlacement("LeftBottom");
+                    SetPreferredPlacement(PlacementOptions.RightTop);
+                    VerifyPlacement("RightTop");
+                    SetPreferredPlacement(PlacementOptions.RightBottom);
+                    VerifyPlacement("RightBottom");
+                    SetPreferredPlacement(PlacementOptions.Center);
+                    VerifyPlacement("Center");
 
                     // Eliminate right of the target
-                    UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 620, targetRect.Z + 1000, targetRect, true);
+                    UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 500, targetRect.Z + 1000, targetRect, true);
 
                     SetPreferredPlacement(PlacementOptions.Top);
-                    VerifyPlacement("Top");
+                    VerifyPlacement("Left");
                     SetPreferredPlacement(PlacementOptions.Bottom);
-                    VerifyPlacement("Bottom");
+                    VerifyPlacement("Left");
                     SetPreferredPlacement(PlacementOptions.Left);
                     VerifyPlacement("Left");
                     SetPreferredPlacement(PlacementOptions.Right);
                     VerifyPlacement("Left");
-                    SetPreferredPlacement(PlacementOptions.TopEdgeAlignedRight);
-                    VerifyPlacement("Top");
-                    SetPreferredPlacement(PlacementOptions.TopEdgeAlignedLeft);
-                    VerifyPlacement("TopEdgeAlignedLeft");
-                    SetPreferredPlacement(PlacementOptions.BottomEdgeAlignedRight);
-                    VerifyPlacement("Bottom");
-                    SetPreferredPlacement(PlacementOptions.BottomEdgeAlignedLeft);
-                    VerifyPlacement("BottomEdgeAlignedLeft");
-                    SetPreferredPlacement(PlacementOptions.LeftEdgeAlignedTop);
-                    VerifyPlacement("LeftEdgeAlignedTop");
-                    SetPreferredPlacement(PlacementOptions.LeftEdgeAlignedBottom);
-                    VerifyPlacement("LeftEdgeAlignedBottom");
-                    SetPreferredPlacement(PlacementOptions.RightEdgeAlignedTop);
+                    SetPreferredPlacement(PlacementOptions.TopRight);
                     VerifyPlacement("Left");
-                    SetPreferredPlacement(PlacementOptions.RightEdgeAlignedBottom);
+                    SetPreferredPlacement(PlacementOptions.TopLeft);
+                    VerifyPlacement("TopLeft");
+                    SetPreferredPlacement(PlacementOptions.BottomRight);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.BottomLeft);
+                    VerifyPlacement("BottomLeft");
+                    SetPreferredPlacement(PlacementOptions.LeftTop);
+                    VerifyPlacement("LeftTop");
+                    SetPreferredPlacement(PlacementOptions.LeftBottom);
+                    VerifyPlacement("LeftBottom");
+                    SetPreferredPlacement(PlacementOptions.RightTop);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.RightBottom);
+                    VerifyPlacement("Left");
+                    SetPreferredPlacement(PlacementOptions.Center);
                     VerifyPlacement("Left");
 
                     // Eliminate bottom of target
@@ -345,22 +353,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     VerifyPlacement("Left");
                     SetPreferredPlacement(PlacementOptions.Right);
                     VerifyPlacement("Right");
-                    SetPreferredPlacement(PlacementOptions.TopEdgeAlignedRight);
-                    VerifyPlacement("TopEdgeAlignedRight");
-                    SetPreferredPlacement(PlacementOptions.TopEdgeAlignedLeft);
-                    VerifyPlacement("TopEdgeAlignedLeft");
-                    SetPreferredPlacement(PlacementOptions.BottomEdgeAlignedRight);
+                    SetPreferredPlacement(PlacementOptions.TopRight);
+                    VerifyPlacement("TopRight");
+                    SetPreferredPlacement(PlacementOptions.TopLeft);
+                    VerifyPlacement("TopLeft");
+                    SetPreferredPlacement(PlacementOptions.BottomRight);
                     VerifyPlacement("Top");
-                    SetPreferredPlacement(PlacementOptions.BottomEdgeAlignedLeft);
+                    SetPreferredPlacement(PlacementOptions.BottomLeft);
                     VerifyPlacement("Top");
-                    SetPreferredPlacement(PlacementOptions.LeftEdgeAlignedTop);
-                    VerifyPlacement("LeftEdgeAlignedTop");
-                    SetPreferredPlacement(PlacementOptions.LeftEdgeAlignedBottom);
-                    VerifyPlacement("LeftEdgeAlignedBottom");
-                    SetPreferredPlacement(PlacementOptions.RightEdgeAlignedTop);
-                    VerifyPlacement("RightEdgeAlignedTop");
-                    SetPreferredPlacement(PlacementOptions.RightEdgeAlignedBottom);
-                    VerifyPlacement("RightEdgeAlignedBottom");
+                    SetPreferredPlacement(PlacementOptions.LeftTop);
+                    VerifyPlacement("LeftTop");
+                    SetPreferredPlacement(PlacementOptions.LeftBottom);
+                    VerifyPlacement("LeftBottom");
+                    SetPreferredPlacement(PlacementOptions.RightTop);
+                    VerifyPlacement("RightTop");
+                    SetPreferredPlacement(PlacementOptions.RightBottom);
+                    VerifyPlacement("RightBottom");
+                    SetPreferredPlacement(PlacementOptions.Center);
+                    VerifyPlacement("Center");
                 }
             }
         }
@@ -469,21 +479,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             UseTestBounds(targetRect.W - 329, targetRect.X - 336, targetRect.Y + 656, targetRect.Z + 680, targetRect, forWindowBounds);
             VerifyPlacement(hasValueOverride ? valueOverride : "Bottom");
             UseTestBounds(targetRect.W - 329, targetRect.X - 318, targetRect.Y + 659, targetRect.Z + 640, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "LeftEdgeAlignedTop");
+            VerifyPlacement(hasValueOverride ? valueOverride : "LeftTop");
             UseTestBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 659, targetRect.Z + 403, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "LeftEdgeAlignedBottom");
+            VerifyPlacement(hasValueOverride ? valueOverride : "LeftBottom");
             UseTestBounds(targetRect.W - 327, targetRect.X - 100, targetRect.Y + 659, targetRect.Z + 403, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "RightEdgeAlignedBottom");
+            VerifyPlacement(hasValueOverride ? valueOverride : "RightBottom");
             UseTestBounds(targetRect.W - 327, targetRect.X - 300, targetRect.Y + 659, targetRect.Z + 603, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "RightEdgeAlignedTop");
+            VerifyPlacement(hasValueOverride ? valueOverride : "RightTop");
             UseTestBounds(targetRect.W - 327, targetRect.X - 340, targetRect.Y + 349, targetRect.Z + 608, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "TopEdgeAlignedLeft");
+            VerifyPlacement(hasValueOverride ? valueOverride : "TopLeft");
             UseTestBounds(targetRect.W - 20, targetRect.X - 340, targetRect.Y + 348, targetRect.Z + 608, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "TopEdgeAlignedRight");
+            VerifyPlacement(hasValueOverride ? valueOverride : "TopRight");
             UseTestBounds(targetRect.W - 327, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 444, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "BottomEdgeAlignedLeft");
+            VerifyPlacement(hasValueOverride ? valueOverride : "BottomLeft");
             UseTestBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 444, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "BottomEdgeAlignedRight");
+            VerifyPlacement(hasValueOverride ? valueOverride : "BottomRight");
+            UseTestBounds(targetRect.W - 327, targetRect.X - 318, targetRect.Y + 650, targetRect.Z + 444, targetRect, forWindowBounds);
+            VerifyPlacement(hasValueOverride ? valueOverride : "Center");
 
             // Remove the hero content;
             SetHeroContent(HeroContentOptions.NoContent);
@@ -712,29 +724,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 case PlacementOptions.Right:
                     elements.GetPreferredPlacementComboBox().SelectItemByName("Right");
                     break;
-                case PlacementOptions.TopEdgeAlignedRight:
-                    elements.GetPreferredPlacementComboBox().SelectItemByName("TopEdgeAlignedRight");
+                case PlacementOptions.TopRight:
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("TopRight");
                     break;
-                case PlacementOptions.TopEdgeAlignedLeft:
-                    elements.GetPreferredPlacementComboBox().SelectItemByName("TopEdgeAlignedLeft");
+                case PlacementOptions.TopLeft:
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("TopLeft");
                     break;
-                case PlacementOptions.BottomEdgeAlignedRight:
-                    elements.GetPreferredPlacementComboBox().SelectItemByName("BottomEdgeAlignedRight");
+                case PlacementOptions.BottomRight:
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("BottomRight");
                     break;
-                case PlacementOptions.BottomEdgeAlignedLeft:
-                    elements.GetPreferredPlacementComboBox().SelectItemByName("BottomEdgeAlignedLeft");
+                case PlacementOptions.BottomLeft:
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("BottomLeft");
                     break;
-                case PlacementOptions.LeftEdgeAlignedTop:
-                    elements.GetPreferredPlacementComboBox().SelectItemByName("LeftEdgeAlignedTop");
+                case PlacementOptions.LeftTop:
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("LeftTop");
                     break;
-                case PlacementOptions.LeftEdgeAlignedBottom:
-                    elements.GetPreferredPlacementComboBox().SelectItemByName("LeftEdgeAlignedBottom");
+                case PlacementOptions.LeftBottom:
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("LeftBottom");
                     break;
-                case PlacementOptions.RightEdgeAlignedTop:
-                    elements.GetPreferredPlacementComboBox().SelectItemByName("RightEdgeAlignedTop");
+                case PlacementOptions.RightTop:
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("RightTop");
                     break;
-                case PlacementOptions.RightEdgeAlignedBottom:
-                    elements.GetPreferredPlacementComboBox().SelectItemByName("RightEdgeAlignedBottom");
+                case PlacementOptions.RightBottom:
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("RightBottom");
+                    break;
+                case PlacementOptions.Center:
+                    elements.GetPreferredPlacementComboBox().SelectItemByName("Center");
                     break;
                 default:
                     elements.GetPreferredPlacementComboBox().SelectItemByName("Auto");
@@ -814,7 +829,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
             else
             {
-                UseTestWindowBounds(targetRect.W - x - 1, targetRect.X - y - 1, targetRect.Y + 1, targetRect.Z + 1);
+                UseTestWindowBounds(targetRect.W - 1, targetRect.X - 1, targetRect.Y + 1, targetRect.Z + 1);
                 UseTestScreenBounds(x, y, width, height);
             }
         }
