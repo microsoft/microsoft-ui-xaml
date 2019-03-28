@@ -963,7 +963,32 @@ void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const 
 
 void TeachingTip::OnCloseButtonGettingFocusFromF6(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args)
 {
-    m_previouslyFocusedElement.set(args.OldFocusedElement().try_as<winrt::Control>());
+    auto const focusFromContent = [this, args]()
+    {
+        auto parent = winrt::VisualTreeHelper::GetParent(args.OldFocusedElement());
+        while (parent)
+        {
+            if (auto parentAsPopup = parent.try_as<winrt::Popup>())
+            {
+                if (parentAsPopup == m_popup.get())
+                {
+                        return true;
+                }
+            }
+            parent = winrt::VisualTreeHelper::GetParent(parent);
+        }
+        return false;
+    }();
+
+    if (focusFromContent)
+    {
+        m_previouslyFocusedElement.get().Focus(winrt::FocusState::Keyboard);
+    }
+    else
+    {
+        m_previouslyFocusedElement.set(args.OldFocusedElement().try_as<winrt::Control>());
+    }
+
     m_closeButtonGettingFocusFromF6Revoker.revoke();
 }
 
