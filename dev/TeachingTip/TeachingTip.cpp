@@ -808,6 +808,7 @@ void TeachingTip::OnIsOpenChanged()
         auto [ignored, tipDoesNotFit] = DetermineEffectivePlacement();
         if (tipDoesNotFit)
         {
+            __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_TeachingTip, RuntimeProfiler::ProfMemberId_TeachingTip_TipDidNotOpenDueToSize);
             RaiseClosingEvent(false);
             auto closedArgs = winrt::make_self<TeachingTipClosedEventArgs>();
             closedArgs->Reason(m_lastCloseReason);
