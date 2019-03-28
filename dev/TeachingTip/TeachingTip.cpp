@@ -770,7 +770,10 @@ void TeachingTip::OnIsOpenChanged()
             auto popup = winrt::Popup();
             m_popupOpenedRevoker = popup.Opened(winrt::auto_revoke, { this, &TeachingTip::OnPopupOpened });
             m_popupClosedRevoker = popup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
-            popup.ShouldConstrainToRootBounds(ShouldConstrainToRootBounds());
+            if (SharedHelpers::Is19H1OrHigher())
+            {
+                popup.ShouldConstrainToRootBounds(ShouldConstrainToRootBounds());
+            }
             m_popup.set(popup);
             SetPopupAutomationProperties();
             m_createNewPopupOnOpen = false;
@@ -895,7 +898,12 @@ void TeachingTip::OnShouldConstrainToRootBoundsChanged()
     // ShouldConstrainToRootBounds is a property that can only be set on a popup before it is opened.
     // If we have opened the tip's popup and then this property changes we will need to discard the old popup
     // and replace it with a new popup.  This variable indicates this state.
-    m_createNewPopupOnOpen = true;
+
+    //The underlying popup api is only available on 19h1 plus, if we aren't on that no opt.
+    if (SharedHelpers::Is19H1OrHigher())
+    {
+        m_createNewPopupOnOpen = true;
+    }
 }
 
 void TeachingTip::OnHeroContentPlacementChanged()
