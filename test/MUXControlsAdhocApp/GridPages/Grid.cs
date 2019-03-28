@@ -303,21 +303,47 @@ namespace MUXControlsAdhocApp.GridPages
             return offset;
         }
 
-        private GridTrackInfo GetTrack(List<GridTrackInfo> list, GridLocation location)
+        private GridTrackInfo GetTrack(List<GridTrackInfo> list, GridLocation location, GridTrackInfo previous = null)
         {
-            int index = 0;
-            if (location != null)
+            if (location == null)
             {
-                index = location.Index;
+                return null;
             }
 
-            if (index >= list.Count)
+            // Exact track index
+            int index = location.Index;
+            if (index >= 0 && index < list.Count)
             {
-                // TODO: Handle
-                return new GridTrackInfo();
+                return list[index];
             }
 
-            return list[index];
+            // Friendly track name
+            if (!String.IsNullOrEmpty(location.LineName))
+            {
+                foreach (GridTrackInfo track in list)
+                {
+                    if (track.LineName == location.LineName)
+                    {
+                        return track;
+                    }
+                }
+            }
+
+            // Span relative to previous track
+            if (previous != null)
+            {
+                int span = 1;
+                int previousIndex = list.IndexOf(previous);
+                if (previousIndex >= 0)
+                {
+                    int spanIndex = previousIndex + span;
+                    spanIndex = Math.Min(spanIndex, list.Count - 1);
+
+                    return list[spanIndex];
+                }
+            }
+
+            return null;
         }
 
         private MeasureInfo GetMeasureInfo(GridTrackInfo info, Dictionary<GridTrackInfo, MeasureInfo> calculated)
@@ -402,8 +428,8 @@ namespace MUXControlsAdhocApp.GridPages
 
                 GridTrackInfo colStartTrack = GetTrack(_templateColumns, colStart);
                 GridTrackInfo rowStartTrack = GetTrack(_templateRows, rowStart);
-                GridTrackInfo colEndTrack = GetTrack(_templateColumns, colStart);
-                GridTrackInfo rowEndTrack = GetTrack(_templateRows, rowStart);
+                GridTrackInfo colEndTrack = GetTrack(_templateColumns, colEnd, colStartTrack);
+                GridTrackInfo rowEndTrack = GetTrack(_templateRows, rowEnd, rowStartTrack);
 
                 MeasureInfo colMeasure = GetMeasureInfo(colStartTrack, _columns);
                 MeasureInfo rowMeasure = GetMeasureInfo(rowStartTrack, _rows);
@@ -444,20 +470,30 @@ namespace MUXControlsAdhocApp.GridPages
 
                 GridTrackInfo colStartTrack = GetTrack(_templateColumns, colStart);
                 GridTrackInfo rowStartTrack = GetTrack(_templateRows, rowStart);
-                GridTrackInfo colEndTrack = GetTrack(_templateColumns, colStart);
-                GridTrackInfo rowEndTrack = GetTrack(_templateRows, rowStart);
+                GridTrackInfo colEndTrack = GetTrack(_templateColumns, colEnd, colStartTrack);
+                GridTrackInfo rowEndTrack = GetTrack(_templateRows, rowEnd, rowStartTrack);
 
                 MeasureInfo colMeasure = GetMeasureInfo(colStartTrack, _columns);
                 MeasureInfo rowMeasure = GetMeasureInfo(rowStartTrack, _rows);
 
                 double left = colMeasure.Start;
                 double top = rowMeasure.Start;
+                double right = left + colMeasure.Size;
+                double bottom = top + rowMeasure.Size;
 
-                double width = colMeasure.Size;
-                double height = rowMeasure.Size;
+                if (colEndTrack != null)
+                {
+                    MeasureInfo colEndMesure = GetMeasureInfo(colEndTrack, _columns);
+                    right = colEndMesure.Start;
+                }
+                if (rowEndTrack != null)
+                {
+                    MeasureInfo colEndMesure = GetMeasureInfo(rowEndTrack, _rows);
+                    right = colEndMesure.Start;
+                }
 
-                Size arrangeSize = new Size(width, height);
-                child.Arrange(new Rect(new Point(left, top), arrangeSize));
+                Rect arrangeRect = new Rect(left, top, (right - left), (bottom - top));
+                child.Arrange(arrangeRect);
             }
             return finalSize;
         }
