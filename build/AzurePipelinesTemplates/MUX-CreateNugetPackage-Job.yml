@@ -8,7 +8,7 @@ parameters:
   primaryBuildArch: x86
   buildFlavor: Release
   signConfig: ''
-  releasePackage: 'false'
+  useReleaseTag: 'false'
 
 jobs:
 - job: ${{ parameters.jobName }}
@@ -38,7 +38,7 @@ jobs:
       echo parameters.publishPath '${{ parameters.publishPath }}'
       echo buildrevision=$(buildrevision)
       echo builddate=$(builddate)
-      echo releasePackage=${{ parameters.releasePackage }}
+      echo useReleaseTag=${{ parameters.useReleaseTag }}
     displayName: 'CreateNugetPackage: Display parameters'
 
   - task: DownloadBuildArtifacts@0 
@@ -64,7 +64,7 @@ jobs:
 
   - powershell: |
       $prereleaseTag = "prerelease"
-      if ("${{ parameters.releasePackage}}" -eq [bool]::TrueString) { $prereleaseTag = "" }
+      if ("${{ parameters.useReleaseTag}}" -eq [bool]::TrueString) { $prereleaseTag = "" }
 
       & "$env:Build_SourcesDirectory\build\NuSpecs\build-nupkg.ps1" `
         -BuildOutput '$(Build.SourcesDirectory)\Artifacts\drop' `
