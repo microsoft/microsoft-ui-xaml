@@ -445,8 +445,8 @@ namespace MUXControlsTestApp
             windowBounds.BorderBrush = new SolidColorBrush(Colors.Red);
             windowBounds.BorderThickness = new Thickness(1.0);
             testWindowBounds.Child = windowBounds;
-            testWindowBounds.HorizontalOffset = windowRect.X + (((bool)UseTestScreenBoundsCheckBox.IsChecked) ? double.Parse(this.TestScreenBoundsXTextBox.Text) : 0);
-            testWindowBounds.VerticalOffset = windowRect.Y + (((bool)UseTestScreenBoundsCheckBox.IsChecked) ? double.Parse(this.TestScreenBoundsYTextBox.Text) : 0);
+            testWindowBounds.HorizontalOffset = windowRect.X;
+            testWindowBounds.VerticalOffset = windowRect.Y;
             testWindowBounds.IsOpen = true;
         }
 

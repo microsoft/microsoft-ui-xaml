@@ -313,22 +313,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     VerifyPlacement("Center");
 
                     // Eliminate right of the target
-                    UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 620, targetRect.Z + 1000, targetRect, true);
+                    UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 500, targetRect.Z + 1000, targetRect, true);
 
                     SetPreferredPlacement(PlacementOptions.Top);
-                    VerifyPlacement("Top");
+                    VerifyPlacement("Left");
                     SetPreferredPlacement(PlacementOptions.Bottom);
-                    VerifyPlacement("Bottom");
+                    VerifyPlacement("Left");
                     SetPreferredPlacement(PlacementOptions.Left);
                     VerifyPlacement("Left");
                     SetPreferredPlacement(PlacementOptions.Right);
                     VerifyPlacement("Left");
                     SetPreferredPlacement(PlacementOptions.TopRight);
-                    VerifyPlacement("Top");
+                    VerifyPlacement("Left");
                     SetPreferredPlacement(PlacementOptions.TopLeft);
                     VerifyPlacement("TopLeft");
                     SetPreferredPlacement(PlacementOptions.BottomRight);
-                    VerifyPlacement("Bottom");
+                    VerifyPlacement("Left");
                     SetPreferredPlacement(PlacementOptions.BottomLeft);
                     VerifyPlacement("BottomLeft");
                     SetPreferredPlacement(PlacementOptions.LeftTop);
@@ -340,7 +340,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     SetPreferredPlacement(PlacementOptions.RightBottom);
                     VerifyPlacement("Left");
                     SetPreferredPlacement(PlacementOptions.Center);
-                    VerifyPlacement("Center");
+                    VerifyPlacement("Left");
 
                     // Eliminate bottom of target
                     UseTestBounds(targetRect.W - 500, targetRect.X - 500, targetRect.Y + 1000, targetRect.Z + 501, targetRect, true);
@@ -829,7 +829,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
             else
             {
-                UseTestWindowBounds(targetRect.W - x - 1, targetRect.X - y - 1, targetRect.Y + 1, targetRect.Z + 1);
+                UseTestWindowBounds(targetRect.W - 1, targetRect.X - 1, targetRect.Y + 1, targetRect.Z + 1);
                 UseTestScreenBounds(x, y, width, height);
             }
         }

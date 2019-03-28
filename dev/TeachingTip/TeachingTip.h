@@ -119,9 +119,12 @@ private:
     void StartContractToClose();
 
     std::tuple<winrt::TeachingTipPlacementMode, bool> DetermineEffectivePlacement();
-    std::tuple<winrt::Rect, winrt::Thickness, winrt::Thickness> DetermineSpaceAroundTarget();
-    winrt::Rect GetEffectiveWindowBounds();
-    winrt::Rect GetEffectiveScreenBounds();
+    std::tuple<winrt::TeachingTipPlacementMode, bool> DetermineEffectivePlacementTargeted(double contentHight, double contentWidth);
+    std::tuple<winrt::TeachingTipPlacementMode, bool> DetermineEffectivePlacementUntargeted(double contentHight, double contentWidth);
+    std::tuple<winrt::Thickness, winrt::Thickness> DetermineSpaceAroundTarget();
+    winrt::Rect GetEffectiveWindowBoundsInCoreWindowSpace(const winrt::Rect& windowBounds);
+    winrt::Rect GetEffectiveScreenBoundsInCoreWindowSpace(const winrt::Rect& windowBounds);
+    winrt::Rect GetWindowBounds();
     static std::array<winrt::TeachingTipPlacementMode, 13> GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPalcement);
     void EstablishShadows();
 
@@ -156,8 +159,8 @@ private:
     winrt::TeachingTipPlacementMode m_currentEffectiveTailPlacementMode{ winrt::TeachingTipPlacementMode::Auto };
     winrt::TeachingTipHeroContentPlacementMode m_currentHeroContentEffectivePlacementMode{ winrt::TeachingTipHeroContentPlacementMode::Auto };
 
-    winrt::Rect m_currentBounds{ 0,0,0,0 };
-    winrt::Rect m_currentTargetBounds{ 0,0,0,0 };
+    winrt::Rect m_currentBoundsInCoreWindowSpace{ 0,0,0,0 };
+    winrt::Rect m_currentTargetBoundsInCoreWindowSpace{ 0,0,0,0 };
 
     bool m_isTemplateApplied{ false };
     bool m_createNewPopupOnOpen{ false };
@@ -166,9 +169,9 @@ private:
     bool m_isContractAnimationPlaying{ false };
 
     bool m_useTestWindowBounds{ false };
-    winrt::Rect m_testWindowBounds{ 0,0,0,0 };
+    winrt::Rect m_testWindowBoundsInCoreWindowSpace{ 0,0,0,0 };
     bool m_useTestScreenBounds{ false };
-    winrt::Rect m_testScreenBounds{ 0,0,0,0 };
+    winrt::Rect m_testScreenBoundsInCoreWindowSpace{ 0,0,0,0 };
 
     bool m_tipShouldHaveShadow{ true };
 
@@ -219,9 +222,9 @@ private:
     static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 0, 0 }; }
     static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 0, 1, 1, 0 }; }
 
-    static inline double UntargetedTipFarPlacementOffset(float windowSize, double tipSize, double offset) { return windowSize - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
-    static inline double UntargetedTipCenterPlacementOffset(float windowSize, double tipSize, double nearOffset, double farOffset) { return (windowSize / 2) - (tipSize / 2) + nearOffset - farOffset; }
-    static inline double UntargetedTipNearPlacementOffset(double offset) { return s_untargetedTipWindowEdgeMargin + offset; }
+    static inline double UntargetedTipFarPlacementOffset(float farWindowCoordinateInCoreWindowSpace, double tipSize, double offset) { return farWindowCoordinateInCoreWindowSpace - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
+    static inline double UntargetedTipCenterPlacementOffset(float nearWindowCoordinateInCoreWindowSpace, float farWindowCoordinateInCoreWindowSpace, double tipSize, double nearOffset, double farOffset) { return ((nearWindowCoordinateInCoreWindowSpace + farWindowCoordinateInCoreWindowSpace) / 2)  - (tipSize / 2) + nearOffset - farOffset; }
+    static inline double UntargetedTipNearPlacementOffset(float nearWindowCoordinateInCoreWindowSpace, double offset) { return s_untargetedTipWindowEdgeMargin + nearWindowCoordinateInCoreWindowSpace + offset; }
 
     static constexpr wstring_view s_scaleTargetName{ L"Scale"sv };
     static constexpr wstring_view s_translationTargetName{ L"Translation"sv };
