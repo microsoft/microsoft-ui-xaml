@@ -17,7 +17,7 @@ TreeViewListAutomationPeer::TreeViewListAutomationPeer(winrt::TreeViewList const
 //IItemsControlAutomationPeerOverrides2
 winrt::ItemAutomationPeer TreeViewListAutomationPeer::OnCreateItemAutomationPeer(winrt::IInspectable const& item)
 {
-    winrt::TreeViewItemDataAutomationPeer itemPeer{ nullptr, item, *this };
+    winrt::TreeViewItemDataAutomationPeer itemPeer{ item, *this };
     return itemPeer;
 }
 
