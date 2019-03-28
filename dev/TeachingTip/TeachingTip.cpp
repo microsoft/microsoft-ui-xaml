@@ -1454,7 +1454,7 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
         availability[winrt::TeachingTipPlacementMode::LeftBottom] = true;
         availability[winrt::TeachingTipPlacementMode::RightTop] = true;
         availability[winrt::TeachingTipPlacementMode::RightBottom] = true;
-		availability[winrt::TeachingTipPlacementMode::Center] = true;
+        availability[winrt::TeachingTipPlacementMode::Center] = true;
 
         double tipHeight = contentHeight + TailShortSideLength();
         double tipWidth = contentWidth + TailShortSideLength();
@@ -1476,7 +1476,7 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
                 availability[winrt::TeachingTipPlacementMode::TopLeft] = false;
                 availability[winrt::TeachingTipPlacementMode::RightTop] = false;
                 availability[winrt::TeachingTipPlacementMode::LeftTop] = false;
-				availability[winrt::TeachingTipPlacementMode::Center] = false;
+                availability[winrt::TeachingTipPlacementMode::Center] = false;
                 break;
             case winrt::TeachingTipHeroContentPlacementMode::Top:
                 availability[winrt::TeachingTipPlacementMode::Bottom] = false;
@@ -1531,7 +1531,7 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
             availability[winrt::TeachingTipPlacementMode::BottomLeft] = false;
             availability[winrt::TeachingTipPlacementMode::Bottom] = false;
             availability[winrt::TeachingTipPlacementMode::BottomRight] = false;
-			availability[winrt::TeachingTipPlacementMode::Center] = false;
+            availability[winrt::TeachingTipPlacementMode::Center] = false;
         }
 
         // If the vertical midpoint is out of the window.
@@ -1544,7 +1544,7 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
             availability[winrt::TeachingTipPlacementMode::RightBottom] = false;
             availability[winrt::TeachingTipPlacementMode::Right] = false;
             availability[winrt::TeachingTipPlacementMode::RightTop] = false;
-			availability[winrt::TeachingTipPlacementMode::Center] = false;
+            availability[winrt::TeachingTipPlacementMode::Center] = false;
         }
 
         // If the tip is too tall to fit between the top of the target and the top edge of the window or screen.
@@ -1554,11 +1554,11 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
             availability[winrt::TeachingTipPlacementMode::TopRight] = false;
             availability[winrt::TeachingTipPlacementMode::TopLeft] = false;
         }
-		// If the total tip is too tall to fit between the center of the target and the top of the window.
-		if (tipHeight > availableBoundsAroundTarget.Top + (targetBounds.Height / 2.0f))
-		{
-			availability[winrt::TeachingTipPlacementMode::Center] = false;
-		}
+        // If the total tip is too tall to fit between the center of the target and the top of the window.
+        if (tipHeight > availableBoundsAroundTarget.Top + (targetBounds.Height / 2.0f))
+        {
+            availability[winrt::TeachingTipPlacementMode::Center] = false;
+        }
         // If the tip is too tall to fit between the center of the target and the top edge of the window.
         if (contentHeight - MinimumTipEdgeToTailCenter() > availableBoundsAroundTarget.Top + (targetBounds.Height / 2.0f))
         {
@@ -1605,6 +1605,7 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
         {
             availability[winrt::TeachingTipPlacementMode::Top] = false;
             availability[winrt::TeachingTipPlacementMode::Bottom] = false;
+            availability[winrt::TeachingTipPlacementMode::Center] = false;
         }
         // If the tip is too wide to fit between the center of the target and the right edge of the window.
         if (contentWidth - MinimumTipEdgeToTailCenter() > availableBoundsAroundTarget.Right + (targetBounds.Width / 2.0f))
@@ -1722,6 +1723,7 @@ winrt::Rect TeachingTip::GetEffectiveWindowBounds()
 
 winrt::Rect TeachingTip::GetEffectiveScreenBounds()
 {
+    MUX_ASSERT_MSG(!m_returnTopForOutOfWindowPlacement, "When returnTopForOutOfWindowPlacement is true we will never need to get the screen bounds");
     if (!m_useTestScreenBounds && !ShouldConstrainToRootBounds())
     {
         auto displayInfo = winrt::DisplayInformation::GetForCurrentView();
@@ -1749,7 +1751,7 @@ std::array<winrt::TeachingTipPlacementMode, 13> TeachingTip::GetPlacementFallbac
     priorityList[9] = winrt::TeachingTipPlacementMode::LeftBottom;
     priorityList[10] = winrt::TeachingTipPlacementMode::RightTop;
     priorityList[11] = winrt::TeachingTipPlacementMode::RightBottom;
-	priorityList[12] = winrt::TeachingTipPlacementMode::Center;
+    priorityList[12] = winrt::TeachingTipPlacementMode::Center;
 
 
     if (IsPlacementBottom(preferredPlacement))
