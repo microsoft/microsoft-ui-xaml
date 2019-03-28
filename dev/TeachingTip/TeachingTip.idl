@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_PREVIEW]
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
 [webhosthidden]
 enum TeachingTipTailVisibility
 {
@@ -154,4 +157,6 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
     static Windows.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
+}
+
 }

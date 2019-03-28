@@ -1,4 +1,7 @@
-﻿#ifdef ApplicableRangeType
+﻿namespace MU_XCP_NAMESPACE
+{
+
+#ifdef ApplicableRangeType
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 enum SnapPointApplicableRangeType
@@ -347,4 +350,6 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     static Windows.UI.Xaml.DependencyProperty MaxZoomFactorProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalAnchorRatioProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalAnchorRatioProperty { get; };
+}
+
 }

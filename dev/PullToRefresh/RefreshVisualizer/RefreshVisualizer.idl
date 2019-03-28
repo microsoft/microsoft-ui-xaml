@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_RS4]
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_RS4]
 [webhosthidden]
 enum RefreshVisualizerOrientation
 {
@@ -69,4 +72,6 @@ unsealed runtimeclass RefreshVisualizer : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ContentProperty { get; };
     static Windows.UI.Xaml.DependencyProperty StateProperty { get; };
+}
+
 }

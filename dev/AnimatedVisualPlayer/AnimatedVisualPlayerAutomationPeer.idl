@@ -1,6 +1,11 @@
+namespace MU_XAP_NAMESPACE
+{
+
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
 unsealed runtimeclass AnimatedVisualPlayerAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {
     AnimatedVisualPlayerAutomationPeer(MU_XC_NAMESPACE.AnimatedVisualPlayer owner);
+}
+
 }

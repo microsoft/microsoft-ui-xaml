@@ -21,8 +21,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)PersonPictureAutomationPeer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)PersonPicture.idl" />
-    <None Include="$(MSBuildThisFileDirectory)PersonPictureAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)PersonPicture.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)PersonPictureAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)InitialsGenerator.h" />

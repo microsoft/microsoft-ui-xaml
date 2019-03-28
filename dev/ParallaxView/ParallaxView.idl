@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_RS3]
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_RS3]
 [webhosthidden]
 enum ParallaxSourceOffsetKind
 {
@@ -55,4 +58,6 @@ unsealed runtimeclass ParallaxView : Windows.UI.Xaml.FrameworkElement
     static Windows.UI.Xaml.DependencyProperty VerticalSourceStartOffsetProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MaxVerticalShiftRatioProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalShiftProperty { get; };
+}
+
 }

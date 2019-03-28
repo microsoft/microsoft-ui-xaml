@@ -59,6 +59,9 @@
       <IsPreviewResource>False</IsPreviewResource>
     </PRIResource>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <Midl Include="..\..\idl\Microsoft.UI.Xaml.idl" />
+  </ItemGroup>
   <ImportGroup Label="Shared">
     <Import Project="..\RatingControl\RatingControl.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\NavigationView\NavigationView.vcxitems" Label="Shared" />
@@ -366,9 +369,6 @@
     <CompactPage Include="$(MSBuildThisFileDirectory)DensityStyles\Compact.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="..\..\idl\Microsoft.UI.Xaml.idl" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="XamlMetadataProviderGenerated.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>$(OutDir)XamlMetadataProviderGenerated.cpp</LastGenOutput>
@@ -596,6 +596,27 @@
         <CompilerIteration>XamlGenerated</CompilerIteration>
       </ClCompile>
     </ItemGroup>
+  </Target>
+  <PropertyGroup>
+      <ProjectMergedIdl>$(IntermediateOutputPath)\Microsoft.UI.Xaml.idl</ProjectMergedIdl>
+  </PropertyGroup>
+
+  <!-- Merge all idl files into one -->
+  <Target Name="MergeIDLFiles"
+          Inputs="@(Midl)"
+          Outputs="$(ProjectMergedIdl)"
+          BeforeTargets="Midl">
+      <PropertyGroup>
+          <MidlLines>@(Midl->'&#x23;include &lt;%(FullPath)&gt;', '&#x0D;&#x0A;')</MidlLines>
+      </PropertyGroup>
+
+      <WriteLinesToFile File="$(ProjectMergedIdl)" Lines="$(MidlLines)" WriteOnlyWhenDifferent="true" Overwrite="true" />
+      
+      <ItemGroup>
+          <OriginalMidl Include="@(Midl)" />
+          <Midl Remove="@(OriginalMidl)" />
+          <Midl Include="$(ProjectMergedIdl)" />
+      </ItemGroup>
   </Target>
   <Target Name="mdmerge" AfterTargets="Midl" Inputs="@(Midl -> '%(MetadataFileName)')" Outputs="$(OutDir)Microsoft.UI.winmd;$(OutDir)\sdk\Microsoft.UI.Xaml.winmd;$(IntermediateOutputPath)CppWinRT\Platform\winrt\base.h;$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.Controls.h">
     <PropertyGroup>

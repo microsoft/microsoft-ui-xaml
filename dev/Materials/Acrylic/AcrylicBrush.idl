@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_RS3]
+﻿namespace MU_XM_NAMESPACE
+{
+
+[WUXC_VERSION_RS3]
 [webhosthidden]
 enum AcrylicBackgroundSource
 {
@@ -49,4 +52,6 @@ unsealed runtimeclass AcrylicBrush : Windows.UI.Xaml.Media.XamlCompositionBrushB
     {
         static Windows.UI.Xaml.DependencyProperty TintLuminosityOpacityProperty { get; };
     }
+}
+
 }

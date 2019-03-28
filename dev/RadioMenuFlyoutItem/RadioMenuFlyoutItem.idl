@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_MUXONLY]
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
@@ -11,4 +14,6 @@ unsealed runtimeclass RadioMenuFlyoutItem : Windows.UI.Xaml.Controls.MenuFlyoutI
 
     static Windows.UI.Xaml.DependencyProperty IsCheckedProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty GroupNameProperty{ get; };
+}
+
 }

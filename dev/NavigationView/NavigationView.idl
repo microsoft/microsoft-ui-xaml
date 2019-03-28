@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_RS3]
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_RS3]
 [webhosthidden]
 enum NavigationViewDisplayMode
 {
@@ -324,4 +327,6 @@ unsealed runtimeclass NavigationViewItemSeparator : NavigationViewItemBase
 unsealed runtimeclass NavigationViewItemHeader : NavigationViewItemBase
 {
     NavigationViewItemHeader();
+}
+
 }

@@ -1,3 +1,6 @@
+namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 interface IRefreshInfoProviderAdapter
@@ -22,4 +25,6 @@ runtimeclass ScrollViewerIRefreshInfoProviderAdapter : IRefreshInfoProviderAdapt
     ScrollViewerIRefreshInfoProviderAdapter(MU_XC_NAMESPACE.RefreshPullDirection refreshPullDirection, IAdapterAnimationHandler animationHandler);
 
     IRefreshInfoProvider Adapt(Windows.UI.Xaml.Controls.ScrollViewer adaptee, Windows.Foundation.Size visualizerSize);
+}
+
 }

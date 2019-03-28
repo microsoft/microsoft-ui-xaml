@@ -49,8 +49,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipTemplateSettings.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)TeachingTip.idl" />
-    <None Include="$(MSBuildThisFileDirectory)TeachingTipAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)TeachingTip.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)TeachingTipAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
