@@ -366,6 +366,7 @@ namespace winrt
     using ItemAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::ItemAutomationPeer;
     using ListViewItemAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::ListViewItemAutomationPeer;
     using PatternInterface = winrt::Windows::UI::Xaml::Automation::Peers::PatternInterface;
+    using ItemsControlAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::ItemsControlAutomationPeer;
     using SelectorAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::SelectorAutomationPeer;
     using SliderAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::SliderAutomationPeer;
 

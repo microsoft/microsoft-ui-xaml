@@ -19,4 +19,11 @@ unsealed runtimeclass TreeViewItemAutomationPeer : Windows.UI.Xaml.Automation.Pe
     [method_name("CreateInstanceWithOwner")] TreeViewItemAutomationPeer(MU_XC_NAMESPACE.TreeViewItem owner);
 }
 
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass TreeViewItemDataAutomationPeer : Windows.UI.Xaml.Automation.Peers.ItemAutomationPeer, Windows.UI.Xaml.Automation.Provider.IExpandCollapseProvider
+{
+    [method_name("CreateInstanceWithOwner")] TreeViewItemDataAutomationPeer(MU_XC_NAMESPACE.TreeViewList owner, IInspectable item, Windows.UI.Xaml.Automation.Peers.ItemsControlAutomationPeer parent);
+}
+
 }
