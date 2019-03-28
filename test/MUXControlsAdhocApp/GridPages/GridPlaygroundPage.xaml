@@ -135,7 +135,7 @@
 
             </local:Grid>
 
-            <local:Grid Background="Blue" MaxHeight="500">
+            <local:Grid Background="LightGray" MaxHeight="500">
                 <!--
                     grid-template-columns: [first] 40px [line2] 50px [line3] auto [col4-start] 50px [five] 40px [end];
                     grid-template-rows: [row1-start] 25% [row1-end] 100px [third-line] auto [last-line];
@@ -155,13 +155,50 @@
                     <!-- TODO: LineName="last-line" as a name for the last edge -->
                 </local:Grid.TemplateRows>
 
+                <!--
+                .item-a {
+                  grid-column-start: 2;
+                  grid-column-end: five;
+                  grid-row-start: row1-start
+                  grid-row-end: 3;
+                }-->
                 <Grid Background="Orange">
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation Index="1"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.ColumnEnd>
+                        <local:GridLocation LineName="five"/>
+                    </local:Grid.ColumnEnd>
+                    <local:Grid.RowStart>
+                        <local:GridLocation LineName="row1-start"/>
+                    </local:Grid.RowStart>
+                    <local:Grid.RowEnd>
+                        <local:GridLocation Index="2"/>
+                    </local:Grid.RowEnd>
+                    <TextBlock>item-a</TextBlock>
+                </Grid>
+
+                <!--
+                .item-b {
+                  grid-column-start: 1;
+                  grid-column-end: span col4-start;
+                  grid-row-start: 2
+                  grid-row-end: span 2
+                }-->
+                <Grid Background="Blue">
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="0"/>
                     </local:Grid.ColumnStart>
+                    <local:Grid.ColumnEnd>
+                        <local:GridLocation LineName="col4-start"/>
+                    </local:Grid.ColumnEnd>
                     <local:Grid.RowStart>
-                        <local:GridLocation Index="0"/>
+                        <local:GridLocation Index="1"/>
                     </local:Grid.RowStart>
+                    <local:Grid.RowEnd>
+                        <!-- TODO: Span 2 -->
+                        <local:GridLocation Index="3"/>
+                    </local:Grid.RowEnd>
                     <TextBlock>item-a</TextBlock>
                 </Grid>
 
