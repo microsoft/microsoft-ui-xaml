@@ -6,11 +6,13 @@
 #include "ItemsRepeater.common.h"
 #include "ItemsRepeaterScrollHost.h"
 #include "DoubleUtil.h"
+#include "RuntimeProfiler.h"
 
 CppWinRTActivatableClassWithBasicFactory(ItemsRepeaterScrollHost)
 
 ItemsRepeaterScrollHost::ItemsRepeaterScrollHost()
 {
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_ItemsRepeaterScrollHost);
 }
 
 winrt::UIElement ItemsRepeaterScrollHost::CurrentAnchor()
