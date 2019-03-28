@@ -33,22 +33,37 @@ function Download-File
 
     Write-Host -NoNewline "Downloading $downloadName..."
 
-    try
+    $retries = 10
+    $downloaded = $false
+    while (-not $downloaded)
     {
-        $webclient = new-object System.Net.WebClient
-        $webclient.DownloadFile($downloadUrl, $downloadPath)
-    }
-    catch [System.Net.WebException]
-    {
-        Write-Host
-        Write-Warning "Failed to fetch updated file from $downloadUrl"
-        if (!(Test-Path $downloadDest))
+        try
         {
-            throw "$downloadName was not found at $downloadDest"
+            $webclient = new-object System.Net.WebClient
+            $webclient.DownloadFile($downloadUrl, $downloadPath)
+            $downloaded = $true
         }
-        else
+        catch [System.Net.WebException]
         {
-            Write-Warning "$downloadName may be out of date"
+            Write-Host
+            Write-Warning "Failed to fetch updated file from $downloadUrl : $($error[0])"
+            if (!(Test-Path $downloadDest))
+            {
+                if ($retries -gt 0)
+                {
+                    Write-Host "$retries retries left, trying download again"
+                    $retries--
+                    start-sleep -Seconds 10
+                }
+                else
+                {
+                    throw "$downloadName was not found at $downloadDest"
+                }
+            }
+            else
+            {
+                Write-Warning "$downloadName may be out of date"
+            }
         }
     }
 
