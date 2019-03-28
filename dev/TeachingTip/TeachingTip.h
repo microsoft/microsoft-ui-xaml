@@ -168,6 +168,8 @@ private:
     bool m_isExpandAnimationPlaying{ false };
     bool m_isContractAnimationPlaying{ false };
 
+    bool m_hasF6BeenInvoked{ false };
+
     bool m_useTestWindowBounds{ false };
     winrt::Rect m_testWindowBoundsInCoreWindowSpace{ 0,0,0,0 };
     bool m_useTestScreenBounds{ false };
