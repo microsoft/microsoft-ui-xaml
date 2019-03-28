@@ -160,11 +160,10 @@
     <Midl>
       <MetadataFileName>$(OutDir)Unmerged\%(Filename)_Unmerged.winmd</MetadataFileName>
       <AdditionalOptions>/no_stamp /no_settings_comment /nomidl %(AdditionalOptions)</AdditionalOptions>
-      <!-- TODO: Remove Configuration==Debug from these once this is fixed: Bug 17488419: MIDL "import winmd" behavior doesn't carry through parameter names of methods on implemented interfaces -->
-      <AdditionalOptions Condition="'$(Configuration)'=='Debug'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.FoundationContract\3.0.0.0\Windows.Foundation.FoundationContract.winmd"</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)'=='Debug'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Networking.Connectivity.WwanContract\2.0.0.0\Windows.Networking.Connectivity.WwanContract.winmd"</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)'=='Debug' And $(UseInsiderSDK) == 'true'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\8.0.0.0\Windows.Foundation.UniversalApiContract.winmd"</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)'=='Debug' And $(UseInsiderSDK) != 'true'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\7.0.0.0\Windows.Foundation.UniversalApiContract.winmd"</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.FoundationContract\3.0.0.0\Windows.Foundation.FoundationContract.winmd"</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Networking.Connectivity.WwanContract\2.0.0.0\Windows.Networking.Connectivity.WwanContract.winmd"</AdditionalOptions>
+      <AdditionalOptions Condition="$(UseInsiderSDK) == 'true'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\8.0.0.0\Windows.Foundation.UniversalApiContract.winmd"</AdditionalOptions>
+      <AdditionalOptions Condition="$(UseInsiderSDK) != 'true'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\7.0.0.0\Windows.Foundation.UniversalApiContract.winmd"</AdditionalOptions>
       <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..;$(MSBuildProjectDirectory)\..\..\idl;$(MiniWindowsSDKIncludePath)</AdditionalIncludeDirectories>
       <AdditionalMetadataDirectories Condition="'$(MiniWindowsSDKWinMDPath)'!=''">$(MiniWindowsSDKWinMDPath)</AdditionalMetadataDirectories>
       <OutputDirectory>$(OutDir)</OutputDirectory>
