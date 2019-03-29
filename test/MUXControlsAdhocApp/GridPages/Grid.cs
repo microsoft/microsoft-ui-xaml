@@ -686,6 +686,13 @@ namespace MUXControlsAdhocApp.GridPages
             {
                 ChildGridLocations childLocation = GetChildGridLocations(child);
 
+                // TODO: This should be driven by auto rows/columns, but until that's implemented, avoid a crash by hiding the item
+                if ((childLocation.ColStart == null) || (childLocation.RowStart == null))
+                {
+                    child.Arrange(new Rect(0, 0, 0, 0));
+                    continue;
+                }
+
                 MeasureInfo colMeasure = GetMeasureInfo(childLocation.ColStart, _columns);
                 MeasureInfo rowMeasure = GetMeasureInfo(childLocation.RowStart, _rows);
                 MeasureInfo colEndMesure = GetMeasureInfo(childLocation.ColEnd, _columns);

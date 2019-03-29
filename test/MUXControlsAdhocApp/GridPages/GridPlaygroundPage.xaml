@@ -9,6 +9,11 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
+        <Grid.Resources>
+            <Style x:Key="HeaderStyle" TargetType="TextBlock">
+                <Setter Property="FontWeight" Value="Bold"/>
+            </Style>
+        </Grid.Resources>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
             <ColumnDefinition/>
@@ -35,187 +40,6 @@
                         <Setter Property="HorizontalAlignment" Value="Stretch"/>
                         <Setter Property="VerticalAlignment" Value="Stretch"/>
                     </Style>
-                </local:Grid.Resources>
-                <!--
-                    grid-template-columns: [first] 40px [line2] 50px [line3] auto [col4-start] 50px [five] 40px [end];
-                    grid-template-rows: [row1-start] 25% [row1-end] 100px [third-line] auto [last-line];
-                -->
-                <local:Grid.TemplateColumns>
-                    <local:GridTrackInfo Length="40" LineName="first"/>
-                    <local:GridTrackInfo Length="50" LineName="line2"/>
-                    <local:GridTrackInfo Auto="True" LineName="line3"/>
-                    <local:GridTrackInfo Length="50" LineName="col4-start"/>
-                    <local:GridTrackInfo Length="40" LineName="five"/>
-                    <!-- TODO: LineName="end" as a name for the last edge -->
-                </local:Grid.TemplateColumns>
-                <local:Grid.TemplateRows>
-                    <local:GridTrackInfo Percentage="0.25" LineName="row1-start"/>
-                    <local:GridTrackInfo Length="100" LineName="row1-end"/>
-                    <local:GridTrackInfo Auto="True" LineName="third-line"/>
-                    <!-- TODO: LineName="last-line" as a name for the last edge -->
-                </local:Grid.TemplateRows>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="0"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="0"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>0,0</TextBlock>
-                </Border>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="1"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="0"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>1,0</TextBlock>
-                </Border>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="2"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="0"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>2,0</TextBlock>
-                </Border>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="3"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="0"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>3,0</TextBlock>
-                </Border>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="4"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="0"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>4,0</TextBlock>
-                </Border>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="0"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="1"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>0,1</TextBlock>
-                </Border>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="1"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="1"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>2,1</TextBlock>
-                </Border>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="2"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="1"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>2,1</TextBlock>
-                </Border>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="3"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="1"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>3,1</TextBlock>
-                </Border>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="4"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="1"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>4,1</TextBlock>
-                </Border>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="0"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="2"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>0,2</TextBlock>
-                </Border>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="1"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="2"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>1,2</TextBlock>
-                </Border>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="2"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="2"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>2,2</TextBlock>
-                </Border>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="3"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="2"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>3,2</TextBlock>
-                </Border>
-
-                <Border>
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="4"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="2"/>
-                    </local:Grid.RowStart>
-                    <TextBlock>4,2</TextBlock>
-                </Border>
-
-            </local:Grid>
-
-            <local:Grid>
-                <local:Grid.Resources>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="White"/>
-                        <Setter Property="VerticalAlignment" Value="Center"/>
-                        <Setter Property="HorizontalAlignment" Value="Center"/>
-                        <Setter Property="FontWeight" Value="Bold"/>
-                        <Setter Property="FontSize" Value="18"/>
-                    </Style>
                     <Style TargetType="Grid">
                         <Setter Property="Background" Value="Orange"/>
                         <Setter Property="Margin" Value="2"/>
@@ -226,7 +50,6 @@
                         <Setter Property="VerticalAlignment" Value="Stretch"/>
                     </Style>
                 </local:Grid.Resources>
-                
                 <!--
                     grid-template-columns: [first] 40px [line2] 50px [line3] auto [col4-start] 50px [five] 40px [end];
                     grid-template-rows: [row1-start] 25% [row1-end] 100px [third-line] auto [last-line];
@@ -253,9 +76,9 @@
                   grid-row-start: row1-start
                   grid-row-end: 3;
                 }-->
-                <Grid Background="#88FFA500" Opacity="0.5">
+                <Grid x:Name="_item" Background="#88FFA500" Opacity="0.5">
                     <local:Grid.ColumnStart>
-                        <local:GridLocation Index="1"/>
+                        <local:GridLocation x:Name="_columnStart" Index="1"/>
                     </local:Grid.ColumnStart>
                     <local:Grid.ColumnEnd>
                         <local:GridLocation LineName="five"/>
@@ -269,76 +92,16 @@
                     <TextBlock>item-a</TextBlock>
                 </Grid>
 
-                <!--
-                .item-b {
-                  grid-column-start: 1;
-                  grid-column-end: span col4-start;
-                  grid-row-start: 2
-                  grid-row-end: span 2
-                }-->
-                <Grid Background="#880000FF" Opacity="0.5">
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="0"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.ColumnEnd>
-                        <local:GridLocation LineName="col4-start"/>
-                    </local:Grid.ColumnEnd>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="1"/>
-                    </local:Grid.RowStart>
-                    <local:Grid.RowEnd>
-                        <local:GridLocation Span="2"/>
-                    </local:Grid.RowEnd>
-                    <TextBlock>item-b</TextBlock>
-                </Grid>
-
-                <!--
-                .item-c {
-                  grid-column: 3 / span 2;
-                  grid-row: third-line / 4;
-                }-->
-                <Grid Background="#88FF0000" Opacity="0.5">
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation Index="2"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.ColumnEnd>
-                        <local:GridLocation Span="2"/>
-                    </local:Grid.ColumnEnd>
-                    <local:Grid.RowStart>
-                        <local:GridLocation LineName="third-line"/>
-                    </local:Grid.RowStart>
-                    <local:Grid.RowEnd>
-                        <local:GridLocation Index="3"/>
-                    </local:Grid.RowEnd>
-                    <TextBlock>item-c</TextBlock>
-                </Grid>
-
-                <!--
-                .item-d {
-                  grid-area: 1 / col4-start / last-line / 6
-                }-->
-                <Grid Background="#888FBC8F">
-                    <local:Grid.ColumnStart>
-                        <local:GridLocation LineName="col4-start"/>
-                    </local:Grid.ColumnStart>
-                    <local:Grid.ColumnEnd>
-                        <local:GridLocation Index="5"/>
-                    </local:Grid.ColumnEnd>
-                    <local:Grid.RowStart>
-                        <local:GridLocation Index="0"/>
-                    </local:Grid.RowStart>
-                    <local:Grid.RowEnd>
-                        <local:GridLocation LineName="last-line"/>
-                    </local:Grid.RowEnd>
-                    <TextBlock>item-d</TextBlock>
-                </Grid>
-
             </local:Grid>
 
         </Grid>
 
         <StackPanel Grid.Column="0">
             <Button Click="InvalidateButton_Click" Content="Invalidate"/>
+            <TextBlock Style="{StaticResource HeaderStyle}">ColumnStart</TextBlock>
+            <Slider Header="Index" Minimum="-1" Maximum="10" Value="{x:Bind _columnStart.Index, Mode=TwoWay}" TickFrequency="1" TickPlacement="Outside"/>
+            <TextBox Header="LineName" Text="{x:Bind _columnStart.LineName, Mode=TwoWay}"/>
+            <Slider Header="Span" Minimum="0" Maximum="6" Value="{x:Bind _columnStart.Span, Mode=TwoWay}" TickFrequency="1" TickPlacement="Outside"/>
         </StackPanel>
     </Grid>
 </Page>
