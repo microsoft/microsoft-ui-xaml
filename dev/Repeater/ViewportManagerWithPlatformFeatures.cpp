@@ -178,7 +178,7 @@ void ViewportManagerWithPlatformFeatures::OnElementPrepared(const winrt::UIEleme
 {
     // If we have an anchor element, we do not want the
     // scroll anchor provider to start anchoring some other element.
-    element.CanBeScrollAnchor(!m_makeAnchorElement);
+    element.CanBeScrollAnchor(true);
 }
 
 void ViewportManagerWithPlatformFeatures::OnElementCleared(const winrt::UIElement& element)
@@ -259,6 +259,73 @@ void ViewportManagerWithPlatformFeatures::OnBringIntoViewRequested(const winrt::
     {
         args.AnimationDesired(false);
     }
+
+    // During the time between a bring into view request and the element coming into view we do not
+    // want the anchor provider to pick some anchor and jump to it. Instead we want to anchor on the
+    // element that is being brought into view. We can do this by making just that element as a potential
+    // anchor candidate and ensure no other element of this repeater is an anchor candidate.
+    // Once the layout pass is done and we render the frame, the element will be in frame and we can
+    // switch back to letting the anchor provider pick a suitable anchor.
+
+    // get the targetChild - i.e the immediate child of this repeater that is being brought into view.
+    // Note that the element being brought into view could be a descendant.
+    const auto targetChild = GetImmediateChildOfRepeater(args.TargetElement());
+
+    // Make sure that only the target child can be the anchor during the bring into view operation.
+    for (const auto& child : m_owner->Children())
+    {
+        if (child.CanBeScrollAnchor() && child != targetChild)
+        {
+            child.CanBeScrollAnchor(false);
+        }
+    }
+
+    // Register to rendering event to go back to how things were before where any child can be the anchor.
+    m_isBringIntoViewInProgress = true;
+    if (!m_renderingToken)
+    {
+        winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{ nullptr };
+        m_renderingToken = compositionTarget.Rendering(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnCompositionTargetRendering });
+    }
+}
+
+winrt::UIElement ViewportManagerWithPlatformFeatures::GetImmediateChildOfRepeater(winrt::UIElement const& descendant)
+{
+    winrt::UIElement targetChild = descendant;
+    winrt::UIElement parent = CachedVisualTreeHelpers::GetParent(descendant).as<winrt::UIElement>();
+    while (parent != nullptr && parent != static_cast<winrt::DependencyObject>(*m_owner))
+    {
+        targetChild = parent;
+        parent = CachedVisualTreeHelpers::GetParent(parent).as<winrt::UIElement>();
+    }
+
+    if (!parent)
+    {
+        throw winrt::hresult_error(E_FAIL, L"OnBringIntoViewRequested called with args.target element not under the ItemsRepeater that recieved the call");
+    }
+
+    return targetChild;
+}
+
+void ViewportManagerWithPlatformFeatures::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
+{
+    m_renderingToken.revoke();
+
+    m_isBringIntoViewInProgress = false;
+    m_makeAnchorElement.set(nullptr);
+
+    // Now that the item has been brought into view, we can let the anchor provider pick a new anchor.
+    for (const auto& child : m_owner->Children())
+    {
+        if (!child.CanBeScrollAnchor())
+        {
+            auto info = ItemsRepeater::GetVirtualizationInfo(child);
+            if (info->IsRealized() && info->IsHeldByLayout())
+            {
+                child.CanBeScrollAnchor(true);
+            }
+        }
+    }
 }
 
 void ViewportManagerWithPlatformFeatures::ResetScrollers()
@@ -278,35 +345,6 @@ void ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged(winrt::Fram
 {
     REPEATER_TRACE_INFO(L"%ls: \tEffectiveViewportChanged event callback \n", GetLayoutId().data());
     UpdateViewport(args.EffectiveViewport());
-
-    // As long as the make_anchor element is within the visible window, force it as the anchor.
-    // As soon as it goes outside, stop forcing it to be the anchor and
-    // let the anchor provider pick a new anchor.
-    if (auto makeAnchorElement = m_makeAnchorElement.get())
-    {
-        auto visibleWindow = GetLayoutVisibleWindowDiscardAnchor();
-        auto layoutSlot = winrt::LayoutInformation::GetLayoutSlot(makeAnchorElement.as<winrt::FrameworkElement>());
-        auto adjustedLayoutSlot = winrt::Rect(layoutSlot.X + m_layoutExtent.X, layoutSlot.Y + m_layoutExtent.Y, layoutSlot.Width, layoutSlot.Height);
-        bool doesNotOverlap = (adjustedLayoutSlot.X + adjustedLayoutSlot.Width) < visibleWindow.X ||
-            (visibleWindow.X + visibleWindow.Width) < adjustedLayoutSlot.X ||
-            (adjustedLayoutSlot.Y + adjustedLayoutSlot.Height) < visibleWindow.Y ||
-            (visibleWindow.Y + visibleWindow.Height) < adjustedLayoutSlot.Y;
-        if (doesNotOverlap)
-        {
-            m_makeAnchorElement.set(nullptr);
-
-            // Now that the anchor is gone, any item can be the anchor.
-            auto children = m_owner->Children();
-            for (unsigned i = 0u; i < children.Size(); ++i)
-            {
-                auto child = children.GetAt(i);
-                if (!child.CanBeScrollAnchor() && ItemsRepeater::GetVirtualizationInfo(child)->IsRealized())
-                {
-                    child.CanBeScrollAnchor(true);
-                }
-            }
-        }
-    }
 
     m_pendingViewportShift = {};
     if (m_visibleWindow == winrt::Rect())

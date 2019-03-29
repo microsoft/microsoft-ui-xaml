@@ -407,7 +407,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 waitingForIndex = 101;
                 indexRealized.Reset();
-                repeater.GetOrCreateElement(100).StartBringIntoView();
+                repeater.GetOrCreateElement(100).StartBringIntoView(new BringIntoViewOptions {
+                    VerticalAlignmentRatio = 0.0
+                });
                 repeater.UpdateLayout();
             });
 
