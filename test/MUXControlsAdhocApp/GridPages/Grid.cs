@@ -218,7 +218,7 @@ namespace MUXControlsAdhocApp.GridPages
                 calculated[track] = new MeasureInfo { Size = fixedSize };
             }
 
-            measure.Remaining = measure.Available - measure.TotalFixed;
+            measure.Remaining = Math.Max(measure.Available - measure.TotalFixed, 0.0);
         }
 
         private void ProcessAutoSizes(ref MeasureBlah measureHorizontal, ref MeasureBlah measureVertical)
@@ -273,7 +273,7 @@ namespace MUXControlsAdhocApp.GridPages
             }
         }
 
-        // NOTE: Can't do as an anonmyous inline Action above because we need to declare the struct MeasureBlah as ref (and Actions don't support ref parameters)
+        // NOTE: Can't do as an anonymous inline Action above because we need to declare the struct MeasureBlah as ref (and Actions don't support ref parameters)
         private static void UpdateAutoBasedOnMeasured(List<GridTrackInfo> tracks, ref MeasureBlah measure, double childDesired)
         {
             if (tracks.Count == 0)
@@ -292,7 +292,7 @@ namespace MUXControlsAdhocApp.GridPages
                 {
                     DumpInfo($"Increasing Auto size track {i} by {moreSize}");
                     info.Size += moreSize;
-                    measure.Remaining -= moreSize;
+                    measure.Remaining = Math.Max(measure.Remaining - moreSize, 0.0);
                 }
             }
         }
@@ -481,7 +481,7 @@ namespace MUXControlsAdhocApp.GridPages
         }
 
 #region Tracing
-        [Conditional("TRACE")]
+        [Conditional("GRID_TRACE")]
         private static void DumpConditional(bool condition, string write, ref string separator)
         {
             if (condition)
@@ -491,7 +491,7 @@ namespace MUXControlsAdhocApp.GridPages
             }
         }
 
-        [Conditional("TRACE")]
+        [Conditional("GRID_TRACE")]
         private void DumpTemplates()
         {
             Action<List<GridTrackInfo>> dumpTemplate = (List<GridTrackInfo> template) =>
@@ -519,7 +519,7 @@ namespace MUXControlsAdhocApp.GridPages
             DumpEnd();
         }
 
-        [Conditional("TRACE")]
+        [Conditional("GRID_TRACE")]
         private void DumpChildren()
         {
             DumpBegin("Children");
@@ -555,7 +555,7 @@ namespace MUXControlsAdhocApp.GridPages
             DumpEnd();
         }
 
-        [Conditional("TRACE")]
+        [Conditional("GRID_TRACE")]
         private static void DumpMeasureInfo(ref MeasureBlah measure, string info, bool includeOffset = false)
         {
             DumpBegin(info);
@@ -575,7 +575,7 @@ namespace MUXControlsAdhocApp.GridPages
             DumpEnd();
         }
 
-        [Conditional("TRACE")]
+        [Conditional("GRID_TRACE")]
         private static void DumpMeasureInfo(ref MeasureBlah horizontalMeasure, ref MeasureBlah verticalMeasure, string info, bool includeOffset = false)
         {
             DumpBegin(info);
@@ -586,28 +586,28 @@ namespace MUXControlsAdhocApp.GridPages
             DumpEnd();
         }
 
-        [Conditional("TRACE")]
+        [Conditional("GRID_TRACE")]
         private static void DumpBegin(Size size, string info)
         {
             Debug.WriteLine($"{info}({size.Width}, {size.Height}) {{");
             Debug.Indent();
         }
 
-        [Conditional("TRACE")]
+        [Conditional("GRID_TRACE")]
         private static void DumpBegin(string info)
         {
             Debug.WriteLine($"{info} {{");
             Debug.Indent();
         }
 
-        [Conditional("TRACE")]
+        [Conditional("GRID_TRACE")]
         private static void DumpEnd()
         {
             Debug.Unindent();
             Debug.WriteLine("}");
         }
 
-        [Conditional("TRACE")]
+        [Conditional("GRID_TRACE")]
         private static void DumpInfo(string info)
         {
             Debug.WriteLine(info);
