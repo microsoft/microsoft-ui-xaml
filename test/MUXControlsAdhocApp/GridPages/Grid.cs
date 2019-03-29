@@ -172,18 +172,20 @@ namespace MUXControlsAdhocApp.GridPages
                 Template = template;
                 Calculated = calculated;
                 Available = 0.0;
+                Remaining = 0.0;
                 TotalFixed = 0.0;
                 TotalFraction = 0.0;
-                Remaining = 0.0;
+                TotalAutos = 0;
             }
 
             public List<GridTrackInfo> Template { get; private set; }
             public Dictionary<GridTrackInfo, MeasureInfo> Calculated { get; private set; }
 
             public double Available;
+            public double Remaining;
             public double TotalFixed;
             public double TotalFraction;
-            public double Remaining;
+            public uint TotalAutos;
         }
 
         private static void ProcessFixedSizes(List<GridTrackInfo> template, Dictionary<GridTrackInfo, MeasureInfo> calculated, double available, out MeasureBlah measure)
@@ -192,21 +194,28 @@ namespace MUXControlsAdhocApp.GridPages
 
             for (int i = 0; i < template.Count; i++)
             {
-                double fixedSize = template[i].Length;
+                GridTrackInfo track = template[i];
+
+                double fixedSize = track.Length;
 
                 // Percentage is effectively a fixed size in that it needs to be applied before any
                 // of the more relative sizes (fraction, auto, etc.)
                 if (fixedSize == 0.0)
                 {
-                    fixedSize = (template[i].Percentage * available);
+                    fixedSize = (track.Percentage * available);
                 }
 
                 measure.TotalFixed += fixedSize;
 
                 // Accumulate the fractional sizes now so we know how many pieces of pie to dish out
-                measure.TotalFraction += template[i].Fraction;
+                measure.TotalFraction += track.Fraction;
 
-                calculated[template[i]] = new MeasureInfo { Size = fixedSize };
+                if (track.Auto)
+                {
+                    measure.TotalAutos++;
+                }
+
+                calculated[track] = new MeasureInfo { Size = fixedSize };
             }
 
             measure.Remaining = measure.Available - measure.TotalFixed;
@@ -218,8 +227,30 @@ namespace MUXControlsAdhocApp.GridPages
             {
                 ChildGridLocations childLocation = GetChildGridLocations(child);
 
+                List<GridTrackInfo> autoHorizontal = new List<GridTrackInfo>();
+                List<GridTrackInfo> autoVertical = new List<GridTrackInfo>();
+
+                Func<GridTrackInfo, GridTrackInfo, MeasureBlah, List<GridTrackInfo>, bool> getAutoTracks = (GridTrackInfo start, GridTrackInfo end, MeasureBlah measure, List<GridTrackInfo> autoTracks) =>
+                {
+                    int startIndex = measure.Template.IndexOf(start);
+                    int endIndex = measure.Template.IndexOf(end);
+
+                    for (int i = startIndex; i<= endIndex; i++)
+                    {
+                        GridTrackInfo track = measure.Template[i];
+                        if (track.Auto)
+                        {
+                            autoTracks.Add(track);
+                        }
+                    }
+                    return (autoTracks.Count > 0);
+                };
+
+                bool affectsHorizontalAuto = getAutoTracks(childLocation.ColStart, childLocation.ColEnd, measureHorizontal, autoHorizontal);
+                bool affectsVerticalAuto = getAutoTracks(childLocation.RowStart, childLocation.RowEnd, measureVertical, autoVertical);
+
                 // If none of the grid tracks are Auto then we can skip this item
-                if (!childLocation.ColStart.Auto && !childLocation.RowStart.Auto)
+                if (!affectsHorizontalAuto && !affectsVerticalAuto)
                 {
                     continue;
                 }
@@ -229,24 +260,36 @@ namespace MUXControlsAdhocApp.GridPages
                 // the space between them. They are all given a crack at being greedy.
                 Size measureSize = new Size(measureHorizontal.Remaining, measureVertical.Remaining);
                 child.Measure(measureSize);
+                DumpInfo($"Child inside Auto range measured to {child.DesiredSize}");
 
                 // Update that row/column with the dimensions
-                Action<GridTrackInfo, MeasureBlah, double> updateAutoBasedOnMeasured = (GridTrackInfo track, MeasureBlah measure, double childDesired) =>
-                {
-                    if (track.Auto)
-                    {
-                        MeasureInfo info = measure.Calculated[track];
-                        if (childDesired > info.Size)
-                        {
-                            info.Size = childDesired;
-                        }
-                    }
-                };
-                updateAutoBasedOnMeasured(childLocation.ColStart, measureHorizontal, child.DesiredSize.Width);
-                updateAutoBasedOnMeasured(childLocation.RowStart, measureVertical, child.DesiredSize.Height);
+                UpdateAutoBasedOnMeasured(autoHorizontal, ref measureHorizontal, child.DesiredSize.Width);
+                UpdateAutoBasedOnMeasured(autoVertical, ref measureVertical, child.DesiredSize.Height);
+            }
+        }
+
+        // NOTE: Can't do as an anonmyous inline Action above because we need to declare the struct MeasureBlah as ref (and Actions don't support ref parameters)
+        private static void UpdateAutoBasedOnMeasured(List<GridTrackInfo> tracks, ref MeasureBlah measure, double childDesired)
+        {
+            if (tracks.Count == 0)
+            {
+                return;
             }
 
-            // TODO: Do we do anything with Remaining? Or is that left to be handled in Arrange?
+            double autoSlice = (childDesired / tracks.Count);
+
+            for (int i = 0; i < tracks.Count; i++)
+            {
+                GridTrackInfo track = tracks[i];
+                MeasureInfo info = measure.Calculated[track];
+                double moreSize = (autoSlice - info.Size);
+                if (moreSize > 0)
+                {
+                    DumpInfo($"Increasing Auto size track {i} by {moreSize}");
+                    info.Size += moreSize;
+                    measure.Remaining -= moreSize;
+                }
+            }
         }
 
         private static void ProcessFractionalSizes(ref MeasureBlah measure)
@@ -279,6 +322,39 @@ namespace MUXControlsAdhocApp.GridPages
             }
 
             // Fractions consume all that's left
+            measure.Remaining = 0.0;
+        }
+
+        // Allow any Auto tracks to take the remaining space
+        private static void ProcessAutoRemainingSize(ref MeasureBlah measure)
+        {
+            if (measure.TotalAutos <= 0)
+            {
+                return;
+            }
+
+            // If there were fractional elements they would have already taken up all the space
+            if (measure.Remaining <= 0.0)
+            {
+                return;
+            }
+
+            // How much extra space do we give up to each Auto element?
+            double autoSlice = measure.Remaining / (double)measure.TotalAutos;
+
+            for (int i = 0; i < measure.Template.Count; i++)
+            {
+                GridTrackInfo track = measure.Template[i];
+                if (!track.Auto)
+                {
+                    continue;
+                }
+
+                MeasureInfo info = measure.Calculated[track];
+                info.Size += autoSlice;
+            }
+
+            // We've consumed all that's left
             measure.Remaining = 0.0;
         }
 
@@ -324,44 +400,48 @@ namespace MUXControlsAdhocApp.GridPages
 
         private GridTrackInfo GetTrack(List<GridTrackInfo> list, GridLocation location, GridTrackInfo previous = null)
         {
-            if (location == null)
+            if (location != null)
             {
-                return null;
-            }
-
-            // Exact track index
-            int index = location.Index;
-            if (index >= 0 && index < list.Count)
-            {
-                return list[index];
-            }
-
-            // Friendly track name
-            if (!String.IsNullOrEmpty(location.LineName))
-            {
-                foreach (GridTrackInfo track in list)
+                // Exact track index
+                int index = location.Index;
+                if (index >= 0 && index < list.Count)
                 {
-                    if (track.LineName == location.LineName)
+                    return list[index];
+                }
+
+                // Friendly track name
+                if (!String.IsNullOrEmpty(location.LineName))
+                {
+                    foreach (GridTrackInfo track in list)
                     {
-                        return track;
+                        if (track.LineName == location.LineName)
+                        {
+                            return track;
+                        }
                     }
                 }
+                return null;
             }
 
             // Span relative to previous track
             if (previous != null)
             {
-                int span = location.Span;
-                if (span == 0)
+                // By default go 1 beyond the previous one
+                int span = 1;
+                if ((location != null) && (location.Span > 0))
                 {
-                    span = 1;
+                    span = location.Span;
                 }
 
                 int previousIndex = list.IndexOf(previous);
                 if (previousIndex >= 0)
                 {
                     int spanIndex = previousIndex + span;
-                    spanIndex = Math.Min(spanIndex, list.Count - 1);
+                    if (spanIndex >= list.Count)
+                    {
+                        // We've spanned right off the grid. Interpret this is "end of the grid"
+                        return null;
+                    }
 
                     return list[spanIndex];
                 }
@@ -372,7 +452,38 @@ namespace MUXControlsAdhocApp.GridPages
 
         private MeasureInfo GetMeasureInfo(GridTrackInfo info, Dictionary<GridTrackInfo, MeasureInfo> calculated)
         {
-            return calculated[info];
+            if (info != null)
+            {
+                MeasureInfo result;
+                if (!calculated.TryGetValue(info, out result))
+                {
+                    return new MeasureInfo();
+                }
+                return result;
+            }
+            else
+            {
+                // TODO: Precalculate this and have a stored MeasureInfo for the last track on hand
+                MeasureInfo lastTrack = new MeasureInfo();
+                foreach (var entry in calculated)
+                {
+                    double right = entry.Value.Start + entry.Value.Size;
+                    lastTrack.Start = Math.Max(lastTrack.Start, right);
+                }
+                return lastTrack;
+            }
+
+        }
+
+#region Tracing
+        [Conditional("TRACE")]
+        private static void DumpConditional(bool condition, string write, ref string separator)
+        {
+            if (condition)
+            {
+                Debug.Write(separator + write);
+                separator = ", ";
+            }
         }
 
         [Conditional("TRACE")]
@@ -380,47 +491,129 @@ namespace MUXControlsAdhocApp.GridPages
         {
             Action<List<GridTrackInfo>> dumpTemplate = (List<GridTrackInfo> template) =>
             {
-                Debug.Indent();
                 for (int i = 0; i < template.Count; i++)
                 {
                     GridTrackInfo track = template[i];
-                    Debug.WriteLine($"{i} {{LineName={track.LineName}, Length={track.Length}, Percentage={track.Percentage}, Fraction={track.Fraction}, Auto={track.Auto}}}");
+                    Debug.Write($"{i} {{");
+                    string separator = String.Empty;
+                    DumpConditional(!String.IsNullOrEmpty(track.LineName), $"LineName='{track.LineName}'", ref separator);
+                    DumpConditional(track.Length != 0.0, $"Length={track.Length}", ref separator);
+                    DumpConditional(track.Percentage != 0.0, $"Percentage={track.Percentage}", ref separator);
+                    DumpConditional(track.Fraction != 0.0, $"Fraction={track.Fraction}", ref separator);
+                    DumpConditional(track.Auto, $"Auto={track.Auto}", ref separator);
+                    Debug.WriteLine($"}}");
                 }
-                Debug.Unindent();
             };
 
-            Debug.WriteLine("TemplateColumns");
+            DumpBegin("TemplateColumns");
             dumpTemplate(_templateColumns);
+            DumpEnd();
 
-            Debug.WriteLine("TemplateRows");
+            DumpBegin("TemplateRows");
             dumpTemplate(_templateRows);
+            DumpEnd();
         }
 
         [Conditional("TRACE")]
-        private void DumpMeasureInfo(ref MeasureBlah measure, string info)
+        private void DumpChildren()
         {
-            Debug.WriteLine(info);
+            DumpBegin("Children");
+            foreach (UIElement child in Children)
+            {
+                Debug.WriteLine(child.GetType().Name + " {");
+                Debug.Indent();
+                ChildGridLocations locations = GetChildGridLocations(child);
 
-            Debug.Indent();
+                Action<GridLocation, string> dumpLocation = (GridLocation location, string info) =>
+                {
+                    Debug.Write(info);
+                    if (location == null)
+                    {
+                        return;
+                    }
+
+                    string separator = String.Empty;
+                    DumpConditional(location.Index >= 0, $"Index={location.Index}", ref separator);
+                    DumpConditional(!String.IsNullOrEmpty(location.LineName), $"LineName='{location.LineName}'", ref separator);
+                    DumpConditional(location.Span > 0, $"Span={location.Span}", ref separator);
+                };
+
+                dumpLocation(GetColumnStart(child), "Column {");
+                dumpLocation(GetColumnEnd(child), "} to {");
+                Debug.WriteLine("}");
+                dumpLocation(GetRowStart(child), "Row {");
+                dumpLocation(GetRowEnd(child), "} to {");
+                Debug.WriteLine("}");
+                Debug.Unindent();
+                Debug.WriteLine("}");
+            }
+            DumpEnd();
+        }
+
+        [Conditional("TRACE")]
+        private static void DumpMeasureInfo(ref MeasureBlah measure, string info, bool includeOffset = false)
+        {
+            DumpBegin(info);
             foreach (var entry in measure.Calculated)
             {
                 int trackIndex = measure.Template.IndexOf(entry.Key);
-                Debug.WriteLine($"{trackIndex} {{Size={entry.Value.Size}, Start={entry.Value.Start}}}");
+                if (includeOffset)
+                {
+                    Debug.WriteLine($"{trackIndex} {{Size={entry.Value.Size}, Start={entry.Value.Start}}}");
+                }
+                else
+                {
+                    Debug.WriteLine($"{trackIndex} {{Size={entry.Value.Size}}}");
+                }
                 
             }
-            Debug.Unindent();
+            DumpEnd();
         }
 
         [Conditional("TRACE")]
-        private void DumpMeasureInfo(ref MeasureBlah horizontalMeasure, ref MeasureBlah verticalMeasure, string info)
+        private static void DumpMeasureInfo(ref MeasureBlah horizontalMeasure, ref MeasureBlah verticalMeasure, string info, bool includeOffset = false)
         {
-            DumpMeasureInfo(ref horizontalMeasure, "Horizontal " + info);
-            DumpMeasureInfo(ref verticalMeasure, "Vertical " + info);
+            DumpBegin(info);
+            DumpMeasureInfo(ref horizontalMeasure, "Columns", includeOffset);
+            Debug.WriteLine($"Remaining={horizontalMeasure.Remaining}");
+            DumpMeasureInfo(ref verticalMeasure, "Rows", includeOffset);
+            Debug.WriteLine($"Remaining={verticalMeasure.Remaining}");
+            DumpEnd();
         }
+
+        [Conditional("TRACE")]
+        private static void DumpBegin(Size size, string info)
+        {
+            Debug.WriteLine($"{info}({size.Width}, {size.Height}) {{");
+            Debug.Indent();
+        }
+
+        [Conditional("TRACE")]
+        private static void DumpBegin(string info)
+        {
+            Debug.WriteLine($"{info} {{");
+            Debug.Indent();
+        }
+
+        [Conditional("TRACE")]
+        private static void DumpEnd()
+        {
+            Debug.Unindent();
+            Debug.WriteLine("}");
+        }
+
+        [Conditional("TRACE")]
+        private static void DumpInfo(string info)
+        {
+            Debug.WriteLine(info);
+        }
+#endregion
 
         protected override Size MeasureOverride(Size availableSize)
         {
+            DumpBegin(availableSize, "Measure");
             DumpTemplates();
+            DumpChildren();
 
             _columns.Clear();
             _rows.Clear();
@@ -430,16 +623,21 @@ namespace MUXControlsAdhocApp.GridPages
             MeasureBlah verticalMeasure;
             ProcessFixedSizes(_templateColumns, _columns, availableSize.Width, out horizontalMeasure);
             ProcessFixedSizes(_templateRows, _rows, availableSize.Height, out verticalMeasure);
-            DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "fixed sizes");
+            DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "Fixed");
 
             // Next we need to know how large the auto sizes are
             ProcessAutoSizes(ref horizontalMeasure, ref verticalMeasure);
-            DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "auto sizes");
+            DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "Auto");
 
             // Then we can figure out how large the fractional sizes should be
             ProcessFractionalSizes(ref horizontalMeasure);
             ProcessFractionalSizes(ref verticalMeasure);
-            DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "fractional sizes");
+            DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "Fractional");
+
+            // And then the auto elements can claim any remaining sizes
+            ProcessAutoRemainingSize(ref horizontalMeasure);
+            ProcessAutoRemainingSize(ref verticalMeasure);
+            DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "Auto remainder");
 
             Size usedSize = new Size(0, 0);
 
@@ -460,7 +658,7 @@ namespace MUXControlsAdhocApp.GridPages
             // Now that the sizes are known we can calculate the offsets for the grid tracks
             double width = ProcessOffsets(ref horizontalMeasure);
             double height = ProcessOffsets(ref verticalMeasure);
-            DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "offsets");
+            DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "Calculate offsets", includeOffset: true);
 
             // If there's no entry for columns/rows use the minimal size, otherwise use the whole space.
             if (_templateColumns.Count > 0)
@@ -472,37 +670,40 @@ namespace MUXControlsAdhocApp.GridPages
                 height = availableSize.Height;
             }
 
+            DumpEnd();
             return new Size(width, height);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
+            DumpBegin(finalSize, "Arrange");
             foreach (UIElement child in Children)
             {
                 ChildGridLocations childLocation = GetChildGridLocations(child);
 
                 MeasureInfo colMeasure = GetMeasureInfo(childLocation.ColStart, _columns);
                 MeasureInfo rowMeasure = GetMeasureInfo(childLocation.RowStart, _rows);
+                MeasureInfo colEndMesure = GetMeasureInfo(childLocation.ColEnd, _columns);
+                MeasureInfo rowEndMesure = GetMeasureInfo(childLocation.RowEnd, _rows);
 
                 double left = colMeasure.Start;
                 double top = rowMeasure.Start;
-                double right = left + colMeasure.Size;
-                double bottom = top + rowMeasure.Size;
+                double right = colEndMesure.Start;
+                double bottom = rowEndMesure.Start;
 
-                if (childLocation.ColEnd!= null)
-                {
-                    MeasureInfo colEndMesure = GetMeasureInfo(childLocation.ColEnd, _columns);
-                    right = colEndMesure.Start;
-                }
-                if (childLocation.RowEnd != null)
-                {
-                    MeasureInfo colEndMesure = GetMeasureInfo(childLocation.RowEnd, _rows);
-                    right = colEndMesure.Start;
-                }
+                DumpBegin(child.GetType().Name);
+                DumpInfo("leftTrack=" + _templateColumns.IndexOf(childLocation.ColStart));
+                DumpInfo("topTrack=" + _templateRows.IndexOf(childLocation.RowStart));
+                DumpInfo("rightTrack=" + _templateColumns.IndexOf(childLocation.ColEnd));
+                DumpInfo("bottomTrack=" + _templateRows.IndexOf(childLocation.RowEnd));
+                DumpInfo($"left={left}, top={top}, right={right}, bottom={bottom}");
+                DumpEnd();
 
                 Rect arrangeRect = new Rect(left, top, (right - left), (bottom - top));
                 child.Arrange(arrangeRect);
             }
+
+            DumpEnd();
             return finalSize;
         }
     }
