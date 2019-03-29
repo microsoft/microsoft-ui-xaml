@@ -18,6 +18,7 @@
             <controls:NavigationViewItem Tag="Home" Icon="Play" Content="Playground"/>
             <controls:NavigationViewItemSeparator/>
             <controls:NavigationViewItemHeader>Container Properties</controls:NavigationViewItemHeader>
+            <controls:NavigationViewItem Tag="TemplateColumnsAndRows" Icon="DockLeft" Content="TemplateColumns &amp; TemplateRows"/>
             <controls:NavigationViewItemSeparator/>
             <controls:NavigationViewItemHeader>Item Properties</controls:NavigationViewItemHeader>
         </controls:NavigationView.MenuItems>
