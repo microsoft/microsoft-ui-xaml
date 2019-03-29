@@ -13,35 +13,29 @@
             <ColumnDefinition/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="1">
-            <StackPanel.Resources>
-                <Style TargetType="TextBlock">
-                    <Setter Property="Foreground" Value="White"/>
-                    <Setter Property="VerticalAlignment" Value="Center"/>
-                    <Setter Property="HorizontalAlignment" Value="Center"/>
-                    <Setter Property="FontWeight" Value="Bold"/>
-                    <Setter Property="FontSize" Value="18"/>
-                </Style>
-                <Style TargetType="Grid">
-                    <Setter Property="Background" Value="Orange"/>
-                    <!--<Setter Property="MinWidth" Value="80"/>
-                    <Setter Property="MinHeight" Value="50"/>-->
-                    <Setter Property="Margin" Value="2"/>
-                    <Setter Property="CornerRadius" Value="6"/>
-                    <Setter Property="BorderBrush" Value="Black"/>
-                    <Setter Property="BorderThickness" Value="2"/>
-                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
-                    <Setter Property="VerticalAlignment" Value="Stretch"/>
-                </Style>
+
+        <!-- MaxHeight is necessary because 25% of Infinity is Infinity :/ -->
+        <Grid Grid.Column="1" MaxHeight="400">
+            <Grid.Resources>
                 <Style TargetType="local:Grid">
-                    <Setter Property="Background" Value="Purple"/>
-                    <Setter Property="Margin" Value="0,0,0,20"/>
                     <Setter Property="HorizontalAlignment" Value="Left"/>
                 </Style>
-            </StackPanel.Resources>
+            </Grid.Resources>
 
-            <!-- MaxHeight is necessary because 25% of Infinity is Infinity :/ -->
-            <local:Grid x:Name="_grid" Background="Purple" MaxHeight="400">
+            <local:Grid x:Name="_grid" MaxHeight="400">
+                <local:Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="Gray"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                    </Style>
+                    <Style TargetType="Border">
+                        <Setter Property="BorderBrush" Value="LightGray"/>
+                        <Setter Property="BorderThickness" Value="1"/>
+                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                        <Setter Property="VerticalAlignment" Value="Stretch"/>
+                    </Style>
+                </local:Grid.Resources>
                 <!--
                     grid-template-columns: [first] 40px [line2] 50px [line3] auto [col4-start] 50px [five] 40px [end];
                     grid-template-rows: [row1-start] 25% [row1-end] 100px [third-line] auto [last-line];
@@ -61,7 +55,7 @@
                     <!-- TODO: LineName="last-line" as a name for the last edge -->
                 </local:Grid.TemplateRows>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="0"/>
                     </local:Grid.ColumnStart>
@@ -69,9 +63,9 @@
                         <local:GridLocation Index="0"/>
                     </local:Grid.RowStart>
                     <TextBlock>0,0</TextBlock>
-                </Grid>
+                </Border>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="1"/>
                     </local:Grid.ColumnStart>
@@ -79,9 +73,9 @@
                         <local:GridLocation Index="0"/>
                     </local:Grid.RowStart>
                     <TextBlock>1,0</TextBlock>
-                </Grid>
+                </Border>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="2"/>
                     </local:Grid.ColumnStart>
@@ -89,9 +83,9 @@
                         <local:GridLocation Index="0"/>
                     </local:Grid.RowStart>
                     <TextBlock>2,0</TextBlock>
-                </Grid>
+                </Border>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="3"/>
                     </local:Grid.ColumnStart>
@@ -99,9 +93,9 @@
                         <local:GridLocation Index="0"/>
                     </local:Grid.RowStart>
                     <TextBlock>3,0</TextBlock>
-                </Grid>
+                </Border>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="4"/>
                     </local:Grid.ColumnStart>
@@ -109,9 +103,9 @@
                         <local:GridLocation Index="0"/>
                     </local:Grid.RowStart>
                     <TextBlock>4,0</TextBlock>
-                </Grid>
+                </Border>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="0"/>
                     </local:Grid.ColumnStart>
@@ -119,9 +113,9 @@
                         <local:GridLocation Index="1"/>
                     </local:Grid.RowStart>
                     <TextBlock>0,1</TextBlock>
-                </Grid>
+                </Border>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="1"/>
                     </local:Grid.ColumnStart>
@@ -129,9 +123,9 @@
                         <local:GridLocation Index="1"/>
                     </local:Grid.RowStart>
                     <TextBlock>2,1</TextBlock>
-                </Grid>
+                </Border>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="2"/>
                     </local:Grid.ColumnStart>
@@ -139,9 +133,9 @@
                         <local:GridLocation Index="1"/>
                     </local:Grid.RowStart>
                     <TextBlock>2,1</TextBlock>
-                </Grid>
+                </Border>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="3"/>
                     </local:Grid.ColumnStart>
@@ -149,9 +143,9 @@
                         <local:GridLocation Index="1"/>
                     </local:Grid.RowStart>
                     <TextBlock>3,1</TextBlock>
-                </Grid>
+                </Border>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="4"/>
                     </local:Grid.ColumnStart>
@@ -159,9 +153,9 @@
                         <local:GridLocation Index="1"/>
                     </local:Grid.RowStart>
                     <TextBlock>4,1</TextBlock>
-                </Grid>
+                </Border>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="0"/>
                     </local:Grid.ColumnStart>
@@ -169,9 +163,9 @@
                         <local:GridLocation Index="2"/>
                     </local:Grid.RowStart>
                     <TextBlock>0,2</TextBlock>
-                </Grid>
+                </Border>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="1"/>
                     </local:Grid.ColumnStart>
@@ -179,9 +173,9 @@
                         <local:GridLocation Index="2"/>
                     </local:Grid.RowStart>
                     <TextBlock>1,2</TextBlock>
-                </Grid>
+                </Border>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="2"/>
                     </local:Grid.ColumnStart>
@@ -189,9 +183,9 @@
                         <local:GridLocation Index="2"/>
                     </local:Grid.RowStart>
                     <TextBlock>2,2</TextBlock>
-                </Grid>
+                </Border>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="3"/>
                     </local:Grid.ColumnStart>
@@ -199,9 +193,9 @@
                         <local:GridLocation Index="2"/>
                     </local:Grid.RowStart>
                     <TextBlock>3,2</TextBlock>
-                </Grid>
+                </Border>
 
-                <Grid>
+                <Border>
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="4"/>
                     </local:Grid.ColumnStart>
@@ -209,11 +203,30 @@
                         <local:GridLocation Index="2"/>
                     </local:Grid.RowStart>
                     <TextBlock>4,2</TextBlock>
-                </Grid>
+                </Border>
 
             </local:Grid>
 
-            <local:Grid Background="LightGray" MaxHeight="400">
+            <local:Grid>
+                <local:Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="FontSize" Value="18"/>
+                    </Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Background" Value="Orange"/>
+                        <Setter Property="Margin" Value="2"/>
+                        <Setter Property="CornerRadius" Value="6"/>
+                        <Setter Property="BorderBrush" Value="Black"/>
+                        <Setter Property="BorderThickness" Value="2"/>
+                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                        <Setter Property="VerticalAlignment" Value="Stretch"/>
+                    </Style>
+                </local:Grid.Resources>
+                
                 <!--
                     grid-template-columns: [first] 40px [line2] 50px [line3] auto [col4-start] 50px [five] 40px [end];
                     grid-template-rows: [row1-start] 25% [row1-end] 100px [third-line] auto [last-line];
@@ -240,7 +253,7 @@
                   grid-row-start: row1-start
                   grid-row-end: 3;
                 }-->
-                <Grid Background="#CCFFA500" Opacity="0.5">
+                <Grid Background="#88FFA500" Opacity="0.5">
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="1"/>
                     </local:Grid.ColumnStart>
@@ -263,7 +276,7 @@
                   grid-row-start: 2
                   grid-row-end: span 2
                 }-->
-                <Grid Background="#CC0000FF" Opacity="0.5">
+                <Grid Background="#880000FF" Opacity="0.5">
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="0"/>
                     </local:Grid.ColumnStart>
@@ -284,7 +297,7 @@
                   grid-column: 3 / span 2;
                   grid-row: third-line / 4;
                 }-->
-                <Grid Background="#CCFF0000" Opacity="0.5">
+                <Grid Background="#88FF0000" Opacity="0.5">
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="2"/>
                     </local:Grid.ColumnStart>
@@ -304,7 +317,7 @@
                 .item-d {
                   grid-area: 1 / col4-start / last-line / 6
                 }-->
-                <Grid Background="#CC8FBC8F">
+                <Grid Background="#888FBC8F">
                     <local:Grid.ColumnStart>
                         <local:GridLocation LineName="col4-start"/>
                     </local:Grid.ColumnStart>
@@ -322,7 +335,8 @@
 
             </local:Grid>
 
-        </StackPanel>
+        </Grid>
+
         <StackPanel Grid.Column="0">
             <Button Click="InvalidateButton_Click" Content="Invalidate"/>
         </StackPanel>
