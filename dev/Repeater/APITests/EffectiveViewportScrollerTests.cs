@@ -360,7 +360,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 repeater.ElementPrepared += (sender, args) =>
                 {
-                    Log.Comment("Realized index: " + args.Index + "Wating for index " + waitingForIndex);
+                    Log.Comment($"Realized index: {args.Index} Wating for index {waitingForIndex}");
                     if (args.Index == waitingForIndex)
                     {
                         indexRealized.Set();
