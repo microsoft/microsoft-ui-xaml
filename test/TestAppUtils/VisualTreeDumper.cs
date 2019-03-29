@@ -15,9 +15,9 @@ namespace MUXControls.TestAppUtils
     {
         public interface IFilter
         {
-            bool ShouldLogElement(string elementName);
-            bool ShouldLogProperty(string propertyName);
-            bool ShouldLogPropertyValuePair(string propertyName, string value);
+            bool ShouldVisitElement(string elementName);
+            bool ShouldVisitProperty(string propertyName);
+            bool ShouldVisitPropertyValuePair(string propertyName, string value);
         }
 
         public interface IPropertyValueTranslator
@@ -64,23 +64,23 @@ namespace MUXControls.TestAppUtils
 
             public bool ShouldVisitNode(DependencyObject node)
             {
-                return node != null && _filter.ShouldLogElement(node.GetType().FullName);
+                return node != null && _filter.ShouldVisitElement(node.GetType().FullName);
             }
 
             public bool ShouldVisitPropertiesForNode(DependencyObject node)
             {
-                return (node as UIElement) != null && _filter.ShouldLogElement(node.GetType().FullName);
+                return (node as UIElement) != null && _filter.ShouldVisitElement(node.GetType().FullName);
             }
 
             public bool ShouldVisitProperty(PropertyInfo propertyInfo)
             {
-                return _filter.ShouldLogProperty(propertyInfo.Name);
+                return _filter.ShouldVisitProperty(propertyInfo.Name);
             }
 
             public void VisitProperty(string propertyName, object value)
             {
                 var v = _translator.PropertyValueToString(propertyName, value);
-                if (_filter.ShouldLogPropertyValuePair(propertyName, v))
+                if (_filter.ShouldVisitPropertyValuePair(propertyName, v))
                 {
                     _logger.LogProperty(_indent+1, propertyName, v);
                 }
@@ -143,17 +143,17 @@ namespace MUXControls.TestAppUtils
         {
             private static readonly string[] _propertyNamePostfixWhiteList = new string[] {"Brush", "Thickness"};
             private static readonly string[] _propertyNameWhiteList = new string[] {"Background", "Foreground", "Padding", "Margin", "RenderSize", "Visibility", "Name"};
-            public virtual bool ShouldLogPropertyValuePair(string propertyName, string value)
+            public virtual bool ShouldVisitPropertyValuePair(string propertyName, string value)
             {
                 return true;
             }
 
-            public virtual bool ShouldLogElement(string elementName)
+            public virtual bool ShouldVisitElement(string elementName)
             {
                 return true;
             }
 
-            public virtual bool ShouldLogProperty(string propertyName)
+            public virtual bool ShouldVisitProperty(string propertyName)
             {
                 return (_propertyNamePostfixWhiteList.Where(item => propertyName.EndsWith(item)).Count()) > 0 || _propertyNameWhiteList.Contains(propertyName);
             }

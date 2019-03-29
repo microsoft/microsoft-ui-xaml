@@ -445,8 +445,8 @@ namespace MUXControlsTestApp
             windowBounds.BorderBrush = new SolidColorBrush(Colors.Red);
             windowBounds.BorderThickness = new Thickness(1.0);
             testWindowBounds.Child = windowBounds;
-            testWindowBounds.HorizontalOffset = windowRect.X + (((bool)UseTestScreenBoundsCheckBox.IsChecked) ? double.Parse(this.TestScreenBoundsXTextBox.Text) : 0);
-            testWindowBounds.VerticalOffset = windowRect.Y + (((bool)UseTestScreenBoundsCheckBox.IsChecked) ? double.Parse(this.TestScreenBoundsYTextBox.Text) : 0);
+            testWindowBounds.HorizontalOffset = windowRect.X;
+            testWindowBounds.VerticalOffset = windowRect.Y;
             testWindowBounds.IsOpen = true;
         }
 
@@ -526,37 +526,41 @@ namespace MUXControlsTestApp
             {
                 getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Right;
             }
-            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementTopEdgeRight)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementTopRight)
             {
-                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.TopEdgeAlignedRight;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.TopRight;
             }
-            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementTopEdgeLeft)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementTopLeft)
             {
-                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.TopEdgeAlignedLeft;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.TopLeft;
             }
-            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementBottomEdgeRight)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementBottomRight)
             {
-                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.BottomEdgeAlignedRight;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.BottomRight;
             }
-            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementBottomEdgeLeft)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementBottomLeft)
             {
-                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.BottomEdgeAlignedLeft;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.BottomLeft;
             }
-            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementLeftEdgeTop)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementLeftTop)
             {
-                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.LeftEdgeAlignedTop;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.LeftTop;
             }
-            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementLeftEdgeBottom)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementLeftBottom)
             {
-                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.LeftEdgeAlignedBottom;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.LeftBottom;
             }
-            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementRightEdgeTop)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementRightTop)
             {
-                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.RightEdgeAlignedTop;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.RightTop;
             }
-            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementRightEdgeBottom)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementRightBottom)
             {
-                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.RightEdgeAlignedBottom;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.RightBottom;
+            }
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementCenter)
+            {
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Center;
             }
             else
             {
