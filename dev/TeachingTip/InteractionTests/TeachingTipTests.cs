@@ -554,6 +554,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     SetCloseButtonContent(CloseButtonContentOptions.ShortText);
                     OpenTeachingTip();
                     CloseOpenAndCloseWithJustKeyboardViaF6();
+                    OpenTeachingTip();
+                    UseF6ToReturnToTestPageToCloseTip();
+                    SetCloseButtonContent(CloseButtonContentOptions.NoText);
                 }
             }
         }
@@ -566,6 +569,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             KeyboardHelper.PressKey(Key.Enter);
             WaitForTipOpened();
             KeyboardHelper.PressKey(Key.F6);
+            KeyboardHelper.PressKey(Key.Enter);
+            WaitForTipClosed();
+        }
+        private void UseF6ToReturnToTestPageToCloseTip()
+        {
+            KeyboardHelper.PressKey(Key.F6);
+            KeyboardHelper.PressKey(Key.Tab);
+            KeyboardHelper.PressKey(Key.F6);
+            KeyboardHelper.PressKey(Key.Tab);
             KeyboardHelper.PressKey(Key.Enter);
             WaitForTipClosed();
         }

@@ -958,8 +958,12 @@ void TeachingTip::OnHeroContentPlacementChanged()
 
 void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args)
 {
-    if (args.VirtualKey() == winrt::VirtualKey::F6 && args.EventType() == winrt::CoreAcceleratorKeyEventType::KeyDown)
+    if (!args.Handled() &&
+        IsOpen() &&
+        args.VirtualKey() == winrt::VirtualKey::F6 &&
+        (args.EventType() == winrt::CoreAcceleratorKeyEventType::KeyDown || args.EventType() == winrt::CoreAcceleratorKeyEventType::SystemKeyDown))
     {
+        args.Handled(true);
         //  Logging usage telemetry
         if (m_hasF6BeenInvoked)
         {
