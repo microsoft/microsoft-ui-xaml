@@ -31,7 +31,7 @@
                                           ActionButtonClick="OnTeachingTipActionButtonClicked"
                                           CloseButtonClick="OnTeachingTipCloseButtonClicked"
                                           Target="{x:Bind targetButton}"
-                                      FlowDirection="RightToLeft">
+                                          FlowDirection="RightToLeft">
                         <muxc:TeachingTip.IconSource>
                             <muxc:SymbolIconSource Symbol="People"/>
                         </muxc:TeachingTip.IconSource>
