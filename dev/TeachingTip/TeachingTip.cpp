@@ -958,7 +958,7 @@ void TeachingTip::OnHeroContentPlacementChanged()
 
 void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args)
 {
-    if (args.VirtualKey() == winrt::VirtualKey::F6)
+    if (args.VirtualKey() == winrt::VirtualKey::F6 && args.EventType() == winrt::CoreAcceleratorKeyEventType::KeyDown)
     {
         //  Logging usage telemetry
         if (m_hasF6BeenInvoked)
@@ -971,58 +971,64 @@ void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const 
             m_hasF6BeenInvoked = true;
         }
 
-        winrt::Button f6Button = [this]() -> winrt::Button
+        auto const focusFromContent = [this, args]()
         {
-            auto firstButton = m_closeButton.get();
-            auto secondButton = m_alternateCloseButton.get();
-            if (CloseButtonContent())
+            auto parent = winrt::FocusManager::GetFocusedElement();
+            auto const rootElement = m_rootElement.get();
+            while (parent)
             {
-                std::swap(firstButton, secondButton);
+                if (auto parentAsUIElement = parent.try_as<winrt::UIElement>())
+                {
+                    if (parentAsUIElement == rootElement)
+                    {
+                        return true;
+                    }
+                }
+                parent = winrt::VisualTreeHelper::GetParent(parent.try_as<winrt::DependencyObject>());
             }
-            if (firstButton && firstButton.Visibility() == winrt::Visibility::Visible)
-            {
-                return firstButton;
-            }
-            else if (secondButton && secondButton.Visibility() == winrt::Visibility::Visible)
-            {
-                return secondButton;
-            }
-            return nullptr;
+            return false;
         }();
 
-        m_closeButtonGettingFocusFromF6Revoker = f6Button.GettingFocus(winrt::auto_revoke, { this, &TeachingTip::OnCloseButtonGettingFocusFromF6 });
-        f6Button.Focus(winrt::FocusState::Keyboard);
+        if (focusFromContent)
+        {
+            if (auto&& previouslyFocusedElement = m_previouslyFocusedElement.get())
+            {
+                previouslyFocusedElement.Focus(winrt::FocusState::Keyboard);
+            }
+        }
+        else
+        {
+            const winrt::Button f6Button = [this]() -> winrt::Button
+            {
+                auto firstButton = m_closeButton.get();
+                auto secondButton = m_alternateCloseButton.get();
+                if (CloseButtonContent())
+                {
+                    std::swap(firstButton, secondButton);
+                }
+                if (firstButton && firstButton.Visibility() == winrt::Visibility::Visible)
+                {
+                    return firstButton;
+                }
+                else if (secondButton && secondButton.Visibility() == winrt::Visibility::Visible)
+                {
+                    return secondButton;
+                }
+                return nullptr;
+            }();
+
+            if (f6Button)
+            {
+                m_closeButtonGettingFocusFromF6Revoker = f6Button.GettingFocus(winrt::auto_revoke, { this, &TeachingTip::OnCloseButtonGettingFocusFromF6 });
+                f6Button.Focus(winrt::FocusState::Keyboard);
+            }
+        }
     }
 }
 
 void TeachingTip::OnCloseButtonGettingFocusFromF6(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args)
 {
-    auto const focusFromContent = [this, args]()
-    {
-        auto parent = winrt::VisualTreeHelper::GetParent(args.OldFocusedElement());
-        while (parent)
-        {
-            if (auto parentAsPopup = parent.try_as<winrt::Popup>())
-            {
-                if (parentAsPopup == m_popup.get())
-                {
-                        return true;
-                }
-            }
-            parent = winrt::VisualTreeHelper::GetParent(parent);
-        }
-        return false;
-    }();
-
-    if (focusFromContent)
-    {
-        m_previouslyFocusedElement.get().Focus(winrt::FocusState::Keyboard);
-    }
-    else
-    {
-        m_previouslyFocusedElement.set(args.OldFocusedElement().try_as<winrt::Control>());
-    }
-
+    m_previouslyFocusedElement.set(args.OldFocusedElement().try_as<winrt::Control>());
     m_closeButtonGettingFocusFromF6Revoker.revoke();
 }
 
