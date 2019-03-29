@@ -50,6 +50,7 @@ namespace RuntimeProfiler
         ProfMemberId_Acrylic_TintLuminosityOpacity_Changed = 0,
         ProfMemberId_TeachingTip_F6AccessKey_FirstInvocation,
         ProfMemberId_TeachingTip_F6AccessKey_SubsequentInvocation,
+        ProfMemberId_TeachingTip_TipDidNotOpenDueToSize,
         ProfMemberId_Size
     } ProfilerMemberId;
 
