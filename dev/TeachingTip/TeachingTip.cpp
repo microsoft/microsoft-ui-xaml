@@ -793,9 +793,9 @@ void TeachingTip::OnIsOpenChanged()
             auto popup = winrt::Popup();
             m_popupOpenedRevoker = popup.Opened(winrt::auto_revoke, { this, &TeachingTip::OnPopupOpened });
             m_popupClosedRevoker = popup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
-            if (SharedHelpers::Is19H1OrHigher())
+            if (auto&& popup3 = popup.try_as<winrt::Controls::Primitives::IPopup3>())
             {
-                popup.ShouldConstrainToRootBounds(ShouldConstrainToRootBounds());
+                popup3.ShouldConstrainToRootBounds(ShouldConstrainToRootBounds());
             }
             m_popup.set(popup);
             SetPopupAutomationProperties();
@@ -924,7 +924,7 @@ void TeachingTip::OnShouldConstrainToRootBoundsChanged()
     // and replace it with a new popup.  This variable indicates this state.
 
     //The underlying popup api is only available on 19h1 plus, if we aren't on that no opt.
-    if (SharedHelpers::Is19H1OrHigher())
+    if (m_popup.get().try_as<winrt::Controls::Primitives::IPopup3>())
     {
         m_createNewPopupOnOpen = true;
     }
