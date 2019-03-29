@@ -41,7 +41,7 @@
             </StackPanel.Resources>
 
             <!-- MaxHeight is necessary because 25% of Infinity is Infinity :/ -->
-            <local:Grid x:Name="_grid" Background="Purple" MaxHeight="500">
+            <local:Grid x:Name="_grid" Background="Purple" MaxHeight="400">
                 <!--
                     grid-template-columns: [first] 40px [line2] 50px [line3] auto [col4-start] 50px [five] 40px [end];
                     grid-template-rows: [row1-start] 25% [row1-end] 100px [third-line] auto [last-line];
@@ -123,6 +123,46 @@
 
                 <Grid>
                     <local:Grid.ColumnStart>
+                        <local:GridLocation Index="1"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.RowStart>
+                        <local:GridLocation Index="1"/>
+                    </local:Grid.RowStart>
+                    <TextBlock>2,1</TextBlock>
+                </Grid>
+
+                <Grid>
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation Index="2"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.RowStart>
+                        <local:GridLocation Index="1"/>
+                    </local:Grid.RowStart>
+                    <TextBlock>2,1</TextBlock>
+                </Grid>
+
+                <Grid>
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation Index="3"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.RowStart>
+                        <local:GridLocation Index="1"/>
+                    </local:Grid.RowStart>
+                    <TextBlock>3,1</TextBlock>
+                </Grid>
+
+                <Grid>
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation Index="4"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.RowStart>
+                        <local:GridLocation Index="1"/>
+                    </local:Grid.RowStart>
+                    <TextBlock>4,1</TextBlock>
+                </Grid>
+
+                <Grid>
+                    <local:Grid.ColumnStart>
                         <local:GridLocation Index="0"/>
                     </local:Grid.ColumnStart>
                     <local:Grid.RowStart>
@@ -131,11 +171,49 @@
                     <TextBlock>0,2</TextBlock>
                 </Grid>
 
+                <Grid>
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation Index="1"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.RowStart>
+                        <local:GridLocation Index="2"/>
+                    </local:Grid.RowStart>
+                    <TextBlock>1,2</TextBlock>
+                </Grid>
 
+                <Grid>
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation Index="2"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.RowStart>
+                        <local:GridLocation Index="2"/>
+                    </local:Grid.RowStart>
+                    <TextBlock>2,2</TextBlock>
+                </Grid>
+
+                <Grid>
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation Index="3"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.RowStart>
+                        <local:GridLocation Index="2"/>
+                    </local:Grid.RowStart>
+                    <TextBlock>3,2</TextBlock>
+                </Grid>
+
+                <Grid>
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation Index="4"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.RowStart>
+                        <local:GridLocation Index="2"/>
+                    </local:Grid.RowStart>
+                    <TextBlock>4,2</TextBlock>
+                </Grid>
 
             </local:Grid>
 
-            <local:Grid Background="LightGray" MaxHeight="500">
+            <local:Grid Background="LightGray" MaxHeight="400">
                 <!--
                     grid-template-columns: [first] 40px [line2] 50px [line3] auto [col4-start] 50px [five] 40px [end];
                     grid-template-rows: [row1-start] 25% [row1-end] 100px [third-line] auto [last-line];
@@ -162,7 +240,7 @@
                   grid-row-start: row1-start
                   grid-row-end: 3;
                 }-->
-                <Grid Background="Orange">
+                <Grid Background="#CCFFA500" Opacity="0.5">
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="1"/>
                     </local:Grid.ColumnStart>
@@ -185,7 +263,7 @@
                   grid-row-start: 2
                   grid-row-end: span 2
                 }-->
-                <Grid Background="Blue">
+                <Grid Background="#CC0000FF" Opacity="0.5">
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="0"/>
                     </local:Grid.ColumnStart>
@@ -198,7 +276,48 @@
                     <local:Grid.RowEnd>
                         <local:GridLocation Span="2"/>
                     </local:Grid.RowEnd>
-                    <TextBlock>item-a</TextBlock>
+                    <TextBlock>item-b</TextBlock>
+                </Grid>
+
+                <!--
+                .item-c {
+                  grid-column: 3 / span 2;
+                  grid-row: third-line / 4;
+                }-->
+                <Grid Background="#CCFF0000" Opacity="0.5">
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation Index="2"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.ColumnEnd>
+                        <local:GridLocation Span="2"/>
+                    </local:Grid.ColumnEnd>
+                    <local:Grid.RowStart>
+                        <local:GridLocation LineName="third-line"/>
+                    </local:Grid.RowStart>
+                    <local:Grid.RowEnd>
+                        <local:GridLocation Index="3"/>
+                    </local:Grid.RowEnd>
+                    <TextBlock>item-c</TextBlock>
+                </Grid>
+
+                <!--
+                .item-d {
+                  grid-area: 1 / col4-start / last-line / 6
+                }-->
+                <Grid Background="#CC8FBC8F">
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation LineName="col4-start"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.ColumnEnd>
+                        <local:GridLocation Index="5"/>
+                    </local:Grid.ColumnEnd>
+                    <local:Grid.RowStart>
+                        <local:GridLocation Index="0"/>
+                    </local:Grid.RowStart>
+                    <local:Grid.RowEnd>
+                        <local:GridLocation LineName="last-line"/>
+                    </local:Grid.RowEnd>
+                    <TextBlock>item-d</TextBlock>
                 </Grid>
 
             </local:Grid>
