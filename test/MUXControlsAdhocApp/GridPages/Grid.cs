@@ -232,10 +232,15 @@ namespace MUXControlsAdhocApp.GridPages
 
                 Func<GridTrackInfo, GridTrackInfo, MeasureBlah, List<GridTrackInfo>, bool> getAutoTracks = (GridTrackInfo start, GridTrackInfo end, MeasureBlah measure, List<GridTrackInfo> autoTracks) =>
                 {
+                    if ((start == null) || (end == null))
+                    {
+                        return false;
+                    }
+
                     int startIndex = measure.Template.IndexOf(start);
                     int endIndex = measure.Template.IndexOf(end);
 
-                    for (int i = startIndex; i<= endIndex; i++)
+                    for (int i = startIndex; i <= endIndex; i++)
                     {
                         GridTrackInfo track = measure.Template[i];
                         if (track.Auto)
