@@ -431,7 +431,8 @@
                               MinWidth="{ThemeResource TeachingTipMinWidth}"
                               MaxHeight="{ThemeResource TeachingTipMaxHeight}"
                               MaxWidth="{ThemeResource TeachingTipMaxWidth}"
-                              AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}">
+                              AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
+                              FlowDirection="{TemplateBinding FlowDirection}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="{StaticResource TeachingTipTailShortSideLength}"/>
                                 <ColumnDefinition Width="{StaticResource TeachingTipTailMargin}"/>

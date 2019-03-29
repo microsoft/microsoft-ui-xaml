@@ -439,23 +439,24 @@ bool TeachingTip::PositionTargetedPopup()
     double tipWidth = tailOcclusionGrid.ActualWidth();
 
     auto&& popup = m_popup.get();
+    auto isLeftToRight = FlowDirection() == winrt::FlowDirection::LeftToRight;
     // Depending on the effective placement mode of the tip we use a combination of the tip's size, the target's position within the app, the target's
     // size, and the target offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
     switch (m_currentEffectiveTipPlacementMode)
     {
     case winrt::TeachingTipPlacementMode::Top:
         popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y - tipHeight - offset.Top);
-        popup.HorizontalOffset((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width - tipWidth) / 2.0f));
+        popup.HorizontalOffset((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width - (isLeftToRight ? tipWidth : -tipWidth)) / 2.0f));
         break;
 
     case winrt::TeachingTipPlacementMode::Bottom:
         popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y + m_currentTargetBoundsInCoreWindowSpace.Height + static_cast<float>(offset.Bottom));
-        popup.HorizontalOffset((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width - tipWidth) / 2.0f));
+        popup.HorizontalOffset((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width - (isLeftToRight ? tipWidth : -tipWidth)) / 2.0f));
         break;
 
     case winrt::TeachingTipPlacementMode::Left:
         popup.VerticalOffset(((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Height - tipHeight) / 2.0f);
-        popup.HorizontalOffset(m_currentTargetBoundsInCoreWindowSpace.X - tipWidth - offset.Left);
+        popup.HorizontalOffset(m_currentTargetBoundsInCoreWindowSpace.X - (isLeftToRight ? tipWidth : -tipWidth) - offset.Left);
         break;
 
     case winrt::TeachingTipPlacementMode::Right:
@@ -470,7 +471,7 @@ bool TeachingTip::PositionTargetedPopup()
 
     case winrt::TeachingTipPlacementMode::TopLeft:
         popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y - tipHeight - offset.Top);
-        popup.HorizontalOffset(((((m_currentTargetBoundsInCoreWindowSpace.X  * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width) / 2.0f) - tipWidth + MinimumTipEdgeToTailCenter()));
+        popup.HorizontalOffset(((((m_currentTargetBoundsInCoreWindowSpace.X  * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width) / 2.0f) - (isLeftToRight ? tipWidth : -tipWidth) + MinimumTipEdgeToTailCenter()));
         break;
 
     case winrt::TeachingTipPlacementMode::BottomRight:
@@ -480,17 +481,17 @@ bool TeachingTip::PositionTargetedPopup()
 
     case winrt::TeachingTipPlacementMode::BottomLeft:
         popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y + m_currentTargetBoundsInCoreWindowSpace.Height + static_cast<float>(offset.Bottom));
-        popup.HorizontalOffset(((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width) / 2.0f) - tipWidth + MinimumTipEdgeToTailCenter()));
+        popup.HorizontalOffset(((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width) / 2.0f) - (isLeftToRight ? tipWidth : -tipWidth) + MinimumTipEdgeToTailCenter()));
         break;
 
     case winrt::TeachingTipPlacementMode::LeftTop:
         popup.VerticalOffset((((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Height) / 2.0f) - tipHeight + MinimumTipEdgeToTailCenter());
-        popup.HorizontalOffset(m_currentTargetBoundsInCoreWindowSpace.X - tipWidth - offset.Left);
+        popup.HorizontalOffset(m_currentTargetBoundsInCoreWindowSpace.X - (isLeftToRight ? tipWidth : -tipWidth) - offset.Left);
         break;
 
     case winrt::TeachingTipPlacementMode::LeftBottom:
         popup.VerticalOffset((((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Height) / 2.0f) - MinimumTipEdgeToTailCenter());
-        popup.HorizontalOffset(m_currentTargetBoundsInCoreWindowSpace.X - tipWidth - offset.Left);
+        popup.HorizontalOffset(m_currentTargetBoundsInCoreWindowSpace.X - (isLeftToRight ? tipWidth : -tipWidth) - offset.Left);
         break;
 
     case winrt::TeachingTipPlacementMode::RightTop:
@@ -505,7 +506,7 @@ bool TeachingTip::PositionTargetedPopup()
 
     case winrt::TeachingTipPlacementMode::Center:
         popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y + (m_currentTargetBoundsInCoreWindowSpace.Height / 2.0f) - tipHeight - offset.Top);
-        popup.HorizontalOffset((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width - tipWidth) / 2.0f));
+        popup.HorizontalOffset((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width - (isLeftToRight ? tipWidth : -tipWidth)) / 2.0f));
         break;
 
     default:
@@ -529,72 +530,73 @@ bool TeachingTip::PositionUntargetedPopup()
     // Depending on the effective placement mode of the tip we use a combination of the tip's size, the window's size, and the target
     // offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
     auto&& popup = m_popup.get();
+    auto isLeftToRight = FlowDirection() == winrt::FlowDirection::LeftToRight;
     switch (PreferredPlacement())
     {
     case winrt::TeachingTipPlacementMode::Auto:
     case winrt::TeachingTipPlacementMode::Bottom:
         popup.VerticalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Height, finalTipHeight, offset.Bottom));
-        popup.HorizontalOffset(UntargetedTipCenterPlacementOffset(windowBoundsInCoreWindowSpace.X, windowBoundsInCoreWindowSpace.Width, finalTipWidth, offset.Left, offset.Right));
+        popup.HorizontalOffset(UntargetedTipCenterPlacementOffset(windowBoundsInCoreWindowSpace.X, windowBoundsInCoreWindowSpace.Width, (isLeftToRight ? finalTipWidth : -finalTipWidth), offset.Left, offset.Right));
         break;
 
     case winrt::TeachingTipPlacementMode::Top:
-        popup.VerticalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.Y, offset.Top));
-        popup.HorizontalOffset(UntargetedTipCenterPlacementOffset(windowBoundsInCoreWindowSpace.X, windowBoundsInCoreWindowSpace.Width, finalTipWidth, offset.Left, offset.Right));
+        popup.VerticalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.Y, 0, offset.Top));
+        popup.HorizontalOffset(UntargetedTipCenterPlacementOffset(windowBoundsInCoreWindowSpace.X, windowBoundsInCoreWindowSpace.Width, (isLeftToRight ? finalTipWidth : -finalTipWidth), offset.Left, offset.Right));
         break;
 
     case winrt::TeachingTipPlacementMode::Left:
         popup.VerticalOffset(UntargetedTipCenterPlacementOffset(windowBoundsInCoreWindowSpace.Y, windowBoundsInCoreWindowSpace.Height, finalTipHeight, offset.Top, offset.Bottom));
-        popup.HorizontalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.X, offset.Left));
+        popup.HorizontalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.X, (isLeftToRight ? 0 : finalTipWidth), offset.Left));
         break;
 
     case winrt::TeachingTipPlacementMode::Right:
         popup.VerticalOffset(UntargetedTipCenterPlacementOffset(windowBoundsInCoreWindowSpace.Y, windowBoundsInCoreWindowSpace.Height, finalTipHeight, offset.Top, offset.Bottom));
-        popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Width, finalTipWidth, offset.Right));
+        popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Width, (isLeftToRight ? finalTipWidth : 0), offset.Right));
         break;
 
     case winrt::TeachingTipPlacementMode::TopRight:
-        popup.VerticalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.Y, offset.Top));
-        popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Width,finalTipWidth, offset.Right));
+        popup.VerticalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.Y, 0, offset.Top));
+        popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Width, (isLeftToRight ? finalTipWidth : 0), offset.Right));
         break;
 
     case winrt::TeachingTipPlacementMode::TopLeft:
-        popup.VerticalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.Y, offset.Top));
-        popup.HorizontalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.X, offset.Left));
+        popup.VerticalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.Y, 0, offset.Top));
+        popup.HorizontalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.X, (isLeftToRight ? 0 : finalTipWidth), offset.Left));
         break;
 
     case winrt::TeachingTipPlacementMode::BottomRight:
         popup.VerticalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Height,finalTipHeight, offset.Bottom));
-        popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Width,finalTipWidth, offset.Right));
+        popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Width, (isLeftToRight ? finalTipWidth : 0), offset.Right));
         break;
 
     case winrt::TeachingTipPlacementMode::BottomLeft:
         popup.VerticalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Height,finalTipHeight, offset.Bottom));
-        popup.HorizontalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.X, offset.Left));
+        popup.HorizontalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.X, (isLeftToRight ? 0 : finalTipWidth), offset.Left));
         break;
 
     case winrt::TeachingTipPlacementMode::LeftTop:
-        popup.VerticalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.Y, offset.Top));
-        popup.HorizontalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.X, offset.Left));
+        popup.VerticalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.Y, 0, offset.Top));
+        popup.HorizontalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.X, (isLeftToRight ? 0 : finalTipWidth), offset.Left));
         break;
 
     case winrt::TeachingTipPlacementMode::LeftBottom:
         popup.VerticalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Height,finalTipHeight, offset.Bottom));
-        popup.HorizontalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.X, offset.Left));
+        popup.HorizontalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.X, (isLeftToRight ? 0 : finalTipWidth), offset.Left));
         break;
 
     case winrt::TeachingTipPlacementMode::RightTop:
-        popup.VerticalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.Y, offset.Top));
-        popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Width, finalTipWidth, offset.Right));
+        popup.VerticalOffset(UntargetedTipNearPlacementOffset(windowBoundsInCoreWindowSpace.Y, 0, offset.Top));
+        popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Width, (isLeftToRight ? finalTipWidth : 0), offset.Right));
         break;
 
     case winrt::TeachingTipPlacementMode::RightBottom:
         popup.VerticalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Height, finalTipHeight, offset.Bottom));
-        popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Width, finalTipWidth, offset.Right));
+        popup.HorizontalOffset(UntargetedTipFarPlacementOffset(windowBoundsInCoreWindowSpace.Width, (isLeftToRight ? finalTipWidth : 0), offset.Right));
         break;
 
     case winrt::TeachingTipPlacementMode::Center:
         popup.VerticalOffset(UntargetedTipCenterPlacementOffset(windowBoundsInCoreWindowSpace.Y, windowBoundsInCoreWindowSpace.Height, finalTipHeight, offset.Top, offset.Bottom));
-        popup.HorizontalOffset(UntargetedTipCenterPlacementOffset(windowBoundsInCoreWindowSpace.X, windowBoundsInCoreWindowSpace.Width, finalTipWidth, offset.Left, offset.Right));
+        popup.HorizontalOffset(UntargetedTipCenterPlacementOffset(windowBoundsInCoreWindowSpace.X, windowBoundsInCoreWindowSpace.Width, (isLeftToRight ? finalTipWidth : -finalTipWidth), offset.Left, offset.Right));
         break;
 
     default:
@@ -793,9 +795,10 @@ void TeachingTip::OnIsOpenChanged()
             auto popup = winrt::Popup();
             m_popupOpenedRevoker = popup.Opened(winrt::auto_revoke, { this, &TeachingTip::OnPopupOpened });
             m_popupClosedRevoker = popup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
-            if (SharedHelpers::Is19H1OrHigher())
+
+            if (winrt::Controls::Primitives::IPopup3 popup3 = popup)
             {
-                popup.ShouldConstrainToRootBounds(ShouldConstrainToRootBounds());
+                popup3.ShouldConstrainToRootBounds(ShouldConstrainToRootBounds());
             }
             m_popup.set(popup);
             SetPopupAutomationProperties();
@@ -923,8 +926,8 @@ void TeachingTip::OnShouldConstrainToRootBoundsChanged()
     // If we have opened the tip's popup and then this property changes we will need to discard the old popup
     // and replace it with a new popup.  This variable indicates this state.
 
-    //The underlying popup api is only available on 19h1 plus, if we aren't on that no opt.
-    if (SharedHelpers::Is19H1OrHigher())
+    // If the popup isn't created or doesn't have the ShouldConstrainToRootBounds api then no opt
+    if(m_popup.get().try_as<winrt::Controls::Primitives::IPopup3>())
     {
         m_createNewPopupOnOpen = true;
     }
