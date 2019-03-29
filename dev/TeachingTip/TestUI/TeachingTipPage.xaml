@@ -222,14 +222,15 @@
                     <ComboBoxItem x:Name="PlacementBottom">Bottom</ComboBoxItem>
                     <ComboBoxItem x:Name="PlacementLeft">Left</ComboBoxItem>
                     <ComboBoxItem x:Name="PlacementRight">Right</ComboBoxItem>
-                    <ComboBoxItem x:Name="PlacementTopEdgeRight">TopEdgeAlignedRight</ComboBoxItem>
-                    <ComboBoxItem x:Name="PlacementTopEdgeLeft">TopEdgeAlignedLeft</ComboBoxItem>
-                    <ComboBoxItem x:Name="PlacementBottomEdgeRight">BottomEdgeAlignedRight</ComboBoxItem>
-                    <ComboBoxItem x:Name="PlacementBottomEdgeLeft">BottomEdgeAlignedLeft</ComboBoxItem>
-                    <ComboBoxItem x:Name="PlacementLeftEdgeTop">LeftEdgeAlignedTop</ComboBoxItem>
-                    <ComboBoxItem x:Name="PlacementLeftEdgeBottom">LeftEdgeAlignedBottom</ComboBoxItem>
-                    <ComboBoxItem x:Name="PlacementRightEdgeTop">RightEdgeAlignedTop</ComboBoxItem>
-                    <ComboBoxItem x:Name="PlacementRightEdgeBottom">RightEdgeAlignedBottom</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementTopRight">TopRight</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementTopLeft">TopLeft</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementBottomRight">BottomRight</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementBottomLeft">BottomLeft</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementLeftTop">LeftTop</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementLeftBottom">LeftBottom</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementRightTop">RightTop</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementRightBottom">RightBottom</ComboBoxItem>
+                    <ComboBoxItem x:Name="PlacementCenter">Center</ComboBoxItem>
                     <ComboBoxItem x:Name="PlacementAuto">Auto</ComboBoxItem>
                 </ComboBox>
                 <Button AutomationProperties.Name="SetPreferredPlacementButton" Click="OnSetPreferredPlacementButtonClicked" Grid.Row="19" Grid.Column="1">Set</Button>

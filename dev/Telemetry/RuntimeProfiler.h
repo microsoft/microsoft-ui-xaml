@@ -40,6 +40,7 @@ namespace RuntimeProfiler
         ProfId_StackLayout,
         ProfId_UniformGridLayout,
         ProfId_VirtualizingLayout,
+        ProfId_ItemsRepeaterScrollHost,
         ProfId_Size // ProfId_Size is the last always. 
     } ProfilerClassId;
 
@@ -47,6 +48,9 @@ namespace RuntimeProfiler
     typedef enum
     {
         ProfMemberId_Acrylic_TintLuminosityOpacity_Changed = 0,
+        ProfMemberId_TeachingTip_F6AccessKey_FirstInvocation,
+        ProfMemberId_TeachingTip_F6AccessKey_SubsequentInvocation,
+        ProfMemberId_TeachingTip_TipDidNotOpenDueToSize,
         ProfMemberId_Size
     } ProfilerMemberId;
 

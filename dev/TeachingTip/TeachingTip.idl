@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum TeachingTipTailVisibility
 {
@@ -10,7 +10,7 @@ enum TeachingTipTailVisibility
     Collapsed,
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum TeachingTipCloseReason
 {
@@ -19,7 +19,7 @@ enum TeachingTipCloseReason
     Programmatic,
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum TeachingTipPlacementMode
 {
@@ -28,17 +28,18 @@ enum TeachingTipPlacementMode
     Bottom,
     Left,
     Right,
-    TopEdgeAlignedRight,
-    TopEdgeAlignedLeft,
-    BottomEdgeAlignedRight,
-    BottomEdgeAlignedLeft,
-    LeftEdgeAlignedTop,
-    LeftEdgeAlignedBottom,
-    RightEdgeAlignedTop,
-    RightEdgeAlignedBottom,
+    TopRight,
+    TopLeft,
+    BottomRight,
+    BottomLeft,
+    LeftTop,
+    LeftBottom,
+    RightTop,
+    RightBottom,
+    Center
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum TeachingTipHeroContentPlacementMode
 {
@@ -47,14 +48,14 @@ enum TeachingTipHeroContentPlacementMode
     Bottom,
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass TeachingTipClosedEventArgs
 {
     TeachingTipCloseReason Reason{ get; };
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass TeachingTipClosingEventArgs
 {
@@ -63,7 +64,7 @@ runtimeclass TeachingTipClosingEventArgs
     Windows.Foundation.Deferral GetDeferral();
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 unsealed runtimeclass TeachingTipTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
@@ -79,7 +80,7 @@ unsealed runtimeclass TeachingTipTemplateSettings : Windows.UI.Xaml.DependencyOb
     static Windows.UI.Xaml.DependencyProperty IconElementProperty{ get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]

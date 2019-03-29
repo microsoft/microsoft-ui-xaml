@@ -207,7 +207,7 @@
                                         <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginRight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="TopEdgeAlignedRight">
+                                <VisualState x:Name="TopRight">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessTop}"/>
                                         <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
@@ -230,7 +230,7 @@
                                         <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginTop}"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="TopEdgeAlignedLeft">
+                                <VisualState x:Name="TopLeft">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessTop}"/>
                                         <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
@@ -253,7 +253,7 @@
                                         <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginTop}"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="BottomEdgeAlignedRight">
+                                <VisualState x:Name="BottomRight">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessBottom}"/>
                                         <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
@@ -277,7 +277,7 @@
                                         <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginBottom}"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="BottomEdgeAlignedLeft">
+                                <VisualState x:Name="BottomLeft">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessBottom}"/>
                                         <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
@@ -301,7 +301,7 @@
                                         <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginBottom}"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="LeftEdgeAlignedTop">
+                                <VisualState x:Name="LeftTop">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessLeft}"/>
                                         <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
@@ -324,7 +324,7 @@
                                         <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginLeft}"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="LeftEdgeAlignedBottom">
+                                <VisualState x:Name="LeftBottom">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessLeft}"/>
                                         <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
@@ -347,7 +347,7 @@
                                         <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginLeft}"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="RightEdgeAlignedTop">
+                                <VisualState x:Name="RightTop">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessRight}"/>
                                         <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
@@ -370,7 +370,7 @@
                                         <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginRight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="RightEdgeAlignedBottom">
+                                <VisualState x:Name="RightBottom">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessRight}"/>
                                         <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
@@ -391,6 +391,29 @@
                                         <Setter Target="TailPolygon.HorizontalAlignment" Value="Left"/>
                                         <Setter Target="TailPolygon.VerticalAlignment" Value="Top"/>
                                         <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginRight}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Center">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentRootGrid.BorderThickness" Value="{StaticResource TeachingTipContentBorderThicknessTop}"/>
+                                        <Setter Target="TailEdgeBorder.Visibility" Value="Visible"/>
+                                        <Setter Target="TailEdgeBorder.VerticalAlignment" Value="Top"/>
+                                        <Setter Target="TailEdgeBorder.HorizontalAlignment" Value="Stretch"/>
+                                        <Setter Target="TailEdgeBorder.Height" Value="{StaticResource TeachingTipBorderThickness}"/>
+                                        <Setter Target="TailEdgeBorder.Width" Value="Auto"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Row)" Value="4"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.Column)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.RowSpan)" Value="1"/>
+                                        <Setter Target="TailEdgeBorder.(Grid.ColumnSpan)" Value="3"/>
+                                        <Setter Target="TopTailPolygonHighlight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TopHighlightRight.Visibility" Value="Collapsed"/>
+                                        <Setter Target="TailPolygon.Visibility" Value="Visible"/>
+                                        <Setter Target="TailPolygon.Points" Value="0,0 10,10, 20,0"/>
+                                        <Setter Target="TailPolygon.(Grid.Row)" Value="4"/>
+                                        <Setter Target="TailPolygon.(Grid.Column)" Value="2"/>
+                                        <Setter Target="TailPolygon.HorizontalAlignment" Value="Center"/>
+                                        <Setter Target="TailPolygon.VerticalAlignment" Value="Bottom"/>
+                                        <Setter Target="TailPolygon.Margin" Value="{StaticResource TeachingTipTailPolygonMarginTop}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Untargeted">
