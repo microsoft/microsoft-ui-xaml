@@ -48,6 +48,7 @@ namespace MUXControlsTestApp
         public TeachingTipPage()
         {
             this.InitializeComponent();
+            Window.Current.CoreWindow.FlowDirection = Windows.UI.Core.CoreWindowFlowDirection.RightToLeft;
             TeachingTipTestHooks.IdleStatusChanged += TeachingTipTestHooks_IdleStatusChanged;
             TeachingTipTestHooks.OpenedStatusChanged += TeachingTipTestHooks_OpenedStatusChanged;
             TeachingTipTestHooks.EffectivePlacementChanged += TeachingTipTestHooks_EffectivePlacementChanged;
