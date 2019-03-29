@@ -24,6 +24,10 @@ namespace MUXControlsAdhocApp.GridPages
                 case "Home":
                     _contentFrame.Navigate(typeof(GridPlaygroundPage));
                     break;
+
+                case "TemplateColumnsAndRows":
+                    _contentFrame.Navigate(typeof(GridTemplateColumnsAndRowsPage));
+                    break;
             }
         }
     }
