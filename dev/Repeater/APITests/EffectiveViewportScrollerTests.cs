@@ -360,6 +360,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 repeater.ElementPrepared += (sender, args) =>
                 {
+                    Log.Comment($"Realized index: {args.Index} Wating for index {waitingForIndex}");
                     if (args.Index == waitingForIndex)
                     {
                         indexRealized.Set();
@@ -406,7 +407,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 waitingForIndex = 101;
                 indexRealized.Reset();
-                repeater.GetOrCreateElement(100).StartBringIntoView();
+                repeater.GetOrCreateElement(100).StartBringIntoView(new BringIntoViewOptions {
+                    VerticalAlignmentRatio = 0.0
+                });
                 repeater.UpdateLayout();
             });
 
@@ -421,6 +424,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Scroll into view item 105 (already realized) w/ animation.");
+                waitingForIndex = 99;
                 repeater.TryGetElement(105).StartBringIntoView(new BringIntoViewOptions
                 {
                     VerticalAlignmentRatio = 0.5,
@@ -433,7 +437,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             IdleSynchronizer.Wait();
             Verify.IsLessThanOrEqual(1, viewChangedOffsets.Count);
             viewChangedOffsets.Clear();
-            ValidateRealizedRange(repeater, 99, 106);
+            ValidateRealizedRange(repeater, 101, 109);
 
             RunOnUIThread.Execute(() =>
             {
