@@ -542,22 +542,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
             {
-                elements = new TeachingTipTestPageElements();
-                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
-                {
-                    SetTeachingTipLocation(location);
-
-                    ScrollTargetIntoView();
-                    ScrollBy(10);
-                    OpenTeachingTip();
-                    CloseOpenAndCloseWithJustKeyboardViaF6();
-                    SetCloseButtonContent(CloseButtonContentOptions.ShortText);
-                    OpenTeachingTip();
-                    CloseOpenAndCloseWithJustKeyboardViaF6();
-                    OpenTeachingTip();
-                    UseF6ToReturnToTestPageToCloseTip();
-                    SetCloseButtonContent(CloseButtonContentOptions.NoText);
-                }
+                ScrollTargetIntoView();
+                ScrollBy(10);
+                OpenTeachingTip();
+                CloseOpenAndCloseWithJustKeyboardViaF6();
+                SetCloseButtonContent(CloseButtonContentOptions.ShortText);
+                OpenTeachingTip();
+                CloseOpenAndCloseWithJustKeyboardViaF6();
+                OpenTeachingTip();
+                UseF6ToReturnToTestPageToCloseTip();
+                SetCloseButtonContent(CloseButtonContentOptions.NoText);
             }
         }
 
