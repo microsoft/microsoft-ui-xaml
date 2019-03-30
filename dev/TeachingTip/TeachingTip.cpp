@@ -302,7 +302,7 @@ bool TeachingTip::UpdateTail()
             tailEdgeBorder.CenterPoint({ 0.0f, (height / 2) - firstRowHeight, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"Left"sv, false);
+        winrt::VisualStateManager::GoToState(*this, isRightToLeft ? L"LeftRTL" : L"Left"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::Right:
@@ -312,7 +312,7 @@ bool TeachingTip::UpdateTail()
             tailEdgeBorder.CenterPoint({ 0.0f, (height / 2) - firstRowHeight, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"Right"sv, false);
+        winrt::VisualStateManager::GoToState(*this, isRightToLeft ? L"RightRTL" : L"Right"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::TopRight:
@@ -362,7 +362,7 @@ bool TeachingTip::UpdateTail()
             tailEdgeBorder.CenterPoint({ 0.0f,  height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         }
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"LeftTop"sv, false);
+        winrt::VisualStateManager::GoToState(*this, isRightToLeft ? L"LeftTopRTL" : L"LeftTop"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::LeftBottom:
@@ -372,7 +372,7 @@ bool TeachingTip::UpdateTail()
             tailEdgeBorder.CenterPoint({ 0.0f, secondRowHeight, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToBottom();
-        winrt::VisualStateManager::GoToState(*this, L"LeftBottom"sv, false);
+        winrt::VisualStateManager::GoToState(*this, isRightToLeft ? L"LeftBottomRTL" : L"LeftBottom"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::RightTop:
@@ -382,7 +382,7 @@ bool TeachingTip::UpdateTail()
             tailEdgeBorder.CenterPoint({ 0.0f, height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         }
         UpdateDynamicHeroContentPlacementToTop();
-        winrt::VisualStateManager::GoToState(*this, L"RightTop"sv, false);
+        winrt::VisualStateManager::GoToState(*this, isRightToLeft ? L"RightTopRTL" : L"RightTop"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::RightBottom:
@@ -392,7 +392,7 @@ bool TeachingTip::UpdateTail()
             tailEdgeBorder.CenterPoint({ 0.0f, secondRowHeight, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToBottom();
-        winrt::VisualStateManager::GoToState(*this, L"RightBottom"sv, false);
+        winrt::VisualStateManager::GoToState(*this, isRightToLeft ? L"RightBottomRTL" : L"RightBottom"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::Center:

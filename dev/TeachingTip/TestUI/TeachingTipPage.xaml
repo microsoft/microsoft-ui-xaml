@@ -8,8 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     AutomationProperties.Name="TeachingTipPage"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-    FlowDirection="RightToLeft">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid BorderThickness="1" Margin="10">
         <Grid.ColumnDefinitions>
@@ -45,7 +44,7 @@
                             </StackPanel>
                         </muxc:TeachingTip.Content>
                     </muxc:TeachingTip>
-                    <Button x:Name="targetButton" HorizontalAlignment="Center" VerticalAlignment="Center" Click="OnShowButtonClicked" Height="300">Enable AutoSave
+                    <Button x:Name="targetButton" FlowDirection="RightToLeft" HorizontalAlignment="Center" VerticalAlignment="Center" Click="OnShowButtonClicked" Height="300">Enable AutoSave
                         <Button.Resources>
                             <muxc:TeachingTip x:Name="TeachingTipInResources" 
                                           AutomationProperties.Name="TeachingTipInResources"
