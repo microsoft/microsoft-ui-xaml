@@ -261,6 +261,8 @@ bool TeachingTip::UpdateTail()
 
     UpdateSizeBasedTemplateSettings();
 
+    const auto isRightToLeft = FlowDirection() == winrt::FlowDirection::RightToLeft;
+
     switch (m_currentEffectiveTailPlacementMode)
     {
     // An effective placement of auto means the tip should not display a tail.
@@ -296,7 +298,7 @@ bool TeachingTip::UpdateTail()
     case winrt::TeachingTipPlacementMode::Left:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            tailOcclusionGrid.CenterPoint({ width - lastColumnWidth, (height / 2), 0.0f });
+            tailOcclusionGrid.CenterPoint({isRightToLeft ? lastColumnWidth : width - lastColumnWidth, (height / 2), 0.0f });
             tailEdgeBorder.CenterPoint({ 0.0f, (height / 2) - firstRowHeight, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToTop();
@@ -306,7 +308,7 @@ bool TeachingTip::UpdateTail()
     case winrt::TeachingTipPlacementMode::Right:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            tailOcclusionGrid.CenterPoint({ firstColumnWidth, height / 2, 0.0f });
+            tailOcclusionGrid.CenterPoint({ isRightToLeft ? width - firstColumnWidth : firstColumnWidth, height / 2, 0.0f });
             tailEdgeBorder.CenterPoint({ 0.0f, (height / 2) - firstRowHeight, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToTop();
@@ -316,8 +318,8 @@ bool TeachingTip::UpdateTail()
     case winrt::TeachingTipPlacementMode::TopEdgeAlignedRight:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            tailOcclusionGrid.CenterPoint({ firstColumnWidth + secondColumnWidth + 1, height - lastRowHeight, 0.0f });
-            tailEdgeBorder.CenterPoint({ secondColumnWidth, 0.0f, 0.0f });
+            tailOcclusionGrid.CenterPoint({ isRightToLeft ? width - (firstColumnWidth + secondColumnWidth + 1) : firstColumnWidth + secondColumnWidth + 1, height - lastRowHeight, 0.0f });
+            tailEdgeBorder.CenterPoint({ isRightToLeft ? width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth) : secondColumnWidth, 0.0f, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"TopEdgeAlignedRight"sv, false);
@@ -326,8 +328,8 @@ bool TeachingTip::UpdateTail()
     case winrt::TeachingTipPlacementMode::TopEdgeAlignedLeft:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            tailOcclusionGrid.CenterPoint({ width - (nextToLastColumnWidth + lastColumnWidth + 1), height - lastRowHeight, 0.0f });
-            tailEdgeBorder.CenterPoint({ width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
+            tailOcclusionGrid.CenterPoint({ isRightToLeft ? nextToLastColumnWidth + lastColumnWidth + 1 : width - (nextToLastColumnWidth + lastColumnWidth + 1), height - lastRowHeight, 0.0f });
+            tailEdgeBorder.CenterPoint({ isRightToLeft ? secondColumnWidth : width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"TopEdgeAlignedLeft"sv, false);
@@ -336,8 +338,8 @@ bool TeachingTip::UpdateTail()
     case winrt::TeachingTipPlacementMode::BottomEdgeAlignedRight:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            tailOcclusionGrid.CenterPoint({ firstColumnWidth + secondColumnWidth + 1, firstRowHeight, 0.0f });
-            tailEdgeBorder.CenterPoint({ secondColumnWidth, 0.0f, 0.0f });
+            tailOcclusionGrid.CenterPoint({ isRightToLeft ? width - (firstColumnWidth + secondColumnWidth + 1) : firstColumnWidth + secondColumnWidth + 1, firstRowHeight, 0.0f });
+            tailEdgeBorder.CenterPoint({ isRightToLeft ? width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth) : secondColumnWidth, 0.0f, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"BottomEdgeAlignedRight"sv, false);
@@ -346,8 +348,8 @@ bool TeachingTip::UpdateTail()
     case winrt::TeachingTipPlacementMode::BottomEdgeAlignedLeft:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            tailOcclusionGrid.CenterPoint({ width - (nextToLastColumnWidth + lastColumnWidth + 1), firstRowHeight, 0.0f });
-            tailEdgeBorder.CenterPoint({ width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
+            tailOcclusionGrid.CenterPoint({ isRightToLeft ? nextToLastColumnWidth + lastColumnWidth + 1 : width - (nextToLastColumnWidth + lastColumnWidth + 1), firstRowHeight, 0.0f });
+            tailEdgeBorder.CenterPoint({ isRightToLeft ? secondColumnWidth : width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"BottomEdgeAlignedLeft"sv, false);
@@ -356,7 +358,7 @@ bool TeachingTip::UpdateTail()
     case winrt::TeachingTipPlacementMode::LeftEdgeAlignedTop:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            tailOcclusionGrid.CenterPoint({ width - lastColumnWidth,  height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
+            tailOcclusionGrid.CenterPoint({ isRightToLeft ? lastColumnWidth : width - lastColumnWidth,  height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
             tailEdgeBorder.CenterPoint({ 0.0f,  height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         }
         UpdateDynamicHeroContentPlacementToTop();
@@ -366,7 +368,7 @@ bool TeachingTip::UpdateTail()
     case winrt::TeachingTipPlacementMode::LeftEdgeAlignedBottom:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            tailOcclusionGrid.CenterPoint({ width - lastColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
+            tailOcclusionGrid.CenterPoint({ isRightToLeft ? lastColumnWidth : width - lastColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
             tailEdgeBorder.CenterPoint({ 0.0f, secondRowHeight, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToBottom();
@@ -376,7 +378,7 @@ bool TeachingTip::UpdateTail()
     case winrt::TeachingTipPlacementMode::RightEdgeAlignedTop:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            tailOcclusionGrid.CenterPoint({ firstColumnWidth, height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
+            tailOcclusionGrid.CenterPoint({ isRightToLeft ? width - firstColumnWidth : firstColumnWidth, height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
             tailEdgeBorder.CenterPoint({ 0.0f, height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         }
         UpdateDynamicHeroContentPlacementToTop();
@@ -386,7 +388,7 @@ bool TeachingTip::UpdateTail()
     case winrt::TeachingTipPlacementMode::RightEdgeAlignedBottom:
         if (SharedHelpers::IsRS5OrHigher())
         {
-            tailOcclusionGrid.CenterPoint({ firstColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
+            tailOcclusionGrid.CenterPoint({ isRightToLeft ? width - firstColumnWidth : firstColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
             tailEdgeBorder.CenterPoint({ 0.0f, secondRowHeight, 0.0f });
         }
         UpdateDynamicHeroContentPlacementToBottom();

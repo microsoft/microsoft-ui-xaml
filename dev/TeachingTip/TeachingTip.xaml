@@ -408,7 +408,8 @@
                               MinWidth="{ThemeResource TeachingTipMinWidth}"
                               MaxHeight="{ThemeResource TeachingTipMaxHeight}"
                               MaxWidth="{ThemeResource TeachingTipMaxWidth}"
-                              AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}">
+                              AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
+                              FlowDirection="LeftToRight">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="{StaticResource TeachingTipTailShortSideLength}"/>
                                 <ColumnDefinition Width="{StaticResource TeachingTipTailMargin}"/>
@@ -442,6 +443,7 @@
                                   MinWidth="{ThemeResource TeachingTipMinWidth}"
                                   MaxHeight="{ThemeResource TeachingTipMaxHeight}"
                                   MaxWidth="{ThemeResource TeachingTipMaxWidth}"
+                                  FlowDirection="{TemplateBinding FlowDirection}"
                                   Grid.ColumnSpan="5"
                                   Grid.RowSpan="5">
                                 <Grid.ColumnDefinitions>
@@ -532,7 +534,31 @@
                                         </Button>
                                     </Grid>
                                 </Grid>
-                                <Grid x:Name="TopHighlightLeft"
+                                <Grid
+                                  HorizontalAlignment="Left" 
+                                  VerticalAlignment="Top" 
+                                  MinHeight="{ThemeResource TeachingTipMinHeight}" 
+                                  MinWidth="{ThemeResource TeachingTipMinWidth}"
+                                  MaxHeight="{ThemeResource TeachingTipMaxHeight}"
+                                  MaxWidth="{ThemeResource TeachingTipMaxWidth}"
+                                  FlowDirection="{TemplateBinding FlowDirection}"
+                                  Grid.ColumnSpan="5"
+                                  Grid.RowSpan="5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="{StaticResource TeachingTipTailShortSideLength}"/>
+                                        <ColumnDefinition Width="{StaticResource TeachingTipTailMargin}"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="{StaticResource TeachingTipTailMargin}"/>
+                                        <ColumnDefinition Width="{StaticResource TeachingTipTailShortSideLength}"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="{StaticResource TeachingTipTailShortSideLength}"/>
+                                        <RowDefinition Height="{StaticResource TeachingTipTailMargin}"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="{StaticResource TeachingTipTailMargin}"/>
+                                        <RowDefinition Height="{StaticResource TeachingTipTailShortSideLength}"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid x:Name="TopHighlightLeft"
                                       Grid.Row="1"
                                       Grid.Column="1"
                                       Grid.ColumnSpan="3"
@@ -541,7 +567,7 @@
                                       HorizontalAlignment="Stretch" 
                                       Background="{ThemeResource TeachingTipTopHighlightBrush}"
                                       Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopLeftHighlightMargin}"/>
-                                <Grid x:Name="TopHighlightRight"
+                                    <Grid x:Name="TopHighlightRight"
                                       Grid.Row="1"
                                       Grid.Column="1"
                                       Grid.ColumnSpan="3"
@@ -550,6 +576,7 @@
                                       HorizontalAlignment="Stretch"
                                       Background="{ThemeResource TeachingTipTopHighlightBrush}"
                                       Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopRightHighlightMargin}"/>
+                                </Grid>
                             </Grid>
                         </Grid>
                     </Border>
