@@ -531,7 +531,7 @@ bool TeachingTip::PositionUntargetedPopup()
     // Depending on the effective placement mode of the tip we use a combination of the tip's size, the window's size, and the target
     // offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
     auto&& popup = m_popup.get();
-    switch (PreferredPlacement())
+    switch (GetPreferredPlacement())
     {
     case winrt::TeachingTipPlacementMode::Auto:
     case winrt::TeachingTipPlacementMode::Bottom:
@@ -1432,6 +1432,42 @@ void TeachingTip::StartContractToClose()
     }
 }
 
+winrt::TeachingTipPlacementMode TeachingTip::GetPreferredPlacement()
+{
+    const auto isRightToLeft = FlowDirection() == winrt::FlowDirection::RightToLeft;
+    switch (auto&& placementMode = PreferredPlacement())
+    {
+    case winrt::TeachingTipPlacementMode::Top:
+        return winrt::TeachingTipPlacementMode::Top;
+    case winrt::TeachingTipPlacementMode::Bottom:
+        return winrt::TeachingTipPlacementMode::Bottom;
+    case winrt::TeachingTipPlacementMode::Left:
+        return isRightToLeft ? winrt::TeachingTipPlacementMode::Right : winrt::TeachingTipPlacementMode::Left;
+    case winrt::TeachingTipPlacementMode::Right:
+        return isRightToLeft ? winrt::TeachingTipPlacementMode::Left : winrt::TeachingTipPlacementMode::Right;
+    case winrt::TeachingTipPlacementMode::TopRight:
+        return isRightToLeft ? winrt::TeachingTipPlacementMode::TopLeft : winrt::TeachingTipPlacementMode::TopRight;
+    case winrt::TeachingTipPlacementMode::TopLeft:
+        return isRightToLeft ? winrt::TeachingTipPlacementMode::TopRight : winrt::TeachingTipPlacementMode::TopLeft;
+    case winrt::TeachingTipPlacementMode::BottomRight:
+        return isRightToLeft ? winrt::TeachingTipPlacementMode::BottomLeft : winrt::TeachingTipPlacementMode::BottomRight;
+    case winrt::TeachingTipPlacementMode::BottomLeft:
+        return isRightToLeft ? winrt::TeachingTipPlacementMode::BottomRight : winrt::TeachingTipPlacementMode::BottomLeft;
+    case winrt::TeachingTipPlacementMode::LeftTop:
+        return isRightToLeft ? winrt::TeachingTipPlacementMode::RightTop : winrt::TeachingTipPlacementMode::LeftTop;
+    case winrt::TeachingTipPlacementMode::LeftBottom:
+        return isRightToLeft ? winrt::TeachingTipPlacementMode::RightBottom : winrt::TeachingTipPlacementMode::LeftBottom;
+    case winrt::TeachingTipPlacementMode::RightTop:
+        return isRightToLeft ? winrt::TeachingTipPlacementMode::LeftTop : winrt::TeachingTipPlacementMode::RightTop;
+    case winrt::TeachingTipPlacementMode::RightBottom:
+        return isRightToLeft ? winrt::TeachingTipPlacementMode::LeftBottom : winrt::TeachingTipPlacementMode::RightBottom;
+    case winrt::TeachingTipPlacementMode::Center:
+        return winrt::TeachingTipPlacementMode::Center;
+    default:
+        return placementMode;
+    }
+}
+
 std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectivePlacement()
 {
     // Because we do not have access to APIs to give us details about multi monitor scenarios we do not have the ability to correctly
@@ -1440,7 +1476,7 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
     // SetReturnTopForOutOfWindowBounds test hook.
     if (!ShouldConstrainToRootBounds() && m_returnTopForOutOfWindowPlacement)
     {
-        auto placement = PreferredPlacement();
+        auto placement = GetPreferredPlacement();
         if (placement == winrt::TeachingTipPlacementMode::Auto)
         {
             return std::make_tuple(winrt::TeachingTipPlacementMode::Top, false);
@@ -1652,7 +1688,7 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
         availability[winrt::TeachingTipPlacementMode::RightBottom] = false;
     }
 
-    auto priorities = GetPlacementFallbackOrder(PreferredPlacement());
+    auto priorities = GetPlacementFallbackOrder(GetPreferredPlacement());
 
     for (auto mode : priorities)
     {

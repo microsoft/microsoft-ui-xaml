@@ -118,6 +118,7 @@ private:
     void StartExpandToOpen();
     void StartContractToClose();
 
+    winrt::TeachingTipPlacementMode GetPreferredPlacement();
     std::tuple<winrt::TeachingTipPlacementMode, bool> DetermineEffectivePlacement();
     std::tuple<winrt::TeachingTipPlacementMode, bool> DetermineEffectivePlacementTargeted(double contentHight, double contentWidth);
     std::tuple<winrt::TeachingTipPlacementMode, bool> DetermineEffectivePlacementUntargeted(double contentHight, double contentWidth);
