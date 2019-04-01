@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 
 using Debug = System.Diagnostics.Debug;
 using ConditionalAttribute = System.Diagnostics.ConditionalAttribute;
@@ -147,12 +148,15 @@ namespace MUXControlsAdhocApp.GridPages
 
         private static void InvalidateMeasureOnChildPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs args)
         {
-            Grid parent = Windows.UI.Xaml.Media.VisualTreeHelper.GetParent(source) as Grid;
+            Grid parent = VisualTreeHelper.GetParent(source) as Grid;
             if (parent != null)
             {
                 parent.InvalidateMeasure();
             }
         }
+
+        private GridTrackInfo _lastInColumn = new GridTrackInfo();
+        private GridTrackInfo _lastInRow = new GridTrackInfo();
 
         // Calculated info on one of the grid tracks
         protected class MeasureInfo
@@ -169,7 +173,10 @@ namespace MUXControlsAdhocApp.GridPages
         {
             public MeasureBlah(List<GridTrackInfo> template, Dictionary<GridTrackInfo, MeasureInfo> calculated)
             {
-                Template = template;
+                // Add all the items from the markup defined template, plus one more grid line for the end
+                Template = new List<GridTrackInfo>(template);
+                template.Add(new GridTrackInfo());
+
                 Calculated = calculated;
                 Available = 0.0;
                 Remaining = 0.0;
@@ -425,7 +432,6 @@ namespace MUXControlsAdhocApp.GridPages
                         }
                     }
                 }
-                return null;
             }
 
             // Span relative to previous track
@@ -441,12 +447,7 @@ namespace MUXControlsAdhocApp.GridPages
                 int previousIndex = list.IndexOf(previous);
                 if (previousIndex >= 0)
                 {
-                    int spanIndex = previousIndex + span;
-                    if (spanIndex >= list.Count)
-                    {
-                        // We've spanned right off the grid. Interpret this is "end of the grid"
-                        return null;
-                    }
+                    int spanIndex = Math.Min(previousIndex + span, list.Count - 1);
 
                     return list[spanIndex];
                 }
@@ -468,14 +469,8 @@ namespace MUXControlsAdhocApp.GridPages
             }
             else
             {
-                // TODO: Precalculate this and have a stored MeasureInfo for the last track on hand
-                MeasureInfo lastTrack = new MeasureInfo();
-                foreach (var entry in calculated)
-                {
-                    double right = entry.Value.Start + entry.Value.Size;
-                    lastTrack.Start = Math.Max(lastTrack.Start, right);
-                }
-                return lastTrack;
+                // TODO: This is where auto rows/columns would kick in
+                return new MeasureInfo();
             }
 
         }
