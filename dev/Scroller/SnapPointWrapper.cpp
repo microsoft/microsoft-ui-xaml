@@ -74,20 +74,8 @@ void SnapPointWrapper<T>::DetermineActualApplicableZone(
 {
     winrt::SnapPointBase winrtSnapPoint = safe_cast<winrt::SnapPointBase>(m_snapPoint);
     SnapPointBase* snapPoint = winrt::get_self<SnapPointBase>(winrtSnapPoint);
-    SnapPointBase* previousSnapPoint = nullptr;
-    SnapPointBase* nextSnapPoint = nullptr;
-
-    if (previousSnapPointWrapper)
-    {
-        winrt::SnapPointBase winrtPreviousSnapPoint = safe_cast<winrt::SnapPointBase>(previousSnapPointWrapper->SnapPoint());
-        previousSnapPoint = winrt::get_self<SnapPointBase>(winrtPreviousSnapPoint);
-    }
-
-    if (nextSnapPointWrapper)
-    {
-        winrt::SnapPointBase winrtNextSnapPoint = safe_cast<winrt::SnapPointBase>(nextSnapPointWrapper->SnapPoint());
-        nextSnapPoint = winrt::get_self<SnapPointBase>(winrtNextSnapPoint);
-    }
+    SnapPointBase* previousSnapPoint = GetSnapPointFromWrapper(previousSnapPointWrapper);
+    SnapPointBase* nextSnapPoint = GetSnapPointFromWrapper(nextSnapPointWrapper);
 
     m_actualApplicableZone = snapPoint->DetermineActualApplicableZone(
         previousSnapPoint,
@@ -110,6 +98,17 @@ double SnapPointWrapper<T>::Evaluate(double value) const
     SnapPointBase* snapPoint = winrt::get_self<SnapPointBase>(winrtSnapPoint);
 
     return snapPoint->Evaluate(m_actualApplicableZone, value);
+}
+
+template<typename T>
+SnapPointBase* SnapPointWrapper<T>::GetSnapPointFromWrapper(SnapPointWrapper<T>* snapPointWrapper)
+{
+    if (snapPointWrapper)
+    {
+        winrt::SnapPointBase winrtPreviousSnapPoint = safe_cast<winrt::SnapPointBase>(snapPointWrapper->SnapPoint());
+        return winrt::get_self<SnapPointBase>(winrtPreviousSnapPoint);
+    }
+    return nullptr;
 }
 
 template SnapPointWrapper<winrt::ScrollSnapPointBase>::SnapPointWrapper(winrt::ScrollSnapPointBase const& snapPoint);

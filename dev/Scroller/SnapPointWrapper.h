@@ -36,6 +36,9 @@ public:
     double Evaluate(double value) const;
 
 private:
+    static SnapPointBase* GetSnapPointFromWrapper(SnapPointWrapper<T>* snapPointWrapper);
+    
+private:
     T m_snapPoint;
     std::tuple<double, double> m_actualApplicableZone{ -INFINITY, INFINITY };
     int m_combinationCount{ 0 };
