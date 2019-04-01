@@ -321,7 +321,7 @@
                 .item-d {
                     grid-area: 1 / col4-start / last-line / 6
                 }-->
-                <Grid Background="#888FBC8F">
+                <Grid Background="#888FBC8F" Opacity="0.5">
                     <local:Grid.ColumnStart>
                         <local:GridLocation LineName="col4-start"/>
                     </local:Grid.ColumnStart>
@@ -332,7 +332,8 @@
                         <local:GridLocation Index="0"/>
                     </local:Grid.RowStart>
                     <local:Grid.RowEnd>
-                        <local:GridLocation LineName="last-line"/>
+                        <!-- TODO: Support LineName="last-line" -->
+                        <local:GridLocation Span="3"/>
                     </local:Grid.RowEnd>
                     <TextBlock>item-d</TextBlock>
                 </Grid>
