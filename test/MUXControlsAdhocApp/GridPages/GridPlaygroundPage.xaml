@@ -21,7 +21,7 @@
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
-            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
 
@@ -102,7 +102,7 @@
 
         </Grid>
 
-        <StackPanel Grid.Column="1" Grid.Row="1" VerticalAlignment="Top">
+        <StackPanel Grid.Column="1" Grid.Row="1">
             <TextBlock Style="{StaticResource HeaderStyle}">Columns</TextBlock>
             <TextBlock>first: 40px</TextBlock>
             <TextBlock>line2: 50px</TextBlock>
@@ -116,7 +116,7 @@
             <TextBlock>third-line: Auto</TextBlock>
         </StackPanel>
 
-        <StackPanel Grid.Column="0" Grid.RowSpan="2">
+        <StackPanel Grid.Column="0" Grid.RowSpan="2" VerticalAlignment="Top">
             <Button Click="InvalidateButton_Click" Content="Invalidate"/>
             
             <TextBlock Style="{StaticResource HeaderStyle}">ColumnStart</TextBlock>
