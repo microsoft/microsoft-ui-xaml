@@ -703,6 +703,17 @@ namespace MUXControlsAdhocApp.GridPages
                 double right = colEndMesure.Start;
                 double bottom = rowEndMesure.Start;
 
+                // They might have specified grid references that were inverted. If so, collapse
+                // them and essentially zero out the child's arrange size.
+                if (right < left)
+                {
+                    right = left;
+                }
+                if (bottom < top)
+                {
+                    bottom = top;
+                }
+
                 DumpBegin(child.GetType().Name);
                 DumpInfo("leftTrack=" + _templateColumns.IndexOf(childLocation.ColStart));
                 DumpInfo("topTrack=" + _templateRows.IndexOf(childLocation.RowStart));

@@ -12,6 +12,7 @@
         <Grid.Resources>
             <Style x:Key="HeaderStyle" TargetType="TextBlock">
                 <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="Margin" Value="0,8,0,0"/>
             </Style>
         </Grid.Resources>
         <Grid.ColumnDefinitions>
@@ -99,9 +100,18 @@
         <StackPanel Grid.Column="0">
             <Button Click="InvalidateButton_Click" Content="Invalidate"/>
             <TextBlock Style="{StaticResource HeaderStyle}">ColumnStart</TextBlock>
-            <Slider Header="Index" Minimum="-1" Maximum="10" Value="{x:Bind _columnStart.Index, Mode=TwoWay}" TickFrequency="1" TickPlacement="Outside"/>
+            <Slider x:Name="_columnStartIndex" Header="Index" Minimum="-1" Maximum="10" Value="-1" TickFrequency="1" TickPlacement="Outside"/>
             <TextBox Header="LineName" Text="{x:Bind _columnStart.LineName, Mode=TwoWay}"/>
             <Slider Header="Span" Minimum="0" Maximum="6" Value="{x:Bind _columnStart.Span, Mode=TwoWay}" TickFrequency="1" TickPlacement="Outside"/>
+
+            <TextBlock Style="{StaticResource HeaderStyle}">ColumnEnd</TextBlock>
+            <Slider x:Name="_columnEndIndex" Header="Index" Minimum="-1" Maximum="10" Value="-1" TickFrequency="1" TickPlacement="Outside"/>
+            
+            <TextBlock Style="{StaticResource HeaderStyle}">RowStart</TextBlock>
+            <Slider x:Name="_rowStartIndex" Header="Index" Minimum="-1" Maximum="10" Value="-1" TickFrequency="1" TickPlacement="Outside"/>
+
+            <TextBlock Style="{StaticResource HeaderStyle}">RowEnd</TextBlock>
+            <Slider x:Name="_rowEndIndex" Header="Index" Minimum="-1" Maximum="10" Value="-1" TickFrequency="1" TickPlacement="Outside"/>
         </StackPanel>
     </Grid>
 </Page>
