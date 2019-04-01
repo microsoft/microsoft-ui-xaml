@@ -146,6 +146,40 @@ namespace MUXControlsAdhocApp.GridPages
         }
         private List<GridTrackInfo> _templateRows = new List<GridTrackInfo>();
 
+        public double ColumnGap
+        {
+            get
+            {
+                return _columnGap;
+            }
+            set
+            {
+                if (_columnGap != value)
+                {
+                    _columnGap = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private double _columnGap = 0.0;
+
+        public double RowGap
+        {
+            get
+            {
+                return _rowGap;
+            }
+            set
+            {
+                if (_rowGap != value)
+                {
+                    _rowGap = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private double _rowGap = 0.0;
+
         private static void InvalidateMeasureOnChildPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs args)
         {
             Grid parent = VisualTreeHelper.GetParent(source) as Grid;
@@ -175,7 +209,7 @@ namespace MUXControlsAdhocApp.GridPages
             {
                 // Add all the items from the markup defined template, plus one more grid line for the end
                 Template = new List<GridTrackInfo>(template);
-                template.Add(new GridTrackInfo());
+                Template.Add(new GridTrackInfo());
 
                 Calculated = calculated;
                 Available = 0.0;
@@ -183,6 +217,7 @@ namespace MUXControlsAdhocApp.GridPages
                 TotalFixed = 0.0;
                 TotalFraction = 0.0;
                 TotalAutos = 0;
+                Gap = 0.0;
             }
 
             public List<GridTrackInfo> Template { get; private set; }
@@ -193,15 +228,29 @@ namespace MUXControlsAdhocApp.GridPages
             public double TotalFixed;
             public double TotalFraction;
             public uint TotalAutos;
+            public double Gap;
         }
 
-        private static void ProcessFixedSizes(List<GridTrackInfo> template, Dictionary<GridTrackInfo, MeasureInfo> calculated, double available, out MeasureBlah measure)
+        private static MeasureBlah InitializeMeasure(List<GridTrackInfo> template, Dictionary<GridTrackInfo, MeasureInfo> calculated, double gap, double available)
         {
-            measure = new MeasureBlah(template, calculated) { Available = available };
-
-            for (int i = 0; i < template.Count; i++)
+            int numberOfGaps = (template.Count - 1);
+            if ((gap > 0.0) && (numberOfGaps > 0))
             {
-                GridTrackInfo track = template[i];
+                available -= (gap * numberOfGaps);
+            }
+
+            MeasureBlah measure = new MeasureBlah(template, calculated);
+            measure.Available = available;
+            measure.Gap = gap;
+
+            return measure;
+        }
+
+        private static void ProcessFixedSizes(ref MeasureBlah measure)
+        {
+            for (int i = 0; i < measure.Template.Count; i++)
+            {
+                GridTrackInfo track = measure.Template[i];
 
                 double fixedSize = track.Length;
 
@@ -209,7 +258,7 @@ namespace MUXControlsAdhocApp.GridPages
                 // of the more relative sizes (fraction, auto, etc.)
                 if (fixedSize == 0.0)
                 {
-                    fixedSize = (track.Percentage * available);
+                    fixedSize = (track.Percentage * measure.Available);
                 }
 
                 measure.TotalFixed += fixedSize;
@@ -222,7 +271,7 @@ namespace MUXControlsAdhocApp.GridPages
                     measure.TotalAutos++;
                 }
 
-                calculated[track] = new MeasureInfo { Size = fixedSize };
+                measure.Calculated[track] = new MeasureInfo { Size = fixedSize };
             }
 
             measure.Remaining = Math.Max(measure.Available - measure.TotalFixed, 0.0);
@@ -378,6 +427,7 @@ namespace MUXControlsAdhocApp.GridPages
             {
                 entry.Value.Start = offset;
                 offset += entry.Value.Size;
+                offset += measure.Gap;
             }
 
             return offset;
@@ -618,11 +668,12 @@ namespace MUXControlsAdhocApp.GridPages
             _columns.Clear();
             _rows.Clear();
 
+            MeasureBlah horizontalMeasure = InitializeMeasure(_templateColumns, _columns, _columnGap, availableSize.Width);
+            MeasureBlah verticalMeasure = InitializeMeasure(_templateRows, _rows, _rowGap, availableSize.Height);
+
             // First process any fixed sizes
-            MeasureBlah horizontalMeasure;
-            MeasureBlah verticalMeasure;
-            ProcessFixedSizes(_templateColumns, _columns, availableSize.Width, out horizontalMeasure);
-            ProcessFixedSizes(_templateRows, _rows, availableSize.Height, out verticalMeasure);
+            ProcessFixedSizes(ref horizontalMeasure);
+            ProcessFixedSizes(ref verticalMeasure);
             DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "Fixed");
 
             // Next we need to know how large the auto sizes are
