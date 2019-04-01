@@ -8,6 +8,7 @@ parameters:
   primaryBuildArch: x86
   buildFlavor: Release
   signConfig: ''
+  useReleaseTag: 'false'
 
 jobs:
 - job: ${{ parameters.jobName }}
@@ -19,7 +20,6 @@ jobs:
     pool:
       name: Package ES Lab E
 
-
   steps:
   - ${{if parameters.signConfig }}:
     - task: PkgESSetupBuild@10
@@ -30,7 +30,7 @@ jobs:
         nugetVer: true
 
   - template: MUX-PopulateBuildDateAndRevision-Steps.yml
-  
+
   - script: |
       echo parameters.jobName '${{ parameters.jobName }}'
       echo parameters.buildOutputDir '${{ parameters.buildOutputDir }}'
@@ -38,6 +38,7 @@ jobs:
       echo parameters.publishPath '${{ parameters.publishPath }}'
       echo buildrevision=$(buildrevision)
       echo builddate=$(builddate)
+      echo useReleaseTag=${{ parameters.useReleaseTag }}
     displayName: 'CreateNugetPackage: Display parameters'
 
   - task: DownloadBuildArtifacts@0 
@@ -47,19 +48,34 @@ jobs:
 
   - template: MUX-InstallNuget-Steps.yml
 
-  - task: powershell@2
-    displayName: 'build-nupkg.ps1'
-    inputs:
-      targetType: filePath
-      filePath: build\NuSpecs\build-nupkg.ps1
-      arguments: > 
-        -BuildOutput '$(Build.SourcesDirectory)\Artifacts\drop' 
-        -OutputDir '${{ parameters.nupkgdir }}' 
-        -prereleaseversion prerelease 
-        -DateOverride '$(builddate)'
-        -Subversion '$(buildrevision)' 
-        -BuildArch ${{ parameters.primaryBuildArch }}
+  - ${{if parameters.signConfig }}:
+    # Install SDK since the custom appx generation needs to resolve winmd types from it.
+    - template: MUX-InstallWindowsSDK-Steps.yml
+
+    # Re-create framework packages because we made them in the build step against unsigned binaries.
+    - template: MUX-MakeFrameworkPackages-Steps.yml
+
+    # Copy the re-made framework packages into the same location in the artifact drop to be republished at the end of the job.
+    - task: CopyFiles@2
+      inputs:
+        targetFolder: '${{ parameters.nupkgdir }}'
+        sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop'
+        Contents: '**\Microsoft.UI.Xaml*.appx'
+
+  - powershell: |
+      $prereleaseTag = "prerelease"
+      if ("${{ parameters.useReleaseTag}}" -eq [bool]::TrueString) { $prereleaseTag = "" }
+
+      & "$env:Build_SourcesDirectory\build\NuSpecs\build-nupkg.ps1" `
+        -BuildOutput '$(Build.SourcesDirectory)\Artifacts\drop' `
+        -OutputDir '${{ parameters.nupkgdir }}' `
+        -prereleaseversion "$prereleaseTag" `
+        -DateOverride '$(builddate)' `
+        -Subversion '$(buildrevision)' `
+        -BuildArch ${{ parameters.primaryBuildArch }} `
         -BuildFlavor ${{ parameters.buildFlavor }}
+
+    displayName: 'build-nupkg.ps1'
 
   - ${{if parameters.signConfig }}:
     - task: PkgESCodeSign@10

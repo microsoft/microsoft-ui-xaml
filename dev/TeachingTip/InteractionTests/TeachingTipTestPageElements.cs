@@ -119,6 +119,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Edit testWindowBoundsHeightTextBox;
 
+        public CheckBox GetUseTestScreenBoundsCheckbox()
+        {
+            return GetElement(ref useTestScreenBoundsCheckbox, "UseTestScreenBoundsCheckbox");
+        }
+        private CheckBox useTestScreenBoundsCheckbox;
+
+        public Edit GetTestScreenBoundsXTextBox()
+        {
+            return GetElement(ref testScreenBoundsXTextBox, "TestScreenBoundsXTextBox");
+        }
+        private Edit testScreenBoundsXTextBox;
+
+        public Edit GetTestScreenBoundsYTextBox()
+        {
+            return GetElement(ref testScreenBoundsYTextBox, "TestScreenBoundsYTextBox");
+        }
+        private Edit testScreenBoundsYTextBox;
+
+        public Edit GetTestScreenBoundsWidthTextBox()
+        {
+            return GetElement(ref testScreenBoundsWidthTextBox, "TestScreenBoundsWidthTextBox");
+        }
+        private Edit testScreenBoundsWidthTextBox;
+
+        public Edit GetTestScreenBoundsHeightTextBox()
+        {
+            return GetElement(ref testScreenBoundsHeightTextBox, "TestScreenBoundsHeightTextBox");
+        }
+        private Edit testScreenBoundsHeightTextBox;
+
         public TextBlock GetTipWidthTextBlock()
         {
             return GetElement(ref tipWidthTextBlock, "TipWidthTextBlock");
@@ -209,6 +239,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Button isLightDismissEnabledButton;
 
+        public ComboBox GetShouldConstrainToRootBoundsComboBox()
+        {
+            return GetElement(ref shouldConstrainToRootBoundsComboBox, "ShouldConstrainToRootBoundsComboBox");
+        }
+        private ComboBox shouldConstrainToRootBoundsComboBox;
+
+        public Button GetShouldConstrainToRootBoundsButton()
+        {
+            return GetElement(ref shouldConstrainToRootBoundsButton, "ShouldConstrainToRootBoundsButton");
+        }
+        private Button shouldConstrainToRootBoundsButton;
+
         public Button GetShowButton()
         {
             return GetElement(ref showButton, "ShowButton");
@@ -245,6 +287,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox tipFollowsTargetCheckBox;
 
+        public CheckBox GetReturnTopForOutOfWindowPlacementCheckBox()
+        {
+            return GetElement(ref returnTopForOutOfWindowPlacementCheckBox, "ReturnTopForOutOfWindowPlacementCheckBox");
+        }
+        private CheckBox returnTopForOutOfWindowPlacementCheckBox;
+
         public ComboBox GetIconComboBox()
         {
             return GetElement(ref iconComboBox, "IconComboBox");
@@ -275,6 +323,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private UIObject teachingTipCloseButton;
 
+        public ComboBox GetAutomationNameComboBox()
+        {
+            return GetElement(ref automationNameComboBox, "AutomationNameComboBox");
+        }
+        private ComboBox automationNameComboBox;
+
+        public Button GetSetAutomationNameButton()
+        {
+            return GetElement(ref setAutomationNameButton, "SetAutomationNameButton");
+        }
+        private Button setAutomationNameButton;
+
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)
@@ -292,14 +352,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Bottom,
             Left,
             Right,
-            TopEdgeAlignedRight,
-            TopEdgeAlignedLeft,
-            BottomEdgeAlignedRight,
-            BottomEdgeAlignedLeft,
-            LeftEdgeAlignedTop,
-            LeftEdgeAlignedBottom,
-            RightEdgeAlignedTop,
-            RightEdgeAlignedBottom,
+            TopRight,
+            TopLeft,
+            BottomRight,
+            BottomLeft,
+            LeftTop,
+            LeftBottom,
+            RightTop,
+            RightBottom,
+            Center,
             Auto
         }
 
@@ -328,6 +389,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             NoText,
             ShortText,
             LongText
+        }
+
+        public enum AutomationNameOptions
+        {
+            VisualTree,
+            Resources,
+            None
         }
     }
 }

@@ -16,6 +16,7 @@ using MUXControls.TestAppUtils;
 using PlatformConfiguration = Common.PlatformConfiguration;
 using OSVersion = Common.OSVersion;
 using System.Collections.Generic;
+using XamlControlsResources = Microsoft.UI.Xaml.Controls.XamlControlsResources;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -26,10 +27,34 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-
-
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
+    [TestClass]
+    public class CommonStylesApiTests
+    {
+        [TestMethod]
+        public void VerifyUseCompactResourcesAPI()
+        {
+            //Verify there is no crash and TreeViewItemMinHeight is not the same when changing UseCompactResources.
+            RunOnUIThread.Execute(() =>
+            {
+                var dict = new XamlControlsResources();
+                var height = dict["TreeViewItemMinHeight"].ToString();
+
+                dict.UseCompactResources = true;
+                var compactHeight = dict["TreeViewItemMinHeight"].ToString();
+                Verify.AreNotEqual(height, compactHeight, "Height in Compact is not the same as default");
+                Verify.AreEqual("24", compactHeight, "Height in 24 in Compact");
+
+                dict.UseCompactResources = false;
+                var height2 = dict["TreeViewItemMinHeight"].ToString();
+                Verify.AreEqual(height, height2, "Height are the same after disabled compact");
+            });
+
+            MUXControlsTestApp.Utilities.IdleSynchronizer.Wait();
+        }
+    }
+
     [TestClass]
     public class CommonStylesVisualTreeTestSamples
     {
@@ -214,18 +239,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {"TransformMatrix","{ {M11:1 M12:0 M13:0 M14:0} {M21:0 M22:1 M23:0 M24:0} {M31:0 M32:0 M33:1 M34:0} {M41:0 M42:0 M43:0 M44:1} }"},
             };
 
-            public bool ShouldLogPropertyValuePair(string propertyName, string value)
+            public bool ShouldVisitPropertyValuePair(string propertyName, string value)
             {
                 string v = _knownPropertyValueDict.ContainsKey(propertyName) ? _knownPropertyValueDict[propertyName] : VisualTreeDumper.ValueNULL;
                 return !(v.Equals(value) || (string.IsNullOrEmpty(value ) && value.StartsWith("Exception")));
             }
 
-            public bool ShouldLogElement(string elementName)
+            public bool ShouldVisitElement(string elementName)
             {
                 return true;
             }
 
-            public bool ShouldLogProperty(string propertyName)
+            public bool ShouldVisitProperty(string propertyName)
             {
                 return (_propertyNamePostfixBlackList.Where(item => propertyName.EndsWith(item)).Count()) == 0 &&
                     !_propertyNameBlackList.Contains(propertyName);

@@ -74,11 +74,35 @@ void TeachingTipTestHooks::SetTestWindowBounds(const winrt::TeachingTip& teachin
     }
 }
 
+void TeachingTipTestHooks::SetUseTestScreenBounds(const winrt::TeachingTip& teachingTip, bool useTestScreenBounds)
+{
+    if (teachingTip)
+    {
+        winrt::get_self<TeachingTip>(teachingTip)->SetUseTestScreenBounds(useTestScreenBounds);
+    }
+}
+
+void TeachingTipTestHooks::SetTestScreenBounds(const winrt::TeachingTip& teachingTip, const winrt::Rect& testScreenBounds)
+{
+    if (teachingTip)
+    {
+        winrt::get_self<TeachingTip>(teachingTip)->SetTestScreenBounds(testScreenBounds);
+    }
+}
+
 void TeachingTipTestHooks::SetTipFollowsTarget(const winrt::TeachingTip& teachingTip, bool tipFollowsTarget)
 {
     if (teachingTip)
     {
         winrt::get_self<TeachingTip>(teachingTip)->SetTipFollowsTarget(tipFollowsTarget);
+    }
+}
+
+void TeachingTipTestHooks::SetReturnTopForOutOfWindowPlacement(const winrt::TeachingTip& teachingTip, bool returnTopForOutOfWindowPlacement)
+{
+    if (teachingTip)
+    {
+        winrt::get_self<TeachingTip>(teachingTip)->SetReturnTopForOutOfWindowPlacement(returnTopForOutOfWindowPlacement);
     }
 }
 

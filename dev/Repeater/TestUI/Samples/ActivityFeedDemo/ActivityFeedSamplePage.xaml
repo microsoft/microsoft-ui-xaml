@@ -20,7 +20,7 @@
         </controls:RecyclingElementFactory>
     </Page.Resources>
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <controls:ScrollAnchorProvider x:Name="tracker"  >
+        <controls:ItemsRepeaterScrollHost x:Name="tracker"  >
             <ScrollViewer x:Name="scrollViewer">
                 <controls:ItemsRepeater x:Name="repeater">
                     <controls:ItemsRepeater.Layout>
@@ -28,6 +28,6 @@
                     </controls:ItemsRepeater.Layout>
                 </controls:ItemsRepeater>
             </ScrollViewer>
-        </controls:ScrollAnchorProvider>
+        </controls:ItemsRepeaterScrollHost>
     </Grid>
 </Page>

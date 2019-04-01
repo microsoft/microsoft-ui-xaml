@@ -96,7 +96,6 @@ private:
 
     // Event tokens
     winrt::IRepeaterScrollingSurface::PostArrange_revoker m_postArrangeToken;
-    winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingToken;
 
     // Stores information about a parent scrolling surface.
     // We subscribe to...

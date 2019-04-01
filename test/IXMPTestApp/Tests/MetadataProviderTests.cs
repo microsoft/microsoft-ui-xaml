@@ -58,7 +58,7 @@ namespace IXMPTestApp.Tests
 
                 Log.Comment("Loading ItemsRepeater...");
                 XamlReader.Load(@"
-                    <controls:ScrollAnchorProvider
+                    <controls:ItemsRepeaterScrollHost
                         xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
                         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                         xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
@@ -79,7 +79,7 @@ namespace IXMPTestApp.Tests
                                 </controls:ItemsRepeater.ItemTemplate>
                             </controls:ItemsRepeater>
                         </ScrollViewer>
-                    </controls:ScrollAnchorProvider>");
+                    </controls:ItemsRepeaterScrollHost>");
 
                 Log.Comment("Loading SwipeControl...");
                 XamlReader.Load(@"

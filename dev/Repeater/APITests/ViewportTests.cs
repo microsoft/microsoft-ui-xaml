@@ -38,7 +38,7 @@ using LayoutContext = Microsoft.UI.Xaml.Controls.LayoutContext;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
-using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
+using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
 using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
@@ -102,7 +102,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         // [TestMethod] Temporarily disabled for bug 18866003
-        public void ValidateScrollAnchorProviderScenario()
+        public void ValidateItemsRepeaterScrollHostScenario()
         {
             var realizationRects = new List<Rect>();
             var scrollViewer = (ScrollViewer)null;
@@ -133,11 +133,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     }
                 };
 
-                var tracker = new ScrollAnchorProvider()
+                var tracker = new ItemsRepeaterScrollHost()
                 {
                     Width = 200,
                     Height = 300,
-                    Content = scrollViewer
+                    ScrollViewer = scrollViewer
                 };
 
                 Content = tracker;

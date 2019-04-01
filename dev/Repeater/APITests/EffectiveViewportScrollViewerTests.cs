@@ -521,7 +521,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             IdleSynchronizer.Wait();
             Verify.IsLessThanOrEqual(1, viewChangedOffsets.Count);
             viewChangedOffsets.Clear();
-            ValidateRealizedRange(repeater, 99, 106);
+            ValidateRealizedRange(repeater, 101, 109);
 
             RunOnUIThread.Execute(() =>
             {

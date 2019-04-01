@@ -45,7 +45,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         End,
         Space,
         Backspace,
-        F10
+        F10,
+        F6
     }
 
     [Flags]
@@ -76,6 +77,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             { Key.Space, "{SPACE}" },
             { Key.Backspace, "{BACKSPACE}" },
             { Key.F10, "{F10}" },
+            { Key.F6, "{F6}" },
         };
 
         private static string ApplyModifierKey(string keyStrokes, ModifierKey key)
@@ -118,6 +120,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             }
 
             keystrokes = ApplyModifierKey(keystrokes, modifierKey);
+
+            Log.Comment("Send text '{0}'.", keystrokes);
+            TextInput.SendText(keystrokes);
+            Wait.ForIdle();
+        }
+
+        public static void PressKeySequence(Key[] keys)
+        {
+            string keystrokes = string.Empty;
+
+            foreach (var key in keys)
+            {
+                keystrokes += keyToKeyStringDictionary[key];
+            }
 
             Log.Comment("Send text '{0}'.", keystrokes);
             TextInput.SendText(keystrokes);
