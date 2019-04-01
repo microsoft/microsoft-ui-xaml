@@ -49,8 +49,12 @@ runtimeclass ScrollerTestHooks
     static Windows.Foundation.Collections.IVector<MU_XCP_NAMESPACE.ScrollSnapPointBase> GetConsolidatedHorizontalScrollSnapPoints(MU_XCP_NAMESPACE.Scroller scroller);
     static Windows.Foundation.Collections.IVector<MU_XCP_NAMESPACE.ScrollSnapPointBase> GetConsolidatedVerticalScrollSnapPoints(MU_XCP_NAMESPACE.Scroller scroller);
     static Windows.Foundation.Collections.IVector<MU_XCP_NAMESPACE.ZoomSnapPointBase> GetConsolidatedZoomSnapPoints(MU_XCP_NAMESPACE.Scroller scroller);
-    static Windows.Foundation.Numerics.Vector2 GetSnapPointActualApplicableZone(MU_XCP_NAMESPACE.SnapPointBase snapPoint);
-    static Int32 GetSnapPointCombinationCount(MU_XCP_NAMESPACE.SnapPointBase snapPoint);
+    static Windows.Foundation.Numerics.Vector2 GetHorizontalSnapPointActualApplicableZone(MU_XCP_NAMESPACE.Scroller scroller, MU_XCP_NAMESPACE.ScrollSnapPointBase scrollSnapPoint);
+    static Windows.Foundation.Numerics.Vector2 GetVerticalSnapPointActualApplicableZone(MU_XCP_NAMESPACE.Scroller scroller, MU_XCP_NAMESPACE.ScrollSnapPointBase scrollSnapPoint);
+    static Windows.Foundation.Numerics.Vector2 GetZoomSnapPointActualApplicableZone(MU_XCP_NAMESPACE.Scroller scroller, MU_XCP_NAMESPACE.ZoomSnapPointBase zoomSnapPoint);
+    static Int32 GetHorizontalSnapPointCombinationCount(MU_XCP_NAMESPACE.Scroller scroller, MU_XCP_NAMESPACE.ScrollSnapPointBase scrollSnapPoint);
+    static Int32 GetVerticalSnapPointCombinationCount(MU_XCP_NAMESPACE.Scroller scroller, MU_XCP_NAMESPACE.ScrollSnapPointBase scrollSnapPoint);
+    static Int32 GetZoomSnapPointCombinationCount(MU_XCP_NAMESPACE.Scroller scroller, MU_XCP_NAMESPACE.ZoomSnapPointBase zoomSnapPoint);
     static Windows.UI.Color GetSnapPointVisualizationColor(MU_XCP_NAMESPACE.SnapPointBase snapPoint);
     static void SetSnapPointVisualizationColor(MU_XCP_NAMESPACE.SnapPointBase snapPoint, Windows.UI.Color color);
     static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, ScrollerTestHooksAnchorEvaluatedEventArgs> AnchorEvaluated;
