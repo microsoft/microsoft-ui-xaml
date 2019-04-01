@@ -39,6 +39,7 @@
 #include <winrt\Windows.UI.Xaml.Controls.h>
 #include <winrt\Windows.UI.Xaml.Controls.Primitives.h>
 #include <winrt\Windows.UI.Xaml.Data.h>
+#include <winrt\Windows.UI.Xaml.Documents.h>
 #include <winrt\Windows.UI.Xaml.Hosting.h>
 #include <winrt\Windows.UI.Xaml.Input.h>
 #include <winrt\Windows.UI.Xaml.Interop.h>
@@ -96,6 +97,7 @@ namespace winrt
     using namespace ::winrt::Windows::UI::Xaml::Automation;
     using namespace ::winrt::Windows::UI::Xaml::Automation::Provider;
     using namespace ::winrt::Windows::UI::Xaml::Data;
+    using namespace ::winrt::Windows::UI::Xaml::Documents;
     using namespace ::winrt::Windows::UI::Xaml::Hosting;
     using namespace ::winrt::Windows::UI::Xaml::Input;
     using namespace ::winrt::Windows::UI::Xaml::Interop;
@@ -280,6 +282,7 @@ namespace winrt
     using ToolTip = winrt::Windows::UI::Xaml::Controls::ToolTip;
     using ToolTipService = winrt::Windows::UI::Xaml::Controls::ToolTipService;
     using VirtualizingStackPanel = winrt::Windows::UI::Xaml::Controls::VirtualizingStackPanel;
+    using WebView = winrt::Windows::UI::Xaml::Controls::WebView;
 
     // using namespace ::winrt::Windows::UI::Xaml::Media;
     using Brush = winrt::Windows::UI::Xaml::Media::Brush;

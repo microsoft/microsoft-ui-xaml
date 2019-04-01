@@ -55,7 +55,8 @@ private:
     PropertyChanged_revoker m_automationNameChangedRevoker{};
     PropertyChanged_revoker m_automationIdChangedRevoker{};
     winrt::CoreDispatcher::AcceleratorKeyActivated_revoker m_acceleratorKeyActivatedRevoker{};
-    winrt::UIElement::GettingFocus_revoker m_closeButtonGettingFocusFromF6Revoker{};
+    RoutedEventHandler_revoker m_tipGettingFocusRevoker{};
+    RoutedEventHandler_revoker m_tipLosingFocusRevoker{};
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     winrt::Button::Click_revoker m_alternateCloseButtonClickedRevoker{};
     winrt::Button::Click_revoker m_actionButtonClickedRevoker{};
@@ -96,7 +97,6 @@ private:
     void OnAutomationIdChanged(const winrt::IInspectable&, const winrt::IInspectable&);
 
     void OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args);
-    void OnCloseButtonGettingFocusFromF6(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args);
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&);
@@ -146,7 +146,7 @@ private:
     tracker_ref<winrt::Polygon> m_tailPolygon{ this };
     tracker_ref<winrt::Grid> m_tailEdgeBorder{ this };
 
-    tracker_ref<winrt::Control> m_previouslyFocusedElement{ this };
+    weak_ref<winrt::DependencyObject> m_previouslyFocusedElement{ };
 
     tracker_ref<winrt::KeyFrameAnimation> m_expandAnimation{ this };
     tracker_ref<winrt::KeyFrameAnimation> m_contractAnimation{ this };
@@ -169,6 +169,7 @@ private:
     bool m_isContractAnimationPlaying{ false };
 
     bool m_hasF6BeenInvoked{ false };
+    bool m_hasFocusInSubtree{ false };
 
     bool m_useTestWindowBounds{ false };
     winrt::Rect m_testWindowBoundsInCoreWindowSpace{ 0,0,0,0 };
