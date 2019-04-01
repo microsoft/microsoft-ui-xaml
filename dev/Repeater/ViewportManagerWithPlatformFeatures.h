@@ -58,8 +58,11 @@ private:
     void ValidateCacheLength(double cacheLength);
     void RegisterCacheBuildWork();
     void TryInvalidateMeasure();
-    
+    winrt::Rect GetLayoutVisibleWindowDiscardAnchor() const;
+
     winrt::hstring GetLayoutId() const;
+    void OnCompositionTargetRendering(winrt::IInspectable const& sender, winrt::IInspectable const& args);
+    winrt::UIElement GetImmediateChildOfRepeater(winrt::UIElement const& descendant);
 
     ItemsRepeater* m_owner{ nullptr };
 
@@ -86,8 +89,11 @@ private:
     double m_horizontalCacheBufferPerSide{};
     double m_verticalCacheBufferPerSide{};
 
+    bool m_isBringIntoViewInProgress{false};
+
     // Event tokens
     winrt::FrameworkElement::EffectiveViewportChanged_revoker m_effectiveViewportChangedRevoker{};
 
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker{};
+    winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingToken{};
 };

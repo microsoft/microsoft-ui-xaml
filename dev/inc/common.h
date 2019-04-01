@@ -30,6 +30,7 @@ typedef int ResourceIdType;
 #include "AutoHandle.h"
 #include "GlobalDependencyProperty.h"
 #include "CollectionHelper.h"
+#include "RoutedEventHelpers.h"
 
 #ifndef BUILD_WINDOWS
 #include "MUXControlsFactory.h"
