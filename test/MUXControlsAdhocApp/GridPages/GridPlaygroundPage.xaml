@@ -103,6 +103,10 @@
         </Grid>
 
         <StackPanel Grid.Column="1" Grid.Row="1">
+            <Slider Value="{x:Bind _grid.ColumnGap, Mode=TwoWay}" Header="ColumnGap" Minimum="0" Maximum="50" TickFrequency="5" TickPlacement="Outside"/>
+            <Slider Value="{x:Bind _grid.RowGap, Mode=TwoWay}" Header="RowGap" Minimum="0" Maximum="50" TickFrequency="5" TickPlacement="Outside"/>
+            <Button Click="InvalidateButton_Click" Content="Invalidate"/>
+            
             <TextBlock Style="{StaticResource HeaderStyle}">Columns</TextBlock>
             <TextBlock>first: 40px</TextBlock>
             <TextBlock>line2: 50px</TextBlock>
@@ -117,8 +121,6 @@
         </StackPanel>
 
         <StackPanel Grid.Column="0" Grid.RowSpan="2" VerticalAlignment="Top">
-            <Button Click="InvalidateButton_Click" Content="Invalidate"/>
-            
             <TextBlock Style="{StaticResource HeaderStyle}">ColumnStart</TextBlock>
             <StackPanel BorderBrush="LightGray" BorderThickness="1" Padding="4" Margin="4">
                 <Slider x:Name="_columnStartIndex" Value="{x:Bind _columnStart.Index}" Header="Index" Minimum="-1" Maximum="4"  TickFrequency="1" TickPlacement="Outside"/>
