@@ -1,3 +1,6 @@
+namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
 interface IRepeaterScrollingSurface;
 
 [WUXC_VERSION_INTERNAL]
@@ -25,4 +28,6 @@ interface IRepeaterScrollingSurface
     void RegisterAnchorCandidate(Windows.UI.Xaml.UIElement element);
     void UnregisterAnchorCandidate(Windows.UI.Xaml.UIElement element);
     Windows.Foundation.Rect GetRelativeViewport(Windows.UI.Xaml.UIElement child);
+}
+
 }

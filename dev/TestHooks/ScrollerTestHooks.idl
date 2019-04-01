@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_INTERNAL]
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[WUXC_VERSION_INTERNAL]
 [webhosthidden]
 enum ScrollerViewChangeResult
 {
@@ -54,4 +57,6 @@ runtimeclass ScrollerTestHooks
     static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, ScrollerTestHooksInteractionSourcesChangedEventArgs> InteractionSourcesChanged;
     static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, Object> ContentLayoutOffsetXChanged;
     static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, Object> ContentLayoutOffsetYChanged;
+}
+
 }

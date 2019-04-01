@@ -46,11 +46,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)MUXControlsTestHooks.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.idl" />
-    <None Include="$(MSBuildThisFileDirectory)ScrollerTestHooks.idl" />
-    <None Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooks.idl" Condition="$(BuildingWithBuildExe) != 'true'" />
-    <None Include="$(MSBuildThisFileDirectory)SwipeTestHooks.idl" />
-    <None Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)MUXControlsTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ScrollerTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooks.idl" Condition="$(BuildingWithBuildExe) != 'true'" />
+    <Midl Include="$(MSBuildThisFileDirectory)SwipeTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.idl" />
   </ItemGroup>
 </Project>

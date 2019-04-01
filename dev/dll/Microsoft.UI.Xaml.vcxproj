@@ -59,6 +59,9 @@
       <IsPreviewResource>False</IsPreviewResource>
     </PRIResource>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <Midl Include="..\..\idl\Microsoft.UI.Xaml.idl" />
+  </ItemGroup>
   <ImportGroup Label="Shared">
     <Import Project="..\RatingControl\RatingControl.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\NavigationView\NavigationView.vcxitems" Label="Shared" />
@@ -157,11 +160,10 @@
     <Midl>
       <MetadataFileName>$(OutDir)Unmerged\%(Filename)_Unmerged.winmd</MetadataFileName>
       <AdditionalOptions>/no_stamp /no_settings_comment /nomidl %(AdditionalOptions)</AdditionalOptions>
-      <!-- TODO: Remove Configuration==Debug from these once this is fixed: Bug 17488419: MIDL "import winmd" behavior doesn't carry through parameter names of methods on implemented interfaces -->
-      <AdditionalOptions Condition="'$(Configuration)'=='Debug'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.FoundationContract\3.0.0.0\Windows.Foundation.FoundationContract.winmd"</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)'=='Debug'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Networking.Connectivity.WwanContract\2.0.0.0\Windows.Networking.Connectivity.WwanContract.winmd"</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)'=='Debug' And $(UseInsiderSDK) == 'true'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\8.0.0.0\Windows.Foundation.UniversalApiContract.winmd"</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)'=='Debug' And $(UseInsiderSDK) != 'true'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\7.0.0.0\Windows.Foundation.UniversalApiContract.winmd"</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.FoundationContract\3.0.0.0\Windows.Foundation.FoundationContract.winmd"</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Networking.Connectivity.WwanContract\2.0.0.0\Windows.Networking.Connectivity.WwanContract.winmd"</AdditionalOptions>
+      <AdditionalOptions Condition="$(UseInsiderSDK) == 'true'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\8.0.0.0\Windows.Foundation.UniversalApiContract.winmd"</AdditionalOptions>
+      <AdditionalOptions Condition="$(UseInsiderSDK) != 'true'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\7.0.0.0\Windows.Foundation.UniversalApiContract.winmd"</AdditionalOptions>
       <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..;$(MSBuildProjectDirectory)\..\..\idl;$(MiniWindowsSDKIncludePath)</AdditionalIncludeDirectories>
       <AdditionalMetadataDirectories Condition="'$(MiniWindowsSDKWinMDPath)'!=''">$(MiniWindowsSDKWinMDPath)</AdditionalMetadataDirectories>
       <OutputDirectory>$(OutDir)</OutputDirectory>
@@ -364,9 +366,6 @@
     </PageRequiringCustomCompilation>
     <Page Include="@(PageRequiringCustomCompilation)" />
     <CompactPage Include="$(MSBuildThisFileDirectory)DensityStyles\Compact.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="..\..\idl\Microsoft.UI.Xaml.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="XamlMetadataProviderGenerated.tt">
@@ -596,6 +595,27 @@
         <CompilerIteration>XamlGenerated</CompilerIteration>
       </ClCompile>
     </ItemGroup>
+  </Target>
+  <PropertyGroup>
+      <ProjectMergedIdl>$(IntermediateOutputPath)\Microsoft.UI.Xaml.idl</ProjectMergedIdl>
+  </PropertyGroup>
+
+  <!-- Merge all idl files into one -->
+  <Target Name="MergeIDLFiles"
+          Inputs="@(Midl)"
+          Outputs="$(ProjectMergedIdl)"
+          BeforeTargets="Midl">
+      <PropertyGroup>
+          <MidlLines>@(Midl->'&#x23;include &lt;%(FullPath)&gt;', '&#x0D;&#x0A;')</MidlLines>
+      </PropertyGroup>
+
+      <WriteLinesToFile File="$(ProjectMergedIdl)" Lines="$(MidlLines)" WriteOnlyWhenDifferent="true" Overwrite="true" />
+      
+      <ItemGroup>
+          <OriginalMidl Include="@(Midl)" />
+          <Midl Remove="@(OriginalMidl)" />
+          <Midl Include="$(ProjectMergedIdl)" />
+      </ItemGroup>
   </Target>
   <Target Name="mdmerge" AfterTargets="Midl" Inputs="@(Midl -> '%(MetadataFileName)')" Outputs="$(OutDir)Microsoft.UI.winmd;$(OutDir)\sdk\Microsoft.UI.Xaml.winmd;$(IntermediateOutputPath)CppWinRT\Platform\winrt\base.h;$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.Controls.h">
     <PropertyGroup>

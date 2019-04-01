@@ -30,7 +30,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)RefreshVisualizerEventArgs.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)RefreshVisualizer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RefreshVisualizer.idl" />
   </ItemGroup>
   <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
     <Page Include="$(MSBuildThisFileDirectory)RefreshVisualizer.xaml">
@@ -43,7 +43,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)PullToRefreshHelperTestAPI.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RefreshVisualizerPrivate.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)PullToRefreshHelperTestAPI.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RefreshVisualizerPrivate.idl" />
   </ItemGroup>
 </Project>

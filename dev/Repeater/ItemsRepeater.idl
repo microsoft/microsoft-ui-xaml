@@ -1,4 +1,7 @@
-﻿runtimeclass ItemsSourceView;
+﻿namespace MU_XC_NAMESPACE
+{
+
+runtimeclass ItemsSourceView;
 runtimeclass ItemsRepeater;
 runtimeclass ElementFactory;
 runtimeclass LayoutContext;
@@ -614,4 +617,6 @@ unsealed runtimeclass SelectionModel : Windows.UI.Xaml.Data.INotifyPropertyChang
     void ClearSelection();
 
     protected void OnPropertyChanged(String propertyName);
+}
+
 }

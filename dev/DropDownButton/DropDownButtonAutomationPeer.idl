@@ -1,7 +1,12 @@
+namespace MU_XAP_NAMESPACE
+{
+
 [WUXC_VERSION_RS5]
 [webhosthidden]
 unsealed runtimeclass DropDownButtonAutomationPeer : Windows.UI.Xaml.Automation.Peers.ButtonAutomationPeer,
 Windows.UI.Xaml.Automation.Provider.IExpandCollapseProvider
 {
     DropDownButtonAutomationPeer(MU_XC_NAMESPACE.DropDownButton owner);
+}
+
 }

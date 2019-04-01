@@ -31,6 +31,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)NEWCONTROL.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)NEWCONTROL.idl" />
   </ItemGroup>
 </Project>

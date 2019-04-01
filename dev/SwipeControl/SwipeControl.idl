@@ -1,4 +1,7 @@
-﻿runtimeclass SwipeItems;
+﻿namespace MU_XC_NAMESPACE
+{
+
+runtimeclass SwipeItems;
 runtimeclass SwipeControl;
 runtimeclass SwipeItemInvokedEventArgs;
 runtimeclass SwipeItem;
@@ -96,4 +99,6 @@ unsealed runtimeclass SwipeItem : Windows.UI.Xaml.DependencyObject
     static Windows.UI.Xaml.DependencyProperty CommandProperty { get; };
     static Windows.UI.Xaml.DependencyProperty CommandParameterProperty { get; };
     static Windows.UI.Xaml.DependencyProperty BehaviorOnInvokedProperty { get; };
+}
+
 }

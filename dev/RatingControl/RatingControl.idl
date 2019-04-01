@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_RS3]
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_RS3]
 [webhosthidden]
 [WUXC_INTERFACE_NAME("IRatingItemInfo", 9ccbe6a2-591e-47a0-a318-6a1f7947da2d)]
 [WUXC_CONSTRUCTOR_NAME("IRatingItemInfoFactory", b0fd43d6-cfec-43c8-9ac5-0b0d5e25d862)]
@@ -89,4 +92,6 @@ unsealed runtimeclass RatingControl : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty PlaceholderValueProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ItemInfoProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ValueProperty { get; };
+}
+
 }

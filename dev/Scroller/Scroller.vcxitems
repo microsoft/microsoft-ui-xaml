@@ -15,9 +15,9 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)Scroller.idl" />
-    <None Include="$(MSBuildThisFileDirectory)ScrollerPrimitives.idl" />
-    <None Include="$(MSBuildThisFileDirectory)ScrollerAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)Scroller.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ScrollerPrimitives.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ScrollerAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)InteractionTrackerAsyncOperation.h" />

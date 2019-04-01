@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_PREVIEW]
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
 [webhosthidden]
 struct ScrollInfo 
 { 
@@ -180,4 +183,6 @@ runtimeclass ScrollerAnchorRequestedEventArgs
 {
     Windows.Foundation.Collections.IVector<Windows.UI.Xaml.UIElement> AnchorCandidates { get; };
     Windows.UI.Xaml.UIElement AnchorElement { get; set; };
+}
+
 }

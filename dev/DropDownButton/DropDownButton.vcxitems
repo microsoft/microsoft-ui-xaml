@@ -32,7 +32,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)DropDownButton.idl" />
-    <None Include="$(MSBuildThisFileDirectory)DropDownButtonAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)DropDownButton.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)DropDownButtonAutomationPeer.idl" />
   </ItemGroup>
 </Project>

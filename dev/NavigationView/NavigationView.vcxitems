@@ -55,8 +55,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TopNavigationViewDataProvider.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)NavigationView.idl" />
-    <None Include="$(MSBuildThisFileDirectory)NavigationViewItemAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)NavigationView.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)NavigationViewItemAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView.xaml">

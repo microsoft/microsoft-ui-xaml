@@ -39,6 +39,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)ScrollViewer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ScrollViewer.idl" />
   </ItemGroup>
 </Project>

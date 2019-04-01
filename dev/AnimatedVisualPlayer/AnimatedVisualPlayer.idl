@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_MUXONLY]
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 interface IAnimatedVisual
     requires Windows.Foundation.IClosable
@@ -87,4 +90,6 @@ unsealed runtimeclass AnimatedVisualPlayer
     static Windows.UI.Xaml.DependencyProperty PlaybackRateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SourceProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty StretchProperty{ get; };
+}
+
 }

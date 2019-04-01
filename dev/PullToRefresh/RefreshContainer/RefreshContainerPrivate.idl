@@ -1,6 +1,12 @@
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+interface IRefreshInfoProviderAdapter;
+
 [WUXC_VERSION_INTERNAL]
 [webhosthidden]
 interface IRefreshContainerPrivate
 {
     IRefreshInfoProviderAdapter RefreshInfoProviderAdapter { get; set; };
+}
+
 }

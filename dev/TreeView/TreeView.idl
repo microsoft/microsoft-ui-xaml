@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_RS4]
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_RS4]
 [webhosthidden]
 enum TreeViewSelectionMode
 {
@@ -214,4 +217,6 @@ unsealed runtimeclass TreeViewItem : Windows.UI.Xaml.Controls.ListViewItem
         static Windows.UI.Xaml.DependencyProperty HasUnrealizedChildrenProperty{ get; };
         static Windows.UI.Xaml.DependencyProperty ItemsSourceProperty{ get; };
     }
+}
+
 }

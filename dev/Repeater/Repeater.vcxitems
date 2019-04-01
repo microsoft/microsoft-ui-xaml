@@ -14,9 +14,9 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)ItemsRepeater.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RepeaterAutomationPeer.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RepeaterPrivate.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ItemsRepeater.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RepeaterAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RepeaterPrivate.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimationManager.h" />

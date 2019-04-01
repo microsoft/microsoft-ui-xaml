@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_INTERNAL]
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[WUXC_VERSION_INTERNAL]
 [default_interface]
 [webhosthidden]
 runtimeclass TeachingTipTestHooks
@@ -28,4 +31,6 @@ runtimeclass TeachingTipTestHooks
     static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TeachingTip, Object> OffsetChanged;
     static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TeachingTip, Object> EffectivePlacementChanged;
     static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TeachingTip, Object> EffectiveHeroContentPlacementChanged;
+}
+
 }

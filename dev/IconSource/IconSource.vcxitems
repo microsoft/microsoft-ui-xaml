@@ -33,6 +33,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)SymbolIconSource.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)IconSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)IconSource.idl" />
   </ItemGroup>
 </Project>

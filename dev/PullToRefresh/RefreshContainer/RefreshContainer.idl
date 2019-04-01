@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_RS4]
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_RS4]
 [webhosthidden]
 enum RefreshPullDirection
 {
@@ -27,4 +30,6 @@ unsealed runtimeclass RefreshContainer : Windows.UI.Xaml.Controls.ContentControl
 
     static Windows.UI.Xaml.DependencyProperty VisualizerProperty { get; };
     static Windows.UI.Xaml.DependencyProperty PullDirectionProperty { get; };
+}
+
 }
