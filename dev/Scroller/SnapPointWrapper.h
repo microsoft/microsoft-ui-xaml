@@ -30,8 +30,8 @@ public:
         winrt::hstring const& target,
         winrt::hstring const& scale) const;
     void DetermineActualApplicableZone(
-        SnapPointBase* previousSnapPoint,
-        SnapPointBase* nextSnapPoint);
+        SnapPointWrapper<T>* previousSnapPointWrapper,
+        SnapPointWrapper<T>* nextSnapPointWrapper);
     void Combine(SnapPointWrapper<T>* snapPointWrapper);
     double Evaluate(double value) const;
 

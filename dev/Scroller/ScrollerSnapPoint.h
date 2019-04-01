@@ -52,14 +52,15 @@ public:
         winrt::hstring const& scale) = 0;
     virtual ScrollerSnapPointSortPredicate SortPredicate() = 0;
     virtual std::tuple<double, double> DetermineActualApplicableZone(
-        std::tuple<double, double> actualApplicableZone,
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint) = 0;
     virtual double Influence(double edgeOfMidpoint) const = 0;
     virtual void Combine(
-        winrt::SnapPointBase const& snapPoint,
-        int& combinationCount) const = 0;
-    virtual double Evaluate(double value, std::tuple<double, double> actualApplicableZone) const = 0;
+        int& combinationCount,
+        winrt::SnapPointBase const& snapPoint) const = 0;
+    virtual double Evaluate(
+        std::tuple<double, double> actualApplicableZone,
+        double value) const = 0;
 
     // Returns True when this snap point is sensitive to the viewport size and is interested in future updates.
     virtual bool OnUpdateViewport(double newViewport) = 0;
@@ -133,22 +134,21 @@ public:
         winrt::hstring const& scale);
     ScrollerSnapPointSortPredicate SortPredicate();
     std::tuple<double, double> DetermineActualApplicableZone(
-        std::tuple<double, double> actualApplicableZone,
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint);
     double Influence(double edgeOfMidpoint) const;
     void Combine(
-        winrt::SnapPointBase const& snapPoint,
-        int& combinationCount) const;
-    double Evaluate(double value, std::tuple<double, double> actualApplicableZone) const;
+        int& combinationCount,
+        winrt::SnapPointBase const& snapPoint) const;
+    double Evaluate(
+        std::tuple<double, double> actualApplicableZone,
+        double value) const;
 
 private:
     double ActualValue() const;
     double DetermineMinActualApplicableZone(
-        std::tuple<double, double> actualApplicableZone,
         SnapPointBase* previousSnapPoint) const;
     double DetermineMaxActualApplicableZone(
-        std::tuple<double, double> actualApplicableZone,
         SnapPointBase* nextSnapPoint) const;
 
     double m_value{ 0.0 };
@@ -192,14 +192,15 @@ public:
         winrt::hstring const& scale);
     ScrollerSnapPointSortPredicate SortPredicate();
     std::tuple<double, double> DetermineActualApplicableZone(
-        std::tuple<double, double> actualApplicableZone,
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint);
     double Influence(double edgeOfMidpoint) const;
     void Combine(
-        winrt::SnapPointBase const& snapPoint,
-        int& combinationCount) const;
-    double Evaluate(double value, std::tuple<double, double> actualApplicableZone) const;
+        int& combinationCount,
+        winrt::SnapPointBase const& snapPoint) const;
+    double Evaluate(
+        std::tuple<double, double> actualApplicableZone,
+        double value) const;
 
 private:
     double ActualOffset() const;
@@ -207,10 +208,8 @@ private:
     double ActualEnd() const;
     double DetermineFirstRepeatedSnapPointValue() const;
     double DetermineMinActualApplicableZone(
-        std::tuple<double, double> actualApplicableZone,
         SnapPointBase* previousSnapPoint) const;
     double DetermineMaxActualApplicableZone(
-        std::tuple<double, double> actualApplicableZone,
         SnapPointBase* nextSnapPoint) const;
     void ValidateConstructorParameters(
 #ifdef ApplicableRangeType
@@ -265,21 +264,20 @@ public:
         winrt::hstring const& scale);
     ScrollerSnapPointSortPredicate SortPredicate();
     std::tuple<double, double> DetermineActualApplicableZone(
-        std::tuple<double, double> actualApplicableZone,
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint);
     double Influence(double edgeOfMidpoint) const;
     void Combine(
-        winrt::SnapPointBase const& snapPoint,
-        int& combinationCount) const;
-    double Evaluate(double value, std::tuple<double, double> actualApplicableZone) const;
+        int& combinationCount,
+        winrt::SnapPointBase const& snapPoint) const;
+    double Evaluate(
+        std::tuple<double, double> actualApplicableZone,
+        double value) const;
 
 private:
     double DetermineMinActualApplicableZone(
-        std::tuple<double, double> actualApplicableZone,
         SnapPointBase* previousSnapPoint) const;
     double DetermineMaxActualApplicableZone(
-        std::tuple<double, double> actualApplicableZone,
         SnapPointBase* nextSnapPoint) const;
 
     double m_value{ 0.0 };
@@ -321,22 +319,21 @@ public:
         winrt::hstring const& scale);
     ScrollerSnapPointSortPredicate SortPredicate();
     std::tuple<double, double> DetermineActualApplicableZone(
-        std::tuple<double, double> actualApplicableZone,
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint);
     double Influence(double edgeOfMidpoint) const;
     void Combine(
-        winrt::SnapPointBase const& snapPoint,
-        int& combinationCount) const;
-    double Evaluate(double value, std::tuple<double, double> actualApplicableZone) const;
+        int& combinationCount,
+        winrt::SnapPointBase const& snapPoint) const;
+    double Evaluate(
+        std::tuple<double, double> actualApplicableZone,
+        double value) const;
 
 private:
     double DetermineFirstRepeatedSnapPointValue() const;
     double DetermineMinActualApplicableZone(
-        std::tuple<double, double> actualApplicableZone,
         SnapPointBase* previousSnapPoint) const;
     double DetermineMaxActualApplicableZone(
-        std::tuple<double, double> actualApplicableZone,
         SnapPointBase* nextSnapPoint) const;
     void ValidateConstructorParameters(
 #ifdef ApplicableRangeType

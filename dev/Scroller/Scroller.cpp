@@ -1930,36 +1930,17 @@ void Scroller::FixSnapPointRanges(
 
         if (currentSnapPointWrapper)
         {
-            SnapPointBase* previousSnapPoint = nullptr;
-            SnapPointBase* nextSnapPoint = nullptr;
-
-            if (previousSnapPointWrapper)
-            {
-                winrt::SnapPointBase winrtPreviousSnapPoint = safe_cast<winrt::SnapPointBase>(previousSnapPointWrapper->SnapPoint());
-                previousSnapPoint = winrt::get_self<SnapPointBase>(winrtPreviousSnapPoint);
-            }
-
-            if (nextSnapPointWrapper)
-            {
-                winrt::SnapPointBase winrtNextSnapPoint = safe_cast<winrt::SnapPointBase>(nextSnapPointWrapper->SnapPoint());
-                nextSnapPoint = winrt::get_self<SnapPointBase>(winrtNextSnapPoint);
-            }
-
-            currentSnapPointWrapper->DetermineActualApplicableZone(previousSnapPoint, nextSnapPoint);
+            currentSnapPointWrapper->DetermineActualApplicableZone(
+                previousSnapPointWrapper ? previousSnapPointWrapper.get() : nullptr,
+                nextSnapPointWrapper ? nextSnapPointWrapper.get() : nullptr);
         }
     }
 
     if (nextSnapPointWrapper)
     {
-        SnapPointBase* currentSnapPoint = nullptr;
-
-        if (currentSnapPointWrapper)
-        {
-            winrt::SnapPointBase winrtCurrentSnapPoint = safe_cast<winrt::SnapPointBase>(currentSnapPointWrapper->SnapPoint());
-            currentSnapPoint = winrt::get_self<SnapPointBase>(winrtCurrentSnapPoint);
-        }
-
-        nextSnapPointWrapper->DetermineActualApplicableZone(currentSnapPoint, nullptr);
+        nextSnapPointWrapper->DetermineActualApplicableZone(
+            currentSnapPointWrapper ? currentSnapPointWrapper.get() : nullptr,
+            nullptr);
     }
 }
 

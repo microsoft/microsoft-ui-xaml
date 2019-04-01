@@ -69,14 +69,27 @@ winrt::ExpressionAnimation SnapPointWrapper<T>::CreateConditionalExpression(
 
 template<typename T>
 void SnapPointWrapper<T>::DetermineActualApplicableZone(
-    SnapPointBase* previousSnapPoint,
-    SnapPointBase* nextSnapPoint)
+    SnapPointWrapper<T>* previousSnapPointWrapper,
+    SnapPointWrapper<T>* nextSnapPointWrapper)
 {
     winrt::SnapPointBase winrtSnapPoint = safe_cast<winrt::SnapPointBase>(m_snapPoint);
     SnapPointBase* snapPoint = winrt::get_self<SnapPointBase>(winrtSnapPoint);
+    SnapPointBase* previousSnapPoint = nullptr;
+    SnapPointBase* nextSnapPoint = nullptr;
+
+    if (previousSnapPointWrapper)
+    {
+        winrt::SnapPointBase winrtPreviousSnapPoint = safe_cast<winrt::SnapPointBase>(previousSnapPointWrapper->SnapPoint());
+        previousSnapPoint = winrt::get_self<SnapPointBase>(winrtPreviousSnapPoint);
+    }
+
+    if (nextSnapPointWrapper)
+    {
+        winrt::SnapPointBase winrtNextSnapPoint = safe_cast<winrt::SnapPointBase>(nextSnapPointWrapper->SnapPoint());
+        nextSnapPoint = winrt::get_self<SnapPointBase>(winrtNextSnapPoint);
+    }
 
     m_actualApplicableZone = snapPoint->DetermineActualApplicableZone(
-        m_actualApplicableZone,
         previousSnapPoint,
         nextSnapPoint);
 }
@@ -87,7 +100,7 @@ void SnapPointWrapper<T>::Combine(SnapPointWrapper<T>* snapPointWrapper)
     winrt::SnapPointBase winrtSnapPoint = safe_cast<winrt::SnapPointBase>(m_snapPoint);
     SnapPointBase* snapPoint = winrt::get_self<SnapPointBase>(winrtSnapPoint);
 
-    snapPoint->Combine(snapPointWrapper->SnapPoint(), m_combinationCount);
+    snapPoint->Combine(m_combinationCount, snapPointWrapper->SnapPoint());
 }
 
 template<typename T>
@@ -96,7 +109,7 @@ double SnapPointWrapper<T>::Evaluate(double value) const
     winrt::SnapPointBase winrtSnapPoint = safe_cast<winrt::SnapPointBase>(m_snapPoint);
     SnapPointBase* snapPoint = winrt::get_self<SnapPointBase>(winrtSnapPoint);
 
-    return snapPoint->Evaluate(value, m_actualApplicableZone);
+    return snapPoint->Evaluate(m_actualApplicableZone, value);
 }
 
 template SnapPointWrapper<winrt::ScrollSnapPointBase>::SnapPointWrapper(winrt::ScrollSnapPointBase const& snapPoint);
@@ -135,11 +148,11 @@ template winrt::ExpressionAnimation SnapPointWrapper<winrt::ZoomSnapPointBase>::
     winrt::hstring const& scale) const;
 
 template void SnapPointWrapper<winrt::ScrollSnapPointBase>::DetermineActualApplicableZone(
-    SnapPointBase* previousSnapPoint,
-    SnapPointBase* nextSnapPoint);
+    SnapPointWrapper<winrt::ScrollSnapPointBase>* previousSnapPoint,
+    SnapPointWrapper<winrt::ScrollSnapPointBase>* nextSnapPoint);
 template void SnapPointWrapper<winrt::ZoomSnapPointBase>::DetermineActualApplicableZone(
-    SnapPointBase* previousSnapPoint,
-    SnapPointBase* nextSnapPoint);
+    SnapPointWrapper<winrt::ZoomSnapPointBase>* previousSnapPoint,
+    SnapPointWrapper<winrt::ZoomSnapPointBase>* nextSnapPoint);
 
 template void SnapPointWrapper<winrt::ScrollSnapPointBase>::Combine(SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper);
 template void SnapPointWrapper<winrt::ZoomSnapPointBase>::Combine(SnapPointWrapper<winrt::ZoomSnapPointBase>* snapPointWrapper);
