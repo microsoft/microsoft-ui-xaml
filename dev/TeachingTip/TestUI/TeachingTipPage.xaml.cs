@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Automation;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 
 #if !BUILD_WINDOWS
@@ -39,12 +40,9 @@ namespace MUXControlsTestApp
     public sealed partial class TeachingTipPage : TestPage, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-        private void NotifyPropertyChanged(string propertyName)
+        private void NotifyPropertyChanged([CallerMemberName]string propertyName = null)
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         Deferral deferral;
@@ -881,17 +879,14 @@ namespace MUXControlsTestApp
 
         public bool IsPageRTL
         {
-            get
-            {
-                return FlowDirection == FlowDirection.RightToLeft;
-            }
+            get => FlowDirection == FlowDirection.RightToLeft;
             set
             {
                 FlowDirection newFlowDirection = value ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
                 if (FlowDirection != newFlowDirection)
                 {
                     FlowDirection = newFlowDirection;
-                    NotifyPropertyChanged(nameof(IsPageRTL));
+                    NotifyPropertyChanged();
                 }
             }
         }
