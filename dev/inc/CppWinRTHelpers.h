@@ -221,6 +221,18 @@ inline bool SetFocus(winrt::DependencyObject const& object, winrt::FocusState fo
 {
     if (object)
     {
+        // Use TryFocusAsync if it's available.
+        if (auto focusManager5 = winrt::get_activation_factory<winrt::FocusManager, winrt::IFocusManagerStatics5>())
+        {
+            auto result = focusManager5.TryFocusAsync(object, focusState);
+            if (result.Status() == winrt::AsyncStatus::Completed)
+            {
+                return result.GetResults().Succeeded();
+            }
+            // Operation was async, let's assume it worked.
+            return true;
+        }
+
         if (auto control = object.try_as<winrt::Control>())
         {
             return control.Focus(focusState);

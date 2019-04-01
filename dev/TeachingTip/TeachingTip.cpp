@@ -736,8 +736,6 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottom()
 void TeachingTip::OnIsOpenChanged()
 {
     m_acceleratorKeyActivatedRevoker = {};
-    m_tipGettingFocusRevoker = {};
-    m_tipLosingFocusRevoker = {};
 
     if (IsOpen())
     {
@@ -833,24 +831,6 @@ void TeachingTip::OnIsOpenChanged()
         }
 
         m_acceleratorKeyActivatedRevoker = Dispatcher().AcceleratorKeyActivated(winrt::auto_revoke, { this, &TeachingTip::OnF6AcceleratorKeyClicked });
-
-        if (auto child = m_rootElement.get())
-        {
-            m_tipGettingFocusRevoker = AddRoutedEventHandler<RoutedEventType::GettingFocus>(
-                child,
-                [this](auto&& sender, auto&& args)
-                {
-                    m_hasFocusInSubtree = true;
-                },
-                true);
-            m_tipLosingFocusRevoker = AddRoutedEventHandler<RoutedEventType::LosingFocus>(
-                child,
-                [this](auto&& sender, auto&& args)
-                {
-                    m_hasFocusInSubtree = false;
-                },
-                true);
-        }
     }
     else
     {
@@ -877,7 +857,6 @@ void TeachingTip::OnIsOpenChanged()
             }
         }
 
-        m_hasFocusInSubtree = false;
         m_currentEffectiveTipPlacementMode = winrt::TeachingTipPlacementMode::Auto;
         TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
     }
@@ -996,7 +975,22 @@ void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const 
             m_hasF6BeenInvoked = true;
         }
 
-        if (m_hasFocusInSubtree)
+        auto const hasFocusInSubtree = [this, args]()
+        {
+            auto current = winrt::FocusManager::GetFocusedElement().try_as<winrt::DependencyObject>();
+            auto const rootElement = m_rootElement.get();
+            while (current)
+            {
+                if (current.try_as<winrt::UIElement>() == rootElement)
+                {
+                    return true;
+                }
+                current = winrt::VisualTreeHelper::GetParent(current);
+            }
+            return false;
+        }();
+
+        if (hasFocusInSubtree)
         {
             bool setFocus = SetFocus(m_previouslyFocusedElement.get(), winrt::FocusState::Programmatic);
             m_previouslyFocusedElement = nullptr;

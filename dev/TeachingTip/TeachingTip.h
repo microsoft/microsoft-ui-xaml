@@ -55,8 +55,6 @@ private:
     PropertyChanged_revoker m_automationNameChangedRevoker{};
     PropertyChanged_revoker m_automationIdChangedRevoker{};
     winrt::CoreDispatcher::AcceleratorKeyActivated_revoker m_acceleratorKeyActivatedRevoker{};
-    RoutedEventHandler_revoker m_tipGettingFocusRevoker{};
-    RoutedEventHandler_revoker m_tipLosingFocusRevoker{};
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     winrt::Button::Click_revoker m_alternateCloseButtonClickedRevoker{};
     winrt::Button::Click_revoker m_actionButtonClickedRevoker{};
@@ -169,7 +167,6 @@ private:
     bool m_isContractAnimationPlaying{ false };
 
     bool m_hasF6BeenInvoked{ false };
-    bool m_hasFocusInSubtree{ false };
 
     bool m_useTestWindowBounds{ false };
     winrt::Rect m_testWindowBoundsInCoreWindowSpace{ 0,0,0,0 };
