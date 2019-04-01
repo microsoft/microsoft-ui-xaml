@@ -20,15 +20,20 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
 
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
         <!-- MaxHeight is necessary because 25% of Infinity is Infinity :/ -->
-        <Grid Grid.Column="1" MaxHeight="400">
+        <Grid Grid.Column="1" MaxHeight="400" VerticalAlignment="Top">
             <Grid.Resources>
                 <Style TargetType="local:Grid">
                     <Setter Property="HorizontalAlignment" Value="Left"/>
                 </Style>
             </Grid.Resources>
 
-            <local:Grid x:Name="_grid">
+            <local:Grid x:Name="_grid" VerticalAlignment="Top">
                 <local:Grid.Resources>
                     <Style TargetType="TextBlock">
                         <Setter Property="Foreground" Value="Gray"/>
@@ -82,13 +87,13 @@
                         <local:GridLocation x:Name="_columnStart" Index="1"/>
                     </local:Grid.ColumnStart>
                     <local:Grid.ColumnEnd>
-                        <local:GridLocation LineName="five"/>
+                        <local:GridLocation x:Name="_columnEnd" LineName="five"/>
                     </local:Grid.ColumnEnd>
                     <local:Grid.RowStart>
-                        <local:GridLocation LineName="row1-start"/>
+                        <local:GridLocation x:Name="_rowStart" LineName="row1-start"/>
                     </local:Grid.RowStart>
                     <local:Grid.RowEnd>
-                        <local:GridLocation Index="2"/>
+                        <local:GridLocation x:Name="_rowEnd" Index="2"/>
                     </local:Grid.RowEnd>
                     <TextBlock>item-a</TextBlock>
                 </Grid>
@@ -97,21 +102,50 @@
 
         </Grid>
 
-        <StackPanel Grid.Column="0">
+        <StackPanel Grid.Column="1" Grid.Row="1" VerticalAlignment="Top">
+            <TextBlock Style="{StaticResource HeaderStyle}">Columns</TextBlock>
+            <TextBlock>first: 40px</TextBlock>
+            <TextBlock>line2: 50px</TextBlock>
+            <TextBlock>line3: Auto</TextBlock>
+            <TextBlock>col4-start: 50px</TextBlock>
+            <TextBlock>five: 40px</TextBlock>
+
+            <TextBlock Style="{StaticResource HeaderStyle}">Rows</TextBlock>
+            <TextBlock>row1-start: 25%</TextBlock>
+            <TextBlock>row1-end: 100px</TextBlock>
+            <TextBlock>third-line: Auto</TextBlock>
+        </StackPanel>
+
+        <StackPanel Grid.Column="0" Grid.RowSpan="2">
             <Button Click="InvalidateButton_Click" Content="Invalidate"/>
+            
             <TextBlock Style="{StaticResource HeaderStyle}">ColumnStart</TextBlock>
-            <Slider x:Name="_columnStartIndex" Header="Index" Minimum="-1" Maximum="10" Value="-1" TickFrequency="1" TickPlacement="Outside"/>
-            <TextBox Header="LineName" Text="{x:Bind _columnStart.LineName, Mode=TwoWay}"/>
-            <Slider Header="Span" Minimum="0" Maximum="6" Value="{x:Bind _columnStart.Span, Mode=TwoWay}" TickFrequency="1" TickPlacement="Outside"/>
+            <StackPanel BorderBrush="LightGray" BorderThickness="1" Padding="4" Margin="4">
+                <Slider x:Name="_columnStartIndex" Value="{x:Bind _columnStart.Index}" Header="Index" Minimum="-1" Maximum="4"  TickFrequency="1" TickPlacement="Outside"/>
+                <TextBox x:Name="_columnStartLineName" Text="{x:Bind _columnStart.LineName}" Header="LineName" />
+                <Slider x:Name="_columnStartSpan" Value="{x:Bind _columnStart.Span}" Header="Span" Minimum="0" Maximum="5" TickFrequency="1" TickPlacement="Outside" IsEnabled="False"/>
+            </StackPanel>
 
             <TextBlock Style="{StaticResource HeaderStyle}">ColumnEnd</TextBlock>
-            <Slider x:Name="_columnEndIndex" Header="Index" Minimum="-1" Maximum="10" Value="-1" TickFrequency="1" TickPlacement="Outside"/>
+            <StackPanel BorderBrush="LightGray" BorderThickness="1" Padding="4" Margin="4">
+                <Slider x:Name="_columnEndIndex" Value="{x:Bind _columnEnd.Index}" Header="Index" Minimum="-1" Maximum="4" TickFrequency="1" TickPlacement="Outside"/>
+                <TextBox x:Name="_columnEndLineName" Text="{x:Bind _columnEnd.LineName}" Header="LineName"/>
+                <Slider x:Name="_columnEndSpan" Value="{x:Bind _columnEnd.Span}" Header="Span" Minimum="0" Maximum="5" TickFrequency="1" TickPlacement="Outside"/>
+            </StackPanel>
             
             <TextBlock Style="{StaticResource HeaderStyle}">RowStart</TextBlock>
-            <Slider x:Name="_rowStartIndex" Header="Index" Minimum="-1" Maximum="10" Value="-1" TickFrequency="1" TickPlacement="Outside"/>
-
+            <StackPanel BorderBrush="LightGray" BorderThickness="1" Padding="4" Margin="4">
+                <Slider x:Name="_rowStartIndex" Value="{x:Bind _rowStart.Index}" Header="Index" Minimum="-1" Maximum="3" TickFrequency="1" TickPlacement="Outside"/>
+                <TextBox x:Name="_rowStartLineName" Text="{x:Bind _rowStart.LineName}" Header="LineName"/>
+                <Slider x:Name="_rowStartSpan" Value="{x:Bind _rowStart.Span}" Header="Span" Minimum="0" Maximum="3" TickFrequency="1" TickPlacement="Outside" IsEnabled="False"/>
+            </StackPanel>
+            
             <TextBlock Style="{StaticResource HeaderStyle}">RowEnd</TextBlock>
-            <Slider x:Name="_rowEndIndex" Header="Index" Minimum="-1" Maximum="10" Value="-1" TickFrequency="1" TickPlacement="Outside"/>
+            <StackPanel BorderBrush="LightGray" BorderThickness="1" Padding="4" Margin="4">
+                <Slider x:Name="_rowEndIndex" Value="{x:Bind _rowEnd.Index}" Header="Index" Minimum="-1" Maximum="3" TickFrequency="1" TickPlacement="Outside"/>
+                <TextBox x:Name="_rowEndLineName" Text="{x:Bind _rowEnd.LineName}" Header="LineName"/>
+                <Slider x:Name="_rowEndSpan" Value="{x:Bind _rowEnd.Span}" Header="Span" Minimum="0" Maximum="3" TickFrequency="1" TickPlacement="Outside"/>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Page>
