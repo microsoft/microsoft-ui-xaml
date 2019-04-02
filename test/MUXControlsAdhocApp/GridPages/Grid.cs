@@ -54,6 +54,14 @@ namespace MUXControlsAdhocApp.GridPages
         Stretch,
     }
 
+    public enum GridAlignItems
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+    }
+
     public class Grid : Panel
     {
         public static readonly DependencyProperty ColumnStartProperty =
@@ -204,6 +212,23 @@ namespace MUXControlsAdhocApp.GridPages
             }
         }
         private GridJustifyItems _justifyItems = GridJustifyItems.Stretch;
+
+        public GridAlignItems AlignItems
+        {
+            get
+            {
+                return _alignItems;
+            }
+            set
+            {
+                if (_alignItems != value)
+                {
+                    _alignItems = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private GridAlignItems _alignItems = GridAlignItems.Stretch;
 
         private static void InvalidateMeasureOnChildPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs args)
         {
@@ -815,17 +840,36 @@ namespace MUXControlsAdhocApp.GridPages
                 switch (_justifyItems)
                 {
                     case GridJustifyItems.Start:
-                        width = child.DesiredSize.Width;
+                        width = desiredWidth;
                         break;
                     case GridJustifyItems.End:
                         left += unusedWidth;
-                        width = child.DesiredSize.Width;
+                        width = desiredWidth;
                         break;
                     case GridJustifyItems.Center:
                         left += unusedWidth * 0.5;
-                        width = child.DesiredSize.Width;
+                        width = desiredWidth;
                         break;
                     case GridJustifyItems.Stretch:
+                        break;
+                }
+
+                double desiredHeight = Math.Min(child.DesiredSize.Height, height);
+                double unusedHeight = (height - desiredHeight);
+                switch (_alignItems)
+                {
+                    case GridAlignItems.Start:
+                        height = desiredHeight;
+                        break;
+                    case GridAlignItems.End:
+                        top += unusedHeight;
+                        height = desiredHeight;
+                        break;
+                    case GridAlignItems.Center:
+                        top += unusedHeight * 0.5;
+                        height = desiredHeight;
+                        break;
+                    case GridAlignItems.Stretch:
                         break;
                 }
 
