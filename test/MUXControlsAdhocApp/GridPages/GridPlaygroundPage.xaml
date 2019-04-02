@@ -141,6 +141,13 @@
                     <x:String>Stretch</x:String>
                 </ComboBox>
 
+                <ComboBox Header="AlignItems" SelectionChanged="AlignItemsComboBox_SelectionChanged" SelectedItem="Stretch">
+                    <x:String>Start</x:String>
+                    <x:String>End</x:String>
+                    <x:String>Center</x:String>
+                    <x:String>Stretch</x:String>
+                </ComboBox>
+
                 <Button Click="InvalidateButton_Click" Content="Invalidate" Margin="0,8,0,0"/>
             </StackPanel>
 
