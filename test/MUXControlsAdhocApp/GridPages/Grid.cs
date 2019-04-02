@@ -668,6 +668,7 @@ namespace MUXControlsAdhocApp.GridPages
         {
             DumpBegin(availableSize, "Measure");
             DumpTemplates();
+            DumpInfo($"ColumnGap={_columnGap}, RowGap={_rowGap}");
 
             _columns.Clear();
             _rows.Clear();
@@ -758,6 +759,17 @@ namespace MUXControlsAdhocApp.GridPages
                 double top = rowMeasure.Start;
                 double right = colEndMesure.Start;
                 double bottom = rowEndMesure.Start;
+
+                // The left edge of a grid line includes the gap amount. As long as we have any
+                // coordinates at all we should be trimming that off.
+                if (right > 0.0)
+                {
+                    right -= _columnGap;
+                }
+                if (bottom > 0.0)
+                {
+                    bottom -= _rowGap;
+                }
 
                 // They might have specified grid references that were inverted. If so, collapse
                 // them and essentially zero out the child's arrange size.
