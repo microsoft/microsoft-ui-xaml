@@ -189,8 +189,7 @@ namespace MUXControlsAdhocApp.GridPages
             }
         }
 
-        private GridTrackInfo _lastInColumn = new GridTrackInfo();
-        private GridTrackInfo _lastInRow = new GridTrackInfo();
+        private static GridTrackInfo _lastInTrack = new GridTrackInfo();
 
         // Calculated info on one of the grid tracks
         protected class MeasureInfo
@@ -209,7 +208,7 @@ namespace MUXControlsAdhocApp.GridPages
             {
                 // Add all the items from the markup defined template, plus one more grid line for the end
                 Template = new List<GridTrackInfo>(template);
-                Template.Add(new GridTrackInfo());
+                Template.Add(_lastInTrack);
 
                 Calculated = calculated;
                 Available = 0.0;
@@ -281,7 +280,7 @@ namespace MUXControlsAdhocApp.GridPages
         {
             foreach (UIElement child in Children)
             {
-                ChildGridLocations childLocation = GetChildGridLocations(child);
+                ChildGridLocations childLocation = GetChildGridLocations(child, ref measureHorizontal, ref measureVertical);
 
                 List<GridTrackInfo> autoHorizontal = new List<GridTrackInfo>();
                 List<GridTrackInfo> autoVertical = new List<GridTrackInfo>();
@@ -441,7 +440,12 @@ namespace MUXControlsAdhocApp.GridPages
             public GridTrackInfo RowEnd;
         }
 
-        private ChildGridLocations GetChildGridLocations(UIElement child)
+        private ChildGridLocations GetChildGridLocations(UIElement child, ref MeasureBlah measureHorizontal, ref MeasureBlah measureVertical)
+        {
+            return GetChildGridLocations(child, measureHorizontal.Template, measureVertical.Template);
+        }
+
+        private ChildGridLocations GetChildGridLocations(UIElement child, List<GridTrackInfo> horizontal, List<GridTrackInfo> vertical)
         {
             ChildGridLocations result;
 
@@ -452,10 +456,10 @@ namespace MUXControlsAdhocApp.GridPages
             GridLocation rowEnd = GetRowEnd(child);
 
             // Map those to our grid lines
-            result.ColStart = GetTrack(_templateColumns, colStart);
-            result.RowStart = GetTrack(_templateRows, rowStart);
-            result.ColEnd = GetTrack(_templateColumns, colEnd, result.ColStart);
-            result.RowEnd = GetTrack(_templateRows, rowEnd, result.RowStart);
+            result.ColStart = GetTrack(horizontal, colStart);
+            result.RowStart = GetTrack(vertical, rowStart);
+            result.ColEnd = GetTrack(horizontal, colEnd, result.ColStart);
+            result.RowEnd = GetTrack(vertical, rowEnd, result.RowStart);
 
             return result;
         }
@@ -466,8 +470,9 @@ namespace MUXControlsAdhocApp.GridPages
             {
                 // Exact track index
                 int index = location.Index;
-                if (index >= 0 && index < list.Count)
+                if (index >= 0)
                 {
+                    index = Math.Min(index, list.Count - 1);
                     return list[index];
                 }
 
@@ -565,14 +570,14 @@ namespace MUXControlsAdhocApp.GridPages
         }
 
         [Conditional("GRID_TRACE")]
-        private void DumpChildren()
+        private void DumpChildren(ref MeasureBlah measureHorizontal, ref MeasureBlah measureVertical)
         {
             DumpBegin("Children");
             foreach (UIElement child in Children)
             {
                 Debug.WriteLine(child.GetType().Name + " {");
                 Debug.Indent();
-                ChildGridLocations locations = GetChildGridLocations(child);
+                ChildGridLocations locations = GetChildGridLocations(child, ref measureHorizontal, ref measureVertical);
 
                 Action<GridLocation, string> dumpLocation = (GridLocation location, string info) =>
                 {
@@ -621,13 +626,13 @@ namespace MUXControlsAdhocApp.GridPages
         }
 
         [Conditional("GRID_TRACE")]
-        private static void DumpMeasureInfo(ref MeasureBlah horizontalMeasure, ref MeasureBlah verticalMeasure, string info, bool includeOffset = false)
+        private static void DumpMeasureInfo(ref MeasureBlah measureHorizontal, ref MeasureBlah measureVertical, string info, bool includeOffset = false)
         {
             DumpBegin(info);
-            DumpMeasureInfo(ref horizontalMeasure, "Columns", includeOffset);
-            Debug.WriteLine($"Remaining={horizontalMeasure.Remaining}");
-            DumpMeasureInfo(ref verticalMeasure, "Rows", includeOffset);
-            Debug.WriteLine($"Remaining={verticalMeasure.Remaining}");
+            DumpMeasureInfo(ref measureHorizontal, "Columns", includeOffset);
+            Debug.WriteLine($"Remaining={measureHorizontal.Remaining}");
+            DumpMeasureInfo(ref measureVertical, "Rows", includeOffset);
+            Debug.WriteLine($"Remaining={measureVertical.Remaining}");
             DumpEnd();
         }
 
@@ -663,38 +668,38 @@ namespace MUXControlsAdhocApp.GridPages
         {
             DumpBegin(availableSize, "Measure");
             DumpTemplates();
-            DumpChildren();
 
             _columns.Clear();
             _rows.Clear();
 
-            MeasureBlah horizontalMeasure = InitializeMeasure(_templateColumns, _columns, _columnGap, availableSize.Width);
-            MeasureBlah verticalMeasure = InitializeMeasure(_templateRows, _rows, _rowGap, availableSize.Height);
+            MeasureBlah measureHorizontal = InitializeMeasure(_templateColumns, _columns, _columnGap, availableSize.Width);
+            MeasureBlah measureVertical = InitializeMeasure(_templateRows, _rows, _rowGap, availableSize.Height);
+            DumpChildren(ref measureHorizontal, ref measureVertical);
 
             // First process any fixed sizes
-            ProcessFixedSizes(ref horizontalMeasure);
-            ProcessFixedSizes(ref verticalMeasure);
-            DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "Fixed");
+            ProcessFixedSizes(ref measureHorizontal);
+            ProcessFixedSizes(ref measureVertical);
+            DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Fixed");
 
             // Next we need to know how large the auto sizes are
-            ProcessAutoSizes(ref horizontalMeasure, ref verticalMeasure);
-            DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "Auto");
+            ProcessAutoSizes(ref measureHorizontal, ref measureVertical);
+            DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Auto");
 
             // Then we can figure out how large the fractional sizes should be
-            ProcessFractionalSizes(ref horizontalMeasure);
-            ProcessFractionalSizes(ref verticalMeasure);
-            DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "Fractional");
+            ProcessFractionalSizes(ref measureHorizontal);
+            ProcessFractionalSizes(ref measureVertical);
+            DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Fractional");
 
             // And then the auto elements can claim any remaining sizes
-            ProcessAutoRemainingSize(ref horizontalMeasure);
-            ProcessAutoRemainingSize(ref verticalMeasure);
-            DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "Auto remainder");
+            ProcessAutoRemainingSize(ref measureHorizontal);
+            ProcessAutoRemainingSize(ref measureVertical);
+            DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Auto remainder");
 
             Size usedSize = new Size(0, 0);
 
             foreach (UIElement child in Children)
             {
-                ChildGridLocations childLocation = GetChildGridLocations(child);
+                ChildGridLocations childLocation = GetChildGridLocations(child, ref measureHorizontal, ref measureVertical);
 
                 MeasureInfo colMeasure = GetMeasureInfo(childLocation.ColStart, _columns);
                 MeasureInfo rowMeasure = GetMeasureInfo(childLocation.RowStart, _rows);
@@ -707,9 +712,9 @@ namespace MUXControlsAdhocApp.GridPages
             }
 
             // Now that the sizes are known we can calculate the offsets for the grid tracks
-            double width = ProcessOffsets(ref horizontalMeasure);
-            double height = ProcessOffsets(ref verticalMeasure);
-            DumpMeasureInfo(ref horizontalMeasure, ref verticalMeasure, "Calculate offsets", includeOffset: true);
+            double width = ProcessOffsets(ref measureHorizontal);
+            double height = ProcessOffsets(ref measureVertical);
+            DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Calculate offsets", includeOffset: true);
 
             // If there's no entry for columns/rows use the minimal size, otherwise use the whole space.
             if (_templateColumns.Count > 0)
@@ -730,7 +735,12 @@ namespace MUXControlsAdhocApp.GridPages
             DumpBegin(finalSize, "Arrange");
             foreach (UIElement child in Children)
             {
-                ChildGridLocations childLocation = GetChildGridLocations(child);
+                // TODO: Avoid recreating these lists
+                var templateColumns = new List<GridTrackInfo>(_templateColumns);
+                templateColumns.Add(_lastInTrack);
+                var templateRows = new List<GridTrackInfo>(_templateRows);
+                templateRows.Add(_lastInTrack);
+                ChildGridLocations childLocation = GetChildGridLocations(child, templateColumns, templateRows);
 
                 // TODO: This should be driven by auto rows/columns, but until that's implemented, avoid a crash by hiding the item
                 if ((childLocation.ColStart == null) || (childLocation.RowStart == null))
