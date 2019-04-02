@@ -11,20 +11,42 @@ namespace MUXControlsAdhocApp.GridPages
         {
             this.InitializeComponent();
 
-            _columnStartIndex.ValueChanged += (object sender, RangeBaseValueChangedEventArgs e) => { IndexValueChanged(sender, GridLocationType.ColumnStart); };
-            _columnEndIndex.ValueChanged += (object sender, RangeBaseValueChangedEventArgs e) => { IndexValueChanged(sender, GridLocationType.ColumnEnd); };
-            _rowStartIndex.ValueChanged += (object sender, RangeBaseValueChangedEventArgs e) => { IndexValueChanged(sender, GridLocationType.RowStart); };
-            _rowEndIndex.ValueChanged += (object sender, RangeBaseValueChangedEventArgs e) => { IndexValueChanged(sender, GridLocationType.RowEnd); };
+            foreach (var child in _itemControls.Children)
+            {
+                StackPanel panel = child as StackPanel;
+                if (panel == null)
+                {
+                    continue;
+                }
 
-            _columnStartLineName.TextChanged += (object sender, TextChangedEventArgs e) => { LineNameChanged(sender, GridLocationType.ColumnStart); };
-            _columnEndLineName.TextChanged += (object sender, TextChangedEventArgs e) => { LineNameChanged(sender, GridLocationType.ColumnEnd); };
-            _rowStartLineName.TextChanged += (object sender, TextChangedEventArgs e) => { LineNameChanged(sender, GridLocationType.RowStart); };
-            _rowEndLineName.TextChanged += (object sender, TextChangedEventArgs e) => { LineNameChanged(sender, GridLocationType.RowEnd); };
+                GridLocationType type;
+                if (Enum.TryParse<GridLocationType>(panel.Tag as string, out type))
+                {
+                    HookUpCellControls(panel, type);
+                }
+            }
+        }
 
-            _columnStartSpan.ValueChanged += (object sender, RangeBaseValueChangedEventArgs e) => { SpanValueChanged(sender, GridLocationType.ColumnStart); };
-            _columnEndSpan.ValueChanged += (object sender, RangeBaseValueChangedEventArgs e) => { SpanValueChanged(sender, GridLocationType.ColumnEnd); };
-            _rowStartSpan.ValueChanged += (object sender, RangeBaseValueChangedEventArgs e) => { SpanValueChanged(sender, GridLocationType.RowStart); };
-            _rowEndSpan.ValueChanged += (object sender, RangeBaseValueChangedEventArgs e) => { SpanValueChanged(sender, GridLocationType.RowEnd); };
+        private void HookUpCellControls(StackPanel parent, GridLocationType type)
+        {
+            foreach (var child in parent.Children)
+            {
+                FrameworkElement element = (FrameworkElement)child;
+                switch (element.Tag)
+                {
+                    case "Index":
+                        ((Slider)element).ValueChanged += (object sender, RangeBaseValueChangedEventArgs e) => { IndexValueChanged(sender, type); };
+                        break;
+
+                    case "LineName":
+                        ((TextBox)element).TextChanged += (object sender, TextChangedEventArgs e) => { LineNameChanged(sender, type); };
+                        break;
+
+                    case "Span":
+                        ((Slider)element).ValueChanged += (object sender, RangeBaseValueChangedEventArgs e) => { SpanValueChanged(sender, type); };
+                        break;
+                }
+            }
         }
 
         private enum GridLocationType
