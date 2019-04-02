@@ -350,6 +350,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -511,6 +512,9 @@
                 <CheckBox Grid.Row="44" Grid.Column="1" Checked="OnTipShadowChecked" Unchecked="OnTipShadowUnchecked" IsChecked="True"/>
                 <TextBlock Grid.Row="45" Foreground="Red" Text="Tail Elevation" VerticalAlignment="Center"/>
                 <Slider Grid.Row="46" Grid.ColumnSpan="2" Minimum="0" Maximum="100" ValueChanged="TailElevationSliderChanged" Value="0"/>
+
+                <TextBlock Grid.Row="47" Foreground="Red" Text="Is Page RTL" VerticalAlignment="Center"/>
+                <CheckBox Grid.Row="47" Grid.Column="1" IsChecked="{x:Bind IsPageRTL, Mode=TwoWay}"/>
             </Grid>
         </ScrollViewer>
 

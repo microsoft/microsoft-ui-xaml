@@ -15,6 +15,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Automation;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 
 #if !BUILD_WINDOWS
@@ -35,8 +37,14 @@ namespace MUXControlsTestApp
         VisualTree = 0,
         Resources = 1
     }
-    public sealed partial class TeachingTipPage : TestPage
+    public sealed partial class TeachingTipPage : TestPage, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void NotifyPropertyChanged([CallerMemberName]string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         Deferral deferral;
         DispatcherTimer timer;
         DispatcherTimer showTimer;
@@ -867,6 +875,20 @@ namespace MUXControlsTestApp
                 current = VisualTreeHelper.GetParent(current);
             }
             return (FrameworkElement)current;
+        }
+
+        public bool IsPageRTL
+        {
+            get => FlowDirection == FlowDirection.RightToLeft;
+            set
+            {
+                FlowDirection newFlowDirection = value ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+                if (FlowDirection != newFlowDirection)
+                {
+                    FlowDirection = newFlowDirection;
+                    NotifyPropertyChanged();
+                }
+            }
         }
     }
 }
