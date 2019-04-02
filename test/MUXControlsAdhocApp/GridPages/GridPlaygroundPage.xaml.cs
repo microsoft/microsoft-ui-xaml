@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -11,9 +12,28 @@ namespace MUXControlsAdhocApp.GridPages
         {
             this.InitializeComponent();
 
+            // Traverse a couple levels down the hierarchy looking for specifically Tagged elements.
+            // TODO: There are likely better utilities for doing a limited traversal.
+            List<UIElement> childrenAndGrandchildren = new List<UIElement>();
             foreach (var child in _itemControls.Children)
             {
-                StackPanel panel = child as StackPanel;
+                childrenAndGrandchildren.Add(child);
+
+                Panel panel = child as Panel;
+                if (panel == null)
+                {
+                    continue;
+                }
+
+                foreach (var grandchild in panel.Children)
+                {
+                    childrenAndGrandchildren.Add(grandchild);
+                }
+            }
+
+            foreach (var descendent in childrenAndGrandchildren)
+            {
+                Panel panel = descendent as Panel;
                 if (panel == null)
                 {
                     continue;
@@ -27,7 +47,7 @@ namespace MUXControlsAdhocApp.GridPages
             }
         }
 
-        private void HookUpCellControls(StackPanel parent, GridLocationType type)
+        private void HookUpCellControls(Panel parent, GridLocationType type)
         {
             foreach (var child in parent.Children)
             {
