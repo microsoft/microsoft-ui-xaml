@@ -98,5 +98,16 @@ namespace MUXControlsAdhocApp.GridPages
         {
             _grid.InvalidateMeasure();
         }
+
+        private void JustifyItemsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            _grid.JustifyItems = EnumValueFromComboBox<GridJustifyItems>(sender);
+        }
+
+        private T EnumValueFromComboBox<T>(object sender) where T : struct, IComparable
+        {
+            string selection = (string)((ComboBox)sender).SelectedItem;
+            return Enum.Parse<T>(selection);
+        }
     }
 }

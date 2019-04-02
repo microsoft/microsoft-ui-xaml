@@ -44,7 +44,15 @@ namespace MUXControlsAdhocApp.GridPages
         public string LineName { get; set; }
 
         public int Span { get; set; } = 0;
-}
+    }
+
+    public enum GridJustifyItems
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+    }
 
     public class Grid : Panel
     {
@@ -179,6 +187,23 @@ namespace MUXControlsAdhocApp.GridPages
             }
         }
         private double _rowGap = 0.0;
+
+        public GridJustifyItems JustifyItems
+        {
+            get
+            {
+                return _justifyItems;
+            }
+            set
+            {
+                if (_justifyItems != value)
+                {
+                    _justifyItems = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private GridJustifyItems _justifyItems = GridJustifyItems.Stretch;
 
         private static void InvalidateMeasureOnChildPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs args)
         {
@@ -782,6 +807,28 @@ namespace MUXControlsAdhocApp.GridPages
                     bottom = top;
                 }
 
+                double width = (right - left);
+                double height = (bottom - top);
+
+                double desiredWidth = Math.Min(child.DesiredSize.Width, width);
+                double unusedWidth = (width - desiredWidth);
+                switch (_justifyItems)
+                {
+                    case GridJustifyItems.Start:
+                        width = child.DesiredSize.Width;
+                        break;
+                    case GridJustifyItems.End:
+                        left += unusedWidth;
+                        width = child.DesiredSize.Width;
+                        break;
+                    case GridJustifyItems.Center:
+                        left += unusedWidth * 0.5;
+                        width = child.DesiredSize.Width;
+                        break;
+                    case GridJustifyItems.Stretch:
+                        break;
+                }
+
                 DumpBegin(child.GetType().Name);
                 DumpInfo("leftTrack=" + _templateColumns.IndexOf(childLocation.ColStart));
                 DumpInfo("topTrack=" + _templateRows.IndexOf(childLocation.RowStart));
@@ -790,7 +837,7 @@ namespace MUXControlsAdhocApp.GridPages
                 DumpInfo($"left={left}, top={top}, right={right}, bottom={bottom}");
                 DumpEnd();
 
-                Rect arrangeRect = new Rect(left, top, (right - left), (bottom - top));
+                Rect arrangeRect = new Rect(left, top, width, height);
                 child.Arrange(arrangeRect);
             }
 
