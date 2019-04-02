@@ -39,7 +39,7 @@ if "%BUILDOUTPUT_OVERRIDE%" == "" (
 )
 
 call ..\build\FrameworkPackage\MakeFrameworkPackage.cmd -InputDirectory '%InputDirectory%' ^
--OutputDirectory '%OutputDirectory%' -BasePackageName '%BasePackageName%' -PackageNameSuffix 2.1 ^
+-OutputDirectory '%OutputDirectory%' -BasePackageName '%BasePackageName%' ^
 -Platform %TFS_PLATFORM% -Configuration %TFS_BUILDCONFIGURATION% ^
  %3 %4 %5 %6 %7 %8 %9
 

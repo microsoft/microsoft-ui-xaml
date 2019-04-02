@@ -3,26 +3,26 @@
   <Import Project="$(MSBuildThisFileDirectory)\MicrosoftUIXamlVersion.props"/>
   <Import Project="$(MSBuildThisFileDirectory)\Common.targets"/>
   <ItemGroup>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.1.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.2.appx">
       <Configuration>Release</Configuration>
       <Architecture>x86</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
       <Publisher>'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US'</Publisher>
     </AppxPackageRegistration>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.1.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.2.appx">
       <Configuration>Debug</Configuration>
       <Architecture>x86</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
       <Publisher>'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US'</Publisher>
     </AppxPackageRegistration>
     <!-- Some C++/CX projects use Platform=Win32 instead of Platform=x86 -->
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.1.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.2.appx">
       <Configuration>Release</Configuration>
       <Architecture>Win32</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
       <Publisher>'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US'</Publisher>
     </AppxPackageRegistration>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.1.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.2.appx">
       <Configuration>Debug</Configuration>
       <Architecture>Win32</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
@@ -30,13 +30,13 @@
     </AppxPackageRegistration>
   </ItemGroup>
   <ItemGroup>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.1.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.2.appx">
       <Configuration>Release</Configuration>
       <Architecture>x64</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
       <Publisher>'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US'</Publisher>
     </AppxPackageRegistration>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.1.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.2.appx">
       <Configuration>Debug</Configuration>
       <Architecture>x64</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
@@ -44,13 +44,13 @@
     </AppxPackageRegistration>
   </ItemGroup>
   <ItemGroup>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm\Release\Microsoft.UI.Xaml.2.1.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm\Release\Microsoft.UI.Xaml.2.2.appx">
       <Configuration>Release</Configuration>
       <Architecture>arm</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
       <Publisher>'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US'</Publisher>
     </AppxPackageRegistration>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm\Release\Microsoft.UI.Xaml.2.1.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm\Release\Microsoft.UI.Xaml.2.2.appx">
       <Configuration>Debug</Configuration>
       <Architecture>arm</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
@@ -58,13 +58,13 @@
     </AppxPackageRegistration>
   </ItemGroup>
   <ItemGroup>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm64\Release\Microsoft.UI.Xaml.2.1.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm64\Release\Microsoft.UI.Xaml.2.2.appx">
       <Configuration>Release</Configuration>
       <Architecture>arm64</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
       <Publisher>'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US'</Publisher>
     </AppxPackageRegistration>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm64\Release\Microsoft.UI.Xaml.2.1.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm64\Release\Microsoft.UI.Xaml.2.2.appx">
       <Configuration>Debug</Configuration>
       <Architecture>arm64</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
