@@ -12,6 +12,9 @@
         <Grid.Resources>
             <Style x:Key="HeaderStyle" TargetType="TextBlock">
                 <Setter Property="FontWeight" Value="Bold"/>
+            </Style>
+            <Style x:Key="DividerHeaderStyle" TargetType="TextBlock">
+                <Setter Property="FontWeight" Value="Bold"/>
                 <Setter Property="Margin" Value="0,8,0,0"/>
             </Style>
         </Grid.Resources>
@@ -118,47 +121,65 @@
                 <Button Click="InvalidateButton_Click" Content="Invalidate" Margin="0,8,0,0"/>
             </StackPanel>
 
-            <TextBlock Style="{StaticResource HeaderStyle}">Columns</TextBlock>
+            <TextBlock Style="{StaticResource DividerHeaderStyle}">Columns</TextBlock>
             <TextBlock>first: 40px</TextBlock>
             <TextBlock>line2: 50px</TextBlock>
             <TextBlock>line3: Auto</TextBlock>
             <TextBlock>col4-start: 50px</TextBlock>
             <TextBlock>five: 40px</TextBlock>
 
-            <TextBlock Style="{StaticResource HeaderStyle}">Rows</TextBlock>
+            <TextBlock Style="{StaticResource DividerHeaderStyle}">Rows</TextBlock>
             <TextBlock>row1-start: 25%</TextBlock>
             <TextBlock>row1-end: 100px</TextBlock>
             <TextBlock>third-line: Auto</TextBlock>
         </StackPanel>
 
-        <StackPanel x:Name="_itemControls" Grid.Column="0" Grid.RowSpan="2" VerticalAlignment="Top">
-            <TextBlock Style="{StaticResource HeaderStyle}">ColumnStart</TextBlock>
-            <StackPanel Tag="ColumnStart" BorderBrush="LightGray" BorderThickness="1" Padding="4" Margin="4">
-                <Slider Tag="Index" Value="{x:Bind _columnStart.Index}" Header="Index" Minimum="-1" Maximum="5" TickFrequency="1" TickPlacement="TopLeft"/>
-                <TextBox Tag="LineName" Text="{x:Bind _columnStart.LineName}" Header="LineName"/>
-                <Slider Tag="Span" Value="{x:Bind _columnStart.Span}" Header="Span" Minimum="0" Maximum="5" TickFrequency="1" TickPlacement="TopLeft" IsEnabled="False"/>
+        <Grid x:Name="_itemControls" Grid.Column="0" Grid.RowSpan="2" VerticalAlignment="Top" ColumnSpacing="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Column="0" Grid.Row="0">
+                <TextBlock Style="{StaticResource HeaderStyle}">ColumnStart</TextBlock>
+                <StackPanel Tag="ColumnStart" BorderBrush="LightGray" BorderThickness="1" Padding="4" Margin="0,4">
+                    <Slider Tag="Index" Value="{x:Bind _columnStart.Index}" Header="Index" Minimum="-1" Maximum="5" TickFrequency="1" TickPlacement="TopLeft"/>
+                    <TextBox Tag="LineName" Text="{x:Bind _columnStart.LineName}" Header="LineName"/>
+                    <Slider Tag="Span" Value="{x:Bind _columnStart.Span}" Header="Span" Minimum="0" Maximum="5" TickFrequency="1" TickPlacement="TopLeft" IsEnabled="False"/>
+                </StackPanel>
             </StackPanel>
 
-            <TextBlock Style="{StaticResource HeaderStyle}">ColumnEnd</TextBlock>
-            <StackPanel Tag="ColumnEnd" BorderBrush="LightGray" BorderThickness="1" Padding="4" Margin="0,4">
-                <Slider Tag="Index" Value="{x:Bind _columnEnd.Index}" Header="Index" Minimum="-1" Maximum="5" TickFrequency="1" TickPlacement="TopLeft"/>
-                <TextBox Tag="LineName" Text="{x:Bind _columnEnd.LineName}" Header="LineName"/>
-                <Slider Tag="Span" Value="{x:Bind _columnEnd.Span}" Header="Span" Minimum="0" Maximum="5" TickFrequency="1" TickPlacement="TopLeft"/>
+            <StackPanel Grid.Column="1" Grid.Row="0">
+                <TextBlock Style="{StaticResource HeaderStyle}">ColumnEnd</TextBlock>
+                <StackPanel Tag="ColumnEnd" BorderBrush="LightGray" BorderThickness="1" Padding="4" Margin="0,4">
+                    <Slider Tag="Index" Value="{x:Bind _columnEnd.Index}" Header="Index" Minimum="-1" Maximum="5" TickFrequency="1" TickPlacement="TopLeft"/>
+                    <TextBox Tag="LineName" Text="{x:Bind _columnEnd.LineName}" Header="LineName"/>
+                    <Slider Tag="Span" Value="{x:Bind _columnEnd.Span}" Header="Span" Minimum="0" Maximum="5" TickFrequency="1" TickPlacement="TopLeft"/>
+                </StackPanel>
             </StackPanel>
-            
-            <TextBlock Style="{StaticResource HeaderStyle}">RowStart</TextBlock>
-            <StackPanel Tag="RowStart" BorderBrush="LightGray" BorderThickness="1" Padding="4" Margin="0,4">
-                <Slider Tag="Index" Value="{x:Bind _rowStart.Index}" Header="Index" Minimum="-1" Maximum="3" TickFrequency="1" TickPlacement="TopLeft"/>
-                <TextBox Tag="LineName" Text="{x:Bind _rowStart.LineName}" Header="LineName"/>
-                <Slider Tag="Span" Value="{x:Bind _rowStart.Span}" Header="Span" Minimum="0" Maximum="3" TickFrequency="1" TickPlacement="TopLeft" IsEnabled="False"/>
+
+            <StackPanel Grid.Column="0" Grid.Row="1">
+                <TextBlock Style="{StaticResource HeaderStyle}">RowStart</TextBlock>
+                <StackPanel Tag="RowStart" BorderBrush="LightGray" BorderThickness="1" Padding="4" Margin="0,4">
+                    <Slider Tag="Index" Value="{x:Bind _rowStart.Index}" Header="Index" Minimum="-1" Maximum="3" TickFrequency="1" TickPlacement="TopLeft"/>
+                    <TextBox Tag="LineName" Text="{x:Bind _rowStart.LineName}" Header="LineName"/>
+                    <Slider Tag="Span" Value="{x:Bind _rowStart.Span}" Header="Span" Minimum="0" Maximum="3" TickFrequency="1" TickPlacement="TopLeft" IsEnabled="False"/>
+                </StackPanel>
             </StackPanel>
-            
-            <TextBlock Style="{StaticResource HeaderStyle}">RowEnd</TextBlock>
-            <StackPanel Tag="RowEnd" BorderBrush="LightGray" BorderThickness="1" Padding="4" Margin="0,4">
-                <Slider Tag="Index" Value="{x:Bind _rowEnd.Index}" Header="Index" Minimum="-1" Maximum="3" TickFrequency="1" TickPlacement="TopLeft"/>
-                <TextBox Tag="LineName" Text="{x:Bind _rowEnd.LineName}" Header="LineName"/>
-                <Slider Tag="Span" Value="{x:Bind _rowEnd.Span}" Header="Span" Minimum="0" Maximum="3" TickFrequency="1" TickPlacement="TopLeft"/>
+
+            <StackPanel Grid.Column="1" Grid.Row="1">
+                <TextBlock Style="{StaticResource HeaderStyle}">RowEnd</TextBlock>
+                <StackPanel Tag="RowEnd" BorderBrush="LightGray" BorderThickness="1" Padding="4" Margin="0,4">
+                    <Slider Tag="Index" Value="{x:Bind _rowEnd.Index}" Header="Index" Minimum="-1" Maximum="3" TickFrequency="1" TickPlacement="TopLeft"/>
+                    <TextBox Tag="LineName" Text="{x:Bind _rowEnd.LineName}" Header="LineName"/>
+                    <Slider Tag="Span" Value="{x:Bind _rowEnd.Span}" Header="Span" Minimum="0" Maximum="3" TickFrequency="1" TickPlacement="TopLeft"/>
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
+        </Grid>
     </Grid>
 </Page>
