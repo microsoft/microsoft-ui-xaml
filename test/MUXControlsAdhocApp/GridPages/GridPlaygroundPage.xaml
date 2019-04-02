@@ -166,7 +166,7 @@
 
         <StackPanel Grid.Column="0" Grid.RowSpan="2" VerticalAlignment="Top" Spacing="8">
 
-            <Grid x:Name="_itemControls1" ColumnSpacing="4" BorderBrush="Black" BorderThickness="1" Padding="4">
+            <Grid x:Name="_itemControls1" ColumnSpacing="4" BorderBrush="Black" BorderThickness="1" Padding="4" Background="#11FFA500">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
@@ -219,7 +219,7 @@
                 </StackPanel>
             </Grid>
 
-            <Grid x:Name="_itemControls2" ColumnSpacing="4" BorderBrush="Black" BorderThickness="1" Padding="4">
+            <Grid x:Name="_itemControls2" ColumnSpacing="4" BorderBrush="Black" BorderThickness="1" Padding="4" Background="#110000FF">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
