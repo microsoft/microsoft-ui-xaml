@@ -494,6 +494,7 @@
                                       AutomationProperties.LandmarkType="Custom"
                                       Background="{TemplateBinding Background}"
                                       BorderBrush="{TemplateBinding BorderBrush}"
+                                      FlowDirection="{TemplateBinding FlowDirection}"
                                       Grid.Row="1"
                                       Grid.Column="1"
                                       Grid.ColumnSpan="3"
