@@ -12,12 +12,18 @@ namespace MUXControlsAdhocApp.GridPages
         {
             this.InitializeComponent();
 
+            HookUpCellControls(_item1, _itemControls1);
+            HookUpCellControls(_item2, _itemControls2);
+        }
+
+        private void HookUpCellControls(Panel item, Panel itemControls)
+        {
             // Traverse a couple levels down the hierarchy looking for specifically Tagged elements.
             // TODO: There are likely better utilities for doing a limited traversal.
-            List<UIElement> childrenAndGrandchildren = new List<UIElement>();
-            foreach (var child in _itemControls.Children)
+            List<FrameworkElement> childrenAndGrandchildren = new List<FrameworkElement>();
+            foreach (var child in itemControls.Children)
             {
-                childrenAndGrandchildren.Add(child);
+                childrenAndGrandchildren.Add(child as FrameworkElement);
 
                 Panel panel = child as Panel;
                 if (panel == null)
@@ -27,12 +33,42 @@ namespace MUXControlsAdhocApp.GridPages
 
                 foreach (var grandchild in panel.Children)
                 {
-                    childrenAndGrandchildren.Add(grandchild);
+                    childrenAndGrandchildren.Add(grandchild as FrameworkElement);
                 }
             }
 
             foreach (var descendent in childrenAndGrandchildren)
             {
+                if ((descendent.Tag as string) == "Text")
+                {
+                    Func<TextBlock> getDisplayText = () =>
+                    {
+                        foreach (var child in item.Children)
+                        {
+                            TextBlock textDisplay = child as TextBlock;
+                            if (textDisplay != null)
+                            {
+                                return textDisplay;
+                            }
+                        }
+                        return null;
+                    };
+
+                    {
+                        // Initialize TextBox value from the item
+                        TextBox textbox = (TextBox)descendent;
+                        TextBlock textDisplay = getDisplayText();
+                        textbox.Text = textDisplay.Text;
+
+                        // Bind TextBox value to the item
+                        textbox.TextChanged += (object sender, TextChangedEventArgs e) =>
+                        {
+                            string value = ((TextBox)sender).Text;
+                            textDisplay.Text = value;
+                        };
+                    }
+                }
+
                 Panel panel = descendent as Panel;
                 if (panel == null)
                 {
@@ -42,28 +78,34 @@ namespace MUXControlsAdhocApp.GridPages
                 GridLocationType type;
                 if (Enum.TryParse<GridLocationType>(panel.Tag as string, out type))
                 {
-                    HookUpCellControls(panel, type);
+                    HookUpCellControls(panel, type, item);
                 }
             }
         }
 
-        private void HookUpCellControls(Panel parent, GridLocationType type)
+
+        private void HookUpCellControls(Panel parent, GridLocationType type, UIElement targetItem)
         {
+            GridLocation location = GetGridLocation(type, targetItem);
+
             foreach (var child in parent.Children)
             {
                 FrameworkElement element = (FrameworkElement)child;
                 switch (element.Tag)
                 {
                     case "Index":
-                        ((Slider)element).ValueChanged += (object sender, RangeBaseValueChangedEventArgs e) => { IndexValueChanged(sender, type); };
+                        ((Slider)element).Value = location.Index;
+                        ((Slider)element).ValueChanged += (object sender, RangeBaseValueChangedEventArgs e) => { IndexValueChanged(sender, type, targetItem); };
                         break;
 
                     case "LineName":
-                        ((TextBox)element).TextChanged += (object sender, TextChangedEventArgs e) => { LineNameChanged(sender, type); };
+                        ((TextBox)element).Text = location.LineName ?? "";
+                        ((TextBox)element).TextChanged += (object sender, TextChangedEventArgs e) => { LineNameChanged(sender, type, targetItem); };
                         break;
 
                     case "Span":
-                        ((Slider)element).ValueChanged += (object sender, RangeBaseValueChangedEventArgs e) => { SpanValueChanged(sender, type); };
+                        ((Slider)element).Value = location.Span;
+                        ((Slider)element).ValueChanged += (object sender, RangeBaseValueChangedEventArgs e) => { SpanValueChanged(sender, type, targetItem); };
                         break;
                 }
             }
@@ -77,39 +119,39 @@ namespace MUXControlsAdhocApp.GridPages
             RowEnd
         }
 
-        private GridLocation GetGridLocation(GridLocationType type)
+        private GridLocation GetGridLocation(GridLocationType type, UIElement targetItem)
         {
             switch (type)
             {
-                case GridLocationType.ColumnStart: return Grid.GetColumnStart(_item);
-                case GridLocationType.ColumnEnd: return Grid.GetColumnEnd(_item);
-                case GridLocationType.RowStart: return Grid.GetRowStart(_item);
-                case GridLocationType.RowEnd: return Grid.GetRowEnd(_item);
+                case GridLocationType.ColumnStart: return Grid.GetColumnStart(targetItem);
+                case GridLocationType.ColumnEnd: return Grid.GetColumnEnd(targetItem);
+                case GridLocationType.RowStart: return Grid.GetRowStart(targetItem);
+                case GridLocationType.RowEnd: return Grid.GetRowEnd(targetItem);
             }
 
             throw new System.ArgumentException();
         }
 
-        private void IndexValueChanged(object sender, GridLocationType type)
+        private void IndexValueChanged(object sender, GridLocationType type, UIElement targetItem)
         {
             int value = (int)((Slider)sender).Value;
-            GridLocation location = GetGridLocation(type);
+            GridLocation location = GetGridLocation(type, targetItem);
             location.Index = value;
             _grid.InvalidateMeasure();
         }
 
-        private void LineNameChanged(object sender, GridLocationType type)
+        private void LineNameChanged(object sender, GridLocationType type, UIElement targetItem)
         {
             string value = ((TextBox)sender).Text;
-            GridLocation location = GetGridLocation(type);
+            GridLocation location = GetGridLocation(type, targetItem);
             location.LineName = value;
             _grid.InvalidateMeasure();
         }
 
-        private void SpanValueChanged(object sender, GridLocationType type)
+        private void SpanValueChanged(object sender, GridLocationType type, UIElement targetItem)
         {
             int value = (int)((Slider)sender).Value;
-            GridLocation location = GetGridLocation(type);
+            GridLocation location = GetGridLocation(type, targetItem);
             location.Span = value;
             _grid.InvalidateMeasure();
         }
