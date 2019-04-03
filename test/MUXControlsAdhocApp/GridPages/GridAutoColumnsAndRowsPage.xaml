@@ -9,7 +9,94 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel>
-        <TextBlock>AutoColumns</TextBlock>
-        <TextBlock>AutoRows</TextBlock>
+
+        <TextBlock>Columns: 60px 60px</TextBlock>
+        <TextBlock>Rows: 90px 90px</TextBlock>
+        <TextBlock>AutoColumns: 60px</TextBlock>
+
+        <Grid>
+
+            <local:Grid>
+                <local:Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="FontSize" Value="18"/>
+                    </Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Background" Value="Orange"/>
+                        <Setter Property="Margin" Value="2"/>
+                        <Setter Property="CornerRadius" Value="6"/>
+                        <Setter Property="BorderBrush" Value="Black"/>
+                        <Setter Property="BorderThickness" Value="2"/>
+                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                        <Setter Property="VerticalAlignment" Value="Stretch"/>
+                    </Style>
+                </local:Grid.Resources>
+                <!--
+                    grid-template-columns: 60px 60px;
+                    grid-template-rows: 90px 90px
+                    grid-auto-columns: 60px;
+                -->
+                <local:Grid.TemplateColumns>
+                    <local:GridTrackInfo Length="60"/>
+                    <local:GridTrackInfo Length="60"/>
+                </local:Grid.TemplateColumns>
+                <local:Grid.TemplateRows>
+                    <local:GridTrackInfo Length="90"/>
+                    <local:GridTrackInfo Length="90"/>
+                </local:Grid.TemplateRows>
+                <local:Grid.AutoColumns>
+                    <local:GridTrackInfo Length="60"/>
+                </local:Grid.AutoColumns>
+
+                <!--
+                .item-a {
+                  grid-column: 1 / 2;
+                  grid-row: 2 / 3;
+                }-->
+                <Grid Background="#88FFA500" Opacity="0.5">
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation Index="0"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.ColumnEnd>
+                        <local:GridLocation Index="1"/>
+                    </local:Grid.ColumnEnd>
+                    <local:Grid.RowStart>
+                        <local:GridLocation Index="1"/>
+                    </local:Grid.RowStart>
+                    <local:Grid.RowEnd>
+                        <local:GridLocation Index="2"/>
+                    </local:Grid.RowEnd>
+                    <TextBlock>item-a</TextBlock>
+                </Grid>
+
+                <!--
+                .item-b {
+                  grid-column: 5 / 6;
+                  grid-row: 2 / 3;
+                }-->
+                <Grid Background="#880000FF" Opacity="0.5">
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation Index="4"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.ColumnEnd>
+                        <local:GridLocation Index="5"/>
+                    </local:Grid.ColumnEnd>
+                    <local:Grid.RowStart>
+                        <local:GridLocation Index="1"/>
+                    </local:Grid.RowStart>
+                    <local:Grid.RowEnd>
+                        <local:GridLocation Index="2"/>
+                    </local:Grid.RowEnd>
+                    <TextBlock>item-b</TextBlock>
+                </Grid>
+
+            </local:Grid>
+
+        </Grid>
+
     </StackPanel>
 </Page>
