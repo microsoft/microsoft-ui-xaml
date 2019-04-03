@@ -446,6 +446,9 @@ unsealed runtimeclass StackLayout : VirtualizingLayout
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
     static Windows.UI.Xaml.DependencyProperty SpacingProperty { get; };
 
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean Carousal{ get; set; };
+    static Windows.UI.Xaml.DependencyProperty CarousalProperty{ get; };
    // Removing until we are ready to expose.
    // overridable FlowLayoutAnchorInfo GetAnchorForRealizationRect(Windows.Foundation.Size availableSize, VirtualizingLayoutContext context);
    // overridable Windows.Foundation.Rect GetExtent(Windows.Foundation.Size availableSize, VirtualizingLayoutContext context, Windows.UI.Xaml.UIElement firstRealized, Int32 firstRealizedItemIndex, Windows.Foundation.Rect firstRealizedLayoutBounds, Windows.UI.Xaml.UIElement lastRealized, Int32 lastRealizedItemIndex, Windows.Foundation.Rect lastRealizedLayoutBounds);

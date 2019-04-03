@@ -10,7 +10,7 @@ namespace MUXControlsTestApp.Samples
         public ScaleAnimatedVerticalListDemo()
         {
             this.InitializeComponent();
-            repeater.ItemsSource = Enumerable.Range(0, 100);
+            repeater.ItemsSource = Enumerable.Range(0, 20);
             repeater.ElementPrepared += OnElementPrepared;
         }
 

@@ -293,7 +293,7 @@ void FlowLayoutAlgorithm::Generate(
         float lineMajorSize = anchorBounds.*MajorSize();
         int countInLine = 1;
         bool lineNeedsReposition = false;
-
+        int itemCount = m_context.get().ItemCount();
         while (m_elementManager.IsIndexValidInData(currentIndex) &&
             ShouldContinueFillingUpSpace(previousIndex, direction))
         {
@@ -401,6 +401,10 @@ void FlowLayoutAlgorithm::Generate(
                 currentBounds.X, currentBounds.Y, currentBounds.Width, currentBounds.Height);
             previousIndex = currentIndex;
             currentIndex += step;
+            if (m_isCarousaling)
+            {
+                currentIndex %= itemCount;
+            }
         }
 
         // If we did not reach the top or bottom of the extent, we realized one 

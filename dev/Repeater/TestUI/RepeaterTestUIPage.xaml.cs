@@ -227,6 +227,7 @@ namespace MUXControlsTestApp
                 {
                     Spacing = double.Parse(lineSpacing.Text),
                     Orientation = orientation.IsOn ? Orientation.Horizontal : Orientation.Vertical,
+                    Carousal = true
                 };
             }
 

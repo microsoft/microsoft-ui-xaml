@@ -60,6 +60,9 @@ public:
     winrt::UIElement GetElementIfRealized(int dataindex);
     bool TryAddElement0(winrt::UIElement const& element);
 
+    bool IsCarousaling() { return m_isCarousaling; };
+    void IsCarousaling(bool value) { m_isCarousaling = value; };
+
 private:
     // Types
     enum class GenerateDirection
@@ -134,4 +137,5 @@ private:
     // feature until someone asks for it - This is not a common scenario
     // anyway. 
     bool m_scrollOrientationSameAsFlow{ false };
+    bool m_isCarousaling{ false };
 };

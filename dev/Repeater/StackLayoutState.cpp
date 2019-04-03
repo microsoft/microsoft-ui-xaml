@@ -19,6 +19,8 @@ void StackLayoutState::InitializeForContext(
         m_estimationBuffer.resize(BufferSize, 0.0f);
     }
 
+    m_flowAlgorithm.IsCarousaling(true);
+
     context.LayoutStateCore(*this);
 }
 

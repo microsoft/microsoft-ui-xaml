@@ -8,6 +8,9 @@
     <Grid>
         <ScrollViewer x:Name="sv" Width="200" Height="150" >
             <mux:ItemsRepeater x:Name="repeater">
+                <mux:ItemsRepeater.Layout>
+                    <mux:StackLayout />
+                </mux:ItemsRepeater.Layout>
                 <mux:ItemsRepeater.ItemTemplate>
                     <DataTemplate>
                         <Button Content="{Binding}" Click="OnItemClicked" GotFocus="OnItemGotFocus" HorizontalAlignment="Stretch"/>

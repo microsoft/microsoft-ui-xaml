@@ -9,20 +9,29 @@ class StackLayoutProperties
 public:
     StackLayoutProperties();
 
+    void Carousal(bool value);
+    bool Carousal();
+
     void Orientation(winrt::Orientation const& value);
     winrt::Orientation Orientation();
 
     void Spacing(double value);
     double Spacing();
 
+    static winrt::DependencyProperty CarousalProperty() { return s_CarousalProperty; }
     static winrt::DependencyProperty OrientationProperty() { return s_OrientationProperty; }
     static winrt::DependencyProperty SpacingProperty() { return s_SpacingProperty; }
 
+    static GlobalDependencyProperty s_CarousalProperty;
     static GlobalDependencyProperty s_OrientationProperty;
     static GlobalDependencyProperty s_SpacingProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnCarousalPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnOrientationPropertyChanged(
         winrt::DependencyObject const& sender,

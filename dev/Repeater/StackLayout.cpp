@@ -146,26 +146,35 @@ winrt::Rect StackLayout::GetExtent(
     const auto stackState = GetAsStackState(context.LayoutState());
     const double averageElementSize = GetAverageElementSize(availableSize, context, stackState) + m_itemSpacing;
 
-    extent.*MinorSize() = static_cast<float>(stackState->MaxArrangeBounds());
-    extent.*MajorSize() = std::max(0.0f, static_cast<float>(itemsCount * averageElementSize - m_itemSpacing));
-    if (itemsCount > 0)
+    if (Carousal())
     {
-        if (firstRealized)
-        {
-            MUX_ASSERT(lastRealized);
-            extent.*MajorStart() = static_cast<float>(firstRealizedLayoutBounds.*MajorStart() - firstRealizedItemIndex * averageElementSize);
-            auto remainingItems = itemsCount - lastRealizedItemIndex - 1;
-            extent.*MajorSize() = MajorEnd(lastRealizedLayoutBounds) - extent.*MajorStart() + static_cast<float>(remainingItems* averageElementSize);
-        }
-        else
-        {
-            REPEATER_TRACE_INFO(L"%ls: \tEstimating extent with no realized elements.  \n", LayoutId().data());
-        }
+        extent.*MinorSize() = static_cast<float>(stackState->MaxArrangeBounds());
+        extent.*MajorSize() = static_cast<float>(itemsCount * averageElementSize * 100); // 100 times looped
+        extent.*MajorStart() = static_cast<float>(-itemsCount * averageElementSize * 50); // 50 above
     }
     else
     {
-        MUX_ASSERT(firstRealizedItemIndex == -1);
-        MUX_ASSERT(lastRealizedItemIndex == -1);
+        extent.*MinorSize() = static_cast<float>(stackState->MaxArrangeBounds());
+        extent.*MajorSize() = std::max(0.0f, static_cast<float>(itemsCount * averageElementSize - m_itemSpacing));
+        if (itemsCount > 0)
+        {
+            if (firstRealized)
+            {
+                MUX_ASSERT(lastRealized);
+                extent.*MajorStart() = static_cast<float>(firstRealizedLayoutBounds.*MajorStart() - firstRealizedItemIndex * averageElementSize);
+                auto remainingItems = itemsCount - lastRealizedItemIndex - 1;
+                extent.*MajorSize() = MajorEnd(lastRealizedLayoutBounds) - extent.*MajorStart() + static_cast<float>(remainingItems * averageElementSize);
+            }
+            else
+            {
+                REPEATER_TRACE_INFO(L"%ls: \tEstimating extent with no realized elements.  \n", LayoutId().data());
+            }
+        }
+        else
+        {
+            MUX_ASSERT(firstRealizedItemIndex == -1);
+            MUX_ASSERT(lastRealizedItemIndex == -1);
+        }
     }
 
     REPEATER_TRACE_INFO(L"%ls: \tExtent is (%.0f,%.0f). Based on average %.0f. \n",
