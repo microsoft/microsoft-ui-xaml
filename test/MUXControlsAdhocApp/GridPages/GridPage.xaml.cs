@@ -28,6 +28,38 @@ namespace MUXControlsAdhocApp.GridPages
                 case "TemplateColumnsAndRows":
                     _contentFrame.Navigate(typeof(GridTemplateColumnsAndRowsPage));
                     break;
+
+                case "TemplateAreas":
+                    break;
+
+                case "ColumnAndRowGap":
+                    _contentFrame.Navigate(typeof(GridColumnAndRowGapPage));
+                    break;
+
+                case "JustifyAndAlignItems":
+                    _contentFrame.Navigate(typeof(GridJustifyAndAlignItemsPage));
+                    break;
+
+                case "JustifyAndAlignContent":
+                    _contentFrame.Navigate(typeof(GridJustifyAndAlignContentPage));
+                    break;
+
+                case "AutoColumnsAndRows":
+                    _contentFrame.Navigate(typeof(GridAutoColumnsAndRowsPage));
+                    break;
+
+                case "ColumnStartAndRowStart":
+                    break;
+
+                case "ColumnEndAndRowEnd":
+                    break;
+
+                case "Area":
+                    break;
+
+                case "JustifyAndAlignSelf":
+                    _contentFrame.Navigate(typeof(GridJustifyAndAlignSelfPage));
+                    break;
             }
         }
     }

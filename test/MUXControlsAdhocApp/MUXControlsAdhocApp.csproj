@@ -162,6 +162,21 @@
       <DependentUpon>FlexboxWrapPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="GridPages\Grid.cs" />
+    <Compile Include="GridPages\GridAutoColumnsAndRowsPage.xaml.cs">
+      <DependentUpon>GridAutoColumnsAndRowsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GridPages\GridColumnAndRowGapPage.xaml.cs">
+      <DependentUpon>GridColumnAndRowGapPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GridPages\GridJustifyAndAlignContentPage.xaml.cs">
+      <DependentUpon>GridJustifyAndAlignContentPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GridPages\GridJustifyAndAlignItemsPage.xaml.cs">
+      <DependentUpon>GridJustifyAndAlignItemsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GridPages\GridJustifyAndAlignSelfPage.xaml.cs">
+      <DependentUpon>GridJustifyAndAlignSelfPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GridPages\GridPage.xaml.cs">
       <DependentUpon>GridPage.xaml</DependentUpon>
     </Compile>
@@ -245,6 +260,26 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="FlexboxPages\FlexboxWrapPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GridPages\GridAutoColumnsAndRowsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GridPages\GridColumnAndRowGapPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GridPages\GridJustifyAndAlignContentPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GridPages\GridJustifyAndAlignItemsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GridPages\GridJustifyAndAlignSelfPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
