@@ -62,6 +62,28 @@ namespace MUXControlsAdhocApp.GridPages
         Stretch,
     }
 
+    public enum GridJustifyContent
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+        SpaceAround,
+        SpaceBetween,
+        SpaceEvenly,
+    }
+
+    public enum GridAlignContent
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+        SpaceAround,
+        SpaceBetween,
+        SpaceEvenly,
+    }
+
     public class Grid : Panel
     {
         public static readonly DependencyProperty ColumnStartProperty =
@@ -229,6 +251,40 @@ namespace MUXControlsAdhocApp.GridPages
             }
         }
         private GridAlignItems _alignItems = GridAlignItems.Stretch;
+
+        public GridJustifyContent JustifyContent
+        {
+            get
+            {
+                return _justifyContent;
+            }
+            set
+            {
+                if (_justifyContent != value)
+                {
+                    _justifyContent = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private GridJustifyContent _justifyContent = GridJustifyContent.Start;
+
+        public GridAlignContent AlignContent
+        {
+            get
+            {
+                return _alignContent;
+            }
+            set
+            {
+                if (_alignContent != value)
+                {
+                    _alignContent = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private GridAlignContent _alignContent = GridAlignContent.Start;
 
         private static void InvalidateMeasureOnChildPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs args)
         {
