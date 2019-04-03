@@ -19,8 +19,17 @@
             <controls:NavigationViewItemSeparator/>
             <controls:NavigationViewItemHeader>Container Properties</controls:NavigationViewItemHeader>
             <controls:NavigationViewItem Tag="TemplateColumnsAndRows" Icon="DockLeft" Content="TemplateColumns &amp; TemplateRows"/>
+            <controls:NavigationViewItem Tag="TemplateAreas" Icon="PreviewLink" Content="TemplateAreas (NYI)"/>
+            <controls:NavigationViewItem Tag="ColumnAndRowGap" Icon="SelectAll" Content="ColumnGap &amp; RowGap"/>
+            <controls:NavigationViewItem Tag="JustifyAndAlignItems" Icon="AlignLeft" Content="JustifyItems &amp; AlignItems"/>
+            <controls:NavigationViewItem Tag="JustifyAndAlignContent" Icon="NewWindow" Content="JustifyContent &amp; AlignContent"/>
+            <controls:NavigationViewItem Tag="AutoColumnsAndRows" Icon="ShowBcc" Content="AutoColumns &amp; AutoRows"/>
             <controls:NavigationViewItemSeparator/>
             <controls:NavigationViewItemHeader>Item Properties</controls:NavigationViewItemHeader>
+            <controls:NavigationViewItem Tag="ColumnStartAndRowStart" Icon="Sort" Content="ColumnStart &amp; RowStart"/>
+            <controls:NavigationViewItem Tag="ColumnEndAndRowEnd" Icon="Switch" Content="ColumnEnd &amp; RowEnd"/>
+            <controls:NavigationViewItem Tag="Area" Icon="StopSlideShow" Content="Area"/>
+            <controls:NavigationViewItem Tag="JustifyAndAlignSelf" Icon="ContactInfo" Content="JustifySelf &amp; AlignSelf"/>
         </controls:NavigationView.MenuItems>
 
         <ScrollViewer>
