@@ -11,7 +11,7 @@
 
 CppWinRTActivatableClassWithBasicFactory(TreeViewItemDataAutomationPeer);
 
-TreeViewItemDataAutomationPeer::TreeViewItemDataAutomationPeer(winrt::TreeViewList owner, winrt::IInspectable const& item, winrt::ItemsControlAutomationPeer const& parent) :
+TreeViewItemDataAutomationPeer::TreeViewItemDataAutomationPeer(winrt::IInspectable const& item, winrt::ItemsControlAutomationPeer const& parent) :
     ReferenceTracker(item, parent)
 {
 }

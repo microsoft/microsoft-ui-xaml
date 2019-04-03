@@ -10,7 +10,7 @@ class TreeViewItemDataAutomationPeer :
         winrt::implementation::TreeViewItemDataAutomationPeerT>
 {
 public:
-    TreeViewItemDataAutomationPeer(winrt::TreeViewList owner, winrt::IInspectable const& item, winrt::ItemsControlAutomationPeer const& parent);
+    TreeViewItemDataAutomationPeer(winrt::IInspectable const& item, winrt::ItemsControlAutomationPeer const& parent);
 
     // IExpandCollapseProvider
     winrt::ExpandCollapseState ExpandCollapseState();
