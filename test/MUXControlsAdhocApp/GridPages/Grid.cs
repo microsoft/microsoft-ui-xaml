@@ -86,6 +86,8 @@ namespace MUXControlsAdhocApp.GridPages
 
     public class Grid : Panel
     {
+#region ChildProperties
+
         public static readonly DependencyProperty ColumnStartProperty =
             DependencyProperty.RegisterAttached(
               "ColumnStart",
@@ -149,6 +151,19 @@ namespace MUXControlsAdhocApp.GridPages
         {
             return (GridLocation)element.GetValue(RowEndProperty);
         }
+
+        private static void InvalidateMeasureOnChildPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs args)
+        {
+            Grid parent = VisualTreeHelper.GetParent(source) as Grid;
+            if (parent != null)
+            {
+                parent.InvalidateMeasure();
+            }
+        }
+
+#endregion ChildProperties
+
+#region Properties
 
         public List<GridTrackInfo> TemplateColumns
         {
@@ -286,20 +301,14 @@ namespace MUXControlsAdhocApp.GridPages
         }
         private GridAlignContent _alignContent = GridAlignContent.Start;
 
-        private static void InvalidateMeasureOnChildPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs args)
-        {
-            Grid parent = VisualTreeHelper.GetParent(source) as Grid;
-            if (parent != null)
-            {
-                parent.InvalidateMeasure();
-            }
-        }
+#endregion Properties
 
         private static GridTrackInfo _lastInTrack = new GridTrackInfo();
 
         // Calculated info on one of the grid tracks
         protected class MeasureInfo
         {
+            public int Index;
             public double Size;
 
             public double Start;
@@ -376,7 +385,10 @@ namespace MUXControlsAdhocApp.GridPages
                     measure.TotalAutos++;
                 }
 
-                measure.Calculated[track] = new MeasureInfo { Size = fixedSize };
+                measure.Calculated[track] = new MeasureInfo {
+                    Index = i,
+                    Size = fixedSize
+                };
             }
 
             measure.Remaining = Math.Max(measure.Available - measure.TotalFixed, 0.0);
@@ -624,14 +636,15 @@ namespace MUXControlsAdhocApp.GridPages
                 MeasureInfo result;
                 if (!calculated.TryGetValue(info, out result))
                 {
-                    return new MeasureInfo();
+                    // TODO: Is this an error?
+                    return new MeasureInfo { Index = -1 };
                 }
                 return result;
             }
             else
             {
                 // TODO: This is where auto rows/columns would kick in
-                return new MeasureInfo();
+                return new MeasureInfo { Index = -1 };
             }
 
         }
@@ -824,14 +837,15 @@ namespace MUXControlsAdhocApp.GridPages
             DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Calculate offsets", includeOffset: true);
 
             // If there's no entry for columns/rows use the minimal size, otherwise use the whole space.
-            if (_templateColumns.Count > 0)
-            {
-                width = availableSize.Width;
-            }
-            if (_templateRows.Count > 0)
-            {
-                height = availableSize.Height;
-            }
+            // TODO: This should be derived from our calculated Remaining numbers
+            //if (_templateColumns.Count > 0)
+            //{
+            //    width = availableSize.Width;
+            //}
+            //if (_templateRows.Count > 0)
+            //{
+            //    height = availableSize.Height;
+            //}
 
             DumpEnd();
             return new Size(width, height);
@@ -840,6 +854,53 @@ namespace MUXControlsAdhocApp.GridPages
         protected override Size ArrangeOverride(Size finalSize)
         {
             DumpBegin(finalSize, "Arrange");
+
+            double extraWidth = finalSize.Width - DesiredSize.Width;
+            double rootOffsetX = 0.0;
+
+            switch (_justifyContent)
+            {
+                case GridJustifyContent.Start:
+                    break;
+
+                case GridJustifyContent.End:
+                    rootOffsetX = extraWidth;
+                    break;
+
+                case GridJustifyContent.Center:
+                    rootOffsetX = extraWidth * 0.5;
+                    break;
+
+                case GridJustifyContent.SpaceAround:
+                case GridJustifyContent.SpaceBetween:
+                case GridJustifyContent.SpaceEvenly:
+                    // TODO: Implement
+                    break;
+            }
+
+            double extraHeight = finalSize.Height - DesiredSize.Height;
+            double rootOffsetY = 0.0;
+
+            switch (_alignContent)
+            {
+                case GridAlignContent.Start:
+                    break;
+
+                case GridAlignContent.End:
+                    rootOffsetY = extraHeight;
+                    break;
+
+                case GridAlignContent.Center:
+                    rootOffsetY = extraHeight * 0.5;
+                    break;
+
+                case GridAlignContent.SpaceAround:
+                case GridAlignContent.SpaceBetween:
+                case GridAlignContent.SpaceEvenly:
+                    // TODO: Implement
+                    break;
+            }
+
             foreach (UIElement child in Children)
             {
                 // TODO: Avoid recreating these lists
@@ -937,7 +998,7 @@ namespace MUXControlsAdhocApp.GridPages
                 DumpInfo($"left={left}, top={top}, right={right}, bottom={bottom}");
                 DumpEnd();
 
-                Rect arrangeRect = new Rect(left, top, width, height);
+                Rect arrangeRect = new Rect(rootOffsetX + left, rootOffsetY + top, width, height);
                 child.Arrange(arrangeRect);
             }
 
