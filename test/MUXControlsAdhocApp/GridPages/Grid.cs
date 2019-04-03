@@ -84,6 +84,14 @@ namespace MUXControlsAdhocApp.GridPages
         SpaceEvenly,
     }
 
+    public enum GridAutoFlow
+    {
+        Row,
+        Column,
+        RowDense,
+        ColumnDense,
+    }
+
     public class Grid : Panel
     {
 #region ChildProperties
@@ -301,6 +309,58 @@ namespace MUXControlsAdhocApp.GridPages
         }
         private GridAlignContent _alignContent = GridAlignContent.Start;
 
+        public List<GridTrackInfo> AutoColumns
+        {
+            get
+            {
+                return _autoColumns;
+            }
+            set
+            {
+                if (_autoColumns != value)
+                {
+                    _autoColumns = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private List<GridTrackInfo> _autoColumns = new List<GridTrackInfo>();
+
+        public List<GridTrackInfo> AutoRows
+        {
+            get
+            {
+                return _autoRows;
+            }
+            set
+            {
+                if (_autoRows != value)
+                {
+                    _autoRows = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private List<GridTrackInfo> _autoRows = new List<GridTrackInfo>();
+
+        public GridAutoFlow AutoFlow
+        {
+            get
+            {
+                return _autoFlow;
+            }
+            set
+            {
+                if (_autoFlow != value)
+                {
+                    _autoFlow = value;
+                    InvalidateMeasure();
+                }
+            }
+        }
+        private GridAutoFlow _autoFlow = GridAutoFlow.Row;
+        
+
 #endregion Properties
 
         private static GridTrackInfo _lastInTrack = new GridTrackInfo();
@@ -319,11 +379,13 @@ namespace MUXControlsAdhocApp.GridPages
         // Tracks all the intermediate calculations of one direction (row or column) of the grid
         protected struct MeasureBlah
         {
-            public MeasureBlah(List<GridTrackInfo> template, Dictionary<GridTrackInfo, MeasureInfo> calculated)
+            public MeasureBlah(List<GridTrackInfo> template, List<GridTrackInfo> auto, Dictionary<GridTrackInfo, MeasureInfo> calculated)
             {
                 // Add all the items from the markup defined template, plus one more grid line for the end
                 Template = new List<GridTrackInfo>(template);
                 Template.Add(_lastInTrack);
+
+                Auto = auto;
 
                 Calculated = calculated;
                 Available = 0.0;
@@ -335,6 +397,7 @@ namespace MUXControlsAdhocApp.GridPages
             }
 
             public List<GridTrackInfo> Template { get; private set; }
+            public List<GridTrackInfo> Auto { get; private set; }
             public Dictionary<GridTrackInfo, MeasureInfo> Calculated { get; private set; }
 
             public double Available;
@@ -343,9 +406,57 @@ namespace MUXControlsAdhocApp.GridPages
             public double TotalFraction;
             public uint TotalAutos;
             public double Gap;
+
+            public GridTrackInfo GetTrack(GridLocation location, GridTrackInfo previous = null)
+            {
+                if (location != null)
+                {
+                    // Exact track index
+                    int index = location.Index;
+                    if (index >= 0)
+                    {
+                        index = Math.Min(index, Template.Count - 1);
+                        // TODO: Index out of range should query Auto
+                        return Template[index];
+                    }
+
+                    // Friendly track name
+                    if (!String.IsNullOrEmpty(location.LineName))
+                    {
+                        foreach (GridTrackInfo track in Template)
+                        {
+                            if (track.LineName == location.LineName)
+                            {
+                                return track;
+                            }
+                        }
+                    }
+                }
+
+                // Span relative to previous track
+                if (previous != null)
+                {
+                    // By default go 1 beyond the previous one
+                    int span = 1;
+                    if ((location != null) && (location.Span > 0))
+                    {
+                        span = location.Span;
+                    }
+
+                    int previousIndex = Template.IndexOf(previous);
+                    if (previousIndex >= 0)
+                    {
+                        int spanIndex = Math.Min(previousIndex + span, Template.Count - 1);
+
+                        return Template[spanIndex];
+                    }
+                }
+
+                return null;
+            }
         }
 
-        private static MeasureBlah InitializeMeasure(List<GridTrackInfo> template, Dictionary<GridTrackInfo, MeasureInfo> calculated, double gap, double available)
+        private static MeasureBlah InitializeMeasure(List<GridTrackInfo> template, List<GridTrackInfo> auto, Dictionary<GridTrackInfo, MeasureInfo> calculated, double gap, double available)
         {
             int numberOfGaps = (template.Count - 1);
             if ((gap > 0.0) && (numberOfGaps > 0))
@@ -353,7 +464,7 @@ namespace MUXControlsAdhocApp.GridPages
                 available -= (gap * numberOfGaps);
             }
 
-            MeasureBlah measure = new MeasureBlah(template, calculated);
+            MeasureBlah measure = new MeasureBlah(template, auto, calculated);
             measure.Available = available;
             measure.Gap = gap;
 
@@ -370,7 +481,7 @@ namespace MUXControlsAdhocApp.GridPages
 
                 // Percentage is effectively a fixed size in that it needs to be applied before any
                 // of the more relative sizes (fraction, auto, etc.)
-                if (fixedSize == 0.0)
+                if ((fixedSize == 0.0) && (track.Percentage != 0.0))
                 {
                     fixedSize = (track.Percentage * measure.Available);
                 }
@@ -558,12 +669,7 @@ namespace MUXControlsAdhocApp.GridPages
             public GridTrackInfo RowEnd;
         }
 
-        private ChildGridLocations GetChildGridLocations(UIElement child, ref MeasureBlah measureHorizontal, ref MeasureBlah measureVertical)
-        {
-            return GetChildGridLocations(child, measureHorizontal.Template, measureVertical.Template);
-        }
-
-        private ChildGridLocations GetChildGridLocations(UIElement child, List<GridTrackInfo> horizontal, List<GridTrackInfo> vertical)
+        private ChildGridLocations GetChildGridLocations(UIElement child, ref MeasureBlah horizontal, ref MeasureBlah vertical)
         {
             ChildGridLocations result;
 
@@ -574,59 +680,12 @@ namespace MUXControlsAdhocApp.GridPages
             GridLocation rowEnd = GetRowEnd(child);
 
             // Map those to our grid lines
-            result.ColStart = GetTrack(horizontal, colStart);
-            result.RowStart = GetTrack(vertical, rowStart);
-            result.ColEnd = GetTrack(horizontal, colEnd, result.ColStart);
-            result.RowEnd = GetTrack(vertical, rowEnd, result.RowStart);
+            result.ColStart = horizontal.GetTrack(colStart);
+            result.RowStart = vertical.GetTrack(rowStart);
+            result.ColEnd = horizontal.GetTrack(colEnd, result.ColStart);
+            result.RowEnd = vertical.GetTrack(rowEnd, result.RowStart);
 
             return result;
-        }
-
-        private GridTrackInfo GetTrack(List<GridTrackInfo> list, GridLocation location, GridTrackInfo previous = null)
-        {
-            if (location != null)
-            {
-                // Exact track index
-                int index = location.Index;
-                if (index >= 0)
-                {
-                    index = Math.Min(index, list.Count - 1);
-                    return list[index];
-                }
-
-                // Friendly track name
-                if (!String.IsNullOrEmpty(location.LineName))
-                {
-                    foreach (GridTrackInfo track in list)
-                    {
-                        if (track.LineName == location.LineName)
-                        {
-                            return track;
-                        }
-                    }
-                }
-            }
-
-            // Span relative to previous track
-            if (previous != null)
-            {
-                // By default go 1 beyond the previous one
-                int span = 1;
-                if ((location != null) && (location.Span > 0))
-                {
-                    span = location.Span;
-                }
-
-                int previousIndex = list.IndexOf(previous);
-                if (previousIndex >= 0)
-                {
-                    int spanIndex = Math.Min(previousIndex + span, list.Count - 1);
-
-                    return list[spanIndex];
-                }
-            }
-
-            return null;
         }
 
         private MeasureInfo GetMeasureInfo(GridTrackInfo info, Dictionary<GridTrackInfo, MeasureInfo> calculated)
@@ -792,8 +851,8 @@ namespace MUXControlsAdhocApp.GridPages
             _columns.Clear();
             _rows.Clear();
 
-            MeasureBlah measureHorizontal = InitializeMeasure(_templateColumns, _columns, _columnGap, availableSize.Width);
-            MeasureBlah measureVertical = InitializeMeasure(_templateRows, _rows, _rowGap, availableSize.Height);
+            MeasureBlah measureHorizontal = InitializeMeasure(_templateColumns, _autoColumns, _columns, _columnGap, availableSize.Width);
+            MeasureBlah measureVertical = InitializeMeasure(_templateRows, _autoRows, _rows, _rowGap, availableSize.Height);
             DumpChildren(ref measureHorizontal, ref measureVertical);
 
             // First process any fixed sizes
@@ -814,8 +873,6 @@ namespace MUXControlsAdhocApp.GridPages
             ProcessAutoRemainingSize(ref measureHorizontal);
             ProcessAutoRemainingSize(ref measureVertical);
             DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Auto remainder");
-
-            Size usedSize = new Size(0, 0);
 
             foreach (UIElement child in Children)
             {
@@ -904,11 +961,10 @@ namespace MUXControlsAdhocApp.GridPages
             foreach (UIElement child in Children)
             {
                 // TODO: Avoid recreating these lists
-                var templateColumns = new List<GridTrackInfo>(_templateColumns);
-                templateColumns.Add(_lastInTrack);
-                var templateRows = new List<GridTrackInfo>(_templateRows);
-                templateRows.Add(_lastInTrack);
-                ChildGridLocations childLocation = GetChildGridLocations(child, templateColumns, templateRows);
+                MeasureBlah measureHorizontal = InitializeMeasure(_templateColumns, _autoColumns, _columns, _columnGap, finalSize.Width);
+                MeasureBlah measureVertical = InitializeMeasure(_templateRows, _autoRows, _rows, _rowGap, finalSize.Height);
+                ChildGridLocations childLocation = GetChildGridLocations(child, ref measureHorizontal, ref measureVertical);
+                
 
                 // TODO: This should be driven by auto rows/columns, but until that's implemented, avoid a crash by hiding the item
                 if ((childLocation.ColStart == null) || (childLocation.RowStart == null))
