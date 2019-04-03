@@ -148,6 +148,26 @@
                     <x:String>Stretch</x:String>
                 </ComboBox>
 
+                <ComboBox Header="JustifyContent" SelectionChanged="JustifyContentComboBox_SelectionChanged" SelectedItem="Start">
+                    <x:String>Start</x:String>
+                    <x:String>End</x:String>
+                    <x:String>Center</x:String>
+                    <x:String>Stretch</x:String>
+                    <x:String>SpaceAround</x:String>
+                    <x:String>SpaceBetween</x:String>
+                    <x:String>SpaceEvenly</x:String>
+                </ComboBox>
+
+                <ComboBox Header="AlignContent" SelectionChanged="AlignContentComboBox_SelectionChanged" SelectedItem="Start">
+                    <x:String>Start</x:String>
+                    <x:String>End</x:String>
+                    <x:String>Center</x:String>
+                    <x:String>Stretch</x:String>
+                    <x:String>SpaceAround</x:String>
+                    <x:String>SpaceBetween</x:String>
+                    <x:String>SpaceEvenly</x:String>
+                </ComboBox>
+
                 <Button Click="InvalidateButton_Click" Content="Invalidate" Margin="0,8,0,0"/>
             </StackPanel>
 

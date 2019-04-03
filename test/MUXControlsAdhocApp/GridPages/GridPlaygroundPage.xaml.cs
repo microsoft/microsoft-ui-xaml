@@ -179,6 +179,16 @@ namespace MUXControlsAdhocApp.GridPages
             _grid.AlignItems = EnumValueFromComboBox<GridAlignItems>(sender);
         }
 
+        private void JustifyContentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            _grid.JustifyContent = EnumValueFromComboBox<GridJustifyContent>(sender);
+        }
+
+        private void AlignContentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            _grid.AlignContent = EnumValueFromComboBox<GridAlignContent>(sender);
+        }
+
         private T EnumValueFromComboBox<T>(object sender) where T : struct, IComparable
         {
             string selection = (string)((ComboBox)sender).SelectedItem;
