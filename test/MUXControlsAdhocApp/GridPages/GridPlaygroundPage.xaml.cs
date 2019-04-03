@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Media;
 
 namespace MUXControlsAdhocApp.GridPages
 {
@@ -16,8 +18,14 @@ namespace MUXControlsAdhocApp.GridPages
             HookUpCellControls(_item2, _itemControls2);
         }
 
-        private void HookUpCellControls(Panel item, Panel itemControls)
+        private void HookUpCellControls(Panel targetItem, Panel itemControls)
         {
+            SolidColorBrush brush = (targetItem as Panel)?.Background as SolidColorBrush;
+            if (brush != null)
+            {
+                itemControls.Background = new SolidColorBrush(new Color { A = 11, R = brush.Color.R, G = brush.Color.G, B = brush.Color.B });
+            }
+
             // Traverse a couple levels down the hierarchy looking for specifically Tagged elements.
             // TODO: There are likely better utilities for doing a limited traversal.
             List<FrameworkElement> childrenAndGrandchildren = new List<FrameworkElement>();
@@ -43,7 +51,7 @@ namespace MUXControlsAdhocApp.GridPages
                 {
                     Func<TextBlock> getDisplayText = () =>
                     {
-                        foreach (var child in item.Children)
+                        foreach (var child in targetItem.Children)
                         {
                             TextBlock textDisplay = child as TextBlock;
                             if (textDisplay != null)
@@ -78,17 +86,17 @@ namespace MUXControlsAdhocApp.GridPages
                 GridLocationType type;
                 if (Enum.TryParse<GridLocationType>(panel.Tag as string, out type))
                 {
-                    HookUpCellControls(panel, type, item);
+                    HookUpCellControls(panel, type, targetItem);
                 }
             }
         }
 
 
-        private void HookUpCellControls(Panel parent, GridLocationType type, UIElement targetItem)
+        private void HookUpCellControls(Panel lineControls, GridLocationType type, UIElement targetItem)
         {
             GridLocation location = GetGridLocation(type, targetItem);
 
-            foreach (var child in parent.Children)
+            foreach (var child in lineControls.Children)
             {
                 FrameworkElement element = (FrameworkElement)child;
                 switch (element.Tag)

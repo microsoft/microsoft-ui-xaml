@@ -164,9 +164,9 @@
             <TextBlock>third-line: Auto</TextBlock>
         </StackPanel>
 
-        <StackPanel Grid.Column="0" Grid.RowSpan="2" VerticalAlignment="Top" Spacing="8">
+        <StackPanel Grid.Column="0" Grid.RowSpan="2" VerticalAlignment="Top" Spacing="12">
 
-            <Grid x:Name="_itemControls1" ColumnSpacing="4" BorderBrush="Black" BorderThickness="1" Padding="4" Background="#11FFA500">
+            <Grid x:Name="_itemControls1" ColumnSpacing="4" RowSpacing="4" BorderBrush="Black" BorderThickness="1" Padding="4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
@@ -219,7 +219,7 @@
                 </StackPanel>
             </Grid>
 
-            <Grid x:Name="_itemControls2" ColumnSpacing="4" BorderBrush="Black" BorderThickness="1" Padding="4" Background="#110000FF">
+            <Grid x:Name="_itemControls2" ColumnSpacing="4" RowSpacing="4" BorderBrush="Black" BorderThickness="1" Padding="4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
