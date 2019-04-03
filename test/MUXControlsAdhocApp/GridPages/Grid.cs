@@ -417,8 +417,36 @@ namespace MUXControlsAdhocApp.GridPages
                     int index = location.Index;
                     if (index >= 0)
                     {
-                        index = Math.Min(index, Template.Count - 1);
-                        // TODO: Index out of range should query Auto
+                        if (index >= Template.Count)
+                        {
+                            if (Auto.Count == 0)
+                            {
+                                // Clamp to the known set of indices
+                                index = Template.Count - 1;
+                            }
+                            else
+                            {
+                                // Grow the list of Templates to include this new index
+                                // FUTURE: Filling each of these in is obviously not the best for virtualization
+                                while (Template.Count <= index)
+                                {
+                                    foreach (var track in Auto)
+                                    {
+                                        // A copy instead of the exact index so that reference based Dictionary look ups will work later
+                                        // TODO: Is that really necessary? This is already going to fail the reference lookup in GetMeasureInfo() unless we do work to link them up.
+                                        // We may already have problems here as there are multiple ways to look up the same grid track and the first one goes in the dictionary.
+                                        Template.Add(new GridTrackInfo {
+                                            Length = track.Length,
+                                            LineName = track.LineName,
+                                            Fraction = track.Fraction,
+                                            Percentage = track.Percentage,
+                                            Auto = track.Auto
+                                        });
+                                    }
+                                }
+                            }
+                        }
+
                         return Template[index];
                     }
 
