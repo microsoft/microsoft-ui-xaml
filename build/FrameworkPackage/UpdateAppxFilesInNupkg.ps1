@@ -68,10 +68,10 @@ foreach ($flavor in $flavors)
 
 $nuspec = Join-Path $nugetUnpacked "Microsoft.UI.Xaml.nuspec"
 
-$nuspecContent = Get-Content $nuspec
+$nuspecContent = Get-Content $nuspec -Encoding UTF8
 $nuspecContent = $nuspecContent.Replace("<licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>", "")
 # Write-Verbose "Rewriting '$nuspec'"
-Set-Content -Path $nuspec -Value $nuspecContent
+Set-Content -Path $nuspec -Value $nuspecContent -Encoding UTF8
 
 Write-Host "Repacking nuget package..."
 
@@ -90,18 +90,18 @@ if ($pushAndQueueBuild)
 {    
     $NugetUNCPath = "\\redmond\osg\threshold\testcontent\CORE\DEP\XAML\winui\NugetSigningInput"
 
-    Copy-Item $nugetRewritten $NugetUNCPath
+    $nugetFileName = (Split-Path -Leaf $nugetRewritten).Replace(".updated", "")
+    $NugetUNCFile = Join-Path $NugetUNCPath $nugetFileName
 
-    $nugetVersion = (Split-Path -Leaf $nugetRewritten).Replace("Microsoft.UI.Xaml.", "").Replace(".updated.nupkg", "")
-    Write-Verbose "Nuget version: $nugetVersion"
+    Write-Verbose "Copying '$nugetRewritten' -> '$NugetUNCFile'"
+    Copy-Item $nugetRewritten $NugetUNCFile
 
     Import-Module -Name $PSScriptRoot\..\..\tools\BuildMachineUtils.psm1 -DisableNameChecking
 
     function Queue-NugetSigningBuild
     {
         Param(
-            [string]$NugetVersion,
-            [string]$CustomFeed)
+            [string]$NupkgPath)
 
         $token = Get-AccessToken
 
@@ -116,8 +116,7 @@ if ($pushAndQueueBuild)
             };
             "parameters" = 
                 ConvertTo-JSon (@{
-                    "PackageVersion" = $NugetVersion;
-                    "CustomFeed" = $CustomFeed
+                    "NupkgPath" = $NupkgPath
                 })
         };
 
@@ -132,7 +131,7 @@ if ($pushAndQueueBuild)
     
     Write-Host "Queueing signing build"
 
-    $result = Queue-NugetSigningBuild -NugetVersion $NugetVersion -CustomFeed $NugetUNCPath
+    $result = Queue-NugetSigningBuild -NupkgPath $NugetUNCFile
 
     $result._links.web.href
 }
