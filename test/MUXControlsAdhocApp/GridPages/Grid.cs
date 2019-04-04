@@ -368,20 +368,17 @@ namespace MUXControlsAdhocApp.GridPages
         // Calculated info on one of the grid tracks, used to carry over calculations from Measure to Arrange
         protected class MeasuredGridTrackInfo
         {
-            // TODO: Currently unused. Expected to be used to make lookups better. If not used, remove.
-            public int Index;
-
             public double Size;
 
             public double Start;
         }
-        private Dictionary<GridTrackInfo, MeasuredGridTrackInfo> _columns = new Dictionary<GridTrackInfo, MeasuredGridTrackInfo>();
-        private Dictionary<GridTrackInfo, MeasuredGridTrackInfo> _rows = new Dictionary<GridTrackInfo, MeasuredGridTrackInfo>();
+        private Dictionary<int, MeasuredGridTrackInfo> _columns = new Dictionary<int, MeasuredGridTrackInfo>();
+        private Dictionary<int, MeasuredGridTrackInfo> _rows = new Dictionary<int, MeasuredGridTrackInfo>();
 
         // Tracks all the intermediate calculations of one direction (row or column) of the grid
         private struct AxisInfo
         {
-            public AxisInfo(List<GridTrackInfo> template, List<GridTrackInfo> auto, Dictionary<GridTrackInfo, MeasuredGridTrackInfo> calculated)
+            public AxisInfo(List<GridTrackInfo> template, List<GridTrackInfo> auto, Dictionary<int, MeasuredGridTrackInfo> calculated)
             {
                 // Add all the items from the markup defined template, plus one more grid line for the end
                 Template = new List<GridTrackInfo>(template);
@@ -400,7 +397,7 @@ namespace MUXControlsAdhocApp.GridPages
 
             public List<GridTrackInfo> Template { get; private set; }
             public List<GridTrackInfo> Auto { get; private set; }
-            public Dictionary<GridTrackInfo, MeasuredGridTrackInfo> Calculated { get; private set; }
+            public Dictionary<int, MeasuredGridTrackInfo> Calculated { get; private set; }
 
             public double Available;
             public double Remaining;
@@ -493,8 +490,7 @@ namespace MUXControlsAdhocApp.GridPages
 
             public MeasuredGridTrackInfo GetMeasuredTrack(int index)
             {
-                // TODO: Should be able to replace this look up with an index lookup
-                return Calculated[Template[index]];
+                return Calculated[index];
             }
 
             public MeasuredGridTrackInfo GetMeasuredTrackSafe(ResolvedGridReference track)
@@ -505,27 +501,23 @@ namespace MUXControlsAdhocApp.GridPages
                     return new MeasuredGridTrackInfo();
                 }
 
-                // TODO: Should be able to replace this look up with an index lookup
                 MeasuredGridTrackInfo info;
-                if (!Calculated.TryGetValue(track.Info, out info))
+                if (Calculated.TryGetValue(track.Index, out info))
                 {
-                    foreach (var entry in Calculated)
-                    {
-                        //if (entry.Value.Index)
-                    }
-
-                    return new MeasuredGridTrackInfo();
+                    return info;
                 }
-                return info;
+
+                // TODO: Is this a programming error?
+                return new MeasuredGridTrackInfo();
             }
 
-            public void AddCalculated(int index, GridTrackInfo track, MeasuredGridTrackInfo measuredInfo)
+            public void AddCalculated(int index, GridTrackInfo track, double size)
             {
-                Calculated[track] = measuredInfo;
+                Calculated[index] = new MeasuredGridTrackInfo { Size = size, Start = 0.0 };
             }
         }
 
-        private static AxisInfo InitializeMeasure(List<GridTrackInfo> template, List<GridTrackInfo> auto, Dictionary<GridTrackInfo, MeasuredGridTrackInfo> calculated, double gap, double available)
+        private static AxisInfo InitializeMeasure(List<GridTrackInfo> template, List<GridTrackInfo> auto, Dictionary<int, MeasuredGridTrackInfo> calculated, double gap, double available)
         {
             int numberOfGaps = (template.Count - 1);
             if ((gap > 0.0) && (numberOfGaps > 0))
@@ -565,11 +557,7 @@ namespace MUXControlsAdhocApp.GridPages
                     measure.TotalAutos++;
                 }
 
-                measure.AddCalculated(i, track, 
-                    new MeasuredGridTrackInfo {
-                        Index = i,
-                        Size = fixedSize
-                    });
+                measure.AddCalculated(i, track, fixedSize);
             }
 
             measure.Remaining = Math.Max(measure.Available - measure.TotalFixed, 0.0);
@@ -867,7 +855,7 @@ namespace MUXControlsAdhocApp.GridPages
             DumpBegin(info);
             foreach (var entry in measure.Calculated)
             {
-                int trackIndex = measure.Template.IndexOf(entry.Key);
+                int trackIndex = entry.Key;
                 if (includeOffset)
                 {
                     Debug.WriteLine($"{trackIndex} {{Size={entry.Value.Size}, Start={entry.Value.Start}}}");
