@@ -27,7 +27,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NETFX_CORE;WINDOWS_UWP;CODE_ANALYSIS;CODE_ANALYSIS</DefineConstants>
     <NoWarn>;2008</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -165,6 +165,9 @@
     <Compile Include="GridPages\GridAutoColumnsAndRowsPage.xaml.cs">
       <DependentUpon>GridAutoColumnsAndRowsPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GridPages\GridAutoFlowPage.xaml.cs">
+      <DependentUpon>GridAutoFlowPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GridPages\GridColumnAndRowGapPage.xaml.cs">
       <DependentUpon>GridColumnAndRowGapPage.xaml</DependentUpon>
     </Compile>
@@ -266,6 +269,10 @@
     <Page Include="GridPages\GridAutoColumnsAndRowsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GridPages\GridAutoFlowPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="GridPages\GridColumnAndRowGapPage.xaml">
       <SubType>Designer</SubType>
