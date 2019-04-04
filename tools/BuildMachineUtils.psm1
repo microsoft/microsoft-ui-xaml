@@ -94,3 +94,10 @@ function Queue-BuildOnMachine
 
     $result
 }
+
+# Initialize ADAL when this module is imported
+
+$adalPath = Get-AdalPath
+
+Write-Verbose "ADALPath: $adalPath"
+Add-Type -Path "$adalPath\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.dll"
