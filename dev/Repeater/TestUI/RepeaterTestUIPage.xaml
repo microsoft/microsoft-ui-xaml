@@ -29,7 +29,8 @@
             <Button x:Name="pinterestLayoutDemo">Pinterest Layout Demo</Button>
             <Button x:Name="flowLayoutDemo">Flow Layout Demo</Button>
             <Button x:Name="storeDemo">Store demo</Button>
-            <Button x:Name="animatedScrollDemo">Animated scroll demo</Button>
+            <Button x:Name="animatedScrollDemo">Animated scroll demo vertical</Button>
+            <Button x:Name="animatedScrollDemoHor">Animated scroll demo horizontal</Button>
             <TextBlock>Selection Demo</TextBlock>
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="flatSelectionDemo">Flat</Button>

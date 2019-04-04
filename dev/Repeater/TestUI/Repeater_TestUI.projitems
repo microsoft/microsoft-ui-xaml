@@ -57,6 +57,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\ScaleAnimatedHorizontalListDemo.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Samples\ScaleAnimatedVerticalListDemo.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -121,6 +125,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Samples\ItemTemplateSamples\ItemTemplateDemo.xaml.cs">
       <DependentUpon>ItemTemplateDemo.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\ScaleAnimatedHorizontalListDemo.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\ScaleAnimatedVerticalListDemo.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\NonVirtual\NonVirtualStackLayoutSamplePage.xaml.cs">
       <DependentUpon>NonVirtualStackLayoutSamplePage.xaml</DependentUpon>
@@ -194,6 +199,9 @@
   <ItemGroup>
     <Compile Update="S:\Source\GitRepos\microsoft-ui-xaml2\dev\Repeater\TestUI\Samples\ScaleAnimatedVerticalListDemo.xaml.cs">
       <DependentUpon>ScaleAnimatedVerticalListDemo.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="S:\Source\Repos\microsoft-ui-xaml\dev\Repeater\TestUI\Samples\ScaleAnimatedHorizontalListDemo.xaml.cs">
+      <DependentUpon>ScaleAnimatedHorizontalListDemo.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>
