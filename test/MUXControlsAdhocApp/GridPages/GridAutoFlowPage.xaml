@@ -1,0 +1,76 @@
+﻿<Page
+    x:Class="MUXControlsAdhocApp.GridPages.GridAutoFlowPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsAdhocApp.GridPages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel>
+
+        <TextBlock>Columns: 60px 60px 60px 60px 60px</TextBlock>
+        <TextBlock>Rows: 30px 30px</TextBlock>
+        <TextBlock>AutoFlow: Row</TextBlock>
+
+        <Grid>
+
+            <!--
+                grid-template-columns: 60px 60px 60px 60px 60px;
+                grid-template-rows: 30px 30px;
+                grid-auto-flow: Row;
+            -->
+            <local:Grid AutoFlow="Row">
+                <local:Grid.TemplateColumns>
+                    <local:GridTrackInfo Length="60"/>
+                    <local:GridTrackInfo Length="60"/>
+                    <local:GridTrackInfo Length="60"/>
+                    <local:GridTrackInfo Length="60"/>
+                    <local:GridTrackInfo Length="60"/>
+                </local:Grid.TemplateColumns>
+                <local:Grid.TemplateRows>
+                    <local:GridTrackInfo Length="30"/>
+                    <local:GridTrackInfo Length="30"/>
+                </local:Grid.TemplateRows>
+                <local:Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="FontSize" Value="18"/>
+                    </Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Background" Value="Orange"/>
+                        <Setter Property="Margin" Value="2"/>
+                        <Setter Property="CornerRadius" Value="6"/>
+                        <Setter Property="BorderBrush" Value="Black"/>
+                        <Setter Property="BorderThickness" Value="2"/>
+                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                        <Setter Property="VerticalAlignment" Value="Stretch"/>
+                    </Style>
+                </local:Grid.Resources>
+                
+                <Grid Background="#88FFA500" Opacity="0.5">
+                    <TextBlock>item-a</TextBlock>
+                </Grid>
+
+                <Grid Background="#880000FF" Opacity="0.5">
+                    <TextBlock>item-b</TextBlock>
+                </Grid>
+
+                <Grid Background="#88FF0000" Opacity="0.5">
+                    <TextBlock>item-c</TextBlock>
+                </Grid>
+
+                <Grid Background="#888FBC8F" Opacity="0.5">
+                    <TextBlock>item-d</TextBlock>
+                </Grid>
+
+            </local:Grid>
+
+        </Grid>
+
+    </StackPanel>
+</Page>

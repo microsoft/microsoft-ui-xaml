@@ -48,6 +48,10 @@ namespace MUXControlsAdhocApp.GridPages
                     _contentFrame.Navigate(typeof(GridAutoColumnsAndRowsPage));
                     break;
 
+                case "AutoFlow":
+                    _contentFrame.Navigate(typeof(GridAutoFlowPage));
+                    break;
+
                 case "ColumnStartAndRowStart":
                     break;
 
