@@ -30,15 +30,6 @@ namespace MUXControlsAdhocApp.GridPages
 
     public class GridLocation
     {
-        // TODO: These being of type int won't suffice. They can be:
-        //<line> - can be a number to refer to a numbered grid line, or a name to refer to a named grid line
-        //span<number> - the item will span across the provided number of grid tracks
-        //span<name> - the item will span across until it hits the next line with the provided name
-        //auto - indicates auto-placement, an automatic span, or a default span of one
-        //  grid-column-start: <number> | <name> | span<number> | span<name> | auto
-        //  grid-column-end: <number> | <name> | span<number> | span<name> | auto
-        //  grid-row-start: <number> | <name> | span<number> | span<name> | auto
-        //  grid-row-end: <number> | <name> | span<number> | span<name> | auto
         public int Index { get; set; } = -1;
 
         public string LineName { get; set; }
@@ -380,9 +371,14 @@ namespace MUXControlsAdhocApp.GridPages
         {
             public AxisInfo(List<GridTrackInfo> template, List<GridTrackInfo> auto, Dictionary<int, MeasuredGridTrackInfo> calculated)
             {
-                // Add all the items from the markup defined template, plus one more grid line for the end
+                // Add all the items from the markup defined template, plus one more grid line for 
+                // the end (unless we have auto tracks, in which case they will define what happens 
+                // when we go out of bounds)
                 Template = new List<GridTrackInfo>(template);
-                Template.Add(_lastInTrack);
+                if ((auto == null) || (auto.Count == 0))
+                {
+                    Template.Add(_lastInTrack);
+                }
 
                 Auto = auto;
 
@@ -425,16 +421,10 @@ namespace MUXControlsAdhocApp.GridPages
                 {
                     foreach (var track in Auto)
                     {
-                        // A copy instead of the exact index so that reference based Dictionary look ups will work later
-                        // TODO: Is that really necessary? This is already going to fail the reference lookup in GetMeasureInfo() unless we do work to link them up.
-                        // We may already have problems here as there are multiple ways to look up the same grid track and the first one goes in the dictionary.
-                        Template.Add(new GridTrackInfo {
-                            Length = track.Length,
-                            LineName = track.LineName,
-                            Fraction = track.Fraction,
-                            Percentage = track.Percentage,
-                            Auto = track.Auto
-                        });
+                        DumpBegin($"Adding auto copy at index {Template.Count}");
+                        DumpGridTrackInfo(track);
+                        DumpEnd();
+                        Template.Add(track);
                     }
                 }
 
@@ -563,8 +553,13 @@ namespace MUXControlsAdhocApp.GridPages
             measure.Remaining = Math.Max(measure.Available - measure.TotalFixed, 0.0);
         }
 
-        private void ProcessAutoSizes(ref AxisInfo measureHorizontal, ref AxisInfo measureVertical)
+        private bool ProcessAutoSizes(ref AxisInfo measureHorizontal, ref AxisInfo measureVertical)
         {
+            if ((measureHorizontal.TotalAutos == 0) && (measureVertical.TotalAutos == 0))
+            {
+                return false;
+            }
+
             foreach (UIElement child in Children)
             {
                 ChildGridLocations childLocation = GetChildGridLocations(child, ref measureHorizontal, ref measureVertical);
@@ -613,6 +608,8 @@ namespace MUXControlsAdhocApp.GridPages
                 UpdateAutoBasedOnMeasured(autoHorizontal, ref measureHorizontal, child.DesiredSize.Width);
                 UpdateAutoBasedOnMeasured(autoVertical, ref measureVertical, child.DesiredSize.Height);
             }
+
+            return true;
         }
 
         // NOTE: Can't do as an anonymous inline Action above because we need to declare the struct AxisInfo as ref (and Actions don't support ref parameters)
@@ -638,11 +635,11 @@ namespace MUXControlsAdhocApp.GridPages
             }
         }
 
-        private static void ProcessFractionalSizes(ref AxisInfo measure)
+        private static bool ProcessFractionalSizes(ref AxisInfo measure)
         {
             if (measure.TotalFraction <= 0.0)
             {
-                return;
+                return false;
             }
 
             // What is the size of each fraction?
@@ -669,6 +666,8 @@ namespace MUXControlsAdhocApp.GridPages
 
             // Fractions consume all that's left
             measure.Remaining = 0.0;
+
+            return true;
         }
 
         // Allow any Auto tracks to take the remaining space
@@ -786,6 +785,19 @@ namespace MUXControlsAdhocApp.GridPages
         }
 
         [Conditional("GRID_TRACE")]
+        private static void DumpGridTrackInfo(GridTrackInfo track)
+        {
+            Debug.Write("{");
+            string separator = String.Empty;
+            DumpConditional(!String.IsNullOrEmpty(track.LineName), $"LineName='{track.LineName}'", ref separator);
+            DumpConditional(track.Length != 0.0, $"Length={track.Length}", ref separator);
+            DumpConditional(track.Percentage != 0.0, $"Percentage={track.Percentage}", ref separator);
+            DumpConditional(track.Fraction != 0.0, $"Fraction={track.Fraction}", ref separator);
+            DumpConditional(track.Auto, $"Auto={track.Auto}", ref separator);
+            Debug.WriteLine("}");
+        }
+
+        [Conditional("GRID_TRACE")]
         private void DumpTemplates()
         {
             Action<List<GridTrackInfo>> dumpTemplate = (List<GridTrackInfo> template) =>
@@ -793,14 +805,8 @@ namespace MUXControlsAdhocApp.GridPages
                 for (int i = 0; i < template.Count; i++)
                 {
                     GridTrackInfo track = template[i];
-                    Debug.Write($"{i} {{");
-                    string separator = String.Empty;
-                    DumpConditional(!String.IsNullOrEmpty(track.LineName), $"LineName='{track.LineName}'", ref separator);
-                    DumpConditional(track.Length != 0.0, $"Length={track.Length}", ref separator);
-                    DumpConditional(track.Percentage != 0.0, $"Percentage={track.Percentage}", ref separator);
-                    DumpConditional(track.Fraction != 0.0, $"Fraction={track.Fraction}", ref separator);
-                    DumpConditional(track.Auto, $"Auto={track.Auto}", ref separator);
-                    Debug.WriteLine($"}}");
+                    Debug.Write($"{i} ");
+                    DumpGridTrackInfo(track);
                 }
             };
 
@@ -811,6 +817,20 @@ namespace MUXControlsAdhocApp.GridPages
             DumpBegin("TemplateRows");
             dumpTemplate(_templateRows);
             DumpEnd();
+
+            if ((_autoColumns != null) && (_autoColumns.Count > 0))
+            {
+                DumpBegin("AutoColumns");
+                dumpTemplate(_autoColumns);
+                DumpEnd();
+            }
+
+            if ((_autoRows != null) && (_autoRows.Count > 0))
+            {
+                DumpBegin("AutoRows");
+                dumpTemplate(_autoRows);
+                DumpEnd();
+            }
         }
 
         [Conditional("GRID_TRACE")]
@@ -927,18 +947,28 @@ namespace MUXControlsAdhocApp.GridPages
             DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Fixed");
 
             // Next we need to know how large the auto sizes are
-            ProcessAutoSizes(ref measureHorizontal, ref measureVertical);
-            DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Auto");
+            bool anyAuto = ProcessAutoSizes(ref measureHorizontal, ref measureVertical);
+            if (anyAuto)
+            {
+                DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Auto");
+            }
 
             // Then we can figure out how large the fractional sizes should be
-            ProcessFractionalSizes(ref measureHorizontal);
-            ProcessFractionalSizes(ref measureVertical);
-            DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Fractional");
+            bool anyFractional = false;
+            anyFractional |= ProcessFractionalSizes(ref measureHorizontal);
+            anyFractional |= ProcessFractionalSizes(ref measureVertical);
+            if (anyFractional)
+            {
+                DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Fractional");
+            }
 
             // And then the auto elements can claim any remaining sizes
             ProcessAutoRemainingSize(ref measureHorizontal);
             ProcessAutoRemainingSize(ref measureVertical);
-            DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Auto remainder");
+            if (anyAuto)
+            {
+                DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Auto remainder");
+            }
 
             foreach (UIElement child in Children)
             {
@@ -947,10 +977,8 @@ namespace MUXControlsAdhocApp.GridPages
                 MeasuredGridTrackInfo colMeasure = measureHorizontal.GetMeasuredTrackSafe(childLocation.ColStart);
                 MeasuredGridTrackInfo rowMeasure = measureVertical.GetMeasuredTrackSafe(childLocation.RowStart);
 
-                // TODO: Relate to availableSize
+                // TODO: This isn't measuring them against their entire span
                 Size measureSize = new Size(colMeasure.Size, rowMeasure.Size);
-
-                // Give each child the maximum available space
                 child.Measure(measureSize);
             }
 
