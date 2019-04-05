@@ -10,9 +10,9 @@
 
     <StackPanel>
 
-        <TextBlock>Columns: 60px 60px</TextBlock>
-        <TextBlock>Rows: 90px 90px</TextBlock>
-        <TextBlock>AutoColumns: 60px</TextBlock>
+        <TextBlock>Columns: 120px 120px</TextBlock>
+        <TextBlock>Rows: 180px 180px</TextBlock>
+        <TextBlock>AutoColumns: 120px</TextBlock>
 
         <Grid>
 
@@ -41,15 +41,15 @@
                     grid-auto-columns: 60px;
                 -->
                 <local:Grid.TemplateColumns>
-                    <local:GridTrackInfo Length="60"/>
-                    <local:GridTrackInfo Length="60"/>
+                    <local:GridTrackInfo Length="120"/>
+                    <local:GridTrackInfo Length="120"/>
                 </local:Grid.TemplateColumns>
                 <local:Grid.TemplateRows>
-                    <local:GridTrackInfo Length="90"/>
-                    <local:GridTrackInfo Length="90"/>
+                    <local:GridTrackInfo Length="180"/>
+                    <local:GridTrackInfo Length="180"/>
                 </local:Grid.TemplateRows>
                 <local:Grid.AutoColumns>
-                    <local:GridTrackInfo Length="60"/>
+                    <local:GridTrackInfo Length="120"/>
                 </local:Grid.AutoColumns>
 
                 <!--
@@ -57,7 +57,7 @@
                   grid-column: 1 / 2;
                   grid-row: 2 / 3;
                 }-->
-                <Grid Background="#88FFA500" Opacity="0.5">
+                <Grid Background="#88FFA500">
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="0"/>
                     </local:Grid.ColumnStart>
@@ -78,7 +78,7 @@
                   grid-column: 5 / 6;
                   grid-row: 2 / 3;
                 }-->
-                <Grid Background="#880000FF" Opacity="0.5">
+                <Grid Background="#880000FF">
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="4"/>
                     </local:Grid.ColumnStart>

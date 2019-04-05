@@ -814,7 +814,7 @@ namespace MUXControlsAdhocApp.GridPages
             return result;
         }
 
-        private void AutoFlowByColumn(ref AxisInfo horizontal, ref AxisInfo vertical, Func<GridCoordinate, bool> checkUnoccupied)
+        private void TraverseByColumn(ref AxisInfo horizontal, ref AxisInfo vertical, Func<GridCoordinate, bool> predicate)
         {
             for (int column = 0; column < horizontal.Template.Count; column++)
             {
@@ -834,7 +834,7 @@ namespace MUXControlsAdhocApp.GridPages
                         break;
                     }
 
-                    if (checkUnoccupied(new GridCoordinate { ColumnIndex = column, RowIndex = row }))
+                    if (predicate(new GridCoordinate { ColumnIndex = column, RowIndex = row }))
                     {
                         return;
                     }
@@ -842,8 +842,8 @@ namespace MUXControlsAdhocApp.GridPages
             }
         }
 
-        // TODO: This code can be more smarty shared with AutoFlowByColumn
-        private void AutoFlowByRow(ref AxisInfo horizontal, ref AxisInfo vertical, Func<GridCoordinate, bool> checkUnoccupied)
+        // TODO: This code can be more smarty shared with TraverseByColumn
+        private void TraverseByRow(ref AxisInfo horizontal, ref AxisInfo vertical, Func<GridCoordinate, bool> predicate)
         {
             for (int row = 0; row < vertical.Template.Count; row++)
             {
@@ -863,7 +863,7 @@ namespace MUXControlsAdhocApp.GridPages
                         break;
                     }
 
-                    if (checkUnoccupied(new GridCoordinate { ColumnIndex = column, RowIndex = row }))
+                    if (predicate(new GridCoordinate { ColumnIndex = column, RowIndex = row }))
                     {
                         return;
                     }
@@ -906,12 +906,12 @@ namespace MUXControlsAdhocApp.GridPages
             {
                 case GridAutoFlow.Column:
                 case GridAutoFlow.ColumnDense:
-                    AutoFlowByColumn(ref horizontal, ref vertical, checkUnoccupied);
+                    TraverseByColumn(ref horizontal, ref vertical, checkUnoccupied);
                     break;
 
                 case GridAutoFlow.Row:
                 case GridAutoFlow.RowDense:
-                    AutoFlowByRow(ref horizontal, ref vertical, checkUnoccupied);
+                    TraverseByRow(ref horizontal, ref vertical, checkUnoccupied);
                     break;
             }
             
