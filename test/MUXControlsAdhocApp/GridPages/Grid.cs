@@ -814,6 +814,63 @@ namespace MUXControlsAdhocApp.GridPages
             return result;
         }
 
+        private void AutoFlowByColumn(ref AxisInfo horizontal, ref AxisInfo vertical, Func<GridCoordinate, bool> checkUnoccupied)
+        {
+            for (int column = 0; column < horizontal.Template.Count; column++)
+            {
+                // Don't consider the last grid line an option (it's meant to be an upper bound, not a starter).
+                // TODO: Figure out how AutoColumns works with AutoFlow
+                if (horizontal.Template[column] == _lastInTrack)
+                {
+                    break;
+                }
+
+                for (int row = 0; row < vertical.Template.Count; row++)
+                {
+                    // Don't consider the last grid line an option (it's meant to be an upper bound, not a starter).
+                    // TODO: Figure out how AutoRows works with AutoFlow
+                    if (vertical.Template[row] == _lastInTrack)
+                    {
+                        break;
+                    }
+
+                    if (checkUnoccupied(new GridCoordinate { ColumnIndex = column, RowIndex = row }))
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
+        // TODO: This code can be more smarty shared with AutoFlowByColumn
+        private void AutoFlowByRow(ref AxisInfo horizontal, ref AxisInfo vertical, Func<GridCoordinate, bool> checkUnoccupied)
+        {
+            for (int row = 0; row < vertical.Template.Count; row++)
+            {
+                // Don't consider the last grid line an option (it's meant to be an upper bound, not a starter).
+                // TODO: Figure out how AutoRows works with AutoFlow
+                if (vertical.Template[row] == _lastInTrack)
+                {
+                    break;
+                }
+
+                for (int column = 0; column < horizontal.Template.Count; column++)
+                {
+                    // Don't consider the last grid line an option (it's meant to be an upper bound, not a starter).
+                    // TODO: Figure out how AutoColumn works with AutoFlow
+                    if (horizontal.Template[column] == _lastInTrack)
+                    {
+                        break;
+                    }
+
+                    if (checkUnoccupied(new GridCoordinate { ColumnIndex = column, RowIndex = row }))
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
         private ChildGridLocations AssignUnoccupiedGridLocation(UIElement child, ref AxisInfo horizontal, ref AxisInfo vertical, GridAutoFlow autoFlow, Dictionary<GridCoordinate, bool> occupied)
         {
             ChildGridLocations result;
@@ -825,35 +882,55 @@ namespace MUXControlsAdhocApp.GridPages
             GridLocation rowEnd = GetRowEnd(child);
 
             Debug.Assert((colStart == null) || (rowStart == null));
-            
+
+            Func<GridCoordinate, bool> checkUnoccupied = (GridCoordinate coordinate) =>
+            {
+                // TODO: Need to incorporate Span in this check
+                if (occupied.ContainsKey(coordinate))
+                {
+                    return false;
+                }
+
+                DumpInfo($"Assigning {child.GetType().Name} to unoccupied column {coordinate.ColumnIndex} and row {coordinate.RowIndex}");
+                colStart = new GridLocation { Index = coordinate.ColumnIndex };
+                rowStart = new GridLocation { Index = coordinate.RowIndex };
+
+                return true;
+            };
+
             // The child has no preference. Find them the first available spot according to the 
             // AutoFlow policy.
-            for (int column = 0; column < horizontal.Template.Count; column++)
+            // TODO: Implement difference between Dense and not Dense
+            // TODO: Should Dense be a different enum value or a separate property (bool AutoFlowDense)
+            switch (autoFlow)
             {
-                bool found = false;
-
-                for (int row = 0; row < vertical.Template.Count; row++)
-                {
-                    // TODO: Need to incorporate Span in this check
-                    if (occupied.ContainsKey(new GridCoordinate { ColumnIndex = column, RowIndex = row }))
-                    {
-                        continue;
-                    }
-
-                    DumpInfo($"Assigning {child.GetType().Name} to unoccupied column {column} and row {row}");
-                    DumpGridTrackInfo(horizontal.Template[column]);
-                    DumpGridTrackInfo(vertical.Template[row]);
-                    colStart = new GridLocation { Index = column };
-                    rowStart = new GridLocation { Index = row };
-
-                    found = true;
+                case GridAutoFlow.Column:
+                case GridAutoFlow.ColumnDense:
+                    AutoFlowByColumn(ref horizontal, ref vertical, checkUnoccupied);
                     break;
-                }
 
-                if (found)
-                {
+                case GridAutoFlow.Row:
+                case GridAutoFlow.RowDense:
+                    AutoFlowByRow(ref horizontal, ref vertical, checkUnoccupied);
                     break;
-                }
+            }
+            
+            if (colStart != null)
+            {
+                DumpGridTrackInfo(horizontal.Template[colStart.Index]);
+            }
+            else
+            {
+                DumpInfo("Unable to find column for child");
+            }
+
+            if (rowStart != null)
+            {
+                DumpGridTrackInfo(vertical.Template[rowStart.Index]);
+            }
+            else
+            {
+                DumpInfo("Unable to find row for child");
             }
 
             // Map the preferences to actual grid lines
