@@ -20,6 +20,13 @@
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.ColorSpectrumAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.Primitives.ColorSpectrum)">
       <param name="owner" />
     </member>
+    <member name="T:Microsoft.UI.Xaml.Automation.Peers.DropDownButtonAutomationPeer" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.DropDownButtonAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.DropDownButton)">
+      <param name="owner" />
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.DropDownButtonAutomationPeer.Collapse" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.DropDownButtonAutomationPeer.Expand" />
+    <member name="P:Microsoft.UI.Xaml.Automation.Peers.DropDownButtonAutomationPeer.ExpandCollapseState" />
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.MenuBarAutomationPeer">
       <summary>Exposes <see cref="Microsoft.UI.Xaml.Automation.Peers.MenuBarAutomationPeer?text=MenuBar" /> types to Microsoft UI Automation.</summary>
     </member>
@@ -67,10 +74,35 @@
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.RatingControlAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.RatingControl)">
       <param name="owner" />
     </member>
+    <member name="T:Microsoft.UI.Xaml.Automation.Peers.RepeaterAutomationPeer" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.RepeaterAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.ItemsRepeater)">
+      <param name="owner" />
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Automation.Peers.ScrollerAutomationPeer" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.ScrollerAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.Primitives.Scroller)">
+      <param name="owner" />
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Automation.Peers.SplitButtonAutomationPeer" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.SplitButtonAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.SplitButton)">
+      <param name="owner" />
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.SplitButtonAutomationPeer.Collapse" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.SplitButtonAutomationPeer.Expand" />
+    <member name="P:Microsoft.UI.Xaml.Automation.Peers.SplitButtonAutomationPeer.ExpandCollapseState" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.SplitButtonAutomationPeer.Invoke" />
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.TeachingTipAutomationPeer" />
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.TeachingTipAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.TeachingTip)">
       <param name="owner" />
     </member>
+    <member name="T:Microsoft.UI.Xaml.Automation.Peers.ToggleSplitButtonAutomationPeer" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.ToggleSplitButtonAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.ToggleSplitButton)">
+      <param name="owner" />
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.ToggleSplitButtonAutomationPeer.Collapse" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.ToggleSplitButtonAutomationPeer.Expand" />
+    <member name="P:Microsoft.UI.Xaml.Automation.Peers.ToggleSplitButtonAutomationPeer.ExpandCollapseState" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.ToggleSplitButtonAutomationPeer.Toggle" />
+    <member name="P:Microsoft.UI.Xaml.Automation.Peers.ToggleSplitButtonAutomationPeer.ToggleState" />
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.TreeViewItemAutomationPeer">
       <summary>Exposes <see cref="Microsoft.UI.Xaml.Controls.TreeViewItem?text=TreeViewItem" /> types to Microsoft UI Automation.</summary>
     </member>
@@ -94,7 +126,7 @@
       <param name="owner" />
     </member>
     <member name="T:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer">
-      <summary>Represents an element that displays and controls an animated visual.</summary>
+      <summary>An element that displays and controls an IAnimatedVisual.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer.#ctor">
       <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer?text=AnimatedVisualPlayer" /> class.</summary>
@@ -213,6 +245,9 @@
     <member name="F:Microsoft.UI.Xaml.Controls.AnimationContext.None">
       <summary>There was no change.</summary>
     </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.AnimationMode" />
+    <member name="F:Microsoft.UI.Xaml.Controls.AnimationMode.Disabled" />
+    <member name="F:Microsoft.UI.Xaml.Controls.AnimationMode.Enabled" />
     <member name="T:Microsoft.UI.Xaml.Controls.BitmapIconSource">
       <summary>Represents an icon source that uses a bitmap as its content.</summary>
     </member>
@@ -1111,6 +1146,12 @@
       <summary>Gets the index of the item the element was prepared for.</summary>
       <returns>The index of the item the element was prepared for.</returns>
     </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost" />
+    <member name="M:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.#ctor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.CurrentAnchor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.HorizontalAnchorRatio" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.ScrollViewer" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.VerticalAnchorRatio" />
     <member name="T:Microsoft.UI.Xaml.Controls.ItemsSourceView">
       <summary>Represents a standardized view of the supported interactions between a given ItemsSource object and an ItemsRepeater control.</summary>
     </member>
@@ -2105,6 +2146,10 @@
       <summary>Identifies the ProfilePicture dependency property.</summary>
       <returns>The identifier for the ProfilePicture dependency property.</returns>
     </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.PersonPicture.TemplateSettings" />
+    <member name="T:Microsoft.UI.Xaml.Controls.PersonPictureTemplateSettings" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PersonPictureTemplateSettings.ActualImageBrush" />
+    <member name="P:Microsoft.UI.Xaml.Controls.PersonPictureTemplateSettings.ActualInitials" />
     <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ColorPickerSlider">
       <summary>Represents a slider in a <see cref="Microsoft.UI.Xaml.Controls.ColorPicker?text=ColorPicker" /> control.</summary>
     </member>
@@ -2304,8 +2349,8 @@
     <member name="T:Microsoft.UI.Xaml.Controls.Primitives.IScrollController" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.AreInteractionsAllowed" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.AreScrollerInteractionsAllowed" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.GetScrollAnimation(System.Int32,Windows.Foundation.Numerics.Vector2,Windows.UI.Composition.CompositionAnimation)">
-      <param name="offsetChangeId" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.GetScrollAnimation(Microsoft.UI.Xaml.Controls.ScrollInfo,Windows.Foundation.Numerics.Vector2,Windows.UI.Composition.CompositionAnimation)">
+      <param name="info" />
       <param name="currentPosition" />
       <param name="defaultAnimation" />
     </member>
@@ -2315,12 +2360,12 @@
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.InteractionVisualScrollOrientation" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.IsInteracting" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.IsInteractionVisualRailEnabled" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.OffsetChangeRequested" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.OffsetChangeWithAdditionalVelocityRequested" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.OnScrollCompleted(System.Int32,Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult)">
-      <param name="offsetChangeId" />
-      <param name="result" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.OnScrollCompleted(Microsoft.UI.Xaml.Controls.ScrollInfo)">
+      <param name="info" />
     </member>
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.ScrollByRequested" />
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.ScrollFromRequested" />
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.ScrollToRequested" />
     <member name="M:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet,System.String,System.String,System.String,System.String)">
       <param name="propertySet" />
       <param name="minOffsetPropertyName" />
@@ -2359,30 +2404,59 @@
     <member name="M:Microsoft.UI.Xaml.Controls.Primitives.RadioButtonsListViewItem.#ctor">
       <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.Primitives.RadioButtonsListViewItem?text=RadioButtonsListViewItem" /> class.</summary>
     </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint.#ctor(System.Double,System.Double,System.Double,System.Double,Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment)">
+      <param name="offset" />
+      <param name="interval" />
+      <param name="start" />
+      <param name="end" />
+      <param name="alignment" />
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint.End" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint.Interval" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint.Offset" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint.Start" />
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint.#ctor(System.Double,System.Double,System.Double,System.Double)">
+      <param name="offset" />
+      <param name="interval" />
+      <param name="start" />
+      <param name="end" />
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint.End" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint.Interval" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint.Offset" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint.Start" />
     <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs" />
     <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs.#ctor(Windows.UI.Input.PointerPoint)">
       <param name="pointerPoint" />
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs.Handled" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs.PointerPoint" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeRequestedEventArgs" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeRequestedEventArgs.#ctor(System.Double,Microsoft.UI.Xaml.Controls.ScrollerViewKind,Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind)">
-      <param name="offset" />
-      <param name="offsetKind" />
-      <param name="offsetChangeKind" />
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs.#ctor(System.Double,Microsoft.UI.Xaml.Controls.ScrollOptions)">
+      <param name="offsetDelta" />
+      <param name="options" />
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeRequestedEventArgs.Offset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeRequestedEventArgs.OffsetChangeKind" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeRequestedEventArgs.OffsetKind" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeRequestedEventArgs.ViewChangeId" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs.#ctor(System.Single,Windows.Foundation.IReference{System.Single})">
-      <param name="additionalVelocity" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs.Info" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs.OffsetDelta" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs.Options" />
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs.#ctor(System.Single,Windows.Foundation.IReference{System.Single})">
+      <param name="offsetVelocity" />
       <param name="inertiaDecayRate" />
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs.AdditionalVelocity" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs.InertiaDecayRate" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs.ViewChangeId" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs.InertiaDecayRate" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs.Info" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs.OffsetVelocity" />
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs.#ctor(System.Double,Microsoft.UI.Xaml.Controls.ScrollOptions)">
+      <param name="offset" />
+      <param name="options" />
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs.Info" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs.Offset" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs.Options" />
     <member name="T:Microsoft.UI.Xaml.Controls.Primitives.Scroller" />
     <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.#ctor">
       <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.Primitives.Scroller?text=Scroller" /> class.</summary>
@@ -2394,20 +2468,6 @@
       <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.Scroller.Background?text=Background" /> dependency property.</returns>
     </member>
     <member name="E:Microsoft.UI.Xaml.Controls.Primitives.Scroller.BringingIntoView" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ChangeOffsets(Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions)">
-      <param name="options" />
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ChangeOffsetsWithAdditionalVelocity(Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions)">
-      <param name="options" />
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ChangeZoomFactor(Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions)">
-      <param name="options" />
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ChangeZoomFactorWithAdditionalVelocity(Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorWithAdditionalVelocityOptions)">
-      <param name="options" />
-    </member>
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ChangingOffsets" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ChangingZoomFactor" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.Content" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ContentOrientation" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ContentOrientationProperty">
@@ -2459,6 +2519,30 @@
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ScrollableHeight" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ScrollableWidth" />
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ScrollAnimationStarting" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ScrollBy(System.Double,System.Double)">
+      <param name="horizontalOffsetDelta" />
+      <param name="verticalOffsetDelta" />
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ScrollBy(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollOptions)">
+      <param name="horizontalOffsetDelta" />
+      <param name="verticalOffsetDelta" />
+      <param name="options" />
+    </member>
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ScrollCompleted" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ScrollFrom(Windows.Foundation.Numerics.Vector2,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
+      <param name="offsetsVelocity" />
+      <param name="inertiaDecayRate" />
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ScrollTo(System.Double,System.Double)">
+      <param name="horizontalOffset" />
+      <param name="verticalOffset" />
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ScrollTo(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollOptions)">
+      <param name="horizontalOffset" />
+      <param name="verticalOffset" />
+      <param name="options" />
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.State" />
     <member name="E:Microsoft.UI.Xaml.Controls.Primitives.Scroller.StateChanged" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.VerticalAnchorRatio" />
@@ -2484,69 +2568,65 @@
       <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.Scroller.VerticalScrollRailingMode?text=VerticalScrollRailingMode" /> dependency property.</returns>
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.VerticalSnapPoints" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ViewChangeCompleted" />
     <member name="E:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ViewChanged" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ViewportHeight" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ViewportWidth" />
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomAnimationStarting" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomBy(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
+      <param name="zoomFactorDelta" />
+      <param name="centerPoint" />
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomBy(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ZoomOptions)">
+      <param name="zoomFactorDelta" />
+      <param name="centerPoint" />
+      <param name="options" />
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomChainingMode" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomChainingModeProperty">
       <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomChainingMode?text=ZoomChainingMode" /> dependency property.</summary>
       <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomChainingMode?text=ZoomChainingMode" /> dependency property.</returns>
     </member>
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomCompleted" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomFactor" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomFrom(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Windows.Foundation.IReference{System.Single})">
+      <param name="zoomFactorVelocity" />
+      <param name="centerPoint" />
+      <param name="inertiaDecayRate" />
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomMode" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomModeProperty">
       <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomMode?text=ZoomMode" /> dependency property.</summary>
       <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomMode?text=ZoomMode" /> dependency property.</returns>
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomSnapPoints" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollerAutomationPeer" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollerAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.Primitives.Scroller)">
-      <param name="owner" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomTo(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
+      <param name="zoomFactor" />
+      <param name="centerPoint" />
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment" />
-    <member name="F:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment.Center" />
-    <member name="F:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment.Far" />
-    <member name="F:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment.Near" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointApplicableRangeType" />
-    <member name="F:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointApplicableRangeType.Mandatory" />
-    <member name="F:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointApplicableRangeType.MandatorySingle" />
-    <member name="F:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointApplicableRangeType.Optional" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointBase" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointBase.Alignment" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointBase.ApplicableRangeType" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointBase.SpecifiedApplicableRange" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointIrregular" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointIrregular.#ctor(System.Double,Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment)">
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.Scroller.ZoomTo(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ZoomOptions)">
+      <param name="zoomFactor" />
+      <param name="centerPoint" />
+      <param name="options" />
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint.#ctor(System.Double,Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment)">
       <param name="snapPointValue" />
       <param name="alignment" />
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointIrregular.#ctor(System.Double,System.Double,Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment)">
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint.Value" />
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointBase" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointBase.Alignment" />
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment" />
+    <member name="F:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment.Center" />
+    <member name="F:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment.Far" />
+    <member name="F:Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment.Near" />
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.SnapPointBase" />
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint.#ctor(System.Double)">
       <param name="snapPointValue" />
-      <param name="applicableRange" />
-      <param name="alignment" />
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointIrregular.Value" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointRegular" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointRegular.#ctor(System.Double,System.Double,System.Double,System.Double,Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment)">
-      <param name="offset" />
-      <param name="interval" />
-      <param name="start" />
-      <param name="end" />
-      <param name="alignment" />
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointRegular.#ctor(System.Double,System.Double,System.Double,System.Double,System.Double,Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointAlignment)">
-      <param name="offset" />
-      <param name="interval" />
-      <param name="start" />
-      <param name="end" />
-      <param name="applicableRange" />
-      <param name="alignment" />
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointRegular.End" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointRegular.Interval" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointRegular.Offset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollerSnapPointRegular.Start" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint.Value" />
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPointBase" />
     <member name="T:Microsoft.UI.Xaml.Controls.RadioButtons" />
     <member name="M:Microsoft.UI.Xaml.Controls.RadioButtons.#ctor">
       <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.RadioButtons?text=RadioButtons" /> class.</summary>
@@ -2597,12 +2677,16 @@
     <member name="M:Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.#ctor">
       <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem?text=RadioMenuFlyoutItem" /> class.</summary>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.GroupName" />
+    <member name="P:Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.GroupName">
+      <summary>Gets or sets the name that specifies which RadioMenuFlyoutItem controls are mutually exclusive.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.GroupNameProperty">
       <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.GroupName?text=GroupName" /> dependency property.</summary>
       <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.GroupName?text=GroupName" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.IsChecked" />
+    <member name="P:Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.IsChecked">
+      <summary>Gets or sets whether the RadioMenuFlyoutItem is checked.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.IsCheckedProperty">
       <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.IsChecked?text=IsChecked" /> dependency property.</summary>
       <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem.IsChecked?text=IsChecked" /> dependency property.</returns>
@@ -3009,129 +3093,52 @@
     <member name="F:Microsoft.UI.Xaml.Controls.RefreshVisualizerState.Refreshing">
       <summary>The visualizer is being refreshed.</summary>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.RepeaterAutomationPeer">
-      <summary>Exposes <see cref="Microsoft.UI.Xaml.Controls.ItemsRepeater?text=ItemsRepeater" /> types to Microsoft UI Automation.</summary>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.RepeaterAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.ItemsRepeater)">
-      <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.RepeaterAutomationPeer?text=RepeaterAutomationPeer" /> class.</summary>
-      <param name="owner">The <see cref="Microsoft.UI.Xaml.Controls.ItemsRepeater?text=ItemsRepeater" /> control instance to create the peer for.</param>
-    </member>
     <member name="T:Microsoft.UI.Xaml.Controls.RevealListViewItemPresenter" />
     <member name="M:Microsoft.UI.Xaml.Controls.RevealListViewItemPresenter.#ctor">
       <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.RevealListViewItemPresenter?text=RevealListViewItemPresenter" /> class.</summary>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollAnchorProvider" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollAnchorProvider.#ctor">
-      <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.ScrollAnchorProvider?text=ScrollAnchorProvider" /> class.</summary>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollAnchorProvider.HorizontalAnchorRatio" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollAnchorProvider.VerticalAnchorRatio" />
+    <member name="T:Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs.Animation" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs.EndPosition" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs.ScrollInfo" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs.StartPosition" />
     <member name="T:Microsoft.UI.Xaml.Controls.ScrollBarVisibility" />
     <member name="F:Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Auto" />
     <member name="F:Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Hidden" />
     <member name="F:Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Visible" />
+    <member name="T:Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs.ScrollInfo" />
     <member name="T:Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs.AnchorCandidates" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs.AnchorElement" />
     <member name="T:Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs.Cancel" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs.RequestEventArgs" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs.ScrollInfo" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs.SnapPointsMode" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs.TargetHorizontalOffset" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs.TargetVerticalOffset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerBringingIntoViewEventArgs.ViewChangeId" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions.#ctor(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollerViewKind,Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind,Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect)">
-      <param name="horizontalOffset" />
-      <param name="verticalOffset" />
-      <param name="offsetsKind" />
-      <param name="viewChangeKind" />
-      <param name="snapPointRespect" />
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions.HorizontalOffset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions.OffsetsKind" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions.SnapPointRespect" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions.VerticalOffset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions.ViewChangeKind" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions.#ctor(Windows.Foundation.Numerics.Vector2,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
-      <param name="additionalVelocity" />
-      <param name="inertiaDecayRate" />
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions.AdditionalVelocity" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions.InertiaDecayRate" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions.#ctor(System.Single,Microsoft.UI.Xaml.Controls.ScrollerViewKind,Windows.Foundation.Numerics.Vector2,Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind,Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect)">
-      <param name="zoomFactor" />
-      <param name="zoomFactorKind" />
-      <param name="centerPoint" />
-      <param name="viewChangeKind" />
-      <param name="snapPointRespect" />
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions.CenterPoint" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions.SnapPointRespect" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions.ViewChangeKind" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions.ZoomFactor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions.ZoomFactorKind" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorWithAdditionalVelocityOptions" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorWithAdditionalVelocityOptions.#ctor(System.Single,Windows.Foundation.IReference{System.Single},Windows.Foundation.Numerics.Vector2)">
-      <param name="additionalVelocity" />
-      <param name="inertiaDecayRate" />
-      <param name="centerPoint" />
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorWithAdditionalVelocityOptions.AdditionalVelocity" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorWithAdditionalVelocityOptions.CenterPoint" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorWithAdditionalVelocityOptions.InertiaDecayRate" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollerChangingOffsetsEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangingOffsetsEventArgs.Animation" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangingOffsetsEventArgs.EndPosition" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangingOffsetsEventArgs.StartPosition" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangingOffsetsEventArgs.ViewChangeId" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollerChangingZoomFactorEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangingZoomFactorEventArgs.Animation" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangingZoomFactorEventArgs.CenterPoint" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangingZoomFactorEventArgs.EndZoomFactor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangingZoomFactorEventArgs.StartZoomFactor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerChangingZoomFactorEventArgs.ViewChangeId" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs.Result" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs.ViewChangeId" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind.AllowAnimation" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind.DisableAnimation" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult.Completed" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult.Ignored" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult.Interrupted" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect.RespectSnapPoints" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollerViewKind" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollerViewKind.Absolute" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollerViewKind.RelativeToCurrentView" />
-    <member name="F:Microsoft.UI.Xaml.Controls.ScrollerViewKind.RelativeToEndOfInertiaView" />
+    <member name="T:Microsoft.UI.Xaml.Controls.ScrollInfo" />
+    <member name="F:Microsoft.UI.Xaml.Controls.ScrollInfo.OffsetsChangeId" />
     <member name="T:Microsoft.UI.Xaml.Controls.ScrollMode" />
     <member name="F:Microsoft.UI.Xaml.Controls.ScrollMode.Disabled" />
     <member name="F:Microsoft.UI.Xaml.Controls.ScrollMode.Enabled" />
+    <member name="T:Microsoft.UI.Xaml.Controls.ScrollOptions" />
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollOptions.#ctor(Microsoft.UI.Xaml.Controls.AnimationMode)">
+      <param name="animationMode" />
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollOptions.#ctor(Microsoft.UI.Xaml.Controls.AnimationMode,Microsoft.UI.Xaml.Controls.SnapPointsMode)">
+      <param name="animationMode" />
+      <param name="snapPointsMode" />
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollOptions.AnimationMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollOptions.SnapPointsMode" />
     <member name="T:Microsoft.UI.Xaml.Controls.ScrollViewer" />
     <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.#ctor">
       <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.ScrollViewer?text=ScrollViewer" /> class.</summary>
     </member>
     <member name="E:Microsoft.UI.Xaml.Controls.ScrollViewer.AnchorRequested" />
     <member name="E:Microsoft.UI.Xaml.Controls.ScrollViewer.BringingIntoView" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.ChangeOffsets(Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions)">
-      <param name="options" />
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.ChangeOffsetsWithAdditionalVelocity(Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions)">
-      <param name="options" />
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.ChangeZoomFactor(Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions)">
-      <param name="options" />
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.ChangeZoomFactorWithAdditionalVelocity(Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorWithAdditionalVelocityOptions)">
-      <param name="options" />
-    </member>
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollViewer.ChangingOffsets" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollViewer.ChangingZoomFactor" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollViewer.ComputedHorizontalScrollBarVisibility" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollViewer.ComputedHorizontalScrollBarVisibilityProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollViewer.ComputedVerticalScrollBarVisibility" />
@@ -3198,9 +3205,33 @@
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollViewer.ScrollableHeight" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollViewer.ScrollableWidth" />
+    <member name="E:Microsoft.UI.Xaml.Controls.ScrollViewer.ScrollAnimationStarting" />
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.ScrollBy(System.Double,System.Double)">
+      <param name="horizontalOffsetDelta" />
+      <param name="verticalOffsetDelta" />
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.ScrollBy(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollOptions)">
+      <param name="horizontalOffsetDelta" />
+      <param name="verticalOffsetDelta" />
+      <param name="options" />
+    </member>
+    <member name="E:Microsoft.UI.Xaml.Controls.ScrollViewer.ScrollCompleted" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollViewer.ScrollerProperty">
       <summary>Identifies the Scroller dependency property.</summary>
       <returns>The identifier for the Scroller dependency property.</returns>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.ScrollFrom(Windows.Foundation.Numerics.Vector2,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
+      <param name="offsetsVelocity" />
+      <param name="inertiaDecayRate" />
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.ScrollTo(System.Double,System.Double)">
+      <param name="horizontalOffset" />
+      <param name="verticalOffset" />
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.ScrollTo(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollOptions)">
+      <param name="horizontalOffset" />
+      <param name="verticalOffset" />
+      <param name="options" />
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollViewer.State" />
     <member name="E:Microsoft.UI.Xaml.Controls.ScrollViewer.StateChanged" />
@@ -3238,20 +3269,44 @@
       <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollViewer.VerticalScrollRailingMode?text=VerticalScrollRailingMode" /> dependency property.</summary>
       <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollViewer.VerticalScrollRailingMode?text=VerticalScrollRailingMode" /> dependency property.</returns>
     </member>
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollViewer.ViewChangeCompleted" />
     <member name="E:Microsoft.UI.Xaml.Controls.ScrollViewer.ViewChanged" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollViewer.ViewportHeight" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollViewer.ViewportWidth" />
+    <member name="E:Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomAnimationStarting" />
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomBy(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
+      <param name="zoomFactorDelta" />
+      <param name="centerPoint" />
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomBy(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ZoomOptions)">
+      <param name="zoomFactorDelta" />
+      <param name="centerPoint" />
+      <param name="options" />
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomChainingMode" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomChainingModeProperty">
       <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomChainingMode?text=ZoomChainingMode" /> dependency property.</summary>
       <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomChainingMode?text=ZoomChainingMode" /> dependency property.</returns>
     </member>
+    <member name="E:Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomCompleted" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomFactor" />
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomFrom(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Windows.Foundation.IReference{System.Single})">
+      <param name="zoomFactorVelocity" />
+      <param name="centerPoint" />
+      <param name="inertiaDecayRate" />
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomMode" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomModeProperty">
       <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomMode?text=ZoomMode" /> dependency property.</summary>
       <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomMode?text=ZoomMode" /> dependency property.</returns>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomTo(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
+      <param name="zoomFactor" />
+      <param name="centerPoint" />
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomTo(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ZoomOptions)">
+      <param name="zoomFactor" />
+      <param name="centerPoint" />
+      <param name="options" />
     </member>
     <member name="T:Microsoft.UI.Xaml.Controls.SelectionModel">
       <summary>Represents a component that tracks the selection state of items in a data source.</summary>
@@ -3409,6 +3464,9 @@
       <summary>Gets or sets the key that identifies the data template.</summary>
       <returns>The key that identifies the data template.</returns>
     </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.SnapPointsMode" />
+    <member name="F:Microsoft.UI.Xaml.Controls.SnapPointsMode.Default" />
+    <member name="F:Microsoft.UI.Xaml.Controls.SnapPointsMode.Ignore" />
     <member name="T:Microsoft.UI.Xaml.Controls.SplitButton">
       <summary>Represents a button with two parts that can be invoked separately. One part behaves like a standard button and the other part invokes a flyout.</summary>
     </member>
@@ -3709,59 +3767,47 @@
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonCommandParameter" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonCommandParameterProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonCommandProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonContent" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonContentProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonStyle" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonStyleProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonText" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonTextProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.AttachProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.BleedingImageContent" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.BleedingImageContentProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.BleedingImagePlacement" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.BleedingImagePlacementProperty" />
     <member name="E:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonClick" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonCommand" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonCommandParameter" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonCommandParameterProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonCommandProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonKind" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonKindProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonContent" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonContentProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonStyle" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonStyleProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonText" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonTextProperty" />
     <member name="E:Microsoft.UI.Xaml.Controls.TeachingTip.Closed" />
     <member name="E:Microsoft.UI.Xaml.Controls.TeachingTip.Closing" />
-    <member name="M:Microsoft.UI.Xaml.Controls.TeachingTip.GetAttach(Windows.UI.Xaml.UIElement)">
-      <param name="element" />
-    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.HeroContent" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.HeroContentPlacement" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.HeroContentPlacementProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.HeroContentProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IconSource" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IconSourceProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IsLightDismissEnabled" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IsLightDismissEnabledProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IsOpen" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IsOpenProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.Placement" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.PlacementProperty" />
-    <member name="M:Microsoft.UI.Xaml.Controls.TeachingTip.SetAttach(Windows.UI.Xaml.UIElement,Microsoft.UI.Xaml.Controls.TeachingTip)">
-      <param name="element" />
-      <param name="teachingTip" />
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.Subtext" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.SubtextProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TargetOffset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TargetOffsetProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.PlacementMargin" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.PlacementMarginProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.PreferredPlacement" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.PreferredPlacementProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ShouldConstrainToRootBounds" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ShouldConstrainToRootBoundsProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.Subtitle" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.SubtitleProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TailVisibility" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TailVisibilityProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.Target" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TargetProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TemplateSettings" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TemplateSettingsProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.Title" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TitleProperty" />
-    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipBleedingImagePlacementMode" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipBleedingImagePlacementMode.Auto" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipBleedingImagePlacementMode.Bottom" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipBleedingImagePlacementMode.Top" />
-    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipCloseButtonKind" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipCloseButtonKind.Auto" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipCloseButtonKind.Footer" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipCloseButtonKind.Header" />
     <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs.Reason" />
     <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipCloseReason" />
@@ -3772,22 +3818,33 @@
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs.Cancel" />
     <member name="M:Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs.GetDeferral" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs.Reason" />
+    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode.Auto" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode.Bottom" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode.Top" />
     <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode" />
     <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Auto" />
     <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Bottom" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.BottomEdgeAlignedLeft" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.BottomEdgeAlignedRight" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.BottomLeft" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.BottomRight" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Center" />
     <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Left" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.LeftEdgeAlignedBottom" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.LeftEdgeAlignedTop" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.LeftBottom" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.LeftTop" />
     <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Right" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.RightEdgeAlignedBottom" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.RightEdgeAlignedTop" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.RightBottom" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.RightTop" />
     <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Top" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.TopEdgeAlignedLeft" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.TopEdgeAlignedRight" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.TopLeft" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.TopRight" />
+    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipTailVisibility" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipTailVisibility.Auto" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipTailVisibility.Collapsed" />
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipTailVisibility.Visible" />
     <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings" />
     <member name="M:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.#ctor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.IconElement" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.IconElementProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.TopLeftHighlightMargin" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.TopLeftHighlightMarginProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.TopRightHighlightMargin" />
@@ -4414,12 +4471,6 @@
     <member name="M:Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext.#ctor">
       <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext?text=VirtualizingLayoutContext" /> class.</summary>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext.GetElementAtCore(System.Int32,Microsoft.UI.Xaml.Controls.ElementRealizationOptions)">
-      <summary>When implemented in a derived class, retrieves a UIElement that represents the data item in the source found at the specified index using the specified options.</summary>
-      <param name="index">The index of the data item to retrieve a UIElement for.</param>
-      <param name="options">A value of <see cref="Microsoft.UI.Xaml.Controls.ElementRealizationOptions?text=ElementRealizationOptions" /> that specifies whether to suppress automatic recycling of the retrieved element or force creation of a new element.</param>
-      <returns>A UIElement that represents the data item.</returns>
-    </member>
     <member name="M:Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext.GetItemAt(System.Int32)">
       <summary>Retrieves the data item in the source found at the specified index.</summary>
       <param name="index">The index of the data item to retrieve.</param>
@@ -4440,6 +4491,10 @@
       <param name="index">The index of the data item to retrieve a UIElement for.</param>
       <param name="options">A value of <see cref="Microsoft.UI.Xaml.Controls.ElementRealizationOptions?text=ElementRealizationOptions" /> that specifies whether to suppress automatic recycling of the retrieved element or force creation of a new element.</param>
       <returns>A UIElement that represents the data item.</returns>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext.GetOrCreateElementAtCore(System.Int32,Microsoft.UI.Xaml.Controls.ElementRealizationOptions)">
+      <param name="index" />
+      <param name="options" />
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext.ItemCount">
       <summary>Gets the number of items in the data.</summary>
@@ -4481,16 +4536,41 @@
       <summary>When implemented in a derived class, clears the specified UIElement and allows it to be either re-used or released.</summary>
       <param name="element">The element to clear.</param>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.XamlControlsResources" />
+    <member name="T:Microsoft.UI.Xaml.Controls.XamlControlsResources">
+      <summary>Default styles for the controls in the
+WinUI library.</summary>
+    </member>
     <member name="M:Microsoft.UI.Xaml.Controls.XamlControlsResources.#ctor">
       <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.XamlControlsResources?text=XamlControlsResources" /> class.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.XamlControlsResources.EnsureRevealLights(Windows.UI.Xaml.UIElement)">
       <param name="element" />
     </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.XamlControlsResources.UseCompactResources" />
+    <member name="P:Microsoft.UI.Xaml.Controls.XamlControlsResources.UseCompactResourcesProperty" />
+    <member name="T:Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs.Animation" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs.CenterPoint" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs.EndZoomFactor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs.StartZoomFactor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs.ZoomInfo" />
+    <member name="T:Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs.ZoomInfo" />
+    <member name="T:Microsoft.UI.Xaml.Controls.ZoomInfo" />
+    <member name="F:Microsoft.UI.Xaml.Controls.ZoomInfo.ZoomFactorChangeId" />
     <member name="T:Microsoft.UI.Xaml.Controls.ZoomMode" />
     <member name="F:Microsoft.UI.Xaml.Controls.ZoomMode.Disabled" />
     <member name="F:Microsoft.UI.Xaml.Controls.ZoomMode.Enabled" />
+    <member name="T:Microsoft.UI.Xaml.Controls.ZoomOptions" />
+    <member name="M:Microsoft.UI.Xaml.Controls.ZoomOptions.#ctor(Microsoft.UI.Xaml.Controls.AnimationMode)">
+      <param name="animationMode" />
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.ZoomOptions.#ctor(Microsoft.UI.Xaml.Controls.AnimationMode,Microsoft.UI.Xaml.Controls.SnapPointsMode)">
+      <param name="animationMode" />
+      <param name="snapPointsMode" />
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.ZoomOptions.AnimationMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ZoomOptions.SnapPointsMode" />
     <member name="T:Microsoft.UI.Xaml.CustomAttributes.MUXContractPropertyAttribute" />
     <member name="M:Microsoft.UI.Xaml.CustomAttributes.MUXContractPropertyAttribute.#ctor">
       <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.CustomAttributes.MUXContractPropertyAttribute?text=MUXContractPropertyAttribute" /> class.</summary>
@@ -4650,6 +4730,8 @@
     <member name="F:Microsoft.UI.Xaml.Media.RevealBrushState.Pressed">
       <summary>The element is pressed.</summary>
     </member>
+    <member name="T:Microsoft.UI.Xaml.MUXContractPropertyAttribute" />
+    <member name="M:Microsoft.UI.Xaml.MUXContractPropertyAttribute.#ctor" />
     <member name="T:Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider">
       <summary>Implements XAML schema context concepts that support XAML parsing.</summary>
     </member>
