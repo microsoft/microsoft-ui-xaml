@@ -19,136 +19,123 @@
         <TextBlock>Columns: 120px 120px 120px 120px 120px</TextBlock>
         <TextBlock>Rows: 60px 60px</TextBlock>
         
+        <!--
+            grid-template-columns: 60px 60px 60px 60px 60px;
+            grid-template-rows: 30px 30px;
+            grid-auto-flow: Row;
+        -->
         <TextBlock Style="{StaticResource HeaderStyle}">AutoFlow: Row</TextBlock>
-
-        <Grid>
-
-            <!--
-                grid-template-columns: 60px 60px 60px 60px 60px;
-                grid-template-rows: 30px 30px;
-                grid-auto-flow: Row;
-            -->
-            <local:Grid AutoFlow="Row">
-                <local:Grid.TemplateColumns>
-                    <local:GridTrackInfo Length="120"/>
-                    <local:GridTrackInfo Length="120"/>
-                    <local:GridTrackInfo Length="120"/>
-                    <local:GridTrackInfo Length="120"/>
-                    <local:GridTrackInfo Length="120"/>
-                </local:Grid.TemplateColumns>
-                <local:Grid.TemplateRows>
-                    <local:GridTrackInfo Length="60"/>
-                    <local:GridTrackInfo Length="60"/>
-                </local:Grid.TemplateRows>
-                <local:Grid.Resources>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="White"/>
-                        <Setter Property="VerticalAlignment" Value="Center"/>
-                        <Setter Property="HorizontalAlignment" Value="Center"/>
-                        <Setter Property="FontWeight" Value="Bold"/>
-                        <Setter Property="FontSize" Value="18"/>
-                    </Style>
-                    <Style TargetType="Grid">
-                        <Setter Property="Background" Value="Orange"/>
-                        <Setter Property="Margin" Value="2"/>
-                        <Setter Property="CornerRadius" Value="6"/>
-                        <Setter Property="BorderBrush" Value="Black"/>
-                        <Setter Property="BorderThickness" Value="2"/>
-                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
-                        <Setter Property="VerticalAlignment" Value="Stretch"/>
-                    </Style>
-                </local:Grid.Resources>
+        <local:Grid AutoFlow="Row">
+            <local:Grid.TemplateColumns>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+            </local:Grid.TemplateColumns>
+            <local:Grid.TemplateRows>
+                <local:GridTrackInfo Length="60"/>
+                <local:GridTrackInfo Length="60"/>
+            </local:Grid.TemplateRows>
+            <local:Grid.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="FontSize" Value="18"/>
+                </Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="Orange"/>
+                    <Setter Property="Margin" Value="2"/>
+                    <Setter Property="CornerRadius" Value="6"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalAlignment" Value="Stretch"/>
+                </Style>
+            </local:Grid.Resources>
                 
-                <Grid Background="#88FFA500">
-                    <TextBlock>item-a</TextBlock>
-                </Grid>
+            <Grid Background="#88FFA500">
+                <TextBlock>item-a</TextBlock>
+            </Grid>
 
-                <Grid Background="#880000FF">
-                    <TextBlock>item-b</TextBlock>
-                </Grid>
+            <Grid Background="#880000FF">
+                <TextBlock>item-b</TextBlock>
+            </Grid>
 
-                <Grid Background="#88FF0000">
-                    <TextBlock>item-c</TextBlock>
-                </Grid>
+            <Grid Background="#88FF0000">
+                <TextBlock>item-c</TextBlock>
+            </Grid>
 
-                <Grid Background="#888FBC8F">
-                    <TextBlock>item-d</TextBlock>
-                </Grid>
+            <Grid Background="#888FBC8F">
+                <TextBlock>item-d</TextBlock>
+            </Grid>
 
-                <Grid Background="#88BC8FBC">
-                    <TextBlock>item-e</TextBlock>
-                </Grid>
+            <Grid Background="#88BC8FBC">
+                <TextBlock>item-e</TextBlock>
+            </Grid>
 
-            </local:Grid>
+        </local:Grid>
 
-        </Grid>
-
+        <!--
+            grid-template-columns: 60px 60px 60px 60px 60px;
+            grid-template-rows: 30px 30px;
+            grid-auto-flow: Column;
+        -->
         <TextBlock Style="{StaticResource HeaderStyle}">AutoFlow: Column</TextBlock>
+        <local:Grid AutoFlow="Column">
+            <local:Grid.TemplateColumns>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+            </local:Grid.TemplateColumns>
+            <local:Grid.TemplateRows>
+                <local:GridTrackInfo Length="60"/>
+                <local:GridTrackInfo Length="60"/>
+            </local:Grid.TemplateRows>
+            <local:Grid.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="FontSize" Value="18"/>
+                </Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="Orange"/>
+                    <Setter Property="Margin" Value="2"/>
+                    <Setter Property="CornerRadius" Value="6"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalAlignment" Value="Stretch"/>
+                </Style>
+            </local:Grid.Resources>
 
-        <Grid>
+            <Grid Background="#88FFA500">
+                <TextBlock>item-a</TextBlock>
+            </Grid>
 
-            <!--
-                grid-template-columns: 60px 60px 60px 60px 60px;
-                grid-template-rows: 30px 30px;
-                grid-auto-flow: Column;
-            -->
-            <local:Grid AutoFlow="Column">
-                <local:Grid.TemplateColumns>
-                    <local:GridTrackInfo Length="120"/>
-                    <local:GridTrackInfo Length="120"/>
-                    <local:GridTrackInfo Length="120"/>
-                    <local:GridTrackInfo Length="120"/>
-                    <local:GridTrackInfo Length="120"/>
-                </local:Grid.TemplateColumns>
-                <local:Grid.TemplateRows>
-                    <local:GridTrackInfo Length="60"/>
-                    <local:GridTrackInfo Length="60"/>
-                </local:Grid.TemplateRows>
-                <local:Grid.Resources>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="White"/>
-                        <Setter Property="VerticalAlignment" Value="Center"/>
-                        <Setter Property="HorizontalAlignment" Value="Center"/>
-                        <Setter Property="FontWeight" Value="Bold"/>
-                        <Setter Property="FontSize" Value="18"/>
-                    </Style>
-                    <Style TargetType="Grid">
-                        <Setter Property="Background" Value="Orange"/>
-                        <Setter Property="Margin" Value="2"/>
-                        <Setter Property="CornerRadius" Value="6"/>
-                        <Setter Property="BorderBrush" Value="Black"/>
-                        <Setter Property="BorderThickness" Value="2"/>
-                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
-                        <Setter Property="VerticalAlignment" Value="Stretch"/>
-                    </Style>
-                </local:Grid.Resources>
-                
-                <Grid Background="#88FFA500">
-                    <TextBlock>item-a</TextBlock>
-                </Grid>
+            <Grid Background="#880000FF">
+                <TextBlock>item-b</TextBlock>
+            </Grid>
 
-                <Grid Background="#880000FF">
-                    <TextBlock>item-b</TextBlock>
-                </Grid>
+            <Grid Background="#88FF0000">
+                <TextBlock>item-c</TextBlock>
+            </Grid>
 
-                <Grid Background="#88FF0000">
-                    <TextBlock>item-c</TextBlock>
-                </Grid>
+            <Grid Background="#888FBC8F">
+                <TextBlock>item-d</TextBlock>
+            </Grid>
 
-                <Grid Background="#888FBC8F">
-                    <TextBlock>item-d</TextBlock>
-                </Grid>
+            <Grid Background="#88BC8FBC">
+                <TextBlock>item-e</TextBlock>
+            </Grid>
 
-                <Grid Background="#88BC8FBC">
-                    <TextBlock>item-e</TextBlock>
-                </Grid>
-
-            </local:Grid>
-
-        </Grid>
-
-        <TextBlock Style="{StaticResource HeaderStyle}">AutoFlow: Row</TextBlock>
-        <TextBlock>With fixed row spanning items at columns 0 and 4</TextBlock>
+        </local:Grid>
 
         <!--
             .container {
@@ -167,6 +154,8 @@
               grid-row: 1 / 3;
             }
         -->
+        <TextBlock Style="{StaticResource HeaderStyle}">AutoFlow: Row</TextBlock>
+        <TextBlock>With fixed row spanning items at columns 0 and 4</TextBlock>
         <local:Grid AutoFlow="Row">
             <local:Grid.TemplateColumns>
                 <local:GridTrackInfo Length="120"/>
@@ -240,24 +229,6 @@
 
         <TextBlock Style="{StaticResource HeaderStyle}">AutoFlow: Column</TextBlock>
         <TextBlock>With fixed row spanning items at columns 0 and 4</TextBlock>
-
-        <!--
-            .container {
-              display: grid;
-              grid-template-columns: 60px 60px 60px 60px 60px;
-              grid-template-rows: 30px 30px;
-              grid-auto-flow: row;
-            }
-
-            .item-a {
-              grid-column: 1;
-              grid-row: 1 / 3;
-            }
-            .item-e {
-              grid-column: 5;
-              grid-row: 1 / 3;
-            }
-        -->
         <local:Grid AutoFlow="Column">
             <local:Grid.TemplateColumns>
                 <local:GridTrackInfo Length="120"/>
@@ -329,5 +300,203 @@
 
         </local:Grid>
 
+        <TextBlock Style="{StaticResource HeaderStyle}">AutoFlow: Row</TextBlock>
+        <TextBlock>With 2 column spans</TextBlock>
+        <local:Grid AutoFlow="Row">
+            <local:Grid.TemplateColumns>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+            </local:Grid.TemplateColumns>
+            <local:Grid.TemplateRows>
+                <local:GridTrackInfo Length="60"/>
+                <local:GridTrackInfo Length="60"/>
+            </local:Grid.TemplateRows>
+            <local:Grid.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="FontSize" Value="18"/>
+                </Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="Orange"/>
+                    <Setter Property="Margin" Value="2"/>
+                    <Setter Property="CornerRadius" Value="6"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalAlignment" Value="Stretch"/>
+                </Style>
+            </local:Grid.Resources>
+                
+            <Grid Background="#88FFA500">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-a</TextBlock>
+            </Grid>
+
+            <Grid Background="#880000FF">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-b</TextBlock>
+            </Grid>
+
+            <Grid Background="#88FF0000">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-c</TextBlock>
+            </Grid>
+
+            <Grid Background="#888FBC8F">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-d</TextBlock>
+            </Grid>
+
+            <Grid Background="#88BC8FBC">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-e</TextBlock>
+            </Grid>
+
+        </local:Grid>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">AutoFlow: Row</TextBlock>
+        <TextBlock>All set to end at specific index</TextBlock>
+        <local:Grid AutoFlow="Row">
+            <local:Grid.TemplateColumns>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+            </local:Grid.TemplateColumns>
+            <local:Grid.TemplateRows>
+                <local:GridTrackInfo Length="60"/>
+                <local:GridTrackInfo Length="60"/>
+            </local:Grid.TemplateRows>
+            <local:Grid.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="FontSize" Value="18"/>
+                </Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="Orange"/>
+                    <Setter Property="Margin" Value="2"/>
+                    <Setter Property="CornerRadius" Value="6"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalAlignment" Value="Stretch"/>
+                </Style>
+            </local:Grid.Resources>
+                
+            <Grid Background="#88FFA500">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="3"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-a</TextBlock>
+            </Grid>
+
+            <Grid Background="#880000FF">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="3"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-b</TextBlock>
+            </Grid>
+
+            <Grid Background="#88FF0000">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="3"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-c</TextBlock>
+            </Grid>
+
+            <Grid Background="#888FBC8F">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="3"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-d</TextBlock>
+            </Grid>
+
+            <Grid Background="#88BC8FBC">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="3"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-e</TextBlock>
+            </Grid>
+
+        </local:Grid>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">AutoFlow: Column</TextBlock>
+        <TextBlock>AutoRows: 40px</TextBlock>
+        <local:Grid AutoFlow="Column">
+            <local:Grid.TemplateColumns>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+            </local:Grid.TemplateColumns>
+            <local:Grid.TemplateRows>
+                <local:GridTrackInfo Length="60"/>
+                <local:GridTrackInfo Length="60"/>
+            </local:Grid.TemplateRows>
+            <local:Grid.AutoRows>
+                <local:GridTrackInfo Length="40"/>
+            </local:Grid.AutoRows>
+            <local:Grid.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="FontSize" Value="18"/>
+                </Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="Orange"/>
+                    <Setter Property="Margin" Value="2"/>
+                    <Setter Property="CornerRadius" Value="6"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalAlignment" Value="Stretch"/>
+                </Style>
+            </local:Grid.Resources>
+                
+            <Grid Background="#88FFA500">
+                <TextBlock>item-a</TextBlock>
+            </Grid>
+
+            <Grid Background="#880000FF">
+                <TextBlock>item-b</TextBlock>
+            </Grid>
+
+            <Grid Background="#88FF0000">
+                <TextBlock>item-c</TextBlock>
+            </Grid>
+
+            <Grid Background="#888FBC8F">
+                <TextBlock>item-d</TextBlock>
+            </Grid>
+
+            <Grid Background="#88BC8FBC">
+                <TextBlock>item-e</TextBlock>
+            </Grid>
+
+        </local:Grid>
+        
     </StackPanel>
 </Page>

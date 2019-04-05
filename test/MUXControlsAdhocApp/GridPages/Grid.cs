@@ -403,7 +403,7 @@ namespace MUXControlsAdhocApp.GridPages
             public uint TotalAutos;
             public double Gap;
 
-            private int EnsureIndexAvailable(int index)
+            public int EnsureIndexAvailable(int index)
             {
                 if (index < Template.Count)
                 {
@@ -508,12 +508,12 @@ namespace MUXControlsAdhocApp.GridPages
             }
         }
 
-        private struct GridCoordinate
+        private struct GridCellIndex
         {
             public int ColumnIndex;
             public int RowIndex;
         }
-        private void MarkOccupied(ChildGridLocations childLocation, Dictionary<GridCoordinate, bool> occupied)
+        private void MarkOccupied(ChildGridLocations childLocation, Dictionary<GridCellIndex, bool> occupied)
         {
             if (!childLocation.ColStart.IsValid || !childLocation.RowStart.IsValid)
             {
@@ -524,7 +524,7 @@ namespace MUXControlsAdhocApp.GridPages
             {
                 for (int row = childLocation.RowStart.Index; row < childLocation.RowEnd.Index; row++)
                 {
-                    occupied[new GridCoordinate { ColumnIndex = column, RowIndex = row }] = true;
+                    occupied[new GridCellIndex { ColumnIndex = column, RowIndex = row }] = true;
                 }
             }
         }
@@ -814,12 +814,11 @@ namespace MUXControlsAdhocApp.GridPages
             return result;
         }
 
-        private void TraverseByColumn(ref AxisInfo horizontal, ref AxisInfo vertical, Func<GridCoordinate, bool> predicate)
+        private void TraverseByColumn(ref AxisInfo horizontal, ref AxisInfo vertical, Func<GridCellIndex, bool> predicate)
         {
             for (int column = 0; column < horizontal.Template.Count; column++)
             {
                 // Don't consider the last grid line an option (it's meant to be an upper bound, not a starter).
-                // TODO: Figure out how AutoColumns works with AutoFlow
                 if (horizontal.Template[column] == _lastInTrack)
                 {
                     break;
@@ -828,27 +827,31 @@ namespace MUXControlsAdhocApp.GridPages
                 for (int row = 0; row < vertical.Template.Count; row++)
                 {
                     // Don't consider the last grid line an option (it's meant to be an upper bound, not a starter).
-                    // TODO: Figure out how AutoRows works with AutoFlow
                     if (vertical.Template[row] == _lastInTrack)
                     {
                         break;
                     }
 
-                    if (predicate(new GridCoordinate { ColumnIndex = column, RowIndex = row }))
+                    if (predicate(new GridCellIndex { ColumnIndex = column, RowIndex = row }))
                     {
                         return;
                     }
+
+                    // Ping the next track to potentially fault it in if AutoRows are specified
+                    int nextRow = vertical.EnsureIndexAvailable(row + 1);
                 }
+
+                // Ping the next track to potentially fault it in if AutoColumns are specified
+                int nextColumn = horizontal.EnsureIndexAvailable(column + 1);
             }
         }
 
-        // TODO: This code can be more smarty shared with TraverseByColumn
-        private void TraverseByRow(ref AxisInfo horizontal, ref AxisInfo vertical, Func<GridCoordinate, bool> predicate)
+        // TODO: This code can be more smartly shared with TraverseByColumn
+        private void TraverseByRow(ref AxisInfo horizontal, ref AxisInfo vertical, Func<GridCellIndex, bool> predicate)
         {
             for (int row = 0; row < vertical.Template.Count; row++)
             {
                 // Don't consider the last grid line an option (it's meant to be an upper bound, not a starter).
-                // TODO: Figure out how AutoRows works with AutoFlow
                 if (vertical.Template[row] == _lastInTrack)
                 {
                     break;
@@ -857,21 +860,26 @@ namespace MUXControlsAdhocApp.GridPages
                 for (int column = 0; column < horizontal.Template.Count; column++)
                 {
                     // Don't consider the last grid line an option (it's meant to be an upper bound, not a starter).
-                    // TODO: Figure out how AutoColumn works with AutoFlow
                     if (horizontal.Template[column] == _lastInTrack)
                     {
                         break;
                     }
 
-                    if (predicate(new GridCoordinate { ColumnIndex = column, RowIndex = row }))
+                    if (predicate(new GridCellIndex { ColumnIndex = column, RowIndex = row }))
                     {
                         return;
                     }
+
+                    // Ping the next track to potentially fault it in if AutoColumns are specified
+                    int nextColumn = horizontal.EnsureIndexAvailable(column + 1);
                 }
+
+                // Ping the next track to potentially fault it in if AutoRows are specified
+                int nextRow = vertical.EnsureIndexAvailable(row + 1);
             }
         }
 
-        private ChildGridLocations AssignUnoccupiedGridLocation(UIElement child, ref AxisInfo horizontal, ref AxisInfo vertical, GridAutoFlow autoFlow, Dictionary<GridCoordinate, bool> occupied)
+        private ChildGridLocations AssignUnoccupiedGridLocation(UIElement child, ref AxisInfo horizontal, ref AxisInfo vertical, GridAutoFlow autoFlow, Dictionary<GridCellIndex, bool> occupied)
         {
             ChildGridLocations result;
 
@@ -883,7 +891,7 @@ namespace MUXControlsAdhocApp.GridPages
 
             Debug.Assert((colStart == null) || (rowStart == null));
 
-            Func<GridCoordinate, bool> checkUnoccupied = (GridCoordinate coordinate) =>
+            Func<GridCellIndex, bool> checkUnoccupied = (GridCellIndex coordinate) =>
             {
                 // TODO: Need to incorporate Span in this check
                 if (occupied.ContainsKey(coordinate))
@@ -945,7 +953,7 @@ namespace MUXControlsAdhocApp.GridPages
         private Dictionary<UIElement, ChildGridLocations> ResolveGridLocations(ref AxisInfo horizontal, ref AxisInfo vertical)
         {
             Dictionary<UIElement, ChildGridLocations> locationCache = new Dictionary<UIElement, ChildGridLocations>();
-            Dictionary<GridCoordinate, bool> occupied = new Dictionary<GridCoordinate, bool>();
+            Dictionary<GridCellIndex, bool> occupied = new Dictionary<GridCellIndex, bool>();
 
             // Mark any known grid coordinates as occupied
             foreach (UIElement child in Children)
