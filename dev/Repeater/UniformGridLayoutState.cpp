@@ -38,29 +38,32 @@ void UniformGridLayoutState::EnsureElementSize(
     double minRowSpacing,
     double minColumnSpacing)
 {
-    // If the first element is realized we don't need to cache it or to get it from the context
-    if (auto realizedElement = m_flowAlgorithm.GetElementIfRealized(0))
+    if (context.ItemCount() > 0)
     {
-        realizedElement.Measure(availableSize);
-        SetSize(realizedElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing);
-        m_cachedFirstElement = nullptr;
-    }
-    else
-    {
-        if (!m_cachedFirstElement)
+        // If the first element is realized we don't need to cache it or to get it from the context
+        if (auto realizedElement = m_flowAlgorithm.GetElementIfRealized(0))
         {
-            // we only cache if we aren't realizing it
-            m_cachedFirstElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle); // expensive
-        }
-
-        m_cachedFirstElement.Measure(availableSize);
-        SetSize(m_cachedFirstElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing);
-
-        // See if we can move ownership to the flow algorithm. If we can, we do not need a local cache.
-        bool added = m_flowAlgorithm.TryAddElement0(m_cachedFirstElement);
-        if (added)
-        {
+            realizedElement.Measure(availableSize);
+            SetSize(realizedElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing);
             m_cachedFirstElement = nullptr;
+        }
+        else
+        {
+            if (!m_cachedFirstElement)
+            {
+                // we only cache if we aren't realizing it
+                m_cachedFirstElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle); // expensive
+            }
+
+            m_cachedFirstElement.Measure(availableSize);
+            SetSize(m_cachedFirstElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing);
+
+            // See if we can move ownership to the flow algorithm. If we can, we do not need a local cache.
+            bool added = m_flowAlgorithm.TryAddElement0(m_cachedFirstElement);
+            if (added)
+            {
+                m_cachedFirstElement = nullptr;
+            }
         }
     }
 }
