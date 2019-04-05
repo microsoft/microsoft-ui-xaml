@@ -384,9 +384,6 @@ namespace MUXControlsAdhocApp.GridPages
 
                 Calculated = calculated;
 
-                //ack of  TODO: This isn't quite correct. We need an Occupied dictionary that has column/row pairs, not just within a single column or row
-                Occupied = new Dictionary<int, bool>();
-
                 Available = 0.0;
                 Remaining = 0.0;
                 TotalFixed = 0.0;
@@ -398,7 +395,6 @@ namespace MUXControlsAdhocApp.GridPages
             public List<GridTrackInfo> Template { get; private set; }
             public List<GridTrackInfo> Auto { get; private set; }
             public Dictionary<int, MeasuredGridTrackInfo> Calculated { get; private set; }
-            public Dictionary<int, bool> Occupied { get; private set; }
 
             public double Available;
             public double Remaining;
@@ -510,17 +506,25 @@ namespace MUXControlsAdhocApp.GridPages
             {
                 Calculated[index] = new MeasuredGridTrackInfo { Size = size, Start = 0.0 };
             }
+        }
 
-            public void MarkOccupied(ResolvedGridReference start, ResolvedGridReference end)
+        private struct GridCoordinate
+        {
+            public int ColumnIndex;
+            public int RowIndex;
+        }
+        private void MarkOccupied(ChildGridLocations childLocation, Dictionary<GridCoordinate, bool> occupied)
+        {
+            if (!childLocation.ColStart.IsValid || !childLocation.RowStart.IsValid)
             {
-                if (!start.IsValid || !end.IsValid)
-                {
-                    return;
-                }
+                return;
+            }
 
-                for (int i = start.Index; i < end.Index; i++)
+            for (int column = childLocation.ColStart.Index; column < childLocation.ColEnd.Index; column++)
+            {
+                for (int row = childLocation.RowStart.Index; row < childLocation.RowEnd.Index; row++)
                 {
-                    Occupied[i] = true;
+                    occupied[new GridCoordinate { ColumnIndex = column, RowIndex = row }] = true;
                 }
             }
         }
@@ -580,7 +584,7 @@ namespace MUXControlsAdhocApp.GridPages
 
             foreach (UIElement child in Children)
             {
-                ChildGridLocations childLocation = GetChildGridLocations(child, ref measureHorizontal, ref measureVertical, _autoFlow, locationCache);
+                ChildGridLocations childLocation = GetChildGridLocations(child, locationCache);
 
                 List<GridTrackInfo> autoHorizontal = new List<GridTrackInfo>();
                 List<GridTrackInfo> autoVertical = new List<GridTrackInfo>();
@@ -772,13 +776,47 @@ namespace MUXControlsAdhocApp.GridPages
             public ResolvedGridReference RowEnd;
         }
 
-        private ChildGridLocations GetChildGridLocations(UIElement child, ref AxisInfo horizontal, ref AxisInfo vertical, GridAutoFlow? autoFlow, Dictionary<UIElement, ChildGridLocations> cache)
+        private ChildGridLocations GetChildGridLocations(UIElement child, Dictionary<UIElement, ChildGridLocations> cache)
         {
             ChildGridLocations result;
-            if (cache != null && cache.TryGetValue(child, out result))
+            if (cache.TryGetValue(child, out result))
             {
                 return result;
             }
+
+            throw new InvalidOperationException("All children should be processed into the cache before using this method");
+        }
+
+        private ChildGridLocations? GetChildGridLocations(UIElement child, ref AxisInfo horizontal, ref AxisInfo vertical)
+        {
+            ChildGridLocations result;
+
+            // Read preferences off the child
+            GridLocation colStart = GetColumnStart(child);
+            GridLocation rowStart = GetRowStart(child);
+
+            // We need a starting point in order to resolve the location. Save this item for the
+            // second pass (AutoFlow)
+            if ((colStart == null) || (rowStart == null))
+            {
+                return null;
+            }
+
+            GridLocation colEnd = GetColumnEnd(child);
+            GridLocation rowEnd = GetRowEnd(child);
+
+            // Map the preferences to actual grid lines
+            result.ColStart = horizontal.GetTrack(colStart);
+            result.RowStart = vertical.GetTrack(rowStart);
+            result.ColEnd = horizontal.GetTrack(colEnd, result.ColStart);
+            result.RowEnd = vertical.GetTrack(rowEnd, result.RowStart);
+
+            return result;
+        }
+
+        private ChildGridLocations AssignUnoccupiedGridLocation(UIElement child, ref AxisInfo horizontal, ref AxisInfo vertical, GridAutoFlow autoFlow, Dictionary<GridCoordinate, bool> occupied)
+        {
+            ChildGridLocations result;
 
             // Read preferences off the child
             GridLocation colStart = GetColumnStart(child);
@@ -786,56 +824,77 @@ namespace MUXControlsAdhocApp.GridPages
             GridLocation colEnd = GetColumnEnd(child);
             GridLocation rowEnd = GetRowEnd(child);
 
-            if (autoFlow.HasValue && ((colStart == null) || (rowStart == null)))
+            Debug.Assert((colStart == null) || (rowStart == null));
+            
+            // The child has no preference. Find them the first available spot according to the 
+            // AutoFlow policy.
+            for (int column = 0; column < horizontal.Template.Count; column++)
             {
-                // The child has no preference. Find them the first available spot according to the 
-                // AutoFlow policy.
-                for (int column = 0; column < horizontal.Template.Count; column++)
+                bool found = false;
+
+                for (int row = 0; row < vertical.Template.Count; row++)
                 {
-                    if (horizontal.Occupied.ContainsKey(column))
+                    // TODO: Need to incorporate Span in this check
+                    if (occupied.ContainsKey(new GridCoordinate { ColumnIndex = column, RowIndex = row }))
                     {
                         continue;
                     }
 
-                    bool found = false;
+                    DumpInfo($"Assigning {child.GetType().Name} to unoccupied column {column} and row {row}");
+                    DumpGridTrackInfo(horizontal.Template[column]);
+                    DumpGridTrackInfo(vertical.Template[row]);
+                    colStart = new GridLocation { Index = column };
+                    rowStart = new GridLocation { Index = row };
 
-                    for (int row = 0; row < vertical.Template.Count; row++)
-                    {
-                        if (vertical.Occupied.ContainsKey(row))
-                        {
-                            continue;
-                        }
+                    found = true;
+                    break;
+                }
 
-                        DumpInfo($"Assigning {child.GetType().Name} to unoccupied column {column} and row {row}");
-                        DumpGridTrackInfo(horizontal.Template[column]);
-                        DumpGridTrackInfo(vertical.Template[row]);
-                        colStart = new GridLocation { Index = column };
-                        rowStart = new GridLocation { Index = row };
-                        horizontal.MarkOccupied(new ResolvedGridReference(column, null), new ResolvedGridReference(column + 1, null));
-                        vertical.MarkOccupied(new ResolvedGridReference(row, null), new ResolvedGridReference(row + 1, null));
-                        found = true;
-                        break;
-                    }
-
-                    if (found)
-                    {
-                        break;
-                    }
+                if (found)
+                {
+                    break;
                 }
             }
 
-            // Map those to our grid lines
+            // Map the preferences to actual grid lines
             result.ColStart = horizontal.GetTrack(colStart);
             result.RowStart = vertical.GetTrack(rowStart);
             result.ColEnd = horizontal.GetTrack(colEnd, result.ColStart);
             result.RowEnd = vertical.GetTrack(rowEnd, result.RowStart);
 
-            if (cache != null)
+            return result;
+        }
+
+        private Dictionary<UIElement, ChildGridLocations> ResolveGridLocations(ref AxisInfo horizontal, ref AxisInfo vertical)
+        {
+            Dictionary<UIElement, ChildGridLocations> locationCache = new Dictionary<UIElement, ChildGridLocations>();
+            Dictionary<GridCoordinate, bool> occupied = new Dictionary<GridCoordinate, bool>();
+
+            // Mark any known grid coordinates as occupied
+            foreach (UIElement child in Children)
             {
-                cache[child] = result;
+                ChildGridLocations? childLocation = GetChildGridLocations(child, ref horizontal, ref vertical);
+                if (childLocation.HasValue)
+                {
+                    MarkOccupied(childLocation.Value, occupied);
+                    locationCache[child] = childLocation.Value;
+                }
             }
 
-            return result;
+            // Go find places for all the unoccupied items
+            foreach (UIElement child in Children)
+            {
+                if (locationCache.ContainsKey(child))
+                {
+                    continue;
+                }
+
+                ChildGridLocations childLocation = AssignUnoccupiedGridLocation(child, ref horizontal, ref vertical, _autoFlow, occupied);
+                MarkOccupied(childLocation, occupied);
+                locationCache[child] = childLocation;
+            }
+
+            return locationCache;
         }
 
 #region Tracing
@@ -906,7 +965,6 @@ namespace MUXControlsAdhocApp.GridPages
             {
                 Debug.WriteLine(child.GetType().Name + " {");
                 Debug.Indent();
-                ChildGridLocations locations = GetChildGridLocations(child, ref measureHorizontal, ref measureVertical, null, null);
 
                 Action<GridLocation, string> dumpLocation = (GridLocation location, string info) =>
                 {
@@ -1002,20 +1060,13 @@ namespace MUXControlsAdhocApp.GridPages
 
             _columns.Clear();
             _rows.Clear();
-            Dictionary<UIElement, ChildGridLocations> locationCache = new Dictionary<UIElement, ChildGridLocations>();
 
             AxisInfo measureHorizontal = InitializeMeasure(_templateColumns, _autoColumns, _columns, _columnGap, availableSize.Width);
             AxisInfo measureVertical = InitializeMeasure(_templateRows, _autoRows, _rows, _rowGap, availableSize.Height);
             DumpChildren(ref measureHorizontal, ref measureVertical);
 
-            // Analyze the grid contents to see where there are gaps (needed to resolve AutoFlow)
-            // TODO: Cache this information
-            foreach (UIElement child in Children)
-            {
-                ChildGridLocations childLocation = GetChildGridLocations(child, ref measureHorizontal, ref measureVertical, null, null);
-                measureHorizontal.MarkOccupied(childLocation.ColStart, childLocation.ColEnd);
-                measureHorizontal.MarkOccupied(childLocation.RowStart, childLocation.RowEnd);
-            }
+            // Resolve all grid references
+            Dictionary<UIElement, ChildGridLocations> locationCache = ResolveGridLocations(ref measureHorizontal, ref measureVertical);
 
             // First process any fixed sizes
             ProcessFixedSizes(ref measureHorizontal);
@@ -1048,7 +1099,7 @@ namespace MUXControlsAdhocApp.GridPages
 
             foreach (UIElement child in Children)
             {
-                ChildGridLocations childLocation = GetChildGridLocations(child, ref measureHorizontal, ref measureVertical, _autoFlow, locationCache);
+                ChildGridLocations childLocation = GetChildGridLocations(child, locationCache);
 
                 MeasuredGridTrackInfo colMeasure = measureHorizontal.GetMeasuredTrackSafe(childLocation.ColStart);
                 MeasuredGridTrackInfo rowMeasure = measureVertical.GetMeasuredTrackSafe(childLocation.RowStart);
@@ -1132,20 +1183,12 @@ namespace MUXControlsAdhocApp.GridPages
             AxisInfo measureHorizontal = InitializeMeasure(_templateColumns, _autoColumns, _columns, _columnGap, finalSize.Width);
             AxisInfo measureVertical = InitializeMeasure(_templateRows, _autoRows, _rows, _rowGap, finalSize.Height);
 
-            // Analyze the grid contents to see where there are gaps (needed to resolve AutoFlow)
-            // TODO: Cache this information
-            foreach (UIElement child in Children)
-            {
-                ChildGridLocations childLocation = GetChildGridLocations(child, ref measureHorizontal, ref measureVertical, null, null);
-                measureHorizontal.MarkOccupied(childLocation.ColStart, childLocation.ColEnd);
-                measureHorizontal.MarkOccupied(childLocation.RowStart, childLocation.RowEnd);
-            }
-            // TODO: Actually necessary? We only single pass the children so we shouldn't need a cache
-            Dictionary<UIElement, ChildGridLocations> locationCache = new Dictionary<UIElement, ChildGridLocations>();
+            // Resolve all grid references
+            Dictionary<UIElement, ChildGridLocations> locationCache = ResolveGridLocations(ref measureHorizontal, ref measureVertical);
 
             foreach (UIElement child in Children)
             {
-                ChildGridLocations childLocation = GetChildGridLocations(child, ref measureHorizontal, ref measureVertical, _autoFlow, locationCache);
+                ChildGridLocations childLocation = GetChildGridLocations(child, locationCache);
                 
                 if (!childLocation.ColStart.IsValid || !childLocation.RowStart.IsValid)
                 {
