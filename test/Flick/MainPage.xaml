@@ -1,0 +1,39 @@
+﻿<Page
+    x:Class="Flick.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Flick"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    RequestedTheme="Dark"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Margin="10">
+        <Grid.Resources>
+            <controls:UniformGridLayout x:Name="uniformGridLayout" MinColumnSpacing="10" MinRowSpacing="10" ItemsStretch="Fill" MinItemWidth="300" MinItemHeight="200"/>
+            <local:ActivityFeedLayout x:Name="activityLayout" ItemSpacing="12" RowSpacing="12" MinItemSize="300, 200"/>
+            <controls:StackLayout x:Name="stackLayout" Spacing="10" />
+        </Grid.Resources>
+        <controls:ItemsRepeaterScrollHost>
+            <ScrollViewer>
+                <StackPanel>
+                    <Grid>
+                        <Image x:Name="banner" Stretch="UniformToFill" Height="400" Margin="5"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                            <AppBarButton Icon="List" Click="AppBarButton_Click" />
+                            <AppBarButton Icon="SelectAll" Click="AppBarButton_Click_1" />
+                            <AppBarButton Icon="Accept" Click="AppBarButton_Click_2" />
+                        </StackPanel>
+                    </Grid>
+                    <controls:ItemsRepeater x:Name="repeater" >
+                        <DataTemplate>
+                            <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="Image_Tapped"/>
+                        </DataTemplate>
+                    </controls:ItemsRepeater>
+                </StackPanel>
+            </ScrollViewer>
+        </controls:ItemsRepeaterScrollHost>
+    </Grid>
+</Page>
