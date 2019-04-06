@@ -199,14 +199,14 @@ winrt::Rect UniformGridLayout::Algorithm_GetExtent(
         static_cast<int>(availableSizeMinor / GetMinorSizeWithSpacing(context)) : itemsCount);
     const float lineSize = GetMajorSizeWithSpacing(context);
 
-    extent.*MinorSize() =
-        std::isfinite(availableSizeMinor) ?
-        availableSizeMinor :
-        std::max(0.0f, itemsCount * GetMinorSizeWithSpacing(context) - static_cast<float>(MinItemSpacing()));
-    extent.*MajorSize() = std::max(0.0f, (itemsCount / itemsPerLine) * lineSize - static_cast<float>(LineSpacing()));
-
     if (itemsCount > 0)
-    {
+    {        
+        extent.*MinorSize() =
+            std::isfinite(availableSizeMinor) ?
+            availableSizeMinor :
+            std::max(0.0f, itemsCount * GetMinorSizeWithSpacing(context) - static_cast<float>(MinItemSpacing()));
+        extent.*MajorSize() = std::max(0.0f, (itemsCount / itemsPerLine) * lineSize - static_cast<float>(LineSpacing()));
+
         if (firstRealized)
         {
             MUX_ASSERT(lastRealized);
