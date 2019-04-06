@@ -3,15 +3,15 @@
 This guide provides instructions on how to build the repo and implement 
 improvements.
 
-* [Prerequisites](docs/developer_guide.md#Prerequisites)
-* [Building the repository](docs/developer_guide.md#Building-the-repository)
-* [Testing](docs/developer_guide.md#Testing)
-* [Telemetry](docs/developer_guide.md#Telemetry)
+* [Prerequisites](developer_guide.md#Prerequisites)
+* [Building the repository](developer_guide.md#Building-the-repository)
+* [Testing](developer_guide.md#Testing)
+* [Telemetry](developer_guide.md#Telemetry)
 
 Additional reading:
 
-* [Source code structure](docs/source_code_structure.md)
-* [Coding style and conventions](docs/code_style_and_conventions.md)
+* [Source code structure](source_code_structure.md)
+* [Coding style and conventions](code_style_and_conventions.md)
 
 
 ## Prerequisites
