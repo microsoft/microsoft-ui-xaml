@@ -403,7 +403,7 @@ namespace MUXControlsAdhocApp.GridPages
             public uint TotalAutos;
             public double Gap;
 
-            public int EnsureIndexAvailable(int index)
+            public int EnsureIndexAvailable(int index, bool clampIfOutOfBounds = true)
             {
                 if (index < Template.Count)
                 {
@@ -412,8 +412,16 @@ namespace MUXControlsAdhocApp.GridPages
 
                 if (Auto.Count == 0)
                 {
-                    // Clamp to the known set of indices
-                    return Template.Count - 1;
+                    if (clampIfOutOfBounds)
+                    {
+                        // Clamp to the known set of indices
+                        return Template.Count - 1;
+                    }
+                    else
+                    {
+                        // Or if that's disallowed, return an invalid index
+                        return -1;
+                    }
                 }
 
                 // Grow the list of Templates to include this new index
@@ -422,7 +430,7 @@ namespace MUXControlsAdhocApp.GridPages
                 {
                     foreach (var track in Auto)
                     {
-                        DumpBegin($"Adding auto copy at index {Template.Count}");
+                        DumpBegin($"Adding auto track at index {Template.Count}");
                         DumpGridTrackInfo(track);
                         DumpEnd();
                         Template.Add(track);
@@ -432,7 +440,7 @@ namespace MUXControlsAdhocApp.GridPages
                 return index;
             }
 
-            public ResolvedGridReference GetTrack(GridLocation location, ResolvedGridReference? previous = null)
+            public ResolvedGridReference GetTrack(GridLocation location, ResolvedGridReference? previous = null, bool allowOutOfRange = true)
             {
                 if (location != null)
                 {
@@ -440,8 +448,11 @@ namespace MUXControlsAdhocApp.GridPages
                     int index = location.Index;
                     if (index >= 0)
                     {
-                        index = EnsureIndexAvailable(index);
-                        return new ResolvedGridReference(index, Template[index]);
+                        index = EnsureIndexAvailable(index, allowOutOfRange);
+                        if (index >= 0)
+                        {
+                            return new ResolvedGridReference(index, Template[index]);
+                        }
                     }
 
                     // Friendly track name
@@ -471,14 +482,18 @@ namespace MUXControlsAdhocApp.GridPages
                     int previousIndex = previous.Value.Index;
                     if (previousIndex >= 0)
                     {
-                        int spanIndex = EnsureIndexAvailable(previousIndex + span);
-                        return new ResolvedGridReference(spanIndex, Template[spanIndex]);
+                        int spanIndex = previousIndex + span;
+                        spanIndex = EnsureIndexAvailable(spanIndex, allowOutOfRange);
+                        if (spanIndex >= 0)
+                        {
+                            return new ResolvedGridReference(spanIndex, Template[spanIndex]);
+                        }
                     }
                 }
 
                 return ResolvedGridReference.Invalid;
             }
-
+            
             public MeasuredGridTrackInfo GetMeasuredTrack(int index)
             {
                 return Calculated[index];
@@ -524,6 +539,7 @@ namespace MUXControlsAdhocApp.GridPages
             {
                 for (int row = childLocation.RowStart.Index; row < childLocation.RowEnd.Index; row++)
                 {
+                    DumpInfo($"Mark occupied {{{column},{row}}}");
                     occupied[new GridCellIndex { ColumnIndex = column, RowIndex = row }] = true;
                 }
             }
@@ -814,7 +830,9 @@ namespace MUXControlsAdhocApp.GridPages
             return result;
         }
 
-        private void TraverseByColumn(ref AxisInfo horizontal, ref AxisInfo vertical, Func<GridCellIndex, bool> predicate)
+        delegate bool CheckCell(GridCellIndex cell, ref AxisInfo horizontal, ref AxisInfo vertical);
+
+        private void TraverseByColumn(ref AxisInfo horizontal, ref AxisInfo vertical, CheckCell predicate)
         {
             for (int column = 0; column < horizontal.Template.Count; column++)
             {
@@ -832,7 +850,7 @@ namespace MUXControlsAdhocApp.GridPages
                         break;
                     }
 
-                    if (predicate(new GridCellIndex { ColumnIndex = column, RowIndex = row }))
+                    if (predicate(new GridCellIndex { ColumnIndex = column, RowIndex = row }, ref horizontal, ref vertical))
                     {
                         return;
                     }
@@ -847,7 +865,7 @@ namespace MUXControlsAdhocApp.GridPages
         }
 
         // TODO: This code can be more smartly shared with TraverseByColumn
-        private void TraverseByRow(ref AxisInfo horizontal, ref AxisInfo vertical, Func<GridCellIndex, bool> predicate)
+        private void TraverseByRow(ref AxisInfo horizontal, ref AxisInfo vertical, CheckCell predicate)
         {
             for (int row = 0; row < vertical.Template.Count; row++)
             {
@@ -865,7 +883,7 @@ namespace MUXControlsAdhocApp.GridPages
                         break;
                     }
 
-                    if (predicate(new GridCellIndex { ColumnIndex = column, RowIndex = row }))
+                    if (predicate(new GridCellIndex { ColumnIndex = column, RowIndex = row }, ref horizontal, ref vertical))
                     {
                         return;
                     }
@@ -891,26 +909,47 @@ namespace MUXControlsAdhocApp.GridPages
 
             Debug.Assert((colStart == null) || (rowStart == null));
 
-            Func<GridCellIndex, bool> checkUnoccupied = (GridCellIndex coordinate) =>
+            CheckCell checkUnoccupied = (GridCellIndex topLeft, ref AxisInfo horizontalAxis, ref AxisInfo verticalAxis) =>
             {
-                // TODO: Need to incorporate Span in this check
-                if (occupied.ContainsKey(coordinate))
-                {
-                    return false;
-                }
+                GridCellIndex bottomRight = new GridCellIndex { ColumnIndex = topLeft.ColumnIndex + 1, RowIndex = topLeft.RowIndex + 1 };
 
+                // Handle a specified End paired with our unspecified Start
                 if (colEnd != null)
                 {
-                    // TODO: Check range
+                    ResolvedGridReference right = horizontalAxis.GetTrack(colEnd, new ResolvedGridReference(topLeft.ColumnIndex, null), allowOutOfRange: false);
+                    if (!right.IsValid)
+                    {
+                        return false;
+                    }
+                    bottomRight.ColumnIndex = right.Index;
                 }
                 if (rowEnd != null)
                 {
-                    // TODO: Check range
+                    ResolvedGridReference bottom = verticalAxis.GetTrack(rowEnd, new ResolvedGridReference(topLeft.RowIndex, null), allowOutOfRange: false);
+                    if (!bottom.IsValid)
+                    {
+                        return false;
+                    }
+                    bottomRight.RowIndex = bottom.Index;
                 }
 
-                DumpInfo($"Assigning {child.GetType().Name} to unoccupied column {coordinate.ColumnIndex} and row {coordinate.RowIndex}");
-                colStart = new GridLocation { Index = coordinate.ColumnIndex };
-                rowStart = new GridLocation { Index = coordinate.RowIndex };
+                // Make sure each individual cell is unoccupied in the whole span
+                DumpInfo($"Testing {{{topLeft.ColumnIndex},{topLeft.RowIndex}}} to {{{bottomRight.ColumnIndex},{bottomRight.RowIndex}}}");
+                for (int col = topLeft.ColumnIndex; col < bottomRight.ColumnIndex; col++)
+                {
+                    for (int row = topLeft.RowIndex; row < bottomRight.RowIndex; row++)
+                    {
+                        GridCellIndex testCoordinate = new GridCellIndex { ColumnIndex = col, RowIndex = row };
+                        if (occupied.ContainsKey(testCoordinate))
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                DumpInfo($"Found unoccupied {{{topLeft.ColumnIndex},{topLeft.RowIndex}}} to {{{bottomRight.ColumnIndex},{bottomRight.RowIndex}}}");
+                colStart = new GridLocation { Index = topLeft.ColumnIndex };
+                rowStart = new GridLocation { Index = topLeft.RowIndex };
 
                 return true;
             };
@@ -975,17 +1014,20 @@ namespace MUXControlsAdhocApp.GridPages
                 }
             }
 
-            // Go find places for all the unoccupied items
-            foreach (UIElement child in Children)
+            // Go find places for all the unspecified items
+            for (int i = 0; i < Children.Count; i++)
             {
+                UIElement child = Children[i];
                 if (locationCache.ContainsKey(child))
                 {
                     continue;
                 }
 
+                DumpBegin($"Finding space for unspecified child {i} {child.GetType().Name} (according to AutoFlow {_autoFlow})");
                 ChildGridLocations childLocation = AssignUnoccupiedGridLocation(child, ref horizontal, ref vertical, _autoFlow, occupied);
                 MarkOccupied(childLocation, occupied);
                 locationCache[child] = childLocation;
+                DumpEnd();
             }
 
             return locationCache;

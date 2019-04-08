@@ -57,7 +57,7 @@
                   grid-column: 1 / 2;
                   grid-row: 2 / 3;
                 }-->
-                <Grid Background="#88FFA500">
+                <Grid Background="#FFA500">
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="0"/>
                     </local:Grid.ColumnStart>
@@ -78,7 +78,7 @@
                   grid-column: 5 / 6;
                   grid-row: 2 / 3;
                 }-->
-                <Grid Background="#880000FF">
+                <Grid Background="#0000FF">
                     <local:Grid.ColumnStart>
                         <local:GridLocation Index="4"/>
                     </local:Grid.ColumnStart>
