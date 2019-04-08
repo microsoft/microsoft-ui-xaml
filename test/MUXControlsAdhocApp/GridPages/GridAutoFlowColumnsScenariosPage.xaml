@@ -1,0 +1,380 @@
+﻿<Page
+    x:Class="MUXControlsAdhocApp.GridPages.GridAutoFlowColumnsScenariosPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsAdhocApp.GridPages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel>
+        <StackPanel.Resources>
+            <Style x:Key="HeaderStyle" TargetType="TextBlock">
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="Margin" Value="0,12,0,0"/>
+            </Style>
+            <Style x:Name="CellText" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="FontSize" Value="18"/>
+            </Style>
+            <Style TargetType="Grid">
+                <Setter Property="Background" Value="Orange"/>
+                <Setter Property="Margin" Value="2"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="BorderBrush" Value="Black"/>
+                <Setter Property="BorderThickness" Value="2"/>
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="VerticalAlignment" Value="Stretch"/>
+            </Style>
+        </StackPanel.Resources>
+
+        <TextBlock>Default grid (unless specified otherwise): 5x2</TextBlock>
+        <TextBlock>Columns: 100px 100px 100px 100px 100px</TextBlock>
+        <TextBlock>Rows: 60px 60px</TextBlock>
+        
+        <TextBlock Style="{StaticResource HeaderStyle}">Column flow but no growing</TextBlock>
+        <TextBlock>Each item has 2 span, but grid overall doesn't auto grow</TextBlock>
+        <local:Grid AutoFlow="Column">
+            <local:Grid.TemplateColumns>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+            </local:Grid.TemplateColumns>
+            <local:Grid.TemplateRows>
+                <local:GridTrackInfo Length="60"/>
+                <local:GridTrackInfo Length="60"/>
+            </local:Grid.TemplateRows>
+                
+            <Grid Background="#FFA500">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">1</TextBlock>
+            </Grid>
+
+            <Grid Background="#0000FF">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">2</TextBlock>
+            </Grid>
+
+            <Grid Background="#FF0000">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">3</TextBlock>
+            </Grid>
+
+            <Grid Background="#8FBC8F">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">4</TextBlock>
+            </Grid>
+
+            <Grid Background="#BC8FBC">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">5</TextBlock>
+            </Grid>
+
+            <Grid Background="#8FBCBC">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">6</TextBlock>
+            </Grid>
+
+        </local:Grid>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">Column flow with AutoColumns</TextBlock>
+        <TextBlock>Each item has 2 span, grid is set to grow additional columns</TextBlock>
+        <local:Grid AutoFlow="Column">
+            <local:Grid.TemplateColumns>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+            </local:Grid.TemplateColumns>
+            <local:Grid.TemplateRows>
+                <local:GridTrackInfo Length="60"/>
+                <local:GridTrackInfo Length="60"/>
+            </local:Grid.TemplateRows>
+            <local:Grid.AutoColumns>
+                <local:GridTrackInfo Length="100"/>
+            </local:Grid.AutoColumns>
+                
+            <Grid Background="#FFA500">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">1</TextBlock>
+            </Grid>
+
+            <Grid Background="#0000FF">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">2</TextBlock>
+            </Grid>
+
+            <Grid Background="#FF0000">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">3</TextBlock>
+            </Grid>
+
+            <Grid Background="#8FBC8F">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">4</TextBlock>
+            </Grid>
+
+            <Grid Background="#BC8FBC">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">5</TextBlock>
+            </Grid>
+
+            <Grid Background="#8FBCBC">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">6</TextBlock>
+            </Grid>
+
+        </local:Grid>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">Column flow to fixed index</TextBlock>
+        <TextBlock>First 3 set to end at specific index, next 3 don't</TextBlock>
+        <local:Grid AutoFlow="Row">
+            <local:Grid.TemplateColumns>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+            </local:Grid.TemplateColumns>
+            <local:Grid.TemplateRows>
+                <local:GridTrackInfo Length="60"/>
+                <local:GridTrackInfo Length="60"/>
+            </local:Grid.TemplateRows>
+            <local:Grid.AutoRows>
+                <local:GridTrackInfo Length="60"/>
+            </local:Grid.AutoRows>
+                
+            <Grid Background="#FFA500">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="3"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">1 (->index#3)</TextBlock>
+            </Grid>
+
+            <Grid Background="#0000FF">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="3"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">2 (->index#3)</TextBlock>
+            </Grid>
+
+            <Grid Background="#FF0000">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="3"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">3 (->index#3)</TextBlock>
+            </Grid>
+
+            <Grid Background="#8FBC8F">
+                <TextBlock Style="{StaticResource CellText}">4</TextBlock>
+            </Grid>
+
+            <Grid Background="#BC8FBC">
+                <TextBlock Style="{StaticResource CellText}">5</TextBlock>
+            </Grid>
+
+            <Grid Background="#8FBCBC">
+                <TextBlock Style="{StaticResource CellText}">6</TextBlock>
+            </Grid>
+
+        </local:Grid>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">Find the gap</TextBlock>
+        <TextBlock>Orange item has no specified position (but needs span 2)</TextBlock>
+        <local:Grid AutoFlow="Row">
+            <local:Grid.TemplateColumns>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+            </local:Grid.TemplateColumns>
+            <local:Grid.AutoRows>
+                <local:GridTrackInfo Length="60"/>
+            </local:Grid.AutoRows>
+                
+            <Grid Background="#BBBBBB">
+                <local:Grid.ColumnStart>
+                    <local:GridLocation Index="0"/>
+                </local:Grid.ColumnStart>
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="1"/>
+                </local:Grid.ColumnEnd>
+                <local:Grid.RowStart>
+                    <local:GridLocation Index="0"/>
+                </local:Grid.RowStart>
+                <TextBlock Style="{StaticResource CellText}">S</TextBlock>
+            </Grid>
+
+            <Grid Background="#BBBBBB">
+                <local:Grid.ColumnStart>
+                    <local:GridLocation Index="2"/>
+                </local:Grid.ColumnStart>
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="4"/>
+                </local:Grid.ColumnEnd>
+                <local:Grid.RowStart>
+                    <local:GridLocation Index="0"/>
+                </local:Grid.RowStart>
+                <TextBlock Style="{StaticResource CellText}">M</TextBlock>
+            </Grid>
+
+            <Grid Background="#BBBBBB">
+                <local:Grid.ColumnStart>
+                    <local:GridLocation Index="0"/>
+                </local:Grid.ColumnStart>
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="2"/>
+                </local:Grid.ColumnEnd>
+                <local:Grid.RowStart>
+                    <local:GridLocation Index="1"/>
+                </local:Grid.RowStart>
+                <TextBlock Style="{StaticResource CellText}">M</TextBlock>
+            </Grid>
+
+            <Grid Background="#BBBBBB">
+                <local:Grid.ColumnStart>
+                    <local:GridLocation Index="3"/>
+                </local:Grid.ColumnStart>
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="5"/>
+                </local:Grid.ColumnEnd>
+                <local:Grid.RowStart>
+                    <local:GridLocation Index="1"/>
+                </local:Grid.RowStart>
+                <TextBlock Style="{StaticResource CellText}">M</TextBlock>
+            </Grid>
+
+            <Grid Background="#BBBBBB">
+                <local:Grid.ColumnStart>
+                    <local:GridLocation Index="0"/>
+                </local:Grid.ColumnStart>
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="2"/>
+                </local:Grid.ColumnEnd>
+                <local:Grid.RowStart>
+                    <local:GridLocation Index="2"/>
+                </local:Grid.RowStart>
+                <TextBlock Style="{StaticResource CellText}">M</TextBlock>
+            </Grid>
+
+            <Grid Background="#BBBBBB">
+                <local:Grid.ColumnStart>
+                    <local:GridLocation Index="4"/>
+                </local:Grid.ColumnStart>
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="5"/>
+                </local:Grid.ColumnEnd>
+                <local:Grid.RowStart>
+                    <local:GridLocation Index="2"/>
+                </local:Grid.RowStart>
+                <TextBlock Style="{StaticResource CellText}">S</TextBlock>
+            </Grid>
+
+            <Grid Background="#BBBBBB">
+                <local:Grid.ColumnStart>
+                    <local:GridLocation Index="0"/>
+                </local:Grid.ColumnStart>
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Index="3"/>
+                </local:Grid.ColumnEnd>
+                <local:Grid.RowStart>
+                    <local:GridLocation Index="3"/>
+                </local:Grid.RowStart>
+                <TextBlock Style="{StaticResource CellText}">L</TextBlock>
+            </Grid>
+
+            <Grid Background="#FFA500">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">M</TextBlock>
+            </Grid>
+
+        </local:Grid>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">Packing with growth</TextBlock>
+        <TextBlock>Grid is 3x2 with ability to grow rows</TextBlock>
+        <local:Grid AutoFlow="Row">
+            <local:Grid.TemplateColumns>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+                <local:GridTrackInfo Length="100"/>
+            </local:Grid.TemplateColumns>
+            <local:Grid.TemplateRows>
+                <local:GridTrackInfo Length="60"/>
+                <local:GridTrackInfo Length="60"/>
+            </local:Grid.TemplateRows>
+            <local:Grid.AutoRows>
+                <local:GridTrackInfo Length="40"/>
+            </local:Grid.AutoRows>
+                
+            <Grid Background="#FFA500">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">1 wide</TextBlock>
+            </Grid>
+
+            <Grid Background="#0000FF">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">2 wide</TextBlock>
+            </Grid>
+
+            <Grid Background="#FF0000">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock Style="{StaticResource CellText}">3 wide</TextBlock>
+            </Grid>
+
+            <Grid Background="#8FBC8F">
+                <TextBlock Style="{StaticResource CellText}">4</TextBlock>
+            </Grid>
+
+            <Grid Background="#BC8FBC">
+                <TextBlock Style="{StaticResource CellText}">5</TextBlock>
+            </Grid>
+
+            <Grid Background="#8FBCBC">
+                <TextBlock Style="{StaticResource CellText}">6</TextBlock>
+            </Grid>
+
+        </local:Grid>
+        
+    </StackPanel>
+
+</Page>

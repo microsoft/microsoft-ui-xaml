@@ -31,6 +31,9 @@
             <controls:NavigationViewItem Tag="ColumnEndAndRowEnd" Icon="Switch" Content="ColumnEnd &amp; RowEnd"/>
             <controls:NavigationViewItem Tag="Area" Icon="StopSlideShow" Content="Area"/>
             <controls:NavigationViewItem Tag="JustifyAndAlignSelf" Icon="ContactInfo" Content="JustifySelf &amp; AlignSelf"/>
+            <controls:NavigationViewItemSeparator/>
+            <controls:NavigationViewItemHeader>Scenarios</controls:NavigationViewItemHeader>
+            <controls:NavigationViewItem Tag="AutoFlowColumnsScenarios" Icon="Contact2" Content="AutoFlow &amp; AutoColumns/Rows"/>
         </controls:NavigationView.MenuItems>
 
         <ScrollViewer>

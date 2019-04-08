@@ -27,7 +27,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NETFX_CORE;WINDOWS_UWP;CODE_ANALYSIS;CODE_ANALYSIS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NETFX_CORE;WINDOWS_UWP;CODE_ANALYSIS</DefineConstants>
     <NoWarn>;2008</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -161,6 +161,9 @@
     <Compile Include="FlexboxPages\FlexboxWrapPage.xaml.cs">
       <DependentUpon>FlexboxWrapPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GridPages\GridAutoFlowColumnsScenariosPage.xaml.cs">
+      <DependentUpon>GridAutoFlowColumnsScenariosPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GridPages\Grid.cs" />
     <Compile Include="GridPages\GridAutoColumnsAndRowsPage.xaml.cs">
       <DependentUpon>GridAutoColumnsAndRowsPage.xaml</DependentUpon>
@@ -263,6 +266,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="FlexboxPages\FlexboxWrapPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GridPages\GridAutoFlowColumnsScenariosPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
