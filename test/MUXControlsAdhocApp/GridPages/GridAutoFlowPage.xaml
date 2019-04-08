@@ -441,6 +441,80 @@
         </local:Grid>
 
         <TextBlock Style="{StaticResource HeaderStyle}">AutoFlow: Column</TextBlock>
+        <TextBlock>With 2 column spans</TextBlock>
+        <TextBlock>AutoColumns: 90px</TextBlock>
+        <local:Grid AutoFlow="Column">
+            <local:Grid.TemplateColumns>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+                <local:GridTrackInfo Length="120"/>
+            </local:Grid.TemplateColumns>
+            <local:Grid.TemplateRows>
+                <local:GridTrackInfo Length="60"/>
+                <local:GridTrackInfo Length="60"/>
+            </local:Grid.TemplateRows>
+            <local:Grid.AutoColumns>
+                <local:GridTrackInfo Length="90"/>
+            </local:Grid.AutoColumns>
+            <local:Grid.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="FontSize" Value="18"/>
+                </Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="Orange"/>
+                    <Setter Property="Margin" Value="2"/>
+                    <Setter Property="CornerRadius" Value="6"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalAlignment" Value="Stretch"/>
+                </Style>
+            </local:Grid.Resources>
+                
+            <Grid Background="#88FFA500">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-a</TextBlock>
+            </Grid>
+
+            <Grid Background="#880000FF">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-b</TextBlock>
+            </Grid>
+
+            <Grid Background="#88FF0000">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-c</TextBlock>
+            </Grid>
+
+            <Grid Background="#888FBC8F">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-d</TextBlock>
+            </Grid>
+
+            <Grid Background="#88BC8FBC">
+                <local:Grid.ColumnEnd>
+                    <local:GridLocation Span="2"/>
+                </local:Grid.ColumnEnd>
+                <TextBlock>item-e</TextBlock>
+            </Grid>
+
+        </local:Grid>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">AutoFlow: Column</TextBlock>
         <TextBlock>AutoRows: 40px</TextBlock>
         <local:Grid AutoFlow="Column">
             <local:Grid.TemplateColumns>
