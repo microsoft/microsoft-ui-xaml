@@ -64,6 +64,10 @@ namespace MUXControlsAdhocApp.GridPages
                 case "JustifyAndAlignSelf":
                     _contentFrame.Navigate(typeof(GridJustifyAndAlignSelfPage));
                     break;
+
+                case "AutoFlowColumnsScenarios":
+                    _contentFrame.Navigate(typeof(GridAutoFlowColumnsScenariosPage));
+                    break;
             }
         }
     }
