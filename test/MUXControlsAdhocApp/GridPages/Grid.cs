@@ -899,6 +899,15 @@ namespace MUXControlsAdhocApp.GridPages
                     return false;
                 }
 
+                if (colEnd != null)
+                {
+                    // TODO: Check range
+                }
+                if (rowEnd != null)
+                {
+                    // TODO: Check range
+                }
+
                 DumpInfo($"Assigning {child.GetType().Name} to unoccupied column {coordinate.ColumnIndex} and row {coordinate.RowIndex}");
                 colStart = new GridLocation { Index = coordinate.ColumnIndex };
                 rowStart = new GridLocation { Index = coordinate.RowIndex };
