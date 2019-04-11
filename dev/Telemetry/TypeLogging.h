@@ -19,6 +19,7 @@ public:
     static winrt::hstring OrientationToString(const winrt::Orientation& orientation);
     static winrt::hstring ScrollEventTypeToString(const winrt::ScrollEventType& scrollEventType);
     static winrt::hstring ScrollingIndicatorModeToString(const winrt::ScrollingIndicatorMode& indicatorMode);
+    static winrt::hstring KeyRoutedEventArgsToString(const winrt::KeyRoutedEventArgs& eventArgs);
 #pragma endregion
 
 #pragma region ScrollViewer-specific section

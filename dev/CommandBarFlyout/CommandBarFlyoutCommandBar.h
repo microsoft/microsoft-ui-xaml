@@ -5,6 +5,7 @@
 
 #include "CommandBarFlyoutCommandBar.g.h"
 #include "CommandBarFlyoutCommandBar.properties.h"
+#include "CommandBarFlyoutTrace.h"
 
 class CommandBarFlyoutCommandBar :
     public ReferenceTracker<CommandBarFlyoutCommandBar, winrt::implementation::CommandBarFlyoutCommandBarT>,
@@ -28,6 +29,9 @@ public:
     void ClearShadow();
 #endif
 
+    // IControlOverrides / IControlOverridesHelper
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
+
 private:
     void AttachEventHandlers();
     void DetachEventHandlers(bool useSafeGet = false);
@@ -36,6 +40,30 @@ private:
     void UpdateUI(bool useTransitions = true);
     void UpdateVisualState(bool useTransitions);
     void UpdateTemplateSettings();
+    void EnsureAutomationSetCountAndPosition();
+    void EnsureFocusedPrimaryCommand();
+
+    static bool IsFrameworkElementLoaded(
+        winrt::FrameworkElement const& frameworkElement);
+    static bool IsControlFocusable(
+        winrt::Control const& control,
+        bool checkTabStop);
+    static winrt::Control GetFirstTabStopControl(
+        winrt::IObservableVector<winrt::ICommandBarElement> const& commands);
+    static bool FocusControl(
+        winrt::Control const& newFocus,
+        winrt::Control const& oldFocus,
+        winrt::FocusState const& focusState,
+        bool updateTabStop);
+    static bool FocusCommand(
+        winrt::IObservableVector<winrt::ICommandBarElement> const& commands,
+        winrt::Control const& moreButton,
+        winrt::FocusState const& focusState,
+        bool firstCommand,
+        bool ensureTabStopUnicity);
+    static void EnsureTabStopUnicity(
+        winrt::IObservableVector<winrt::ICommandBarElement> const& commands,
+        winrt::Control const& moreButton);
 
 #ifdef USE_INSIDER_SDK
     void AddShadow();
@@ -46,9 +74,10 @@ private:
     tracker_ref<winrt::FrameworkElement> m_secondaryItemsRoot{ this };
     tracker_ref<winrt::ButtonBase> m_moreButton{ this };
     weak_ref<winrt::CommandBarFlyout> m_owningFlyout{ nullptr };
-    winrt::FrameworkElement::SizeChanged_revoker m_secondaryItemsRootSizeChangedRevoker{};
     winrt::IInspectable m_keyDownHandler{ nullptr };
-    winrt::FrameworkElement::Loaded_revoker m_firstSecondaryItemLoadedRevoker{};
+    winrt::UIElement::PreviewKeyDown_revoker m_secondaryItemsRootPreviewKeyDownRevoker{};
+    winrt::FrameworkElement::SizeChanged_revoker m_secondaryItemsRootSizeChangedRevoker{};
+    winrt::FrameworkElement::Loaded_revoker m_firstItemLoadedRevoker{};
 
     // We need to manually connect the end element of the primary items to the start element of the secondary items
     // for the purposes of UIA items navigation. To ensure that we only have the current start and end elements registered

@@ -14,6 +14,14 @@
             <Button Content="Base CommandBarFlyout Tests" Click="OnCommandBarFlyoutTestsClicked" Margin="10" />
             <Button Content="TextCommandBarFlyout Tests" Click="OnTextCommandBarFlyoutTestsClicked" Margin="10" />
             <Button Content="Extra CommandBarFlyout Tests" Click="OnExtraCommandBarFlyoutTestsClicked" Margin="10" />
+
+            <TextBlock Text="CommandBarFlyout OutputDebugString Level:" VerticalAlignment="Center" Margin="10, 10, 10, 1"/>
+            <ComboBox x:Name="cmbCommandBarFlyoutOutputDebugStringLevel" AutomationProperties.Name="cmbCommandBarFlyoutOutputDebugStringLevel" Margin="10, 1, 10, 10"
+                      HorizontalAlignment="Left" SelectedIndex="0" SelectionChanged="CmbCommandBarFlyoutOutputDebugStringLevel_SelectionChanged">
+                <ComboBoxItem>None</ComboBoxItem>
+                <ComboBoxItem>Info</ComboBoxItem>
+                <ComboBoxItem>Verbose</ComboBoxItem>
+            </ComboBox>
         </StackPanel>
     </Grid>
 </local:TestPage>

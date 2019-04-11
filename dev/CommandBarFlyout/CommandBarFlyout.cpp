@@ -8,6 +8,10 @@
 #include "Vector.h"
 #include "RuntimeProfiler.h"
 
+// Change to 'true' to turn on debugging outputs in Output window
+bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };
+bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };
+
 CommandBarFlyout::CommandBarFlyout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_CommandBarFlyout);
