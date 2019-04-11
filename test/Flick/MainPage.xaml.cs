@@ -96,6 +96,11 @@ namespace Flick
         {
             repeater.Layout = activityLayout;
         }
+
+        private void AppBarButton_Click_3(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(GroupedPage), new NavigateArgs() { Photos = Images });
+        }
     }
 
     public class NavigateArgs

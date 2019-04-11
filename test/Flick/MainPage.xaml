@@ -25,6 +25,7 @@
                             <AppBarButton Icon="List" Click="AppBarButton_Click" />
                             <AppBarButton Icon="SelectAll" Click="AppBarButton_Click_1" />
                             <AppBarButton Icon="Accept" Click="AppBarButton_Click_2" />
+                            <AppBarButton Icon="Globe" Click="AppBarButton_Click_3" />
                         </StackPanel>
                     </Grid>
                     <controls:ItemsRepeater x:Name="repeater" >
