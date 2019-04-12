@@ -1,0 +1,130 @@
+﻿<Page
+    x:Class="MUXControlsAdhocApp.GridPages.GridColumnAndRowStartPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsAdhocApp.GridPages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel>
+
+        <TextBlock>Columns: 40px 50px auto 50px 40px</TextBlock>
+        <TextBlock>Rows: 25% 100px auto</TextBlock>
+
+        <!-- MaxHeight is necessary because 25% of Infinity is Infinity :/ -->
+        <Grid MaxHeight="500">
+
+            <local:Grid>
+                <local:Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="FontSize" Value="18"/>
+                    </Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Background" Value="Orange"/>
+                        <Setter Property="Margin" Value="2"/>
+                        <Setter Property="CornerRadius" Value="6"/>
+                        <Setter Property="BorderBrush" Value="Black"/>
+                        <Setter Property="BorderThickness" Value="2"/>
+                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                        <Setter Property="VerticalAlignment" Value="Stretch"/>
+                    </Style>
+                </local:Grid.Resources>
+                
+                <!--
+                    grid-template-columns: [first] 40px [line2] 50px [line3] auto [col4-start] 50px [five] 40px [end];
+                    grid-template-rows: [row1-start] 25% [row1-end] 100px [third-line] auto [last-line];
+                -->
+                <local:Grid.TemplateColumns>
+                    <local:GridTrackInfo Length="40" LineName="first"/>
+                    <local:GridTrackInfo Length="50" LineName="line2"/>
+                    <local:GridTrackInfo Auto="True" LineName="line3"/>
+                    <local:GridTrackInfo Length="50" LineName="col4-start"/>
+                    <local:GridTrackInfo Length="40" LineName="five"/>
+                    <!-- TODO: LineName="end" as a name for the last edge -->
+                </local:Grid.TemplateColumns>
+                <local:Grid.TemplateRows>
+                    <local:GridTrackInfo Percentage="0.25" LineName="row1-start"/>
+                    <local:GridTrackInfo Length="100" LineName="row1-end"/>
+                    <local:GridTrackInfo Auto="True" LineName="third-line"/>
+                    <!-- TODO: LineName="last-line" as a name for the last edge -->
+                </local:Grid.TemplateRows>
+
+                <!--
+                .item-a {
+                    grid-column-start: 2;
+                    grid-column-end: five;
+                    grid-row-start: row1-start
+                    grid-row-end: 3;
+                }-->
+                <Grid Background="#88FFA500">
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation Index="1"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.ColumnEnd>
+                        <local:GridLocation LineName="five"/>
+                    </local:Grid.ColumnEnd>
+                    <local:Grid.RowStart>
+                        <local:GridLocation LineName="row1-start"/>
+                    </local:Grid.RowStart>
+                    <local:Grid.RowEnd>
+                        <local:GridLocation Index="2"/>
+                    </local:Grid.RowEnd>
+                    <TextBlock>item-a</TextBlock>
+                </Grid>
+
+                <!--
+                .item-b {
+                    grid-column-start: 1;
+                    grid-column-end: span col4-start;
+                    grid-row-start: 2
+                    grid-row-end: span 2
+                }-->
+                <Grid Background="#880000FF">
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation Index="0"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.ColumnEnd>
+                        <local:GridLocation LineName="col4-start"/>
+                    </local:Grid.ColumnEnd>
+                    <local:Grid.RowStart>
+                        <local:GridLocation Index="1"/>
+                    </local:Grid.RowStart>
+                    <local:Grid.RowEnd>
+                        <local:GridLocation Span="2"/>
+                    </local:Grid.RowEnd>
+                    <TextBlock>item-b</TextBlock>
+                </Grid>
+
+                <!--
+                .item-c {
+                    grid-column: 3 / span 2;
+                    grid-row: third-line / 4;
+                }-->
+                <Grid Background="#88FF0000">
+                    <local:Grid.ColumnStart>
+                        <local:GridLocation Index="2"/>
+                    </local:Grid.ColumnStart>
+                    <local:Grid.ColumnEnd>
+                        <local:GridLocation Span="2"/>
+                    </local:Grid.ColumnEnd>
+                    <local:Grid.RowStart>
+                        <local:GridLocation LineName="third-line"/>
+                    </local:Grid.RowStart>
+                    <local:Grid.RowEnd>
+                        <local:GridLocation Index="3"/>
+                    </local:Grid.RowEnd>
+                    <TextBlock>item-c</TextBlock>
+                </Grid>
+
+            </local:Grid>
+
+        </Grid>
+
+    </StackPanel>
+</Page>

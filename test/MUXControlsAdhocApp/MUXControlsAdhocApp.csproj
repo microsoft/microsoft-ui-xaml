@@ -174,6 +174,9 @@
     <Compile Include="GridPages\GridColumnAndRowGapPage.xaml.cs">
       <DependentUpon>GridColumnAndRowGapPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GridPages\GridColumnAndRowStartPage.xaml.cs">
+      <DependentUpon>GridColumnAndRowStartPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GridPages\GridJustifyAndAlignContentPage.xaml.cs">
       <DependentUpon>GridJustifyAndAlignContentPage.xaml</DependentUpon>
     </Compile>
@@ -282,6 +285,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="GridPages\GridColumnAndRowGapPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GridPages\GridColumnAndRowStartPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

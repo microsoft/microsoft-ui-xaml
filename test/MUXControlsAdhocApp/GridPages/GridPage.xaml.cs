@@ -53,6 +53,7 @@ namespace MUXControlsAdhocApp.GridPages
                     break;
 
                 case "ColumnStartAndRowStart":
+                    _contentFrame.Navigate(typeof(GridColumnAndRowStartPage));
                     break;
 
                 case "ColumnEndAndRowEnd":
