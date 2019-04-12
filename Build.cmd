@@ -108,9 +108,9 @@ REM
 REM     NUGET Restore
 REM
 if "%PROJECTPATH%" NEQ "" (
-    call .\Tools\NugetWrapper.cmd restore -NonInteractive %PROJECTPATH%
+	call .\Tools\NugetWrapper.cmd restore -MSBuildPath "%VSINSTALLDIR%\MSBuild\15.0\Bin" -NonInteractive %PROJECTPATH%
 ) else (
-    call .\Tools\NugetWrapper.cmd restore -NonInteractive .\MUXControls.sln
+	call .\Tools\NugetWrapper.cmd restore -MSBuildPath "%VSINSTALLDIR%\MSBuild\15.0\Bin" -NonInteractive .\MUXControls.sln 
 )
 
 REM
