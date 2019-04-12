@@ -130,6 +130,19 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="PaneVisibilityGroup">
+                                <VisualState x:Name="PaneVisible" />
+                                <VisualState x:Name="PaneCollapsed">
+                                    <VisualState.Setters>
+                                        <!-- Note that RootSplitView.DisplayMode is set in code so we don't want to -->
+                                        <!-- write it here and interfere. But these values work together to hide -->
+                                        <!-- the left pane. -->
+                                        <Setter Target="RootSplitView.CompactPaneLength" Value="0" />
+                                        <Setter Target="PaneToggleButtonGrid.Visibility" Value="Collapsed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Grid
@@ -250,13 +263,12 @@
                                     <Button 
                                         x:Name="TopNavOverflowButton"
                                         Grid.Column="4"
-
                                         Content="More"
                                         Style="{StaticResource NavigationViewOverflowButtonStyleWhenPaneOnTop}"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.OverflowButtonVisibility}">
 
                                         <Button.Flyout>
-                                            <Flyout Placement="Bottom">
+                                            <Flyout Placement="Bottom" ElementSoundMode="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ElementSoundMode}">
                                                 <Flyout.FlyoutPresenterStyle>
                                                     <Style TargetType="FlyoutPresenter">
                                                         <Setter Property="Padding" Value="0,8" />
@@ -271,7 +283,8 @@
                                                     ItemContainerStyle="{TemplateBinding MenuItemContainerStyle}"
                                                     ItemContainerStyleSelector="{TemplateBinding MenuItemContainerStyleSelector}"
                                                     SingleSelectionFollowsFocus="False"
-                                                    IsItemClickEnabled="True">
+                                                    IsItemClickEnabled="True"
+                                                    ElementSoundMode="{TemplateBinding ElementSoundMode}">
                                                     <ListView.ItemContainerTransitions>
                                                         <TransitionCollection />
                                                     </ListView.ItemContainerTransitions>
@@ -310,7 +323,7 @@
 
                                     <local:NavigationViewItem
                                             x:Name="SettingsTopNavPaneItem"
-                                            Style="{ThemeResource NavigationViewSettingsItemStyleWhenOnTopPane}"
+                                            Style="{ThemeResource MUX_NavigationViewSettingsItemStyleWhenOnTopPane}"
                                             Grid.Column="8"
                                             Icon="Setting"/>
 
@@ -500,27 +513,27 @@
                             <VisualStateGroup x:Name="ItemOnNavigationViewListPositionStates">
                                 <VisualState x:Name="OnLeftNavigation">
                                     <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnLeftPane}" />
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPane}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OnLeftNavigationReveal">
                                     <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnLeftPaneWithRevealFocus}" />
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPaneWithRevealFocus}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OnTopNavigationPrimary">
                                     <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnTopPane}" />
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPane}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OnTopNavigationPrimaryReveal">
                                     <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus}" />
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OnTopNavigationOverflow">
                                     <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource NavigationViewItemPresenterStyleWhenOnTopPaneOverflow}" />
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPaneOverflow}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>

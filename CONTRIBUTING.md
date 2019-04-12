@@ -40,10 +40,10 @@ While we strive to accept all community contributions that meet the guidelines o
 
 For details see:
 
-* [Source code structure](docs/developer_guide.md#Source%20code%20structure)
-* [Setup and build environment](docs/developer_guide.md#Building%20the%20repository)
-* [Development process](docs/contribution_workflow.md)
-* [Coding style and conventions](docs/developer_guide.md#Code%20style%20and%20conventions)
+* [Setup and build environment](docs/developer_guide.md#Prerequisites)
+* [Source code structure](docs/source_code_structure.md)
+* [Contribution workflow](docs/contribution_workflow.md)
+* [Coding style and conventions](docs/code_style_and_conventions.md)
 
 ### Contributor License Agreement
 

@@ -3,83 +3,6 @@
 #define WUXC_VERSION_RS5_CONTRACT  7
 #define WUXC_VERSION_19H1_CONTRACT 8
 
-#ifdef BUILD_WINDOWS
-
-// USE_INSIDER_SDK is defined here because the definition 
-// in environment.props is not used in razzle. The BUILD_WINDOWS label 
-// is defined by build.cmd automatically.
-#define USE_INSIDER_SDK
-
-#define MU_XC_NAMESPACE Windows.UI.Xaml.Controls
-#define MU_XCP_NAMESPACE Windows.UI.Xaml.Controls.Primitives
-#define MU_XM_NAMESPACE Windows.UI.Xaml.Media
-#define MU_XAP_NAMESPACE Windows.UI.Xaml.Automation.Peers
-#define MU_PRIVATE_CONTROLS_NAMESPACE Windows.UI.Xaml.Controls
-#define MU_PRIVATE_MEDIA_NAMESPACE Windows.UI.Xaml.Media
-
-import "oaidl.idl";
-import "contactmanager.idl";
-import "windows.foundation.idl";
-import "windows.system.input.idl";
-import "windows.ui.composition.interactions.idl";
-import "windows.ui.core.corewindow.idl";
-import "windows.ui.input.gesturerecognizer.idl";
-import "windows.ui.input.pointerpoint.idl";
-import "windows.ui.xaml.idl";
-import "windows.ui.xaml-private.idl";
-import "displayproperties.idl";
-
-#include <FeatureStaging-XAML.h>
-
-namespace Windows.UI.Xaml
-{
-    apicontract PrivateApiContract;
-}
-
-namespace Windows.Foundation
-{
-    apicontract UniversalApiContract;
-}
-
-#define WUXC_VERSION_RS3 contract(Windows.Foundation.UniversalApiContract, WUXC_VERSION_RS3_CONTRACT)
-#define WUXC_VERSION_RS4 contract(Windows.Foundation.UniversalApiContract, WUXC_VERSION_RS4_CONTRACT)
-#define WUXC_VERSION_RS5 contract(Windows.Foundation.UniversalApiContract, WUXC_VERSION_RS5_CONTRACT)
-#define WUXC_VERSION_19H1 contract(Windows.Foundation.UniversalApiContract, WUXC_VERSION_19H1_CONTRACT)
-
-// Test internal APIs
-#define WUXC_VERSION_INTERNAL WUXC_VERSION_19H1, feature(Feature_WUXCPreviewTypes)
-// Preview APIs
-#define WUXC_VERSION_PREVIEW WUXC_VERSION_19H1, feature(Feature_WUXCPreviewTypes)
-// Public APIs
-#define WUXC_VERSION_MUXONLY WUXC_VERSION_PREVIEW
-
-#define WUXC_INTERFACE_NAME(name, uuid) interface_name(name, uuid)
-#define WUXC_STATIC_NAME(name, uuid) static_name(name, uuid)
-#define WUXC_CONSTRUCTOR_NAME(name, uuid) constructor_name(name, uuid)
-
-#define MUX_HAS_CUSTOM_FACTORY
-#define MUX_PROPERTY_NEEDS_DP_FIELD
-#define MUX_PROPERTY_CHANGED_CALLBACK(enable) 
-#define MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME(name) 
-#define MUX_DEFAULT_VALUE(value) 
-#define MUX_PROPERTY_TYPE(value) 
-#define MUX_PROPERTY_VALIDATION_CALLBACK(value)
-
-#else
-// TODO: Remove after this is fixed: BUG 17488419: MIDL "import winmd" behavior doesn't carry through parameter names of methods on implemented interfaces
-// Because of it in RELEASE builds we use the old IDL includes, but in debug we still use importwinmd behavior to get faster VS builds
-#ifndef DEBUG
-import "inspectable.idl";
-import "Windows.Foundation.idl";
-import "Windows.UI.idl";
-import "Windows.UI.Xaml.idl";
-import "Windows.UI.Xaml.Controls.idl";
-import "Windows.UI.Xaml.CustomAttributes.idl";
-import "Windows.UI.Xaml.Markup.idl";
-import "Windows.UI.Composition.Effects.idl";
-import "Windows.UI.Composition.Interactions.idl";
-#endif
-
 #define MU_XC_NAMESPACE Microsoft.UI.Xaml.Controls
 #define MU_XCP_NAMESPACE Microsoft.UI.Xaml.Controls.Primitives
 #define MU_XM_NAMESPACE Microsoft.UI.Xaml.Media
@@ -213,9 +136,6 @@ namespace Microsoft.UI.Xaml.CustomAttributes
 // Instance method on the owning type that can be used to validate or coerce the value.
 #define MUX_PROPERTY_VALIDATION_CALLBACK(value) muxpropertyvalidationcallback(value)
 
-#endif
-
-#ifndef BUILD_WINDOWS
 namespace MU_X_XTI_NAMESPACE
 {
     [WUXC_VERSION_MUXONLY]
@@ -232,132 +152,26 @@ namespace MU_X_XTI_NAMESPACE
         static void Initialize();
     }
 }
-#endif
 
 
 namespace MU_XC_NAMESPACE
 {
-#include <Materials\Reveal\RevealControls.idl>
-#include <NavigationView\NavigationView.idl>
-#include <ParallaxView\ParallaxView.idl>
-#include <Repeater\ItemsRepeater.idl>
-#include <Repeater\RepeaterAutomationPeer.idl>
-#include <Scroller\Scroller.idl>
-#include <LayoutPanel\LayoutPanel.idl>
-
-#ifndef BUILD_WINDOWS
-#include <IconSource\IconSource.idl>
-#endif
-
-#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
-#include <ColorPicker\Common.idl>
-#include <ColorPicker\ColorPicker.idl>
-#include <CommandBarFlyout\CommandBarFlyout.idl>
-#include <MenuBar\MenuBar.idl>
-#include <PersonPicture\PersonPicture.idl>
-#include <PullToRefresh\RefreshVisualizer\RefreshVisualizer.idl>
-#include <PullToRefresh\RefreshContainer\RefreshContainer.idl>
-#include <RatingControl\RatingControl.idl>
-#include <TwoPaneView\TwoPaneView.idl>
-#include <SwipeControl\SwipeControl.idl>
-#include <TreeView\TreeView.idl>
-#include <SplitButton\SplitButton.idl>
-#include <SplitButton\SplitButtonAutomationPeer.idl>
-#include <DropDownButton\DropDownButton.idl>
-#include <DropDownButton\DropDownButtonAutomationPeer.idl>
-#include <RadioButtons\RadioButtons.idl>
-#include <RadioMenuFlyoutItem\RadioMenuFlyoutItem.idl>
-#ifndef BUILD_WINDOWS
-#include <ScrollViewer\ScrollViewer.idl>
-#include <ScrollBar2\ScrollBar2.idl>
-#endif
-#endif
-
-
     [WUXC_VERSION_MUXONLY]
     [webhosthidden]
     [default_interface]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
     runtimeclass XamlControlsResources : Windows.UI.Xaml.ResourceDictionary
     {
         XamlControlsResources();
         static void EnsureRevealLights(Windows.UI.Xaml.UIElement element);
+
+        [WUXC_VERSION_PREVIEW]
+        {
+            [MUX_DEFAULT_VALUE("false")]
+            Boolean UseCompactResources{ get; set; };
+
+            static Windows.UI.Xaml.DependencyProperty UseCompactResourcesProperty{ get; };
+        }
     }
-}
-
-namespace MU_XCP_NAMESPACE
-{
-#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
-#include <ColorPicker\ColorSpectrum.idl>
-#include <ColorPicker\ColorPickerSlider.idl>
-#include <CommandBarFlyout\CommandBarFlyoutCommandBar.idl>
-#include <RadioButtons\RadioButtonsPrimitives.idl>
-#endif
-#include <NavigationView\NavigationViewItemPresenter.idl>
-#include <Scroller\ScrollerPrimitives.idl>
-#include <Scroller\ScrollerAutomationPeer.idl>
-}
-
-namespace MU_XM_NAMESPACE
-{
-#include <Materials\Acrylic\AcrylicBrush.idl>
-#include <Materials\Reveal\RevealBrush.idl>
-}
-
-namespace MU_XAP_NAMESPACE
-{
-#include <NavigationView\NavigationViewItemAutomationPeer.idl>
-
-#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
-#include <ColorPicker\ColorSpectrumAutomationPeer.idl>
-#include <ColorPicker\ColorPickerSliderAutomationPeer.idl>
-#include <MenuBar\MenuBarAutomationPeer.idl>
-#include <PersonPicture\PersonPictureAutomationPeer.idl>
-#include <RatingControl\RatingControlAutomationPeer.idl>
-#include <TreeView\TreeViewAutomationPeers.idl>
-#include <RadioButtons\RadioButtonsAutomationPeer.idl>
-#endif
-}
-
-// Types in these namespaces end up in a separate WinMD from the public types in the MUXControls repo
-// and therefore are "private" because we don't give Microsoft.UI.Private.WinMD to any customers.
-// However, it is useful for these types to still be in a WinMD so that we can use them from our test app.
-namespace MU_PRIVATE_CONTROLS_NAMESPACE
-{
-// These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
-// We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
-// to non-public types.  So for now we'll just exclude these from the OS repo.
-#ifndef BUILD_WINDOWS
-#include <Interactions\ButtonInteraction\ButtonInteraction.idl>
-#include <Interactions\SliderInteraction\SliderInteraction.idl>
-#endif
-
-#include <Repeater\RepeaterPrivate.idl>
-#include <TestHooks\MUXControlsTestHooks.idl>
-#include <TestHooks\RepeaterTestHooks.idl>
-#include <TestHooks\ScrollerTestHooks.idl>
-
-#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
-#include <TestHooks\SwipeTestHooks.idl>
-#include <ColorPicker\SpectrumBrush.idl>
-#include <PullToRefresh\RefreshVisualizer\RefreshVisualizerPrivate.idl>
-#include <PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\ScrollViewerIRefreshInfoProviderAdapter.idl>
-#include <PullToRefresh\RefreshContainer\RefreshContainerPrivate.idl>
-#include <PullToRefresh\RefreshVisualizer\PullToRefreshHelperTestAPI.idl>
-#include <TwoPaneView\DisplayRegionHelperTestApi.idl>
-#include <SplitButton\SplitButtonTestApi.idl>
-#ifndef BUILD_WINDOWS
-#include <TestHooks\ScrollViewerTestHooks.idl>
-#endif
-#endif
-}
-
-namespace MU_PRIVATE_MEDIA_NAMESPACE
-{
-#include <Lights\RevealBorderLight.idl>
-#include <Lights\RevealHoverLight.idl>
-#include <Lights\RevealTestApi.idl>
-#include <Lights\MaterialHelperTestApi.idl>
-#include <Lights\XamlAmbientLight.idl>
-#include <Materials\Reveal\RevealBrushTestApi.idl>
-#include <Materials\Acrylic\AcrylicTestApi.idl>
 }

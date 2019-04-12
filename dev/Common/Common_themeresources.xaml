@@ -9,12 +9,18 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
+            <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
+            <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
+            <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
+   
+    <!-- DateTimeFlyoutBorderPadding is defined since RS5. set it here to ensure it's always defined. -->
+    <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
 </ResourceDictionary>

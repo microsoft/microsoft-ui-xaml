@@ -11,18 +11,25 @@ You can download and use WinUI packages in your app using the NuGet package mana
 
 ### Packages
 
-| NuGet Package | Build Status | Latest Versions |
-| --- | --- | --- |
-| [Microsoft.UI.Xaml](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> Controls and Fluent Design for UWP apps | [![Build Status](https://dev.azure.com/ms/microsoft-ui-xaml/_apis/build/status/WinUI-Public-MUX-CI?branchName=master)](https://dev.azure.com/ms/microsoft-ui-xaml/_build/latest?definitionId=20?branchName=master) | [![latest stable version](https://img.shields.io/nuget/v/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml/absoluteLatest) |
-| [Microsoft.UI.Xaml.Core.Direct](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct) <br /> Low-level APIs for middleware components | | [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.Core.Direct.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct/absoluteLatest) |
+| NuGet Package | Build Status | Latest Versions | Documentation |
+| --- | --- | --- | --- |
+| [Microsoft.UI.Xaml](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> Controls and Fluent Design for UWP apps | [![Build Status](https://dev.azure.com/ms/microsoft-ui-xaml/_apis/build/status/WinUI-Public-MUX-CI?branchName=master)](https://dev.azure.com/ms/microsoft-ui-xaml/_build/latest?definitionId=20?branchName=master) | [![latest stable version](https://img.shields.io/nuget/v/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml/absoluteLatest) | [2.0 release](https://docs.microsoft.com/uwp/toolkits/winui/release-notes/winui-2.0) <br /> [2.1 prerelease](https://docs.microsoft.com/uwp/toolkits/winui/release-notes/winui-2.1) |
+| [Microsoft.UI.Xaml.Core.Direct](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct) <br /> Low-level APIs for middleware components | | [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.Core.Direct.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct/absoluteLatest) | [2.0 prerelease](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.core.direct) |
 
 You can also build a WinUI package yourself from source. See [Contributing to the Windows UI Library](CONTRIBUTING.md) for more information on building and contributing to WinUI.
 
 ## Documentation
 
-WinUI usage documentation can be found here:
-
+**WinUI usage documentation**:  
 https://docs.microsoft.com/uwp/toolkits/winui
+
+**Release notes**:  
+https://docs.microsoft.com/uwp/toolkits/winui/release-notes/
+
+**Sample code**:  
+To view the WinUI controls in an interactive format, check out the Xaml Controls Gallery:
+* Get the XAML Controls Gallery app from the [Microsoft Store](https://www.microsoft.com/store/productId/9MSVH128X2ZT)
+* Get the source code on [GitHub](https://github.com/Microsoft/Xaml-Controls-Gallery)
 
 ## Contributing to WinUI
 The WinUI team welcomes feedback and contributions!
@@ -57,37 +64,6 @@ Your app's users can be on any of the following supported Windows versions:
 * Anniversary Update (14393)
 
 Some features may have a reduced or slightly different user experience on older versions, particularly on builds before 15063. This should not impact overall usability.
-
-### Contents
-
-The **Microsoft.UI.Xaml** 2.0 stable package includes:
-
-* Fluent Design control styles for all XAML controls (from both WinUI and the standard Windows 10 SDK)
-* Fluent materials and styles including [Fluent Acrylic](https://docs.microsoft.com/windows/uwp/design/style/acrylic) and [Fluent Reveal](https://docs.microsoft.com/windows/uwp/design/style/reveal)
-* Many new and popular controls like 
-[ColorPicker](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.colorpicker),
-[MenuBar](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.menubar),
-[NavigationView](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.navigationview),
-[ParallaxView](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.parallaxview),
-[PersonPicture](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.personpicture),
-[RatingControl](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.ratingcontrol),
-[RefreshContainer](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.refreshcontainer),
-[SplitButton](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.splitbutton),
-[SwipeControl](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.swipecontrol),
-and
-[TreeView](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.treeview)
-
-Prerelease Microsoft.UI.Xaml packages also include previews of features and controls that we are still working on, like:
-* [LayoutPanel](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.layoutpanel),
-[Repeater](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.repeater),
-[Scroller](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scroller),
-[ScrollViewer](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollviewer),
-and
-[ScrollBar2](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollbar2)
-
-The **Microsoft.UI.Xaml.Core.Direct** package includes:
-
-* [XamlDirect](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.core.direct) and related APIs to improve performance for middleware components
 
 ## Roadmap
 

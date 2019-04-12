@@ -15,7 +15,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)ParallaxView.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ParallaxView.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ParallaxView.h" />

@@ -1,0 +1,101 @@
+﻿<local:TestPage
+    x:Class="MUXControlsTestApp.AnimatedVisualPlayerPage"
+    x:Name="AnimatedVisualPlayerTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:lotties="using:AnimatedVisuals"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <local:MyCommand x:Key="TestExecuteCommand" />
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+        <RelativePanel x:Name="ParentPanel">
+            <Button x:Name="PlayButton" AutomationProperties.Name="PlayButton" Click="PlayButton_Click"/>
+            <TextBox x:Name="ProgressTextBox"
+                IsEnabled="False"
+                AutomationProperties.Name="ProgressTextBox"
+                Text="None"
+                RelativePanel.Below="PlayButton"/>
+            <TextBox x:Name="IsPlayingTextBoxBeforePlaying"
+                IsEnabled="False"
+                AutomationProperties.Name="IsPlayingTextBoxBeforePlaying"
+                Text="None"
+                RelativePanel.Below="ProgressTextBox"/>
+            <TextBox x:Name="IsPlayingTextBoxBeingPlaying"
+                IsEnabled="False"
+                AutomationProperties.Name="IsPlayingTextBoxBeingPlaying"
+                Text="None"
+                RelativePanel.Below="IsPlayingTextBoxBeforePlaying"/>
+            <Button x:Name="ToZeroKeyframeAnimationPlayButton"
+                AutomationProperties.Name="ToZeroKeyframeAnimationPlayButton"
+                Click="ToZeroKeyframeAnimationPlayButton_Click"
+                RelativePanel.Below="IsPlayingTextBoxBeingPlaying"/>
+            <TextBox x:Name="ToZeroKeyframeAnimationProgressTextBox"
+                IsEnabled="False"
+                AutomationProperties.Name="ToZeroKeyframeAnimationProgressTextBox"
+                Text="None"
+                RelativePanel.Below="ToZeroKeyframeAnimationPlayButton"/>
+            <Button x:Name="FromOneKeyframeAnimationPlayButton"
+                AutomationProperties.Name="FromOneKeyframeAnimationPlayButton"
+                Click="FromOneKeyframeAnimationPlayButton_Click"
+                RelativePanel.Below="ToZeroKeyframeAnimationProgressTextBox"/>
+            <TextBox x:Name="FromOneKeyframeAnimationProgressTextBox"
+                IsEnabled="False"
+                AutomationProperties.Name="FromOneKeyframeAnimationProgressTextBox"
+                Text="None"
+                RelativePanel.Below="FromOneKeyframeAnimationPlayButton"/>
+            <Button x:Name="ReverseNegativePlaybackRateAnimationPlayButton"
+                AutomationProperties.Name="ReverseNegativePlaybackRateAnimationPlayButton"
+                Click="ReverseNegativePlaybackRateAnimationPlayButton_Click"
+                RelativePanel.Below="FromOneKeyframeAnimationProgressTextBox"/>
+            <TextBox x:Name="ReverseNegativePlaybackRateAnimationTextBox"
+                IsEnabled="False"
+                AutomationProperties.Name="ReverseNegativePlaybackRateAnimationTextBox"
+                Text="None"
+                RelativePanel.Below="ReverseNegativePlaybackRateAnimationPlayButton"/>
+            <Button x:Name="ReversePositivePlaybackRateAnimationPlayButton"
+                AutomationProperties.Name="ReversePositivePlaybackRateAnimationPlayButton"
+                Click="ReversePositivePlaybackRateAnimationPlayButton_Click"
+                RelativePanel.Below="ReverseNegativePlaybackRateAnimationTextBox"/>
+            <TextBox x:Name="ReversePositivePlaybackRateAnimationTextBox"
+                IsEnabled="False"
+                AutomationProperties.Name="ReversePositivePlaybackRateAnimationTextBox"
+                Text="None"
+                RelativePanel.Below="ReversePositivePlaybackRateAnimationPlayButton"/>
+            <TextBox x:Name="HittestingTextBox"
+                IsEnabled="False"
+                AutomationProperties.Name="HittestingTextBox"
+                Text="None"
+                RelativePanel.Below="ReversePositivePlaybackRateAnimationTextBox"/>
+            <Button x:Name="FallenBackButton"
+                AutomationProperties.Name="FallenBackButton"
+                Click="FallenBackButton_ClickAsync"
+                RelativePanel.Below="HittestingTextBox"/>
+            <TextBox x:Name="FallenBackTextBox"
+                IsEnabled="False"
+                AutomationProperties.Name="FallenBackTextBox"
+                Text="None"
+                RelativePanel.Below="FallenBackButton"/>
+            <controls:AnimatedVisualPlayer
+                x:Name="Player"
+                AutomationProperties.Name="Player"
+                AutomationProperties.LabeledBy="{Binding ElementName=ProgressTextBox}"
+                RelativePanel.AlignHorizontalCenterWithPanel="True"
+                AutoPlay="False"
+                PointerMoved="Player_PointerMoved">
+                <lotties:LottieLogo/>
+                <controls:AnimatedVisualPlayer.FallbackContent>
+                    <DataTemplate>
+                        <local:FallbackGrid/>
+                    </DataTemplate>
+                </controls:AnimatedVisualPlayer.FallbackContent>
+            </controls:AnimatedVisualPlayer>
+        </RelativePanel>
+    </Grid>
+</local:TestPage>

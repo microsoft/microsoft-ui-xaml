@@ -108,6 +108,11 @@ namespace MUXControlsTestApp
             "zh-TW"
         };
 
+        public List<FlowDirection> FlowDirections
+        {
+            get;
+        } = new List<FlowDirection>() { FlowDirection.LeftToRight, FlowDirection.RightToLeft };
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -122,6 +127,13 @@ namespace MUXControlsTestApp
                 AutomationProperties.SetAutomationId(item, locale);
             }
 
+            foreach (var flowDirection in FlowDirections)
+            {
+                var item = new ComboBoxItem { Content = flowDirection.ToString(), Tag = flowDirection };
+                FlowDirectionChooser.Items.Add(item);
+                AutomationProperties.SetAutomationId(item, flowDirection.ToString());
+            }
+
             // This setting is persisted across multiple openings of an app, so we always want to initialize it to en-US
             // in case the app crashed while in a different language or otherwise was not able to set it back.
             MUXControlsTestApp.App.LanguageOverride = "en-US";
@@ -129,6 +141,7 @@ namespace MUXControlsTestApp
             // We'll additionally make sure that the combo box begins on the right element to reflect the current value.
             LanguageChooser.SelectedIndex = locales.IndexOf("en-US");
             LongAnimationsDisabled.IsChecked = MUXControlsTestApp.App.DisableLongAnimations;
+            FlowDirectionChooser.SelectedIndex = FlowDirections.IndexOf(GetRootFlowDirection());
 
             // App remembers ExtendViewIntoTitleBar and the value persists true if test case aborted and didn't change it back
             // Always set it to false when app restarted
@@ -210,6 +223,20 @@ namespace MUXControlsTestApp
         private void LongAnimationsDisabled_Unchecked(object sender, RoutedEventArgs e)
         {
             MUXControlsTestApp.App.DisableLongAnimations = false;
+        }
+
+        private void FlowDirectionChooser_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            FrameworkElement root = Window.Current.Content as FrameworkElement;
+            if (root != null)
+            {
+                root.FlowDirection = (FlowDirection)((ComboBoxItem)FlowDirectionChooser.SelectedItem).Tag;
+            }
+        }
+
+        private FlowDirection GetRootFlowDirection()
+        {
+            return (Window.Current.Content as FrameworkElement)?.FlowDirection ?? FlowDirection.LeftToRight;
         }
     }
 }

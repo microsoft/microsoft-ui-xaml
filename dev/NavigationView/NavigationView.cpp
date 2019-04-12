@@ -37,6 +37,7 @@ static constexpr auto c_headerContent = L"HeaderContent"sv;
 static constexpr auto c_navViewBackButton = L"NavigationViewBackButton"sv;
 static constexpr auto c_navViewBackButtonToolTip = L"NavigationViewBackButtonToolTip"sv;
 static constexpr auto c_buttonHolderGrid = L"ButtonHolderGrid"sv;
+static constexpr auto c_paneShadowReceiverCanvas = L"PaneShadowReceiver"sv;
 
 static constexpr auto c_topNavMenuItemsHost = L"TopNavMenuItemsHost"sv;
 static constexpr auto c_topNavOverflowButton = L"TopNavOverflowButton"sv;
@@ -54,10 +55,10 @@ static constexpr auto c_paneHeaderOnTopPane = L"PaneHeaderOnTopPane"sv;
 static constexpr auto c_paneCustomContentOnTopPane = L"PaneCustomContentOnTopPane"sv;
 static constexpr auto c_paneFooterOnTopPane = L"PaneFooterOnTopPane"sv;
 
-static constexpr int c_backButtonHeight = 44;
-static constexpr int c_backButtonWidth = 48;
+static constexpr int c_backButtonHeight = 40;
+static constexpr int c_backButtonWidth = 40;
 static constexpr int c_backButtonPaneButtonMargin = 8;
-static constexpr int c_paneToggleButtonWidth = 48;
+static constexpr int c_paneToggleButtonWidth = 40;
 static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior = 56;
 static constexpr int c_backButtonRowDefinition = 1;
 static constexpr float c_paneElevationTranslationZ = 32;
@@ -70,8 +71,6 @@ static constexpr float c_paneElevationTranslationZ = 32;
 constexpr int s_measureOnInitStep2CountThreshold{ 4 };
 
 static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
-
-using namespace std::chrono_literals;
 
 NavigationView::~NavigationView()
 {
@@ -134,6 +133,7 @@ NavigationView::NavigationView()
         });
 
     Unloaded({ this, &NavigationView::OnUnloaded });
+    Loaded({ this, &NavigationView::OnLoaded });
 }
 
 void NavigationView::OnApplyTemplate()
@@ -242,7 +242,7 @@ void NavigationView::OnApplyTemplate()
     {
         m_leftNavListView.set(leftNavListView);
 
-        m_leftNavListViewLoadedRevoker = leftNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnLoaded });
+        m_leftNavListViewLoadedRevoker = leftNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
 
         m_leftNavListViewSelectionChangedRevoker = leftNavListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
         m_leftNavListViewItemClickRevoker = leftNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
@@ -255,7 +255,7 @@ void NavigationView::OnApplyTemplate()
     {
         m_topNavListView.set(topNavListView);
 
-        m_topNavListViewLoadedRevoker = topNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnLoaded });
+        m_topNavListViewLoadedRevoker = topNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
 
         m_topNavListViewSelectionChangedRevoker = topNavListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
         m_topNavListViewItemClickRevoker = topNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
@@ -363,23 +363,7 @@ void NavigationView::OnApplyTemplate()
 
     m_accessKeyInvokedRevoker = AccessKeyInvoked(winrt::auto_revoke, { this, &NavigationView::OnAccessKeyInvoked });
 
-    if (SharedHelpers::IsThemeShadowAvailable())
-    {
-#ifdef USE_INSIDER_SDK
-        if (auto splitView = m_rootSplitView.get())
-        {
-            if (auto contentRoot = splitView.Content())
-            {
-                if (auto paneRoot = splitView.Pane())
-                {
-                    winrt::ThemeShadow shadow;
-                    shadow.Receivers().Append(contentRoot);
-                    paneRoot.Shadow(shadow);
-                }
-            }
-        }
-#endif
-    }
+    UpdatePaneShadow();
 
     m_appliedTemplate = true;
 
@@ -596,16 +580,22 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
         MUX_FAIL_FAST();
     }
 
-
+    auto previousMode = DisplayMode();
     SetDisplayMode(displayMode, forceSetDisplayMode);
 
-    if (displayMode == winrt::NavigationViewDisplayMode::Expanded)
+    if (displayMode == winrt::NavigationViewDisplayMode::Expanded && IsPaneVisible())
     {
         if (!m_wasForceClosed)
         {
             OpenPane();
         }
-    }     
+    }
+
+    if (previousMode == winrt::NavigationViewDisplayMode::Expanded
+        && displayMode == winrt::NavigationViewDisplayMode::Compact)
+    {
+        ClosePane();
+    }
 }
 
 void NavigationView::OnPaneToggleButtonClick(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
@@ -1403,10 +1393,13 @@ void NavigationView::RaiseItemInvoked(winrt::IInspectable const& item,
 // forceSetDisplayMode: On first call to SetDisplayMode, force setting to initial values
 void NavigationView::SetDisplayMode(const winrt::NavigationViewDisplayMode& displayMode, bool forceSetDisplayMode)
 {
+    // Need to keep the VisualStateGroup "DisplayModeGroup" updated even if the actual
+    // display mode is not changed. This is due to the fact that there can be a transition between
+    // 'Minimal' and 'MinimalWithBackButton'.
+    UpdateVisualStateForDisplayModeGroup(displayMode);
+
     if (forceSetDisplayMode || DisplayMode() != displayMode)
     {
-        UpdateVisualStateForDisplayModeGroup(displayMode);
-
         // Update header visibility based on what the new display mode will be
         UpdateHeaderVisibility(displayMode);
 
@@ -1486,6 +1479,12 @@ void NavigationView::UpdateVisualStateForDisplayModeGroup(const winrt::Navigatio
             visualStateName = L"Expanded";
             splitViewDisplayMode = winrt::SplitViewDisplayMode::CompactInline;
             break;
+        }
+
+        // When the pane is made invisible we need to collapse the pane part of the SplitView
+        if (!IsPaneVisible())
+        {
+            splitViewDisplayMode = winrt::SplitViewDisplayMode::CompactOverlay;
         }
 
         auto handled = false;
@@ -2646,7 +2645,19 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_IsPaneVisibleProperty)
     {
         UpdatePaneVisibility();
+        UpdateVisualStateForDisplayModeGroup(DisplayMode());
 
+        // When NavView is in expaneded mode with fixed window size, setting IsPaneVisible to false doesn't closes the pane
+        // We manually close/open it for this case
+        if (!IsPaneVisible() && IsPaneOpen())
+        {
+            ClosePane();
+        }
+
+        if (IsPaneVisible() && DisplayMode() == winrt::NavigationViewDisplayMode::Expanded && !IsPaneOpen())
+        {
+            OpenPane();
+        }
     }
     else if (property == s_OverflowLabelModeProperty)
     {
@@ -2673,11 +2684,16 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_IsSettingsVisibleProperty)
     {
         UpdateVisualState();
-    }        
+    }
+    else if (property == s_CompactPaneLengthProperty)
+    {
+        // Need to update receiver margins when CompactPaneLength changes
+        UpdatePaneShadow();
+    }
 }
 
 
-void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+void NavigationView::OnListViewLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     if (auto item = SelectedItem())
     {
@@ -2700,9 +2716,22 @@ void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEv
     }
 }
 
+// If app is .net app, the lifetime of NavigationView maybe depends on garbage collection.
+// Unlike other revoker, TitleBar is in global space and we need to stop receiving changed event when it's unloaded.
+// So we do hook it in Loaded and Unhook it in Unloaded
 void NavigationView::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
-    UnhookEventsAndClearFields();
+    m_titleBarMetricsChangedRevoker.revoke();
+    m_titleBarIsVisibleChangedRevoker.revoke();
+}
+
+void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+{
+    if (auto coreTitleBar = m_coreTitleBar.get())
+    {
+        m_titleBarMetricsChangedRevoker = coreTitleBar.LayoutMetricsChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarMetricsChanged });
+        m_titleBarIsVisibleChangedRevoker = coreTitleBar.IsVisibleChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarIsVisibleChanged });
+    }
 }
 
 void NavigationView::OnIsPaneOpenChanged()
@@ -2733,10 +2762,12 @@ void NavigationView::OnIsPaneOpenChanged()
 #ifdef USE_INSIDER_SDK
         if (auto splitView = m_rootSplitView.get())
         {
+            auto displayMode = splitView.DisplayMode();
+            auto isOverlay = displayMode == winrt::SplitViewDisplayMode::Overlay || displayMode == winrt::SplitViewDisplayMode::CompactOverlay;
             if (auto paneRoot = splitView.Pane())
             {
                 auto currentTranslation = paneRoot.Translation();
-                auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, IsPaneOpen() ? c_paneElevationTranslationZ : 0.0f };
+                auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, IsPaneOpen() && isOverlay ? c_paneElevationTranslationZ : 0.0f };
                 paneRoot.Translation(translation);
             }
         }
@@ -2842,11 +2873,15 @@ void NavigationView::UpdatePaneVisibility()
             templateSettings->TopPaneVisibility(winrt::Visibility::Collapsed);
             templateSettings->LeftPaneVisibility(winrt::Visibility::Visible);
         }
+
+        winrt::VisualStateManager::GoToState(*this, L"PaneVisible", false /*useTransitions*/);
     }
     else
     {
         templateSettings->TopPaneVisibility(winrt::Visibility::Collapsed);
         templateSettings->LeftPaneVisibility(winrt::Visibility::Collapsed);
+
+        winrt::VisualStateManager::GoToState(*this, L"PaneCollapsed", false /*useTransitions*/);
     }
 }
 
@@ -3116,6 +3151,7 @@ void NavigationView::UpdateListViewItemSource()
     if (!dataSource)
     {
         dataSource = MenuItems();
+        UpdateSelectionForMenuItems();
     }
 
     // Always unset the data source first from old ListView, then set data source for new ListView.
@@ -3134,6 +3170,38 @@ void NavigationView::UpdateListViewItemSource()
     {
         InvalidateTopNavPrimaryLayout();
         UpdateSelectedItem();
+    }
+}
+
+void NavigationView::UpdateSelectionForMenuItems()
+{
+    // Allow customer to set selection by NavigationViewItem.IsSelected.
+    // If there are more than two items are set IsSelected=true, the first one is actually selected.
+    // If SelectedItem is set, IsSelected is ignored.
+    //         <NavigationView.MenuItems>
+    //              <NavigationViewItem Content = "Collection" IsSelected = "True" / >
+    //         </NavigationView.MenuItems>
+    if (!SelectedItem() && !m_shouldIgnoreNextSelectionChange)
+    {
+        if (auto menuItems = MenuItems().try_as<winrt::IVector<winrt::IInspectable>>())
+        {
+            for (int i = 0; i < static_cast<int>(menuItems.Size()); i++)
+            {
+                if (auto item = menuItems.GetAt(i).try_as<winrt::NavigationViewItem>())
+                {
+                    if (item.IsSelected())
+                    {
+                        auto scopeGuard = gsl::finally([this]()
+                            {
+                                m_shouldIgnoreNextSelectionChange = false;
+                            });
+                        m_shouldIgnoreNextSelectionChange = true;
+                        SelectedItem(item);
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -3323,4 +3391,43 @@ bool NavigationView::IsFullScreenOrTabletMode()
     bool isTabletMode = m_uiViewSettings.UserInteractionMode() == winrt::ViewManagement::UserInteractionMode::Touch;
 
     return isFullScreenMode || isTabletMode;
+}
+
+void NavigationView::UpdatePaneShadow()
+{
+    if (SharedHelpers::IsThemeShadowAvailable())
+    {
+#ifdef USE_INSIDER_SDK
+        winrt::Canvas shadowReceiver = GetTemplateChildT<winrt::Canvas>(c_paneShadowReceiverCanvas, *this);
+        if (!shadowReceiver)
+        {
+            shadowReceiver = winrt::Canvas();
+            shadowReceiver.Name(c_paneShadowReceiverCanvas);
+
+            if (auto contentGrid = GetTemplateChildT<winrt::Grid>(c_contentGridName, *this))
+            {
+                contentGrid.SetRowSpan(shadowReceiver, contentGrid.RowDefinitions().Size());
+                contentGrid.Children().Append(shadowReceiver);
+
+                winrt::ThemeShadow shadow;
+                shadow.Receivers().Append(shadowReceiver);
+                if (auto splitView = m_rootSplitView.get())
+                {
+                    if (auto paneRoot = splitView.Pane())
+                    {
+                        if (auto paneRoot_uiElement10 = paneRoot.try_as<winrt::IUIElement10 >())
+                        {
+                            paneRoot_uiElement10.Shadow(shadow);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Shadow will get clipped if casting on the splitView.Content directly
+        // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
+        winrt::Thickness shadowReceiverMargin = { -CompactPaneLength(), -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
+        shadowReceiver.Margin(shadowReceiverMargin);
+#endif
+    }
 }

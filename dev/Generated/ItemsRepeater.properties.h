@@ -24,8 +24,8 @@ public:
     void ItemTemplate(winrt::IInspectable const& value);
     winrt::IInspectable ItemTemplate();
 
-    void Layout(winrt::VirtualizingLayout const& value);
-    winrt::VirtualizingLayout Layout();
+    void Layout(winrt::Layout const& value);
+    winrt::Layout Layout();
 
     void VerticalCacheLength(double value);
     double VerticalCacheLength();
@@ -59,4 +59,28 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnAnimatorPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnHorizontalCacheLengthPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnItemsSourcePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnItemTemplatePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnLayoutPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnVerticalCacheLengthPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 };

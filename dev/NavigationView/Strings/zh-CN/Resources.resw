@@ -141,6 +141,10 @@
     <value>后退按钮</value>
     <comment>Automation name for the nav view provided back button</comment>
   </data>
+  <data name="NavigationBackButtonToolTip" xml:space="preserve">
+    <value>返回</value>
+    <comment>ToolTip caption for the back button</comment>
+  </data>
   <data name="NavigationOverflowButtonName" xml:space="preserve">
     <value>更多按钮</value>
     <comment>Automation name for the nav view more button when panel is on top</comment>

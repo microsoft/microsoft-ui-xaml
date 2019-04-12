@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -20,6 +20,7 @@ namespace MUXControlsTestApp
             Tests.Add(new TestDeclaration("RatingControl Tests", typeof(RatingControlPage)));
             Tests.Add(new TestDeclaration("SwipeControl Tests", typeof(SwipePage)));
             Tests.Add(new TestDeclaration("TreeView Tests", typeof(TreeViewPage)));
+            Tests.Add(new TestDeclaration("TeachingTip Tests", typeof(TeachingTipPage)));
             Tests.Add(new TestDeclaration("TwoPaneView Tests", typeof(TwoPaneViewPage)));
             Tests.Add(new TestDeclaration("PTR Tests", typeof(PTRPage)));
             Tests.Add(new TestDeclaration("MenuBar Tests", typeof(MenuBarPage)));
@@ -29,6 +30,7 @@ namespace MUXControlsTestApp
             Tests.Add(new TestDeclaration("DropDownButton Tests", typeof(DropDownButtonPage)));
             Tests.Add(new TestDeclaration("CommandBarFlyout Tests", typeof(CommandBarFlyoutMainPage)));
             Tests.Add(new TestDeclaration("CommonStyles Tests", typeof(CommonStylesPage)));
+            Tests.Add(new TestDeclaration("Compact Tests", typeof(CompactPage)));
             Tests.Add(new TestDeclaration("RadioButtons Tests", typeof(RadioButtonsPage)));
             Tests.Add(new TestDeclaration("RadioMenuFlyoutItem Tests", typeof(RadioMenuFlyoutItemPage)));
 #endif
@@ -37,11 +39,13 @@ namespace MUXControlsTestApp
             // We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
             // to non-public types.  So for now we'll just exclude these from the OS repo.
 #if (!BUILD_WINDOWS && !BUILD_LEAN_MUX_FOR_THE_STORE_APP)
-            Tests.Add(new TestDeclaration("ScrollBar2 Tests", typeof(ScrollBar2Page)));
             Tests.Add(new TestDeclaration("ScrollViewer Tests", typeof(ScrollViewerPage)));
-#if (USE_INSIDER_SDK)
+#if (USE_INTERNAL_SDK)
             Tests.Add(new TestDeclaration("ButtonInteraction Tests", typeof(ButtonInteractionPage)));
             Tests.Add(new TestDeclaration("SliderInteraction Tests", typeof(SliderInteractionPage)));
+#endif
+#if (USE_INSIDER_SDK)
+            Tests.Add(new TestDeclaration("AnimatedVisualPlayer Tests", typeof(AnimatedVisualPlayerPage)));
 #endif
 #endif
             Tests.Add(new TestDeclaration("NavigationView Tests", typeof(NavigationViewCaseBundle)));

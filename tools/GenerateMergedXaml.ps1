@@ -706,7 +706,7 @@ foreach ($xamlFile in $XamlFileList.Split(';'))
         continue
     }
 
-    $xamlFileContent = Get-Content $xamlFile -Raw
+    [string]$xamlFileContent = Get-Content $xamlFile -Raw
 
     # We need to make sure that every newline is of the form CR LF since some of our regular expressions depend on that,
     # so let's replace every newline with that to make sure that we've got the correct newline pattern.
@@ -820,6 +820,11 @@ foreach ($xamlFile in $XamlFileList.Split(';'))
             # Remove the entire tag
             $xamlFileContent = $xamlFileContent -replace "<$prefixToRemove[^>]*/>",""
             $xamlFileContent = $xamlFileContent -replace "<$prefixToRemove[.\S\s]*?</$prefixToRemove\:[^>]*>","" 
+
+            #   <Rectangle x:Name="colorRectangle" Width="200" Height="200"
+            #      contract5NotPresent:Fill="{x:Bind ((SolidColorBrush)((FrameworkElement)colorComboBox.SelectedItem).Tag), Mode=OneWay}">
+            #
+            $xamlFileContent = $xamlFileContent -replace "(?m)\s$prefixToRemove\:\w+?=`"[^`"]+`"", ""
         }
         else
         {

@@ -1,6 +1,10 @@
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
 [WUXC_VERSION_INTERNAL]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 runtimeclass SpectrumBrush : Windows.UI.Xaml.Media.XamlCompositionBrushBase
 {
     SpectrumBrush();
@@ -13,4 +17,6 @@ runtimeclass SpectrumBrush : Windows.UI.Xaml.Media.XamlCompositionBrushBase
     static Windows.UI.Xaml.DependencyProperty MinSurfaceProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MaxSurfaceProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MaxSurfaceOpacityProperty { get; };
+}
+
 }

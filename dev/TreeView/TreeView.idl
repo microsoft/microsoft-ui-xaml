@@ -1,3 +1,6 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
 [WUXC_VERSION_RS4]
 [webhosthidden]
 enum TreeViewSelectionMode
@@ -23,6 +26,7 @@ runtimeclass TreeViewItemInvokedEventArgs
 [WUXC_INTERFACE_NAME("ITreeViewNode", c04c8ed3-9af2-4e75-a329-7497a110e7a8)]
 [WUXC_STATIC_NAME("ITreeViewNodeStatics", 5d8276fe-e1d1-4b61-9e81-c7fb189a2980)]
 [WUXC_CONSTRUCTOR_NAME("ITreeViewNodeFactory", 6ec62d90-aa19-414a-8a45-0a5589a836f7)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass TreeViewNode : Windows.UI.Xaml.DependencyObject
 {
     TreeViewNode();
@@ -99,6 +103,7 @@ unsealed runtimeclass TreeViewList : Windows.UI.Xaml.Controls.ListView
 [WUXC_INTERFACE_NAME("ITreeView", 9353cc5c-dd6e-453c-aedd-0c3ac993978b)]
 [WUXC_STATIC_NAME("ITreeViewStatics", ef913e08-83f2-4e16-bfb1-1577b98355f5)]
 [WUXC_CONSTRUCTOR_NAME("ITreeViewFactory", cc5267c3-6c69-49ce-b445-753acee7948b)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass TreeView : Windows.UI.Xaml.Controls.Control
 {
     TreeView();
@@ -176,6 +181,7 @@ unsealed runtimeclass TreeViewItemTemplateSettings : Windows.UI.Xaml.DependencyO
 [WUXC_INTERFACE_NAME("ITreeViewItem", 4e05d3e6-6167-44e7-9c74-291ddd6df6eb)]
 [WUXC_STATIC_NAME("ITreeViewItemStatics", 436795be-7396-46dc-a264-21c56581c5e5)]
 [WUXC_CONSTRUCTOR_NAME("ITreeViewItemFactory", 4ea32731-568d-4d0d-adfd-3d8dc5aa5d88)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass TreeViewItem : Windows.UI.Xaml.Controls.ListViewItem
 {
     TreeViewItem();
@@ -211,4 +217,6 @@ unsealed runtimeclass TreeViewItem : Windows.UI.Xaml.Controls.ListViewItem
         static Windows.UI.Xaml.DependencyProperty HasUnrealizedChildrenProperty{ get; };
         static Windows.UI.Xaml.DependencyProperty ItemsSourceProperty{ get; };
     }
+}
+
 }

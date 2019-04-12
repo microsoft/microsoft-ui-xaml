@@ -33,8 +33,6 @@ public:
 
     static bool IsCoreWindowActivationModeAvailable();
 
-    static bool AreInteractionTrackerPointerWheelRedirectionModesAvailable();
-
     static bool IsFlyoutShowOptionsAvailable();
 
     static bool IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable();
@@ -45,6 +43,8 @@ public:
 
     static bool IsApplicationViewGetDisplayRegionsAvailable();
 
+    static bool IsControlCornerRadiusAvailable();
+
     static bool IsTranslationFacadeAvailable(const winrt::UIElement& element);
 
     static bool IsIconSourceElementAvailable();
@@ -52,8 +52,6 @@ public:
     static bool IsStandardUICommandAvailable();
 
     static bool IsDispatcherQueueAvailable();
-
-    static bool IsXamlRootAvailable();
 
     static bool IsThemeShadowAvailable();
 

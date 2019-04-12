@@ -45,6 +45,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)SwipeControl.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)SwipeControl.idl" />
   </ItemGroup>
 </Project>

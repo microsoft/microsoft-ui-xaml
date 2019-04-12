@@ -217,6 +217,43 @@ inline PropertyChanged_revoker RegisterPropertyChanged(winrt::DependencyObject c
 }
 
 
+inline bool SetFocus(winrt::DependencyObject const& object, winrt::FocusState focusState)
+{
+    if (object)
+    {
+        // Use TryFocusAsync if it's available.
+        if (auto focusManager5 = winrt::get_activation_factory<winrt::FocusManager, winrt::IFocusManagerStatics5>())
+        {
+            auto result = focusManager5.TryFocusAsync(object, focusState);
+            if (result.Status() == winrt::AsyncStatus::Completed)
+            {
+                return result.GetResults().Succeeded();
+            }
+            // Operation was async, let's assume it worked.
+            return true;
+        }
+
+        if (auto control = object.try_as<winrt::Control>())
+        {
+            return control.Focus(focusState);
+        }
+        else if (auto hyperlink = object.try_as<winrt::Hyperlink>())
+        {
+            return hyperlink.Focus(focusState);
+        }
+        else if (auto contentlink = object.try_as<winrt::ContentLink>())
+        {
+            return contentlink.Focus(focusState);
+        }
+        else if (auto webview = object.try_as<winrt::WebView>())
+        {
+            return webview.Focus(focusState);
+        }
+    }
+
+    return false;
+}
+
 // This type exists for types that in metadata derive from FrameworkElement but internally want to derive from Panel
 // to get "protected" Children.
 // Using it is just like any other winrt::implementation::FooT type *except* that you must pass an additional parameter
@@ -236,4 +273,71 @@ struct WINRT_EBO DeriveFromPanelHelper_base : winrt::Windows::UI::Xaml::Controls
     {
         return hstring{ winrt::name_of<T>() };
     }
+};
+
+//
+// An awaitable object. Completes when the CompleteAwaits() method is called.
+// cf. .NET's TaskCompletionSource.
+//
+struct Awaitable
+{
+    Awaitable()
+    {
+        m_signal.attach(::CreateEvent(nullptr, true, false, nullptr));
+    }
+
+    // Awaitable contract.
+    // Blocks until the awaitable is completed, or error.
+    bool await_ready() const noexcept
+    {
+        return ::WaitForSingleObject(m_signal.get(), 0) == 0;
+    }
+
+    // Registers a callback that will be called when the awaitable is completed.
+    void await_suspend(std::experimental::coroutine_handle<> resume)
+    {
+        m_wait.attach(
+            winrt::check_pointer(
+                ::CreateThreadpoolWait(CoroutineCompletedCallback, resume.address(), nullptr)
+            )
+        );
+        ::SetThreadpoolWait(m_wait.get(), m_signal.get(), nullptr);
+    }
+
+    // Called to get the value of the awaitable. 
+    // This awaitable has no value, so nothing to do.
+    void await_resume() const noexcept { }
+
+protected:
+    void CompleteAwaits() const noexcept
+    {
+        ::SetEvent(m_signal.get());
+    }
+
+private:
+    static void __stdcall CoroutineCompletedCallback(PTP_CALLBACK_INSTANCE, void* context, PTP_WAIT, TP_WAIT_RESULT) noexcept
+    {
+        // Resumes anyone waiting on the awaitable.
+        std::experimental::coroutine_handle<>::from_address(context)();
+    }
+
+    //
+    // Describes a PTP_WAIT.
+    //
+    struct PTP_WAIT_traits
+    {
+        using type = PTP_WAIT;
+
+        static void close(type value) noexcept
+        {
+            ::CloseThreadpoolWait(value);
+        }
+
+        static constexpr type invalid() noexcept
+        {
+            return nullptr;
+        }
+    };
+    winrt::handle m_signal;
+    winrt::handle_type<PTP_WAIT_traits> m_wait;
 };

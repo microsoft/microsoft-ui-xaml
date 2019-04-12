@@ -44,8 +44,8 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)RatingControl.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RatingControlAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RatingControl.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RatingControlAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw">

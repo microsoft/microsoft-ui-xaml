@@ -4,6 +4,7 @@ Param(
     [string]$OutputDir,
     [string]$VersionOverride,
     [string]$Subversion = "",
+    [string]$DateOverride,
     [string]$prereleaseversion,
     [string]$BuildFlavor = "release",
     [string]$BuildArch = "x86",
@@ -30,17 +31,6 @@ if (!$BuildOutput)
     Exit 1
 }
 
-if (!$env:NUGETCMD) {
-
-    cmd /c where /Q nuget.exe
-    if ($lastexitcode -ne 0) {
-        Write-Host "nuget not found on path. Either add it to path or set NUGETCMD environment variable." -ForegroundColor Red
-        Exit 1
-    }
-
-    $env:NUGETCMD = "nuget.exe"
-}
-
 if ($VersionOverride)
 {
     $version = $VersionOverride
@@ -59,9 +49,15 @@ else
 
     $version = "$versionMajor.$versionMinor"
     
-    $pstZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
-    $pstTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $pstZone)
-    $version += "." + ($pstTime).ToString("yyMMdd") + "$subversion"
+    $versiondate = $DateOverride
+    if (-not $versiondate)
+    {
+        $pstZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
+        $pstTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $pstZone)
+        $versiondate += ($pstTime).ToString("yyMMdd")
+    }
+
+    $version += "." + $versiondate + "$subversion"
 
     Write-Verbose "Version = $version"
 }
@@ -125,14 +121,19 @@ $CommonNugetArgs = "-properties `"BuildOutput=$BuildOutput``;ID=$nupkgtitle``;RU
 
 $NugetArgs = "$CommonNugetArgs -OutputDirectory $OutputDir"
 
-$NugetCmdLine = "$env:NUGETCMD pack MUXControls.nuspec $NugetArgs -version $version"
+$nugetExe = "$scriptDirectory\..\..\tools\NugetWrapper.cmd"
+$NugetCmdLine = "$nugetExe pack MUXControls.nuspec $NugetArgs -version $version"
 Write-Host $NugetCmdLine
 Invoke-Expression $NugetCmdLine
 if ($lastexitcode -ne 0)
 {
-    Exit $lastexitcode; 
     Write-Host "Nuget returned $lastexitcode"
+    Exit $lastexitcode; 
 }
+
+Write-Host
+Write-Host "SkipFrameworkPackage = $SkipFrameworkPackage"
+Write-Host
 
 if(-not $SkipFrameworkPackage)
 {
@@ -150,13 +151,13 @@ if(-not $SkipFrameworkPackage)
     #Copy-IntoNewDirectory -IfExists $BuildOutput\debug\arm\FrameworkPackage\Microsoft.UI.Xaml.Debug.*.appx "$toolsDir\AppX\arm\Debug"
     #Copy-IntoNewDirectory -IfExists $BuildOutput\debug\arm64\FrameworkPackage\Microsoft.UI.Xaml.Debug.*.appx "$toolsDir\AppX\arm64\Debug"
 
-    $NugetCmdLine = "$env:NUGETCMD pack MUXControlsFrameworkPackage.nuspec $NugetArgs -version $version"
+    $NugetCmdLine = "$nugetExe pack MUXControlsFrameworkPackage.nuspec $NugetArgs -version $version"
     Write-Host $NugetCmdLine
     Invoke-Expression $NugetCmdLine
     if ($lastexitcode -ne 0)
     {
-        Exit $lastexitcode; 
         Write-Host "Nuget returned $lastexitcode"
+        Exit $lastexitcode; 
     }
 }
 

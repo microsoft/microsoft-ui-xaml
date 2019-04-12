@@ -78,6 +78,18 @@ if "%1" == "/UseInsiderSDK" (
     shift
     goto :MoreArguments
 )
+if "%1" == "/UseInternalSDK" (
+    REM echo UseInternalSDK
+    set USEINTERNALSDK=1
+    shift
+    goto :MoreArguments
+)
+if "%1" == "/EmitTelemetryEvents" (
+    REM echo EmitTelemetryEvents
+    set EMITTELEMETRYEVENTS=1
+    shift
+    goto :MoreArguments
+)
 if "%1" == "/project" (
     set PROJECTPATH=%~2
     shift
@@ -110,6 +122,8 @@ set EXTRAMSBUILDPARAMS=
 if "%BUILDLEANMUXFORTHESTOREAPP%" == "1" ( set EXTRAMSBUILDPARAMS=/p:BuildLeanMuxForTheStoreApp=true )
 if "%MUXFINAL%" == "1" ( set EXTRAMSBUILDPARAMS=/p:MUXFinalRelease=true )
 if "%USEINSIDERSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInsiderSDK=true )
+if "%USEINTERNALSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInternalSDK=true )
+if "%EMITTELEMETRYEVENTS%" == "1" ( set EXTRAMSBUILDPARAMS=/p:EmitTelemetryEvents=true )
 
 REM Need an explicit full path to MSBuild.exe or it will fall back to 14.0 for some reason
 set MSBUILDPATH=%VSINSTALLDIR%\MSBuild\15.0\Bin\MSBuild.exe
@@ -165,6 +179,8 @@ echo    Options:
 echo        /leanmux - build lean mux for the store
 echo        /muxfinal - build "final" bits which have the winmd stripped of experimental types
 echo        /UseInsiderSDK - build using insider SDK
+echo        /UseInternalSDK - build using internal SDK
+echo        /EmitTelemetryEvents - build with telemetry events turned on
 echo        /project ^<path^> - builds a specific project
 echo.
 

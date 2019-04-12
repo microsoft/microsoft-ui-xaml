@@ -126,17 +126,6 @@ bool SharedHelpers::IsFlyoutShowOptionsAvailable()
     return s_isFlyoutShowOptionsAvailable;
 }
 
-bool SharedHelpers::AreInteractionTrackerPointerWheelRedirectionModesAvailable()
-{
-    // VisualInteractionSourceRedirectionMode::PointerWheelOnly and VisualInteractionSourceRedirectionMode::CapableTouchpadAndPointerWheel
-    // were introduced late in RS4.
-    static bool s_areInteractionTrackerPointerWheelRedirectionModesAvailable =
-        IsSystemDll() ||
-        IsRS5OrHigher() ||
-        (IsRS4OrHigher() && winrt::ApiInformation::IsEnumNamedValuePresent(L"Windows.UI.Composition.Interactions.VisualInteractionSourceRedirectionMode", L"PointerWheelOnly"));
-    return s_areInteractionTrackerPointerWheelRedirectionModesAvailable;
-}
-
 bool SharedHelpers::IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable()
 {
     static bool s_isScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable =
@@ -167,6 +156,15 @@ bool SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable()
         Is19H1OrHigher() ||
         winrt::ApiInformation::IsMethodPresent(L"Windows.UI.ViewManagement.ApplicationView", L"GetDisplayRegions");
     return s_isApplicationViewGetDisplayRegionsAvailable;
+}
+
+bool SharedHelpers::IsControlCornerRadiusAvailable()
+{
+    static bool s_isControlCornerRadiusAvailable =
+        IsSystemDll() ||
+        Is19H1OrHigher() ||
+        (IsRS5OrHigher() && winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.Control", L"CornerRadius"));
+    return s_isControlCornerRadiusAvailable;
 }
 
 bool SharedHelpers::IsTranslationFacadeAvailable(const winrt::UIElement& element)
@@ -201,15 +199,6 @@ bool SharedHelpers::IsDispatcherQueueAvailable()
         IsRS4OrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.System.DispatcherQueue");
     return s_isAvailable;
-}
-
-bool SharedHelpers::IsXamlRootAvailable()
-{
-    static bool s_IsXamlRootAvailable =
-        IsSystemDll() ||
-        IsVanadiumOrHigher() ||
-        winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.XamlRoot");
-    return s_IsXamlRootAvailable;
 }
 
 bool SharedHelpers::IsThemeShadowAvailable()

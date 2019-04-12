@@ -10,12 +10,14 @@
 #include "ItemsRepeaterElementClearingEventArgs.h"
 #include "ItemsRepeaterElementIndexChangedEventArgs.h"
 #include "ItemsRepeater.g.h"
+#include "ItemsRepeater.properties.h"
 #include "ViewportManager.h"
 
 class VirtualizationInfo;
 
 class ItemsRepeater :
-    public ReferenceTracker<ItemsRepeater, DeriveFromPanelHelper_base, winrt::ItemsRepeater, winrt::IItemsRepeater2>
+    public ReferenceTracker<ItemsRepeater, DeriveFromPanelHelper_base, winrt::ItemsRepeater, winrt::IItemsRepeater2>,
+    public ItemsRepeaterProperties
 {
 public:
     ItemsRepeater();
@@ -24,6 +26,8 @@ public:
     static winrt::Point ClearedElementsArrangePosition;
     // A convention we use in the ItemsRepeater codebase for an invalid Rect value.
     static winrt::Rect InvalidRect;
+
+    using ItemsRepeaterProperties::Background;
 
 #pragma region IUIElementOverrides
 
@@ -52,49 +56,19 @@ public:
 
 #pragma region IRepeater interface.
 
-    winrt::IInspectable ItemsSource();
-    void ItemsSource(winrt::IInspectable const& value);
-
     winrt::ItemsSourceView ItemsSourceView();
-    
-    winrt::IElementFactory ItemTemplate();
-    void ItemTemplate(winrt::IElementFactory const& value);
-
-    winrt::VirtualizingLayout Layout();
-    void Layout(winrt::VirtualizingLayout const& value);
-
-    winrt::ElementAnimator Animator();
-    void Animator(winrt::ElementAnimator const& value);
-
-    double HorizontalCacheLength();
-    void HorizontalCacheLength(double value);
-
-    double VerticalCacheLength();
-    void VerticalCacheLength(double value);
-
-    winrt::Brush Background();
-    void Background(winrt::Brush const& value);
 
     // Mapping APIs
     int32_t GetElementIndex(winrt::UIElement const& element);
     winrt::UIElement TryGetElement(int index);
     winrt::UIElement GetOrCreateElement(int index);
 
-    // Element events
-    winrt::event_token ElementPrepared(winrt::TypedEventHandler<winrt::ItemsRepeater, winrt::ItemsRepeaterElementPreparedEventArgs> const& value);
-    void ElementPrepared(winrt::event_token const& token);
-
-    winrt::event_token ElementClearing(winrt::TypedEventHandler<winrt::ItemsRepeater, winrt::ItemsRepeaterElementClearingEventArgs> const& value);
-    void ElementClearing(winrt::event_token const& token);
-
-    winrt::event_token ElementIndexChanged(winrt::TypedEventHandler<winrt::ItemsRepeater, winrt::ItemsRepeaterElementIndexChangedEventArgs> const& value);
-    void ElementIndexChanged(winrt::event_token const& token);
 #pragma endregion
 
 #ifndef BUILD_WINDOWS
     winrt::Microsoft::UI::Xaml::Controls::IElementFactoryShim ItemTemplateShim() { return m_itemTemplateWrapper; };
 #else
-    winrt::IElementFactory ItemTemplateShim() { return m_itemTemplate; };
+    winrt::IElementFactory ItemTemplateShim() { return ItemTemplate(); };
 #endif
 
     ViewManager& ViewManager() { return m_viewManager; }
@@ -135,45 +109,27 @@ public:
 
     static winrt::DependencyProperty GetVirtualizationInfoProperty()
     {
+        static GlobalDependencyProperty s_VirtualizationInfoProperty =
+            InitializeDependencyProperty(
+                L"VirtualizationInfo",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::ItemsRepeater>(),
+                true /* isAttached */,
+                nullptr /* defaultValue */);
+
         return s_VirtualizationInfoProperty;
     }
 
-    static winrt::DependencyProperty ItemsSourceProperty() { return s_itemsSourceProperty; }
-    static winrt::DependencyProperty ItemTemplateProperty() { return s_itemTemplateProperty; }
-    static winrt::DependencyProperty LayoutProperty() { return s_layoutProperty; }
-    static winrt::DependencyProperty AnimatorProperty() { return s_animatorProperty; }
-
-    static winrt::DependencyProperty HorizontalCacheLengthProperty() { return s_horizontalCacheLengthProperty; }
-    static winrt::DependencyProperty VerticalCacheLengthProperty() { return s_verticalCacheLengthProperty; }
-
-    static winrt::DependencyProperty BackgroundProperty() { return winrt::Panel::BackgroundProperty(); }
-
-    static GlobalDependencyProperty s_itemsSourceProperty;
-    static GlobalDependencyProperty s_itemTemplateProperty;
-    static GlobalDependencyProperty s_layoutProperty;
-    static GlobalDependencyProperty s_animatorProperty;
-    static GlobalDependencyProperty s_horizontalCacheLengthProperty;
-    static GlobalDependencyProperty s_verticalCacheLengthProperty;
-
-    static void EnsureProperties();
-    static void ClearProperties();
-
 private:
-    static void ItemsRepeater::OnPropertyChanged(
-        const winrt::DependencyObject& sender,
-        const winrt::DependencyPropertyChangedEventArgs& args);
-
-    static GlobalDependencyProperty s_VirtualizationInfoProperty;
-
     void OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/);
     void OnUnloaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/);
 
     void OnDataSourcePropertyChanged(const winrt::ItemsSourceView& oldValue, const winrt::ItemsSourceView& newValue);
     void OnItemTemplateChanged(const winrt::IElementFactory& oldValue, const winrt::IElementFactory& newValue);
-    void OnLayoutChanged(const winrt::VirtualizingLayout& oldValue, const winrt::VirtualizingLayout& newValue);
+    void OnLayoutChanged(const winrt::Layout& oldValue, const winrt::Layout& newValue);
     void OnAnimatorChanged(const winrt::ElementAnimator& oldValue, const winrt::ElementAnimator& newValue);
 
-    void OnDataSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
+    void OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
     void InvalidateMeasureForLayout(winrt::Layout const& sender, winrt::IInspectable const& args);
     void InvalidateArrangeForLayout(winrt::Layout const& sender, winrt::IInspectable const& args);
 
@@ -186,15 +142,11 @@ private:
     ::ViewManager m_viewManager{ this };
     std::shared_ptr<::ViewportManager> m_viewportManager{ nullptr };
 
-    tracker_ref<winrt::ItemsSourceView> m_dataSource{ this };
-    winrt::IElementFactory m_itemTemplate{ nullptr };
+    tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{ this };
 
 #ifndef BUILD_WINDOWS
     winrt::Microsoft::UI::Xaml::Controls::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
 #endif
-
-    winrt::VirtualizingLayout m_layout{ nullptr };
-    winrt::ElementAnimator m_animator{ nullptr };
 
     tracker_ref<winrt::VirtualizingLayoutContext> m_layoutContext{ this };
     tracker_ref<winrt::IInspectable> m_layoutState{ this };
@@ -207,14 +159,10 @@ private:
     // when it gets measured. It should not be used outside of measure.
     winrt::Point m_layoutOrigin{};
 
-    // Event tokens
-    winrt::event_token m_dataSourceChanged{};
-    winrt::event_token m_measureInvalidated{};
-    winrt::event_token m_arrangeInvalidated{};
-
-    event_source<winrt::TypedEventHandler<winrt::ItemsRepeater, winrt::ItemsRepeaterElementPreparedEventArgs>> m_elementPreparedEventSource{ this };
-    event_source<winrt::TypedEventHandler<winrt::ItemsRepeater, winrt::ItemsRepeaterElementClearingEventArgs>> m_elementClearingEventSource{ this };
-    event_source<winrt::TypedEventHandler<winrt::ItemsRepeater, winrt::ItemsRepeaterElementIndexChangedEventArgs>> m_elementIndexChangedEventSource{ this };
+    // Event revokers
+    winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceViewChanged{};
+    winrt::Layout::MeasureInvalidated_revoker m_measureInvalidated{};
+    winrt::Layout::ArrangeInvalidated_revoker m_arrangeInvalidated{};
 
     // Cached Event args to avoid creation cost every time
     tracker_ref<winrt::ItemsRepeaterElementPreparedEventArgs> m_elementPreparedArgs{ this };
@@ -226,4 +174,10 @@ private:
     // events. We keep these counters to detect out-of-sync unloaded events and take action to rectify.
     int _loadedCounter{};
     int _unloadedCounter{};
+
+    // Bug in framework's reference tracking causes crash during
+    // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
+    winrt::IElementFactory m_itemTemplate{ nullptr };
+    winrt::Layout m_layout{ nullptr };
+    winrt::ElementAnimator m_animator{ nullptr }; 
 };

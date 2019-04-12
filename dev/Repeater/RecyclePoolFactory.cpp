@@ -26,11 +26,21 @@ void RecyclePool::SetReuseKey(winrt::UIElement const& element, winrt::hstring co
 
 winrt::RecyclePool RecyclePool::GetPoolInstance(winrt::DataTemplate const& dataTemplate)
 {
+    if (!s_poolInstanceProperty)
+    {
+        EnsureProperties();
+    }
+
     return dataTemplate.GetValue(s_poolInstanceProperty).try_as<winrt::RecyclePool>();
 }
 
 void RecyclePool::SetPoolInstance(winrt::DataTemplate const& dataTemplate, winrt::RecyclePool const& value)
 {
+    if (!s_poolInstanceProperty)
+    {
+        EnsureProperties();
+    }
+
     dataTemplate.SetValue(s_poolInstanceProperty, value);
 }
 

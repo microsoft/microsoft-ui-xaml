@@ -12,8 +12,6 @@
 #define REFRESH_ANIMATION_DURATION 100ms
 #define REFRESH_VISUALIZER_OVERPAN_RATIO 0.4
 
-using namespace std::chrono_literals;
-
 // Implementors of the IAdapterAnimationHandler interface are responsible for implementing the
 // 3 well defined component level animations in a PTR scenario. The three animations involved 
 // in PTR include the expression animation used to have the RefreshVisualizer and its 

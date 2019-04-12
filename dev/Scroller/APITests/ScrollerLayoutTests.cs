@@ -23,10 +23,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 #if !BUILD_WINDOWS
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
-using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
@@ -73,13 +72,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             // Try to jump beyond maximum offsets
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 c_defaultUIScrollerContentWidth + 2 * c_Margin - c_defaultUIScrollerWidth + 10.0,
                 c_defaultUIScrollerContentHeight + 2 * c_Margin - c_defaultUIScrollerHeight + 10.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 true /*hookViewChanged*/,
                 c_defaultUIScrollerContentWidth + 2 * c_Margin - c_defaultUIScrollerWidth,
                 c_defaultUIScrollerContentHeight + 2 * c_Margin - c_defaultUIScrollerHeight);
@@ -93,13 +91,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             // Try to jump beyond maximum offsets
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 c_defaultUIScrollerContentWidth - 2 * c_Margin - c_defaultUIScrollerWidth + 10.0,
                 c_defaultUIScrollerContentHeight - 2 * c_Margin - c_defaultUIScrollerHeight + 10.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 false /*hookViewChanged*/,
                 c_defaultUIScrollerContentWidth - 2 * c_Margin - c_defaultUIScrollerWidth,
                 c_defaultUIScrollerContentHeight - 2 * c_Margin - c_defaultUIScrollerHeight);
@@ -144,13 +141,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             // Try to jump beyond maximum offsets
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth + 10.0,
                 c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight + 10.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 true /*hookViewChanged*/,
                 c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth,
                 c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight);
@@ -193,7 +189,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ChangeZoomFactor(scroller, c_smallZoomFactor, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+            ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
@@ -333,7 +329,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ChangeZoomFactor(scroller, c_smallZoomFactor, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+            ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
@@ -423,13 +419,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
             // Try to jump beyond maximum offsets
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 c_UnnaturalImageWidth - c_defaultUIScrollerWidth + 10.0,
                 c_UnnaturalImageHeight - c_defaultUIScrollerHeight + 10.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 true /*hookViewChanged*/,
                 c_UnnaturalImageWidth - c_defaultUIScrollerWidth,
                 c_UnnaturalImageHeight - c_defaultUIScrollerHeight);
@@ -487,7 +482,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ChangeZoomFactor(scroller, c_smallZoomFactor, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+            ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             ValidateContentWithConstrainedWidth(
                 compositor,
@@ -526,7 +521,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: c_smallZoomFactor);
 
             // Jump to absolute large zoomFactor to make the content larger than the viewport.
-            ChangeZoomFactor(scroller, c_largeZoomFactor, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+            ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             ValidateContentWithConstrainedWidth(
                 compositor,
@@ -615,7 +610,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ChangeZoomFactor(scroller, c_smallZoomFactor, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+            ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             ValidateContentWithConstrainedHeight(
                 compositor,
@@ -654,7 +649,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: c_smallZoomFactor);
 
             // Jump to absolute large zoomFactor to make the content larger than the viewport.
-            ChangeZoomFactor(scroller, c_largeZoomFactor, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+            ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             ValidateContentWithConstrainedHeight(
                 compositor,

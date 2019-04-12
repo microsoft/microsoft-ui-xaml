@@ -30,12 +30,14 @@ function PublishFile {
     }
 }
 
-PublishFile $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll $FullPublishDir\Microsoft.UI.Xaml\
-PublishFile $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri $FullPublishDir\Microsoft.UI.Xaml\
-PublishFile $FullBuildOutput\Microsoft.UI.Xaml\sdk\Microsoft.UI.Xaml.winmd $FullPublishDir\Microsoft.UI.Xaml\sdk\
-PublishFile $FullBuildOutput\Microsoft.UI.Xaml\Generic.xaml $FullPublishDir\Microsoft.UI.Xaml\
+PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll $FullPublishDir\Microsoft.UI.Xaml\
+PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri $FullPublishDir\Microsoft.UI.Xaml\
+PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\sdk\Microsoft.UI.Xaml.winmd $FullPublishDir\Microsoft.UI.Xaml\sdk\
+PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Generic.xaml $FullPublishDir\Microsoft.UI.Xaml\
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml.Design\Microsoft.UI.Xaml.Design.dll $FullPublishDir\Microsoft.UI.Xaml.Design\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\MUXControls.Test.dll $FullPublishDir\Test\
+PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\MUXControls.ReleaseTest.dll $FullPublishDir\Test\
+PublishFile -IfExists $FullBuildOutput\FrameworkPackage\*.* $FullPublishDir\FrameworkPackage
 
 # Publish pdbs:
 $symbolsOutputDir = "$($FullPublishDir)\Symbols\"
@@ -47,3 +49,5 @@ PublishFile -IfExists $FullBuildOutput\MUXControlsTestApp\MUXControlsTestApp.pdb
 PublishFile -IfExists $FullBuildOutput\MUXControlsTestAppForIslands\MUXControlsTestAppForIslands.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXControlsTestAppWPF\MUXControlsTestAppWPF.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\TestAppCX\TestAppCX.pdb $symbolsOutputDir
+PublishFile -IfExists $FullBuildOutput\NugetPackageTestApp\NugetPackageTestApp.pdb $symbolsOutputDir
+PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\NugetPackageTestAppCX.pdb $symbolsOutputDir

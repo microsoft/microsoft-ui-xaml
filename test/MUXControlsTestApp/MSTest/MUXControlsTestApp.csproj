@@ -3,6 +3,7 @@
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <UnitTestPlatformVersion Condition="'$(UnitTestPlatformVersion)' == ''">$(VisualStudioVersion)</UnitTestPlatformVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <!-- We need to define NuGet references using this newer style for running tests locally in VS to work.
        However, for some reason, specifially in lab builds, using the below to resolve NuGet references
@@ -13,7 +14,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(XES_DFSDROP)' == ''">
     <PackageReference Include="MUXCustomBuildTasks">
-      <Version>1.0.38</Version>
+      <Version>1.0.39</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Net.Native.Compiler">
       <Version>2.2.1</Version>
@@ -35,6 +36,14 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DiffPlex">
+      <Version>1.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Win2D.uwp">
+      <Version>1.22.0</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="..\MUXControlsTestApp.Shared.projitems" />
   <Import Project="..\MUXControlsTestApp.Shared.targets" />

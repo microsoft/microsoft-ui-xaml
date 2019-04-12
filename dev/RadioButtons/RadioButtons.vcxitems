@@ -37,8 +37,8 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)RadioButtons.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RadioButtonsPrimitives.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RadioButtonsAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RadioButtons.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RadioButtonsPrimitives.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RadioButtonsAutomationPeer.idl" />
   </ItemGroup>
 </Project>

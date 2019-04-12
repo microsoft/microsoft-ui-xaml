@@ -15,7 +15,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-namespace MuxControls.ReleaseTest
+namespace MUXControls.ReleaseTest
 {
     [TestClass]
     public class NugetTests

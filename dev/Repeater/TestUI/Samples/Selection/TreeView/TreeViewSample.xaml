@@ -88,7 +88,7 @@
                 <TextBlock Text="{x:Bind selectionModel.SelectedItem, Mode=OneWay}" />
             </StackPanel>
         </StackPanel>
-        <controls:ScrollAnchorProvider Grid.Row="1">
+        <controls:ItemsRepeaterScrollHost Grid.Row="1">
             <ScrollViewer>
                 <local:SelectionContainer SelectionModel="{StaticResource selectionModel}">
                     <controls:ItemsRepeater 
@@ -98,6 +98,6 @@
                     ItemTemplate="{StaticResource elementFactory}" />
                 </local:SelectionContainer>
             </ScrollViewer>
-        </controls:ScrollAnchorProvider>
+        </controls:ItemsRepeaterScrollHost>
     </Grid>
 </Page>

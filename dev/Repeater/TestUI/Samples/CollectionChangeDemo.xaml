@@ -47,7 +47,7 @@
             </StackPanel>
         </StackPanel>
 
-        <controls:ScrollAnchorProvider x:Name="tracker" Grid.Row="1" >
+        <controls:ItemsRepeaterScrollHost x:Name="tracker" Grid.Row="1" >
             <ScrollViewer x:Name="scrollViewer">
                 <controls:ItemsRepeater x:Name="repeater">
                     <controls:ItemsRepeater.Layout>
@@ -58,6 +58,6 @@
                     </controls:ItemsRepeater.Animator>
                 </controls:ItemsRepeater>
             </ScrollViewer>
-        </controls:ScrollAnchorProvider>
+        </controls:ItemsRepeaterScrollHost>
     </Grid>
 </Page>

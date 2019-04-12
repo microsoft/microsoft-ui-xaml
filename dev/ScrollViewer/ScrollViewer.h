@@ -3,8 +3,8 @@
 
 #pragma once
 
+#include "ScrollBarController.h"
 #include "ScrollViewerTrace.h"
-
 #include "ScrollViewer.g.h"
 #include "ScrollViewer.properties.h"
 
@@ -22,19 +22,23 @@ public:
     static const winrt::ChainingMode s_defaultHorizontalScrollChainingMode{ winrt::ChainingMode::Auto };
     static const winrt::ChainingMode s_defaultVerticalScrollChainingMode{ winrt::ChainingMode::Auto };
     static const winrt::RailingMode s_defaultHorizontalScrollRailingMode{ winrt::RailingMode::Enabled };
-    static const winrt::RailingMode s_defaultVerticalScrollRailingMode{ winrt::RailingMode::Enabled };
+    static const winrt::RailingMode s_defaultVerticalScrollRailingMode{ winrt::RailingMode::Enabled };    
+    static const winrt::Visibility s_defaultComputedHorizontalScrollBarVisibility{ winrt::Visibility::Collapsed };
+    static const winrt::Visibility s_defaultComputedVerticalScrollBarVisibility{ winrt::Visibility::Collapsed };
 #ifdef USE_SCROLLMODE_AUTO
     static const winrt::ScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollMode::Auto };
     static const winrt::ScrollMode s_defaultVerticalScrollMode{ winrt::ScrollMode::Auto };
+    static const winrt::ScrollMode s_defaultComputedHorizontalScrollMode{ winrt::ScrollMode::Disabled };
+    static const winrt::ScrollMode s_defaultComputedVerticalScrollMode{ winrt::ScrollMode::Disabled };
 #else
     static const winrt::ScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollMode::Enabled };
     static const winrt::ScrollMode s_defaultVerticalScrollMode{ winrt::ScrollMode::Enabled };
 #endif
-    static const winrt::ScrollMode s_defaultComputedHorizontalScrollMode{ winrt::ScrollMode::Disabled };
-    static const winrt::ScrollMode s_defaultComputedVerticalScrollMode{ winrt::ScrollMode::Disabled };
+    static const winrt::ScrollInfo s_noOpScrollInfo;
+    static const winrt::ZoomInfo s_noOpZoomInfo;
     static const winrt::ChainingMode s_defaultZoomChainingMode{ winrt::ChainingMode::Auto };
     static const winrt::ZoomMode s_defaultZoomMode{ winrt::ZoomMode::Disabled };
-    static const winrt::InputKind s_defaultInputKind{ winrt::InputKind::All };
+    static const winrt::InputKind s_defaultIgnoredInputKind{ winrt::InputKind::None };
     static const winrt::ContentOrientation s_defaultContentOrientation{ winrt::ContentOrientation::Vertical };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
     static constexpr double s_defaultMaxZoomFactor{ 10.0 };
@@ -46,24 +50,33 @@ public:
     winrt::CompositionPropertySet ExpressionAnimationSources();
 
     double HorizontalOffset();
-
     double VerticalOffset();
-
     float ZoomFactor();
-
     double ExtentWidth();
-
     double ExtentHeight();
+    double ViewportWidth();
+    double ViewportHeight();
+    double ScrollableWidth();
+    double ScrollableHeight();
 
     winrt::InteractionState State();
 
-    winrt::InputKind InputKind();
-    void InputKind(winrt::InputKind const& value);
+    winrt::InputKind IgnoredInputKind();
+    void IgnoredInputKind(winrt::InputKind const& value);
 
-    int32_t ChangeOffsets(winrt::ScrollerChangeOffsetsOptions const& options);
-    int32_t ChangeOffsetsWithAdditionalVelocity(winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions const& options);
-    int32_t ChangeZoomFactor(winrt::ScrollerChangeZoomFactorOptions const& options);
-    int32_t ChangeZoomFactorWithAdditionalVelocity(winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions const& options);
+    void RegisterAnchorCandidate(winrt::UIElement const& element);
+    void UnregisterAnchorCandidate(winrt::UIElement const& element);
+
+    winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset);
+    winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options);
+    winrt::ScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
+    winrt::ScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollOptions const& options);
+    winrt::ScrollInfo ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
+    winrt::ZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
+    winrt::ZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
+    winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
+    winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
+    winrt::ZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 #pragma endregion
 
     // Invoked by ScrollViewerTestHooks
@@ -150,21 +163,26 @@ private:
     void OnScrollerStateChanged(
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);
-    void OnScrollerChangingOffsets(
+    void OnScrollAnimationStarting(
         const winrt::IInspectable& sender,
-        const winrt::ScrollerChangingOffsetsEventArgs& args);
-    void OnScrollerChangingZoomFactor(
+        const winrt::ScrollAnimationStartingEventArgs& args);
+    void OnZoomAnimationStarting(
         const winrt::IInspectable& sender,
-        const winrt::ScrollerChangingZoomFactorEventArgs& args);
-    void OnScrollViewerChanged(
+        const winrt::ZoomAnimationStartingEventArgs& args);
+    void OnScrollerViewChanged(
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);
+#ifdef USE_SCROLLMODE_AUTO
     void OnScrollerPropertyChanged(
         const winrt::DependencyObject& sender,
         const winrt::DependencyProperty& args);
-    void OnScrollViewerChangeCompleted(
+#endif
+    void OnScrollerScrollCompleted(
         const winrt::IInspectable& sender,
-        const winrt::ScrollerViewChangeCompletedEventArgs& args);
+        const winrt::ScrollCompletedEventArgs& args);
+    void OnScrollerZoomCompleted(
+        const winrt::IInspectable& sender,
+        const winrt::ZoomCompletedEventArgs& args);
     void OnScrollerBringingIntoView(
         const winrt::IInspectable& sender,
         const winrt::ScrollerBringingIntoViewEventArgs& args);
@@ -184,14 +202,19 @@ private:
     void UnhookVerticalScrollControllerEvents();
 
     void UpdateScroller(const winrt::Scroller& scroller);
-    void UpdateHorizontalScrollController(const winrt::IScrollController& horizontalScrollController);
-    void UpdateVerticalScrollController(const winrt::IScrollController& verticalScrollController);
+    void UpdateHorizontalScrollController(
+        const winrt::IScrollController& horizontalScrollController,
+        const winrt::IUIElement& horizontalScrollControllerElement);
+    void UpdateVerticalScrollController(
+        const winrt::IScrollController& verticalScrollController,
+        const winrt::IUIElement& verticalScrollControllerElement);
     void UpdateScrollControllersSeparator(const winrt::IUIElement& scrollControllersSeparator);
     void UpdateScrollerHorizontalScrollController(const winrt::IScrollController& horizontalScrollController);
     void UpdateScrollerVerticalScrollController(const winrt::IScrollController& verticalScrollController);
     void UpdateScrollControllersVisibility(bool horizontalChange, bool verticalChange);
 
     bool IsLoaded();
+    bool IsInputKindIgnored(winrt::InputKind const& inputKind);
 
     bool AreAllScrollControllersCollapsed();
     bool AreBothScrollControllersVisible();
@@ -217,10 +240,17 @@ private:
 
     static constexpr std::wstring_view s_rootPartName{ L"PART_Root"sv };
     static constexpr std::wstring_view s_scrollerPartName{ L"PART_Scroller"sv };
-    static constexpr std::wstring_view s_horizontalScrollControllerPartName{ L"PART_HorizontalScrollController"sv };
-    static constexpr std::wstring_view s_verticalScrollControllerPartName{ L"PART_VerticalScrollController"sv };
-    static constexpr std::wstring_view s_scrollControllersSeparatorPartName{ L"PART_ScrollControllersSeparator"sv };
+    static constexpr std::wstring_view s_horizontalScrollBarPartName{ L"PART_HorizontalScrollBar"sv };
+    static constexpr std::wstring_view s_verticalScrollBarPartName{ L"PART_VerticalScrollBar"sv };
+    static constexpr std::wstring_view s_scrollBarsSeparatorPartName{ L"PART_ScrollBarsSeparator"sv };
+    static constexpr std::wstring_view s_IScrollAnchorProviderNotImpl{ L"Template part named PART_Scroller does not implement IScrollAnchorProvider."sv };
+    static constexpr std::wstring_view s_noScrollerPart{ L"No template part named PART_Scroller was loaded."sv };
 
+    winrt::com_ptr<ScrollBarController> m_horizontalScrollBarController{ nullptr };
+    winrt::com_ptr<ScrollBarController> m_verticalScrollBarController{ nullptr };
+
+    tracker_ref<winrt::IScrollController> m_horizontalScrollController{ this };
+    tracker_ref<winrt::IScrollController> m_verticalScrollController{ this };
     tracker_ref<winrt::IUIElement> m_horizontalScrollControllerElement{ this };
     tracker_ref<winrt::IUIElement> m_verticalScrollControllerElement{ this };
     tracker_ref<winrt::IUIElement> m_scrollControllersSeparatorElement{ this };
@@ -234,14 +264,17 @@ private:
 
     winrt::event_token m_scrollerExtentChangedToken{};
     winrt::event_token m_scrollerStateChangedToken{};
-    winrt::event_token m_scrollerChangingOffsetsToken{};
-    winrt::event_token m_scrollerChangingZoomFactorToken{};
-    winrt::event_token m_scrollViewerChangedToken{};
-    winrt::event_token m_scrollViewerChangeCompletedToken{};
+    winrt::event_token m_scrollerScrollAnimationStartingToken{};
+    winrt::event_token m_scrollerZoomAnimationStartingToken{};
+    winrt::event_token m_scrollerViewChangedToken{};
+    winrt::event_token m_scrollerScrollCompletedToken{};
+    winrt::event_token m_scrollerZoomCompletedToken{};
     winrt::event_token m_scrollerBringingIntoViewToken{};
     winrt::event_token m_scrollerAnchorRequestedToken{};
+#ifdef USE_SCROLLMODE_AUTO
     winrt::event_token m_scrollerComputedHorizontalScrollModeChangedToken{};
     winrt::event_token m_scrollerComputedVerticalScrollModeChangedToken{};
+#endif
 
     winrt::event_token m_horizontalScrollControllerInteractionInfoChangedToken{};
     winrt::event_token m_verticalScrollControllerInteractionInfoChangedToken{};
@@ -289,8 +322,8 @@ private:
     static constexpr std::wstring_view s_mouseIndicatorFullStateName{ L"MouseIndicatorFull"sv };
 
     int m_verticalScrollWithKeyboardDirection = 0;
-    int m_verticalScrollWithKeyboardViewChangeId = -1;
+    int m_verticalScrollWithKeyboardOffsetChangeId = -1;
 
     int m_horizontalScrollWithKeyboardDirection = 0;
-    int m_horizontalScrollWithKeyboardViewChangeId = -1;
+    int m_horizontalScrollWithKeyboardOffsetChangeId = -1;
 };

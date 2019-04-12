@@ -90,16 +90,6 @@ private:
     tracker_ref<winrt::TextBlock> m_initialsTextBlock{ this };
 
     /// <summary>
-    /// XAML Element for the contact image matching x:Name of PersonPictureEllipse.
-    /// </summary>
-    tracker_ref<winrt::Ellipse> m_personPictureEllipse{ this };
-
-    /// <summary>
-    /// The font family of person text block as default.
-    /// </summary>
-    tracker_ref<winrt::FontFamily> m_personTextFontFamily{ this };
-
-    /// <summary>
     /// XAML Element for the first TextBlock matching x:Name of BadgeNumberTextBlock.
     /// </summary>
     tracker_ref<winrt::TextBlock> m_badgeNumberTextBlock{ this };

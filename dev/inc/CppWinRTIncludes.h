@@ -39,6 +39,7 @@
 #include <winrt\Windows.UI.Xaml.Controls.h>
 #include <winrt\Windows.UI.Xaml.Controls.Primitives.h>
 #include <winrt\Windows.UI.Xaml.Data.h>
+#include <winrt\Windows.UI.Xaml.Documents.h>
 #include <winrt\Windows.UI.Xaml.Hosting.h>
 #include <winrt\Windows.UI.Xaml.Input.h>
 #include <winrt\Windows.UI.Xaml.Interop.h>
@@ -96,6 +97,7 @@ namespace winrt
     using namespace ::winrt::Windows::UI::Xaml::Automation;
     using namespace ::winrt::Windows::UI::Xaml::Automation::Provider;
     using namespace ::winrt::Windows::UI::Xaml::Data;
+    using namespace ::winrt::Windows::UI::Xaml::Documents;
     using namespace ::winrt::Windows::UI::Xaml::Hosting;
     using namespace ::winrt::Windows::UI::Xaml::Input;
     using namespace ::winrt::Windows::UI::Xaml::Interop;
@@ -206,6 +208,7 @@ namespace winrt
     using DragItemsStartingEventArgs = winrt::Windows::UI::Xaml::Controls::DragItemsStartingEventArgs;
     using DragItemsStartingEventHandler = winrt::Windows::UI::Xaml::Controls::DragItemsStartingEventHandler;
     using FlyoutPresenter = winrt::Windows::UI::Xaml::Controls::FlyoutPresenter;
+    using IFlyoutPresenter2 = winrt::Windows::UI::Xaml::Controls::IFlyoutPresenter2;
     using FocusDisengagedEventArgs = winrt::Windows::UI::Xaml::Controls::FocusDisengagedEventArgs;
     using FocusEngagedEventArgs = winrt::Windows::UI::Xaml::Controls::FocusEngagedEventArgs;
     using FontIcon = winrt::Windows::UI::Xaml::Controls::FontIcon;
@@ -228,9 +231,6 @@ namespace winrt
     using IPasswordBox5 = ::winrt::Windows::UI::Xaml::Controls::IPasswordBox5;
     using IRichEditBox6 = ::winrt::Windows::UI::Xaml::Controls::IRichEditBox6;
     using IRichEditBox8 = ::winrt::Windows::UI::Xaml::Controls::IRichEditBox8;
-#ifdef BUILD_WINDOWS
-    using IRichEditBoxFeature_RichEditBoxCutCopyPasteAPIs = ::winrt::Windows::UI::Xaml::Controls::IRichEditBoxFeature_RichEditBoxCutCopyPasteAPIs;
-#endif
     using IRichTextBlock6 = ::winrt::Windows::UI::Xaml::Controls::IRichTextBlock6;
     using ITextBlock7 = ::winrt::Windows::UI::Xaml::Controls::ITextBlock7;
     using ITextBox8 = ::winrt::Windows::UI::Xaml::Controls::ITextBox8;
@@ -282,6 +282,7 @@ namespace winrt
     using ToolTip = winrt::Windows::UI::Xaml::Controls::ToolTip;
     using ToolTipService = winrt::Windows::UI::Xaml::Controls::ToolTipService;
     using VirtualizingStackPanel = winrt::Windows::UI::Xaml::Controls::VirtualizingStackPanel;
+    using WebView = winrt::Windows::UI::Xaml::Controls::WebView;
 
     // using namespace ::winrt::Windows::UI::Xaml::Media;
     using Brush = winrt::Windows::UI::Xaml::Media::Brush;
@@ -303,6 +304,7 @@ namespace winrt
     using RectangleGeometry = winrt::Windows::UI::Xaml::Media::RectangleGeometry;
     using SolidColorBrush = ::winrt::Windows::UI::Xaml::Media::SolidColorBrush;
     using Stretch = winrt::Windows::UI::Xaml::Media::Stretch;
+    using ThemeShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow;
     using TranslateTransform = winrt::Windows::UI::Xaml::Media::TranslateTransform;
     using VisualTreeHelper = winrt::Windows::UI::Xaml::Media::VisualTreeHelper;
     using XamlCompositionBrushBase = ::winrt::Windows::UI::Xaml::Media::XamlCompositionBrushBase;

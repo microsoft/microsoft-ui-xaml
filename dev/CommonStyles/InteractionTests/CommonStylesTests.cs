@@ -119,8 +119,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             RunDensityTests("AppBarButtonDensityTest");
         }
-        private void RunDensityTests(string buttonName)
-        
+
+        private void RunDensityTests(string buttonName)       
         {
             using (var setup = new TestSetupHelper("CommonStyles Tests"))
             {
@@ -131,6 +131,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 var densityTestResult = new TextBlock(FindElement.ByName("DensityTestResult")).GetText();
                 Verify.AreEqual(densityTestResult, "Pass", "We expect density test result is Pass");
+            }
+        }
+
+        [TestMethod]
+        public void RunCompactTests()        
+        {
+            using (var setup = new TestSetupHelper("Compact Tests"))
+            {
+                Log.Comment("Click on RunTest");
+                var button = new Button(FindElement.ByName("RunTest"));
+                button.Invoke();
+                Wait.ForIdle();
+
+                var testResult = new TextBlock(FindElement.ById("CompactTestResult")).GetText();
+                Verify.AreEqual(testResult, "Pass", "We expect compact test result is Pass"); // "Pass" string matches value used by MUXControlsTestApp.SimpleVerify
             }
         }
     }

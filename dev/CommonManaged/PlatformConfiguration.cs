@@ -32,6 +32,29 @@ namespace Common
     {
         const OSVersion MaxOSVersion = OSVersion.Redstone2;
 
+        private const ushort InvalidAPIVersion = 255;
+        private static ushort _currentAPIVersion = InvalidAPIVersion;
+
+        private static bool IsApiContractPresent(ushort version)
+        {
+            return ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", version);
+        }
+
+        public static ushort GetCurrentAPIVersion()
+        {
+            if (_currentAPIVersion == InvalidAPIVersion)
+            {
+                ushort currentAPIVersion = 3;
+                while (IsApiContractPresent((ushort)(currentAPIVersion + 1)))
+                {
+                    currentAPIVersion++;
+                }
+
+                _currentAPIVersion = currentAPIVersion;
+            }
+            return _currentAPIVersion;
+        }
+
         public static bool IsDevice(DeviceType type)
         {
             var deviceFamily = AnalyticsInfo.VersionInfo.DeviceFamily;

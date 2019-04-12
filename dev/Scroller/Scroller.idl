@@ -1,4 +1,21 @@
-﻿[WUXC_VERSION_PREVIEW]
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+struct ScrollInfo 
+{ 
+    Int32 OffsetsChangeId;
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+struct ZoomInfo
+{
+    Int32 ZoomFactorChangeId;
+};
+
+[WUXC_VERSION_PREVIEW]
 [webhosthidden]
 enum ContentOrientation
 {
@@ -62,142 +79,101 @@ enum RailingMode
 [flags]
 enum InputKind
 {
+    None = 0,
     Touch = 1,
     Pen = 2,
     MouseWheel = 4,
+    Keyboard = 8,
+    Gamepad = 16,
     All = 255,
 };
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ScrollerViewKind
-{
-    Absolute = 0,
-    RelativeToCurrentView = 1,
-    RelativeToEndOfInertiaView = 2,
+enum AnimationMode 
+{ 
+   Disabled = 0,
+   Enabled = 1,
 };
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum ScrollerViewChangeKind
+enum SnapPointsMode
 {
-    DisableAnimation = 0,
-    AllowAnimation = 1,
-};
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-enum ScrollerViewChangeSnapPointRespect
-{
-    IgnoreSnapPoints = 0,
-    RespectSnapPoints = 1,
-};
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-enum ScrollerViewChangeResult
-{
-    Completed = 0,
-    Interrupted = 1,
-    Ignored = 2,
+    Default = 0,
+    Ignore = 1,
 };
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
-runtimeclass ScrollerChangeOffsetsOptions
+unsealed runtimeclass ScrollOptions
 {
-    ScrollerChangeOffsetsOptions(
-        Double horizontalOffset,
-        Double verticalOffset,
-        ScrollerViewKind offsetsKind,
-        ScrollerViewChangeKind viewChangeKind,
-        ScrollerViewChangeSnapPointRespect snapPointRespect);
-
-    Double HorizontalOffset { get; set; };
-    Double VerticalOffset { get; set; };
-    ScrollerViewKind OffsetsKind { get; set; };
-    ScrollerViewChangeKind ViewChangeKind { get; set; };
-    ScrollerViewChangeSnapPointRespect SnapPointRespect{ get; set; };
+    ScrollOptions(AnimationMode animationMode);
+    ScrollOptions(AnimationMode animationMode, SnapPointsMode snapPointsMode);
+ 
+    AnimationMode AnimationMode { get; set; };
+    SnapPointsMode SnapPointsMode { get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ScrollerChangeOffsetsWithAdditionalVelocityOptions
+[marshaling_behavior(agile)]
+[threading(both)]
+unsealed runtimeclass ZoomOptions
 {
-    ScrollerChangeOffsetsWithAdditionalVelocityOptions(Windows.Foundation.Numerics.Vector2 additionalVelocity, Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
+    ZoomOptions(AnimationMode animationMode);
+    ZoomOptions(AnimationMode animationMode, SnapPointsMode snapPointsMode);
 
-    Windows.Foundation.Numerics.Vector2 AdditionalVelocity { get; set; };
-    Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> InertiaDecayRate { get; set; };
+    AnimationMode AnimationMode { get; set; };
+    SnapPointsMode SnapPointsMode { get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ScrollerChangeZoomFactorOptions
-{
-    ScrollerChangeZoomFactorOptions(
-        Single zoomFactor,
-        ScrollerViewKind zoomFactorKind,
-        Windows.Foundation.Numerics.Vector2 centerPoint,
-        ScrollerViewChangeKind viewChangeKind,
-        ScrollerViewChangeSnapPointRespect snapPointRespect);
-
-    Single ZoomFactor { get; set; };
-    ScrollerViewKind ZoomFactorKind { get; set; };
-    Windows.Foundation.Numerics.Vector2 CenterPoint { get; set; };
-    ScrollerViewChangeKind ViewChangeKind { get; set; };
-    ScrollerViewChangeSnapPointRespect SnapPointRespect{ get; set; };
-}
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-runtimeclass ScrollerChangeZoomFactorWithAdditionalVelocityOptions
-{
-    ScrollerChangeZoomFactorWithAdditionalVelocityOptions(Single additionalVelocity, Windows.Foundation.IReference<Single> inertiaDecayRate, Windows.Foundation.Numerics.Vector2 centerPoint);
-
-    Single AdditionalVelocity { get; set; };
-    Windows.Foundation.IReference<Single> InertiaDecayRate { get; set; };
-    Windows.Foundation.Numerics.Vector2 CenterPoint { get; set; };
-}
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-runtimeclass ScrollerChangingOffsetsEventArgs
+runtimeclass ScrollAnimationStartingEventArgs
 {
     Windows.UI.Composition.CompositionAnimation Animation { get; set; };
     Windows.Foundation.Numerics.Vector2 StartPosition { get; };
     Windows.Foundation.Numerics.Vector2 EndPosition { get; };
-    Int32 ViewChangeId { get; };
+    ScrollInfo ScrollInfo { get; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ScrollerChangingZoomFactorEventArgs
+runtimeclass ZoomAnimationStartingEventArgs
 {
     Windows.Foundation.Numerics.Vector2 CenterPoint { get; };
-    Single StartZoomFactor{ get; };
-    Single EndZoomFactor{ get; };
+    Single StartZoomFactor { get; };
+    Single EndZoomFactor { get; };
     Windows.UI.Composition.CompositionAnimation Animation { get; set; };
-    Int32 ViewChangeId { get; };
+    ZoomInfo ZoomInfo { get; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ScrollerViewChangeCompletedEventArgs
+runtimeclass ScrollCompletedEventArgs
 {
-    Int32 ViewChangeId { get; };
-    ScrollerViewChangeResult Result { get; };
+    ScrollInfo ScrollInfo { get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass ZoomCompletedEventArgs
+{
+    ZoomInfo ZoomInfo { get; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 runtimeclass ScrollerBringingIntoViewEventArgs
 {
+    SnapPointsMode SnapPointsMode { get; set; };
     Windows.UI.Xaml.BringIntoViewRequestedEventArgs RequestEventArgs { get; };
     Double TargetHorizontalOffset { get; };
     Double TargetVerticalOffset { get; };
-    Int32 ViewChangeId { get; };
+    ScrollInfo ScrollInfo { get; };
     Boolean Cancel { get; set; };
 }
 
@@ -207,4 +183,6 @@ runtimeclass ScrollerAnchorRequestedEventArgs
 {
     Windows.Foundation.Collections.IVector<Windows.UI.Xaml.UIElement> AnchorCandidates { get; };
     Windows.UI.Xaml.UIElement AnchorElement { get; set; };
+}
+
 }

@@ -26,8 +26,8 @@ public:
     static void AreAnchorNotificationsRaised(bool areAnchorNotificationsRaised);
     static bool AreInteractionSourcesNotificationsRaised();
     static void AreInteractionSourcesNotificationsRaised(bool areInteractionSourcesNotificationsRaised);
-    static bool IsInteractionTrackerMouseWheelZoomingEnabled();
-    static void IsInteractionTrackerMouseWheelZoomingEnabled(bool isInteractionTrackerMouseWheelZoomingEnabled);
+    static bool IsInteractionTrackerPointerWheelRedirectionEnabled();
+    static void IsInteractionTrackerPointerWheelRedirectionEnabled(bool isInteractionTrackerPointerWheelRedirectionEnabled);
     static int MouseWheelDeltaForVelocityUnit();
     static void MouseWheelDeltaForVelocityUnit(int mouseWheelDeltaForVelocityUnit);
     static float MouseWheelInertiaDecayRate();
@@ -40,6 +40,8 @@ public:
     static void SetContentLayoutOffsetX(const winrt::Scroller& scroller, float contentLayoutOffsetX);
     static void GetContentLayoutOffsetY(const winrt::Scroller& scroller, _Out_ float& contentLayoutOffsetY);
     static void SetContentLayoutOffsetY(const winrt::Scroller& scroller, float contentLayoutOffsetY);
+    static winrt::ScrollerViewChangeResult GetScrollCompletedResult(const winrt::ScrollCompletedEventArgs& scrollCompletedEventArgs);
+    static winrt::ScrollerViewChangeResult GetZoomCompletedResult(const winrt::ZoomCompletedEventArgs& zoomCompletedEventArgs);
 
     static void NotifyAnchorEvaluated(const winrt::Scroller& sender, const winrt::UIElement& anchorElement, double viewportAnchorPointHorizontalOffset, double viewportAnchorPointVerticalOffset);
     static winrt::event_token AnchorEvaluated(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksAnchorEvaluatedEventArgs> const& value);
@@ -56,12 +58,33 @@ public:
     static winrt::event_token ContentLayoutOffsetYChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
     static void ContentLayoutOffsetYChanged(winrt::event_token const& token);
 
-    static winrt::IVector<winrt::ScrollerSnapPointBase> GetConsolidatedSnapPoints(const winrt::Scroller& scroller, const winrt::ScrollerSnapPointDimension& dimension);
-    static winrt::float2 GetSnapPointActualApplicableZone(const winrt::ScrollerSnapPointBase& snapPoint);
-    static int GetSnapPointCombinationCount(const winrt::ScrollerSnapPointBase& snapPoint);
-    static winrt::Color GetSnapPointVisualizationColor(const winrt::ScrollerSnapPointBase& snapPoint);
-    static void SetSnapPointVisualizationColor(const winrt::ScrollerSnapPointBase& snapPoint, const winrt::Color& color);
+    static winrt::IVector<winrt::ScrollSnapPointBase> GetConsolidatedHorizontalScrollSnapPoints(const winrt::Scroller& scroller);
+    static winrt::IVector<winrt::ScrollSnapPointBase> GetConsolidatedVerticalScrollSnapPoints(const winrt::Scroller& scroller);
+    static winrt::IVector<winrt::ZoomSnapPointBase> GetConsolidatedZoomSnapPoints(const winrt::Scroller& scroller);
+    static winrt::float2 GetHorizontalSnapPointActualApplicableZone(
+        const winrt::Scroller& scroller,
+        const winrt::ScrollSnapPointBase& scrollSnapPoint);
+    static winrt::float2 GetVerticalSnapPointActualApplicableZone(
+        const winrt::Scroller& scroller,
+        const winrt::ScrollSnapPointBase& scrollSnapPoint);
+    static winrt::float2 GetZoomSnapPointActualApplicableZone(
+        const winrt::Scroller& scroller,
+        const winrt::ZoomSnapPointBase& zoomSnapPoint);
+    static int GetHorizontalSnapPointCombinationCount(
+        const winrt::Scroller& scroller,
+        const winrt::ScrollSnapPointBase& scrollSnapPoint);
+    static int GetVerticalSnapPointCombinationCount(
+        const winrt::Scroller& scroller,
+        const winrt::ScrollSnapPointBase& scrollSnapPoint);
+    static int GetZoomSnapPointCombinationCount(
+        const winrt::Scroller& scroller,
+        const winrt::ZoomSnapPointBase& zoomSnapPoint);
+    static winrt::Color GetSnapPointVisualizationColor(const winrt::SnapPointBase& snapPoint);
+    static void SetSnapPointVisualizationColor(const winrt::SnapPointBase& snapPoint, const winrt::Color& color);
+
 private:
+    static winrt::ScrollerViewChangeResult TestHooksViewChangeResult(ScrollerViewChangeResult result);
+
     static com_ptr<ScrollerTestHooks> s_testHooks;
     winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksAnchorEvaluatedEventArgs>> m_anchorEvaluatedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksInteractionSourcesChangedEventArgs>> m_interactionSourcesChangedEventSource;
@@ -69,7 +92,7 @@ private:
     winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_contentLayoutOffsetYChangedEventSource;
     bool m_areAnchorNotificationsRaised{ false };
     bool m_areInteractionSourcesNotificationsRaised{ false };
-    bool m_isInteractionTrackerMouseWheelZoomingEnabled{ true };
+    bool m_isInteractionTrackerPointerWheelRedirectionEnabled{ true };
     int m_offsetsChangeMsPerUnit{ 0 };
     int m_offsetsChangeMinMs{ 0 };
     int m_offsetsChangeMaxMs{ 0 };

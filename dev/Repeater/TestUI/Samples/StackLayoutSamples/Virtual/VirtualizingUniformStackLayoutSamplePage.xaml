@@ -21,7 +21,7 @@
     <Grid>
 
         <StackPanel>
-            <controls:ScrollAnchorProvider x:Name="tracker" Height="400">
+            <controls:ItemsRepeaterScrollHost x:Name="tracker" Height="400">
                 <ScrollViewer>
                     <controls:ItemsRepeater x:Name="repeater" VerticalCacheLength="0">
                         <controls:ItemsRepeater.Layout>
@@ -29,7 +29,7 @@
                         </controls:ItemsRepeater.Layout>
                     </controls:ItemsRepeater>
                 </ScrollViewer>
-            </controls:ScrollAnchorProvider>
+            </controls:ItemsRepeaterScrollHost>
             <StackPanel Grid.Column="2">
                 <TextBlock x:Name="tb">10</TextBlock>
                 <Button Content="BringIntoView" x:Name="bringIntoView"/>

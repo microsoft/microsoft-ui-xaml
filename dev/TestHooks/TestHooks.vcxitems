@@ -27,6 +27,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooksFactory.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true'" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeTestHooks.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeTestHooksFactory.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)MUXControlsTestHooks.h" />
@@ -42,12 +43,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooksFactory.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true'" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeTestHooks.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeTestHooksFactory.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)MUXControlsTestHooks.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.idl" />
-    <None Include="$(MSBuildThisFileDirectory)ScrollerTestHooks.idl" />
-    <None Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooks.idl" Condition="$(BuildingWithBuildExe) != 'true'" />
-    <None Include="$(MSBuildThisFileDirectory)SwipeTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)MUXControlsTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ScrollerTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooks.idl" Condition="$(BuildingWithBuildExe) != 'true'" />
+    <Midl Include="$(MSBuildThisFileDirectory)SwipeTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.idl" />
   </ItemGroup>
 </Project>

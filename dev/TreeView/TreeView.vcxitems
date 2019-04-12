@@ -48,8 +48,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ViewModel.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)TreeView.idl" />
-    <None Include="$(MSBuildThisFileDirectory)TreeViewAutomationPeers.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)TreeView.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)TreeViewAutomationPeers.idl" />
   </ItemGroup>
   <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
     <Page Include="$(MSBuildThisFileDirectory)TreeView.xaml">

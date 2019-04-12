@@ -20,8 +20,6 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="0">
-            <TextBlock Text="Languages:"/>
-            <ComboBox x:Name="LanguageChooser" AutomationProperties.AutomationId="LanguageChooser" VerticalAlignment="Center" Margin="0,0,0,5" SelectionChanged="LanguageChooser_SelectionChanged"/>
         </StackPanel>
         <ScrollViewer Grid.Row="1" HorizontalAlignment="Center" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <ItemsControl ItemsSource="{x:Bind Tests}">
@@ -47,6 +45,19 @@
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center">
             <Button Content="Magic Scale Change" Click="Button_Click"/>
             <CheckBox x:Name="LongAnimationsDisabled" AutomationProperties.AutomationId="LongAnimationsDisabled" Content="Long Animations Disabled" Checked="LongAnimationsDisabled_Checked" Unchecked="LongAnimationsDisabled_Unchecked" Margin="10,0,0,0"/>
+
+            <ComboBox
+                x:Name="LanguageChooser"
+                Header="Languages"
+                AutomationProperties.AutomationId="LanguageChooser"
+                VerticalAlignment="Center"
+                SelectionChanged="LanguageChooser_SelectionChanged"/>
+            <ComboBox
+                x:Name="FlowDirectionChooser"
+                Header="FlowDirection"
+                AutomationProperties.AutomationId="FlowDirectionChooser"
+                VerticalAlignment="Center"
+                SelectionChanged="FlowDirectionChooser_SelectionChanged"/>
 
         </StackPanel>
     </Grid>

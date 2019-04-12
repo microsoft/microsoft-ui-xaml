@@ -103,6 +103,10 @@
       <HintPath>$(SdkRefPath)\profiles\testnet\v2.0\system.Net.Sockets.metadata_dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="System.Numerics.Vectors">
+      <HintPath>$(SdkRefPath)\profiles\testnet\v2.0\system.numerics.vectors.metadata_dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="System.Security.Cryptography.X509Certificates">
       <HintPath>$(SdkRefPath)\profiles\testnet\v2.0\system.security.cryptography.x509certificates.metadata_dll</HintPath>
       <SpecificVersion>False</SpecificVersion>

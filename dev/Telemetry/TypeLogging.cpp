@@ -33,6 +33,30 @@ winrt::hstring TypeLogging::Float2ToString(const winrt::float2& v2)
     return StringUtil::FormatString(L"(%1!i!, %2!i!)", static_cast<int32_t>(v2.x), static_cast<int32_t>(v2.y));
 }
 
+winrt::hstring TypeLogging::NullableFloatToString(const winrt::IReference<float>& nf)
+{
+    if (nf)
+    {
+        return StringUtil::FormatString(L"%1!i!", static_cast<int32_t>(nf.Value()));
+    }
+    else
+    {
+        return L"null";
+    }
+}
+
+winrt::hstring TypeLogging::NullableFloat2ToString(const winrt::IReference<winrt::float2>& nv2)
+{
+    if (nv2)
+    {
+        return Float2ToString(nv2.Value());
+    }
+    else
+    {
+        return L"null";
+    }
+}
+
 winrt::hstring TypeLogging::OrientationToString(const winrt::Orientation& orientation)
 {
     return orientation == winrt::Orientation::Horizontal ? L"Horizontal" : L"Vertical";
@@ -176,79 +200,78 @@ winrt::hstring TypeLogging::InputKindToString(const winrt::InputKind& inputKind)
 {
     switch (static_cast<int>(inputKind))
     {
-    case static_cast<int>(winrt::InputKind::All):
+    case static_cast<int>(winrt::InputKind::None) :
+        return L"None";
+    case static_cast<int>(winrt::InputKind::All) :
         return L"All";
     case static_cast<int>(winrt::InputKind::Touch):
         return L"Touch";
     case static_cast<int>(winrt::InputKind::Pen):
         return L"Pen";
-    case static_cast<int>(winrt::InputKind::Touch | winrt::InputKind::MouseWheel):
-        return L"Touch|MouseWheel";
-    case static_cast<int>(winrt::InputKind::Touch | winrt::InputKind::Pen):
-        return L"Touch|Pen";
-    case static_cast<int>(winrt::InputKind::Pen | winrt::InputKind::MouseWheel) :
-        return L"Pen|MouseWheel";
-    case static_cast<int>(winrt::InputKind::Touch | winrt::InputKind::Pen | winrt::InputKind::MouseWheel) :
-        return L"Touch|Pen|MouseWheel";
+    case static_cast<int>(winrt::InputKind::Keyboard):
+        return L"Keyboard";
+    case static_cast<int>(winrt::InputKind::Gamepad):
+        return L"Gamepad";
+    default:
+        return L"InputKind combination";
+    }
+}
+
+winrt::hstring TypeLogging::AnimationModeToString(const winrt::AnimationMode& animationMode)
+{
+    switch (animationMode)
+    {
+    case winrt::AnimationMode::Disabled:
+        return L"Disabled";
+    case winrt::AnimationMode::Enabled:
+        return L"Enabled";
     default:
         MUX_ASSERT(false);
         return L"";
     }
 }
 
-winrt::hstring TypeLogging::ScrollerViewKindToString(const winrt::ScrollerViewKind& viewKind)
+winrt::hstring TypeLogging::SnapPointsModeToString(const winrt::SnapPointsMode& snapPointsMode)
+{
+    switch (snapPointsMode)
+    {
+    case winrt::SnapPointsMode::Default:
+        return L"Default";
+    case winrt::SnapPointsMode::Ignore:
+        return L"Ignore";
+    default:
+        MUX_ASSERT(false);
+        return L"";
+    }
+}
+
+winrt::hstring TypeLogging::ScrollerViewKindToString(ScrollerViewKind viewKind)
 {
     switch (viewKind)
     {
-    case winrt::ScrollerViewKind::Absolute:
+    case ScrollerViewKind::Absolute:
         return L"Absolute";
-    case winrt::ScrollerViewKind::RelativeToCurrentView:
+    case ScrollerViewKind::RelativeToCurrentView:
         return L"RelativeToCurrentView";
-    case winrt::ScrollerViewKind::RelativeToEndOfInertiaView:
+#ifdef ScrollerViewKind_RelativeToEndOfInertiaView
+    case ScrollerViewKind::RelativeToEndOfInertiaView:
         return L"RelativeToEndOfInertiaView";
+#endif
     default:
         MUX_ASSERT(false);
         return L"";
     }
 }
 
-winrt::hstring TypeLogging::ScrollerViewChangeKindToString(const winrt::ScrollerViewChangeKind& viewChangeKind)
-{
-    switch (viewChangeKind)
-    {
-    case winrt::ScrollerViewChangeKind::AllowAnimation:
-        return L"AllowAnimation";
-    case winrt::ScrollerViewChangeKind::DisableAnimation:
-        return L"DisableAnimation";
-    default:
-        MUX_ASSERT(false);
-        return L"";
-    }
-}
-
-winrt::hstring TypeLogging::ScrollerViewChangeSnapPointRespectToString(const winrt::ScrollerViewChangeSnapPointRespect& snapPointRespect)
-{
-    switch (snapPointRespect)
-    {
-    case winrt::ScrollerViewChangeSnapPointRespect::IgnoreSnapPoints:
-        return L"IgnoreSnapPoints";
-    case winrt::ScrollerViewChangeSnapPointRespect::RespectSnapPoints:
-        return L"RespectSnapPoints";
-    default:
-        assert(false);
-        return L"";
-    }
-}
-
-winrt::hstring TypeLogging::ScrollerViewChangeResultToString(const winrt::ScrollerViewChangeResult& result)
+winrt::hstring TypeLogging::ScrollerViewChangeResultToString(ScrollerViewChangeResult result)
 {
     switch (result)
     {
-    case winrt::ScrollerViewChangeResult::Completed:
+    case ScrollerViewChangeResult::Completed:
         return L"Completed";
-    case winrt::ScrollerViewChangeResult::Ignored:
+    case ScrollerViewChangeResult::Ignored:
         return L"Ignored";
-    case winrt::ScrollerViewChangeResult::Interrupted:
+    case ScrollerViewChangeResult::Interrupted:
         return L"Interrupted";
     default:
         MUX_ASSERT(false);
@@ -276,44 +299,34 @@ winrt::hstring TypeLogging::ScrollAmountToString(const winrt::ScrollAmount& scro
     }
 }
 
-winrt::hstring TypeLogging::ScrollerChangeOffsetsOptionsToString(const winrt::ScrollerChangeOffsetsOptions& options)
+winrt::hstring TypeLogging::ScrollOptionsToString(const winrt::ScrollOptions& options)
 {
-    return StringUtil::FormatString(L"ScrollerChangeOffsetsOptions[0x%1!p!]: HorizontalOffset: %2!i!, VerticalOffset: %3!i!, OffsetsKind: %4!s!, ViewChangeKind: %5!s!, SnapPointRespect: %6!s!",
-        options,
-        static_cast<int32_t>(options.HorizontalOffset()),
-        static_cast<int32_t>(options.VerticalOffset()),
-        ScrollerViewKindToString(options.OffsetsKind()).c_str(),
-        ScrollerViewChangeKindToString(options.ViewChangeKind()).c_str(),
-        ScrollerViewChangeSnapPointRespectToString(options.SnapPointRespect()).c_str());
+    if (options)
+    {
+        return StringUtil::FormatString(L"ScrollOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
+            options,
+            AnimationModeToString(options.AnimationMode()).c_str(),
+            SnapPointsModeToString(options.SnapPointsMode()).c_str());
+    }
+    else
+    {
+        return L"ScrollOptions[null]";
+    }
 }
 
-winrt::hstring TypeLogging::ScrollerChangeOffsetsWithAdditionalVelocityOptionsToString(const winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions& options)
+winrt::hstring TypeLogging::ZoomOptionsToString(const winrt::ZoomOptions& options)
 {
-    return StringUtil::FormatString(L"ScrollerChangeOffsetsWithAdditionalVelocityOptions[0x%1!p!]: AdditionalVelocity: (%2!i!, %3!i!), 1000*InertiaDecayRate: (%4!i!, %5!i!)",
-        options,
-        static_cast<int32_t>(options.AdditionalVelocity().x),
-        static_cast<int32_t>(options.AdditionalVelocity().y),
-        static_cast<int32_t>(options.InertiaDecayRate() ? 1000.0f * options.InertiaDecayRate().Value().x : -1.0f),
-        static_cast<int32_t>(options.InertiaDecayRate() ? 1000.0f * options.InertiaDecayRate().Value().y : -1.0f));
-}
-
-winrt::hstring TypeLogging::ScrollerChangeZoomFactorOptionsToString(const winrt::ScrollerChangeZoomFactorOptions& options)
-{
-    return StringUtil::FormatString(L"ScrollerChangeZoomFactorOptions[0x%1!p!]: 1000*ZoomFactor: %2!u!, CenterPoint: %3!s!, ZoomFactorKind: %4!s!, ViewChangeKind: %5!s!",
-        options,
-        static_cast<uint32_t>(options.ZoomFactor() * 1000.0f),
-        Float2ToString(options.CenterPoint()).c_str(),
-        ScrollerViewKindToString(options.ZoomFactorKind()).c_str(),
-        ScrollerViewChangeKindToString(options.ViewChangeKind()).c_str());
-}
-
-winrt::hstring TypeLogging::ScrollerChangeZoomFactorWithAdditionalVelocityOptionsToString(const winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions& options)
-{
-    return StringUtil::FormatString(L"ScrollerChangeZoomFactorWithAdditionalVelocityOptions[0x%1!p!]: AdditionalVelocity: %2!i!, 1000*InertiaDecayRate: %3!i!, CenterPoint: %4!s!",
-        options,
-        static_cast<int32_t>(options.AdditionalVelocity()),
-        static_cast<int32_t>(options.InertiaDecayRate() ? 1000.0f * options.InertiaDecayRate().Value() : -1.0f),
-        Float2ToString(options.CenterPoint()).c_str());
+    if (options)
+    {
+        return StringUtil::FormatString(L"ZoomOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
+            options,
+            AnimationModeToString(options.AnimationMode()).c_str(),
+            SnapPointsModeToString(options.SnapPointsMode()).c_str());
+    }
+    else
+    {
+        return L"ZoomOptions[null]";
+    }
 }
 
 winrt::hstring TypeLogging::InteractionTrackerAsyncOperationTypeToString(InteractionTrackerAsyncOperationType operationType)

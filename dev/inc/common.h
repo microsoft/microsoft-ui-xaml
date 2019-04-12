@@ -9,7 +9,9 @@ using namespace Microsoft::WRL::Wrappers;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Numerics;
 
+using namespace std::chrono_literals;
 using namespace std::string_view_literals;
+using namespace std::chrono_literals;
 
 #ifndef BUILD_WINDOWS
 typedef winrt::hstring const& ResourceIdType;
@@ -28,6 +30,7 @@ typedef int ResourceIdType;
 #include "AutoHandle.h"
 #include "GlobalDependencyProperty.h"
 #include "CollectionHelper.h"
+#include "RoutedEventHelpers.h"
 
 #ifndef BUILD_WINDOWS
 #include "MUXControlsFactory.h"

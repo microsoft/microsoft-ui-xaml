@@ -29,7 +29,7 @@ public:
 #pragma region IVirtualizingLayoutContextOverrides
     virtual int32_t ItemCountCore();
     virtual winrt::IInspectable GetItemAtCore(int index);
-    virtual winrt::UIElement GetElementAtCore(int index, winrt::ElementRealizationOptions const& options);
+    virtual winrt::UIElement GetOrCreateElementAtCore(int index, winrt::ElementRealizationOptions const& options);
     virtual void RecycleElementCore(winrt::UIElement const& element);
 
     virtual winrt::Rect RealizationRectCore();
@@ -40,4 +40,8 @@ public:
     virtual void LayoutOriginCore(winrt::Point const& value);
 #pragma endregion
 
+    winrt::NonVirtualizingLayoutContext GetNonVirtualizingContextAdapter();
+
+private:
+    winrt::NonVirtualizingLayoutContext m_contextAdapter{ nullptr };
 };

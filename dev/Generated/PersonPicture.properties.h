@@ -39,6 +39,9 @@ public:
     void ProfilePicture(winrt::ImageSource const& value);
     winrt::ImageSource ProfilePicture();
 
+    void TemplateSettings(winrt::PersonPictureTemplateSettings const& value);
+    winrt::PersonPictureTemplateSettings TemplateSettings();
+
     static winrt::DependencyProperty BadgeGlyphProperty() { return s_BadgeGlyphProperty; }
     static winrt::DependencyProperty BadgeImageSourceProperty() { return s_BadgeImageSourceProperty; }
     static winrt::DependencyProperty BadgeNumberProperty() { return s_BadgeNumberProperty; }
@@ -49,6 +52,7 @@ public:
     static winrt::DependencyProperty IsGroupProperty() { return s_IsGroupProperty; }
     static winrt::DependencyProperty PreferSmallImageProperty() { return s_PreferSmallImageProperty; }
     static winrt::DependencyProperty ProfilePictureProperty() { return s_ProfilePictureProperty; }
+    static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
 
     static GlobalDependencyProperty s_BadgeGlyphProperty;
     static GlobalDependencyProperty s_BadgeImageSourceProperty;
@@ -60,11 +64,52 @@ public:
     static GlobalDependencyProperty s_IsGroupProperty;
     static GlobalDependencyProperty s_PreferSmallImageProperty;
     static GlobalDependencyProperty s_ProfilePictureProperty;
+    static GlobalDependencyProperty s_TemplateSettingsProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnPropertyChanged(
+    static void OnBadgeGlyphPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnBadgeImageSourcePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnBadgeNumberPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnBadgeTextPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnContactPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnDisplayNamePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnInitialsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsGroupPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnPreferSmallImagePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnProfilePicturePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnTemplateSettingsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

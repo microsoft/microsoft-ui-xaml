@@ -1,6 +1,22 @@
+setlocal ENABLEDELAYEDEXPANSION
+
 robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP
 
-te MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError %* 
+reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
+
+cd scripts
+powershell -ExecutionPolicy Bypass .\InstallTestAppDependencies.ps1
+cd ..
+
+set testBinaryCandidates=MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx MUXControls.ReleaseTest.dll NugetPackageTestApp.appx NugetPackageTestAppCX.appx
+set testBinaries=
+for %%B in (%testBinaryCandidates%) do (
+    if exist %%B (
+        set "testBinaries=!testBinaries! %%B"
+    )
+)
+
+te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError %* 
 
 %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te.wtl -result_name te.wtl
 

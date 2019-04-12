@@ -165,6 +165,11 @@ void TextCommandBarFlyout::UpdateButtons()
 
                 if (selection)
                 {
+                    auto initializingButtons = gsl::finally([this]()
+                    {
+                        m_isSettingToggleButtonState = false;
+                    });
+                    m_isSettingToggleButtonState = true;
                     toggleButton.IsChecked(getIsChecked(selection));
                 }
 
@@ -298,7 +303,11 @@ void TextCommandBarFlyout::UpdateButtons()
     addRichEditButtonToCommandsIfPresent(TextControlButtons::Italic, PrimaryCommands(),
         [](winrt::ITextSelection textSelection) { return textSelection.CharacterFormat().Italic() == winrt::FormatEffect::On; });
     addRichEditButtonToCommandsIfPresent(TextControlButtons::Underline, PrimaryCommands(),
-        [](winrt::ITextSelection textSelection) { return textSelection.CharacterFormat().Underline() != winrt::UnderlineType::None; });
+        [](winrt::ITextSelection textSelection)
+    {
+        auto underline = textSelection.CharacterFormat().Underline();
+        return (underline != winrt::UnderlineType::None) && (underline != winrt::UnderlineType::Undefined);
+    });
 
     addButtonToCommandsIfPresent(TextControlButtons::Undo, SecondaryCommands());
     addButtonToCommandsIfPresent(TextControlButtons::Redo, SecondaryCommands());
@@ -556,20 +565,11 @@ void TextCommandBarFlyout::ExecuteCutCommand()
     }
     else if (auto richEditBoxTarget = safe_try_cast<winrt::RichEditBox>(target))
     {
-#ifdef BUILD_WINDOWS
-        if (auto richEditBoxCutCopyPaste = richEditBoxTarget.try_as<winrt::IRichEditBoxFeature_RichEditBoxCutCopyPasteAPIs>())
-        {
-            richEditBoxCutCopyPaste.CutSelectionToClipboard();
-        }
-        else
-#endif
-        {
-            auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
+        auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
-            if (selection)
-            {
-                selection.Cut();
-            }
+        if (selection)
+        {
+            selection.Cut();
         }
     }
 
@@ -634,20 +634,11 @@ void TextCommandBarFlyout::ExecuteCopyCommand()
     }
     else if (auto richEditBoxTarget = safe_try_cast<winrt::RichEditBox>(target))
     {
-#ifdef BUILD_WINDOWS
-        if (auto richEditBoxCutCopyPaste = richEditBoxTarget.try_as<winrt::IRichEditBoxFeature_RichEditBoxCutCopyPasteAPIs>())
-        {
-            richEditBoxCutCopyPaste.CopySelectionToClipboard();
-        }
-        else
-#endif
-        {
-            auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
+        auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
-            if (selection)
-            {
-                selection.Copy();
-            }
+        if (selection)
+        {
+            selection.Copy();
         }
     }
     else if (auto richTextBlockTarget = safe_try_cast<winrt::RichTextBlock>(target))
@@ -706,20 +697,11 @@ void TextCommandBarFlyout::ExecutePasteCommand()
     }
     else if (auto richEditBoxTarget = safe_try_cast<winrt::RichEditBox>(target))
     {
-#ifdef BUILD_WINDOWS
-        if (auto richEditBoxCutCopyPaste = richEditBoxTarget.try_as<winrt::IRichEditBoxFeature_RichEditBoxCutCopyPasteAPIs>())
-        {
-            richEditBoxCutCopyPaste.PasteFromClipboard();
-        }
-        else
-#endif
-        {
-            auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
+        auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
-            if (selection)
-            {
-                selection.Paste(0);
-            }
+        if (selection)
+        {
+            selection.Paste(0);
         }
     }
     else if (auto passwordBoxTarget = safe_try_cast<winrt::PasswordBox>(target))
@@ -735,52 +717,77 @@ void TextCommandBarFlyout::ExecutePasteCommand()
 
 void TextCommandBarFlyout::ExecuteBoldCommand()
 {
-    auto target = Target();
-
-    if (auto richEditBoxTarget = safe_try_cast<winrt::RichEditBox>(target))
+    if (!m_isSettingToggleButtonState)
     {
-        auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
+        auto target = Target();
 
-        if (selection)
+        if (auto richEditBoxTarget = safe_try_cast<winrt::RichEditBox>(target))
         {
-            selection.CharacterFormat().Bold(winrt::FormatEffect::Toggle);
+            auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
+
+            if (selection)
+            {
+                auto characterFormat = selection.CharacterFormat();
+                if (characterFormat.Bold() == winrt::FormatEffect::On)
+                {
+                    characterFormat.Bold(winrt::FormatEffect::Off);
+                }
+                else
+                {
+                    characterFormat.Bold(winrt::FormatEffect::On);
+                }
+            }
         }
     }
 }
 
 void TextCommandBarFlyout::ExecuteItalicCommand()
 {
-    auto target = Target();
-
-    if (auto richEditBoxTarget = safe_try_cast<winrt::RichEditBox>(target))
+    if (!m_isSettingToggleButtonState)
     {
-        auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
+        auto target = Target();
 
-        if (selection)
+        if (auto richEditBoxTarget = safe_try_cast<winrt::RichEditBox>(target))
         {
-            selection.CharacterFormat().Italic(winrt::FormatEffect::Toggle);
+            auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
+
+            if (selection)
+            {
+                auto characterFormat = selection.CharacterFormat();
+                if (characterFormat.Italic() == winrt::FormatEffect::On)
+                {
+                    characterFormat.Italic(winrt::FormatEffect::Off);
+                }
+                else
+                {
+                    characterFormat.Italic(winrt::FormatEffect::On);
+                }
+            }
         }
     }
 }
 
 void TextCommandBarFlyout::ExecuteUnderlineCommand()
 {
-    auto target = Target();
-
-    if (auto richEditBoxTarget = safe_try_cast<winrt::RichEditBox>(target))
+    if (!m_isSettingToggleButtonState)
     {
-        auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
+        auto target = Target();
 
-        if (selection)
+        if (auto richEditBoxTarget = safe_try_cast<winrt::RichEditBox>(target))
         {
-            auto characterFormat = selection.CharacterFormat();
-            if (characterFormat.Underline() == winrt::UnderlineType::None)
+            auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
+
+            if (selection)
             {
-                characterFormat.Underline(winrt::UnderlineType::Single);
-            }
-            else
-            {
-                characterFormat.Underline(winrt::UnderlineType::None);
+                auto characterFormat = selection.CharacterFormat();
+                if (characterFormat.Underline() == winrt::UnderlineType::None || characterFormat.Underline() == winrt::UnderlineType::Undefined)
+                {
+                    characterFormat.Underline(winrt::UnderlineType::Single);
+                }
+                else
+                {
+                    characterFormat.Underline(winrt::UnderlineType::None);
+                }
             }
         }
     }

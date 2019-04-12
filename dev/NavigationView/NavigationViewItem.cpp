@@ -151,13 +151,9 @@ void NavigationViewItem::SuggestedToolTipChanged(winrt::IInspectable const& newC
     m_suggestedToolTipContent.set(newToolTipContent);
 }
 
-void NavigationViewItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    auto property = args.Property();
-    if (property == s_IconProperty)
-    {
-        UpdateVisualStateNoTransition();
-    }
+    UpdateVisualStateNoTransition();
 }
 
 void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool showContent)

@@ -8,7 +8,7 @@
     
     <Style TargetType="local:TreeViewItem"
            BasedOn="{StaticResource ListViewItemRevealStyle}"
-           x:Key="TreeViewItemStyle">
+           x:Key="MUX_TreeViewItemStyle">
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Background" Value="{ThemeResource TreeViewItemBackground}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource TreeViewItemBorderBrush}"/>
@@ -103,7 +103,7 @@
                                 <VisualState x:Name="NotDragging" />
                                 <VisualState x:Name="MultipleDraggingPrimary">
                                     <VisualState.Setters>
-                                        <Setter Target="MultiArrangeOverlayTextBorder.Opacity" Value="1" />
+                                        <Setter Target="MultiArrangeOverlayTextBorder.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -129,7 +129,7 @@
                                         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
                                         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
                                         <Setter Property="MinWidth" Value="32" />
-                                        <Setter Property="MinHeight" Value="32" />
+                                        <Setter Property="MinHeight" Value="{ThemeResource TreeViewItemMinHeight}" />
                                         <!-- Changed background color, stroke color and CheckGlyph, Removed ContentPrensenter. -->
                                         <!-- We tried to remove this re-template and use resource oevrride inside CheckBox, but it caused issues in OS repo because of bug 16889199.-->
                                         <Setter Property="Template">
@@ -323,7 +323,7 @@
                                                                 </VisualState>
                                                             </VisualStateGroup>
                                                         </VisualStateManager.VisualStateGroups>
-                                                        <Grid VerticalAlignment="Stretch" Height="32">
+                                                        <Grid VerticalAlignment="Stretch" HorizontalAlignment="Right">
                                                             <Rectangle x:Name="NormalRectangle"
                                                                 VerticalAlignment="Center" HorizontalAlignment="Center"
                                                                 Fill="{ThemeResource CheckBoxCheckBackgroundFillUnchecked}"
@@ -354,7 +354,7 @@
                                             IsTabStop="False"
                                             AutomationProperties.AccessibilityView="Raw"/>
                                 <Border x:Name="MultiArrangeOverlayTextBorder"
-                                    Opacity="0"
+                                    Visibility="Collapsed"
                                     IsHitTestVisible="False"
                                     MinWidth="20"
                                     Height="20"

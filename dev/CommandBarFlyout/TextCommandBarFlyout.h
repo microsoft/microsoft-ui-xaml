@@ -88,6 +88,8 @@ private:
     std::vector<winrt::MenuFlyoutItem::Click_revoker> m_proofingMenuItemClickRevokers;
     std::vector<winrt::ToggleMenuFlyoutItem::Click_revoker> m_proofingMenuToggleItemClickRevokers;
     DispatcherHelper m_dispatcherHelper{ *this };
+
+    bool m_isSettingToggleButtonState = false;
 };
 
 CppWinRTActivatableClassWithBasicFactory(TextCommandBarFlyout);

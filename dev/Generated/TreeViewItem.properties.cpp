@@ -89,7 +89,7 @@ void TreeViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewItem>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnHasUnrealizedChildrenPropertyChanged));
     }
     if (!s_IsExpandedProperty)
     {
@@ -100,7 +100,7 @@ void TreeViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewItem>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnIsExpandedPropertyChanged));
     }
     if (!s_ItemsSourceProperty)
     {
@@ -111,7 +111,7 @@ void TreeViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TreeViewItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnItemsSourcePropertyChanged));
     }
     if (!s_TreeViewItemTemplateSettingsProperty)
     {
@@ -139,7 +139,23 @@ void TreeViewItemProperties::ClearProperties()
     s_TreeViewItemTemplateSettingsProperty = nullptr;
 }
 
-void TreeViewItemProperties::OnPropertyChanged(
+void TreeViewItemProperties::OnHasUnrealizedChildrenPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TreeViewItem>();
+    winrt::get_self<TreeViewItem>(owner)->OnPropertyChanged(args);
+}
+
+void TreeViewItemProperties::OnIsExpandedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TreeViewItem>();
+    winrt::get_self<TreeViewItem>(owner)->OnPropertyChanged(args);
+}
+
+void TreeViewItemProperties::OnItemsSourcePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

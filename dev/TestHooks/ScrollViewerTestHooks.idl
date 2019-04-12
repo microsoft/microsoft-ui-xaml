@@ -1,7 +1,12 @@
-﻿[WUXC_VERSION_INTERNAL]
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[WUXC_VERSION_INTERNAL]
 [default_interface]
 [webhosthidden]
 runtimeclass ScrollViewerTestHooks
 {
     static MU_XCP_NAMESPACE.Scroller GetScrollerPart(MU_XC_NAMESPACE.ScrollViewer scrollViewer);
+}
+
 }

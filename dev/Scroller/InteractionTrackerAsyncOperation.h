@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "ViewChangeBase.h"
 #include "ScrollerTrace.h"
 
 enum class InteractionTrackerAsyncOperationType
@@ -19,8 +20,7 @@ enum class InteractionTrackerAsyncOperationType
 
 enum class InteractionTrackerAsyncOperationTrigger
 {
-    // Operation is triggered by a direct call to Scroller::ChangeOffsets, Scroller::ChangeZoomFactor,
-    // Scroller::ChangeOffsetsWithAdditionalVelocity or Scroller::ChangeZoomFactorWithAdditionalVelocity
+    // Operation is triggered by a direct call to Scroller's ScrollTo/ScrollBy/ScrollFrom or ZoomTo/ZoomBy/ZoomFrom
     DirectViewChange = 0x01,
     // Operation is triggered by the horizontal IScrollController.
     HorizontalScrollControllerRequest = 0x02,
@@ -45,7 +45,7 @@ public:
         InteractionTrackerAsyncOperationType operationType,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         bool isDelayed,
-        const winrt::IInspectable& options);
+        std::shared_ptr<ViewChangeBase> viewChangeBase);
     ~InteractionTrackerAsyncOperation();
 
     int32_t GetViewChangeId() const
@@ -184,9 +184,9 @@ public:
         m_requestId = requestId;
     }
 
-    winrt::IInspectable GetOptions() const
+    std::shared_ptr<ViewChangeBase> GetViewChangeBase() const
     {
-        return m_options;
+        return m_viewChangeBase;
     }
 
 private:
@@ -201,7 +201,7 @@ private:
     int m_postProcessingTicksCountdown{ 0 };
 
     // Number of UI thread ticks remaining before this queued operation gets processed.
-    // Positive between the time the operation is queued in Scroller::ChangeOffsets, Scroller::ChangeZoomFactor or
+    // Positive between the time the operation is queued in Scroller::ScrollTo/By/From, Scroller::ZoomTo/By/From or
     // Scroller::OnCompositionTargetRendering and the time it is processed in Scroller::ProcessOffsetsChange or Scroller::ProcessZoomFactorChange.
     int m_preProcessingTicksCountdown{ c_queuedOperationTicks };
 
@@ -217,9 +217,8 @@ private:
     // Set to True when the operation is delayed until the scroller is loaded.
     bool m_isDelayed{ false };
 
-    // ScrollerChangeOffsetsOptions, ScrollerChangeOffsetsWithAdditionalVelocityOptions, ScrollerChangeZoomFactorOptions or 
-    // ScrollerChangeZoomFactorWithAdditionalVelocityOptions instance associated with this operation.
-    winrt::IInspectable m_options{ nullptr };
+    // OffsetsChange or ZoomFactorChange instance associated with this operation.
+    std::shared_ptr<ViewChangeBase> m_viewChangeBase;
 
     // ViewChangeId associated with this operation.
     int32_t m_viewChangeId{ -1 };

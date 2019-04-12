@@ -1,17 +1,19 @@
 [CmdLetBinding()]
 Param(
-    [string]$inputs,
+    [string]$inputDirectory,
     [string]$outputDirectory,
     [string]$Platform,
     [string]$Configuration,
     [string]$Publisher = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
     [string]$VersionOverride,
-    [string]$Subversion = "000",
-    [string]$TestAppManifest,
+    [int]$Subversion = "000",
+    [string]$builddate_yymm,
+    [string]$builddate_dd,
     [string]$WindowsSdkBinDir,
     [string]$BasePackageName,
     [string]$PackageNameSuffix)
 
+Import-Module $PSScriptRoot\..\..\tools\Utils.psm1 -DisableNameChecking
 
 function Copy-IntoNewDirectory {
     Param($source, $destinationDir, [switch]$IfExists = $false)
@@ -33,86 +35,91 @@ $fullOutputPath = [IO.Path]::GetFullPath($outputDirectory)
 Write-Host "MakeFrameworkPackage: $fullOutputPath" -ForegroundColor Magenta 
 # Write-Output "Path: $env:PATH"
 
-$output = mkdir -Force $fullOutputPath\PackageContents
-$output = mkdir -Force $fullOutputPath\Resources
+mkdir -Force $fullOutputPath\PackageContents | Out-Null
+mkdir -Force $fullOutputPath\Resources | Out-Null
 
 Copy-IntoNewDirectory FrameworkPackageContents\* $fullOutputPath\PackageContents
 
 Copy-IntoNewDirectory PriConfig\* $fullOutputPath
 
-if (!$WindowsSdkBinDir -and $env:WindowsSdkVerBinPath)
-{
-    $WindowsSdkBinDir = "${env:WindowsSdkVerBinPath}\x86"
-}
-else
-{
-    $WindowsSdkBinDir = "${env:ProgramFiles(x86)}\Windows Kits\10\bin\x86"
-}
-
-$scriptDirectory = Split-Path -Path $script:MyInvocation.MyCommand.Path -Parent
+$KitsRoot10 = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows Kits\Installed Roots" -Name KitsRoot10).KitsRoot10
+$WindowsSdkBinDir = Join-Path $KitsRoot10 "bin\x86"
 
 $ActivatableTypes = ""
 
-$activatableTypeEntries = @{}
-
-$testAppManifestContents = Get-Content $TestAppManifest -Raw
-ForEach ($match in ($testAppManifestContents | Select-String '(?s)(\<Extension Category.*?\</Extension\>)' -AllMatches).Matches)
-{
-    $value = $match.Value
-    $dllPath = ($value | Select-String  '\<Path\>(.*?)\</Path\>').Matches[0].Groups[1]
-    $activatableTypeEntries[$dllPath.Value.ToLower()] = $value
-}
-
 # Copy over and add to the manifest file list the .dll, .winmd for the inputs. Also copy the .pri
 # but don't list it because it will be merged together.
-ForEach ($input in ($inputs -split ";"))
-{
-    Write-Output "Input: $input"
-    $inputBaseFileName = [System.IO.Path]::GetFileNameWithoutExtension($input)
-    $inputBasePath = Split-Path $input -Parent
-    
-    Copy-IntoNewDirectory "$inputBasePath\$inputBaseFileName.dll" $fullOutputPath\PackageContents
-    Copy-IntoNewDirectory "$inputBasePath\$inputBaseFileName.pri" $fullOutputPath\Resources
-    Copy-IntoNewDirectory "$inputBasePath\sdk\$inputBaseFileName.winmd" $fullOutputPath\PackageContents
 
-    Write-Verbose "Copying $inputBasePath\Themes"
-    Copy-IntoNewDirectory -IfExists $inputBasePath\Themes $fullOutputPath\PackageContents\Microsoft.UI.Xaml
+Write-Output "Input: $inputDirectory"
+$inputBaseFileName = "Microsoft.UI.Xaml"
+$inputBasePath = $inputDirectory
 
+Copy-IntoNewDirectory "$inputBasePath\$inputBaseFileName.dll" $fullOutputPath\PackageContents
+Copy-IntoNewDirectory "$inputBasePath\$inputBaseFileName.pri" $fullOutputPath\Resources
+Copy-IntoNewDirectory "$inputBasePath\sdk\$inputBaseFileName.winmd" $fullOutputPath\PackageContents
+
+Write-Verbose "Copying $inputBasePath\Themes"
+Copy-IntoNewDirectory -IfExists $inputBasePath\Themes $fullOutputPath\PackageContents\Microsoft.UI.Xaml
+
+[xml]$sdkPropsContent = Get-Content $PSScriptRoot\..\..\sdkversion.props
+$highestSdkVersion = $sdkPropsContent.GetElementsByTagName("*").'#text' -match "10." | Sort-Object | Select-Object -Last 1
+$sdkReferencesPath=$kitsRoot10 + "References\" + $highestSdkVersion;    
+$foundationWinmdPath = Get-ChildItem -Recurse $sdkReferencesPath"\Windows.Foundation.FoundationContract" -Filter "Windows.Foundation.FoundationContract.winmd" | Select-Object -ExpandProperty FullName
+$universalWinmdPath = Get-ChildItem -Recurse $sdkReferencesPath"\Windows.Foundation.UniversalApiContract" -Filter "Windows.Foundation.UniversalApiContract.winmd" | Select-Object -ExpandProperty FullName
+$refrenceWinmds = $foundationWinmdPath + ";" + $universalWinmdPath
+$classes = Get-ActivatableTypes $inputBasePath\sdk\$inputBaseFileName.winmd  $refrenceWinmds  | Sort-Object -Property FullName
+Write-Host $classes.Length Types found.
 @"
 "$inputBaseFileName.dll" "$inputBaseFileName.dll"
-"$inputBaseFileName.winmd" "$inputBaseFileName.winmd"
+"$inputBaseFileName.winmd" "$inputBaseFileName.winmd" 
 "@ | Out-File -Append -Encoding "UTF8" $fullOutputPath\PackageContents\FrameworkPackageFiles.txt
 
-    $ActivatableTypes += $activatableTypeEntries["$($inputBaseFileName.ToLower()).dll"]
+    $ActivatableTypes += @"
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>$inputBaseFileName.dll</Path>
 
-    # NOTE: Build machines don't have ILDAsm or .NET SDK so we have to do this differently.
-#    # Get the activatable types out of each WinMD
-#    $ildasmCommand = "`"ildasm.exe`" /classlist `"$inputBasePath\$inputBaseFileName.winmd`" /text"
-#    Write-Host "cmd /c $ildasmCommand"
-#    $classes = cmd /c $ildasmCommand | where {$_.Contains(".class public")}
-#    $classes = $classes -replace '.* ([\w\.]+)$',"`$1"
+"@
 
-#    $ActivatableTypes += @"
-#    <Extension Category="windows.activatableClass.inProcessServer">
-#      <InProcessServer>
-#        <Path>$inputBaseFileName.dll</Path>
-
-#"@
-#    ForEach ($class in $classes)
-#    {
-#        Write-Host "Activatable type : $class"
-#        $ActivatableTypes += "        <ActivatableClass ActivatableClassId=`"$class`" ThreadingModel=`"both`" />`r`n"
-#    }
-
-#    $ActivatableTypes += @"
-#      </InProcessServer>
-#    </Extension>
-
-#"@
+ForEach ($class in $classes)
+{
+    $className = $class.fullname
+    #Write-Host "Activatable type : $className"
+    $ActivatableTypes += "        <ActivatableClass ActivatableClassId=`"$className`" ThreadingModel=`"both`" />`r`n"
 }
 
+$ActivatableTypes += @"
+      </InProcessServer>
+    </Extension>
+
+"@
 
 Copy-IntoNewDirectory ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png $fullOutputPath\Assets
+
+$customPropsFile = "$PSScriptRoot\..\..\custom.props"
+Write-Verbose "Looking in $customPropsFile"
+
+if (-not (Test-Path $customPropsFile))
+{
+    Write-Error "Expected '$customPropsFile' to exist"
+    Exit 1
+}
+[xml]$customProps = (Get-Content $customPropsFile)
+$versionMajor = $customProps.GetElementsByTagName("VersionMajor").'#text'
+$versionMinor = $customProps.GetElementsByTagName("VersionMinor").'#text'
+
+Write-Verbose "CustomProps = $customProps, VersionMajor = '$versionMajor', VersionMinor = '$versionMinor'"
+
+if ((!$versionMajor) -or (!$versionMinor))
+{
+    Write-Error "Expected VersionMajor and VersionMinor tags to be in custom.props file"
+    Exit 1
+}
+
+if (-not $PackageNameSuffix)
+{
+    $PackageNameSuffix = "$($versionMajor).$($versionMinor)"
+}
 
 # Calculate the version the same as our nuget package.
 
@@ -121,27 +128,7 @@ if ($VersionOverride)
     $version = $VersionOverride
 }
 else
-{
-    $customPropsFile = "$PSScriptRoot\..\..\custom.props"
-Write-Verbose "Looking in $customPropsFile"
-
-    if (-not (Test-Path $customPropsFile))
-    {
-        Write-Error "Expected '$customPropsFile' to exist"
-        Exit 1
-    }
-    [xml]$customProps = (Get-Content $customPropsFile)
-    $versionMajor = $customProps.GetElementsByTagName("VersionMajor").'#text'
-    $versionMinor = $customProps.GetElementsByTagName("VersionMinor").'#text'
-
-Write-Verbose "CustomProps = $customProps, VersionMajor = '$versionMajor', VersionMinor = '$versionMinor'"
-
-    if ((!$versionMajor) -or (!$versionMinor))
-    {
-        Write-Error "Expected VersionMajor and VersionMinor tags to be in custom.props file"
-        Exit 1
-    }
-
+{    
     $pstZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
     $pstTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $pstZone)
     # Split version into yyMM.dd because appx versions can't be greater than 65535
@@ -158,7 +145,19 @@ Write-Verbose "CustomProps = $customProps, VersionMajor = '$versionMajor', Versi
         $versionMinor = ""
     }
 
-    $version = "${versionMajor}.${versionMinor}" + ($pstTime).ToString("yyMM") + "." + ($pstTime).ToString("dd").TrimStart("0") + "$subversion.0"
+    if (-not $builddate_yymm)
+    {
+        $builddate_yymm = ($pstTime).ToString("yyMM")
+    }
+    if (-not $builddate_dd)
+    {
+        $builddate_dd = ($pstTime).ToString("dd")
+    }
+
+    # Pad subversion up to 3 digits
+    $subversionPadded = $subversion.ToString("000")
+
+    $version = "${versionMajor}.${versionMinor}" + $builddate_yymm + "." + $builddate_dd.TrimStart("0") + "$subversionPadded.0"
 
     Write-Verbose "Version = $version"
 }
@@ -209,6 +208,17 @@ $rs1_genericxaml =
 
 Set-Content -Value $rs1_genericxaml $fullOutputPath\rs1_themes_generic.xaml
 
+# Allow single URI to access Compact.xaml from both framework package and nuget package
+$compactxaml = 
+@"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="ms-appx://$PackageName/Microsoft.UI.Xaml/DensityStyles/Compact.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>
+"@
+Set-Content -Value $compactxaml $fullOutputPath\Compact.xaml
+
 # AppxManifest needs some pieces generated per-flavor.
 $manifestContents = Get-Content $fullOutputPath\PackageContents\AppxManifest.xml
 $manifestContents = $manifestContents.Replace('$(PackageName)', "$PackageName")
@@ -256,7 +266,7 @@ Write-Host $makeappx
 cmd /c $makeappx
 if ($LastExitCode -ne 0) { Exit 1 }
 
-if ($env:TFS_ToolsDirectory -and ($env:BUILD_DEFINITIONNAME -match "_release") -and $env:UseSimpleSign)
+if ($env:TFS_ToolsDirectory -and ($env:BUILD_DEFINITIONNAME -match "release") -and $env:UseSimpleSign)
 {
     # From MakeAppxBundle in the XES tools
     $signToolPath = $env:TFS_ToolsDirectory + "\bin\SimpleSign.exe"

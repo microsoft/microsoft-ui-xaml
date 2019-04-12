@@ -26,7 +26,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
-using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
+using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
@@ -161,11 +161,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 root.Children.Add(repeater1);
                 root.Children.Add(repeater2);
 
-                Content = new ScrollAnchorProvider()
+                Content = new ItemsRepeaterScrollHost()
                 {
                     Width = 400,
                     Height = 400,
-                    Content = new ScrollViewer()
+                    ScrollViewer = new ScrollViewer()
                     {
                         Content = root
                     }
@@ -187,6 +187,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     var element2 = (FrameworkElement)recyclePool.TryGetElement(recycleKey, repeater2);
                     Verify.AreSame(repeater2, element2.Parent);
                 }
+            });
+        }
+
+        // When the owner is not the same, the element we get out of the recycle
+        // pool should be disconnected from its previous parent.
+        [TestMethod]
+        public void ValidateChildRemovedFromParentWhenOwnerIsDifferent()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var element = new Button();
+                const string key1 = "Key1";
+                const string key2 = "Key2";
+
+                RecyclePool pool = new RecyclePool();
+                var parent1 = new StackPanel();
+                var child1 = new Button();
+                var child2 = new Button();
+                parent1.Children.Add(child1);
+                parent1.Children.Add(child2);
+                
+                pool.PutElement(child1, key1);
+                pool.PutElement(child2, key2);
+
+                var parent2 = new StackPanel();
+                // Recycle the second child for a different parent. It should be disconnected
+                var recycled1 = (FrameworkElement)pool.TryGetElement(key2, parent2);
+                Verify.IsNull(recycled1.Parent);
+                var recycled2 = (FrameworkElement)pool.TryGetElement(key1, parent2);
+                Verify.IsNull(recycled2.Parent);
             });
         }
     }

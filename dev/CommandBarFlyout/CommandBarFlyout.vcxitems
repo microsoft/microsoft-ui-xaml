@@ -38,12 +38,12 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)CommandBarFlyout.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)CommandBarFlyout.idl" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBar.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBar.idl" />
   </ItemGroup>
 </Project>

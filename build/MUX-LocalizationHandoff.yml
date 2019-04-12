@@ -1,0 +1,22 @@
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+jobs:
+- job: LocalizationHandoff
+  pool:
+    name: Package ES Lab E
+
+  steps:
+  - task: PkgESSetupBuild@10
+    displayName: 'XESSetupBuild'
+    inputs:
+      productName: dep.controls
+      branchVersion: true
+      nugetVer: true
+
+  - template: AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml
+
+  - task: CmdLine@1
+    displayName: 'Run Loc Workflow'
+    inputs:
+      filename: '$(Build.SourcesDirectory)\tools\VSTSRunLocWorkflow.cmd'
+
+

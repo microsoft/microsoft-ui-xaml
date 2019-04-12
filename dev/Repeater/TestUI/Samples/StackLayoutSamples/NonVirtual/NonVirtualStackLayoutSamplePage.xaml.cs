@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using System.Linq;
 
 #if !BUILD_WINDOWS
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
@@ -21,6 +22,7 @@ namespace MUXControlsTestApp.Samples
         public NonVirtualStackLayoutSamplePage()
         {
             this.InitializeComponent();
+            repeater.ItemsSource = Enumerable.Range(0, 10);
         }
     }
 }

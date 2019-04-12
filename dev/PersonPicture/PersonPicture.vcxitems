@@ -15,13 +15,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PersonPicture.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PersonPictureTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InitialsGenerator.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)PersonPicture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)PersonPictureAutomationPeer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)PersonPicture.idl" />
-    <None Include="$(MSBuildThisFileDirectory)PersonPictureAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)PersonPicture.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)PersonPictureAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)InitialsGenerator.h" />

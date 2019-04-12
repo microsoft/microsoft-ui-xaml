@@ -44,12 +44,20 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\FlowLayoutDemoPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Samples\ItemsViewWithDataPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)Samples\ItemTemplateSamples\ItemTemplateDemo.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\ScaleAnimatedVerticalListDemo.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -107,9 +115,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)Samples\Defaults.xaml.cs">
       <DependentUpon>Defaults.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\FlowLayoutDemoPage.xaml.cs">
+      <DependentUpon>FlowLayoutDemoPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Samples\ItemTemplateSamples\ItemTemplateDemo.xaml.cs">
       <DependentUpon>ItemTemplateDemo.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\ScaleAnimatedVerticalListDemo.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\NonVirtual\NonVirtualStackLayoutSamplePage.xaml.cs">
       <DependentUpon>NonVirtualStackLayoutSamplePage.xaml</DependentUpon>
     </Compile>
@@ -126,7 +138,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Samples\CircleLayoutDemo\CircleLayoutSamplePage.xaml.cs">
       <DependentUpon>CircleLayoutSamplePage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\NonVirtual\NonVIrtualStackLayout.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\StackLayoutSamples\NonVirtual\NonVirtualStackLayout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\CollectionChangeDemo.xaml.cs">
       <DependentUpon>CollectionChangeDemo.xaml</DependentUpon>
     </Compile>
@@ -178,5 +190,10 @@
     <Content Include="$(MSBuildThisFileDirectory)Images\recipe6.png" />
     <Content Include="$(MSBuildThisFileDirectory)Images\recipe7.png" />
     <Content Include="$(MSBuildThisFileDirectory)Images\recipe8.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="S:\Source\GitRepos\microsoft-ui-xaml2\dev\Repeater\TestUI\Samples\ScaleAnimatedVerticalListDemo.xaml.cs">
+      <DependentUpon>ScaleAnimatedVerticalListDemo.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

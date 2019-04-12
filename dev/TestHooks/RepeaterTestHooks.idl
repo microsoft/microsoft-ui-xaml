@@ -1,3 +1,6 @@
+namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
 [WUXC_VERSION_INTERNAL]
 [webhosthidden]
 [default_interface]
@@ -11,4 +14,6 @@ runtimeclass RepeaterTestHooks
 
     static String GetLayoutId(Object layout);
     static void SetLayoutId(Object layout, String id);
+}
+
 }
