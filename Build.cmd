@@ -96,6 +96,11 @@ if "%1" == "/project" (
     shift
     goto :MoreArguments
 )
+if "%1" == "/usevsprerelease" (
+    set VSWHEREPARAMS=%VSWHEREPARAMS% -prerelease
+    shift
+    goto :MoreArguments
+)
 if "%1" NEQ "" (
     echo ERROR: Unknown argument "%1"
     goto :usage
@@ -104,12 +109,12 @@ goto :DoBuild
 
 :DoBuild
 
-"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -Latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe > %TEMP%\msbuildpath.txt
-
-set /p MSBUILDPATH=<%TEMP%\msbuildpath.txt
-
-For %%A in ("%MSBUILDPATH%") do (set MSBUILDDIRPATH=%%~dpA)
-IF %MSBUILDDIRPATH:~-1%==\ SET MSBUILDDIRPATH=%MSBUILDDIRPATH:~0,-1%
+for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest %VSWHEREPARAMS% -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe`) do (
+  set MSBUILDPATH=%%i
+  set MSBUILDDIRPATH=%%~dpi
+  IF !MSBUILDDIRPATH:~-1!==\ SET MSBUILDDIRPATH=!MSBUILDDIRPATH:~0,-1!
+  echo Using MSBuild from !MSBUILDPATH! in !MSBUILDDIRPATH!
+)
 
 REM
 REM     NUGET Restore
@@ -133,18 +138,18 @@ if "%USEINTERNALSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInternalSDK=true )
 if "%EMITTELEMETRYEVENTS%" == "1" ( set EXTRAMSBUILDPARAMS=/p:EmitTelemetryEvents=true )
 
 if "%PROJECTPATH%" NEQ "" (
-    set MSBuildCommand="%MSBUILDPATH%" %PROJECTPATH% /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /p:VisualStudioVersion="15.0" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
+    set MSBuildCommand="%MSBUILDPATH%" %PROJECTPATH% /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
     echo !MSBuildCommand!
     !MSBuildCommand!
 ) else (
     if "%BUILDALL%" == "" (
         set XES_OUTDIR=%BUILD_BINARIESDIRECTORY%\%BUILDCONFIGURATION%\%BUILDPLATFORM%\
 
-        "%MSBUILDPATH%" .\MUXControls.sln /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /p:VisualStudioVersion="15.0" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
+        "%MSBUILDPATH%" .\MUXControls.sln /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
 
         if "%ERRORLEVEL%" == "0" call .\tools\MakeAppxHelper.cmd %BUILDPLATFORM% %BUILDCONFIGURATION%
     ) else (
-        "%MSBUILDPATH%" .\build\BuildAll.proj /maxcpucount:12 /p:VisualStudioVersion="15.0" /flp:Verbosity=Diagnostic /fl /bl /verbosity:Minimal
+        "%MSBUILDPATH%" .\build\BuildAll.proj /maxcpucount:12 /flp:Verbosity=Diagnostic /fl /bl /verbosity:Minimal
 
         if "%ERRORLEVEL%" == "0" (
             call .\tools\MakeAppxHelper.cmd x86 release
@@ -186,6 +191,7 @@ echo        /UseInsiderSDK - build using insider SDK
 echo        /UseInternalSDK - build using internal SDK
 echo        /EmitTelemetryEvents - build with telemetry events turned on
 echo        /project ^<path^> - builds a specific project
+echo        /usevsprerelease - use the prerelease VS on the machine instead of latest stable
 echo.
 
 :end
