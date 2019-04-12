@@ -15,6 +15,11 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
+        <Grid.Resources>
+            <Storyboard x:Name="bannerEnter">
+                <PopInThemeAnimation Storyboard.TargetName="banner" Duration="1500" FromHorizontalOffset="500"/>
+            </Storyboard>
+        </Grid.Resources>
         <Image x:Name="banner" Stretch="UniformToFill" Margin="5" />
         <ScrollViewer x:Name="sv" Height="200"
                       HorizontalScrollBarVisibility="Auto"
@@ -29,7 +34,7 @@
                 <mux:ItemsRepeater.ItemTemplate>
                     <DataTemplate>
                         <UserControl IsTabStop="True" UseSystemFocusVisuals="True" GotFocus="OnItemGotFocus" >
-                            <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="OnItemClicked"  />
+                           <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="OnItemClicked"  />
                         </UserControl>
                     </DataTemplate>
                 </mux:ItemsRepeater.ItemTemplate>

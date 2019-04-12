@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 
@@ -71,7 +62,7 @@ namespace Flick
         {
             var selected = (sender as FrameworkElement).DataContext as Photo;
             banner.Source = new BitmapImage(new Uri(selected.LargeUrl));
-            
+            bannerEnter.Begin();
         }
 
         private void OnItemGotFocus(object sender, RoutedEventArgs e)
@@ -89,7 +80,7 @@ namespace Flick
         private static void ScrollToCenterOfViewport(object sender)
         {
             var item = sender as FrameworkElement;
-            item.StartBringIntoView(new BringIntoViewOptions()
+            item.StartBringIntoView(new BringIntoViewOptions() 
             {
                 HorizontalAlignmentRatio = 0.5,
                 VerticalAlignmentRatio = 0.5,
@@ -99,7 +90,7 @@ namespace Flick
 
         private void Grid_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if(e.Key == Windows.System.VirtualKey.Escape)
+            if (e.Key == Windows.System.VirtualKey.Escape)
             {
                 Frame.GoBack();
             }
