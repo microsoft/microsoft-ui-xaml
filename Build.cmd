@@ -104,13 +104,20 @@ goto :DoBuild
 
 :DoBuild
 
+"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -Latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe > %TEMP%\msbuildpath.txt
+
+set /p MSBUILDPATH=<%TEMP%\msbuildpath.txt
+
+For %%A in ("%MSBUILDPATH%") do (set MSBUILDDIRPATH=%%~dpA)
+IF %MSBUILDDIRPATH:~-1%==\ SET MSBUILDDIRPATH=%MSBUILDDIRPATH:~0,-1%
+
 REM
 REM     NUGET Restore
 REM
 if "%PROJECTPATH%" NEQ "" (
-	call .\Tools\NugetWrapper.cmd restore -MSBuildPath "%VSINSTALLDIR%\MSBuild\15.0\Bin" -NonInteractive %PROJECTPATH%
+	call .\Tools\NugetWrapper.cmd restore -MSBuildPath "%MSBUILDDIRPATH%" -NonInteractive %PROJECTPATH%
 ) else (
-	call .\Tools\NugetWrapper.cmd restore -MSBuildPath "%VSINSTALLDIR%\MSBuild\15.0\Bin" -NonInteractive .\MUXControls.sln 
+	call .\Tools\NugetWrapper.cmd restore -MSBuildPath "%MSBUILDDIRPATH%" -NonInteractive .\MUXControls.sln 
 )
 
 REM
@@ -124,9 +131,6 @@ if "%MUXFINAL%" == "1" ( set EXTRAMSBUILDPARAMS=/p:MUXFinalRelease=true )
 if "%USEINSIDERSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInsiderSDK=true )
 if "%USEINTERNALSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInternalSDK=true )
 if "%EMITTELEMETRYEVENTS%" == "1" ( set EXTRAMSBUILDPARAMS=/p:EmitTelemetryEvents=true )
-
-REM Need an explicit full path to MSBuild.exe or it will fall back to 14.0 for some reason
-set MSBUILDPATH=%VSINSTALLDIR%\MSBuild\15.0\Bin\MSBuild.exe
 
 if "%PROJECTPATH%" NEQ "" (
     set MSBuildCommand="%MSBUILDPATH%" %PROJECTPATH% /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /p:VisualStudioVersion="15.0" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
