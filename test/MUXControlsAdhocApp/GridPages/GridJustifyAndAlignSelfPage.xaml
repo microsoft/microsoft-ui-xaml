@@ -9,7 +9,51 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel>
-        <TextBlock>JustifySelf</TextBlock>
-        <TextBlock>AlignSelf</TextBlock>
+
+        <local:Grid>
+            <local:Grid.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="FontSize" Value="18"/>
+                </Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="Orange"/>
+                    <Setter Property="Margin" Value="2"/>
+                    <Setter Property="CornerRadius" Value="6"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalAlignment" Value="Stretch"/>
+                </Style>
+            </local:Grid.Resources>
+            <local:Grid.TemplateColumns>
+                <local:GridTrackInfo Length="180"/>
+                <local:GridTrackInfo Length="60"/>
+                <local:GridTrackInfo Length="180"/>
+            </local:Grid.TemplateColumns>
+            <local:Grid.TemplateRows>
+                <local:GridTrackInfo Length="60"/>
+                <local:GridTrackInfo Length="40"/>
+                <local:GridTrackInfo Length="40"/>
+            </local:Grid.TemplateRows>
+
+            <Grid Background="#FFA500">
+                <local:Grid.ColumnStart>
+                    <local:GridLocation Index="0"/>
+                </local:Grid.ColumnStart>
+                <local:Grid.RowStart>
+                    <local:GridLocation Index="0"/>
+                </local:Grid.RowStart>
+                <local:Grid.JustifySelf>
+                    <local:GridJustifySelf>Start</local:GridJustifySelf>
+                </local:Grid.JustifySelf>
+                <TextBlock>item-a</TextBlock>
+            </Grid>
+
+        </local:Grid>
+
     </StackPanel>
 </Page>

@@ -83,6 +83,22 @@ namespace MUXControlsAdhocApp.GridPages
         ColumnDense,
     }
 
+    public enum GridJustifySelf
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+    }
+
+    public enum GridAlignSelf
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+    }
+
     public class Grid : Panel
     {
 #region ChildProperties
@@ -149,6 +165,56 @@ namespace MUXControlsAdhocApp.GridPages
         public static GridLocation GetRowEnd(UIElement element)
         {
             return (GridLocation)element.GetValue(RowEndProperty);
+        }
+
+        public static readonly DependencyProperty JustifySelfProperty =
+            DependencyProperty.RegisterAttached(
+              "JustifySelf",
+              typeof(GridJustifySelf),
+              typeof(Grid),
+              new PropertyMetadata(null, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
+            );
+        public static void SetJustifySelf(UIElement element, GridJustifySelf value)
+        {
+            element.SetValue(JustifySelfProperty, value);
+        }
+        public static GridJustifySelf GetJustifySelf(UIElement element)
+        {
+            return (GridJustifySelf)element.GetValue(JustifySelfProperty);
+        }
+        public static GridJustifySelf? TryGetJustifySelf(UIElement element)
+        {
+            var value = element.GetValue(JustifySelfProperty);
+            if (value != null)
+            {
+                return (GridJustifySelf)value;
+            }
+            return null;
+        }
+
+        public static readonly DependencyProperty AlignSelfProperty =
+            DependencyProperty.RegisterAttached(
+              "AlignSelf",
+              typeof(GridAlignSelf),
+              typeof(Grid),
+              new PropertyMetadata(null, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
+            );
+        public static void SetAlignSelf(UIElement element, GridAlignSelf value)
+        {
+            element.SetValue(AlignSelfProperty, value);
+        }
+        public static GridAlignSelf GetAlignSelf(UIElement element)
+        {
+            return (GridAlignSelf)element.GetValue(AlignSelfProperty);
+        }
+        public static GridAlignSelf? TryGetAlignSelf(UIElement element)
+        {
+            var value = element.GetValue(AlignSelfProperty);
+            if (value != null)
+            {
+                return (GridAlignSelf)value;
+            }
+            return null;
         }
 
         private static void InvalidateMeasureOnChildPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs args)
@@ -1033,6 +1099,31 @@ namespace MUXControlsAdhocApp.GridPages
             return locationCache;
         }
 
+        private GridJustifyItems Convert(GridJustifySelf value)
+        {
+            switch (value)
+            {
+                case GridJustifySelf.Start: return GridJustifyItems.Start;
+                case GridJustifySelf.Center: return GridJustifyItems.Center;
+                case GridJustifySelf.End: return GridJustifyItems.End;
+                case GridJustifySelf.Stretch: return GridJustifyItems.Stretch;
+                default: throw new ArgumentOutOfRangeException("value");
+            }
+        }
+
+        private GridAlignItems Convert(GridAlignSelf value)
+        {
+            switch (value)
+            {
+                case GridAlignSelf.Start: return GridAlignItems.Start;
+                case GridAlignSelf.Center: return GridAlignItems.Center;
+                case GridAlignSelf.End: return GridAlignItems.End;
+                case GridAlignSelf.Stretch: return GridAlignItems.Stretch;
+                default: throw new ArgumentOutOfRangeException("value");
+            }
+        }
+
+
 #region Tracing
         [Conditional("GRID_TRACE")]
         private static void DumpConditional(bool condition, string write, ref string separator)
@@ -1369,7 +1460,13 @@ namespace MUXControlsAdhocApp.GridPages
 
                 double desiredWidth = Math.Min(child.DesiredSize.Width, width);
                 double unusedWidth = (width - desiredWidth);
-                switch (_justifyItems)
+                GridJustifyItems justify = _justifyItems;
+                GridJustifySelf? justifySelf = TryGetJustifySelf(child);
+                if (justifySelf.HasValue)
+                {
+                    justify = Convert(justifySelf.Value);
+                }
+                switch (justify)
                 {
                     case GridJustifyItems.Start:
                         width = desiredWidth;
@@ -1388,7 +1485,13 @@ namespace MUXControlsAdhocApp.GridPages
 
                 double desiredHeight = Math.Min(child.DesiredSize.Height, height);
                 double unusedHeight = (height - desiredHeight);
-                switch (_alignItems)
+                GridAlignItems align = _alignItems;
+                GridAlignSelf? alignSelf = TryGetAlignSelf(child);
+                if (alignSelf.HasValue)
+                {
+                    align = Convert(alignSelf.Value);
+                }
+                switch (align)
                 {
                     case GridAlignItems.Start:
                         height = desiredHeight;
