@@ -15,7 +15,7 @@
                     <mux:ScrollerView IsChildAvailableWidthConstrained="False"
                                       HorizontalScrollMode="Auto"
                                       HorizontalScrollControllerVisibility="Auto">-->
-                    <mux:ScrollAnchorProvider Margin="2,0,0,0" HorizontalContentAlignment="Stretch">
+                    <mux:ItemsRepeaterScrollHost Margin="2,0,0,0" HorizontalAlignment="Stretch">
                         <ScrollViewer x:Name="ScrollViewer"
                                       HorizontalContentAlignment="Left"
                                       VerticalContentAlignment="Top"
@@ -44,7 +44,7 @@
                                 </mux:ItemsRepeater>
                             </ScrollViewer.Content>
                         </ScrollViewer>
-                    </mux:ScrollAnchorProvider>
+                    </mux:ItemsRepeaterScrollHost>
                     <!--</mux:ScrollerView>-->
                 </ControlTemplate>
             </Setter.Value>

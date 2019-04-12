@@ -17,11 +17,6 @@ NonVirtualizingLayout::NonVirtualizingLayout()
 
 #pragma region INonVirtualizingLayoutOverrides
 
-NonVirtualizingLayout::NonVirtualizingLayout()
-{
-    __RP_Marker_ClassById(RuntimeProfiler::ProfId_NonVirtualizingLayout);
-}
-
 void NonVirtualizingLayout::InitializeForContextCore(winrt::LayoutContext const& context)
 {
 

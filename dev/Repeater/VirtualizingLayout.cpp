@@ -16,11 +16,6 @@ VirtualizingLayout::VirtualizingLayout()
 
 #pragma region IVirtualizingLayoutOverrides
 
-VirtualizingLayout::VirtualizingLayout()
-{
-    __RP_Marker_ClassById(RuntimeProfiler::ProfId_VirtualizingLayout);
-}
-
 void VirtualizingLayout::InitializeForContextCore(winrt::VirtualizingLayoutContext const& context)
 {
 
