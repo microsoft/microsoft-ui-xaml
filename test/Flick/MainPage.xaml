@@ -19,6 +19,11 @@
         <controls:ItemsRepeaterScrollHost>
             <ScrollViewer>
                 <StackPanel>
+                    <AutoSuggestBox x:Name="autoSuggest"
+                                    QueryIcon="Find"
+                                    SuggestionChosen="AutoSuggest_SuggestionChosen"
+                                    TextChanged="AutoSuggest_TextChanged"
+                                    QuerySubmitted="AutoSuggest_QuerySubmitted" />
                     <Grid>
                         <Image x:Name="banner" Stretch="UniformToFill" Height="400" Margin="5"/>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">

@@ -101,6 +101,30 @@ namespace Flick
         {
             Frame.Navigate(typeof(GroupedPage), new NavigateArgs() { Photos = Images });
         }
+
+        private void AutoSuggest_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+
+        }
+
+        private void AutoSuggest_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+
+        }
+
+        private void AutoSuggest_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            if (args.ChosenSuggestion != null)
+            {
+                // User selected an item from the suggestion list, take an action on it here.
+            }
+            else
+            {
+                // Use args.QueryText to determine what to do.
+                var url = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=dc318dbb02bf7cd2ab3daca1ae7d93c8&tags={0}&styles=depthoffield&safe_search=1&per_page=100&page=1";
+                LoadFeed(string.Format(url, args.QueryText.Replace(" ", "+")));
+            }
+        }
     }
 
     public class NavigateArgs
