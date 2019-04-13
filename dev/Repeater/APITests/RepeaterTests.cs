@@ -28,6 +28,7 @@ using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 using System.Collections.ObjectModel;
 using System.Threading;
+using System.Collections.Generic;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
@@ -301,6 +302,70 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 {
                     Verify.AreEqual(i * 200, scrollViewer.VerticalOffset);
                 });
+            }
+        }
+
+        // ScrollViewer scrolls vertically, but there is an inner 
+        // repeater which flows horizontally which needs corrections to be handled.
+        [TestMethod]
+        public void VerifyCorrectionsInNonScrollableDirection()
+        {
+            ItemsRepeater rootRepeater = null;
+            ScrollViewer scrollViewer = null;
+            ItemsRepeaterScrollHost scrollhost = null;
+            ManualResetEvent viewChanged = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                scrollhost = (ItemsRepeaterScrollHost)XamlReader.Load(
+                  @"<controls:ItemsRepeaterScrollHost Width='400' Height='600'
+                     xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                     xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                    <ScrollViewer Width='400' Height='400' x:Name='scrollviewer'>
+                        <controls:ItemsRepeater x:Name='repeater'>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <controls:ItemsRepeater ItemsSource='{Binding}'>
+                                        <controls:ItemsRepeater.Layout>
+                                            <controls:StackLayout Orientation='Horizontal' />
+                                        </controls:ItemsRepeater.Layout>
+                                    </controls:ItemsRepeater>
+                                </StackPanel>
+                            </DataTemplate>
+                        </controls:ItemsRepeater>
+                    </ScrollViewer>
+                </controls:ItemsRepeaterScrollHost>");
+
+                rootRepeater = (ItemsRepeater)scrollhost.FindName("repeater");
+                scrollViewer = (ScrollViewer)scrollhost.FindName("scrollviewer");
+                scrollViewer.ViewChanged += (sender, args) =>
+                {
+                    if (!args.IsIntermediate)
+                    {
+                        viewChanged.Set();
+                    }
+                };
+
+                List<List<int>> items = new List<List<int>>();
+                for (int i = 0; i < 100; i++)
+                {
+                    items.Add(Enumerable.Range(0, 4).ToList());
+                }
+                rootRepeater.ItemsSource = items;
+                Content = scrollhost;
+            });
+
+            // scroll down several times and validate no crash
+            for (int i = 1; i < 5; i++)
+            {
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    scrollViewer.ChangeView(null, i * 200, null);
+                });
+
+                Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS));
+                viewChanged.Reset();
             }
         }
     }
