@@ -52,6 +52,9 @@ public:
                 TraceLoggingLevel(WINEVENT_LEVEL_INFO),
                 TraceLoggingKeyword(KEYWORD_REPEATER),
                 TraceLoggingWideString(buffer, "Message"));
+#ifdef _DEBUG
+            OutputDebugStringW(buffer);
+#endif
         }
         va_end(args);
     }

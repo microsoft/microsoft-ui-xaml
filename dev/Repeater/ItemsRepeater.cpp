@@ -110,7 +110,15 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
 
     if (auto layout = Layout())
     {
-        desiredSize = layout.Measure(GetLayoutContext(), availableSize);
+        auto layoutContext = GetLayoutContext();
+
+        // Expensive operation, do it only in debug builds.
+#ifdef _DEBUG
+        auto virtualContext = winrt::get_self<VirtualizingLayoutContext>(layoutContext);
+        virtualContext->Indent(Indent());
+#endif
+
+        desiredSize = layout.Measure(layoutContext, availableSize);
         extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, desiredSize.Width, desiredSize.Height };
 
         // Clear auto recycle candidate elements that have not been kept alive by layout - i.e layout did not
@@ -432,6 +440,28 @@ void ItemsRepeater::OnElementIndexChanged(const winrt::UIElement& element, int o
 
         m_elementIndexChangedEventSource(*this, m_elementIndexChangedArgs.get());
     }
+}
+
+int ItemsRepeater::Indent()
+{
+    int indent = 1;
+
+    // Expensive, so we do it only in debug builds.
+#ifdef _DEBUG
+    auto parent = this->Parent().as<winrt::FrameworkElement>();
+    while (parent && !parent.try_as<winrt::ItemsRepeater>())
+    {
+        parent = parent.Parent().as<winrt::FrameworkElement>();
+    }
+
+    if (parent)
+    {
+        auto parentRepeater = winrt::get_self<ItemsRepeater>(parent.as<winrt::ItemsRepeater>());
+        indent = parentRepeater->Indent();
+    }
+#endif
+
+    return indent * 4;
 }
 
 void ItemsRepeater::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)

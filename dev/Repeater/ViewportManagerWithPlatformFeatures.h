@@ -82,6 +82,12 @@ private:
     // Sometimes the scrolling surface cannot service a shift (for example
     // it is already at the top and cannot shift anymore.)
     winrt::Point m_pendingViewportShift{};
+    // Unshiftable shift amount that this view manager can
+    // handle on its own to fake it to the layout as if the shift
+    // actually happened. This can happen in cases where no scrollviewer
+    // in the parent chain can scroll in the shift direction.
+    winrt::Point m_unshiftableShift{};
+
 
     // Realization window cache fields
     double m_maximumHorizontalCacheLength{ 2.0 };

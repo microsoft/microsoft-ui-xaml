@@ -86,8 +86,8 @@ winrt::Rect ViewportManagerWithPlatformFeatures::GetLayoutVisibleWindowDiscardAn
 
     if (HasScroller())
     {
-        visibleWindow.X += m_layoutExtent.X + m_expectedViewportShift.X;
-        visibleWindow.Y += m_layoutExtent.Y + m_expectedViewportShift.Y;
+        visibleWindow.X += m_layoutExtent.X + m_expectedViewportShift.X + m_unshiftableShift.X;
+        visibleWindow.Y += m_layoutExtent.Y + m_expectedViewportShift.Y + m_unshiftableShift.Y;
     }
 
     return visibleWindow;
@@ -108,8 +108,8 @@ winrt::Rect ViewportManagerWithPlatformFeatures::GetLayoutVisibleWindow() const
     }
     else if (HasScroller())
     {
-        visibleWindow.X += m_layoutExtent.X + m_expectedViewportShift.X;
-        visibleWindow.Y += m_layoutExtent.Y + m_expectedViewportShift.Y;
+        visibleWindow.X += m_layoutExtent.X + m_expectedViewportShift.X + m_unshiftableShift.X;
+        visibleWindow.Y += m_layoutExtent.Y + m_expectedViewportShift.Y + m_unshiftableShift.Y;
     }
 
     return visibleWindow;
@@ -171,6 +171,7 @@ void ViewportManagerWithPlatformFeatures::OnLayoutChanged()
     m_layoutExtent = {};
     m_expectedViewportShift = {};
     m_pendingViewportShift = {};
+    m_unshiftableShift = {};
     ResetCacheBuffer();
 }
 
@@ -230,13 +231,21 @@ void ViewportManagerWithPlatformFeatures::OnOwnerArranged()
 void ViewportManagerWithPlatformFeatures::OnLayoutUpdated(winrt::IInspectable const& sender, winrt::IInspectable const& args)
 {
     // We were expecting a viewport shift but we never got one and we are not going to in this
-    // layout pass. Request another pass so that we can fill our window.
+    // layout pass. We likely will never get this shift, so lets assume that we are never going to get it and
+    // adjust our expected shift to track that. One case where this can happen is when there is no scrollviewer
+    // that can scroll in the direction where the shift is expected.
     if (m_pendingViewportShift.X != 0 || m_pendingViewportShift.Y != 0)
     {
         REPEATER_TRACE_INFO(L"%ls: \tLayout Updated with pending shift %.0f %.0f- invalidating measure \n",
             GetLayoutId().data(),
             m_pendingViewportShift.X,
             m_pendingViewportShift.Y);
+
+        // Assume this is never going to come.
+        m_unshiftableShift.X += m_pendingViewportShift.X;
+        m_unshiftableShift.Y += m_pendingViewportShift.Y;
+        m_pendingViewportShift = {};
+        m_expectedViewportShift = {};
 
         TryInvalidateMeasure();
     }
@@ -347,6 +356,7 @@ void ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged(winrt::Fram
     UpdateViewport(args.EffectiveViewport());
 
     m_pendingViewportShift = {};
+    m_unshiftableShift = {};
     if (m_visibleWindow == winrt::Rect())
     {
         // We got cleared.

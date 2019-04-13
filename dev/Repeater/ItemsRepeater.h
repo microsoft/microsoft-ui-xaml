@@ -120,6 +120,8 @@ public:
         return s_VirtualizationInfoProperty;
     }
 
+    int Indent();
+
 private:
     void OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/);
     void OnUnloaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/);
@@ -179,5 +181,5 @@ private:
     // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
     winrt::IElementFactory m_itemTemplate{ nullptr };
     winrt::Layout m_layout{ nullptr };
-    winrt::ElementAnimator m_animator{ nullptr }; 
+    winrt::ElementAnimator m_animator{ nullptr };
 };
