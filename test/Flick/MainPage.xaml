@@ -37,6 +37,9 @@
                         <DataTemplate>
                             <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="Image_Tapped"/>
                         </DataTemplate>
+                        <controls:ItemsRepeater.Animator>
+                            <local:DefaultElementAnimator />
+                        </controls:ItemsRepeater.Animator>
                     </controls:ItemsRepeater>
                 </StackPanel>
             </ScrollViewer>

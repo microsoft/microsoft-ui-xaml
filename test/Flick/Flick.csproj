@@ -119,6 +119,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DefaultElementAnimator.cs" />
     <Compile Include="GroupedPage.xaml.cs">
       <DependentUpon>GroupedPage.xaml</DependentUpon>
     </Compile>
@@ -169,9 +170,12 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.8</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.1.190404001</Version>
-    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\dev\dll\Microsoft.UI.Xaml.vcxproj">
+      <Project>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</Project>
+      <Name>Microsoft.UI.Xaml</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
