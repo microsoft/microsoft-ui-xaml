@@ -102,15 +102,4 @@ namespace Flick
             }
         }
     }
-
-    public class PhotoReel: ObservableCollection<Photo>
-    {
-        public PhotoReel(IEnumerable<Photo> photos)
-        :base(photos)
-        {
-           
-        }
-
-        public string Name { get; set; }
-    }
 }
