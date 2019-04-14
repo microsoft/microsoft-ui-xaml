@@ -55,7 +55,7 @@ namespace Flick
             {
                 var realIndex = Math.Abs(currentIndex % context.ItemCount);
                 var element = context.GetOrCreateElementAt(realIndex);
-                var arrangeRect = new Rect(currentIndex* (ItemWidth + Spacing), 0, ItemWidth, ItemHeight);
+                var arrangeRect = new Rect(currentIndex * (ItemWidth + Spacing), 0, ItemWidth, ItemHeight);
                 element.Arrange(arrangeRect);
                 Debug.WriteLine("   Arrange:" + currentIndex + " :" + arrangeRect);
             }
@@ -77,12 +77,12 @@ namespace Flick
 
         private int FirstRealizedIndexInRect(Rect realizationRect, int itemCount)
         {
-            return (int)(realizationRect.X / ItemWidth);
+            return (int)(realizationRect.X / (ItemWidth + Spacing));
         }
 
         private int LastRealizedIndexInRect(Rect realizationRect, int itemCount)
         {
-            int index = (int)(realizationRect.Right / ItemWidth);
+            int index = (int)(realizationRect.Right / (ItemWidth + Spacing));
             return index;
         }
 

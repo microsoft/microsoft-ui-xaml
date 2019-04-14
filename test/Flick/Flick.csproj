@@ -130,6 +130,7 @@
       <DependentUpon>GroupedPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Layouts\ActivityFeedLayout.cs" />
+    <Compile Include="Layouts\UniformGrid2DLayout.cs" />
     <Compile Include="Layouts\VirtualizingUniformCarousalStackLayout.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -140,6 +141,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StoreScenario.xaml.cs">
       <DependentUpon>StoreScenario.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UniformGrid2DPage.xaml.cs">
+      <DependentUpon>UniformGrid2DPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -180,6 +184,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="StoreScenario.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UniformGrid2DPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -33,6 +33,7 @@
                             <AppBarButton Icon="Globe" Click="AppBarButton_Click_3" />
                             <AppBarButton Icon="FourBars" Click="AppBarButton_Click_4" />
                             <AppBarButton Icon="AlignCenter" Click="AppBarButton_Click_5" />
+                            <AppBarButton Icon="Important" Click="AppBarButton_Click_6" />
                         </StackPanel>
                     </Grid>
                     <controls:ItemsRepeater x:Name="repeater" >

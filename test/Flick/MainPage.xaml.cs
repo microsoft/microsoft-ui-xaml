@@ -66,6 +66,11 @@ namespace Flick
             Frame.Navigate(typeof(CarousalPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
         }
 
+        private void AppBarButton_Click_6(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(UniformGrid2DPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
+        }
+
         private void AutoSuggest_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
 
