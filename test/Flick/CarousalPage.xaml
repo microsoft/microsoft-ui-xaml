@@ -1,0 +1,44 @@
+﻿<Page
+    x:Class="Flick.CarousalPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Flick"
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    RequestedTheme="Dark"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Margin="10" KeyDown="Grid_KeyDown">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <Grid.Resources>
+            <Storyboard x:Name="bannerEnter">
+                <PopInThemeAnimation Storyboard.TargetName="banner" Duration="1500" FromHorizontalOffset="500"/>
+            </Storyboard>
+        </Grid.Resources>
+        <Image x:Name="banner" Stretch="UniformToFill" Margin="5" />
+        <ScrollViewer x:Name="sv" Height="200"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Disabled"
+                      HorizontalScrollMode="Enabled"
+                      VerticalScrollMode="Disabled"
+                      Grid.Row="1">
+            <mux:ItemsRepeater x:Name="repeater" HorizontalCacheLength="0" VerticalCacheLength="0">
+                <mux:ItemsRepeater.Layout>
+                    <local:VirtualizingUniformCarousalStackLayout ItemWidth="300" ItemHeight="200" Spacing="0"/>
+                </mux:ItemsRepeater.Layout>
+                <mux:ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <UserControl IsTabStop="True" UseSystemFocusVisuals="True" GotFocus="OnItemGotFocus" >
+                            <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="OnItemClicked"  />
+                        </UserControl>
+                    </DataTemplate>
+                </mux:ItemsRepeater.ItemTemplate>
+            </mux:ItemsRepeater>
+        </ScrollViewer>
+    </Grid>
+</Page>

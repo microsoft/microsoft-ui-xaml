@@ -119,6 +119,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CarousalPage.xaml.cs">
+      <DependentUpon>CarousalPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Data\FlickApi.cs" />
     <Compile Include="Data\Photo.cs" />
     <Compile Include="Data\PhotoReel.cs" />
@@ -127,6 +130,7 @@
       <DependentUpon>GroupedPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Layouts\ActivityFeedLayout.cs" />
+    <Compile Include="Layouts\VirtualizingUniformCarousalStackLayout.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -159,6 +163,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="CarousalPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="GroupedPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
