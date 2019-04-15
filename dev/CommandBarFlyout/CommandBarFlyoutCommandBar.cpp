@@ -26,7 +26,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
             if (commands)
             {
                 bool usingPrimaryCommands = commands == PrimaryCommands();
-                bool ensureTabStopUnicity = usingPrimaryCommands || SharedHelpers::IsRS3OrHigher();
+                bool ensureTabStopUniqueness = usingPrimaryCommands || SharedHelpers::IsRS3OrHigher();
                 auto firstCommandAsFrameworkElement = commands.GetAt(0).try_as<winrt::FrameworkElement>();
 
                 if (firstCommandAsFrameworkElement)
@@ -38,20 +38,20 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
                             usingPrimaryCommands ? m_moreButton.get() : nullptr /*moreButton*/,
                             winrt::FocusState::Programmatic /*focusState*/,
                             true /*firstCommand*/,
-                            ensureTabStopUnicity);
+                            ensureTabStopUniqueness);
                     }
                     else
                     {
                         m_firstItemLoadedRevoker = firstCommandAsFrameworkElement.Loaded(winrt::auto_revoke,
                         {
-                            [this, commands, usingPrimaryCommands, ensureTabStopUnicity](winrt::IInspectable const& sender, auto const&)
+                            [this, commands, usingPrimaryCommands, ensureTabStopUniqueness](winrt::IInspectable const& sender, auto const&)
                             {
                                 FocusCommand(
                                     commands,
                                     usingPrimaryCommands ? m_moreButton.get() : nullptr /*moreButton*/,
                                     winrt::FocusState::Programmatic /*focusState*/,
                                     true /*firstCommand*/,
-                                    ensureTabStopUnicity);
+                                    ensureTabStopUniqueness);
                                 m_firstItemLoadedRevoker.revoke();
                             }
                         });
@@ -121,18 +121,13 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
     });
 }
 
-CommandBarFlyoutCommandBar::~CommandBarFlyoutCommandBar()
-{
-    DetachEventHandlers(true /* useSafeGet */);
-}
-
 void CommandBarFlyoutCommandBar::OnApplyTemplate()
 {
     COMMANDBARFLYOUT_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     __super::OnApplyTemplate();
     DetachEventHandlers();
-    
+
     winrt::IControlProtected thisAsControlProtected = *this;
 
     m_primaryItemsRoot.set(GetTemplateChildT<winrt::FrameworkElement>(L"PrimaryItemsRoot", thisAsControlProtected));
@@ -165,26 +160,6 @@ void CommandBarFlyoutCommandBar::SetOwningFlyout(
 void CommandBarFlyoutCommandBar::AttachEventHandlers()
 {
     COMMANDBARFLYOUT_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
-
-    if (!SharedHelpers::IsRS3OrHigher())
-    {
-        // Prior to RS3, UIElement.PreviewKeyDown is not available. Thus IsTabStop
-        // for SecondaryCommands is left to True and the KeyDown event is used to
-        // close the whole flyout with the escape key.
-        m_keyDownHandler = winrt::box_value<winrt::KeyEventHandler>(
-        {
-            [this](auto const&, winrt::KeyRoutedEventArgs const& args)
-            {
-                if (auto owningFlyout = m_owningFlyout.get())
-                {
-                    if (args.Key() == winrt::VirtualKey::Escape)
-                    {
-                        owningFlyout.Hide();
-                    }
-                }
-            }
-        });
-    }
 
     if (auto secondaryItemsRoot = m_secondaryItemsRoot.get())
     {
@@ -283,8 +258,23 @@ void CommandBarFlyoutCommandBar::AttachEventHandlers()
         }
         else
         {
-            // UIElement.PreviewKeyDown is not available before RS3. Skip the custom Down/Up arrows handling above.
-            secondaryItemsRoot.AddHandler(winrt::UIElement::KeyDownEvent(), m_keyDownHandler, true);
+            // Prior to RS3, UIElement.PreviewKeyDown is not available. Thus IsTabStop
+            // for SecondaryCommands is left to True and the KeyDown event is used to
+            // close the whole flyout with the escape key.
+            // The custom Down / Up arrows handling above is skipped.
+            m_keyDownRevoker = AddRoutedEventHandler<RoutedEventType::KeyDown>(
+                secondaryItemsRoot.try_as<winrt::UIElement>(),
+                [this](auto const&, auto const& args)
+                {
+                    if (auto owningFlyout = m_owningFlyout.get())
+                    {
+                        if (args.Key() == winrt::VirtualKey::Escape)
+                        {
+                            owningFlyout.Hide();
+                        }
+                    }
+                },
+                true /*handledEventsToo*/);
         }
     }
 
@@ -307,22 +297,17 @@ void CommandBarFlyoutCommandBar::AttachEventHandlers()
     }
 }
 
-void CommandBarFlyoutCommandBar::DetachEventHandlers(
-    bool useSafeGet)
+void CommandBarFlyoutCommandBar::DetachEventHandlers()
 {
     COMMANDBARFLYOUT_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    if (m_keyDownHandler)
-    {
-        MUX_ASSERT(!SharedHelpers::IsRS3OrHigher());
-
-        if (auto secondaryItemsRoot = useSafeGet ? m_secondaryItemsRoot.safe_get() : m_secondaryItemsRoot.get())
-        {
-            secondaryItemsRoot.RemoveHandler(winrt::UIElement::KeyDownEvent(), m_keyDownHandler);
-        }
-
-        m_keyDownHandler = nullptr;
-    }
+    m_keyDownRevoker.revoke();
+    m_secondaryItemsRootPreviewKeyDownRevoker.revoke();
+    m_secondaryItemsRootSizeChangedRevoker.revoke();
+    m_firstItemLoadedRevoker.revoke();
+    m_openingStoryboardCompletedRevoker.revoke();
+    m_closingStoryboardCompletedRevoker.revoke();
+    m_closingStoryboardCompletedCallbackRevoker.revoke();
 }
 
 bool CommandBarFlyoutCommandBar::HasOpenAnimation()
@@ -378,10 +363,10 @@ void CommandBarFlyoutCommandBar::UpdateFlowsFromAndFlowsTo()
     // Ensure there is only one focusable command with IsTabStop set to True
     // to enable tabbing from primary to secondary commands and vice-versa
     // with a single Tab keystroke.
-    EnsureTabStopUnicity(PrimaryCommands(), moreButton);
+    EnsureTabStopUniqueness(PrimaryCommands(), moreButton);
     if (SharedHelpers::IsRS3OrHigher())
     {
-        EnsureTabStopUnicity(SecondaryCommands(), nullptr);
+        EnsureTabStopUniqueness(SecondaryCommands(), nullptr);
     }
 
     // Ensure the SizeOfSet and PositionInSet automation properties
@@ -736,7 +721,7 @@ void CommandBarFlyoutCommandBar::EnsureFocusedPrimaryCommand()
             moreButton /*moreButton*/,
             winrt::FocusState::Programmatic /*focusState*/,
             true /*firstCommand*/,
-            true /*ensureTabStopUnicity*/);
+            true /*ensureTabStopUniqueness*/);
     }
 }
 
@@ -766,7 +751,7 @@ void CommandBarFlyoutCommandBar::OnKeyDown(
                 nullptr /*moreButton*/,
                 winrt::FocusState::Keyboard /*focusState*/,
                 true /*firstCommand*/,
-                SharedHelpers::IsRS3OrHigher() /*ensureTabStopUnicity*/);
+                SharedHelpers::IsRS3OrHigher() /*ensureTabStopUniqueness*/);
         }
         break;
     }
@@ -810,7 +795,7 @@ void CommandBarFlyoutCommandBar::OnKeyDown(
                     nullptr /*moreButton*/,
                     winrt::FocusState::Keyboard /*focusState*/,
                     true /*firstCommand*/,
-                    SharedHelpers::IsRS3OrHigher() /*ensureTabStopUnicity*/))
+                    SharedHelpers::IsRS3OrHigher() /*ensureTabStopUniqueness*/))
             {
                 args.Handled(true);
             }
@@ -891,7 +876,7 @@ void CommandBarFlyoutCommandBar::OnKeyDown(
                             nullptr /*moreButton*/,
                             winrt::FocusState::Keyboard /*focusState*/,
                             false /*firstCommand*/,
-                            SharedHelpers::IsRS3OrHigher() /*ensureTabStopUnicity*/))
+                            SharedHelpers::IsRS3OrHigher() /*ensureTabStopUniqueness*/))
                     {
                         args.Handled(true);
                     }
@@ -979,7 +964,7 @@ bool CommandBarFlyoutCommandBar::FocusCommand(
     winrt::Control const& moreButton,
     winrt::FocusState const& focusState,
     bool firstCommand,
-    bool ensureTabStopUnicity)
+    bool ensureTabStopUniqueness)
 {
     COMMANDBARFLYOUT_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, nullptr);
 
@@ -1004,7 +989,7 @@ bool CommandBarFlyoutCommandBar::FocusCommand(
 
         if (auto commandAsControl = command.try_as<winrt::Control>())
         {
-            if (IsControlFocusable(commandAsControl, !ensureTabStopUnicity /*checkTabStop*/))
+            if (IsControlFocusable(commandAsControl, !ensureTabStopUniqueness /*checkTabStop*/))
             {
                 if (!focusedControl)
                 {
@@ -1012,16 +997,16 @@ bool CommandBarFlyoutCommandBar::FocusCommand(
                             commandAsControl /*newFocus*/,
                             nullptr /*oldFocus*/,
                             focusState /*focusState*/,
-                            ensureTabStopUnicity /*updateTabStop*/))
+                            ensureTabStopUniqueness /*updateTabStop*/))
                     {
-                        if (ensureTabStopUnicity && moreButton && moreButton.IsTabStop())
+                        if (ensureTabStopUniqueness && moreButton && moreButton.IsTabStop())
                         {
                             moreButton.IsTabStop(false);
                         }
 
                         focusedControl = commandAsControl;
 
-                        if (!ensureTabStopUnicity)
+                        if (!ensureTabStopUniqueness)
                         {
                             break;
                         }
@@ -1038,7 +1023,7 @@ bool CommandBarFlyoutCommandBar::FocusCommand(
     return focusedControl != nullptr;
 }
 
-void CommandBarFlyoutCommandBar::EnsureTabStopUnicity(
+void CommandBarFlyoutCommandBar::EnsureTabStopUniqueness(
     winrt::IObservableVector<winrt::ICommandBarElement> const& commands,
     winrt::Control const& moreButton)
 {

@@ -13,7 +13,6 @@ class CommandBarFlyoutCommandBar :
 {
 public:
     CommandBarFlyoutCommandBar();
-    virtual ~CommandBarFlyoutCommandBar();
 
     // IFrameworkElementOverrides
     void OnApplyTemplate();
@@ -34,7 +33,7 @@ public:
 
 private:
     void AttachEventHandlers();
-    void DetachEventHandlers(bool useSafeGet = false);
+    void DetachEventHandlers();
 
     void UpdateFlowsFromAndFlowsTo();
     void UpdateUI(bool useTransitions = true);
@@ -60,8 +59,8 @@ private:
         winrt::Control const& moreButton,
         winrt::FocusState const& focusState,
         bool firstCommand,
-        bool ensureTabStopUnicity);
-    static void EnsureTabStopUnicity(
+        bool ensureTabStopUniqueness);
+    static void EnsureTabStopUniqueness(
         winrt::IObservableVector<winrt::ICommandBarElement> const& commands,
         winrt::Control const& moreButton);
 
@@ -74,7 +73,7 @@ private:
     tracker_ref<winrt::FrameworkElement> m_secondaryItemsRoot{ this };
     tracker_ref<winrt::ButtonBase> m_moreButton{ this };
     weak_ref<winrt::CommandBarFlyout> m_owningFlyout{ nullptr };
-    winrt::IInspectable m_keyDownHandler{ nullptr };
+    RoutedEventHandler_revoker m_keyDownRevoker{};
     winrt::UIElement::PreviewKeyDown_revoker m_secondaryItemsRootPreviewKeyDownRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_secondaryItemsRootSizeChangedRevoker{};
     winrt::FrameworkElement::Loaded_revoker m_firstItemLoadedRevoker{};
