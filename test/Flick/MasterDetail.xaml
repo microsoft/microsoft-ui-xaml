@@ -29,7 +29,7 @@
                       Grid.Row="1">
             <mux:ItemsRepeater x:Name="repeater">
                 <mux:ItemsRepeater.Layout>
-                    <mux:StackLayout Orientation="Horizontal" />
+                    <mux:StackLayout Orientation="Horizontal" Spacing="-10" />
                 </mux:ItemsRepeater.Layout>
                 <mux:ItemsRepeater.ItemTemplate>
                     <DataTemplate>

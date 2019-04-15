@@ -48,7 +48,7 @@ namespace Flick
             scaleExpresion.SetReferenceParameter("item", item);
 
             // scale the item based on the distance of the item relative to the center of the viewport.
-            scaleExpresion.Expression = "1 - abs((svVisual.Size.X/2 - scrollProperties.Translation.X) - (item.Offset.X + item.Size.X/2))*(.5/(svVisual.Size.X/2))";
+            scaleExpresion.Expression = "1 - abs((svVisual.Size.X/2 - scrollProperties.Translation.X) - (item.Offset.X + item.Size.X/2))*(.75/(svVisual.Size.X/2))";
             item.StartAnimation("Scale.X", scaleExpresion);
             item.StartAnimation("Scale.Y", scaleExpresion);
 

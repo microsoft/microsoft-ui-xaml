@@ -62,6 +62,7 @@ namespace Flick
 
         private void Repeater_ElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
         {
+            /* Works bug disabled for perf.
             var item = ElementCompositionPreview.GetElementVisual(args.Element);
 
             var parentSv = VisualTreeHelper.GetParent(args.Element);
@@ -87,6 +88,7 @@ namespace Flick
             centerPointExpression.SetReferenceParameter("item", item);
             centerPointExpression.Expression = "Vector3(item.Size.X/2, item.Size.Y/2, 0)";
             item.StartAnimation("CenterPoint", centerPointExpression);
+            */
         }
     }
 }

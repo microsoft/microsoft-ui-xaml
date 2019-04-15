@@ -25,7 +25,7 @@ namespace Flick
 
         private async void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            Images = await FlickApi.GetPhotos("supercar");
+            Images = await FlickApi.GetPhotos("tulips");
             repeater.ItemsSource = Images;
             repeater.Layout = activityLayout;
             banner.Source = new BitmapImage(new Uri(Images.Last().LargeUrl));
@@ -36,37 +36,42 @@ namespace Flick
             Frame.Navigate(typeof(MasterDetail), new NavigateArgs() { Photos = Images, Selected = (sender as Image).DataContext as Photo });
         }
 
-        private void AppBarButton_Click(object sender, RoutedEventArgs e)
+        private void OnStackLayoutClicked(object sender, RoutedEventArgs e)
         {
             repeater.Layout = stackLayout;
         }
 
-        private void AppBarButton_Click_1(object sender, RoutedEventArgs e)
+        private void OnUniformGridLayoutClicked(object sender, RoutedEventArgs e)
         {
             repeater.Layout = uniformGridLayout;
         }
 
-        private void AppBarButton_Click_2(object sender, RoutedEventArgs e)
+        private void OnActivityLayoutClicked(object sender, RoutedEventArgs e)
         {
             repeater.Layout = activityLayout;
         }
 
-        private void AppBarButton_Click_3(object sender, RoutedEventArgs e)
+        private void OnAnimatedPageClicked(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(MasterDetail), new NavigateArgs() { Photos = Images, Selected = Images[0] });
+        }
+
+        private void OnGroupedPageClicked(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(GroupedPage), new NavigateArgs() { Photos = Images });
         }
 
-        private void AppBarButton_Click_4(object sender, RoutedEventArgs e)
+        private void OnStoreScenarioClicked(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(StoreScenario), new NavigateArgs() { Photos = Images });
         }
 
-        private void AppBarButton_Click_5(object sender, RoutedEventArgs e)
+        private void OnCarousalClicked(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(CarousalPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
         }
 
-        private void AppBarButton_Click_6(object sender, RoutedEventArgs e)
+        private void On2DGridClicked(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(UniformGrid2DPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
         }

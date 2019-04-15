@@ -26,14 +26,21 @@
                                     QuerySubmitted="AutoSuggest_QuerySubmitted" />
                     <Grid>
                         <Image x:Name="banner" Stretch="UniformToFill" Height="400" Margin="5"/>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-                            <AppBarButton Icon="List" Click="AppBarButton_Click" />
-                            <AppBarButton Icon="SelectAll" Click="AppBarButton_Click_1" />
-                            <AppBarButton Icon="Accept" Click="AppBarButton_Click_2" />
-                            <AppBarButton Icon="Globe" Click="AppBarButton_Click_3" />
-                            <AppBarButton Icon="FourBars" Click="AppBarButton_Click_4" />
-                            <AppBarButton Icon="AlignCenter" Click="AppBarButton_Click_5" />
-                            <AppBarButton Icon="Important" Click="AppBarButton_Click_6" />
+                        <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Layouts" />
+                                <AppBarButton Content="Stack" Click="OnStackLayoutClicked" />
+                                <AppBarButton Content="UniformGrid" Click="OnUniformGridLayoutClicked" />
+                                <AppBarButton Content="Activity" Click="OnActivityLayoutClicked" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Scenarios" />
+                                <AppBarButton Content="Animated" Click="OnAnimatedPageClicked" />
+                                <AppBarButton Content="Store" Click="OnStoreScenarioClicked" />
+                                <AppBarButton Content="Carousal" Click="OnCarousalClicked" />
+                                <AppBarButton Content="2D Grid" Click="On2DGridClicked" />
+                                <AppBarButton Content="Grouped" Click="OnGroupedPageClicked" />
+                            </StackPanel>
                         </StackPanel>
                     </Grid>
                     <controls:ItemsRepeater x:Name="repeater" >
