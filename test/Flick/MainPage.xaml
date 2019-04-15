@@ -27,14 +27,14 @@
                     <Grid>
                         <Image x:Name="banner" Stretch="UniformToFill" Height="400" Margin="5"/>
                         <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                            <TextBlock Text="Layouts" VerticalAlignment="Center"/>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Layouts" />
                                 <AppBarButton Content="Stack" Click="OnStackLayoutClicked" />
                                 <AppBarButton Content="UniformGrid" Click="OnUniformGridLayoutClicked" />
                                 <AppBarButton Content="Activity" Click="OnActivityLayoutClicked" />
                             </StackPanel>
+                            <TextBlock Text="Scenarios" VerticalAlignment="Center"/>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Scenarios" />
                                 <AppBarButton Content="Animated" Click="OnAnimatedPageClicked" />
                                 <AppBarButton Content="Store" Click="OnStoreScenarioClicked" />
                                 <AppBarButton Content="Carousal" Click="OnCarousalClicked" />
