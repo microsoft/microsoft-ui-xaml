@@ -1,8 +1,26 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Collections.Generic;
 using Windows.Foundation;
 using Windows.UI.Xaml;
+using System.Linq;
 
+// Notes:
+// (1) Item's Horizontal and Vertical Alignment conflict 
+// with align-content stretch and align-items stretch
+// For these two to work, we need to have the xaml alignments be set to stretch.
+//
+// (2) Is there equivalent of align-items baseline in xaml ?
+//
+// (3) order is not impl - don't think it is valuable, we
+// can just change the order of the children
+//
+// (4) FlexWrap-WrapReverse not impl - not sure if it is valuable.
+//
+// todo - basis, shrink, grow
+//
+// todo for perf - possibly cache dependency properties since they dont change often.
+//
 namespace Flick
 {
     public class Flex : NonVirtualizingLayout
@@ -56,6 +74,19 @@ namespace Flick
         public static readonly DependencyProperty AlignContentProperty =
             DependencyProperty.Register("AlignContent", typeof(AlignContent), typeof(Flex), new PropertyMetadata(0, new PropertyChangedCallback(OnPropertyChanged)));
 
+        public static AlignItems GetAlignSelf(DependencyObject obj)
+        {
+            return (AlignItems)obj.GetValue(AlignSelfProperty);
+        }
+
+        public static void SetAlignSelf(DependencyObject obj, AlignItems value)
+        {
+            obj.SetValue(AlignSelfProperty, value);
+        }
+
+        public static readonly DependencyProperty AlignSelfProperty =
+            DependencyProperty.RegisterAttached("AlignSelf", typeof(AlignItems), typeof(Flex), new PropertyMetadata(0));
+
 
         public static int GetFlexGrow(DependencyObject obj)
         {
@@ -104,10 +135,10 @@ namespace Flick
         {
             double mainPosition = 0.0;
             double crossPosition = 0.0;
-            double currentLineSize = 0;
-
             var children = context.Children;
             bool isReverse = FlexDirection == FlexDirection.RowReverse || FlexDirection == FlexDirection.ColumnReverse;
+            Lines.Clear();
+            var currentLine = new LineInfo();
             for (int i = 0; i < children.Count; i++)
             {
                 var child =  isReverse? children[children.Count -1 - i] : children[i];
@@ -118,60 +149,187 @@ namespace Flick
                     if (Main(availableSize) - (mainPosition + Main(child.DesiredSize)) < 0)
                     {
                         // wrap since the current item will not fit.
+                        currentLine.MainSize = mainPosition;
+                        Lines.Add(currentLine);
                         mainPosition = 0.0;
-                        crossPosition += currentLineSize;
-                        currentLineSize = 0;
+                        crossPosition += currentLine.CrossSize;
+                        currentLine = new LineInfo();
+                        currentLine.CrossPosition = crossPosition;
                     }
                 }
 
                 // Let's position child at mainPosition, crossPosition 
+                currentLine.CountInLine++;
 
                 // Now calculate position for next child.
                 mainPosition += Main(child.DesiredSize);
-                currentLineSize = Math.Max(currentLineSize, Cross(child.DesiredSize));
+                currentLine.CrossSize = Math.Max(currentLine.CrossSize, Cross(child.DesiredSize));
             }
 
-            return Size(mainPosition, crossPosition + currentLineSize);
+            if(currentLine.CountInLine > 0)
+            {
+                currentLine.MainSize = mainPosition;
+                Lines.Add(currentLine);
+            }
+
+            m_LastExtent =  Size(mainPosition, crossPosition + currentLine.CrossSize);
+            return m_LastExtent;
         }
 
         protected override Size ArrangeOverride(NonVirtualizingLayoutContext context, Size finalSize)
         {
-            double mainPosition = 0.0;
-            double crossPosition = 0.0;
-            double currentLineSize = 0;
-
-            var children = context.Children;
             bool isReverse = FlexDirection == FlexDirection.RowReverse || FlexDirection == FlexDirection.ColumnReverse;
-            for (int i=0; i< children.Count; i++)
+            int step = isReverse ? -1 : 1;
+            int childIndex = isReverse ? context.Children.Count - 1 : 0;
+            var layoutItemAlignment = AlignItems;
+            double extraCrossSpaceInExtent = Cross(finalSize) - Cross(m_LastExtent);
+            for(int lineIndex = 0; lineIndex < Lines.Count; lineIndex++)
             {
-                var child = isReverse ? children[children.Count - 1 - i] : children[i];
-                var desired = child.DesiredSize;
+                var line = Lines[lineIndex];
+                int countInLine = line.CountInLine;
+                var mainPosition = 0.0;
 
-                if (FlexWrap == FlexWrap.Wrap)
+                double crossContentOffset = GetContentAlignedCrossOffset(extraCrossSpaceInExtent, lineIndex);
+                double extraMainSpace = Main(finalSize) - line.MainSize;
+                
+                for (int indexInLine = 0; indexInLine < countInLine; indexInLine++)
                 {
-                    if (Main(finalSize) - (mainPosition + Main(child.DesiredSize)) < 0)
+                    var child = context.Children[childIndex];
+                    var childAlign = GetAlignSelf(child);
+                    var itemAlignment = childAlign == AlignItems.Auto ? layoutItemAlignment : childAlign;
+                    double itemMainSize = Main(child.DesiredSize);
+                    double itemCrossSize = Cross(child.DesiredSize);
+
+                    double mainOffset = mainPosition + GetContentJustifiedMainOffset(countInLine, extraMainSpace, indexInLine);
+                    double crossOffset = line.CrossPosition + crossContentOffset + GetItemsAlignedCrossOffset(line, itemCrossSize, itemAlignment);
+                   
+                    if(AlignContent == AlignContent.Stretch)
                     {
-                        // wrap since the current item will not fit.
-                        mainPosition = 0.0;
-                        crossPosition += currentLineSize;
-                        currentLineSize = 0;
+                        itemCrossSize = line.CrossSize + extraCrossSpaceInExtent / Lines.Count;
                     }
+                    else if (itemAlignment == AlignItems.Stretch)
+                    {
+                        itemCrossSize = line.CrossSize;
+                    }
+
+                    child.Arrange(Rect(mainOffset, crossOffset, itemMainSize, itemCrossSize));
+                    mainPosition += Main(child.DesiredSize);
+
+                    childIndex += step;
                 }
-
-                child.Arrange(Rect(mainPosition, crossPosition, Main(desired), Cross(desired)));
-
-                // Now calculate position for next child.
-                mainPosition += Main(desired);
-                currentLineSize = Math.Max(currentLineSize, Cross(child.DesiredSize));
             }
 
             return finalSize;
+        }
+
+        private double GetContentAlignedCrossOffset(double extraCrossSpaceInExtent, int lineIndex)
+        {
+            double crossContentOffset = 0;
+            if (extraCrossSpaceInExtent > 0)
+            {
+                switch (AlignContent)
+                {
+                    case AlignContent.FlexStart:
+                        break;
+                    case AlignContent.FlexEnd:
+                        crossContentOffset = extraCrossSpaceInExtent;
+                        break;
+                    case AlignContent.Center:
+                        crossContentOffset = extraCrossSpaceInExtent / 2;
+                        break;
+                    case AlignContent.Stretch:
+                        crossContentOffset = lineIndex * extraCrossSpaceInExtent / (Lines.Count);
+                        break;
+                    case AlignContent.SpaceBetween:
+                        if (Lines.Count > 1)
+                        {
+                            crossContentOffset = lineIndex * (extraCrossSpaceInExtent / (Lines.Count - 1));
+                        }
+                        break;
+                    case AlignContent.SpaceAround:
+                        crossContentOffset = (lineIndex * 2 + 1) * extraCrossSpaceInExtent / (Lines.Count * 2);
+                        break;
+                }
+            }
+
+            return crossContentOffset;
+        }
+
+        private double GetItemsAlignedCrossOffset(LineInfo line, double itemCrossSize, AlignItems alignment)
+        {
+            double crossOffset = 0.0;
+            double extraCrossSpace = line.CrossSize - itemCrossSize;
+            switch (alignment)
+            {
+                case AlignItems.Auto:
+                case AlignItems.FlexStart:
+                    break;
+                case AlignItems.FlexEnd:
+                    crossOffset = extraCrossSpace;
+                    break;
+                case AlignItems.Center:
+                    crossOffset = extraCrossSpace / 2;
+                    break;
+                case AlignItems.Stretch:
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            return crossOffset;
+        }
+
+        private double GetContentJustifiedMainOffset(int countInLine, double extraMainSpace, int itemIndex)
+        {
+            double mainOffset = 0;
+            switch (JustifyContent)
+            {
+                case JustifyContent.FlexStart:
+                    break;
+                case JustifyContent.FlexEnd:
+                    mainOffset = extraMainSpace;
+                    break;
+                case JustifyContent.Center:
+                    mainOffset = extraMainSpace / 2;
+                    break;
+                case JustifyContent.SpaceBetween:
+                    mainOffset = countInLine > 1 ?
+                        itemIndex * (extraMainSpace / (countInLine - 1)): 
+                        0;
+                    break;
+                case JustifyContent.SpaceAround:
+                    mainOffset = extraMainSpace / (countInLine * 2) + (itemIndex) * (extraMainSpace / countInLine);
+                    break;
+                case JustifyContent.SpaceEvenly:
+                    mainOffset = (itemIndex + 1) * (extraMainSpace / (countInLine + 1));
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
+
+            return mainOffset;
         }
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             (d as Flex).InvalidateMeasure();
         }
+
+        class LineInfo
+        {
+            public double CrossPosition { get; set; }
+            public int CountInLine { get; set; }
+            public double MainSize { get; set; }
+            public double CrossSize { get; set; }
+
+            public override string ToString()
+            {
+                return $"Offset:{CrossPosition} Count:{CountInLine} Main:{MainSize} Cross:{CrossSize}";
+            }
+        };
+
+        List<LineInfo> Lines { get; set; } = new List<LineInfo>();
 
         #region Axis Helpers
 
@@ -438,6 +596,8 @@ namespace Flick
 
         #endregion
 
+        private Size m_LastExtent;
+
     }
 
     #region Enums
@@ -468,6 +628,7 @@ namespace Flick
 
     public enum AlignItems
     {
+        Auto,
         FlexStart,
         FlexEnd,
         Center,
@@ -480,9 +641,9 @@ namespace Flick
         FlexStart,
         FlexEnd,
         Center,
+        Stretch,
         SpaceBetween,
-        SpaceAround,
-        SpaceEvenly
+        SpaceAround
     }
 
     #endregion

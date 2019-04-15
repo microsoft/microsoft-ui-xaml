@@ -22,16 +22,16 @@
 
         <utilities:EntityPropertiesControl Entity="{StaticResource layout}" />
         <controls:LayoutPanel Grid.Column="1" Layout="{StaticResource layout}">
-            <Button Width="200" Height="100">1</Button>
-            <Button Width="200" Height="100">2</Button>
-            <Button Width="200" Height="100">3</Button>
-            <Button Width="200" Height="100">4</Button>
-            <Button Width="200" Height="100">5</Button>
-            <Button Width="200" Height="100">6</Button>
-            <Button Width="200" Height="100">7</Button>
-            <Button Width="200" Height="100">8</Button>
-            <Button Width="200" Height="100">9</Button>
-            <Button Width="200" Height="100">10</Button>
+            <Button Height="300" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" local:Flex.AlignSelf="Center">1</Button>
+            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" local:Flex.AlignSelf="FlexEnd">2</Button>
+            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" local:Flex.AlignSelf="FlexStart">3</Button>
+            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">4</Button>
+            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">5</Button>
+            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">6</Button>
+            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">7</Button>
+            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">8</Button>
+            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">9</Button>
+            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">10</Button>
         </controls:LayoutPanel>
         
     </Grid>
