@@ -126,10 +126,20 @@
     <Compile Include="Data\Photo.cs" />
     <Compile Include="Data\PhotoReel.cs" />
     <Compile Include="DefaultElementAnimator.cs" />
+    <Compile Include="EntityPropertiesControl\EntityPropertiesControl.xaml.cs" />
+    <Compile Include="EntityPropertiesControl\EntityPropertyControlDiscardedEventArgs.cs" />
+    <Compile Include="EntityPropertiesControl\EntityPropertyControlGeneratedEventArgs.cs" />
+    <Compile Include="EntityPropertiesControl\EntityPropertyControlNeededEventArgs.cs" />
+    <Compile Include="EntityPropertiesControl\TypeConverters.cs" />
+    <Compile Include="FlexDemo.xaml.cs">
+      <DependentUpon>FlexDemo.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GroupedPage.xaml.cs">
       <DependentUpon>GroupedPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Layouts\ActivityFeedLayout.cs" />
+    <Compile Include="Layouts\CircleLayout.cs" />
+    <Compile Include="Layouts\Flex.cs" />
     <Compile Include="Layouts\UniformGrid2DLayout.cs" />
     <Compile Include="Layouts\VirtualizingUniformCarousalStackLayout.cs" />
     <Compile Include="MainPage.xaml.cs">
@@ -168,6 +178,14 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="CarousalPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EntityPropertiesControl\EntityPropertiesControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="FlexDemo.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
