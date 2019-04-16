@@ -54,6 +54,7 @@ void TeachingTip::OnApplyTemplate()
     m_tailEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_tailEdgeBorderName, controlProtected));
     m_tailPolygon.set(GetTemplateChildT<winrt::Polygon>(s_tailPolygonName, controlProtected));
 
+#ifdef USE_INSIDER_SDK
     if (winrt::IUIElement10 uiElement10 = *this)
     {
         if (auto xamlRoot = uiElement10.XamlRoot())
@@ -62,9 +63,10 @@ void TeachingTip::OnApplyTemplate()
             m_xamlRootChangedRevoker = xamlRoot.Changed(winrt::auto_revoke, { this, &TeachingTip::XamlRootChanged });
         }
     }
-    else if (auto window = winrt::Window::Current())
+    else
+#endif // USE_INSIDER_SDK
     {
-        if (auto coreWindow = window.CoreWindow())
+        if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
         {
             m_windowSizeChangedRevoker = coreWindow.SizeChanged(winrt::auto_revoke, { this, &TeachingTip::WindowSizeChanged });
         }
@@ -1841,7 +1843,7 @@ winrt::Rect TeachingTip::GetWindowBounds()
         }
     }
 #endif // USE_INSIDER_SDK
-    return winrt::Window::Current().CoreWindow().Bounds();
+    return winrt::CoreWindow::GetForCurrentThread().Bounds();
 }
 
 std::array<winrt::TeachingTipPlacementMode, 13> TeachingTip::GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPlacement)
