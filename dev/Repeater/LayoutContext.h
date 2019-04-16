@@ -19,6 +19,7 @@ public:
     virtual void LayoutStateCore(winrt::IInspectable const& state);
 #pragma endregion
 
+#ifdef _DEBUG
     int Indent()
     {
         return m_indent;
@@ -31,5 +32,10 @@ public:
 
 private:
     int m_indent{ 0 };
-
+#else
+    int Indent()
+    {
+        return 0;
+    }
+#endif
 };

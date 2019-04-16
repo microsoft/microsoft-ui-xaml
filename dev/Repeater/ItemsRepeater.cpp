@@ -442,6 +442,8 @@ void ItemsRepeater::OnElementIndexChanged(const winrt::UIElement& element, int o
     }
 }
 
+// Provides an indentation based on repeater elements in the UI Tree that
+// can be used to make logging a little easier to read.
 int ItemsRepeater::Indent()
 {
     int indent = 1;
