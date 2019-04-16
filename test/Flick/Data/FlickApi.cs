@@ -9,16 +9,16 @@ namespace Flick
 {
     public class FlickApi
     {
-        public static async Task<PhotoReel> GetPhotos(string tag)
+        public static async Task<PhotoReel> GetPhotos(string tag, int count = 100)
         {
-            PhotoReel photos =  await LoadFeed(tag);
+            PhotoReel photos =  await LoadFeed(tag, count);
             return photos;
         }
 
-        private static async Task<PhotoReel> LoadFeed(string tag)
+        private static async Task<PhotoReel> LoadFeed(string tag, int count)
         {
             // https://www.flickr.com/services/api/flickr.photos.search.html
-            var url = string.Format("https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=dc318dbb02bf7cd2ab3daca1ae7d93c8&tags={0}&styles=depthoffield&safe_search=1&per_page=100&page=1", tag);
+            var url = string.Format("https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=dc318dbb02bf7cd2ab3daca1ae7d93c8&tags={0}&styles=depthoffield&safe_search=1&per_page={1}&page=1", tag, count);
 
 
             Windows.Web.Http.HttpClient httpClient = new Windows.Web.Http.HttpClient();

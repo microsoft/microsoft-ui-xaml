@@ -8,31 +8,36 @@
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:utilities="using:MUXControlsTestApp.Utilities"
     mc:Ignorable="d"
+    RequestedTheme="Dark"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
         <Grid.Resources>
             <local:Flex x:Name="layout"/>
         </Grid.Resources>
-        
+
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <utilities:EntityPropertiesControl Entity="{StaticResource layout}" />
-        <controls:LayoutPanel Grid.Column="1" Layout="{StaticResource layout}">
-            <Button Height="300" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" local:Flex.AlignSelf="Center">1</Button>
-            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" local:Flex.AlignSelf="FlexEnd">2</Button>
-            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" local:Flex.AlignSelf="FlexStart">3</Button>
-            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">4</Button>
-            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">5</Button>
-            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">6</Button>
-            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">7</Button>
-            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">8</Button>
-            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">9</Button>
-            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch">10</Button>
-        </controls:LayoutPanel>
-        
+        <StackPanel>
+            <utilities:EntityPropertiesControl Entity="{StaticResource layout}" />
+        </StackPanel>
+        <ScrollViewer Grid.Column="1" Margin="10">
+            <StackPanel>
+                <TextBlock Text="Architecture" FontSize="28" Margin="10" />
+                <controls:ItemsRepeater  Layout="{StaticResource layout}" x:Name="repeater">
+                    <DataTemplate>
+                        <UserControl Margin="5" IsTabStop="True" UseSystemFocusVisuals="True" Width="300" VerticalAlignment="Stretch">
+                            <StackPanel>
+                                <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" />
+                                <TextBlock Text="{Binding Description}" TextWrapping="WrapWholeWords" FontSize="16"/>
+                            </StackPanel>
+                        </UserControl>
+                    </DataTemplate>
+                </controls:ItemsRepeater>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

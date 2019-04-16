@@ -25,6 +25,12 @@ namespace Flick
         public FlexDemo()
         {
             this.InitializeComponent();
+            this.Loaded += OnLoaded;
+        }
+
+        private async void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            repeater.ItemsSource = await FlickApi.GetPhotos("architecture", 10);
         }
     }
 }
