@@ -185,35 +185,34 @@ namespace Flick
             double extraCrossSpaceInExtent = Cross(finalSize) - Cross(m_LastExtent);
             for(int lineIndex = 0; lineIndex < Lines.Count; lineIndex++)
             {
-                var line = Lines[lineIndex];
-                int countInLine = line.CountInLine;
+                var currentLine = Lines[lineIndex];
                 var mainPosition = 0.0;
 
                 double crossContentOffset = GetContentAlignedCrossOffset(extraCrossSpaceInExtent, lineIndex);
-                double extraMainSpace = Main(finalSize) - line.MainSize;
-                
-                for (int indexInLine = 0; indexInLine < countInLine; indexInLine++)
-                {
-                    var child = context.Children[childIndex];
-                    var childAlign = GetAlignSelf(child);
-                    var itemAlignment = childAlign == AlignItems.Auto ? layoutItemAlignment : childAlign;
-                    double itemMainSize = Main(child.DesiredSize);
-                    double itemCrossSize = Cross(child.DesiredSize);
+                double extraMainSpaceInLine = Main(finalSize) - currentLine.MainSize;
 
-                    double mainOffset = mainPosition + GetContentJustifiedMainOffset(countInLine, extraMainSpace, indexInLine);
-                    double crossOffset = line.CrossPosition + crossContentOffset + GetItemsAlignedCrossOffset(line, itemCrossSize, itemAlignment);
+                for (int indexInLine = 0; indexInLine < currentLine.CountInLine; indexInLine++)
+                {
+                    var currentChild = context.Children[childIndex];
+                    var childAlign = GetAlignSelf(currentChild);
+                    var itemAlignment = childAlign == AlignItems.Auto ? layoutItemAlignment : childAlign;
+                    double itemMainSize = Main(currentChild.DesiredSize);
+                    double itemCrossSize = Cross(currentChild.DesiredSize);
+
+                    double mainOffset = mainPosition + GetContentJustifiedMainOffset(currentLine.CountInLine, extraMainSpaceInLine, indexInLine);
+                    double crossOffset = currentLine.CrossPosition + crossContentOffset + GetItemsAlignedCrossOffset(currentLine, itemCrossSize, itemAlignment);
                    
                     if(AlignContent == AlignContent.Stretch)
                     {
-                        itemCrossSize = line.CrossSize + extraCrossSpaceInExtent / Lines.Count;
+                        itemCrossSize = currentLine.CrossSize + extraCrossSpaceInExtent / Lines.Count;
                     }
                     else if (itemAlignment == AlignItems.Stretch)
                     {
-                        itemCrossSize = line.CrossSize;
+                        itemCrossSize = currentLine.CrossSize;
                     }
 
-                    child.Arrange(Rect(mainOffset, crossOffset, itemMainSize, itemCrossSize));
-                    mainPosition += Main(child.DesiredSize);
+                    currentChild.Arrange(Rect(mainOffset, crossOffset, itemMainSize, itemCrossSize));
+                    mainPosition += Main(currentChild.DesiredSize);
 
                     childIndex += step;
                 }
