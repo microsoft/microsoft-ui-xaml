@@ -17,6 +17,9 @@
 #include "ItemTemplateWrapper.h"
 #endif
 
+// Change to 'true' to turn on debugging outputs in Output window
+bool RepeaterTrace::s_IsDebugOutputEnabled{ false };
+
 winrt::Point ItemsRepeater::ClearedElementsArrangePosition = winrt::Point(-10000.0f, -10000.0f);
 winrt::Rect ItemsRepeater::InvalidRect = { -1.f, -1.f, -1.f, -1.f };
 
