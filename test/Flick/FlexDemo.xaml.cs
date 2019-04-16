@@ -33,7 +33,8 @@ namespace Flick
             var items = await FlickApi.GetPhotos("architecture", 10);
             for(int i=0; i< items.Count; i++)
             {
-                items[i].FlexGrow = (i % 3 + 1)*2;
+                items[i].FlexBasis = 300;
+                items[i].FlexGrow = i % 3 + 1;
             }
             repeater.ItemsSource = items;
         }

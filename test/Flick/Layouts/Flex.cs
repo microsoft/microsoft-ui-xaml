@@ -145,7 +145,6 @@ namespace Flick
                 var basis = GetFlexBasis(child);
                 var measureSize = basis != 0 ? Size(basis, Cross(availableSize)) : availableSize;
                 child.Measure(measureSize);
-                currentLine.SumGrow += GetFlexGrow(child);
 
                 if (FlexWrap == FlexWrap.Wrap)
                 {
@@ -162,6 +161,7 @@ namespace Flick
                 }
 
                 // Let's position child at mainPosition, crossPosition 
+                currentLine.SumGrow += GetFlexGrow(child);
                 currentLine.CountInLine++;
 
                 // Now calculate position for next child.

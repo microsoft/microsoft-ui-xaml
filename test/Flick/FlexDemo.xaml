@@ -29,10 +29,14 @@
                 <TextBlock Text="Architecture" FontSize="28" Margin="10" />
                 <controls:ItemsRepeater  Layout="{StaticResource layout}" x:Name="repeater">
                     <DataTemplate>
-                        <UserControl Margin="5" IsTabStop="True" UseSystemFocusVisuals="True" local:Flex.FlexBasis="300" local:Flex.FlexGrow="{Binding FlexGrow}" VerticalAlignment="Stretch">
+                        <UserControl Margin="5" IsTabStop="True" UseSystemFocusVisuals="True" local:Flex.FlexBasis="{Binding FlexBasis}" local:Flex.FlexGrow="{Binding FlexGrow}" VerticalAlignment="Stretch">
                             <StackPanel>
                                 <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" />
                                 <TextBlock Text="{Binding Description}" TextWrapping="WrapWholeWords" FontSize="16"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBox Text="{Binding FlexBasis, Mode=TwoWay}" MinWidth="50" />
+                                    <TextBox Text="{Binding FlexGrow, Mode=TwoWay}" MinWidth="50" />
+                                </StackPanel>
                             </StackPanel>
                         </UserControl>
                     </DataTemplate>
