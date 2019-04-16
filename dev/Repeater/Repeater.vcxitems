@@ -28,6 +28,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgs.h" Condition="$(BuildingWithBuildExe) != 'true'" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgsDownlevel.h" Condition="$(BuildingWithBuildExe) == 'true'" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FlexboxLayout.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GridLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsSourceView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementAnimator.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementClearingEventArgs.h" />
@@ -98,6 +99,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgs.cpp" Condition="$(BuildingWithBuildExe) != 'true'" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgsDownlevel.cpp" Condition="$(BuildingWithBuildExe) == 'true'" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FlexboxLayout.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)GridLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsSourceView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ElementAnimator.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementClearingEventArgs.cpp" />
