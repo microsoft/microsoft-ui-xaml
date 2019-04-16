@@ -2,18 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
-using System;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Windows.System;
-using Windows.UI.Core;
-using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
 
 #if !BUILD_WINDOWS
@@ -36,6 +29,7 @@ namespace MUXControlsTestApp
                 UndoButton4.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Z, Modifiers = VirtualKeyModifiers.Control });
                 UndoButton5.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Z, Modifiers = VirtualKeyModifiers.Control });
                 UndoButton6.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Z, Modifiers = VirtualKeyModifiers.Control });
+                UndoButton7.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Z, Modifiers = VirtualKeyModifiers.Control });
 
                 RedoButton1.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
                 RedoButton2.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
@@ -43,6 +37,7 @@ namespace MUXControlsTestApp
                 RedoButton4.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
                 RedoButton5.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
                 RedoButton6.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
+                RedoButton7.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
 
                 SelectAllButton1.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
                 SelectAllButton2.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
@@ -50,6 +45,7 @@ namespace MUXControlsTestApp
                 SelectAllButton4.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
                 SelectAllButton5.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
                 SelectAllButton6.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
+                SelectAllButton7.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
             }
 
             if (ApiInformation.IsPropertyPresent("Windows.UI.Xaml.UIElement", "ContextFlyout"))
@@ -60,6 +56,7 @@ namespace MUXControlsTestApp
                 FlyoutTarget4.ContextFlyout = Flyout4;
                 FlyoutTarget5.ContextFlyout = Flyout5;
                 FlyoutTarget6.ContextFlyout = Flyout6;
+                FlyoutTarget7.ContextFlyout = Flyout7;
             }
 
             if (ApiInformation.IsEnumNamedValuePresent("Windows.UI.Xaml.Controls.Primitives.FlyoutPlacementMode", "TopEdgeAlignedLeft"))
@@ -70,6 +67,7 @@ namespace MUXControlsTestApp
                 Flyout4.Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
                 Flyout5.Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
                 Flyout6.Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
+                Flyout7.Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
             }
         }
 
@@ -143,6 +141,11 @@ namespace MUXControlsTestApp
             ShowFlyoutAt(Flyout6, FlyoutTarget6, FlyoutShowMode.Standard);
         }
 
+        private void OnFlyoutTarget7Click(object sender, RoutedEventArgs e)
+        {
+            ShowFlyoutAt(Flyout7, FlyoutTarget7);
+        }
+
         private void ShowFlyoutAt(FlyoutBase flyout, FrameworkElement targetElement, FlyoutShowMode showMode = FlyoutShowMode.Transient)
         {
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
@@ -154,6 +157,16 @@ namespace MUXControlsTestApp
                 flyout.Placement = FlyoutPlacementMode.Top;
                 flyout.ShowAt(targetElement);
             }
+        }
+
+        private void IsRTLCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            FlowDirection = FlowDirection.RightToLeft;
+        }
+
+        private void IsRTLCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            FlowDirection = FlowDirection.LeftToRight;
         }
     }
 }

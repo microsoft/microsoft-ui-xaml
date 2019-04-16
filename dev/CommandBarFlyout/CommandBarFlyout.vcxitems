@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandBarFlyout.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)CommandBarFlyoutTrace.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBar.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBarTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TextCommandBarFlyout.h" />

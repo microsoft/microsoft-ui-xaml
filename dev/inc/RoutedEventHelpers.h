@@ -80,6 +80,7 @@ enum class RoutedEventType
 {
     GettingFocus,
     LosingFocus,
+    KeyDown,
 };
 
 template<RoutedEventType eventType>
@@ -99,6 +100,13 @@ struct RoutedEventTraits<RoutedEventType::LosingFocus>
 {
     static winrt::RoutedEvent Event() { return winrt::UIElement::LosingFocusEvent(); }
     using HandlerT = winrt::TypedEventHandler<winrt::UIElement, winrt::LosingFocusEventArgs>;
+};
+
+template <>
+struct RoutedEventTraits<RoutedEventType::KeyDown>
+{
+    static winrt::RoutedEvent Event() { return winrt::UIElement::KeyDownEvent(); }
+    using HandlerT = winrt::KeyEventHandler;
 };
 
 template<RoutedEventType eventType, typename traits = RoutedEventTraits<eventType>>
