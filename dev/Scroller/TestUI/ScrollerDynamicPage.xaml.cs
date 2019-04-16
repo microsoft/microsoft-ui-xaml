@@ -1266,6 +1266,16 @@ namespace MUXControlsTestApp
             tblExtentHeight.Text = scroller.ExtentHeight.ToString();
         }
 
+        private void BtnGetViewportWidth_Click(object sender, RoutedEventArgs e)
+        {
+            tblViewportWidth.Text = scroller.ViewportWidth.ToString();
+        }
+
+        private void BtnGetViewportHeight_Click(object sender, RoutedEventArgs e)
+        {
+            tblViewportHeight.Text = scroller.ViewportHeight.ToString();
+        }
+
         private void BtnGetWidth_Click(object sender, RoutedEventArgs e)
         {
             txtWidth.Text = scroller.Width.ToString();
@@ -1291,6 +1301,24 @@ namespace MUXControlsTestApp
                 double value = Convert.ToDouble(txtWidth.Text);
                 lstQueuedOperations.Add(new QueuedOperation(QueuedOperationType.SetWidth, value));
                 AppendAsyncEventMessage("Queued SetWidth " + value);
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                lstScrollerEvents.Items.Add(ex.ToString());
+            }
+        }
+
+        private void BtnGetMaxWidth_Click(object sender, RoutedEventArgs e)
+        {
+            txtMaxWidth.Text = scroller.MaxWidth.ToString();
+        }
+
+        private void BtnSetMaxWidth_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                scroller.MaxWidth = Convert.ToDouble(txtMaxWidth.Text);
             }
             catch (Exception ex)
             {
@@ -1330,6 +1358,34 @@ namespace MUXControlsTestApp
                 txtExceptionReport.Text = ex.ToString();
                 lstScrollerEvents.Items.Add(ex.ToString());
             }
+        }
+
+        private void BtnGetMaxHeight_Click(object sender, RoutedEventArgs e)
+        {
+            txtMaxHeight.Text = scroller.MaxHeight.ToString();
+        }
+
+        private void BtnSetMaxHeight_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                scroller.MaxHeight = Convert.ToDouble(txtMaxHeight.Text);
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                lstScrollerEvents.Items.Add(ex.ToString());
+            }
+        }
+
+        private void BtnGetActualWidth_Click(object sender, RoutedEventArgs e)
+        {
+            tblActualWidth.Text = scroller.ActualWidth.ToString();
+        }
+
+        private void BtnGetActualHeight_Click(object sender, RoutedEventArgs e)
+        {
+            tblActualHeight.Text = scroller.ActualHeight.ToString();
         }
 
         private void BtnClearScrollerEvents_Click(object sender, RoutedEventArgs e)
