@@ -106,6 +106,12 @@ winrt::hstring TypeLogging::ScrollingIndicatorModeToString(const winrt::Scrollin
     }
 }
 
+winrt::hstring TypeLogging::KeyRoutedEventArgsToString(const winrt::KeyRoutedEventArgs& eventArgs)
+{
+    return StringUtil::FormatString(L"KeyRoutedEventArgs: Handled: %1!u!, Key: %2!u!, OriginalKey: %3!u!",
+        static_cast<uint32_t>(eventArgs.Handled()), static_cast<uint32_t>(eventArgs.Key()), static_cast<uint32_t>(eventArgs.OriginalKey()));
+}
+
 #pragma endregion
 
 #pragma region ScrollViewer-specific section

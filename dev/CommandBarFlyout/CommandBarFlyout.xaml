@@ -311,6 +311,7 @@
                                         Grid.Column="1"
                                         contract4Present:Control.IsTemplateKeyTipTarget="True"
                                         IsAccessKeyScope="True"
+                                        IsTabStop="False"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}">
                                         <Button.RenderTransform>
                                             <TranslateTransform x:Name="MoreButtonTransform" />
