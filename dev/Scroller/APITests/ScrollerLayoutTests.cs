@@ -306,8 +306,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             VerticalAlignment scrollerVerticalAlignment,
             double scrollerContentHeight)
         {
-            Log.Comment("ViewportHeight test case - isScrollerParentSizeSet: " + isScrollerParentSizeSet + ", isScrollerParentMaxSizeSet: " + isScrollerParentMaxSizeSet +
-                ", scrollerVerticalAlignment: " + scrollerVerticalAlignment + ", scrollerContentHeight: " + scrollerContentHeight);
+            Log.Comment("ViewportHeight test case - isScrollerParentSizeSet: {0}, isScrollerParentMaxSizeSet: {1}, scrollerVerticalAlignment: {2}, scrollerContentHeight: {3}",
+                isScrollerParentSizeSet, isScrollerParentMaxSizeSet, scrollerVerticalAlignment, scrollerContentHeight);
 
             Border border = null;
             Scroller scroller = null;
@@ -382,14 +382,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     expectedViewportHeight = borderChildAvailableHeight;
                 }
 
-                Log.Comment("border.ActualWidth: " + border.ActualWidth + ", border.ActualHeight: " + border.ActualHeight);
-
-                Log.Comment("Checking ViewportWidth - scroller.ViewportWidth: " + scroller.ViewportWidth + 
-                    ", scroller.ActualWidth: " + scroller.ActualWidth);
+                Log.Comment("border.ActualWidth: {0}, border.ActualHeight: {1}",
+                    border.ActualWidth, border.ActualHeight);
+                Log.Comment("Checking ViewportWidth - scroller.ViewportWidth: {0}, scroller.ActualWidth: {1}",
+                    scroller.ViewportWidth, scroller.ActualWidth);
                 Verify.AreEqual(scroller.ViewportWidth, scroller.ActualWidth);
 
-                Log.Comment("Checking ViewportHeight - expectedViewportHeight: " + expectedViewportHeight + 
-                    ", scroller.ViewportHeight: " + scroller.ViewportHeight + ", scroller.ActualHeight: " + scroller.ActualHeight);
+                Log.Comment("Checking ViewportHeight - expectedViewportHeight: {0}, scroller.ViewportHeight: {1}, scroller.ActualHeight: {2}",
+                    expectedViewportHeight, scroller.ViewportHeight, scroller.ActualHeight);
                 Verify.AreEqual(scroller.ViewportHeight, expectedViewportHeight);
                 Verify.AreEqual(scroller.ViewportHeight, scroller.ActualHeight);
             });
