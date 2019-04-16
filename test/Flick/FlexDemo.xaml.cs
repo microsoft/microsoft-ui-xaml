@@ -30,12 +30,17 @@ namespace Flick
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            repeater.ItemsSource = await FlickApi.GetPhotos("architecture", 10);
+            var items = await FlickApi.GetPhotos("architecture", 10);
+            for(int i=0; i< items.Count; i++)
+            {
+                items[i].FlexGrow = (i % 3 + 1)*2;
+            }
+            repeater.ItemsSource = items;
         }
 
         private void Grid_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if(e.Key == Windows.System.VirtualKey.Escape)
+            if (e.Key == Windows.System.VirtualKey.Escape)
             {
                 Frame.GoBack();
             }

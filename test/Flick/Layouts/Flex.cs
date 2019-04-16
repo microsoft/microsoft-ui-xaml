@@ -141,9 +141,12 @@ namespace Flick
             var currentLine = new LineInfo();
             for (int i = 0; i < children.Count; i++)
             {
-                var child =  isReverse? children[children.Count -1 - i] : children[i];
-                child.Measure(availableSize);
-                
+                var child = isReverse ? children[children.Count - 1 - i] : children[i];
+                var basis = GetFlexBasis(child);
+                var measureSize = basis != 0 ? Size(basis, Cross(availableSize)) : availableSize;
+                child.Measure(measureSize);
+                currentLine.SumGrow += GetFlexGrow(child);
+
                 if (FlexWrap == FlexWrap.Wrap)
                 {
                     if (Main(availableSize) - (mainPosition + Main(child.DesiredSize)) < 0)
@@ -166,13 +169,13 @@ namespace Flick
                 currentLine.CrossSize = Math.Max(currentLine.CrossSize, Cross(child.DesiredSize));
             }
 
-            if(currentLine.CountInLine > 0)
+            if (currentLine.CountInLine > 0)
             {
                 currentLine.MainSize = mainPosition;
                 Lines.Add(currentLine);
             }
 
-            m_LastExtent =  Size(mainPosition, crossPosition + currentLine.CrossSize);
+            m_LastExtent = Size(mainPosition, crossPosition + currentLine.CrossSize);
             return m_LastExtent;
         }
 
@@ -183,7 +186,7 @@ namespace Flick
             int childIndex = isReverse ? context.Children.Count - 1 : 0;
             var layoutItemAlignment = AlignItems;
             double extraCrossSpaceInExtent = Cross(finalSize) - Cross(m_LastExtent);
-            for(int lineIndex = 0; lineIndex < Lines.Count; lineIndex++)
+            for (int lineIndex = 0; lineIndex < Lines.Count; lineIndex++)
             {
                 var currentLine = Lines[lineIndex];
                 var mainPosition = 0.0;
@@ -199,10 +202,25 @@ namespace Flick
                     double itemMainSize = Main(currentChild.DesiredSize);
                     double itemCrossSize = Cross(currentChild.DesiredSize);
 
-                    double mainOffset = mainPosition + GetContentJustifiedMainOffset(currentLine.CountInLine, extraMainSpaceInLine, indexInLine);
+                    double mainOffset = mainPosition;
+                    if (extraMainSpaceInLine > 0)
+                    {
+                        if (currentLine.SumGrow > 0)
+                        {
+                            // grow the item
+                            var currentChildFlexGrow = GetFlexGrow(currentChild);
+                            var growBy = (extraMainSpaceInLine / currentLine.SumGrow) * currentChildFlexGrow;
+                            itemMainSize += growBy;
+                            mainPosition += growBy; 
+                        }
+                        else
+                        {
+                            mainOffset += GetContentJustifiedMainOffset(currentLine.CountInLine, extraMainSpaceInLine, indexInLine);
+                        }
+                    }
                     double crossOffset = currentLine.CrossPosition + crossContentOffset + GetItemsAlignedCrossOffset(currentLine, itemCrossSize, itemAlignment);
-                   
-                    if(AlignContent == AlignContent.Stretch)
+
+                    if (AlignContent == AlignContent.Stretch)
                     {
                         itemCrossSize = currentLine.CrossSize + extraCrossSpaceInExtent / Lines.Count;
                     }
@@ -293,7 +311,7 @@ namespace Flick
                     break;
                 case JustifyContent.SpaceBetween:
                     mainOffset = countInLine > 1 ?
-                        itemIndex * (extraMainSpace / (countInLine - 1)): 
+                        itemIndex * (extraMainSpace / (countInLine - 1)) :
                         0;
                     break;
                 case JustifyContent.SpaceAround:
@@ -312,7 +330,15 @@ namespace Flick
 
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            (d as Flex).InvalidateMeasure();
+            var layout = (d as Flex);
+            if (layout != null)
+            {
+                layout.InvalidateMeasure();
+            }
+            else if (d is UIElement)
+            {
+                (d as UIElement).InvalidateMeasure();
+            }
         }
 
         class LineInfo
@@ -321,6 +347,7 @@ namespace Flick
             public int CountInLine { get; set; }
             public double MainSize { get; set; }
             public double CrossSize { get; set; }
+            public int SumGrow { get; set; }
 
             public override string ToString()
             {
@@ -612,7 +639,7 @@ namespace Flick
     {
         NoWrap,
         Wrap,
-       // WrapReverse
+        // WrapReverse
     };
 
     public enum JustifyContent
