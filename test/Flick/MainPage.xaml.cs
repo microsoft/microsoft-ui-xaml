@@ -75,6 +75,10 @@ namespace Flick
         {
             Frame.Navigate(typeof(UniformGrid2DPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
         }
+        private void OnFlexClicked(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(FlexDemo), new NavigateArgs() { Photos = Images, Selected = Images[0] });
+        }
 
         private void AutoSuggest_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {

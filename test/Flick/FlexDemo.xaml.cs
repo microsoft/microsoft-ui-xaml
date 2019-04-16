@@ -32,5 +32,13 @@ namespace Flick
         {
             repeater.ItemsSource = await FlickApi.GetPhotos("architecture", 10);
         }
+
+        private void Grid_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if(e.Key == Windows.System.VirtualKey.Escape)
+            {
+                Frame.GoBack();
+            }
+        }
     }
 }

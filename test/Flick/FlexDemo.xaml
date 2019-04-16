@@ -11,7 +11,7 @@
     RequestedTheme="Dark"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+    <Grid KeyDown="Grid_KeyDown">
         <Grid.Resources>
             <local:Flex x:Name="layout"/>
         </Grid.Resources>
