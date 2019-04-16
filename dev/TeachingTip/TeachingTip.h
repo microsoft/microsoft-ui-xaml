@@ -66,6 +66,7 @@ private:
     winrt::Popup::Closed_revoker m_popupClosedRevoker{};
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
     winrt::CoreWindow::SizeChanged_revoker m_windowSizeChangedRevoker{};
+    winrt::XamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
 	void SetPopupAutomationProperties();
     void CreateLightDismissIndicatorPopup();
@@ -109,6 +110,7 @@ private:
     void SetViewportChangedEvent();
     void RevokeViewportChangedEvent();
     void WindowSizeChanged(const winrt::CoreWindow&, const winrt::WindowSizeChangedEventArgs&);
+    void XamlRootChanged(const winrt::XamlRoot&, const winrt::XamlRootChangedEventArgs&);
     void TargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&);
     void RepositionPopup();
 
@@ -161,6 +163,8 @@ private:
 
     winrt::Rect m_currentBoundsInCoreWindowSpace{ 0,0,0,0 };
     winrt::Rect m_currentTargetBoundsInCoreWindowSpace{ 0,0,0,0 };
+
+    winrt::Size m_currentXamlRootSize{ 0,0 };
 
     bool m_isTemplateApplied{ false };
     bool m_createNewPopupOnOpen{ false };

@@ -54,7 +54,15 @@ void TeachingTip::OnApplyTemplate()
     m_tailEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_tailEdgeBorderName, controlProtected));
     m_tailPolygon.set(GetTemplateChildT<winrt::Polygon>(s_tailPolygonName, controlProtected));
 
-    if (auto window = winrt::Window::Current())
+    if (winrt::IUIElement10 uiElement10 = *this)
+    {
+        if (auto xamlRoot = uiElement10.XamlRoot())
+        {
+            m_currentXamlRootSize = xamlRoot.Size();
+            m_xamlRootChangedRevoker = xamlRoot.Changed(winrt::auto_revoke, { this, &TeachingTip::XamlRootChanged });
+        }
+    }
+    else if (auto window = winrt::Window::Current())
     {
         if (auto coreWindow = window.CoreWindow())
         {
@@ -1283,6 +1291,22 @@ void TeachingTip::TargetLayoutUpdated(const winrt::IInspectable&, const winrt::I
 void TeachingTip::WindowSizeChanged(const winrt::CoreWindow&, const winrt::WindowSizeChangedEventArgs&)
 {
     RepositionPopup();
+}
+
+void TeachingTip::XamlRootChanged(const winrt::XamlRoot&, const winrt::XamlRootChangedEventArgs&)
+{
+    if (winrt::IUIElement10 uiElement10 = *this)
+    {
+        if (auto xamlRoot = uiElement10.XamlRoot())
+        {
+            auto xamlRootSize = xamlRoot.Size();
+            if (xamlRootSize != m_currentXamlRootSize)
+            {
+                m_currentXamlRootSize = xamlRootSize;
+                RepositionPopup();
+            }
+        }
+    }
 }
 
 void TeachingTip::RepositionPopup()
