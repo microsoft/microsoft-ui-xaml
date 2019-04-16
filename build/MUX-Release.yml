@@ -95,6 +95,8 @@ jobs:
 
   - task: PkgESCodeSign@10
     displayName: CodeSign
+    env:
+      SYSTEM_ACCESSTOKEN: $(system.accesstoken)
     inputs:
       signConfigXml: '$(Build.SourcesDirectory)\build\SignConfig.xml'
       inPathRoot: '$(Build.ArtifactStagingDirectory)\drop'
