@@ -46,5 +46,10 @@ namespace Flick
                 Frame.GoBack();
             }
         }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            repeater.InvalidateMeasure();
+        }
     }
 }

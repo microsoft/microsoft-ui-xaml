@@ -13,7 +13,7 @@
 
     <Grid KeyDown="Grid_KeyDown">
         <Grid.Resources>
-            <local:Flex x:Name="layout"/>
+            <local:Flex x:Name="layout" FlexWrap="Wrap"/>
         </Grid.Resources>
 
         <Grid.ColumnDefinitions>
@@ -29,15 +29,21 @@
                 <TextBlock Text="Architecture" FontSize="28" Margin="10" />
                 <controls:ItemsRepeater  Layout="{StaticResource layout}" x:Name="repeater">
                     <DataTemplate>
-                        <UserControl Margin="5" IsTabStop="True" UseSystemFocusVisuals="True" local:Flex.FlexBasis="{Binding FlexBasis}" local:Flex.FlexGrow="{Binding FlexGrow}" VerticalAlignment="Stretch">
-                            <StackPanel>
-                                <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" />
-                                <TextBlock Text="{Binding Description}" TextWrapping="WrapWholeWords" FontSize="16"/>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBox Text="{Binding FlexBasis, Mode=TwoWay}" MinWidth="50" />
-                                    <TextBox Text="{Binding FlexGrow, Mode=TwoWay}" MinWidth="50" />
+                        <UserControl Margin="5" IsTabStop="True" UseSystemFocusVisuals="True"
+                                     local:Flex.FlexBasis="{Binding FlexBasis, Mode=OneWay}"
+                                     local:Flex.FlexGrow="{Binding FlexGrow, Mode=OneWay}"
+                                     >
+                            <Grid BorderBrush="Red"
+                                     BorderThickness="1">
+                                <StackPanel>
+                                    <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" />
+                                    <TextBlock Text="{Binding Description}" TextWrapping="WrapWholeWords" FontSize="16"/>
                                 </StackPanel>
-                            </StackPanel>
+                                <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="20">
+                                    <TextBox Text="{Binding FlexBasis, Mode=TwoWay}" Width="50" TextChanged="TextBox_TextChanged" />
+                                    <TextBox Text="{Binding FlexGrow, Mode=TwoWay}" Width="50" TextChanged="TextBox_TextChanged" />
+                                </StackPanel>
+                            </Grid>
                         </UserControl>
                     </DataTemplate>
                 </controls:ItemsRepeater>
