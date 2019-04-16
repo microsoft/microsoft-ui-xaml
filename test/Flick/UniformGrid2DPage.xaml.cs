@@ -57,5 +57,11 @@ namespace Flick
                 Frame.GoBack();
             }
         }
+
+        private void OnZoomClicked(object sender, RoutedEventArgs e)
+        {
+            layout.EnlargeFocusedItem = !layout.EnlargeFocusedItem;
+            UpdateLayout();
+        }
     }
 }

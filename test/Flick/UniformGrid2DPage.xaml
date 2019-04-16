@@ -11,6 +11,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid Margin="10" KeyDown="Grid_KeyDown">
+        <AppBarButton Icon="Zoom" HorizontalAlignment="Right" VerticalAlignment="Top" Click="OnZoomClicked" Canvas.ZIndex="10"/>
         <ScrollViewer x:Name="sv"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto"
@@ -18,7 +19,11 @@
                       VerticalScrollMode="Enabled">
             <mux:ItemsRepeater x:Name="repeater" HorizontalCacheLength="0" VerticalCacheLength="0">
                 <mux:ItemsRepeater.Layout>
-                    <local:UniformGrid2DLayout ItemWidth="200" ItemHeight="200" Spacing="10"/>
+                    <local:UniformGrid2DLayout
+                        x:Name="layout"
+                        ItemWidth="200" ItemHeight="200"
+                        FocusedItemWidth="300" FocusedItemHeight="300"
+                        Spacing="10"/>
                 </mux:ItemsRepeater.Layout>
                 <mux:ItemsRepeater.ItemTemplate>
                     <DataTemplate>

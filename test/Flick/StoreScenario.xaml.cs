@@ -43,6 +43,16 @@ namespace Flick
         private void OnItemGotFocus(object sender, RoutedEventArgs e)
         {
             ScrollToCenterOfViewport(sender);
+            var item = (sender as Control);
+            item.Width = 400;
+            item.Height = 300;
+        }
+
+        private void OnItemLostFocus(object sender, RoutedEventArgs e)
+        {
+            var item = (sender as Control);
+            item.Width = 300;
+            item.Height = 200;
         }
 
         private void OnItemClicked(object sender, RoutedEventArgs e)

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 
 namespace Flick
 {
@@ -14,6 +16,11 @@ namespace Flick
         public double ItemWidth { get; set; }
         public double ItemHeight { get; set; }
         public double Spacing { get; set; }
+
+        public double FocusedItemWidth { get; set; }
+        public double FocusedItemHeight { get; set; }
+
+        public bool EnlargeFocusedItem { get; set; }
 
         protected override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
         {
@@ -33,7 +40,14 @@ namespace Flick
                 {
                     var realIndex = GetElementIndex(rowIndex, colIndex, context.ItemCount);
                     var element = context.GetOrCreateElementAt(realIndex);
-                    element.Measure(new Size(ItemWidth, ItemHeight));
+                    if (EnlargeFocusedItem && FocusManager.GetFocusedElement() == element)
+                    {
+                        element.Measure(new Size(FocusedItemWidth, FocusedItemHeight));
+                    }
+                    else
+                    {
+                        element.Measure(new Size(ItemWidth, ItemHeight));
+                    }
                 }
             }
 
@@ -60,9 +74,22 @@ namespace Flick
                 {
                     var realIndex = GetElementIndex(rowIndex, colIndex, context.ItemCount);
                     var element = context.GetOrCreateElementAt(realIndex);
-                    var arrangeRect = new Rect(colIndex * (ItemWidth + Spacing), rowIndex * (ItemHeight + Spacing), ItemWidth, ItemHeight);
-                    element.Arrange(arrangeRect);
-                    Debug.WriteLine("   Arrange:" + realIndex + " :" + arrangeRect);
+                    if (EnlargeFocusedItem && FocusManager.GetFocusedElement() == element)
+                    {
+                        var widthDiff = FocusedItemWidth - ItemWidth;
+                        var heightDiff = FocusedItemHeight - ItemHeight;
+                        var arrangeRect = new Rect(colIndex * (ItemWidth + Spacing) - widthDiff/2, rowIndex * (ItemHeight + Spacing) - heightDiff/2, FocusedItemWidth, FocusedItemHeight);
+                        element.Arrange(arrangeRect);
+                        Debug.WriteLine("   Arrange:" + realIndex + " :" + arrangeRect);
+                        Canvas.SetZIndex(element, 1);
+                    }
+                    else
+                    {
+                        var arrangeRect = new Rect(colIndex * (ItemWidth + Spacing), rowIndex * (ItemHeight + Spacing), ItemWidth, ItemHeight);
+                        element.Arrange(arrangeRect);
+                        Debug.WriteLine("   Arrange:" + realIndex + " :" + arrangeRect);
+                        Canvas.SetZIndex(element, 0);
+                    }
                 }
             }
 
@@ -79,7 +106,7 @@ namespace Flick
 
         private int FirstRealizedRowIndexInRect(Rect realizationRect)
         {
-            return (int)(realizationRect.Y /(ItemHeight + Spacing));
+            return (int)(realizationRect.Y / (ItemHeight + Spacing));
         }
 
         private int LastRealizedRowIndexInRect(Rect realizationRect)

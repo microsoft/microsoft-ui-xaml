@@ -14,8 +14,8 @@
         <mux:StackLayout Spacing="10"  x:Name="verticalStack"/>
         <mux:StackLayout Spacing="20" Orientation="Horizontal" x:Name="horizontalStack"/>
         <DataTemplate x:Name="itemTemplate">
-            <UserControl IsTabStop="True" UseSystemFocusVisuals="True" GotFocus="OnItemGotFocus" >
-                <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="OnItemClicked" Width="300" Height="200" />
+            <UserControl IsTabStop="True" UseSystemFocusVisuals="True" GotFocus="OnItemGotFocus" LostFocus="OnItemLostFocus" Width="300" Height="200" >
+                <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="OnItemClicked"  />
             </UserControl>
         </DataTemplate>
     </Page.Resources>
