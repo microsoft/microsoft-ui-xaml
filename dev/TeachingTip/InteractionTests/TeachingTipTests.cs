@@ -179,6 +179,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void TipFollowsTargetOnWindowResize()
+        {
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
+
+                    ScrollTargetIntoView();
+                    Wait.ForIdle();
+                    OpenTeachingTip();
+                    double initialTipVerticalOffset = GetTipVerticalOffset();
+                    double initialScrollViewerVerticalOffset = GetScrollViewerVerticalOffset();
+
+                    ScrollBy(10);
+                    WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
+                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+
+                    //Unmaximize then maximize the window, to force a window size changed event.
+                    KeyboardHelper.PressKey(Key.Down, ModifierKey.Windows);
+                    Wait.ForIdle();
+                    KeyboardHelper.PressKey(Key.Up, ModifierKey.Windows);
+                    Wait.ForIdle();
+
+                    Verify.IsLessThan(GetTipVerticalOffset(), initialTipVerticalOffset);
+                }
+            }
+        }
+
+        [TestMethod]
         public void AutoPlacement()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))

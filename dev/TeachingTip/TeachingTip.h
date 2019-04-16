@@ -65,7 +65,7 @@ private:
     winrt::Popup::Opened_revoker m_popupOpenedRevoker{};
     winrt::Popup::Closed_revoker m_popupClosedRevoker{};
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
-    winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
+    winrt::CoreWindow::SizeChanged_revoker m_windowSizeChangedRevoker{};
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
 	void SetPopupAutomationProperties();
     void CreateLightDismissIndicatorPopup();
@@ -108,7 +108,9 @@ private:
 
     void SetViewportChangedEvent();
     void RevokeViewportChangedEvent();
+    void WindowSizeChanged(const winrt::CoreWindow&, const winrt::WindowSizeChangedEventArgs&);
     void TargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&);
+    void RepositionPopup();
 
     void CreateExpandAnimation();
     void CreateContractAnimation();

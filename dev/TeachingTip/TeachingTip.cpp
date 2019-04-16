@@ -37,6 +37,7 @@ void TeachingTip::OnApplyTemplate()
     m_closeButtonClickedRevoker.revoke();
     m_alternateCloseButtonClickedRevoker.revoke();
     m_actionButtonClickedRevoker.revoke();
+    m_windowSizeChangedRevoker.revoke();
 
     winrt::IControlProtected controlProtected{ *this };
 
@@ -52,6 +53,14 @@ void TeachingTip::OnApplyTemplate()
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
     m_tailEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_tailEdgeBorderName, controlProtected));
     m_tailPolygon.set(GetTemplateChildT<winrt::Polygon>(s_tailPolygonName, controlProtected));
+
+    if (auto window = winrt::Window::Current())
+    {
+        if (auto coreWindow = window.CoreWindow())
+        {
+            m_windowSizeChangedRevoker = coreWindow.SizeChanged(winrt::auto_revoke, { this, &TeachingTip::WindowSizeChanged });
+        }
+    }
 
     if (auto && container = m_container.get())
     {
@@ -1268,30 +1277,44 @@ void TeachingTip::RevokeViewportChangedEvent()
 
 void TeachingTip::TargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&)
 {
+    RepositionPopup();
+}
+
+void TeachingTip::WindowSizeChanged(const winrt::CoreWindow&, const winrt::WindowSizeChangedEventArgs&)
+{
+    RepositionPopup();
+}
+
+void TeachingTip::RepositionPopup()
+{
     if (IsOpen())
     {
-        if (auto&& target = m_target.get())
+        auto newTargetBounds = [this]()
         {
-            auto newTargetBounds = target.TransformToVisual(nullptr).TransformBounds({
-                0.0,
-                0.0,
-                static_cast<float>(target.as<winrt::FrameworkElement>().ActualWidth()),
-                static_cast<float>(target.as<winrt::FrameworkElement>().ActualHeight())
-            });
-
-            auto newCurrentBounds = this->TransformToVisual(nullptr).TransformBounds({
-                0.0,
-                0.0,
-                static_cast<float>(this->ActualWidth()),
-                static_cast<float>(this->ActualHeight())
-            });
-
-            if (newTargetBounds != m_currentTargetBoundsInCoreWindowSpace || newCurrentBounds != m_currentBoundsInCoreWindowSpace)
+            if (auto && target = m_target.get())
             {
-                m_currentBoundsInCoreWindowSpace = newCurrentBounds;
-                m_currentTargetBoundsInCoreWindowSpace = newTargetBounds;
-                PositionPopup();
+                return target.TransformToVisual(nullptr).TransformBounds({
+                    0.0,
+                    0.0,
+                    static_cast<float>(target.as<winrt::FrameworkElement>().ActualWidth()),
+                    static_cast<float>(target.as<winrt::FrameworkElement>().ActualHeight())
+                    });
             }
+            return winrt::Rect{};
+        }();
+
+        auto newCurrentBounds = this->TransformToVisual(nullptr).TransformBounds({
+            0.0,
+            0.0,
+            static_cast<float>(this->ActualWidth()),
+            static_cast<float>(this->ActualHeight())
+            });
+
+        if (newTargetBounds != m_currentTargetBoundsInCoreWindowSpace || newCurrentBounds != m_currentBoundsInCoreWindowSpace)
+        {
+            m_currentBoundsInCoreWindowSpace = newCurrentBounds;
+            m_currentTargetBoundsInCoreWindowSpace = newTargetBounds;
+            PositionPopup();
         }
     }
 }
