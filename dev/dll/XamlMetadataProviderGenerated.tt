@@ -76,6 +76,8 @@
 #include "NavigationViewTemplateSettings.h"
 #include "NavigationViewItemPresenter.h"
 #include "LayoutPanel.h"
+#include "FlexboxLayout.h"
+#include "GridLayout.h"
 
 #ifndef BUILD_WINDOWS
 #include "IconSource.h"

@@ -40,6 +40,8 @@ namespace RuntimeProfiler
         ProfId_StackLayout,
         ProfId_UniformGridLayout,
         ProfId_VirtualizingLayout,
+        ProfId_FlexboxLayout,
+        ProfId_GridLayout,
         ProfId_Size // ProfId_Size is the last always. 
     } ProfilerClassId;
 
