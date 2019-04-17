@@ -24,17 +24,17 @@
         <StackPanel>
             <utilities:EntityPropertiesControl Entity="{StaticResource layout}" />
         </StackPanel>
-        <ScrollViewer Grid.Column="1" Margin="10">
+        <ScrollViewer Grid.Column="1" Padding="16">
             <StackPanel>
                 <TextBlock Text="Architecture" FontSize="28" Margin="10" />
-                <controls:ItemsRepeater  Layout="{StaticResource layout}" x:Name="repeater">
+                <controls:ItemsRepeater  Layout="{StaticResource layout}" x:Name="repeater" Background="LightGray">
                     <DataTemplate>
-                        <UserControl Margin="5" IsTabStop="True" UseSystemFocusVisuals="True"
+                        <UserControl IsTabStop="True" UseSystemFocusVisuals="True"
+                                     Margin="5"
                                      local:Flex.FlexBasis="{Binding FlexBasis, Mode=OneWay}"
-                                     local:Flex.FlexGrow="{Binding FlexGrow, Mode=OneWay}"
-                                     >
-                            <Grid BorderBrush="Red"
-                                     BorderThickness="1">
+                                     local:Flex.FlexGrow="{Binding FlexGrow, Mode=OneWay}">
+                            <Grid>
+                                <!-- BorderBrush="Red" BorderThickness="1"/> -->
                                 <StackPanel>
                                     <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" />
                                     <TextBlock Text="{Binding Description}" TextWrapping="WrapWholeWords" FontSize="16"/>

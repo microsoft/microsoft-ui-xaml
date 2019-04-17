@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using Windows.Foundation;
 using Windows.UI.Xaml;
-using System.Linq;
 
 // Notes:
 // (1) Item's Horizontal and Vertical Alignment conflict 
@@ -131,6 +130,7 @@ namespace Flick
 
         #endregion
 
+        // TODO: Separate concern of order/iteration away from here to simplify
         protected override Size MeasureOverride(NonVirtualizingLayoutContext context, Size availableSize)
         {
             double mainPosition = 0.0;
@@ -139,9 +139,11 @@ namespace Flick
             bool isReverse = FlexDirection == FlexDirection.RowReverse || FlexDirection == FlexDirection.ColumnReverse;
             Lines.Clear();
             var currentLine = new LineInfo();
+            currentLine.StartIndex = isReverse ? children.Count - 1 : 0;
             for (int i = 0; i < children.Count; i++)
             {
-                var child = isReverse ? children[children.Count - 1 - i] : children[i];
+                var childIndex = isReverse ? children.Count - 1 - i : i;
+                var child = children[childIndex];
                 var basis = GetFlexBasis(child);
                 var measureSize = basis != 0 ? Size(basis, Cross(availableSize)) : availableSize;
                 child.Measure(measureSize);
@@ -152,10 +154,12 @@ namespace Flick
                     {
                         // wrap since the current item will not fit.
                         currentLine.MainSize = mainPosition;
+                        GrowLineIfNeeded(ref currentLine, children, availableSize, isReverse);
                         Lines.Add(currentLine);
                         mainPosition = 0.0;
                         crossPosition += currentLine.CrossSize;
                         currentLine = new LineInfo();
+                        currentLine.StartIndex = childIndex;
                         currentLine.CrossPosition = crossPosition;
                     }
                 }
@@ -172,6 +176,7 @@ namespace Flick
             if (currentLine.CountInLine > 0)
             {
                 currentLine.MainSize = mainPosition;
+                GrowLineIfNeeded(ref currentLine, children, availableSize, isReverse);
                 Lines.Add(currentLine);
             }
 
@@ -205,19 +210,9 @@ namespace Flick
                     double mainOffset = mainPosition;
                     if (extraMainSpaceInLine > 0)
                     {
-                        if (currentLine.SumGrow > 0)
-                        {
-                            // grow the item
-                            var currentChildFlexGrow = GetFlexGrow(currentChild);
-                            var growBy = (extraMainSpaceInLine / currentLine.SumGrow) * currentChildFlexGrow;
-                            itemMainSize += growBy;
-                            mainPosition += growBy; 
-                        }
-                        else
-                        {
-                            mainOffset += GetContentJustifiedMainOffset(currentLine.CountInLine, extraMainSpaceInLine, indexInLine);
-                        }
+                        mainOffset += GetContentJustifiedMainOffset(currentLine.CountInLine, extraMainSpaceInLine, indexInLine);
                     }
+
                     double crossOffset = currentLine.CrossPosition + crossContentOffset + GetItemsAlignedCrossOffset(currentLine, itemCrossSize, itemAlignment);
 
                     if (AlignContent == AlignContent.Stretch)
@@ -237,6 +232,33 @@ namespace Flick
             }
 
             return finalSize;
+        }
+
+        private void GrowLineIfNeeded(ref LineInfo currentLine, IReadOnlyList<UIElement> children, Size availableSize, bool isReverse)
+        {
+            var mainAvailableSize = Main(availableSize);
+            if (currentLine.SumGrow > 0 && mainAvailableSize > currentLine.MainSize)
+            {
+                var extraMainSpaceInLine = mainAvailableSize - currentLine.MainSize;
+                // Line eats up all the space.
+                currentLine.MainSize = Main(availableSize);
+                currentLine.CrossSize = 0.0;
+                for (int i = 0; i < currentLine.CountInLine; i++)
+                {
+                    // grow the item
+                    var childIndex = isReverse ? currentLine.StartIndex - i : currentLine.StartIndex + i;
+                    var currentChild = children[childIndex];
+                    var currentChildFlexGrow = GetFlexGrow(currentChild);
+                    var growBy = (extraMainSpaceInLine / currentLine.SumGrow) * currentChildFlexGrow;
+
+                    var basis = GetFlexBasis(currentChild);
+                    var measureSize = basis != 0 ? Size(basis + growBy, Cross(availableSize)) : availableSize;
+                    //var mainMeasureSize = Main(currentChild.DesiredSize) + growBy;
+                    //var measureSize = Size(mainMeasureSize, Cross(availableSize));
+                    currentChild.Measure(measureSize);
+                    currentLine.CrossSize = Math.Max(currentLine.CrossSize, Cross(currentChild.DesiredSize));
+                }
+            }
         }
 
         private double GetContentAlignedCrossOffset(double extraCrossSpaceInExtent, int lineIndex)
@@ -344,6 +366,7 @@ namespace Flick
         class LineInfo
         {
             public double CrossPosition { get; set; }
+            public int StartIndex { get; set; }
             public int CountInLine { get; set; }
             public double MainSize { get; set; }
             public double CrossSize { get; set; }
@@ -358,46 +381,6 @@ namespace Flick
         List<LineInfo> Lines { get; set; } = new List<LineInfo>();
 
         #region Axis Helpers
-
-        private double Main(Point point)
-        {
-            double value = 0.0;
-            switch (FlexDirection)
-            {
-                case FlexDirection.Row:
-                case FlexDirection.RowReverse:
-                    value = point.X;
-                    break;
-                case FlexDirection.Column:
-                case FlexDirection.ColumnReverse:
-                    value = point.Y;
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-
-            return value;
-        }
-
-        private double Cross(Point point)
-        {
-            double value = 0.0;
-            switch (FlexDirection)
-            {
-                case FlexDirection.Row:
-                case FlexDirection.RowReverse:
-                    value = point.Y;
-                    break;
-                case FlexDirection.Column:
-                case FlexDirection.ColumnReverse:
-                    value = point.X;
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-
-            return value;
-        }
 
         private double Main(Size size)
         {
@@ -437,157 +420,6 @@ namespace Flick
             }
 
             return value;
-        }
-
-        private double MainStart(Rect rect)
-        {
-            double value = 0.0;
-            switch (FlexDirection)
-            {
-                case FlexDirection.Row:
-                    value = rect.X;
-                    break;
-                case FlexDirection.RowReverse:
-                    value = rect.Right;
-                    break;
-                case FlexDirection.Column:
-                    value = rect.Y;
-                    break;
-                case FlexDirection.ColumnReverse:
-                    value = rect.Bottom;
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-
-            return value;
-        }
-
-        private double MainEnd(Rect rect)
-        {
-            double value = 0.0;
-            switch (FlexDirection)
-            {
-                case FlexDirection.Row:
-                    value = rect.Right;
-                    break;
-                case FlexDirection.RowReverse:
-                    value = rect.X;
-                    break;
-                case FlexDirection.Column:
-                    value = rect.Bottom;
-                    break;
-                case FlexDirection.ColumnReverse:
-                    value = rect.Y;
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-
-            return value;
-        }
-
-        private double CrossStart(Rect rect)
-        {
-            double value = 0.0;
-            switch (FlexDirection)
-            {
-                case FlexDirection.Row:
-                    value = rect.Y;
-                    break;
-                case FlexDirection.RowReverse:
-                    value = rect.Right;
-                    break;
-                case FlexDirection.Column:
-                    value = rect.X;
-                    break;
-                case FlexDirection.ColumnReverse:
-                    value = rect.Bottom;
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-
-            return value;
-        }
-
-        private double CrossEnd(Rect rect)
-        {
-            double value = 0.0;
-            switch (FlexDirection)
-            {
-                case FlexDirection.Row:
-                    value = rect.Right;
-                    break;
-                case FlexDirection.RowReverse:
-                    value = rect.X;
-                    break;
-                case FlexDirection.Column:
-                    value = rect.Bottom;
-                    break;
-                case FlexDirection.ColumnReverse:
-                    value = rect.Y;
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-
-            return value;
-        }
-
-        private double MainSize(Rect rect)
-        {
-            double value = 0.0;
-            switch (FlexDirection)
-            {
-                case FlexDirection.Row:
-                case FlexDirection.RowReverse:
-                    value = rect.Width;
-                    break;
-                case FlexDirection.Column:
-                case FlexDirection.ColumnReverse:
-                    value = rect.Height;
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-
-            return value;
-        }
-
-        private double CrossSize(Rect rect)
-        {
-            double value = 0.0;
-            switch (FlexDirection)
-            {
-                case FlexDirection.Row:
-                case FlexDirection.RowReverse:
-                    value = rect.Height;
-                    break;
-                case FlexDirection.Column:
-                case FlexDirection.ColumnReverse:
-                    value = rect.Width;
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-
-            return value;
-        }
-
-        private Point Point(double main, double cross)
-        {
-            switch (FlexDirection)
-            {
-                case FlexDirection.Row:
-                case FlexDirection.RowReverse:
-                    return new Point(main, cross);
-                case FlexDirection.Column:
-                case FlexDirection.ColumnReverse:
-                    return new Point(cross, main);
-                default:
-                    throw new NotImplementedException();
-            }
         }
 
         private Size Size(double main, double cross)
