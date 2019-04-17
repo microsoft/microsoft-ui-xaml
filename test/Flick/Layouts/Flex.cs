@@ -249,13 +249,14 @@ namespace Flick
                     var childIndex = isReverse ? currentLine.StartIndex - i : currentLine.StartIndex + i;
                     var currentChild = children[childIndex];
                     var currentChildFlexGrow = GetFlexGrow(currentChild);
-                    var growBy = (extraMainSpaceInLine / currentLine.SumGrow) * currentChildFlexGrow;
-
-                    var basis = GetFlexBasis(currentChild);
-                    var measureSize = basis != 0 ? Size(basis + growBy, Cross(availableSize)) : availableSize;
-                    //var mainMeasureSize = Main(currentChild.DesiredSize) + growBy;
-                    //var measureSize = Size(mainMeasureSize, Cross(availableSize));
-                    currentChild.Measure(measureSize);
+                    // no need to re-measure if we are not going to grow this item.
+                    if (currentChildFlexGrow > 0)
+                    {
+                        var growBy = (extraMainSpaceInLine / currentLine.SumGrow) * currentChildFlexGrow;
+                        var basis = GetFlexBasis(currentChild);
+                        var measureSize = basis != 0 ? Size(basis + growBy, Cross(availableSize)) : availableSize;
+                        currentChild.Measure(measureSize);
+                    }
                     currentLine.CrossSize = Math.Max(currentLine.CrossSize, Cross(currentChild.DesiredSize));
                 }
             }
