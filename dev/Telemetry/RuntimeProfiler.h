@@ -41,6 +41,8 @@ namespace RuntimeProfiler
         ProfId_UniformGridLayout,
         ProfId_VirtualizingLayout,
         ProfId_ItemsRepeaterScrollHost,
+        ProfId_FlexboxLayout,
+        ProfId_GridLayout,
         ProfId_Size // ProfId_Size is the last always. 
     } ProfilerClassId;
 
