@@ -5,9 +5,11 @@
 
 #include "NonVirtualizingLayout.h"
 #include "FlexboxLayout.g.h"
+#include "FlexboxLayout.properties.h"
 
 class FlexboxLayout :
-    public ReferenceTracker<FlexboxLayout, winrt::implementation::FlexboxLayoutT, NonVirtualizingLayout>
+    public ReferenceTracker<FlexboxLayout, winrt::implementation::FlexboxLayoutT, NonVirtualizingLayout>,
+    public FlexboxLayoutProperties
 {
 public:
     FlexboxLayout();
@@ -19,4 +21,6 @@ public:
     winrt::Size MeasureOverride(winrt::LayoutContext const& context, winrt::Size const& availableSize);
     winrt::Size ArrangeOverride(winrt::LayoutContext const& context, winrt::Size const& finalSize);
 #pragma endregion
+
+    void OnPlaceholderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 };
