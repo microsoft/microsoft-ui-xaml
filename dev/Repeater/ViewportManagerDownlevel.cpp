@@ -171,33 +171,35 @@ void ViewportManagerDownLevel::OnElementCleared(const winrt::UIElement& element)
 
 void ViewportManagerDownLevel::OnOwnerArranged()
 {
-    if (!m_managingViewportDisabled)
+    if (m_managingViewportDisabled)
     {
-        m_expectedViewportShift = {};
+        return;
+    }
 
-        EnsureScrollers();
+    m_expectedViewportShift = {};
 
-        if (HasScrollers())
+    EnsureScrollers();
+
+    if (HasScrollers())
+    {
+        const double maximumHorizontalCacheBufferPerSide = m_maximumHorizontalCacheLength * m_visibleWindow.Width / 2.0;
+        const double maximumVerticalCacheBufferPerSide = m_maximumVerticalCacheLength * m_visibleWindow.Height / 2.0;
+
+        const bool continueBuildingCache =
+            m_horizontalCacheBufferPerSide < maximumHorizontalCacheBufferPerSide ||
+            m_verticalCacheBufferPerSide < maximumVerticalCacheBufferPerSide;
+
+        if (continueBuildingCache)
         {
-            const double maximumHorizontalCacheBufferPerSide = m_maximumHorizontalCacheLength * m_visibleWindow.Width / 2.0;
-            const double maximumVerticalCacheBufferPerSide = m_maximumVerticalCacheLength * m_visibleWindow.Height / 2.0;
+            m_horizontalCacheBufferPerSide += CacheBufferPerSideInflationPixelDelta;
+            m_verticalCacheBufferPerSide += CacheBufferPerSideInflationPixelDelta;
 
-            const bool continueBuildingCache =
-                m_horizontalCacheBufferPerSide < maximumHorizontalCacheBufferPerSide ||
-                m_verticalCacheBufferPerSide < maximumVerticalCacheBufferPerSide;
+            m_horizontalCacheBufferPerSide = std::min(m_horizontalCacheBufferPerSide, maximumHorizontalCacheBufferPerSide);
+            m_verticalCacheBufferPerSide = std::min(m_verticalCacheBufferPerSide, maximumVerticalCacheBufferPerSide);
 
-            if (continueBuildingCache)
-            {
-                m_horizontalCacheBufferPerSide += CacheBufferPerSideInflationPixelDelta;
-                m_verticalCacheBufferPerSide += CacheBufferPerSideInflationPixelDelta;
-
-                m_horizontalCacheBufferPerSide = std::min(m_horizontalCacheBufferPerSide, maximumHorizontalCacheBufferPerSide);
-                m_verticalCacheBufferPerSide = std::min(m_verticalCacheBufferPerSide, maximumVerticalCacheBufferPerSide);
-
-                // Since we grow the cache buffer at the end of the arrange pass,
-                // we need to register work even if we just reached cache potential.
-                RegisterCacheBuildWork();
-            }
+            // Since we grow the cache buffer at the end of the arrange pass,
+            // we need to register work even if we just reached cache potential.
+            RegisterCacheBuildWork();
         }
     }
 }

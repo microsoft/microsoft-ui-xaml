@@ -245,24 +245,25 @@ void ViewportManagerWithPlatformFeatures::OnOwnerArranged()
 
 void ViewportManagerWithPlatformFeatures::OnLayoutUpdated(winrt::IInspectable const& sender, winrt::IInspectable const& args)
 {
-	if (!m_managingViewportDisabled)
-	{
-		// We were expecting a viewport shift but we never got one and we are not going to in this
-		// layout pass. We likely will never get this shift, so lets assume that we are never going to get it and
-		// adjust our expected shift to track that. One case where this can happen is when there is no scrollviewer
-		// that can scroll in the direction where the shift is expected.
-		if (m_pendingViewportShift.X != 0 || m_pendingViewportShift.Y != 0)
-		{
-			REPEATER_TRACE_INFO(L"%ls: \tLayout Updated with pending shift %.0f %.0f- invalidating measure \n",
-				GetLayoutId().data(),
-				m_pendingViewportShift.X,
-				m_pendingViewportShift.Y);
-
-			TryInvalidateMeasure();
-		}
-	}
-
     m_layoutUpdatedRevoker.revoke();
+    if (m_managingViewportDisabled)
+    {
+        return;
+    }
+
+    // We were expecting a viewport shift but we never got one and we are not going to in this
+    // layout pass. We likely will never get this shift, so lets assume that we are never going to get it and
+    // adjust our expected shift to track that. One case where this can happen is when there is no scrollviewer
+    // that can scroll in the direction where the shift is expected.
+    if (m_pendingViewportShift.X != 0 || m_pendingViewportShift.Y != 0)
+    {
+        REPEATER_TRACE_INFO(L"%ls: \tLayout Updated with pending shift %.0f %.0f- invalidating measure \n",
+            GetLayoutId().data(),
+            m_pendingViewportShift.X,
+            m_pendingViewportShift.Y);
+
+        TryInvalidateMeasure();
+    }
 }
 
 void ViewportManagerWithPlatformFeatures::OnMakeAnchor(const winrt::UIElement& anchor, const bool isAnchorOutsideRealizedRange)
