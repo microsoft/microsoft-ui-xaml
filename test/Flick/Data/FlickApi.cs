@@ -42,9 +42,7 @@ namespace Flick
             var entries = root.Descendants()
                           .Where(x => x.Name.LocalName == "photo")
                           .ToList();
-
-            Console.WriteLine("There are {0} nodes...", entries.Count());
-
+            
             PhotoReel reel = new PhotoReel() { Name = tag };
             foreach (XElement v in entries)
             {
