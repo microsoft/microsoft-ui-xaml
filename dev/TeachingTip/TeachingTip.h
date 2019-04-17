@@ -68,6 +68,7 @@ private:
     winrt::CoreWindow::SizeChanged_revoker m_windowSizeChangedRevoker{};
     winrt::XamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
+    winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
 	void SetPopupAutomationProperties();
     void CreateLightDismissIndicatorPopup();
     bool UpdateTail();
@@ -92,6 +93,7 @@ private:
     void OnShouldConstrainToRootBoundsChanged();
     void OnHeroContentPlacementChanged();
 
+    void OnLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnAutomationNameChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnAutomationIdChanged(const winrt::IInspectable&, const winrt::IInspectable&);
 

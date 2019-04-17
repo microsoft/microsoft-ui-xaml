@@ -18,6 +18,7 @@ TeachingTip::TeachingTip()
     m_automationNameChangedRevoker = RegisterPropertyChanged(*this, winrt::AutomationProperties::NameProperty(), { this, &TeachingTip::OnAutomationNameChanged });
     m_automationIdChangedRevoker = RegisterPropertyChanged(*this, winrt::AutomationProperties::AutomationIdProperty(), { this, &TeachingTip::OnAutomationIdChanged });
     SetValue(s_TemplateSettingsProperty, winrt::make<::TeachingTipTemplateSettings>());
+    m_loadedRevoker = Loaded(winrt::auto_revoke, { this, &TeachingTip::OnLoaded });
 }
 
 TeachingTip::~TeachingTip()
@@ -53,24 +54,6 @@ void TeachingTip::OnApplyTemplate()
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
     m_tailEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_tailEdgeBorderName, controlProtected));
     m_tailPolygon.set(GetTemplateChildT<winrt::Polygon>(s_tailPolygonName, controlProtected));
-
-#ifdef USE_INSIDER_SDK
-    if (winrt::IUIElement10 uiElement10 = *this)
-    {
-        if (auto xamlRoot = uiElement10.XamlRoot())
-        {
-            m_currentXamlRootSize = xamlRoot.Size();
-            m_xamlRootChangedRevoker = xamlRoot.Changed(winrt::auto_revoke, { this, &TeachingTip::XamlRootChanged });
-        }
-    }
-    else
-#endif // USE_INSIDER_SDK
-    {
-        if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
-        {
-            m_windowSizeChangedRevoker = coreWindow.SizeChanged(winrt::auto_revoke, { this, &TeachingTip::WindowSizeChanged });
-        }
-    }
 
     if (auto && container = m_container.get())
     {
@@ -135,6 +118,29 @@ void TeachingTip::OnApplyTemplate()
     EstablishShadows();
 
     m_isTemplateApplied = true;
+}
+
+void TeachingTip::OnLoaded(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+#ifdef USE_INSIDER_SDK
+    if (winrt::IUIElement10 uiElement10 = *this)
+    {
+        if (auto xamlRoot = uiElement10.XamlRoot())
+        {
+            m_currentXamlRootSize = xamlRoot.Size();
+            m_xamlRootChangedRevoker.revoke();
+            m_xamlRootChangedRevoker = xamlRoot.Changed(winrt::auto_revoke, { this, &TeachingTip::XamlRootChanged });
+        }
+    }
+    else
+#endif // USE_INSIDER_SDK
+    {
+        if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
+        {
+            m_windowSizeChangedRevoker.revoke();
+            m_windowSizeChangedRevoker = coreWindow.SizeChanged(winrt::auto_revoke, { this, &TeachingTip::WindowSizeChanged });
+        }
+    }
 }
 
 void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
