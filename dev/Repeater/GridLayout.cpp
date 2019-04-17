@@ -49,7 +49,7 @@ winrt::Size GridLayout::MeasureOverride(
     winrt::LayoutContext const& context,
     winrt::Size const& availableSize)
 {
-    return { availableSize.Width, availableSize.Height };
+    return { availableSize.Width, availableSize.Height > 9999 ? 9999 : availableSize.Height };
 }
 
 winrt::Size GridLayout::ArrangeOverride(
@@ -57,4 +57,8 @@ winrt::Size GridLayout::ArrangeOverride(
     winrt::Size const& finalSize)
 {
     return { finalSize.Width, finalSize.Height };
+}
+
+void GridLayout::OnPlaceholderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
 }
