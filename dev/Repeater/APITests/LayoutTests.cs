@@ -173,7 +173,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 arrangeCount = 0;
 
                 // once we switch to a virtualizing layout we should 
-                // get atleast two passes to update the viewport.
+                // get at least two passes to update the viewport.
                 repeater.Layout = new MockVirtualizingLayout() {
                     MeasureLayoutFunc = (size, context) =>
                     {
