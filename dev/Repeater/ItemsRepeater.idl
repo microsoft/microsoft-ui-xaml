@@ -27,6 +27,7 @@ runtimeclass SelectionModelSelectionChangedEventArgs;
 runtimeclass SelectionModelChildrenRequestedEventArgs;
 runtimeclass SelectionModel;
 runtimeclass FlexboxLayout;
+runtimeclass GridLayout;
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
@@ -622,14 +623,14 @@ unsealed runtimeclass SelectionModel : Windows.UI.Xaml.Data.INotifyPropertyChang
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass FlexboxLayout : VirtualizingLayout
+unsealed runtimeclass FlexboxLayout : NonVirtualizingLayout
 {
     FlexboxLayout();
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass GridLayout : VirtualizingLayout
+unsealed runtimeclass GridLayout : NonVirtualizingLayout
 {
     GridLayout();
 }

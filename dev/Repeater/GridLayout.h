@@ -3,12 +3,20 @@
 
 #pragma once
 
-#include "VirtualizingLayout.h"
+#include "NonVirtualizingLayout.h"
 #include "GridLayout.g.h"
 
 class GridLayout :
-    public ReferenceTracker<GridLayout, winrt::implementation::GridLayoutT, VirtualizingLayout>
+    public ReferenceTracker<GridLayout, winrt::implementation::GridLayoutT, NonVirtualizingLayout>
 {
 public:
     GridLayout();
+
+#pragma region INonVirtualizingLayoutOverrides
+    void InitializeForContextCore(winrt::LayoutContext const& context);
+    void UninitializeForContextCore(winrt::LayoutContext const& context);
+
+    winrt::Size MeasureOverride(winrt::LayoutContext const& context, winrt::Size const& availableSize);
+    winrt::Size ArrangeOverride(winrt::LayoutContext const& context, winrt::Size const& finalSize);
+#pragma endregion
 };
