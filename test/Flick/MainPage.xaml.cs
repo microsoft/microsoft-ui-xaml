@@ -26,6 +26,12 @@ namespace Flick
         private async void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
             Images = await FlickApi.GetPhotos("tulips");
+            for (int i = 0; i < Images.Count; i++)
+            {
+                Images[i].FlexBasis = 300 + (i%3 * 50);
+                Images[i].FlexGrow = i % 3 + 1;
+            }
+
             repeater.ItemsSource = Images;
             repeater.Layout = activityLayout;
             banner.Source = new BitmapImage(new Uri(Images.Last().LargeUrl));
@@ -49,6 +55,11 @@ namespace Flick
         private void OnActivityLayoutClicked(object sender, RoutedEventArgs e)
         {
             repeater.Layout = activityLayout;
+        }
+
+        private void OnFlexLayoutClicked(object sender, RoutedEventArgs e)
+        {
+            repeater.Layout = flexLayout;
         }
 
         private void OnAnimatedPageClicked(object sender, RoutedEventArgs e)

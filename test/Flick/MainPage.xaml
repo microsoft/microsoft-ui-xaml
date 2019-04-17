@@ -12,9 +12,10 @@
 
     <Grid Margin="10">
         <Grid.Resources>
-            <controls:UniformGridLayout x:Name="uniformGridLayout" MinColumnSpacing="10" MinRowSpacing="10" ItemsStretch="Fill" MinItemWidth="300" MinItemHeight="200"/>
-            <local:ActivityFeedLayout x:Name="activityLayout" ItemSpacing="12" RowSpacing="12" MinItemSize="300, 200"/>
-            <controls:StackLayout x:Name="stackLayout" Spacing="10" />
+            <controls:UniformGridLayout x:Name="uniformGridLayout" MinColumnSpacing="5" MinRowSpacing="5" ItemsStretch="Fill" MinItemWidth="300" MinItemHeight="200"/>
+            <local:ActivityFeedLayout x:Name="activityLayout" ItemSpacing="5" RowSpacing="5" MinItemSize="300, 200"/>
+            <controls:StackLayout x:Name="stackLayout" Spacing="5" />
+            <local:Flex x:Name="flexLayout" FlexWrap="Wrap" AlignItems="Stretch"/>
         </Grid.Resources>
         <controls:ItemsRepeaterScrollHost>
             <ScrollViewer>
@@ -32,6 +33,7 @@
                                 <AppBarButton Content="Stack" Click="OnStackLayoutClicked" />
                                 <AppBarButton Content="UniformGrid" Click="OnUniformGridLayoutClicked" />
                                 <AppBarButton Content="Activity" Click="OnActivityLayoutClicked" />
+                                <AppBarButton Content="Flex" Click="OnFlexLayoutClicked" />
                             </StackPanel>
                             <TextBlock Text="Scenarios" VerticalAlignment="Center"/>
                             <StackPanel Orientation="Horizontal">
@@ -46,7 +48,9 @@
                     </Grid>
                     <controls:ItemsRepeater x:Name="repeater" >
                         <DataTemplate>
-                            <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="Image_Tapped"/>
+                            <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="Image_Tapped" Margin="5"
+                                   local:Flex.FlexBasis="{Binding FlexBasis, Mode=OneWay}"
+                                     local:Flex.FlexGrow="{Binding FlexGrow, Mode=OneWay}"/>
                         </DataTemplate>
                         <controls:ItemsRepeater.Animator>
                             <local:DefaultElementAnimator />
