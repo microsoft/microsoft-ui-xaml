@@ -5,9 +5,11 @@
 
 #include "NonVirtualizingLayout.h"
 #include "GridLayout.g.h"
+#include "GridLayout.properties.h"
 
 class GridLayout :
-    public ReferenceTracker<GridLayout, winrt::implementation::GridLayoutT, NonVirtualizingLayout>
+    public ReferenceTracker<GridLayout, winrt::implementation::GridLayoutT, NonVirtualizingLayout>,
+    public GridLayoutProperties
 {
 public:
     GridLayout();
@@ -19,4 +21,6 @@ public:
     winrt::Size MeasureOverride(winrt::LayoutContext const& context, winrt::Size const& availableSize);
     winrt::Size ArrangeOverride(winrt::LayoutContext const& context, winrt::Size const& finalSize);
 #pragma endregion
+
+    void OnPlaceholderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 };

@@ -623,16 +623,26 @@ unsealed runtimeclass SelectionModel : Windows.UI.Xaml.Data.INotifyPropertyChang
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 unsealed runtimeclass FlexboxLayout : NonVirtualizingLayout
 {
     FlexboxLayout();
+
+    Object Placeholder{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty PlaceholderProperty{ get; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 unsealed runtimeclass GridLayout : NonVirtualizingLayout
 {
     GridLayout();
+
+    Object Placeholder{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty PlaceholderProperty{ get; };
 }
 
 }
