@@ -144,11 +144,16 @@ void ViewportManagerDownLevel::SetLayoutExtent(winrt::Rect extent)
     if (m_verticalScroller && m_verticalScroller != outerScroller) { m_verticalScroller.as<winrt::UIElement>().InvalidateArrange(); }
 }
 
-void ViewportManagerDownLevel::OnLayoutChanged()
+void ViewportManagerDownLevel::OnLayoutChanged(bool isVirtualizing)
 {
+    m_managingViewportDisabled = !isVirtualizing;
     m_layoutExtent = {};
     m_expectedViewportShift = {};
-    ResetCacheBuffer();
+
+    if (!m_managingViewportDisabled)
+    {
+        ResetCacheBuffer();
+    }
 }
 
 void ViewportManagerDownLevel::OnElementCleared(const winrt::UIElement& element)
@@ -166,30 +171,33 @@ void ViewportManagerDownLevel::OnElementCleared(const winrt::UIElement& element)
 
 void ViewportManagerDownLevel::OnOwnerArranged()
 {
-    m_expectedViewportShift = {};
-
-    EnsureScrollers();
-
-    if (HasScrollers())
+    if (!m_managingViewportDisabled)
     {
-        const double maximumHorizontalCacheBufferPerSide = m_maximumHorizontalCacheLength * m_visibleWindow.Width / 2.0;
-        const double maximumVerticalCacheBufferPerSide = m_maximumVerticalCacheLength * m_visibleWindow.Height / 2.0;
+        m_expectedViewportShift = {};
 
-        const bool continueBuildingCache =
-            m_horizontalCacheBufferPerSide < maximumHorizontalCacheBufferPerSide ||
-            m_verticalCacheBufferPerSide < maximumVerticalCacheBufferPerSide;
+        EnsureScrollers();
 
-        if (continueBuildingCache)
+        if (HasScrollers())
         {
-            m_horizontalCacheBufferPerSide += CacheBufferPerSideInflationPixelDelta;
-            m_verticalCacheBufferPerSide += CacheBufferPerSideInflationPixelDelta;
+            const double maximumHorizontalCacheBufferPerSide = m_maximumHorizontalCacheLength * m_visibleWindow.Width / 2.0;
+            const double maximumVerticalCacheBufferPerSide = m_maximumVerticalCacheLength * m_visibleWindow.Height / 2.0;
 
-            m_horizontalCacheBufferPerSide = std::min(m_horizontalCacheBufferPerSide, maximumHorizontalCacheBufferPerSide);
-            m_verticalCacheBufferPerSide = std::min(m_verticalCacheBufferPerSide, maximumVerticalCacheBufferPerSide);
+            const bool continueBuildingCache =
+                m_horizontalCacheBufferPerSide < maximumHorizontalCacheBufferPerSide ||
+                m_verticalCacheBufferPerSide < maximumVerticalCacheBufferPerSide;
 
-            // Since we grow the cache buffer at the end of the arrange pass,
-            // we need to register work even if we just reached cache potential.
-            RegisterCacheBuildWork();
+            if (continueBuildingCache)
+            {
+                m_horizontalCacheBufferPerSide += CacheBufferPerSideInflationPixelDelta;
+                m_verticalCacheBufferPerSide += CacheBufferPerSideInflationPixelDelta;
+
+                m_horizontalCacheBufferPerSide = std::min(m_horizontalCacheBufferPerSide, maximumHorizontalCacheBufferPerSide);
+                m_verticalCacheBufferPerSide = std::min(m_verticalCacheBufferPerSide, maximumVerticalCacheBufferPerSide);
+
+                // Since we grow the cache buffer at the end of the arrange pass,
+                // we need to register work even if we just reached cache potential.
+                RegisterCacheBuildWork();
+            }
         }
     }
 }
@@ -202,12 +210,15 @@ void ViewportManagerDownLevel::OnMakeAnchor(const winrt::UIElement& anchor, cons
 
 void ViewportManagerDownLevel::OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs args)
 {
-    // We do not animate bring-into-view operations where the anchor is disconnected because
-    // it doesn't look good (the blank space is obvious because the layout can't keep track
-    // of two realized ranges while the animation is going on).
-    if (m_isAnchorOutsideRealizedRange)
+    if (!m_managingViewportDisabled)
     {
-        args.AnimationDesired(false);
+        // We do not animate bring-into-view operations where the anchor is disconnected because
+        // it doesn't look good (the blank space is obvious because the layout can't keep track
+        // of two realized ranges while the animation is going on).
+        if (m_isAnchorOutsideRealizedRange)
+        {
+            args.AnimationDesired(false);
+        }
     }
 }
 
@@ -229,45 +240,51 @@ void ViewportManagerDownLevel::OnCacheBuildActionCompleted()
 
 void ViewportManagerDownLevel::OnViewportChanged(const winrt::IRepeaterScrollingSurface&, const bool isFinal)
 {
-    if (isFinal)
+    if (!m_managingViewportDisabled)
     {
-        // Note that isFinal will never be true for input based manipulations.
-        m_makeAnchorElement.set(nullptr);
-        m_isAnchorOutsideRealizedRange = false;
-    }
+        if (isFinal)
+        {
+            // Note that isFinal will never be true for input based manipulations.
+            m_makeAnchorElement.set(nullptr);
+            m_isAnchorOutsideRealizedRange = false;
+        }
 
-    TryInvalidateMeasure();
+        TryInvalidateMeasure();
+    }
 }
 
 void ViewportManagerDownLevel::OnPostArrange(const winrt::IRepeaterScrollingSurface&)
 {
-    UpdateViewport();
+    if (!m_managingViewportDisabled)
+    {
+        UpdateViewport();
 
-    if (m_visibleWindow == winrt::Rect())
-    {
-        // We got cleared.
-        m_layoutExtent = {};
-    }
-    else
-    {
-        // Register our non-recycled children as candidates for element tracking.
-        if (m_horizontalScroller || m_verticalScroller)
+        if (m_visibleWindow == winrt::Rect())
         {
-            auto children = m_owner->Children();
-            for (unsigned i = 0u; i < children.Size(); ++i)
+            // We got cleared.
+            m_layoutExtent = {};
+        }
+        else
+        {
+            // Register our non-recycled children as candidates for element tracking.
+            if (m_horizontalScroller || m_verticalScroller)
             {
-                const auto element = children.GetAt(i);
-                const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
-                if (virtInfo->IsHeldByLayout())
+                auto children = m_owner->Children();
+                for (unsigned i = 0u; i < children.Size(); ++i)
                 {
-                    if (m_horizontalScroller)
+                    const auto element = children.GetAt(i);
+                    const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+                    if (virtInfo->IsHeldByLayout())
                     {
-                        m_horizontalScroller.get().RegisterAnchorCandidate(element);
-                    }
+                        if (m_horizontalScroller)
+                        {
+                            m_horizontalScroller.get().RegisterAnchorCandidate(element);
+                        }
 
-                    if (m_verticalScroller && m_verticalScroller != m_horizontalScroller)
-                    {
-                        m_verticalScroller.get().RegisterAnchorCandidate(element);
+                        if (m_verticalScroller && m_verticalScroller != m_horizontalScroller)
+                        {
+                            m_verticalScroller.get().RegisterAnchorCandidate(element);
+                        }
                     }
                 }
             }
@@ -346,6 +363,8 @@ bool ViewportManagerDownLevel::AddScroller(const winrt::IRepeaterScrollingSurfac
 
 void ViewportManagerDownLevel::UpdateViewport()
 {
+    assert(!m_managingViewportDisabled);
+
     const auto previousVisibleWindow = m_visibleWindow;
     const auto horizontalVisibleWindow =
         m_horizontalScroller ?
@@ -400,8 +419,11 @@ void ViewportManagerDownLevel::ResetCacheBuffer()
     m_horizontalCacheBufferPerSide = 0.0;
     m_verticalCacheBufferPerSide = 0.0;
 
-    // We need to start building the realization buffer again.
-    RegisterCacheBuildWork();
+    if (!m_managingViewportDisabled)
+    {
+        // We need to start building the realization buffer again.
+        RegisterCacheBuildWork();
+    }
 }
 
 void ViewportManagerDownLevel::ValidateCacheLength(double cacheLength)

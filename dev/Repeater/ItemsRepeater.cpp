@@ -609,7 +609,8 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
         m_arrangeInvalidated = newValue.ArrangeInvalidated(winrt::auto_revoke, { this, &ItemsRepeater::InvalidateArrangeForLayout });
     }
 
-    m_viewportManager->OnLayoutChanged();
+    bool isVirtualizingLayout = newValue != nullptr && newValue.try_as<winrt::VirtualizingLayout>() != nullptr;
+    m_viewportManager->OnLayoutChanged(isVirtualizingLayout);
     InvalidateMeasure();
 }
 
