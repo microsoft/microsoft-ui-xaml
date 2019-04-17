@@ -178,7 +178,7 @@ void ViewportManagerWithPlatformFeatures::OnLayoutChanged(bool isVirtualizing)
     {
         m_effectiveViewportChangedRevoker.revoke();
     }
-    else if(!m_effectiveViewportChangedRevoker)
+    else if (!m_effectiveViewportChangedRevoker)
     {
         m_effectiveViewportChangedRevoker = m_owner->EffectiveViewportChanged(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged });
     }
