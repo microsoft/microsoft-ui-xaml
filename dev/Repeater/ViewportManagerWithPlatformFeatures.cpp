@@ -413,7 +413,7 @@ void ViewportManagerWithPlatformFeatures::EnsureScroller()
             // a scroller, let's do it now.
             UpdateViewport(winrt::Rect{});
         }
-        else if(!m_managingViewportDisabled)
+        else if (!m_managingViewportDisabled)
         {
             m_effectiveViewportChangedRevoker = m_owner->EffectiveViewportChanged(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged });
         }
