@@ -4,9 +4,11 @@
 #pragma once
 
 #include "GridLocation.g.h"
+#include "GridLocation.properties.h"
 
 class GridLocation :
-    public ReferenceTracker<GridLocation, winrt::implementation::GridLocationT, winrt::composable, winrt::composing>
+    public ReferenceTracker<GridLocation, winrt::implementation::GridLocationT>,
+    public GridLocationProperties
 {
 public:
     GridLocation();
