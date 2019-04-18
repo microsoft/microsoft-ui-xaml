@@ -28,6 +28,8 @@ runtimeclass SelectionModelChildrenRequestedEventArgs;
 runtimeclass SelectionModel;
 runtimeclass FlexboxLayout;
 runtimeclass GridLayout;
+runtimeclass GridTrackInfo;
+runtimeclass GridLocation;
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
@@ -781,6 +783,30 @@ unsealed runtimeclass FlexboxLayout : NonVirtualizingLayout
     //static Windows.UI.Xaml.DependencyProperty GrowProperty{ get; };
     //static Windows.UI.Xaml.DependencyProperty ShrinkProperty{ get; };
     //static Windows.UI.Xaml.DependencyProperty AlignSelfProperty{ get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass GridTrackInfo
+{
+    GridTrackInfo();
+
+    String LineName{ get; set; };
+    Double Length{ get; set; };
+    Boolean Auto{ get; set; };
+    Double Fraction{ get; set; };
+    Double Percentage{ get; set; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass GridLocation
+{
+    GridLocation();
+
+    Int32 Index{ get; set; };
+    String LineName{ get; set; };
+    Int32 Span{ get; set; };
 }
 
 [WUXC_VERSION_PREVIEW]
