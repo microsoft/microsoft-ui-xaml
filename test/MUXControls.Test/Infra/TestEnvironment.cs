@@ -107,7 +107,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         [TestProperty("MUXControlsTestEnabledForPhone", "False")]
         public static void AssemblyInitialize(TestContext testContext)
         {
-            if (PlatformConfiguration.IsDevice(DeviceType.Desktop))
+            if (!PlatformConfiguration.IsDevice(DeviceType.OneCore))
             {
                 // We need to make the process DPI aware so it properly handles scale factors other than 100%.
                 // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 only existed RS2 and up, so we'll fall back to
