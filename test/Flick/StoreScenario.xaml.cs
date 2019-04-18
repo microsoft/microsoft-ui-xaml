@@ -21,13 +21,13 @@ namespace Flick
             var args = e.Parameter as NavigateArgs;
 
             ObservableCollection<PhotoReel> groupedPhotos = new ObservableCollection<PhotoReel>();
-            groupedPhotos.Add(await FlickApi.GetPhotos("tulips"));
-            groupedPhotos.Add(await FlickApi.GetPhotos("daffodils"));
-            groupedPhotos.Add(await FlickApi.GetPhotos("allium"));
-            groupedPhotos.Add(await FlickApi.GetPhotos("roses"));
-            groupedPhotos.Add(await FlickApi.GetPhotos("Lilies"));
+            groupedPhotos.Add(await FlickApi.GetPhotos("Allium"));
+            groupedPhotos.Add(await FlickApi.GetPhotos("Daffodils"));
+            groupedPhotos.Add(await FlickApi.GetPhotos("Geraniums"));
+            groupedPhotos.Add(await FlickApi.GetPhotos("Roses"));
+            groupedPhotos.Add(await FlickApi.GetPhotos("Tulips"));
             groupedPhotos.Add(await FlickApi.GetPhotos("Lavendar"));
-            groupedPhotos.Add(await FlickApi.GetPhotos("geraniums"));
+            groupedPhotos.Add(await FlickApi.GetPhotos("Lilies"));
 
             rootRepeater.ItemsSource = groupedPhotos;
         }

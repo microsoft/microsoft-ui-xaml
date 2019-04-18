@@ -30,7 +30,7 @@
                         HorizontalScrollMode="Enabled"
                         VerticalScrollMode="Disabled">
                         <StackPanel>
-                            <TextBlock Text="{Binding Name}" />
+                            <TextBlock Text="{Binding Name}" FontSize="28"/>
                             <mux:ItemsRepeater x:Name="repeater"
                                                ItemsSource="{Binding}"
                                                Layout="{StaticResource horizontalStack}"
