@@ -130,14 +130,30 @@ namespace Flick
 
         #endregion
 
+        protected override void InitializeForContextCore(NonVirtualizingLayoutContext context)
+        {
+            context.LayoutState = new FlexState();
+        }
+
+        protected override void UninitializeForContextCore(NonVirtualizingLayoutContext context)
+        {
+            context.LayoutState = null;
+        }
+
+        private FlexState State(NonVirtualizingLayoutContext context)
+        {
+            return context.LayoutState as FlexState;
+        }
+
         // TODO: Separate concern of order/iteration away from here to simplify
         protected override Size MeasureOverride(NonVirtualizingLayoutContext context, Size availableSize)
         {
+            var state = State(context);
             double mainPosition = 0.0;
             double crossPosition = 0.0;
             var children = context.Children;
             bool isReverse = FlexDirection == FlexDirection.RowReverse || FlexDirection == FlexDirection.ColumnReverse;
-            Lines.Clear();
+            state.Lines.Clear();
             var currentLine = new LineInfo();
             currentLine.StartIndex = isReverse ? children.Count - 1 : 0;
             for (int i = 0; i < children.Count; i++)
@@ -155,7 +171,7 @@ namespace Flick
                         // wrap since the current item will not fit.
                         currentLine.MainSize = mainPosition;
                         GrowLineIfNeeded(ref currentLine, children, availableSize, isReverse);
-                        Lines.Add(currentLine);
+                        state.Lines.Add(currentLine);
                         mainPosition = 0.0;
                         crossPosition += currentLine.CrossSize;
                         currentLine = new LineInfo();
@@ -177,26 +193,27 @@ namespace Flick
             {
                 currentLine.MainSize = mainPosition;
                 GrowLineIfNeeded(ref currentLine, children, availableSize, isReverse);
-                Lines.Add(currentLine);
+                state.Lines.Add(currentLine);
             }
 
-            m_LastExtent = Size(mainPosition, crossPosition + currentLine.CrossSize);
-            return m_LastExtent;
+            state.LastExtent = Size(mainPosition, crossPosition + currentLine.CrossSize);
+            return state.LastExtent;
         }
 
         protected override Size ArrangeOverride(NonVirtualizingLayoutContext context, Size finalSize)
         {
+            var state = State(context);
             bool isReverse = FlexDirection == FlexDirection.RowReverse || FlexDirection == FlexDirection.ColumnReverse;
             int step = isReverse ? -1 : 1;
             int childIndex = isReverse ? context.Children.Count - 1 : 0;
             var layoutItemAlignment = AlignItems;
-            double extraCrossSpaceInExtent = Cross(finalSize) - Cross(m_LastExtent);
-            for (int lineIndex = 0; lineIndex < Lines.Count; lineIndex++)
+            double extraCrossSpaceInExtent = Cross(finalSize) - Cross(state.LastExtent);
+            for (int lineIndex = 0; lineIndex < state.Lines.Count; lineIndex++)
             {
-                var currentLine = Lines[lineIndex];
+                var currentLine = state.Lines[lineIndex];
                 var mainPosition = 0.0;
 
-                double crossContentOffset = GetContentAlignedCrossOffset(extraCrossSpaceInExtent, lineIndex);
+                double crossContentOffset = GetContentAlignedCrossOffset(extraCrossSpaceInExtent, lineIndex, state);
                 double extraMainSpaceInLine = Main(finalSize) - currentLine.MainSize;
 
                 for (int indexInLine = 0; indexInLine < currentLine.CountInLine; indexInLine++)
@@ -217,7 +234,7 @@ namespace Flick
 
                     if (AlignContent == AlignContent.Stretch)
                     {
-                        itemCrossSize = currentLine.CrossSize + extraCrossSpaceInExtent / Lines.Count;
+                        itemCrossSize = currentLine.CrossSize + extraCrossSpaceInExtent / state.Lines.Count;
                     }
                     else if (itemAlignment == AlignItems.Stretch)
                     {
@@ -262,7 +279,7 @@ namespace Flick
             }
         }
 
-        private double GetContentAlignedCrossOffset(double extraCrossSpaceInExtent, int lineIndex)
+        private double GetContentAlignedCrossOffset(double extraCrossSpaceInExtent, int lineIndex, FlexState state)
         {
             double crossContentOffset = 0;
             if (extraCrossSpaceInExtent > 0)
@@ -278,16 +295,16 @@ namespace Flick
                         crossContentOffset = extraCrossSpaceInExtent / 2;
                         break;
                     case AlignContent.Stretch:
-                        crossContentOffset = lineIndex * extraCrossSpaceInExtent / (Lines.Count);
+                        crossContentOffset = lineIndex * extraCrossSpaceInExtent / (state.Lines.Count);
                         break;
                     case AlignContent.SpaceBetween:
-                        if (Lines.Count > 1)
+                        if (state.Lines.Count > 1)
                         {
-                            crossContentOffset = lineIndex * (extraCrossSpaceInExtent / (Lines.Count - 1));
+                            crossContentOffset = lineIndex * (extraCrossSpaceInExtent / (state.Lines.Count - 1));
                         }
                         break;
                     case AlignContent.SpaceAround:
-                        crossContentOffset = (lineIndex * 2 + 1) * extraCrossSpaceInExtent / (Lines.Count * 2);
+                        crossContentOffset = (lineIndex * 2 + 1) * extraCrossSpaceInExtent / (state.Lines.Count * 2);
                         break;
                 }
             }
@@ -364,23 +381,6 @@ namespace Flick
             }
         }
 
-        class LineInfo
-        {
-            public double CrossPosition { get; set; }
-            public int StartIndex { get; set; }
-            public int CountInLine { get; set; }
-            public double MainSize { get; set; }
-            public double CrossSize { get; set; }
-            public int SumGrow { get; set; }
-
-            public override string ToString()
-            {
-                return $"Offset:{CrossPosition} Count:{CountInLine} Main:{MainSize} Cross:{CrossSize}";
-            }
-        };
-
-        List<LineInfo> Lines { get; set; } = new List<LineInfo>();
-
         #region Axis Helpers
 
         private double Main(Size size)
@@ -455,7 +455,26 @@ namespace Flick
 
         #endregion
 
-        private Size m_LastExtent;
+        class LineInfo
+        {
+            public double CrossPosition { get; set; }
+            public int StartIndex { get; set; }
+            public int CountInLine { get; set; }
+            public double MainSize { get; set; }
+            public double CrossSize { get; set; }
+            public int SumGrow { get; set; }
+
+            public override string ToString()
+            {
+                return $"Offset:{CrossPosition} Count:{CountInLine} Main:{MainSize} Cross:{CrossSize}";
+            }
+        };
+
+        class FlexState
+        {
+            public List<LineInfo> Lines { get; set; } = new List<LineInfo>();
+            public Size LastExtent { get; set; }
+        }
 
     }
 

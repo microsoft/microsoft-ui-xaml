@@ -15,6 +15,7 @@
             <mux:StackLayout x:Name="stackLayout" Spacing="5" />
             <mux:UniformGridLayout x:Name="uniformGridLayout" MinColumnSpacing="10" MinRowSpacing="10" ItemsStretch="Fill" MinItemWidth="300" MinItemHeight="200"/>
             <local:ActivityFeedLayout x:Name="activityLayout" ItemSpacing="5" RowSpacing="5" MinItemSize="300, 200"/>
+            <local:Flex x:Name="flexLayout" FlexWrap="Wrap" />
             <DataTemplate x:Name="groupedStack">
                 <StackPanel>
                     <TextBlock Text="{Binding Name}" FontSize="32"/>
@@ -63,10 +64,7 @@
             <DataTemplate x:Name="groupedFlex">
                 <StackPanel>
                     <TextBlock Text="{Binding Name}" FontSize="32"/>
-                    <mux:ItemsRepeater x:Name="repeater" ItemsSource="{Binding}">
-                        <mux:ItemsRepeater.Layout>
-                            <local:Flex FlexWrap="Wrap" />
-                        </mux:ItemsRepeater.Layout>
+                    <mux:ItemsRepeater x:Name="repeater" ItemsSource="{Binding}" Layout="{StaticResource flexLayout}">
                         <mux:ItemsRepeater.ItemTemplate>
                             <DataTemplate>
                                 <UserControl IsTabStop="True" UseSystemFocusVisuals="True"
