@@ -262,6 +262,12 @@ void ViewportManagerWithPlatformFeatures::OnLayoutUpdated(winrt::IInspectable co
             m_pendingViewportShift.X,
             m_pendingViewportShift.Y);
 
+        // Assume this is never going to come.
+        m_unshiftableShift.X += m_pendingViewportShift.X;
+        m_unshiftableShift.Y += m_pendingViewportShift.Y;
+        m_pendingViewportShift = {};
+        m_expectedViewportShift = {};
+
         TryInvalidateMeasure();
     }
 }

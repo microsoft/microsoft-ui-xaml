@@ -149,11 +149,7 @@ void ViewportManagerDownLevel::OnLayoutChanged(bool isVirtualizing)
     m_managingViewportDisabled = !isVirtualizing;
     m_layoutExtent = {};
     m_expectedViewportShift = {};
-
-    if (!m_managingViewportDisabled)
-    {
-        ResetCacheBuffer();
-    }
+    ResetCacheBuffer();
 }
 
 void ViewportManagerDownLevel::OnElementCleared(const winrt::UIElement& element)
