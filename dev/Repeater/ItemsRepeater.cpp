@@ -512,16 +512,15 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
 
     if (auto layout = Layout())
     {
-        auto args = winrt::NotifyCollectionChangedEventArgs(
-            winrt::NotifyCollectionChangedAction::Reset,
-            nullptr /* newItems */,
-            nullptr /* oldItems */,
-            -1 /* newIndex */,
-            -1 /* oldIndex */);
-        args.Action();
-
         if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
         {
+            auto args = winrt::NotifyCollectionChangedEventArgs(
+                winrt::NotifyCollectionChangedAction::Reset,
+                nullptr /* newItems */,
+                nullptr /* oldItems */,
+                -1 /* newIndex */,
+                -1 /* oldIndex */);
+            args.Action();
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
 
@@ -529,11 +528,50 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
     }
 }
 
-void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory&  oldValue, const winrt::IElementFactory&  newValue)
+void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue, const winrt::IElementFactory& newValue)
 {
     if (m_isLayoutInProgress && oldValue)
     {
         throw winrt::hresult_error(E_FAIL, L"ItemTemplate cannot be changed during layout.");
+    }
+
+    // Since the ItemTemplate has changed, we need to re-evaluate all the items that
+    // have already been created and are now in the tree. The easist way to do that
+    // would be to do a reset.. Note that this has to be done before we change the template
+    // so that the cleared elements go back into the old template.
+    if (auto layout = Layout())
+    {
+        if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
+        {
+            auto args = winrt::NotifyCollectionChangedEventArgs(
+                winrt::NotifyCollectionChangedAction::Reset,
+                nullptr /* newItems */,
+                nullptr /* oldItems */,
+                -1 /* newIndex */,
+                -1 /* oldIndex */);
+            args.Action();
+            m_processingDataSourceChange.set(args);
+            auto processingChange = gsl::finally([this]()
+                {
+                    m_processingDataSourceChange.set(nullptr);
+                });
+
+            virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
+        }
+        else if (auto nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
+        {
+            // Walk through all the elements and make sure they are cleared for
+            // non-virtualizing layouts.
+            auto children = Children();
+            for (unsigned i = 0u; i < children.Size(); ++i)
+            {
+                auto element = children.GetAt(i);
+                if (GetVirtualizationInfo(element)->IsRealized())
+                {
+                    ClearElementImpl(element);
+                }
+            }
+        }
     }
 
     if (!SharedHelpers::IsRS5OrHigher())
@@ -563,6 +601,8 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory&  oldValu
         }
     }
 #endif
+
+    InvalidateMeasure();
 }
 
 void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::Layout& newValue)
