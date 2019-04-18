@@ -25,31 +25,23 @@ namespace MUXControlsTestApp
         [TestProperty("Classification", "Integration")]
         public static void AssemblyInitialize(TestContext testContext)
         {
-            try
-            {
 #if USING_TAEF
-                if (testContext.Properties.Contains("WaitForDebugger") || testContext.Properties.Contains("WaitForAppDebugger"))
+            if (testContext.Properties.Contains("WaitForDebugger") || testContext.Properties.Contains("WaitForAppDebugger"))
 #else
             if (testContext.Properties.ContainsKey("WaitForDebugger") || testContext.Properties.ContainsKey("WaitForAppDebugger"))
 #endif
-                {
-                    var processId = Windows.System.Diagnostics.ProcessDiagnosticInfo.GetForCurrentProcess().ProcessId;
-                    var waitEvent = new AutoResetEvent(false);
-
-                    while (!System.Diagnostics.Debugger.IsAttached)
-                    {
-                        Log.Comment(string.Format("Waiting for a debugger to attach (processId = {0})...", processId));
-                        Windows.System.Threading.ThreadPoolTimer.CreateTimer((timer) => { waitEvent.Set(); }, TimeSpan.FromSeconds(1));
-                        waitEvent.WaitOne();
-                    }
-
-                    System.Diagnostics.Debugger.Break();
-                }
-            }
-            catch (Exception e)
             {
-                Log.Error("Oh noes: " + e.ToString());
-                throw;
+                var processId = Windows.System.Diagnostics.ProcessDiagnosticInfo.GetForCurrentProcess().ProcessId;
+                var waitEvent = new AutoResetEvent(false);
+
+                while (!System.Diagnostics.Debugger.IsAttached)
+                {
+                    Log.Comment(string.Format("Waiting for a debugger to attach (processId = {0})...", processId));
+                    Windows.System.Threading.ThreadPoolTimer.CreateTimer((timer) => { waitEvent.Set(); }, TimeSpan.FromSeconds(1));
+                    waitEvent.WaitOne();
+                }
+
+                System.Diagnostics.Debugger.Break();
             }
         }
     }
