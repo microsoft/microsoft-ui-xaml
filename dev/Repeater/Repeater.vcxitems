@@ -92,6 +92,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\UniformGridLayout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\FlexboxLayout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\GridLayout.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\GridLocation.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\GridTrackInfo.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimationManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ChildrenInTabFocusOrderIterable.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BuildTreeScheduler.cpp" />

@@ -4,9 +4,11 @@
 #pragma once
 
 #include "GridTrackInfo.g.h"
+#include "GridTrackInfo.properties.h"
 
 class GridTrackInfo :
-    public ReferenceTracker<GridTrackInfo, winrt::implementation::GridTrackInfoT, winrt::composable, winrt::composing>
+    public ReferenceTracker<GridTrackInfo, winrt::implementation::GridTrackInfoT>,
+    public GridTrackInfoProperties
 {
 public:
     GridTrackInfo();

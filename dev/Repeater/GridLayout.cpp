@@ -5,10 +5,36 @@
 #include <common.h>
 #include "GridLayout.h"
 #include "RuntimeProfiler.h"
+#include "Vector.h"
 
 GridLayout::GridLayout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_GridLayout);
+
+    m_templateColumns = winrt::make<Vector<winrt::GridTrackInfo>>();
+    m_templateRows = winrt::make<Vector<winrt::GridTrackInfo>>();
+    m_autoColumns = winrt::make<Vector<winrt::GridTrackInfo>>();
+    m_autoRows = winrt::make<Vector<winrt::GridTrackInfo>>();
+}
+
+winrt::IVector<winrt::GridTrackInfo> GridLayout::TemplateColumns()
+{
+    return m_templateColumns;
+}
+
+void GridLayout::TemplateColumns(winrt::IVector<winrt::GridTrackInfo> const& value)
+{
+    m_templateColumns = value;
+}
+
+winrt::IVector<winrt::GridTrackInfo> GridLayout::TemplateRows()
+{
+    return m_templateRows;
+}
+
+void GridLayout::TemplateRows(winrt::IVector<winrt::GridTrackInfo> const& value)
+{
+    m_templateRows = value;
 }
 
 double GridLayout::ColumnGap()
@@ -69,6 +95,26 @@ winrt::GridAlignContent GridLayout::AlignContent()
 void GridLayout::AlignContent(winrt::GridAlignContent const& value)
 {
     m_alignContent = value;
+}
+
+winrt::IVector<winrt::GridTrackInfo> GridLayout::AutoColumns()
+{
+    return m_autoColumns;
+}
+
+void GridLayout::AutoColumns(winrt::IVector<winrt::GridTrackInfo> const& value)
+{
+    m_autoColumns = value;
+}
+
+winrt::IVector<winrt::GridTrackInfo> GridLayout::AutoRows()
+{
+    return m_autoRows;
+}
+
+void GridLayout::AutoRows(winrt::IVector<winrt::GridTrackInfo> const& value)
+{
+    m_autoRows = value;
 }
 
 winrt::GridAutoFlow GridLayout::AutoFlow()
