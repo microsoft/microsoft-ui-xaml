@@ -14,7 +14,8 @@ namespace Common
     public enum DeviceType
     {
         Desktop,
-        Phone
+        Phone,
+        OneCore
     }
 
     public enum OSVersion : ushort
@@ -64,6 +65,10 @@ namespace Common
                 return true;
             }
             else if (type == DeviceType.Phone && deviceFamily == "Windows.Mobile")
+            {
+                return true;
+            }
+            else if (type == DeviceType.OneCore && deviceFamily != "Windows.Desktop" && deviceFamily != "Windows.Mobile")
             {
                 return true;
             }

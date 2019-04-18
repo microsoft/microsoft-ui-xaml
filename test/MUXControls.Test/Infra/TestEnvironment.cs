@@ -107,15 +107,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         [TestProperty("MUXControlsTestEnabledForPhone", "False")]
         public static void AssemblyInitialize(TestContext testContext)
         {
-            // We need to make the process DPI aware so it properly handles scale factors other than 100%.
-            // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 only existed RS2 and up, so we'll fall back to
-            // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE below RS2.
-            if (SetProcessDpiAwarenessContext(
-                PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2) ?
-                    DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 :
-                    DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) < 0)
+            if (PlatformConfiguration.IsDevice(DeviceType.Desktop))
             {
-                throw new Exception("Failed to set process DPI awareness context!  Error = " + Marshal.GetLastWin32Error());
+                // We need to make the process DPI aware so it properly handles scale factors other than 100%.
+                // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 only existed RS2 and up, so we'll fall back to
+                // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE below RS2.
+                if (SetProcessDpiAwarenessContext(
+                    PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2) ?
+                        DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 :
+                        DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) < 0)
+                {
+                    throw new Exception("Failed to set process DPI awareness context!  Error = " + Marshal.GetLastWin32Error());
+                }
             }
 
 #if USING_TAEF
