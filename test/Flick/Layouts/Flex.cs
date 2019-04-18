@@ -145,7 +145,7 @@ namespace Flick
                 var childIndex = isReverse ? children.Count - 1 - i : i;
                 var child = children[childIndex];
                 var basis = GetFlexBasis(child);
-                var measureSize = basis != 0 ? Size(basis, Cross(availableSize)) : availableSize;
+                var measureSize = basis != 0 ? Size(Math.Min(basis, Main(availableSize)), Cross(availableSize)) : availableSize;
                 child.Measure(measureSize);
 
                 if (FlexWrap == FlexWrap.Wrap)
@@ -254,7 +254,7 @@ namespace Flick
                     {
                         var growBy = (extraMainSpaceInLine / currentLine.SumGrow) * currentChildFlexGrow;
                         var basis = GetFlexBasis(currentChild);
-                        var measureSize = basis != 0 ? Size(basis + growBy, Cross(availableSize)) : availableSize;
+                        var measureSize = basis != 0 ? Size(Math.Min(basis + growBy, Main(availableSize)), Cross(availableSize)) : availableSize;
                         currentChild.Measure(measureSize);
                     }
                     currentLine.CrossSize = Math.Max(currentLine.CrossSize, Cross(currentChild.DesiredSize));
