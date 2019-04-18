@@ -32,7 +32,7 @@ public:
     void SetLayoutExtent(winrt::Rect extent) override;
     winrt::Point GetOrigin() const override { return winrt::Point(m_layoutExtent.X, m_layoutExtent.Y); }
 
-    void OnLayoutChanged() override;
+    void OnLayoutChanged(bool isVirtualizing) override;
     void OnElementPrepared(const winrt::UIElement& element) override;
     void OnElementCleared(const winrt::UIElement& element) override;
     void OnOwnerMeasuring() override;
@@ -82,6 +82,12 @@ private:
     // Sometimes the scrolling surface cannot service a shift (for example
     // it is already at the top and cannot shift anymore.)
     winrt::Point m_pendingViewportShift{};
+    // Unshiftable shift amount that this view manager can
+    // handle on its own to fake it to the layout as if the shift
+    // actually happened. This can happen in cases where no scrollviewer
+    // in the parent chain can scroll in the shift direction.
+    winrt::Point m_unshiftableShift{};
+
 
     // Realization window cache fields
     double m_maximumHorizontalCacheLength{ 2.0 };
@@ -90,6 +96,10 @@ private:
     double m_verticalCacheBufferPerSide{};
 
     bool m_isBringIntoViewInProgress{false};
+    // For non-virtualizing layouts, we do not need to keep
+    // updating viewports and invalidating measure often. So when
+    // a non virtualizing layout is used, we stop doing all that work.
+    bool m_managingViewportDisabled{ false };
 
     // Event tokens
     winrt::FrameworkElement::EffectiveViewportChanged_revoker m_effectiveViewportChangedRevoker{};

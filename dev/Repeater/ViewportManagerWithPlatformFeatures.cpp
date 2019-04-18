@@ -166,7 +166,7 @@ void ViewportManagerWithPlatformFeatures::SetLayoutExtent(winrt::Rect extent)
     }
 }
 
-void ViewportManagerWithPlatformFeatures::OnLayoutChanged()
+void ViewportManagerWithPlatformFeatures::OnLayoutChanged(bool isVirtualizing)
 {
     m_layoutExtent = {};
     m_expectedViewportShift = {};

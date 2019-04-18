@@ -90,7 +90,7 @@ private:
     bool ShouldContinueFillingUpSpace(
         int index,
         GenerateDirection direction);
-    winrt::Rect EstimateExtent(const winrt::Size& availableSize);
+    winrt::Rect EstimateExtent(const winrt::Size& availableSize, const wstring_view& layoutId);
     void RaiseLineArranged();
 #pragma endregion
 

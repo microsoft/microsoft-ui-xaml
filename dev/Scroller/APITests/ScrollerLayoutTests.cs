@@ -245,6 +245,153 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Validates Scroller.ViewportHeight for various layouts.")]
+        public void ViewportHeight()
+        {
+            for (double scrollerContentHeight = 50.0; scrollerContentHeight <= 350.0; scrollerContentHeight += 300.0)
+            {
+                ViewportHeight(
+                    isScrollerParentSizeSet: false,
+                    isScrollerParentMaxSizeSet: false,
+                    scrollerVerticalAlignment: VerticalAlignment.Top,
+                    scrollerContentHeight);
+                ViewportHeight(
+                    isScrollerParentSizeSet: true,
+                    isScrollerParentMaxSizeSet: false,
+                    scrollerVerticalAlignment: VerticalAlignment.Top,
+                    scrollerContentHeight);
+                ViewportHeight(
+                    isScrollerParentSizeSet: false,
+                    isScrollerParentMaxSizeSet: true,
+                    scrollerVerticalAlignment: VerticalAlignment.Top,
+                    scrollerContentHeight);
+
+                ViewportHeight(
+                    isScrollerParentSizeSet: false,
+                    isScrollerParentMaxSizeSet: false,
+                    scrollerVerticalAlignment: VerticalAlignment.Center,
+                    scrollerContentHeight);
+                ViewportHeight(
+                    isScrollerParentSizeSet: true,
+                    isScrollerParentMaxSizeSet: false,
+                    scrollerVerticalAlignment: VerticalAlignment.Center,
+                    scrollerContentHeight);
+                ViewportHeight(
+                    isScrollerParentSizeSet: false,
+                    isScrollerParentMaxSizeSet: true,
+                    scrollerVerticalAlignment: VerticalAlignment.Center,
+                    scrollerContentHeight);
+
+                ViewportHeight(
+                    isScrollerParentSizeSet: false,
+                    isScrollerParentMaxSizeSet: false,
+                    scrollerVerticalAlignment: VerticalAlignment.Stretch,
+                    scrollerContentHeight);
+                ViewportHeight(
+                    isScrollerParentSizeSet: true,
+                    isScrollerParentMaxSizeSet: false,
+                    scrollerVerticalAlignment: VerticalAlignment.Stretch,
+                    scrollerContentHeight);
+                ViewportHeight(
+                    isScrollerParentSizeSet: false,
+                    isScrollerParentMaxSizeSet: true,
+                    scrollerVerticalAlignment: VerticalAlignment.Stretch,
+                    scrollerContentHeight);
+            }
+        }
+
+        private void ViewportHeight(
+            bool isScrollerParentSizeSet,
+            bool isScrollerParentMaxSizeSet,
+            VerticalAlignment scrollerVerticalAlignment,
+            double scrollerContentHeight)
+        {
+            Log.Comment($"ViewportHeight test case - isScrollerParentSizeSet: {isScrollerParentSizeSet}, isScrollerParentMaxSizeSet: {isScrollerParentMaxSizeSet}, scrollerVerticalAlignment: {scrollerVerticalAlignment}, scrollerContentHeight: {scrollerContentHeight}");
+
+            Border border = null;
+            Scroller scroller = null;
+            StackPanel stackPanel = null;
+            Rectangle rectangle = null;
+            AutoResetEvent borderLoadedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                rectangle = new Rectangle()
+                {
+                    Width = 30,
+                    Height = scrollerContentHeight
+                };
+
+                stackPanel = new StackPanel()
+                {
+                    BorderThickness = new Thickness(5),
+                    Margin = new Thickness(7),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                stackPanel.Children.Add(rectangle);
+
+                scroller = new Scroller()
+                {
+                    Content = stackPanel,
+                    ContentOrientation = ContentOrientation.Vertical,
+                    VerticalAlignment = scrollerVerticalAlignment
+                };
+
+                border = new Border()
+                {
+                    BorderThickness = new Thickness(2),
+                    Margin = new Thickness(3),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Child = scroller
+                };
+                if (isScrollerParentSizeSet)
+                {
+                    border.Width = 300.0;
+                    border.Height = 200.0;
+                }
+                if (isScrollerParentMaxSizeSet)
+                {
+                    border.MaxWidth = 300.0;
+                    border.MaxHeight = 200.0;
+                }
+
+                border.Loaded += (object sender, RoutedEventArgs e) =>
+                {
+                    Log.Comment("Border.Loaded event handler");
+                    borderLoadedEvent.Set();
+                };
+
+                Log.Comment("Setting window content");
+                MUXControlsTestApp.App.TestContentRoot = border;
+            });
+
+            WaitForEvent("Waiting for Border.Loaded event", borderLoadedEvent);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                double expectedViewportHeight = 
+                    rectangle.Height + stackPanel.BorderThickness.Top + stackPanel.BorderThickness.Bottom +
+                    stackPanel.Margin.Top + stackPanel.Margin.Bottom;
+
+                double borderChildAvailableHeight = border.ActualHeight - border.BorderThickness.Top - border.BorderThickness.Bottom;
+
+                if (expectedViewportHeight > borderChildAvailableHeight || scrollerVerticalAlignment == VerticalAlignment.Stretch)
+                {
+                    expectedViewportHeight = borderChildAvailableHeight;
+                }
+
+                Log.Comment($"border.ActualWidth: {border.ActualWidth}, border.ActualHeight: {border.ActualHeight}");
+                Log.Comment($"Checking ViewportWidth - scroller.ViewportWidth: {scroller.ViewportWidth}, scroller.ActualWidth: {scroller.ActualWidth}");
+                Verify.AreEqual(scroller.ViewportWidth, scroller.ActualWidth);
+
+                Log.Comment($"Checking ViewportHeight - expectedViewportHeight: {expectedViewportHeight}, scroller.ViewportHeight: {scroller.ViewportHeight}, scroller.ActualHeight: {scroller.ActualHeight}");
+                Verify.AreEqual(scroller.ViewportHeight, expectedViewportHeight);
+                Verify.AreEqual(scroller.ViewportHeight, scroller.ActualHeight);
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Uses a StackPanel with Stretch alignment as Scroller.Content to verify it stretched to the size of the Scroller.")]
         public void StretchAlignment()
         {

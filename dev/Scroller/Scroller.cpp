@@ -663,11 +663,20 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
 
     const winrt::UIElement content = Content();
     winrt::Rect finalContentRect{};
+
+    // Possible cases:
+    // 1. m_availableSize is infinite, the Scroller is not constrained and takes its Content DesiredSize.
+    //    viewport thus is finalSize.
+    // 2. m_availableSize > finalSize, the Scroller is constrained and its Content is smaller than the available size.
+    //    No matter the Scroller's alignment, it does not grow larger than finalSize. viewport is finalSize again.
+    // 3. m_availableSize <= finalSize, the Scroller is constrained and its Content is larger than or equal to
+    //    the available size. viewport is the smaller & constrained m_availableSize.
     winrt::Size viewport =
     {
-        isinf(m_availableSize.Width) ? finalSize.Width : m_availableSize.Width,
-        isinf(m_availableSize.Height) ? finalSize.Height : m_availableSize.Height,
+        std::min(finalSize.Width, m_availableSize.Width),
+        std::min(finalSize.Height, m_availableSize.Height)
     };
+
     double newUnzoomedExtentWidth = 0.0;
     double newUnzoomedExtentHeight = 0.0;
 

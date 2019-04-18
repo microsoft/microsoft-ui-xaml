@@ -17,6 +17,8 @@ class FlowLayout :
     public FlowLayoutProperties
 {
 public:
+    FlowLayout();
+
     // Disambiguate EnsureProperties and ClearProperties
     using FlowLayoutProperties::EnsureProperties;
     using FlowLayoutProperties::ClearProperties;

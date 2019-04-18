@@ -8,12 +8,14 @@
 #include "UniformGridLayoutState.h"
 #include "UniformGridLayout.h"
 #include "RuntimeProfiler.h"
+#include "VirtualizingLayoutContext.h"
 
 #pragma region IGridLayout
 
 UniformGridLayout::UniformGridLayout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_UniformGridLayout);
+    LayoutId(L"UniformGridLayout");
 }
 
 #pragma endregion
@@ -178,14 +180,14 @@ winrt::FlowLayoutAnchorInfo UniformGridLayout::Algorithm_GetAnchorForTargetEleme
 }
 
 winrt::Rect UniformGridLayout::Algorithm_GetExtent(
-    const winrt::Size & availableSize,
-    const winrt::VirtualizingLayoutContext & context,
-    const winrt::UIElement & firstRealized,
+    const winrt::Size& availableSize,
+    const winrt::VirtualizingLayoutContext& context,
+    const winrt::UIElement& firstRealized,
     int firstRealizedItemIndex,
-    const winrt::Rect & firstRealizedLayoutBounds,
-    const winrt::UIElement & lastRealized,
+    const winrt::Rect& firstRealizedLayoutBounds,
+    const winrt::UIElement& lastRealized,
     int lastRealizedItemIndex,
-    const winrt::Rect & lastRealizedLayoutBounds)
+    const winrt::Rect& lastRealizedLayoutBounds)
 {
     UNREFERENCED_PARAMETER(lastRealized);
 
@@ -200,7 +202,7 @@ winrt::Rect UniformGridLayout::Algorithm_GetExtent(
     const float lineSize = GetMajorSizeWithSpacing(context);
 
     if (itemsCount > 0)
-    {        
+    {
         extent.*MinorSize() =
             std::isfinite(availableSizeMinor) ?
             availableSizeMinor :

@@ -12,7 +12,7 @@ For example you can use this to propose a new API on an existing type, or an ide
 It's fine if you don't have all the details: you can start with the Summary and Rationale.
 
 This link describes the WinUI feature/API proposal process:
-https://github.com/Microsoft/microsoft-ui-xaml-specs/blob/master/docs/feature_proposal_process.md
+https://github.com/Microsoft/microsoft-ui-xaml/blob/master/docs/feature_proposal_process.md
 -->
 
 <!-- Add a title for your feature or API proposal. Please be short and descriptive -->

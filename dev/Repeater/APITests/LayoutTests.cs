@@ -129,6 +129,71 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void ValidateNonVirtualLayoutDoesNotGetMeasuredForViewportChanges()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                int measureCount = 0;
+                int arrangeCount = 0;
+                var repeater = new ItemsRepeater();
+
+                // with a non virtualizing layout, repeater will just
+                // run layout once. 
+                repeater.Layout = new MockNonVirtualizingLayout() 
+                {
+                    MeasureLayoutFunc = (size, context) =>
+                    {
+                        measureCount++;
+                        return new Size(100, 800);
+                    },
+                    ArrangeLayoutFunc = (size, context) =>
+                    {
+                        arrangeCount++;
+                        return new Size(100, 800);
+                    }
+                };
+
+                repeater.ItemsSource = Enumerable.Range(0, 10);
+                repeater.ItemTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                         <Button Content='{Binding}' Height='100' />
+                    </DataTemplate>");
+
+                Content = new ScrollViewer() 
+                {
+                    Content = repeater
+                };
+                Content.UpdateLayout();
+
+                Verify.AreEqual(1, measureCount);
+                Verify.AreEqual(1, arrangeCount);
+
+                measureCount = 0;
+                arrangeCount = 0;
+
+                // Once we switch to a virtualizing layout we should 
+                // get at least two passes to update the viewport.
+                repeater.Layout = new MockVirtualizingLayout() {
+                    MeasureLayoutFunc = (size, context) =>
+                    {
+                        measureCount++;
+                        return new Size(100, 800);
+                    },
+                    ArrangeLayoutFunc = (size, context) =>
+                    {
+                        arrangeCount++;
+                        return new Size(100, 800);
+                    }
+                };
+
+                Content.UpdateLayout();
+
+                Verify.IsGreaterThan(measureCount, 1);
+                Verify.IsGreaterThan(arrangeCount, 1);
+            });
+        }
+
         private ItemsRepeaterScrollHost CreateAndInitializeRepeater(
            object itemsSource,
            VirtualizingLayout layout,

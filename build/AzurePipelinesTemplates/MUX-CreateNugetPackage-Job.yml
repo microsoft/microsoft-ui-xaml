@@ -79,6 +79,8 @@ jobs:
 
   - ${{if parameters.signConfig }}:
     - task: PkgESCodeSign@10
+      env:
+        SYSTEM_ACCESSTOKEN: $(system.accesstoken)
       displayName: CodeSign
       inputs:
         signConfigXml: ${{ parameters.signConfig }}
