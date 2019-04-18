@@ -11,6 +11,56 @@ FlexboxLayout::FlexboxLayout()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_FlexboxLayout);
 }
 
+winrt::FlexboxWrap FlexboxLayout::Wrap()
+{
+    return m_wrap;
+}
+
+void FlexboxLayout::Wrap(winrt::FlexboxWrap const& value)
+{
+    m_wrap = value;
+}
+
+winrt::FlexboxDirection FlexboxLayout::Direction()
+{
+    return m_direction;
+}
+
+void FlexboxLayout::Direction(winrt::FlexboxDirection const& value)
+{
+    m_direction = value;
+}
+
+winrt::FlexboxJustifyContent FlexboxLayout::JustifyContent()
+{
+    return m_justifyContent;
+}
+
+void FlexboxLayout::JustifyContent(winrt::FlexboxJustifyContent const& value)
+{
+    m_justifyContent = value;
+}
+
+winrt::FlexboxAlignItems FlexboxLayout::AlignItems()
+{
+    return m_alignItems;
+}
+
+void FlexboxLayout::AlignItems(winrt::FlexboxAlignItems const& value)
+{
+    m_alignItems = value;
+}
+
+winrt::FlexboxAlignContent FlexboxLayout::AlignContent()
+{
+    return m_alignContent;
+}
+
+void FlexboxLayout::AlignContent(winrt::FlexboxAlignContent const& value)
+{
+    m_alignContent = value;
+}
+
 void FlexboxLayout::InitializeForContextCore(winrt::LayoutContext const& context)
 {
 #if FALSE
@@ -59,6 +109,6 @@ winrt::Size FlexboxLayout::ArrangeOverride(
     return { finalSize.Width, finalSize.Height };
 }
 
-void FlexboxLayout::OnPlaceholderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void FlexboxLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
 }
