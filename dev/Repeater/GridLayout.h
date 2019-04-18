@@ -14,6 +14,12 @@ class GridLayout :
 public:
     GridLayout();
 
+    winrt::IVector<winrt::GridTrackInfo> TemplateColumns();
+    void TemplateColumns(winrt::IVector<winrt::GridTrackInfo> const& value);
+
+    winrt::IVector<winrt::GridTrackInfo> TemplateRows();
+    void TemplateRows(winrt::IVector<winrt::GridTrackInfo> const& value);
+
     double ColumnGap();
     void ColumnGap(double const& value);
 
@@ -32,6 +38,12 @@ public:
     winrt::GridAlignContent AlignContent();
     void AlignContent(winrt::GridAlignContent const& value);
 
+    winrt::IVector<winrt::GridTrackInfo> AutoColumns();
+    void AutoColumns(winrt::IVector<winrt::GridTrackInfo> const& value);
+
+    winrt::IVector<winrt::GridTrackInfo> AutoRows();
+    void AutoRows(winrt::IVector<winrt::GridTrackInfo> const& value);
+
     winrt::GridAutoFlow AutoFlow();
     void AutoFlow(winrt::GridAutoFlow const& value);
 
@@ -46,11 +58,15 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
-    double m_columnGap;
-    double m_rowGap;
+    winrt::IVector<winrt::GridTrackInfo> m_templateColumns;
+    winrt::IVector<winrt::GridTrackInfo> m_templateRows;
+    double m_columnGap {};
+    double m_rowGap {};
     winrt::GridJustifyItems m_justifyItems;
     winrt::GridAlignItems m_alignItems;
     winrt::GridJustifyContent m_justifyContent;
     winrt::GridAlignContent m_alignContent;
+    winrt::IVector<winrt::GridTrackInfo> m_autoColumns;
+    winrt::IVector<winrt::GridTrackInfo> m_autoRows;
     winrt::GridAutoFlow m_autoFlow;
 };

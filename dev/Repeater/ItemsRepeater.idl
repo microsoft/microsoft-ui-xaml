@@ -770,6 +770,7 @@ unsealed runtimeclass FlexboxLayout : NonVirtualizingLayout
 {
     FlexboxLayout();
 
+    // Avoiding CLASS_E_CLASSNOTAVAILABLE
     Object Placeholder{ get; set; };
     static Windows.UI.Xaml.DependencyProperty PlaceholderProperty{ get; };
 
@@ -787,9 +788,13 @@ unsealed runtimeclass FlexboxLayout : NonVirtualizingLayout
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass GridTrackInfo
+unsealed runtimeclass GridTrackInfo : Windows.UI.Xaml.DependencyObject
 {
     GridTrackInfo();
+
+    // Avoiding CLASS_E_CLASSNOTAVAILABLE
+    Object Placeholder{ get; set; };
+    static Windows.UI.Xaml.DependencyProperty PlaceholderProperty{ get; };
 
     String LineName{ get; set; };
     Double Length{ get; set; };
@@ -800,9 +805,13 @@ unsealed runtimeclass GridTrackInfo
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass GridLocation
+unsealed runtimeclass GridLocation : Windows.UI.Xaml.DependencyObject
 {
     GridLocation();
+
+    // Avoiding CLASS_E_CLASSNOTAVAILABLE
+    Object Placeholder{ get; set; };
+    static Windows.UI.Xaml.DependencyProperty PlaceholderProperty{ get; };
 
     Int32 Index{ get; set; };
     String LineName{ get; set; };
@@ -817,19 +826,20 @@ unsealed runtimeclass GridLayout : NonVirtualizingLayout
 {
     GridLayout();
 
+    // Avoiding CLASS_E_CLASSNOTAVAILABLE
     Object Placeholder{ get; set; };
     static Windows.UI.Xaml.DependencyProperty PlaceholderProperty{ get; };
 
-    // TemplateColumns
-    // TemplateRows
+    Windows.Foundation.Collections.IVector<GridTrackInfo> TemplateColumns{ get; set; };
+    Windows.Foundation.Collections.IVector<GridTrackInfo> TemplateRows{ get; set; };
     Double ColumnGap{ get; set; };
     Double RowGap{ get; set; };
     GridJustifyItems JustifyItems{ get; set; };
     GridAlignItems AlignItems{ get; set; };
     GridJustifyContent JustifyContent{ get; set; };
     GridAlignContent AlignContent{ get; set; };
-    // AutoColumns
-    // AutoRows
+    Windows.Foundation.Collections.IVector<GridTrackInfo> AutoColumns{ get; set; };
+    Windows.Foundation.Collections.IVector<GridTrackInfo> AutoRows{ get; set; };
     GridAutoFlow AutoFlow{ get; set; };
 
     //static Windows.UI.Xaml.DependencyProperty ColumnStartProperty{ get; };
