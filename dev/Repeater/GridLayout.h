@@ -14,6 +14,27 @@ class GridLayout :
 public:
     GridLayout();
 
+    double ColumnGap();
+    void ColumnGap(double const& value);
+
+    double RowGap();
+    void RowGap(double const& value);
+
+    winrt::GridJustifyItems JustifyItems();
+    void JustifyItems(winrt::GridJustifyItems const& value);
+
+    winrt::GridAlignItems AlignItems();
+    void AlignItems(winrt::GridAlignItems const& value);
+
+    winrt::GridJustifyContent JustifyContent();
+    void JustifyContent(winrt::GridJustifyContent const& value);
+
+    winrt::GridAlignContent AlignContent();
+    void AlignContent(winrt::GridAlignContent const& value);
+
+    winrt::GridAutoFlow AutoFlow();
+    void AutoFlow(winrt::GridAutoFlow const& value);
+
 #pragma region INonVirtualizingLayoutOverrides
     void InitializeForContextCore(winrt::LayoutContext const& context);
     void UninitializeForContextCore(winrt::LayoutContext const& context);
@@ -22,5 +43,14 @@ public:
     winrt::Size ArrangeOverride(winrt::LayoutContext const& context, winrt::Size const& finalSize);
 #pragma endregion
 
-    void OnPlaceholderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
+private:
+    double m_columnGap;
+    double m_rowGap;
+    winrt::GridJustifyItems m_justifyItems;
+    winrt::GridAlignItems m_alignItems;
+    winrt::GridJustifyContent m_justifyContent;
+    winrt::GridAlignContent m_alignContent;
+    winrt::GridAutoFlow m_autoFlow;
 };
