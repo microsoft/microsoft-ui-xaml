@@ -11,6 +11,76 @@ GridLayout::GridLayout()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_GridLayout);
 }
 
+double GridLayout::ColumnGap()
+{
+    return m_columnGap;
+}
+
+void GridLayout::ColumnGap(double const& value)
+{
+    m_columnGap = value;
+}
+
+double GridLayout::RowGap()
+{
+    return m_rowGap;
+}
+
+void GridLayout::RowGap(double const& value)
+{
+    m_rowGap = value;
+}
+
+winrt::GridJustifyItems GridLayout::JustifyItems()
+{
+    return m_justifyItems;
+}
+
+void GridLayout::JustifyItems(winrt::GridJustifyItems const& value)
+{
+    m_justifyItems = value;
+}
+
+winrt::GridAlignItems GridLayout::AlignItems()
+{
+    return m_alignItems;
+}
+
+void GridLayout::AlignItems(winrt::GridAlignItems const& value)
+{
+    m_alignItems = value;
+}
+
+winrt::GridJustifyContent GridLayout::JustifyContent()
+{
+    return m_justifyContent;
+}
+
+void GridLayout::JustifyContent(winrt::GridJustifyContent const& value)
+{
+    m_justifyContent = value;
+}
+
+winrt::GridAlignContent GridLayout::AlignContent()
+{
+    return m_alignContent;
+}
+
+void GridLayout::AlignContent(winrt::GridAlignContent const& value)
+{
+    m_alignContent = value;
+}
+
+winrt::GridAutoFlow GridLayout::AutoFlow()
+{
+    return m_autoFlow;
+}
+
+void GridLayout::AutoFlow(winrt::GridAutoFlow const& value)
+{
+    m_autoFlow = value;
+}
+
 void GridLayout::InitializeForContextCore(winrt::LayoutContext const& context)
 {
 #if FALSE
@@ -59,6 +129,6 @@ winrt::Size GridLayout::ArrangeOverride(
     return { finalSize.Width, finalSize.Height };
 }
 
-void GridLayout::OnPlaceholderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void GridLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
 }

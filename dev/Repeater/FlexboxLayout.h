@@ -14,6 +14,21 @@ class FlexboxLayout :
 public:
     FlexboxLayout();
 
+    winrt::FlexboxWrap Wrap();
+    void Wrap(winrt::FlexboxWrap const& value);
+
+    winrt::FlexboxDirection Direction();
+    void Direction(winrt::FlexboxDirection const& value);
+
+    winrt::FlexboxJustifyContent JustifyContent();
+    void JustifyContent(winrt::FlexboxJustifyContent const& value);
+
+    winrt::FlexboxAlignItems AlignItems();
+    void AlignItems(winrt::FlexboxAlignItems const& value);
+
+    winrt::FlexboxAlignContent AlignContent();
+    void AlignContent(winrt::FlexboxAlignContent const& value);
+
 #pragma region INonVirtualizingLayoutOverrides
     void InitializeForContextCore(winrt::LayoutContext const& context);
     void UninitializeForContextCore(winrt::LayoutContext const& context);
@@ -22,5 +37,12 @@ public:
     winrt::Size ArrangeOverride(winrt::LayoutContext const& context, winrt::Size const& finalSize);
 #pragma endregion
 
-    void OnPlaceholderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
+private:
+    winrt::FlexboxWrap m_wrap;
+    winrt::FlexboxDirection m_direction;
+    winrt::FlexboxJustifyContent m_justifyContent;
+    winrt::FlexboxAlignItems m_alignItems;
+    winrt::FlexboxAlignContent m_alignContent;
 };

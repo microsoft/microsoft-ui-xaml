@@ -83,6 +83,145 @@ enum UniformGridLayoutItemsStretch
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
+enum FlexboxDirection
+{
+    Row = 0,
+    RowReverse = 1,
+    Column = 2,
+    ColumnReverse = 2
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum FlexboxWrap
+{
+    NoWrap = 0,
+    Wrap = 1,
+    WrapReverse = 2
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum FlexboxJustifyContent
+{
+    Start = 0,
+    End = 1,
+    Center = 2,
+    SpaceBetween = 3,
+    SpaceAround = 4,
+    SpaceEvenly = 5
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum FlexboxAlignItems
+{
+    Start = 0,
+    End = 1,
+    Center = 2,
+    Stretch = 3
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum FlexboxAlignContent
+{
+    Start = 0,
+    End = 1,
+    Center = 2,
+    Stretch = 3,
+    SpaceBetween = 4,
+    SpaceAround = 5,
+    SpaceEvenly = 6
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum FlexboxAlignSelf
+{
+    Auto = 0,
+    Start = 1,
+    End = 2,
+    Center = 3,
+    Stretch = 4,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum GridJustifyItems
+{
+    Start = 0,
+    End = 1,
+    Center = 2,
+    Stretch = 3,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum GridAlignItems
+{
+    Start = 0,
+    End = 1,
+    Center = 2,
+    Stretch = 3,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum GridJustifyContent
+{
+    Start = 0,
+    End = 1,
+    Center = 2,
+    Stretch = 3,
+    SpaceAround = 4,
+    SpaceBetween = 5,
+    SpaceEvenly = 6
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum GridAlignContent
+{
+    Start = 0,
+    End = 1,
+    Center = 2,
+    Stretch = 3,
+    SpaceAround = 4,
+    SpaceBetween = 5,
+    SpaceEvenly = 6
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum GridAutoFlow
+{
+    Row = 0,
+    Column = 1
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum GridJustifySelf
+{
+    Start = 0,
+    End = 1,
+    Center = 2,
+    Stretch = 3,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum GridAlignSelf
+{
+    Start = 0,
+    End = 1,
+    Center = 2,
+    Stretch = 3,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
 delegate void ElementAnimationCompleted(ElementAnimator sender, Windows.UI.Xaml.UIElement element);
 
 [WUXC_VERSION_MUXONLY]
@@ -616,23 +755,53 @@ unsealed runtimeclass SelectionModel : Windows.UI.Xaml.Data.INotifyPropertyChang
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass FlexboxLayout : NonVirtualizingLayout
 {
     FlexboxLayout();
 
     Object Placeholder{ get; set; };
-
     static Windows.UI.Xaml.DependencyProperty PlaceholderProperty{ get; };
+
+    FlexboxWrap Wrap{ get; set; };
+    FlexboxDirection Direction{ get; set; };
+    FlexboxJustifyContent JustifyContent{ get; set; };
+    FlexboxAlignItems AlignItems{ get; set; };
+    FlexboxAlignContent AlignContent{ get; set; };
+
+    //static Windows.UI.Xaml.DependencyProperty OrderProperty{ get; };
+    //static Windows.UI.Xaml.DependencyProperty GrowProperty{ get; };
+    //static Windows.UI.Xaml.DependencyProperty ShrinkProperty{ get; };
+    //static Windows.UI.Xaml.DependencyProperty AlignSelfProperty{ get; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass GridLayout : NonVirtualizingLayout
 {
     GridLayout();
 
     Object Placeholder{ get; set; };
-
     static Windows.UI.Xaml.DependencyProperty PlaceholderProperty{ get; };
+
+    // TemplateColumns
+    // TemplateRows
+    Double ColumnGap{ get; set; };
+    Double RowGap{ get; set; };
+    GridJustifyItems JustifyItems{ get; set; };
+    GridAlignItems AlignItems{ get; set; };
+    GridJustifyContent JustifyContent{ get; set; };
+    GridAlignContent AlignContent{ get; set; };
+    // AutoColumns
+    // AutoRows
+    GridAutoFlow AutoFlow{ get; set; };
+
+    //static Windows.UI.Xaml.DependencyProperty ColumnStartProperty{ get; };
+    //static Windows.UI.Xaml.DependencyProperty ColumnEndProperty{ get; };
+    //static Windows.UI.Xaml.DependencyProperty RowStartProperty{ get; };
+    //static Windows.UI.Xaml.DependencyProperty RowEndProperty{ get; };
+    //static Windows.UI.Xaml.DependencyProperty JustifySelfProperty{ get; };
+    //static Windows.UI.Xaml.DependencyProperty AlignSelfProperty{ get; };
 }
