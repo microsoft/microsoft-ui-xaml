@@ -5,7 +5,7 @@
 
 For all languages respect the [.editorconfig](https://editorconfig.org/) file 
 specified in the source tree. Many IDEs natively support this or can with a 
-plugin.
+plugin. 
 
 ### File headers
 
