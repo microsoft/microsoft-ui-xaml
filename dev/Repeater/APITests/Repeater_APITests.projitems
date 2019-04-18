@@ -41,7 +41,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RepeaterFocusTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RepeaterTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SelectionModelTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ElementFactoryTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ItemTemplateTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewManagerTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewportTests.cs" />
   </ItemGroup>
