@@ -40,6 +40,25 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
+    bool IsHorizontal();
+    bool IsReversed();
+    bool IsWrapping();
+    float MainAxis(winrt::Size const& value);
+    float CrossAxis(winrt::Size const& value);
+    winrt::Size CreateSize(float mainAxis, float crossAxis);
+    winrt::Point CreatePoint(float mainAxis, float crossAxis);
+    std::vector<winrt::UIElement> ChildrenSortedByOrder(winrt::NonVirtualizingLayoutContext const& context);
+
+    // Calculated information from Measure that we'll need during Arrange
+    struct RowMeasureInfo
+    {
+        float MainAxis;
+        float CrossAxis;
+        unsigned int Count;
+        float Grow;
+    };
+    std::vector<RowMeasureInfo> m_rows;
+
     winrt::FlexboxWrap m_wrap;
     winrt::FlexboxDirection m_direction;
     winrt::FlexboxJustifyContent m_justifyContent;
