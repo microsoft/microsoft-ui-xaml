@@ -32,7 +32,7 @@ public:
     void SetLayoutExtent(winrt::Rect extent) override;
     winrt::Point GetOrigin() const override { return winrt::Point(m_layoutExtent.X, m_layoutExtent.Y); }
 
-    void OnLayoutChanged() override;
+    void OnLayoutChanged(bool isVirtualizing) override;
     void OnElementPrepared(const winrt::UIElement& element) override;
     void OnElementCleared(const winrt::UIElement& element) override;
     void OnOwnerMeasuring() override;
@@ -96,6 +96,10 @@ private:
     double m_verticalCacheBufferPerSide{};
 
     bool m_isBringIntoViewInProgress{false};
+    // For non-virtualizing layouts, we do not need to keep
+    // updating viewports and invalidating measure often. So when
+    // a non virtualizing layout is used, we stop doing all that work.
+    bool m_managingViewportDisabled{ false };
 
     // Event tokens
     winrt::FrameworkElement::EffectiveViewportChanged_revoker m_effectiveViewportChangedRevoker{};
