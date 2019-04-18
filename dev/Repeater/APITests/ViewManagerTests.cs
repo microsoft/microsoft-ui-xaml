@@ -347,15 +347,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(1, clearedIndices.Count);
                 Verify.AreEqual(0, clearedIndices[0]);
 
-                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-                {
-                    Verify.AreEqual(0, preparedIndices.Count);
-                }
-                else
-                {
-                    Verify.AreEqual(1, preparedIndices.Count);
-                    Verify.AreEqual(2, preparedIndices[0]);
-                }
+                Verify.AreEqual(1, preparedIndices.Count);
+                Verify.AreEqual(2, preparedIndices[0]);
 
                 Verify.AreEqual(2, changedIndices.Count);
                 Verify.IsTrue(changedIndices.Contains(new KeyValuePair<int, int>(1, 0)));
