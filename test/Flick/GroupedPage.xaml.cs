@@ -1,19 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+﻿using System.Collections.ObjectModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 
 namespace Flick
@@ -25,62 +13,37 @@ namespace Flick
             this.InitializeComponent();
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            var args = e.Parameter as NavigateArgs;
-
+            
             ObservableCollection<PhotoReel> groupedPhotos = new ObservableCollection<PhotoReel>();
-            for (int i = 0; i < 10; i++)
+            groupedPhotos.Add(await FlickApi.GetPhotos("Allium", 10));
+            groupedPhotos.Add(await FlickApi.GetPhotos("Daffodils", 10));
+            groupedPhotos.Add(await FlickApi.GetPhotos("Geraniums", 10));
+            groupedPhotos.Add(await FlickApi.GetPhotos("Roses", 10));
+            groupedPhotos.Add(await FlickApi.GetPhotos("Tulips", 10));
+            groupedPhotos.Add(await FlickApi.GetPhotos("Lavendar", 10));
+            groupedPhotos.Add(await FlickApi.GetPhotos("Lilies", 10));
+            foreach (var group in groupedPhotos)
             {
-                PhotoReel reel = new PhotoReel(args.Photos) { Name = "Group " + i };
-                groupedPhotos.Add(reel);
+                for (int i = 0; i < group.Count; i++)
+                {
+                    group[i].FlexBasis = 300;
+                    group[i].FlexGrow = i % 3 + 1;
+                }
             }
 
             rootRepeater.ItemsSource = groupedPhotos;
-
-            //var anchor = repeater.GetOrCreateElement(selectedIndex);
-            //(anchor as UserControl).Focus(FocusState.Keyboard);
-            //UpdateLayout();
-            //ScrollToCenterOfViewport(anchor);
-        }
-
-        private void OnElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
-        {
-            var item = ElementCompositionPreview.GetElementVisual(args.Element);
-            var svVisual = ElementCompositionPreview.GetElementVisual(sv);
-            var scrollProperties = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(sv);
-
-            var scaleExpresion = scrollProperties.Compositor.CreateExpressionAnimation();
-            scaleExpresion.SetReferenceParameter("svVisual", svVisual);
-            scaleExpresion.SetReferenceParameter("scrollProperties", scrollProperties);
-            scaleExpresion.SetReferenceParameter("item", item);
-
-            // scale the item based on the distance of the item relative to the center of the viewport.
-            scaleExpresion.Expression = "1 - abs((svVisual.Size.X/2 - scrollProperties.Translation.X) - (item.Offset.X + item.Size.X/2))*(.5/(svVisual.Size.X/2))";
-            item.StartAnimation("Scale.X", scaleExpresion);
-            item.StartAnimation("Scale.Y", scaleExpresion);
-
-            var centerPointExpression = scrollProperties.Compositor.CreateExpressionAnimation();
-            centerPointExpression.SetReferenceParameter("item", item);
-            centerPointExpression.Expression = "Vector3(item.Size.X/2, item.Size.Y/2, 0)";
-            item.StartAnimation("CenterPoint", centerPointExpression);
-        }
-
-        private void SetBanner(object sender)
-        {
-           // var selected = (sender as FrameworkElement).DataContext as Photo;
         }
 
         private void OnItemGotFocus(object sender, RoutedEventArgs e)
         {
-            SetBanner(sender);
             ScrollToCenterOfViewport(sender);
         }
 
         private void OnItemClicked(object sender, RoutedEventArgs e)
         {
-            SetBanner(sender);
             ScrollToCenterOfViewport(sender);
         }
 
@@ -101,5 +64,30 @@ namespace Flick
                 Frame.GoBack();
             }
         }
+
+        private void OnStackClicked(object sender, RoutedEventArgs e)
+        {
+            rootRepeater.ItemTemplate = groupedStack;
+        }
+
+        private void OnGridClicked(object sender, RoutedEventArgs e)
+        {
+            rootRepeater.ItemTemplate = groupedGrid;
+        }
+
+        private void OnActivityClicked(object sender, RoutedEventArgs e)
+        {
+            rootRepeater.ItemTemplate = groupedActivity;
+        }
+
+        private void OnFlexClicked(object sender, RoutedEventArgs e)
+        {
+            rootRepeater.ItemTemplate = groupedFlex;
+        }
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            rootRepeater.InvalidateMeasure();
+        }
+
     }
 }
