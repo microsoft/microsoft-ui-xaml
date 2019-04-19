@@ -432,6 +432,34 @@ namespace MUXControlsAdhocApp.GridPages
         private Dictionary<int, MeasuredGridTrackInfo> _columns = new Dictionary<int, MeasuredGridTrackInfo>();
         private Dictionary<int, MeasuredGridTrackInfo> _rows = new Dictionary<int, MeasuredGridTrackInfo>();
 
+        private struct ResolvedGridReference
+        {
+            public ResolvedGridReference(int index, GridTrackInfo info)
+            {
+                Index = index;
+                Info = info;
+            }
+
+            public bool IsValid
+            {
+                get
+                {
+                    return (Index != -1);
+                }
+            }
+
+            public static ResolvedGridReference Invalid
+            {
+                get
+                {
+                    return new ResolvedGridReference(-1, null);
+                }
+            }
+
+            public int Index;
+            public GridTrackInfo Info;
+        }
+
         // Tracks all the intermediate calculations of one direction (row or column) of the grid
         private struct AxisInfo
         {
@@ -589,6 +617,13 @@ namespace MUXControlsAdhocApp.GridPages
             }
         }
 
+        private struct ChildGridLocations
+        {
+            public ResolvedGridReference ColStart;
+            public ResolvedGridReference RowStart;
+            public ResolvedGridReference ColEnd;
+            public ResolvedGridReference RowEnd;
+        }
         private struct GridCellIndex
         {
             public int ColumnIndex;
@@ -655,6 +690,44 @@ namespace MUXControlsAdhocApp.GridPages
             }
 
             measure.Remaining = Math.Max(measure.Available - measure.TotalFixed, 0.0);
+        }
+
+        private ChildGridLocations GetChildGridLocations(UIElement child, Dictionary<UIElement, ChildGridLocations> cache)
+        {
+            ChildGridLocations result;
+            if (cache.TryGetValue(child, out result))
+            {
+                return result;
+            }
+
+            throw new InvalidOperationException("All children should be processed into the cache before using this method");
+        }
+
+        private ChildGridLocations? GetChildGridLocations(UIElement child, ref AxisInfo horizontal, ref AxisInfo vertical)
+        {
+            ChildGridLocations result;
+
+            // Read preferences off the child
+            GridLocation colStart = GetColumnStart(child);
+            GridLocation rowStart = GetRowStart(child);
+
+            // We need a starting point in order to resolve the location. Save this item for the
+            // second pass (AutoFlow)
+            if ((colStart == null) || (rowStart == null))
+            {
+                return null;
+            }
+
+            GridLocation colEnd = GetColumnEnd(child);
+            GridLocation rowEnd = GetRowEnd(child);
+
+            // Map the preferences to actual grid lines
+            result.ColStart = horizontal.GetTrack(colStart);
+            result.RowStart = vertical.GetTrack(rowStart);
+            result.ColEnd = horizontal.GetTrack(colEnd, result.ColStart);
+            result.RowEnd = vertical.GetTrack(rowEnd, result.RowStart);
+
+            return result;
         }
 
         private bool ProcessAutoSizes(ref AxisInfo measureHorizontal, ref AxisInfo measureVertical, Dictionary<UIElement, ChildGridLocations> locationCache)
@@ -821,81 +894,7 @@ namespace MUXControlsAdhocApp.GridPages
 
             return offset;
         }
-
-        private struct ResolvedGridReference
-        {
-            public ResolvedGridReference(int index, GridTrackInfo info)
-            {
-                Index = index;
-                Info = info;
-            }
-
-            public bool IsValid
-            {
-                get
-                {
-                    return (Index != -1);
-                }
-            }
-
-            public static ResolvedGridReference Invalid 
-            {
-                get
-                {
-                    return new ResolvedGridReference(-1, null);
-                }
-            }
-
-            public int Index;
-            public GridTrackInfo Info;
-        }
-
-        private struct ChildGridLocations
-        {
-            public ResolvedGridReference ColStart;
-            public ResolvedGridReference RowStart;
-            public ResolvedGridReference ColEnd;
-            public ResolvedGridReference RowEnd;
-        }
-
-        private ChildGridLocations GetChildGridLocations(UIElement child, Dictionary<UIElement, ChildGridLocations> cache)
-        {
-            ChildGridLocations result;
-            if (cache.TryGetValue(child, out result))
-            {
-                return result;
-            }
-
-            throw new InvalidOperationException("All children should be processed into the cache before using this method");
-        }
-
-        private ChildGridLocations? GetChildGridLocations(UIElement child, ref AxisInfo horizontal, ref AxisInfo vertical)
-        {
-            ChildGridLocations result;
-
-            // Read preferences off the child
-            GridLocation colStart = GetColumnStart(child);
-            GridLocation rowStart = GetRowStart(child);
-
-            // We need a starting point in order to resolve the location. Save this item for the
-            // second pass (AutoFlow)
-            if ((colStart == null) || (rowStart == null))
-            {
-                return null;
-            }
-
-            GridLocation colEnd = GetColumnEnd(child);
-            GridLocation rowEnd = GetRowEnd(child);
-
-            // Map the preferences to actual grid lines
-            result.ColStart = horizontal.GetTrack(colStart);
-            result.RowStart = vertical.GetTrack(rowStart);
-            result.ColEnd = horizontal.GetTrack(colEnd, result.ColStart);
-            result.RowEnd = vertical.GetTrack(rowEnd, result.RowStart);
-
-            return result;
-        }
-
+        
         delegate bool CheckCell(GridCellIndex cell, ref AxisInfo horizontal, ref AxisInfo vertical);
 
         private void TraverseByColumn(ref AxisInfo horizontal, ref AxisInfo vertical, CheckCell predicate)
