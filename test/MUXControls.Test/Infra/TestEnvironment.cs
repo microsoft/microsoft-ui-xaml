@@ -101,8 +101,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 #endif
         [TestProperty("RunFixtureAs:Assembly", "ElevatedUserOrSystem")]
         [TestProperty("Hosting:Mode", "UAP")]
-        // Default value for test metadata used to group tests 
-        [TestProperty("MUXControlsTestSuite", "SuiteA")]
         // Default value for tests is to not run on phone. Test Classes or Test Methods can override
         [TestProperty("MUXControlsTestEnabledForPhone", "False")]
         public static void AssemblyInitialize(TestContext testContext)
