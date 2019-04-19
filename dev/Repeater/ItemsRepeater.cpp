@@ -536,7 +536,7 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
     }
 
     // Since the ItemTemplate has changed, we need to re-evaluate all the items that
-    // have already been created and are now in the tree. The easist way to do that
+    // have already been created and are now in the tree. The easiest way to do that
     // would be to do a reset.. Note that this has to be done before we change the template
     // so that the cleared elements go back into the old template.
     if (auto layout = Layout())

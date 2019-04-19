@@ -283,7 +283,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Content = CreateAndInitializeRepeater
                 (
-                   itemsSource: Enumerable.Range(0, numItems).Select(i => string.Format("{0}", i)),
+                   itemsSource: Enumerable.Range(0, numItems).Select(i => i.ToString()),
                    elementFactory: dataTemplate,
                    layout: new StackLayout(),
                    repeater: ref repeater
@@ -456,17 +456,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             var dataTemplate1 = (DataTemplate)XamlReader.Load(
                      @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
                             <TextBlock Text='{Binding}' />
-                        </DataTemplate>");
+                       </DataTemplate>");
 
             var dataTemplate2 = (DataTemplate)XamlReader.Load(
                     @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
                             <Button Content='{Binding}' />
-                        </DataTemplate>");
+                      </DataTemplate>");
             ItemsRepeater repeater = null;
             const int numItems = 10;
             Content = CreateAndInitializeRepeater
             (
-               itemsSource: Enumerable.Range(0, numItems).Select(i => string.Format("{0}", i)),
+               itemsSource: Enumerable.Range(0, numItems).Select(i => i.ToString()),
                elementFactory: dataTemplate1,
                layout: layout,
                repeater: ref repeater
