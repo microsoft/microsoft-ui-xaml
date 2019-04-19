@@ -59,6 +59,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     public class CommonStylesVisualTreeTestSamples
     {
         [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // The default theme is different on OneCore, leading to a test failure.
         public void VerifyVisualTreeForAppBarAndAppBarToggleButton()
         {
             if (!PlatformConfiguration.IsOsVersion(OSVersion.Redstone5))
@@ -127,6 +128,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // The default theme is different on OneCore, leading to a test failure.
         public void VerifyVisualTreeExampleWithCustomerFilter()
         {
             if (!PlatformConfiguration.IsOsVersion(OSVersion.Redstone5))
@@ -144,6 +146,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // The default theme is different on OneCore, leading to a test failure.
         public void VerifyVisualTreeExampleWithCustomerPropertyValueTranslator()
         {
             if (!PlatformConfiguration.IsOsVersion(OSVersion.Redstone5))

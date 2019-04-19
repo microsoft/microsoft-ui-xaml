@@ -53,8 +53,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Platform", "Any")]
-        [TestProperty("MUXControlsTestSuite", "SuiteB")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("MUXControlsTestEnabledForPhone", "True")]
         [TestProperty("NavViewTestSuite", "A")]
         public static void ClassInitialize(TestContext testContext)

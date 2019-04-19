@@ -23,7 +23,6 @@ namespace MUXControlsTestApp
     {
         [AssemblyInitialize]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Platform", "Any")]
         public static void AssemblyInitialize(TestContext testContext)
         {
 #if USING_TAEF

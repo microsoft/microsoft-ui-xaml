@@ -37,7 +37,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Platform", "Any")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("TreeViewTestSuite", "A")]
         public static void ClassInitialize(TestContext testContext)
         {
@@ -124,7 +124,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // [TestMethod]
         // [TestProperty("TreeViewTestSuite", "A")]
-        // [TestProperty("Platform", "Desktop")]
+        // [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         // BUG: Multiple unreliable TreeView tests #131
         public void ExpandCollapseTest_NodeMode()
         {
@@ -133,7 +133,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void ExpandCollapseTest_ContentMode()
         {
            ExpandCollapseTest(isContentMode:true);
@@ -198,7 +198,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void ExpandCollapseViaAutomationTest_NodeMode()
         {
             ExpandCollapseViaAutomationTest();
@@ -206,7 +206,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void ExpandCollapseViaAutomationTest_ContentMode()
         {
             ExpandCollapseViaAutomationTest(isContentMode:true);
@@ -238,7 +238,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewItemClickTest_NodeMode()
         {
             TreeViewItemClickTest();
@@ -246,7 +246,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewItemClickTest_ContentMode()
         {
             TreeViewItemClickTest(isContentMode:true);
@@ -254,7 +254,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void FlyoutTreeViewItemClickTest()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
@@ -289,7 +289,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         // Regression test for bug 15801893
         public void FlyoutTreeViewItemTabTest()
         {
@@ -414,7 +414,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         //[TestMethod]
         //[TestProperty("TreeViewTestSuite", "A")]
-        //[TestProperty("Platform", "Desktop")]
+        //[TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         // BUG: Multiple unreliable TreeView tests #131
         public void TreeViewKeyDownLeftToRightTest_NodeMode()
         {
@@ -423,7 +423,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // [TestMethod]
         // [TestProperty("TreeViewTestSuite", "A")]
-        // [TestProperty("Platform", "Desktop")]
+        // [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         // BUG: Multiple unreliable TreeView tests #131
         public void TreeViewKeyDownLeftToRightTest_ContentMode()
         {
@@ -549,7 +549,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewSelectedItemTest_NodeMode()
         {
             TreeViewSelectedItemTest();
@@ -557,7 +557,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewSelectedItemTest_ContentMode()
         {
             TreeViewSelectedItemTest(isContentMode:true);
@@ -595,7 +595,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewSwappingNodesTest_NodeMode()
         {
             TreeViewSwappingNodesTest();
@@ -603,7 +603,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewSwappingNodesTest_ContentMode()
         {
             TreeViewSwappingNodesTest(isContentMode:true);
@@ -651,7 +651,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewExpandingEventTest_NodeMode()
         {
             TreeViewExpandingEventTest();
@@ -659,7 +659,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewExpandingEventTest_ContentMode()
         {
             TreeViewExpandingEventTest(isContentMode:true);
@@ -739,7 +739,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewKeyboardReorderTest_NodeMode()
         {
             TreeViewKeyboardReorderTest();
@@ -747,7 +747,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewKeyboardReorderTest_ContentMode()
         {
             TreeViewKeyboardReorderTest(isContentMode:true);
@@ -947,7 +947,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewCollectionChangesEffectSelectedNodesTest_NodeMode()
         {
             TreeViewCollectionChangesEffectSelectedNodesTest();
@@ -955,7 +955,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewCollectionChangesEffectSelectedNodesTest_ContentMode()
         {
             TreeViewCollectionChangesEffectSelectedNodesTest(isContentMode:true);
@@ -1596,7 +1596,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewMultiSelectKeyboardingTest_NodeMode()
         {
             TreeViewMultiSelectKeyboardingTest();
@@ -1604,7 +1604,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewMultiSelectKeyboardingTest_ContentMode()
         {
             TreeViewMultiSelectKeyboardingTest(isContentMode:true);
@@ -1661,7 +1661,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewMultiSelectItemTest_NodeMode()
         {
             TreeViewMultiSelectItemTest();
@@ -1669,7 +1669,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewMultiSelectItemTest_ContentMode()
         {
             TreeViewMultiSelectItemTest(isContentMode:true);
@@ -1858,7 +1858,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewItemUIATest_NodeMode()
         {
             TreeViewItemUIATest();
@@ -1866,7 +1866,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewItemUIATest_ContentMode()
         {
             TreeViewItemUIATest(isContentMode:true);
@@ -1909,7 +1909,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void ValidateExpandingRaisedOnItemHavingUnrealizedChildren_NodeMode()
         {
             ValidateExpandingRaisedOnItemHavingUnrealizedChildren();
@@ -1917,7 +1917,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void ValidateExpandingRaisedOnItemHavingUnrealizedChildren_ContentMode()
         {
             ValidateExpandingRaisedOnItemHavingUnrealizedChildren(isContentMode:true);
@@ -2553,7 +2553,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewNodeInMarkupTest()
         {
             using (var setup = new TestSetupHelper(new[] { "TreeView Tests", "TreeViewNodeInMarkupTestPage" }))
