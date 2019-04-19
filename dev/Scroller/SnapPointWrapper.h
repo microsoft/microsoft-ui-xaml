@@ -21,27 +21,47 @@ public:
     T SnapPoint() const;
     std::tuple<double, double> ActualApplicableZone() const;
     int CombinationCount() const;
+    bool ResetIgnoredValue();
+    void SetIgnoredValue(double ignoredValue);
+
     winrt::ExpressionAnimation CreateRestingPointExpression(
-        winrt::Compositor const& compositor,
+        winrt::InteractionTracker const& interactionTracker,
         winrt::hstring const& target,
-        winrt::hstring const& scale) const;
+        winrt::hstring const& scale,
+        bool isInertiaFromImpulse);
     winrt::ExpressionAnimation CreateConditionalExpression(
-        winrt::Compositor const& compositor,
+        winrt::InteractionTracker const& interactionTracker,
         winrt::hstring const& target,
-        winrt::hstring const& scale) const;
+        winrt::hstring const& scale,
+        bool isInertiaFromImpulse);
+    void GetUpdatedExpressionAnimationsForImpulse(
+        winrt::ExpressionAnimation* conditionalExpressionAnimation,
+        winrt::ExpressionAnimation* restingPointExpressionAnimation);
+    void GetUpdatedExpressionAnimationsForImpulse(
+        bool isInertiaFromImpulse,
+        winrt::ExpressionAnimation* conditionalExpressionAnimation,
+        winrt::ExpressionAnimation* restingPointExpressionAnimation);
     void DetermineActualApplicableZone(
         SnapPointWrapper<T>* previousSnapPointWrapper,
-        SnapPointWrapper<T>* nextSnapPointWrapper);
+        SnapPointWrapper<T>* nextSnapPointWrapper,
+        bool forImpulseOnly);
     void Combine(SnapPointWrapper<T>* snapPointWrapper);
     double Evaluate(double value) const;
+    bool SnapsAt(double value) const;
+
+    static SnapPointBase* GetSnapPointFromWrapper(std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper);
 
 private:
-    static SnapPointBase* GetSnapPointFromWrapper(SnapPointWrapper<T>* snapPointWrapper);
-    
+	static SnapPointBase* GetSnapPointFromWrapper(const SnapPointWrapper<T>* snapPointWrapper);
+
 private:
     T m_snapPoint;
     std::tuple<double, double> m_actualApplicableZone{ -INFINITY, INFINITY };
+    std::tuple<double, double> m_actualImpulseApplicableZone{ -INFINITY, INFINITY };
     int m_combinationCount{ 0 };
+    double m_ignoredValue{ NAN }; // Ignored snapping value when inertia is triggered by an impulse
+    winrt::ExpressionAnimation m_conditionExpressionAnimation{ nullptr };
+    winrt::ExpressionAnimation m_restingValueExpressionAnimation{ nullptr };
 };
 
 template <typename T>
