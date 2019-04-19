@@ -23,7 +23,7 @@ public:
     void Span(int const& value);
 
 private:
-    int m_index;
+    int m_index { -1 };
     winrt::hstring m_lineName;
-    int m_span;
+    int m_span { };
 };
