@@ -1324,10 +1324,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
 
             AnimateSelectionChanged(prevItem, nextActualItem);
 
-            if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded)
-            {
-                ClosePane();
-            }
+            ClosePaneIfNeccessaryAfterItemIsClicked();
         }
     }
 }
@@ -1348,6 +1345,8 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
     if (!m_shouldIgnoreNextSelectionChange && DoesSelectedItemContainContent(clickedItem, itemContainer) && !IsSelectionSuppressed(selectedItem))
     {
         RaiseItemInvoked(selectedItem, false /*isSettings*/, itemContainer);
+
+        ClosePaneIfNeccessaryAfterItemIsClicked();
     }
 }
 
@@ -3226,6 +3225,14 @@ void NavigationView::OnTitleBarMetricsChanged(const winrt::IInspectable& /*sende
 void NavigationView::OnTitleBarIsVisibleChanged(const winrt::CoreApplicationViewTitleBar& /*sender*/, const winrt::IInspectable& /*args*/)
 {
     UpdateTitleBarPadding();
+}
+
+void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked()
+{
+    if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded)
+    {
+        ClosePane();
+    }
 }
 
 bool NavigationView::ShouldIgnoreMeasureOverride()
