@@ -30,8 +30,8 @@ public:
 
 private:
     winrt::hstring m_lineName;
-    double m_length;
-    bool m_auto;
-    double m_fraction;
-    double m_percentage;
+    double m_length { };
+    bool m_auto { };
+    double m_fraction { };
+    double m_percentage { };
 };
