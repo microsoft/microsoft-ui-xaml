@@ -7,6 +7,8 @@
 #include "RuntimeProfiler.h"
 #include "Vector.h"
 
+static winrt::GridTrackInfo s_lastInTrack;
+
 GridLayout::GridLayout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_GridLayout);
@@ -149,7 +151,7 @@ GridLayout::AxisInfo::AxisInfo(winrt::IVector<winrt::GridTrackInfo> templates, w
     // Add all the items from the markup defined template, plus one more grid line for 
     // the end (unless we have auto tracks, in which case they will define what happens 
     // when we go out of bounds)
-    for (auto& item : templates)
+    for (auto item : templates)
     {
         Template.push_back(item);
     }
@@ -158,7 +160,7 @@ GridLayout::AxisInfo::AxisInfo(winrt::IVector<winrt::GridTrackInfo> templates, w
         Template.push_back(s_lastInTrack);
     }
 
-    for (auto& item : autos)
+    for (auto item : autos)
     {
         Auto.push_back(item);
     }
@@ -175,12 +177,14 @@ GridLayout::AxisInfo::AxisInfo(winrt::IVector<winrt::GridTrackInfo> templates, w
 
 int GridLayout::AxisInfo::EnsureIndexAvailable(int index, bool clampIfOutOfBounds)
 {
-    if (index < Template.size())
+    assert(index >= 0);
+
+    if (static_cast<unsigned int>(index) < Template.size())
     {
         return index;
     }
 
-    if (Auto.size() == 0)
+    if (Auto.size() == 0u)
     {
         if (clampIfOutOfBounds)
         {
@@ -196,9 +200,9 @@ int GridLayout::AxisInfo::EnsureIndexAvailable(int index, bool clampIfOutOfBound
 
     // Grow the list of Templates to include this new index
     // FUTURE: Filling each of these in is obviously not the best for virtualization
-    while (Template.size() <= index)
+    while (Template.size() <= static_cast<unsigned int>(index))
     {
-        for (auto& track : Auto)
+        for (auto const& track : Auto)
         {
             //DumpBegin($"Adding auto track at index {Template.Count}");
             //DumpGridTrackInfo(track);
@@ -208,7 +212,7 @@ int GridLayout::AxisInfo::EnsureIndexAvailable(int index, bool clampIfOutOfBound
     }
 
     return index;
-        }
+}
 
 GridLayout::ResolvedGridReference GridLayout::AxisInfo::GetTrack(winrt::GridLocation const& location, GridLayout::ResolvedGridReference *previous, bool allowOutOfRange)
 {
@@ -229,7 +233,7 @@ GridLayout::ResolvedGridReference GridLayout::AxisInfo::GetTrack(winrt::GridLoca
         // PORT_TODO
         //if (!String.IsNullOrEmpty(location.LineName))
         {
-            for (int i = 0; i < Template.size(); i++)
+            for (unsigned int i = 0u; i < Template.size(); i++)
             {
                 winrt::GridTrackInfo track = Template[i];
                 if (track.LineName() == location.LineName())
@@ -249,7 +253,7 @@ GridLayout::ResolvedGridReference GridLayout::AxisInfo::GetTrack(winrt::GridLoca
         {
             span = location.Span();
         }
-        //(*previous).Index
+
         int previousIndex = previous->Index;
         if (previousIndex >= 0)
         {
@@ -265,12 +269,13 @@ GridLayout::ResolvedGridReference GridLayout::AxisInfo::GetTrack(winrt::GridLoca
     return GridLayout::ResolvedGridReference::Invalid();
 }
 
-GridLayout::MeasuredGridTrackInfo GridLayout::AxisInfo::GetMeasuredTrack(int index)
+GridLayout::MeasuredGridTrackInfo GridLayout::AxisInfo::GetMeasuredTrack(int index) const
 {
-    return Calculated[index];
+    auto result = Calculated.find(index);
+    return result->second;
 }
 
-GridLayout::MeasuredGridTrackInfo GridLayout::AxisInfo::GetMeasuredTrackSafe(GridLayout::ResolvedGridReference track)
+GridLayout::MeasuredGridTrackInfo GridLayout::AxisInfo::GetMeasuredTrackSafe(GridLayout::ResolvedGridReference track) const
 {
     if (!track.IsValid())
     {
@@ -278,11 +283,10 @@ GridLayout::MeasuredGridTrackInfo GridLayout::AxisInfo::GetMeasuredTrackSafe(Gri
         return GridLayout::MeasuredGridTrackInfo();
     }
 
-    MeasuredGridTrackInfo info;
-    auto infoIterator = Calculated.find(track.Index);
-    if (infoIterator != Calculated.end())
+    auto result = Calculated.find(track.Index);
+    if (result != Calculated.end())
     {
-        return infoIterator->second;
+        return result->second;
     }
 
     // TODO: Is this a programming error?
@@ -294,7 +298,7 @@ void GridLayout::AxisInfo::AddCalculated(int index, winrt::GridTrackInfo track, 
     Calculated[index] = GridLayout::MeasuredGridTrackInfo{ size, 0.0f };
 }
 
-void GridLayout::MarkOccupied(GridLayout::ChildGridLocations childLocation, std::map<GridLayout::GridCellIndex, bool> const& occupied)
+void GridLayout::MarkOccupied(GridLayout::ChildGridLocations childLocation, std::map<GridLayout::GridCellIndex, bool> & occupied)
 {
     if (!childLocation.ColStart.IsValid() || !childLocation.RowStart.IsValid())
     {
@@ -328,25 +332,25 @@ GridLayout::AxisInfo GridLayout::InitializeMeasure(winrt::IVector<winrt::GridTra
     return measure;
 }
 
-void GridLayout::ProcessFixedSizes(GridLayout::AxisInfo const& measure)
+void GridLayout::ProcessFixedSizes(GridLayout::AxisInfo & measure)
 {
-    for (int i = 0; i < measure.Template.size(); i++)
+    for (unsigned int i = 0u; i < measure.Template.size(); i++)
     {
         winrt::GridTrackInfo track = measure.Template[i];
 
-        float fixedSize = track.Length();
+        float fixedSize = static_cast<float>(track.Length());
 
         // Percentage is effectively a fixed size in that it needs to be applied before any
         // of the more relative sizes (fraction, auto, etc.)
         if ((fixedSize == 0.0f) && (track.Percentage() != 0.0f))
         {
-            fixedSize = (track.Percentage() * measure.Available);
+            fixedSize = (static_cast<float>(track.Percentage()) * measure.Available);
         }
 
         measure.TotalFixed += fixedSize;
 
         // Accumulate the fractional sizes now so we know how many pieces of pie to dish out
-        measure.TotalFraction += track.Fraction();
+        measure.TotalFraction += static_cast<float>(track.Fraction());
 
         if (track.Auto())
         {
@@ -368,9 +372,10 @@ GridLayout::ChildGridLocations GridLayout::GetChildGridLocations(winrt::UIElemen
     }
 
     assert("All children should be processed into the cache before using this method");
+    return GridLayout::ChildGridLocations();
 }
 
-bool GridLayout::TryGetChildGridLocations(winrt::UIElement const& child, GridLayout::AxisInfo const& horizontal, GridLayout::AxisInfo const& vertical, GridLayout::ChildGridLocations* outResult)
+bool GridLayout::TryGetChildGridLocations(winrt::UIElement const& child, GridLayout::AxisInfo & horizontal, GridLayout::AxisInfo & vertical, GridLayout::ChildGridLocations* outResult)
 {
     GridLayout::ChildGridLocations result;
 
@@ -398,7 +403,7 @@ bool GridLayout::TryGetChildGridLocations(winrt::UIElement const& child, GridLay
     return true;
 }
 
-bool GridLayout::ProcessAutoSizes(GridLayout::AxisInfo const& measureHorizontal, GridLayout::AxisInfo const& measureVertical, std::map<winrt::UIElement, GridLayout::ChildGridLocations> const& locationCache, winrt::NonVirtualizingLayoutContext const& context)
+bool GridLayout::ProcessAutoSizes(GridLayout::AxisInfo & measureHorizontal, GridLayout::AxisInfo & measureVertical, std::map<winrt::UIElement, GridLayout::ChildGridLocations> const& locationCache, winrt::NonVirtualizingLayoutContext const& context)
 {
     if ((measureHorizontal.TotalAutos == 0) && (measureVertical.TotalAutos == 0))
     {
@@ -412,7 +417,7 @@ bool GridLayout::ProcessAutoSizes(GridLayout::AxisInfo const& measureHorizontal,
         std::vector<winrt::GridTrackInfo> autoHorizontal;
         std::vector<winrt::GridTrackInfo> autoVertical;
 
-        auto getAutoTracks = [](GridLayout::ResolvedGridReference start, GridLayout::ResolvedGridReference end, GridLayout::AxisInfo measure, std::vector<winrt::GridTrackInfo> const& autoTracks)
+        auto getAutoTracks = [](GridLayout::ResolvedGridReference start, GridLayout::ResolvedGridReference end, GridLayout::AxisInfo & measure, std::vector<winrt::GridTrackInfo> & autoTracks)
         {
             if (!start.IsValid() || !end.IsValid())
             {
@@ -458,7 +463,7 @@ bool GridLayout::ProcessAutoSizes(GridLayout::AxisInfo const& measureHorizontal,
 }
 
 // NOTE: Can't do as an anonymous inline Action above because we need to declare the struct AxisInfo as ref (and Actions don't support ref parameters)
-void GridLayout::UpdateAutoBasedOnMeasured(std::vector<winrt::GridTrackInfo> const& tracks, GridLayout::AxisInfo const& measure, float childDesired)
+void GridLayout::UpdateAutoBasedOnMeasured(std::vector<winrt::GridTrackInfo> const& tracks, GridLayout::AxisInfo & measure, float childDesired)
 {
     if (tracks.size() == 0)
     {
@@ -467,7 +472,7 @@ void GridLayout::UpdateAutoBasedOnMeasured(std::vector<winrt::GridTrackInfo> con
 
     float autoSlice = (childDesired / tracks.size());
 
-    for (int i = 0; i < tracks.size(); i++)
+    for (unsigned int i = 0; i < tracks.size(); i++)
     {
         GridLayout::MeasuredGridTrackInfo info = measure.GetMeasuredTrack(i);
         float moreSize = (autoSlice - info.Size);
@@ -480,7 +485,7 @@ void GridLayout::UpdateAutoBasedOnMeasured(std::vector<winrt::GridTrackInfo> con
     }
 }
 
-bool GridLayout::ProcessFractionalSizes(GridLayout::AxisInfo const& measure)
+bool GridLayout::ProcessFractionalSizes(GridLayout::AxisInfo & measure)
 {
     if (measure.TotalFraction <= 0.0f)
     {
@@ -490,7 +495,7 @@ bool GridLayout::ProcessFractionalSizes(GridLayout::AxisInfo const& measure)
     // What is the size of each fraction?
     float fractionSlice = measure.Remaining / measure.TotalFraction;
 
-    for (int i = 0; i < measure.Template.size(); i++)
+    for (unsigned int i = 0; i < measure.Template.size(); i++)
     {
         winrt::GridTrackInfo track = measure.Template[i];
         if (track.Fraction() == 0.0f)
@@ -505,7 +510,7 @@ bool GridLayout::ProcessFractionalSizes(GridLayout::AxisInfo const& measure)
             continue;
         }
 
-        float myFractionSlice = track.Fraction() * fractionSlice;
+        float myFractionSlice = static_cast<float>(track.Fraction()) * fractionSlice;
         info.Size = myFractionSlice;
     }
 
@@ -516,7 +521,7 @@ bool GridLayout::ProcessFractionalSizes(GridLayout::AxisInfo const& measure)
 }
 
 // Allow any Auto tracks to take the remaining space
-void GridLayout::ProcessAutoRemainingSize(GridLayout::AxisInfo const& measure)
+void GridLayout::ProcessAutoRemainingSize(GridLayout::AxisInfo & measure)
 {
     if (measure.TotalAutos <= 0)
     {
@@ -532,7 +537,7 @@ void GridLayout::ProcessAutoRemainingSize(GridLayout::AxisInfo const& measure)
     // How much extra space do we give up to each Auto element?
     float autoSlice = measure.Remaining / (float)measure.TotalAutos;
 
-    for (int i = 0; i < measure.Template.size(); i++)
+    for (unsigned int i = 0; i < measure.Template.size(); i++)
     {
         winrt::GridTrackInfo track = measure.Template[i];
         if (!track.Auto())
@@ -563,9 +568,9 @@ float GridLayout::ProcessOffsets(GridLayout::AxisInfo const& measure)
     return offset;
 }
 
-void GridLayout::TraverseByColumn(GridLayout::AxisInfo const& horizontal, GridLayout::AxisInfo const& vertical, std::function<bool(GridLayout::GridCellIndex cell, GridLayout::AxisInfo const& horizontal, GridLayout::AxisInfo const& vertical)> predicate)
+void GridLayout::TraverseByColumn(GridLayout::AxisInfo & horizontal, GridLayout::AxisInfo & vertical, std::function<bool(GridLayout::GridCellIndex cell, GridLayout::AxisInfo & horizontal, GridLayout::AxisInfo & vertical)> predicate)
 {
-    for (int column = 0; column < horizontal.Template.size(); column++)
+    for (unsigned int column = 0; column < horizontal.Template.size(); column++)
     {
         // Don't consider the last grid line an option (it's meant to be an upper bound, not a starter).
         if (horizontal.Template[column] == s_lastInTrack)
@@ -573,7 +578,7 @@ void GridLayout::TraverseByColumn(GridLayout::AxisInfo const& horizontal, GridLa
             break;
         }
 
-        for (int row = 0; row < vertical.Template.size(); row++)
+        for (unsigned int row = 0; row < vertical.Template.size(); row++)
         {
             // Don't consider the last grid line an option (it's meant to be an upper bound, not a starter).
             if (vertical.Template[row] == s_lastInTrack)
@@ -581,7 +586,7 @@ void GridLayout::TraverseByColumn(GridLayout::AxisInfo const& horizontal, GridLa
                 break;
             }
 
-            if (predicate(GridCellIndex{ column, row }, horizontal, vertical))
+            if (predicate(GridCellIndex{ static_cast<int>(column), static_cast<int>(row) }, horizontal, vertical))
             {
                 return;
             }
@@ -596,9 +601,9 @@ void GridLayout::TraverseByColumn(GridLayout::AxisInfo const& horizontal, GridLa
 }
 
 // TODO: This code can be more smartly shared with TraverseByColumn
-void GridLayout::TraverseByRow(GridLayout::AxisInfo const& horizontal, GridLayout::AxisInfo const& vertical, std::function<bool(GridLayout::GridCellIndex cell, GridLayout::AxisInfo const& horizontal, GridLayout::AxisInfo const& vertical)> predicate)
+void GridLayout::TraverseByRow(GridLayout::AxisInfo & horizontal, GridLayout::AxisInfo & vertical, std::function<bool(GridLayout::GridCellIndex cell, GridLayout::AxisInfo & horizontal, GridLayout::AxisInfo & vertical)> predicate)
 {
-    for (int row = 0; row < vertical.Template.size(); row++)
+    for (unsigned int row = 0; row < vertical.Template.size(); row++)
     {
         // Don't consider the last grid line an option (it's meant to be an upper bound, not a starter).
         if (vertical.Template[row] == s_lastInTrack)
@@ -606,7 +611,7 @@ void GridLayout::TraverseByRow(GridLayout::AxisInfo const& horizontal, GridLayou
             break;
         }
 
-        for (int column = 0; column < horizontal.Template.size(); column++)
+        for (unsigned int column = 0; column < horizontal.Template.size(); column++)
         {
             // Don't consider the last grid line an option (it's meant to be an upper bound, not a starter).
             if (horizontal.Template[column] == s_lastInTrack)
@@ -614,7 +619,7 @@ void GridLayout::TraverseByRow(GridLayout::AxisInfo const& horizontal, GridLayou
                 break;
             }
 
-            if (predicate(GridCellIndex{ column, row }, horizontal, vertical))
+            if (predicate(GridCellIndex{ static_cast<int>(column), static_cast<int>(row) }, horizontal, vertical))
             {
                 return;
             }
@@ -628,7 +633,7 @@ void GridLayout::TraverseByRow(GridLayout::AxisInfo const& horizontal, GridLayou
     }
 }
 
-GridLayout::ChildGridLocations GridLayout::AssignUnoccupiedGridLocation(winrt::UIElement child, GridLayout::AxisInfo const& horizontal, GridLayout::AxisInfo const& vertical, winrt::GridAutoFlow autoFlow, std::map<GridLayout::GridCellIndex, bool> occupied)
+GridLayout::ChildGridLocations GridLayout::AssignUnoccupiedGridLocation(winrt::UIElement child, GridLayout::AxisInfo & horizontal, GridLayout::AxisInfo & vertical, winrt::GridAutoFlow autoFlow, std::map<GridLayout::GridCellIndex, bool> occupied)
 {
     ChildGridLocations result;
 
@@ -640,7 +645,7 @@ GridLayout::ChildGridLocations GridLayout::AssignUnoccupiedGridLocation(winrt::U
 
     assert((colStart == nullptr) || (rowStart == nullptr));
 
-    auto checkUnoccupied = [&colStart, &rowStart, colEnd, rowEnd, &occupied](GridCellIndex topLeft, AxisInfo const& horizontalAxis, AxisInfo const& verticalAxis)
+    auto checkUnoccupied = [&colStart, &rowStart, colEnd, rowEnd, &occupied](GridCellIndex topLeft, AxisInfo & horizontalAxis, AxisInfo & verticalAxis)
     {
         GridCellIndex bottomRight = GridCellIndex{ topLeft.ColumnIndex + 1, topLeft.RowIndex + 1 };
 
@@ -648,7 +653,8 @@ GridLayout::ChildGridLocations GridLayout::AssignUnoccupiedGridLocation(winrt::U
         // Handle a specified End paired with our unspecified Start
         if (colEnd != nullptr)
         {
-            ResolvedGridReference right = horizontalAxis.GetTrack(colEnd, &GridLayout::ResolvedGridReference(topLeft.ColumnIndex, nullptr), allowOutOfRange);
+            auto left = GridLayout::ResolvedGridReference(topLeft.ColumnIndex, nullptr);
+            ResolvedGridReference right = horizontalAxis.GetTrack(colEnd, &left, allowOutOfRange);
             if (!right.IsValid())
             {
                 return false;
@@ -657,7 +663,8 @@ GridLayout::ChildGridLocations GridLayout::AssignUnoccupiedGridLocation(winrt::U
         }
         if (rowEnd != nullptr)
         {
-            ResolvedGridReference bottom = verticalAxis.GetTrack(rowEnd, &GridLayout::ResolvedGridReference(topLeft.RowIndex, nullptr), allowOutOfRange);
+            auto top = GridLayout::ResolvedGridReference(topLeft.RowIndex, nullptr);
+            ResolvedGridReference bottom = verticalAxis.GetTrack(rowEnd, &top, allowOutOfRange);
             if (!bottom.IsValid())
             {
                 return false;
@@ -730,7 +737,7 @@ GridLayout::ChildGridLocations GridLayout::AssignUnoccupiedGridLocation(winrt::U
     return result;
 }
 
-std::map<winrt::UIElement, GridLayout::ChildGridLocations> GridLayout::ResolveGridLocations(GridLayout::AxisInfo const& horizontal, GridLayout::AxisInfo const& vertical, winrt::NonVirtualizingLayoutContext const& context)
+std::map<winrt::UIElement, GridLayout::ChildGridLocations> GridLayout::ResolveGridLocations(GridLayout::AxisInfo & horizontal, GridLayout::AxisInfo & vertical, winrt::NonVirtualizingLayoutContext const& context)
 {
     std::map<winrt::UIElement, GridLayout::ChildGridLocations> locationCache;
     std::map<GridLayout::GridCellIndex, bool> occupied;
@@ -747,7 +754,7 @@ std::map<winrt::UIElement, GridLayout::ChildGridLocations> GridLayout::ResolveGr
     }
 
     // Go find places for all the unspecified items
-    for (int i = 0; i < context.Children().Size(); i++)
+    for (unsigned int i = 0; i < context.Children().Size(); i++)
     {
         auto child = context.Children().GetAt(i);
         auto cache = locationCache.find(child);
@@ -774,7 +781,7 @@ winrt::GridJustifyItems GridLayout::Convert(winrt::GridJustifySelf const& value)
     case winrt::GridJustifySelf::Center: return winrt::GridJustifyItems::Center;
     case winrt::GridJustifySelf::End: return winrt::GridJustifyItems::End;
     case winrt::GridJustifySelf::Stretch: return winrt::GridJustifyItems::Stretch;
-    default: assert(false);
+    default: assert(false); return winrt::GridJustifyItems::Start;
     }
 }
 
@@ -786,7 +793,7 @@ winrt::GridAlignItems GridLayout::Convert(winrt::GridAlignSelf const& value)
     case winrt::GridAlignSelf::Center: return winrt::GridAlignItems::Center;
     case winrt::GridAlignSelf::End: return winrt::GridAlignItems::End;
     case winrt::GridAlignSelf::Stretch: return winrt::GridAlignItems::Stretch;
-    default: assert(false);
+    default: assert(false); return winrt::GridAlignItems::Start;
     }
 }
 
@@ -836,8 +843,8 @@ winrt::Size GridLayout::MeasureOverride(
     m_columns.clear();
     m_rows.clear();
 
-    GridLayout::AxisInfo measureHorizontal = InitializeMeasure(m_templateColumns, m_autoColumns, m_columns, m_columnGap, availableSize.Width);
-    GridLayout::AxisInfo measureVertical = InitializeMeasure(m_templateRows, m_autoRows, m_rows, m_rowGap, availableSize.Height);
+    GridLayout::AxisInfo measureHorizontal = InitializeMeasure(m_templateColumns, m_autoColumns, m_columns, static_cast<float>(m_columnGap), availableSize.Width);
+    GridLayout::AxisInfo measureVertical = InitializeMeasure(m_templateRows, m_autoRows, m_rows, static_cast<float>(m_rowGap), availableSize.Height);
     //DumpChildren(measureHorizontal, measureVertical);
 
     // Resolve all grid references
@@ -963,8 +970,8 @@ winrt::Size GridLayout::ArrangeOverride(
     }
 
     // TODO: Avoid recreating these lists
-    GridLayout::AxisInfo measureHorizontal = InitializeMeasure(m_templateColumns, m_autoColumns, m_columns, m_columnGap, finalSize.Width);
-    GridLayout::AxisInfo measureVertical = InitializeMeasure(m_templateRows, m_autoRows, m_rows, m_rowGap, finalSize.Height);
+    GridLayout::AxisInfo measureHorizontal = InitializeMeasure(m_templateColumns, m_autoColumns, m_columns, static_cast<float>(m_columnGap), finalSize.Width);
+    GridLayout::AxisInfo measureVertical = InitializeMeasure(m_templateRows, m_autoRows, m_rows, static_cast<float>(m_rowGap), finalSize.Height);
 
     // Resolve all grid references
     std::map<winrt::UIElement, GridLayout::ChildGridLocations> locationCache = ResolveGridLocations(measureHorizontal, measureVertical, nonVirtualizingContext);
@@ -993,11 +1000,11 @@ winrt::Size GridLayout::ArrangeOverride(
         // coordinates at all we should be trimming that off.
         if (right > 0.0f)
         {
-            right -= m_columnGap;
+            right -= static_cast<float>(m_columnGap);
         }
         if (bottom > 0.0f)
         {
-            bottom -= m_rowGap;
+            bottom -= static_cast<float>(m_rowGap);
         }
 
         // They might have specified grid references that were inverted. If so, collapse
