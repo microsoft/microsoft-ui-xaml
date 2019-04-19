@@ -28,12 +28,12 @@ namespace Flick
             Images = await FlickApi.GetPhotos("tulips");
             for (int i = 0; i < Images.Count; i++)
             {
-                Images[i].FlexBasis = 300 + (i%3 * 50);
+                Images[i].FlexBasis = 300;
                 Images[i].FlexGrow = i % 3 + 1;
             }
 
             repeater.ItemsSource = Images;
-            repeater.Layout = activityLayout;
+            repeater.Layout = uniformGridLayout;
             banner.Source = new BitmapImage(new Uri(Images.Last().LargeUrl));
         }
 
@@ -45,21 +45,25 @@ namespace Flick
         private void OnStackLayoutClicked(object sender, RoutedEventArgs e)
         {
             repeater.Layout = stackLayout;
+            repeater.ItemTemplate = defaultTemplate;
         }
 
         private void OnUniformGridLayoutClicked(object sender, RoutedEventArgs e)
         {
             repeater.Layout = uniformGridLayout;
+            repeater.ItemTemplate = defaultTemplate;
         }
 
         private void OnActivityLayoutClicked(object sender, RoutedEventArgs e)
         {
             repeater.Layout = activityLayout;
+            repeater.ItemTemplate = defaultTemplate;
         }
 
         private void OnFlexLayoutClicked(object sender, RoutedEventArgs e)
         {
             repeater.Layout = flexLayout;
+            repeater.ItemTemplate = flexTemplate;
         }
 
         private void OnAnimatedPageClicked(object sender, RoutedEventArgs e)
@@ -111,8 +115,19 @@ namespace Flick
             {
                 Images = await FlickApi.GetPhotos(args.QueryText.Replace(" ", "+"));
                 repeater.ItemsSource = Images;
+                for (int i = 0; i < Images.Count; i++)
+                {
+                    Images[i].FlexBasis = 300;
+                    Images[i].FlexGrow = i % 3 + 1;
+                }
+
                 banner.Source = new BitmapImage(new Uri(Images.Last().LargeUrl));
             }
+        }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            repeater.InvalidateMeasure();
         }
     }
 

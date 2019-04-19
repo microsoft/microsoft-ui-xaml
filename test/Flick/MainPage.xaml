@@ -16,6 +16,29 @@
             <local:ActivityFeedLayout x:Name="activityLayout" ItemSpacing="5" RowSpacing="5" MinItemSize="300, 200"/>
             <controls:StackLayout x:Name="stackLayout" Spacing="5" />
             <local:Flex x:Name="flexLayout" FlexWrap="Wrap" AlignItems="Stretch"/>
+
+            <DataTemplate x:Name="defaultTemplate">
+                <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="Image_Tapped" Margin="5"/>
+            </DataTemplate>
+            
+            <DataTemplate x:Name="flexTemplate">
+                <UserControl IsTabStop="True" UseSystemFocusVisuals="True"
+                                     Margin="5"
+                                     local:Flex.FlexBasis="{Binding FlexBasis, Mode=OneWay}"
+                                     local:Flex.FlexGrow="{Binding FlexGrow, Mode=OneWay}">
+                    <Grid >
+                        <!--BorderBrush="Red" BorderThickness="1"-->
+                        <StackPanel>
+                            <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" />
+                            <TextBlock Text="{Binding Description}" TextWrapping="WrapWholeWords" FontSize="16"/>
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="20">
+                            <TextBox Text="{Binding FlexBasis, Mode=TwoWay}" Width="50" TextChanged="TextBox_TextChanged" />
+                            <TextBox Text="{Binding FlexGrow, Mode=TwoWay}" Width="50" TextChanged="TextBox_TextChanged" />
+                        </StackPanel>
+                    </Grid>
+                </UserControl>
+            </DataTemplate>
         </Grid.Resources>
         <controls:ItemsRepeaterScrollHost>
             <ScrollViewer>
@@ -46,12 +69,7 @@
                             </StackPanel>
                         </StackPanel>
                     </Grid>
-                    <controls:ItemsRepeater x:Name="repeater" >
-                        <DataTemplate>
-                            <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="Image_Tapped" Margin="5"
-                                   local:Flex.FlexBasis="{Binding FlexBasis, Mode=OneWay}"
-                                     local:Flex.FlexGrow="{Binding FlexGrow, Mode=OneWay}"/>
-                        </DataTemplate>
+                    <controls:ItemsRepeater x:Name="repeater" ItemTemplate="{StaticResource defaultTemplate}">
                         <controls:ItemsRepeater.Animator>
                             <local:DefaultElementAnimator />
                         </controls:ItemsRepeater.Animator>

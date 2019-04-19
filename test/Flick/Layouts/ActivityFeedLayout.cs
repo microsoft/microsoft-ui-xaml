@@ -8,6 +8,7 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls;
+using System.Collections.Specialized;
 
 namespace Flick
 {
@@ -77,6 +78,11 @@ namespace Flick
         #endregion
 
         #region Layout
+
+        protected override void OnItemsChangedCore(VirtualizingLayoutContext context, object source, NotifyCollectionChangedEventArgs args)
+        {
+            InvalidateMeasure();
+        }
 
         protected override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
         {
