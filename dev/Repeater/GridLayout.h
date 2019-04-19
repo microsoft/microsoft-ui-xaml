@@ -81,7 +81,15 @@ private:
     struct ResolvedGridReference
     {
     public:
-        ResolvedGridReference(int index, winrt::GridTrackInfo info);
+        ResolvedGridReference() :
+            ResolvedGridReference(-1, nullptr)
+        {
+        }
+        ResolvedGridReference(int index, winrt::GridTrackInfo info) :
+            Index(index),
+            Info(info)
+        {
+        }
 
         bool IsValid();
 
@@ -96,8 +104,8 @@ private:
     class MeasuredGridTrackInfo
     {
     public:
-        double Size;
-        double Start;
+        float Size;
+        float Start;
     };
     std::map<int, MeasuredGridTrackInfo> m_columns;
     std::map<int, MeasuredGridTrackInfo> m_rows;
@@ -106,18 +114,18 @@ private:
     struct AxisInfo
     {
     public:
-        AxisInfo(std::vector<winrt::GridTrackInfo> templates, std::vector<winrt::GridTrackInfo> autos, std::map<int, MeasuredGridTrackInfo> const& calculated);
+        AxisInfo(winrt::IVector<winrt::GridTrackInfo> templates, winrt::IVector<winrt::GridTrackInfo> autos, std::map<int, MeasuredGridTrackInfo> const& calculated);
 
         std::vector<winrt::GridTrackInfo> Template;
         std::vector<winrt::GridTrackInfo> Auto;
         std::map<int, MeasuredGridTrackInfo> Calculated;
 
-        double Available;
-        double Remaining;
-        double TotalFixed;
-        double TotalFraction;
+        float Available;
+        float Remaining;
+        float TotalFixed;
+        float TotalFraction;
         unsigned int TotalAutos;
-        double Gap;
+        float Gap;
 
         int EnsureIndexAvailable(int index, bool clampIfOutOfBounds = true);
 
@@ -127,7 +135,7 @@ private:
 
         MeasuredGridTrackInfo GetMeasuredTrackSafe(ResolvedGridReference track);
 
-        void AddCalculated(int index, winrt::GridTrackInfo track, double size);
+        void AddCalculated(int index, winrt::GridTrackInfo track, float size);
     };
 
     struct ChildGridLocations
@@ -148,19 +156,19 @@ private:
     };
 
     void GridLayout::MarkOccupied(ChildGridLocations childLocation, std::map<GridCellIndex, bool> const& occupied);
-    static AxisInfo InitializeMeasure(std::vector<winrt::GridTrackInfo> const& templates, std::vector<winrt::GridTrackInfo> const& autos, std::map<int, GridLayout::MeasuredGridTrackInfo> const& calculated, double gap, double available);
+    static AxisInfo InitializeMeasure(winrt::IVector<winrt::GridTrackInfo> const& templates, winrt::IVector<winrt::GridTrackInfo> const& autos, std::map<int, GridLayout::MeasuredGridTrackInfo> const& calculated, float gap, float available);
     static void ProcessFixedSizes(AxisInfo const& measure);
     ChildGridLocations GetChildGridLocations(winrt::UIElement const& child, std::map<winrt::UIElement, ChildGridLocations> const& cache);
     bool TryGetChildGridLocations(winrt::UIElement const& child, AxisInfo const& horizontal, AxisInfo const& vertical, ChildGridLocations* outResult);
     bool ProcessAutoSizes(AxisInfo const& measureHorizontal, AxisInfo const& measureVertical, std::map<winrt::UIElement, ChildGridLocations> const& locationCache, winrt::NonVirtualizingLayoutContext const& context);
-    static void UpdateAutoBasedOnMeasured(std::vector<winrt::GridTrackInfo> const& tracks, AxisInfo const& measure, double childDesired);
+    static void UpdateAutoBasedOnMeasured(std::vector<winrt::GridTrackInfo> const& tracks, AxisInfo const& measure, float childDesired);
     static bool ProcessFractionalSizes(AxisInfo const& measure);
     static void ProcessAutoRemainingSize(AxisInfo const& measure);
-    double ProcessOffsets(AxisInfo const& measure);
+    float ProcessOffsets(AxisInfo const& measure);
     void TraverseByColumn(AxisInfo const& horizontal, AxisInfo const& vertical, std::function<bool(GridCellIndex cell, AxisInfo const& horizontal, AxisInfo const& vertical)> predicate);
     void TraverseByRow(AxisInfo const& horizontal, AxisInfo const& vertical, std::function<bool(GridCellIndex cell, AxisInfo const& horizontal, AxisInfo const& vertical)> predicate);
     ChildGridLocations AssignUnoccupiedGridLocation(winrt::UIElement child, AxisInfo const& horizontal, AxisInfo const& vertical, winrt::GridAutoFlow autoFlow, std::map<GridCellIndex, bool> occupied);
-    std::map<winrt::UIElement, ChildGridLocations> ResolveGridLocations(AxisInfo const& horizontal, AxisInfo const& vertical);
+    std::map<winrt::UIElement, ChildGridLocations> ResolveGridLocations(AxisInfo const& horizontal, AxisInfo const& vertical, winrt::NonVirtualizingLayoutContext const& context);
     static winrt::GridJustifyItems Convert(winrt::GridJustifySelf const& value);
     static winrt::GridAlignItems Convert(winrt::GridAlignSelf const& value);
 };
