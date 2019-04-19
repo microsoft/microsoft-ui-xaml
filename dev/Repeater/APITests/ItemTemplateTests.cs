@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
+using Microsoft.UI.Xaml.Controls;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -38,7 +39,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 #endif
 
     [TestClass]
-    public class ElementFactoryTests : TestsBase
+    public class ItemTemplateTests : TestsBase
     {
         [TestMethod]
         public void ValidateRecycling()
@@ -282,7 +283,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Content = CreateAndInitializeRepeater
                 (
-                   itemsSource: Enumerable.Range(0, numItems).Select(i => string.Format("{0}", i)),
+                   itemsSource: Enumerable.Range(0, numItems).Select(i => i.ToString()),
                    elementFactory: dataTemplate,
                    layout: new StackLayout(),
                    repeater: ref repeater
@@ -432,9 +433,68 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void ValidateTemplateSwitchingRefreshesElementsVirtualizingLayout()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                ValidateTemplateSwitchingRefreshesElements(new StackLayout());
+            });
+        }
+
+        [TestMethod]
+        public void ValidateTemplateSwitchingRefreshesElementsNonVirtualizingLayout()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                ValidateTemplateSwitchingRefreshesElements(new NonVirtualStackLayout());
+            });
+        }
+
+        public void ValidateTemplateSwitchingRefreshesElements(Layout layout)
+        {
+            var dataTemplate1 = (DataTemplate)XamlReader.Load(
+                     @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <TextBlock Text='{Binding}' />
+                       </DataTemplate>");
+
+            var dataTemplate2 = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <Button Content='{Binding}' />
+                      </DataTemplate>");
+            ItemsRepeater repeater = null;
+            const int numItems = 10;
+            Content = CreateAndInitializeRepeater
+            (
+               itemsSource: Enumerable.Range(0, numItems).Select(i => i.ToString()),
+               elementFactory: dataTemplate1,
+               layout: layout,
+               repeater: ref repeater
+            );
+
+            Content.UpdateLayout();
+            Verify.AreEqual(numItems, VisualTreeHelper.GetChildrenCount(repeater));
+            for (int i = 0; i < numItems; i++)
+            {
+                var element = (TextBlock)repeater.TryGetElement(i);
+                Verify.AreEqual(i.ToString(), element.Text);
+            }
+
+            repeater.ItemTemplate = dataTemplate2;
+            Content.UpdateLayout();
+
+            // The old elements have been recycled but still parented under this repeater.
+            Verify.AreEqual(numItems * 2, VisualTreeHelper.GetChildrenCount(repeater));
+            for (int i = 0; i < numItems; i++)
+            {
+                var element = (Button)repeater.TryGetElement(i);
+                Verify.AreEqual(i.ToString(), element.Content);
+            }
+        }
+
         private ItemsRepeaterScrollHost CreateAndInitializeRepeater(
             object itemsSource,
-            VirtualizingLayout layout,
+            Layout layout,
             object elementFactory,
             ref ItemsRepeater repeater)
         {
@@ -453,7 +513,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 Width = 400,
                 Height = 400,
-                ScrollViewer = new ScrollViewer()
+                ScrollViewer = new Windows.UI.Xaml.Controls.ScrollViewer()
                 {
                     Content = repeater
                 }
