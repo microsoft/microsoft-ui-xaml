@@ -23,6 +23,9 @@ GridLayout::GridLayout()
     {
         s_lastInTrack = winrt::GridTrackInfo();
     }
+
+    m_columns.reset(new std::map<int, MeasuredGridTrackInfo>());
+    m_rows.reset(new std::map<int, MeasuredGridTrackInfo>());
 }
 
 winrt::IVector<winrt::GridTrackInfo> GridLayout::TemplateColumns()
@@ -146,7 +149,7 @@ GridLayout::ResolvedGridReference GridLayout::ResolvedGridReference::Invalid()
     return GridLayout::ResolvedGridReference();
 }
 
-GridLayout::AxisInfo::AxisInfo(winrt::IVector<winrt::GridTrackInfo> templates, winrt::IVector<winrt::GridTrackInfo> autos, std::map<int, GridLayout::MeasuredGridTrackInfo> const& calculated)
+GridLayout::AxisInfo::AxisInfo(winrt::IVector<winrt::GridTrackInfo> templates, winrt::IVector<winrt::GridTrackInfo> autos, std::map<int, GridLayout::MeasuredGridTrackInfo>* calculated)
 {
     // Add all the items from the markup defined template, plus one more grid line for 
     // the end (unless we have auto tracks, in which case they will define what happens 
@@ -271,7 +274,7 @@ GridLayout::ResolvedGridReference GridLayout::AxisInfo::GetTrack(winrt::GridLoca
 
 GridLayout::MeasuredGridTrackInfo GridLayout::AxisInfo::GetMeasuredTrack(int index) const
 {
-    auto result = Calculated.find(index);
+    auto result = Calculated->find(index);
     return result->second;
 }
 
@@ -283,8 +286,8 @@ GridLayout::MeasuredGridTrackInfo GridLayout::AxisInfo::GetMeasuredTrackSafe(Gri
         return GridLayout::MeasuredGridTrackInfo();
     }
 
-    auto result = Calculated.find(track.Index);
-    if (result != Calculated.end())
+    auto result = Calculated->find(track.Index);
+    if (result != Calculated->end())
     {
         return result->second;
     }
@@ -295,7 +298,7 @@ GridLayout::MeasuredGridTrackInfo GridLayout::AxisInfo::GetMeasuredTrackSafe(Gri
 
 void GridLayout::AxisInfo::AddCalculated(int index, winrt::GridTrackInfo track, float size)
 {
-    Calculated[index] = GridLayout::MeasuredGridTrackInfo{ size, 0.0f };
+    Calculated->insert(std::make_pair(index, GridLayout::MeasuredGridTrackInfo{ size, 0.0f }));
 }
 
 void GridLayout::MarkOccupied(GridLayout::ChildGridLocations childLocation, std::map<GridLayout::GridCellIndex, bool> & occupied)
@@ -317,7 +320,7 @@ void GridLayout::MarkOccupied(GridLayout::ChildGridLocations childLocation, std:
     }
 }
 
-GridLayout::AxisInfo GridLayout::InitializeMeasure(winrt::IVector<winrt::GridTrackInfo> const& templates, winrt::IVector<winrt::GridTrackInfo> const& autos, std::map<int, GridLayout::MeasuredGridTrackInfo> const& calculated, float gap, float available)
+GridLayout::AxisInfo GridLayout::InitializeMeasure(winrt::IVector<winrt::GridTrackInfo> const& templates, winrt::IVector<winrt::GridTrackInfo> const& autos, std::map<int, GridLayout::MeasuredGridTrackInfo>* calculated, float gap, float available)
 {
     int numberOfGaps = (templates.Size() - 1);
     if ((gap > 0.0f) && (numberOfGaps > 0))
@@ -554,14 +557,20 @@ void GridLayout::ProcessAutoRemainingSize(GridLayout::AxisInfo & measure)
 }
 
 
-float GridLayout::ProcessOffsets(GridLayout::AxisInfo const& measure)
+float GridLayout::ProcessOffsets(GridLayout::AxisInfo & measure)
 {
     float offset = 0.0f;
-    // TODO: This assumes the dictionary is ordered
-    for (auto entry : measure.Calculated)
+    // PORT_TODO: Backport to C# version
+    for (unsigned int i = 0; i < measure.Template.size(); i++)
     {
-        entry.second.Start = offset;
-        offset += entry.second.Size;
+        winrt::GridTrackInfo track = measure.Template[i];
+        auto measurement = measure.Calculated->at(i);
+        measurement.Start = offset;
+        // PORT_TODO: Running into some equality issues preventing this from being overridden. Using an erase() until I figure this back
+        measure.Calculated->erase(i);
+        measure.Calculated->insert(std::make_pair(i, measurement));
+
+        offset += measurement.Size;
         offset += measure.Gap;
     }
 
@@ -840,11 +849,11 @@ winrt::Size GridLayout::MeasureOverride(
     //DumpInfo($"ColumnGap={_columnGap}, RowGap={_rowGap}");
     //DumpInfo($"AutoFlow={_autoFlow}");
 
-    m_columns.clear();
-    m_rows.clear();
+    m_columns->clear();
+    m_rows->clear();
 
-    GridLayout::AxisInfo measureHorizontal = InitializeMeasure(m_templateColumns, m_autoColumns, m_columns, static_cast<float>(m_columnGap), availableSize.Width);
-    GridLayout::AxisInfo measureVertical = InitializeMeasure(m_templateRows, m_autoRows, m_rows, static_cast<float>(m_rowGap), availableSize.Height);
+    GridLayout::AxisInfo measureHorizontal = InitializeMeasure(m_templateColumns, m_autoColumns, m_columns.get(), static_cast<float>(m_columnGap), availableSize.Width);
+    GridLayout::AxisInfo measureVertical = InitializeMeasure(m_templateRows, m_autoRows, m_rows.get(), static_cast<float>(m_rowGap), availableSize.Height);
     //DumpChildren(measureHorizontal, measureVertical);
 
     // Resolve all grid references
@@ -970,8 +979,8 @@ winrt::Size GridLayout::ArrangeOverride(
     }
 
     // TODO: Avoid recreating these lists
-    GridLayout::AxisInfo measureHorizontal = InitializeMeasure(m_templateColumns, m_autoColumns, m_columns, static_cast<float>(m_columnGap), finalSize.Width);
-    GridLayout::AxisInfo measureVertical = InitializeMeasure(m_templateRows, m_autoRows, m_rows, static_cast<float>(m_rowGap), finalSize.Height);
+    GridLayout::AxisInfo measureHorizontal = InitializeMeasure(m_templateColumns, m_autoColumns, m_columns.get(), static_cast<float>(m_columnGap), finalSize.Width);
+    GridLayout::AxisInfo measureVertical = InitializeMeasure(m_templateRows, m_autoRows, m_rows.get(), static_cast<float>(m_rowGap), finalSize.Height);
 
     // Resolve all grid references
     std::map<winrt::UIElement, GridLayout::ChildGridLocations> locationCache = ResolveGridLocations(measureHorizontal, measureVertical, nonVirtualizingContext);
