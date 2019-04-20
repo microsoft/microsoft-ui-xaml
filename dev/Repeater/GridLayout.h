@@ -105,18 +105,19 @@ private:
         float Size {};
         float Start {};
     };
-    std::map<int, MeasuredGridTrackInfo> m_columns;
-    std::map<int, MeasuredGridTrackInfo> m_rows;
+    // TODO: Move to a State object
+    std::unique_ptr<std::map<int, MeasuredGridTrackInfo>> m_columns;
+    std::unique_ptr<std::map<int, MeasuredGridTrackInfo>> m_rows;
 
     // Tracks all the intermediate calculations of one direction (row or column) of the grid
     struct AxisInfo
     {
     public:
-        AxisInfo(winrt::IVector<winrt::GridTrackInfo> templates, winrt::IVector<winrt::GridTrackInfo> autos, std::map<int, MeasuredGridTrackInfo> const& calculated);
+        AxisInfo(winrt::IVector<winrt::GridTrackInfo> templates, winrt::IVector<winrt::GridTrackInfo> autos, std::map<int, MeasuredGridTrackInfo>* calculated);
 
         std::vector<winrt::GridTrackInfo> Template;
         std::vector<winrt::GridTrackInfo> Auto;
-        std::map<int, MeasuredGridTrackInfo> Calculated;
+        std::map<int, MeasuredGridTrackInfo>* Calculated;
 
         float Available {};
         float Remaining {};
@@ -158,7 +159,7 @@ private:
     };
 
     void MarkOccupied(ChildGridLocations childLocation, std::map<GridCellIndex, bool> & occupied);
-    static AxisInfo InitializeMeasure(winrt::IVector<winrt::GridTrackInfo> const& templates, winrt::IVector<winrt::GridTrackInfo> const& autos, std::map<int, GridLayout::MeasuredGridTrackInfo> const& calculated, float gap, float available);
+    static AxisInfo InitializeMeasure(winrt::IVector<winrt::GridTrackInfo> const& templates, winrt::IVector<winrt::GridTrackInfo> const& autos, std::map<int, GridLayout::MeasuredGridTrackInfo>* calculated, float gap, float available);
     static void ProcessFixedSizes(AxisInfo & measure);
     ChildGridLocations GetChildGridLocations(winrt::UIElement const& child, std::map<winrt::UIElement, ChildGridLocations> const& cache);
     bool TryGetChildGridLocations(winrt::UIElement const& child, AxisInfo & horizontal, AxisInfo & vertical, ChildGridLocations* outResult);
@@ -166,7 +167,7 @@ private:
     static void UpdateAutoBasedOnMeasured(std::vector<winrt::GridTrackInfo> const& tracks, AxisInfo & measure, float childDesired);
     static bool ProcessFractionalSizes(AxisInfo & measure);
     static void ProcessAutoRemainingSize(AxisInfo & measure);
-    float ProcessOffsets(AxisInfo const& measure);
+    float ProcessOffsets(AxisInfo & measure);
     void TraverseByColumn(AxisInfo & horizontal, AxisInfo & vertical, std::function<bool(GridCellIndex cell, AxisInfo & horizontal, AxisInfo & vertical)> predicate);
     void TraverseByRow(AxisInfo & horizontal, AxisInfo & vertical, std::function<bool(GridCellIndex cell, AxisInfo & horizontal, AxisInfo & vertical)> predicate);
     ChildGridLocations AssignUnoccupiedGridLocation(winrt::UIElement child, AxisInfo & horizontal, AxisInfo & vertical, winrt::GridAutoFlow autoFlow, std::map<GridCellIndex, bool> occupied);
