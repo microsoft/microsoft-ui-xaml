@@ -131,10 +131,10 @@ namespace MUXControlsAdhocApp.GridPages
         {
             switch (type)
             {
-                case GridLocationType.ColumnStart: return Grid.GetColumnStart(targetItem);
-                case GridLocationType.ColumnEnd: return Grid.GetColumnEnd(targetItem);
-                case GridLocationType.RowStart: return Grid.GetRowStart(targetItem);
-                case GridLocationType.RowEnd: return Grid.GetRowEnd(targetItem);
+                case GridLocationType.ColumnStart: return GridLayout.GetColumnStart(targetItem);
+                case GridLocationType.ColumnEnd: return GridLayout.GetColumnEnd(targetItem);
+                case GridLocationType.RowStart: return GridLayout.GetRowStart(targetItem);
+                case GridLocationType.RowEnd: return GridLayout.GetRowEnd(targetItem);
             }
 
             throw new System.ArgumentException();
@@ -171,22 +171,22 @@ namespace MUXControlsAdhocApp.GridPages
 
         private void JustifyItemsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _grid.JustifyItems = EnumValueFromComboBox<GridJustifyItems>(sender);
+            _gridLayout.JustifyItems = EnumValueFromComboBox<GridJustifyItems>(sender);
         }
 
         private void AlignItemsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _grid.AlignItems = EnumValueFromComboBox<GridAlignItems>(sender);
+            _gridLayout.AlignItems = EnumValueFromComboBox<GridAlignItems>(sender);
         }
 
         private void JustifyContentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _grid.JustifyContent = EnumValueFromComboBox<GridJustifyContent>(sender);
+            _gridLayout.JustifyContent = EnumValueFromComboBox<GridJustifyContent>(sender);
         }
 
         private void AlignContentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _grid.AlignContent = EnumValueFromComboBox<GridAlignContent>(sender);
+            _gridLayout.AlignContent = EnumValueFromComboBox<GridAlignContent>(sender);
         }
 
         private T EnumValueFromComboBox<T>(object sender) where T : struct, IComparable

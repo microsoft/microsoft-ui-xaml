@@ -146,6 +146,7 @@
     <Compile Include="FlexboxPages\FlexboxJustifyContentPage.xaml.cs">
       <DependentUpon>FlexboxJustifyContentPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FlexboxPages\FlexboxLayout.cs" />
     <Compile Include="FlexboxPages\FlexboxOrderPage.xaml.cs">
       <DependentUpon>FlexboxOrderPage.xaml</DependentUpon>
     </Compile>
@@ -186,6 +187,7 @@
     <Compile Include="GridPages\GridJustifyAndAlignSelfPage.xaml.cs">
       <DependentUpon>GridJustifyAndAlignSelfPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GridPages\GridLayout.cs" />
     <Compile Include="GridPages\GridPage.xaml.cs">
       <DependentUpon>GridPage.xaml</DependentUpon>
     </Compile>
