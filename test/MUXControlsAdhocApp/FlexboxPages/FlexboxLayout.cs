@@ -2,18 +2,72 @@
 using System.Collections.Generic;
 using Windows.Foundation;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls;
 
 namespace MUXControlsAdhocApp.FlexboxPages
 {
-    public class Flexbox : Panel
+    public enum FlexboxDirection
+    {
+        Row,
+        RowReverse,
+        Column,
+        ColumnReverse,
+    }
+
+    public enum FlexboxWrap
+    {
+        NoWrap,
+        Wrap,
+        WrapReverse,
+    }
+
+    public enum FlexboxJustifyContent
+    {
+        Start,
+        End,
+        Center,
+        SpaceBetween,
+        SpaceAround,
+        SpaceEvenly,
+    }
+
+    public enum FlexboxAlignItems
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+        Baseline,
+    }
+
+    public enum FlexboxAlignContent
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+        SpaceBetween,
+        SpaceAround,
+    }
+
+    public enum FlexboxAlignSelf
+    {
+        Auto,
+        Start,
+        End,
+        Center,
+        Baseline,
+        Stretch,
+    }
+
+    public class FlexboxLayout : NonVirtualizingLayout
     {
         // Order (number)
         public static readonly DependencyProperty OrderProperty =
             DependencyProperty.RegisterAttached(
               "Order",
               typeof(int),
-              typeof(Flexbox),
+              typeof(FlexboxLayout),
               new PropertyMetadata(0, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
             );
         public static void SetOrder(UIElement element, int value)
@@ -24,13 +78,13 @@ namespace MUXControlsAdhocApp.FlexboxPages
         {
             return (int)element.GetValue(OrderProperty);
         }
-        
+
         // Grow (number, >= 0)
         public static readonly DependencyProperty GrowProperty =
             DependencyProperty.RegisterAttached(
               "Grow",
               typeof(double),
-              typeof(Flexbox),
+              typeof(FlexboxLayout),
               new PropertyMetadata(0.0, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
             );
         public static void SetGrow(UIElement element, double value)
@@ -47,7 +101,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
             DependencyProperty.RegisterAttached(
               "Shrink",
               typeof(double),
-              typeof(Flexbox),
+              typeof(FlexboxLayout),
               new PropertyMetadata(0.0, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
             );
         public static void SetShrink(UIElement element, double value)
@@ -66,7 +120,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
             DependencyProperty.RegisterAttached(
               "AlignSelf",
               typeof(FlexboxAlignSelf),
-              typeof(Flexbox),
+              typeof(FlexboxLayout),
               new PropertyMetadata(FlexboxAlignSelf.Auto, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
             );
         public static void SetAlignSelf(UIElement element, FlexboxAlignSelf value)
@@ -196,7 +250,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
                 new Point(crossAxis, mainAxis);
         }
 
-        protected override Size MeasureOverride(Size availableSize)
+        protected override Size MeasureOverride(NonVirtualizingLayoutContext context, Size availableSize)
         {
             _rows.Clear();
 
@@ -225,7 +279,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
                 usedInCurrentCrossAxis = 0;
             };
 
-            List<UIElement> sortedChildren = ChildrenSortedByOrder();
+            List<UIElement> sortedChildren = ChildrenSortedByOrder(context);
             foreach (UIElement child in sortedChildren)
             {
                 // Give each child the maximum available space
@@ -286,7 +340,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
         }
         private List<RowMeasureInfo> _rows = new List<RowMeasureInfo>();
 
-        protected override Size ArrangeOverride(Size finalSize)
+        protected override Size ArrangeOverride(NonVirtualizingLayoutContext context, Size finalSize)
         {
             int rowIndex = 0;
             double usedInCurrentMainAxis = 0;
@@ -300,7 +354,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
                 crossOffsetForCurrentRow = CrossAxis(finalSize) - (_rows[_rows.Count - 1].CrossAxis);
             }
 
-            List<UIElement> sortedChildren = ChildrenSortedByOrder();
+            List<UIElement> sortedChildren = ChildrenSortedByOrder(context);
             foreach (UIElement child in sortedChildren)
             {
                 RowMeasureInfo info = _rows[rowIndex];
@@ -491,9 +545,9 @@ namespace MUXControlsAdhocApp.FlexboxPages
             return finalSize;
         }
 
-        private List<UIElement> ChildrenSortedByOrder()
+        private List<UIElement> ChildrenSortedByOrder(NonVirtualizingLayoutContext context)
         {
-            List<UIElement> sorted = new List<UIElement>(Children);
+            List<UIElement> sorted = new List<UIElement>(context.Children);
 
             sorted.Sort((UIElement a, UIElement b) =>
             {

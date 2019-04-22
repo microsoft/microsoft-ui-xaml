@@ -5,6 +5,7 @@
     xmlns:local="using:MUXControlsAdhocApp.FlexboxPages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -25,7 +26,10 @@
                             <Setter Property="FontWeight" Value="Bold"/>
                         </Style>
                     </Grid.Resources>
-                    <local:Flexbox x:Name="_flexbox" MaxWidth="500" MaxHeight="500" MinHeight="300">
+                    <controls:LayoutPanel x:Name="_flexbox" MaxWidth="500" MaxHeight="500" MinHeight="300">
+                        <controls:LayoutPanel.Layout>
+                            <local:FlexboxLayout x:Name="_flexboxLayout"/>
+                        </controls:LayoutPanel.Layout>
                         <Grid Background="Red" MinWidth="150" MinHeight="100" local:Flexbox.Order="1">
                             <TextBlock>1(1)</TextBlock>
                         </Grid>
@@ -57,7 +61,7 @@
                                 </ComboBox>
                             </StackPanel>
                         </Grid>
-                    </local:Flexbox>
+                    </controls:LayoutPanel>
                 </Grid>
             </Grid>
         </StackPanel>

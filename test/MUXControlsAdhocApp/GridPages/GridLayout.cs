@@ -4,21 +4,111 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Controls;
 
 using Debug = System.Diagnostics.Debug;
 using ConditionalAttribute = System.Diagnostics.ConditionalAttribute;
 
 namespace MUXControlsAdhocApp.GridPages
 {
-    public class Grid : Panel
+    public class GridTrackInfo
     {
-#region ChildProperties
+        // TODO: a line can have more than one name. For example, here the second line will have two names: row1-end and row2-start:
+        // grid-template-rows: [row1-start] 25% [row1-end row2-start] 25% [row2-end];
+        // TODO: Line more refers to the space between two tracks, not a cell
+        public string LineName { get; set; }
+
+        // TODO: track-size can be a length, a percentage, or a fraction of the free space in the grid (fr)
+        // grid-template-columns: 40px 50px auto 50px 40px;
+        // grid-template-rows: 25% 100px auto;
+        // The fr unit allows you to set the size of a track as a fraction of the free space of the grid container. For example, this will set each item to one third the width of the grid container:
+        // grid-template-columns: 1fr 1fr 1fr;
+        public double Length { get; set; } = 0;
+        public bool Auto { get; set; } = false;
+        public double Fraction { get; set; } = 0.0;
+        public double Percentage { get; set; } = 0.0;
+    }
+
+    public class GridLocation
+    {
+        public int Index { get; set; } = -1;
+
+        public string LineName { get; set; }
+
+        public int Span { get; set; } = 0;
+    }
+
+    public enum GridJustifyItems
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+    }
+
+    public enum GridAlignItems
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+    }
+
+    public enum GridJustifyContent
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+        SpaceAround,
+        SpaceBetween,
+        SpaceEvenly,
+    }
+
+    public enum GridAlignContent
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+        SpaceAround,
+        SpaceBetween,
+        SpaceEvenly,
+    }
+
+    public enum GridAutoFlow
+    {
+        Row,
+        Column,
+        RowDense,
+        ColumnDense,
+    }
+
+    public enum GridJustifySelf
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+    }
+
+    public enum GridAlignSelf
+    {
+        Start,
+        End,
+        Center,
+        Stretch,
+    }
+
+    public class GridLayout : NonVirtualizingLayout
+    {
+        #region ChildProperties
 
         public static readonly DependencyProperty ColumnStartProperty =
             DependencyProperty.RegisterAttached(
               "ColumnStart",
               typeof(GridLocation),
-              typeof(Grid),
+              typeof(GridLayout),
               new PropertyMetadata(null, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
             );
         public static void SetColumnStart(UIElement element, GridLocation value)
@@ -34,7 +124,7 @@ namespace MUXControlsAdhocApp.GridPages
             DependencyProperty.RegisterAttached(
               "ColumnEnd",
               typeof(GridLocation),
-              typeof(Grid),
+              typeof(GridLayout),
               new PropertyMetadata(null, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
             );
         public static void SetColumnEnd(UIElement element, GridLocation value)
@@ -50,7 +140,7 @@ namespace MUXControlsAdhocApp.GridPages
             DependencyProperty.RegisterAttached(
               "RowStart",
               typeof(GridLocation),
-              typeof(Grid),
+              typeof(GridLayout),
               new PropertyMetadata(null, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
             );
         public static void SetRowStart(UIElement element, GridLocation value)
@@ -66,7 +156,7 @@ namespace MUXControlsAdhocApp.GridPages
             DependencyProperty.RegisterAttached(
               "RowEnd",
               typeof(GridLocation),
-              typeof(Grid),
+              typeof(GridLayout),
               new PropertyMetadata(null, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
             );
         public static void SetRowEnd(UIElement element, GridLocation value)
@@ -82,7 +172,7 @@ namespace MUXControlsAdhocApp.GridPages
             DependencyProperty.RegisterAttached(
               "JustifySelf",
               typeof(GridJustifySelf),
-              typeof(Grid),
+              typeof(GridLayout),
               new PropertyMetadata(null, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
             );
         public static void SetJustifySelf(UIElement element, GridJustifySelf value)
@@ -107,7 +197,7 @@ namespace MUXControlsAdhocApp.GridPages
             DependencyProperty.RegisterAttached(
               "AlignSelf",
               typeof(GridAlignSelf),
-              typeof(Grid),
+              typeof(GridLayout),
               new PropertyMetadata(null, new PropertyChangedCallback(InvalidateMeasureOnChildPropertyChanged))
             );
         public static void SetAlignSelf(UIElement element, GridAlignSelf value)
@@ -137,9 +227,9 @@ namespace MUXControlsAdhocApp.GridPages
             }
         }
 
-#endregion ChildProperties
+        #endregion ChildProperties
 
-#region Properties
+        #region Properties
 
         public List<GridTrackInfo> TemplateColumns
         {
@@ -327,9 +417,9 @@ namespace MUXControlsAdhocApp.GridPages
             }
         }
         private GridAutoFlow _autoFlow = GridAutoFlow.Row;
-        
 
-#endregion Properties
+
+        #endregion Properties
 
         private static GridTrackInfo _lastInTrack = new GridTrackInfo();
 
@@ -498,7 +588,7 @@ namespace MUXControlsAdhocApp.GridPages
 
                 return ResolvedGridReference.Invalid;
             }
-            
+
             public MeasuredGridTrackInfo GetMeasuredTrack(int index)
             {
                 return Calculated[index];
@@ -641,14 +731,14 @@ namespace MUXControlsAdhocApp.GridPages
             return result;
         }
 
-        private bool ProcessAutoSizes(ref AxisInfo measureHorizontal, ref AxisInfo measureVertical, Dictionary<UIElement, ChildGridLocations> locationCache)
+        private bool ProcessAutoSizes(ref AxisInfo measureHorizontal, ref AxisInfo measureVertical, Dictionary<UIElement, ChildGridLocations> locationCache, NonVirtualizingLayoutContext context)
         {
             if ((measureHorizontal.TotalAutos == 0) && (measureVertical.TotalAutos == 0))
             {
                 return false;
             }
 
-            foreach (UIElement child in Children)
+            foreach (UIElement child in context.Children)
             {
                 ChildGridLocations childLocation = GetChildGridLocations(child, locationCache);
 
@@ -805,7 +895,7 @@ namespace MUXControlsAdhocApp.GridPages
 
             return offset;
         }
-        
+
         delegate bool CheckCell(GridCellIndex cell, ref AxisInfo horizontal, ref AxisInfo vertical);
 
         private void TraverseByColumn(ref AxisInfo horizontal, ref AxisInfo vertical, CheckCell predicate)
@@ -946,7 +1036,7 @@ namespace MUXControlsAdhocApp.GridPages
                     TraverseByRow(ref horizontal, ref vertical, checkUnoccupied);
                     break;
             }
-            
+
             if (colStart != null)
             {
                 DumpGridTrackInfo(horizontal.Template[colStart.Index]);
@@ -974,13 +1064,13 @@ namespace MUXControlsAdhocApp.GridPages
             return result;
         }
 
-        private Dictionary<UIElement, ChildGridLocations> ResolveGridLocations(ref AxisInfo horizontal, ref AxisInfo vertical)
+        private Dictionary<UIElement, ChildGridLocations> ResolveGridLocations(ref AxisInfo horizontal, ref AxisInfo vertical, NonVirtualizingLayoutContext context)
         {
             Dictionary<UIElement, ChildGridLocations> locationCache = new Dictionary<UIElement, ChildGridLocations>();
             Dictionary<GridCellIndex, bool> occupied = new Dictionary<GridCellIndex, bool>();
 
             // Mark any known grid coordinates as occupied
-            foreach (UIElement child in Children)
+            foreach (UIElement child in context.Children)
             {
                 ChildGridLocations? childLocation = GetChildGridLocations(child, ref horizontal, ref vertical);
                 if (childLocation.HasValue)
@@ -991,9 +1081,9 @@ namespace MUXControlsAdhocApp.GridPages
             }
 
             // Go find places for all the unspecified items
-            for (int i = 0; i < Children.Count; i++)
+            for (int i = 0; i < context.Children.Count; i++)
             {
-                UIElement child = Children[i];
+                UIElement child = context.Children[i];
                 if (locationCache.ContainsKey(child))
                 {
                     continue;
@@ -1034,7 +1124,7 @@ namespace MUXControlsAdhocApp.GridPages
         }
 
 
-#region Tracing
+        #region Tracing
         [Conditional("GRID_TRACE")]
         private static void DumpConditional(bool condition, string write, ref string separator)
         {
@@ -1095,10 +1185,10 @@ namespace MUXControlsAdhocApp.GridPages
         }
 
         [Conditional("GRID_TRACE")]
-        private void DumpChildren(ref AxisInfo measureHorizontal, ref AxisInfo measureVertical)
+        private void DumpChildren(ref AxisInfo measureHorizontal, ref AxisInfo measureVertical, NonVirtualizingLayoutContext context)
         {
             DumpBegin("Children");
-            foreach (UIElement child in Children)
+            foreach (UIElement child in context.Children)
             {
                 Debug.WriteLine(child.GetType().Name + " {");
                 Debug.Indent();
@@ -1144,7 +1234,7 @@ namespace MUXControlsAdhocApp.GridPages
                 {
                     Debug.WriteLine($"{trackIndex} {{Size={entry.Value.Size}}}");
                 }
-                
+
             }
             DumpEnd();
         }
@@ -1186,9 +1276,9 @@ namespace MUXControlsAdhocApp.GridPages
         {
             Debug.WriteLine(info);
         }
-#endregion
+        #endregion
 
-        protected override Size MeasureOverride(Size availableSize)
+        protected override Size MeasureOverride(NonVirtualizingLayoutContext context, Size availableSize)
         {
             DumpBegin(availableSize, "Measure");
             DumpTemplates();
@@ -1200,10 +1290,10 @@ namespace MUXControlsAdhocApp.GridPages
 
             AxisInfo measureHorizontal = InitializeMeasure(_templateColumns, _autoColumns, _columns, _columnGap, availableSize.Width);
             AxisInfo measureVertical = InitializeMeasure(_templateRows, _autoRows, _rows, _rowGap, availableSize.Height);
-            DumpChildren(ref measureHorizontal, ref measureVertical);
+            DumpChildren(ref measureHorizontal, ref measureVertical, context);
 
             // Resolve all grid references
-            Dictionary<UIElement, ChildGridLocations> locationCache = ResolveGridLocations(ref measureHorizontal, ref measureVertical);
+            Dictionary<UIElement, ChildGridLocations> locationCache = ResolveGridLocations(ref measureHorizontal, ref measureVertical, context);
 
             // First process any fixed sizes
             ProcessFixedSizes(ref measureHorizontal);
@@ -1211,7 +1301,7 @@ namespace MUXControlsAdhocApp.GridPages
             DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Fixed");
 
             // Next we need to know how large the auto sizes are
-            bool anyAuto = ProcessAutoSizes(ref measureHorizontal, ref measureVertical, locationCache);
+            bool anyAuto = ProcessAutoSizes(ref measureHorizontal, ref measureVertical, locationCache, context);
             if (anyAuto)
             {
                 DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Auto");
@@ -1234,7 +1324,7 @@ namespace MUXControlsAdhocApp.GridPages
                 DumpMeasureInfo(ref measureHorizontal, ref measureVertical, "Auto remainder");
             }
 
-            foreach (UIElement child in Children)
+            foreach (UIElement child in context.Children)
             {
                 ChildGridLocations childLocation = GetChildGridLocations(child, locationCache);
 
@@ -1266,11 +1356,11 @@ namespace MUXControlsAdhocApp.GridPages
             return new Size(width, height);
         }
 
-        protected override Size ArrangeOverride(Size finalSize)
+        protected override Size ArrangeOverride(NonVirtualizingLayoutContext context, Size finalSize)
         {
             DumpBegin(finalSize, "Arrange");
 
-            double extraWidth = finalSize.Width - DesiredSize.Width;
+            double extraWidth = 0.0; // finalSize.Width - DesiredSize.Width; // TODO: How to get DesiredSize from context?
             double rootOffsetX = 0.0;
 
             switch (_justifyContent)
@@ -1293,7 +1383,7 @@ namespace MUXControlsAdhocApp.GridPages
                     break;
             }
 
-            double extraHeight = finalSize.Height - DesiredSize.Height;
+            double extraHeight = 0.0f; //  finalSize.Height - DesiredSize.Height; // TODO: How to get DesiredSize from context?
             double rootOffsetY = 0.0;
 
             switch (_alignContent)
@@ -1321,12 +1411,12 @@ namespace MUXControlsAdhocApp.GridPages
             AxisInfo measureVertical = InitializeMeasure(_templateRows, _autoRows, _rows, _rowGap, finalSize.Height);
 
             // Resolve all grid references
-            Dictionary<UIElement, ChildGridLocations> locationCache = ResolveGridLocations(ref measureHorizontal, ref measureVertical);
+            Dictionary<UIElement, ChildGridLocations> locationCache = ResolveGridLocations(ref measureHorizontal, ref measureVertical, context);
 
-            foreach (UIElement child in Children)
+            foreach (UIElement child in context.Children)
             {
                 ChildGridLocations childLocation = GetChildGridLocations(child, locationCache);
-                
+
                 if (!childLocation.ColStart.IsValid || !childLocation.RowStart.IsValid)
                 {
                     child.Arrange(new Rect(0, 0, 0, 0));
