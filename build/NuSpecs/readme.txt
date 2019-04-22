@@ -4,7 +4,7 @@ Don't forget to set XamlControlsResources as your Application resources in App.x
 
     <Application>
         <Application.Resources>
-            <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" /> 
+            <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
         </Application.Resources>
     </Application>
 
@@ -14,8 +14,12 @@ or if you have other resources then add XamlControlsResources at the top as a me
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <!-- Other merged dictionaries -->
+
             </ResourceDictionary.MergedDictionaries>
-                       
+
+            <!-- Other app resources -->
+
         </ResourceDictionary>
     </Application.Resources>
 
