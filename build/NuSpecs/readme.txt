@@ -14,12 +14,9 @@ or if you have other resources then add XamlControlsResources at the top as a me
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <!-- Other merged dictionaries -->
-
+                <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
-
-            <!-- Other app resources -->
-
+            <!-- Other app resources here -->
         </ResourceDictionary>
     </Application.Resources>
 
