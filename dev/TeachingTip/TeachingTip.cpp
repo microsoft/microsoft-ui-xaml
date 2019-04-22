@@ -212,6 +212,11 @@ void TeachingTip::CreateLightDismissIndicatorPopup()
     if (!m_lightDismissIndicatorPopup)
     {
         auto popup = winrt::Popup();
+        // Set XamlRoot on the popup to handle XamlIsland/AppWindow scenarios.
+        if (winrt::IUIElement10 uiElement10 = *this)
+        {
+            popup.XamlRoot(uiElement10.XamlRoot());
+        }
         // A Popup needs contents to open, so set a child that doesn't do anything.
         auto grid = winrt::Grid();
         popup.Child(grid);
@@ -790,6 +795,12 @@ void TeachingTip::OnIsOpenChanged()
         if (!m_popup || m_createNewPopupOnOpen)
         {
             auto popup = winrt::Popup();
+            // Set XamlRoot on the popup to handle XamlIsland/AppWindow scenarios.
+            if (winrt::IUIElement10 uiElement10 = *this)
+            {
+                popup.XamlRoot(uiElement10.XamlRoot());
+            }
+
             m_popupOpenedRevoker = popup.Opened(winrt::auto_revoke, { this, &TeachingTip::OnPopupOpened });
             m_popupClosedRevoker = popup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
             if (auto&& popup3 = popup.try_as<winrt::Controls::Primitives::IPopup3>())
