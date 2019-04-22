@@ -18,32 +18,32 @@ namespace MUXControlsAdhocApp.FlexboxPages
 
         private void DirectionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _flexbox.Direction = EnumValueFromComboBox<FlexboxDirection>(sender);
+            _flexboxLayout.Direction = EnumValueFromComboBox<FlexboxDirection>(sender);
         }
 
         private void WrapComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _flexbox.Wrap = EnumValueFromComboBox<FlexboxWrap>(sender);
+            _flexboxLayout.Wrap = EnumValueFromComboBox<FlexboxWrap>(sender);
         }
 
         private void JustifyContentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _flexbox.JustifyContent = EnumValueFromComboBox<FlexboxJustifyContent>(sender);
+            _flexboxLayout.JustifyContent = EnumValueFromComboBox<FlexboxJustifyContent>(sender);
         }
 
         private void AlignItemsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _flexbox.AlignItems = EnumValueFromComboBox<FlexboxAlignItems>(sender);
+            _flexboxLayout.AlignItems = EnumValueFromComboBox<FlexboxAlignItems>(sender);
         }
 
         private void AlignContentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _flexbox.AlignContent = EnumValueFromComboBox<FlexboxAlignContent>(sender);
+            _flexboxLayout.AlignContent = EnumValueFromComboBox<FlexboxAlignContent>(sender);
         }
 
         private void AlignSelfComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Flexbox.SetAlignSelf(_alignSelf, EnumValueFromComboBox<FlexboxAlignSelf>(sender));
+            FlexboxLayout.SetAlignSelf(_alignSelf, EnumValueFromComboBox<FlexboxAlignSelf>(sender));
         }
 
         private T EnumValueFromComboBox<T>(object sender) where T : struct, IComparable

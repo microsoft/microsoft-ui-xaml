@@ -5,6 +5,7 @@
     xmlns:local="using:MUXControlsAdhocApp.GridPages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -37,9 +38,9 @@
             </Grid.Resources>
 
             <Border BorderBrush="Black" BorderThickness="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                
-                <local:Grid x:Name="_grid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                    <local:Grid.Resources>
+
+                <controls:LayoutPanel x:Name="_grid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                    <controls:LayoutPanel.Resources>
                         <Style TargetType="TextBlock">
                             <Setter Property="Foreground" Value="Gray"/>
                             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -59,25 +60,29 @@
                             <Setter Property="HorizontalAlignment" Value="Stretch"/>
                             <Setter Property="VerticalAlignment" Value="Stretch"/>
                         </Style>
-                    </local:Grid.Resources>
+                    </controls:LayoutPanel.Resources>
                     <!--
                         grid-template-columns: [first] 40px [line2] 50px [line3] auto [col4-start] 50px [five] 40px [end];
                         grid-template-rows: [row1-start] 25% [row1-end] 100px [third-line] auto [last-line];
                     -->
-                    <local:Grid.TemplateColumns>
-                        <local:GridTrackInfo Length="40" LineName="first"/>
-                        <local:GridTrackInfo Length="50" LineName="line2"/>
-                        <local:GridTrackInfo Auto="True" LineName="line3"/>
-                        <local:GridTrackInfo Length="50" LineName="col4-start"/>
-                        <local:GridTrackInfo Length="40" LineName="five"/>
-                        <!-- TODO: LineName="end" as a name for the last edge -->
-                    </local:Grid.TemplateColumns>
-                    <local:Grid.TemplateRows>
-                        <local:GridTrackInfo Percentage="0.25" LineName="row1-start"/>
-                        <local:GridTrackInfo Length="100" LineName="row1-end"/>
-                        <local:GridTrackInfo Auto="True" LineName="third-line"/>
-                        <!-- TODO: LineName="last-line" as a name for the last edge -->
-                    </local:Grid.TemplateRows>
+                    <controls:LayoutPanel.Layout>
+                        <local:GridLayout x:Name="_gridLayout">
+                            <local:GridLayout.TemplateColumns>
+                                <local:GridTrackInfo Length="40" LineName="first"/>
+                                <local:GridTrackInfo Length="50" LineName="line2"/>
+                                <local:GridTrackInfo Auto="True" LineName="line3"/>
+                                <local:GridTrackInfo Length="50" LineName="col4-start"/>
+                                <local:GridTrackInfo Length="40" LineName="five"/>
+                                <!-- TODO: LineName="end" as a name for the last edge -->
+                            </local:GridLayout.TemplateColumns>
+                            <local:GridLayout.TemplateRows>
+                                <local:GridTrackInfo Percentage="0.25" LineName="row1-start"/>
+                                <local:GridTrackInfo Length="100" LineName="row1-end"/>
+                                <local:GridTrackInfo Auto="True" LineName="third-line"/>
+                                <!-- TODO: LineName="last-line" as a name for the last edge -->
+                            </local:GridLayout.TemplateRows>  
+                        </local:GridLayout>
+                    </controls:LayoutPanel.Layout>
 
                     <!--
                     .item-a {
@@ -87,18 +92,18 @@
                       grid-row-end: 3;
                     }-->
                     <Grid x:Name="_item1" Background="#88FFA500" Opacity="0.5">
-                        <local:Grid.ColumnStart>
+                        <local:GridLayout.ColumnStart>
                             <local:GridLocation x:Name="_columnStart" Index="1"/>
-                        </local:Grid.ColumnStart>
-                        <local:Grid.ColumnEnd>
+                        </local:GridLayout.ColumnStart>
+                        <local:GridLayout.ColumnEnd>
                             <local:GridLocation x:Name="_columnEnd" LineName="five"/>
-                        </local:Grid.ColumnEnd>
-                        <local:Grid.RowStart>
+                        </local:GridLayout.ColumnEnd>
+                        <local:GridLayout.RowStart>
                             <local:GridLocation x:Name="_rowStart" LineName="row1-start"/>
-                        </local:Grid.RowStart>
-                        <local:Grid.RowEnd>
+                        </local:GridLayout.RowStart>
+                        <local:GridLayout.RowEnd>
                             <local:GridLocation x:Name="_rowEnd" Index="2"/>
-                        </local:Grid.RowEnd>
+                        </local:GridLayout.RowEnd>
                         <TextBlock FontWeight="Bold" Foreground="White" FontSize="24">item-a</TextBlock>
                     </Grid>
 
@@ -110,22 +115,22 @@
                         grid-row-end: span 2
                     }-->
                     <Grid x:Name="_item2" Background="#880000FF" Opacity="0.5">
-                        <local:Grid.ColumnStart>
+                        <local:GridLayout.ColumnStart>
                             <local:GridLocation Index="0"/>
-                        </local:Grid.ColumnStart>
-                        <local:Grid.ColumnEnd>
+                        </local:GridLayout.ColumnStart>
+                        <local:GridLayout.ColumnEnd>
                             <local:GridLocation LineName="col4-start"/>
-                        </local:Grid.ColumnEnd>
-                        <local:Grid.RowStart>
+                        </local:GridLayout.ColumnEnd>
+                        <local:GridLayout.RowStart>
                             <local:GridLocation Index="1"/>
-                        </local:Grid.RowStart>
-                        <local:Grid.RowEnd>
+                        </local:GridLayout.RowStart>
+                        <local:GridLayout.RowEnd>
                             <local:GridLocation Span="2"/>
-                        </local:Grid.RowEnd>
+                        </local:GridLayout.RowEnd>
                         <TextBlock FontWeight="Bold" Foreground="White" FontSize="24">item-b</TextBlock>
                     </Grid>
 
-                </local:Grid>
+                </controls:LayoutPanel>
 
             </Border>
 
@@ -134,8 +139,8 @@
         <StackPanel Grid.Column="1" Grid.Row="1">
 
             <StackPanel BorderBrush="LightGray" BorderThickness="1" Padding="4" Margin="0,4">
-                <Slider Value="{x:Bind _grid.ColumnGap, Mode=TwoWay}" Header="ColumnGap" Minimum="0" Maximum="50" TickFrequency="5" TickPlacement="TopLeft"/>
-                <Slider Value="{x:Bind _grid.RowGap, Mode=TwoWay}" Header="RowGap" Minimum="0" Maximum="50" TickFrequency="5" TickPlacement="TopLeft"/>
+                <Slider Value="{x:Bind _gridLayout.ColumnGap, Mode=TwoWay}" Header="ColumnGap" Minimum="0" Maximum="50" TickFrequency="5" TickPlacement="TopLeft"/>
+                <Slider Value="{x:Bind _gridLayout.RowGap, Mode=TwoWay}" Header="RowGap" Minimum="0" Maximum="50" TickFrequency="5" TickPlacement="TopLeft"/>
 
                 <ComboBox Header="JustifyItems" SelectionChanged="JustifyItemsComboBox_SelectionChanged" SelectedItem="Stretch">
                     <x:String>Start</x:String>
