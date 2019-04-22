@@ -9,12 +9,14 @@
 #include "StackLayoutState.h"
 #include "StackLayout.h"
 #include "RuntimeProfiler.h"
+#include "VirtualizingLayoutContext.h"
 
 #pragma region IFlowLayout
 
 StackLayout::StackLayout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_StackLayout);
+    LayoutId(L"StackLayout");
 }
 
 #pragma endregion
@@ -159,7 +161,9 @@ winrt::Rect StackLayout::GetExtent(
         }
         else
         {
-            REPEATER_TRACE_INFO(L"%ls: \tEstimating extent with no realized elements.  \n", LayoutId().data());
+            REPEATER_TRACE_INFO(L"%*s: \tEstimating extent with no realized elements.  \n",
+                winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),
+                LayoutId().data());
         }
     }
     else
@@ -168,7 +172,8 @@ winrt::Rect StackLayout::GetExtent(
         MUX_ASSERT(lastRealizedItemIndex == -1);
     }
 
-    REPEATER_TRACE_INFO(L"%ls: \tExtent is (%.0f,%.0f). Based on average %.0f. \n",
+    REPEATER_TRACE_INFO(L"%*s: \tExtent is (%.0f,%.0f). Based on average %.0f. \n",
+        winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),
         LayoutId().data(), extent.Width, extent.Height, averageElementSize);
     return extent;
 }

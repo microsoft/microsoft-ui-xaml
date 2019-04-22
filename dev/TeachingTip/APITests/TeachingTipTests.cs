@@ -33,6 +33,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     public class TeachingTipTests
     {
         [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // TeachingTip doesn't appear to show up correctly in OneCore.
         public void TeachingTipBackgroundTest()
         {
             var loadedEvent = new AutoResetEvent(false);

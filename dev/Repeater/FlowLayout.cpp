@@ -8,6 +8,12 @@
 #include "FlowLayoutAlgorithm.h"
 #include "FlowLayoutState.h"
 #include "FlowLayout.h"
+#include "VirtualizingLayoutContext.h"
+
+FlowLayout::FlowLayout()
+{
+    LayoutId(L"FlowLayout");
+}
 
 #pragma region IVirtualizingLayoutOverrides
 
@@ -224,19 +230,19 @@ winrt::Rect FlowLayout::GetExtent(
                     0,
                     std::max(0.0f, static_cast<float>((flowState->SpecialElementDesiredSize().*Minor() + minItemSpacing) * itemsCount - minItemSpacing)),
                     std::max(0.0f, static_cast<float>(averageLineSize - lineSpacing)));
-            REPEATER_TRACE_INFO(L"%ls: \tEstimating extent with no realized elements. \n", LayoutId().data());
+            REPEATER_TRACE_INFO(L"%*s: \tEstimating extent with no realized elements. \n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data());
         }
 
-        REPEATER_TRACE_INFO(L"%ls: \tExtent is {%.0f,%.0f}. Based on average line size {%.0f} and average items per line {%.0f}. \n",
-            LayoutId().data(), extent.Width, extent.Height, averageLineSize, averageItemsPerLine);
+        REPEATER_TRACE_INFO(L"%*s: \tExtent is {%.0f,%.0f}. Based on average line size {%.0f} and average items per line {%.0f}. \n",
+            winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data(), extent.Width, extent.Height, averageLineSize, averageItemsPerLine);
     }
     else
     {
         MUX_ASSERT(firstRealizedItemIndex == -1);
         MUX_ASSERT(lastRealizedItemIndex == -1);
 
-        REPEATER_TRACE_INFO(L"%ls: \tExtent is {%.0f,%.0f}. ItemCount is 0 \n",
-            LayoutId().data(), extent.Width, extent.Height);
+        REPEATER_TRACE_INFO(L"%*s: \tExtent is {%.0f,%.0f}. ItemCount is 0 \n",
+            winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data(), extent.Width, extent.Height);
     }
 
     return extent;
@@ -260,8 +266,8 @@ void FlowLayout::OnLineArranged(
     winrt::VirtualizingLayoutContext const& context)
 {
 
-    REPEATER_TRACE_INFO(L"%ls: \tOnLineArranged startIndex:%d Count:%d LineHeight:%d \n",
-        LayoutId().data(), startIndex, countInLine, lineSize);
+    REPEATER_TRACE_INFO(L"%*s: \tOnLineArranged startIndex:%d Count:%d LineHeight:%d \n",
+        winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data(), startIndex, countInLine, lineSize);
     
     const auto flowState = GetAsFlowState(context.LayoutState());
     flowState->OnLineArranged(startIndex, countInLine, lineSize, context);

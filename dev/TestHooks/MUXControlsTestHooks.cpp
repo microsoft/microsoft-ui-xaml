@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "MUXControlsTestHooksFactory.h"
+#include "CommandBarFlyoutTrace.h"
 #include "ScrollerTrace.h"
 
 #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
@@ -63,7 +64,12 @@ void MUXControlsTestHooks::SetOutputDebugStringLevelForTypeImpl(const wstring_vi
         ScrollerTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
         ScrollerTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
     }
-    #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
+    if (type == L"CommandBarFlyout" || type.empty())
+    {
+        CommandBarFlyoutTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
+        CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
+    }
+#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
     if (type == L"SwipeControl" || type.empty())
     {
         SwipeControlTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;

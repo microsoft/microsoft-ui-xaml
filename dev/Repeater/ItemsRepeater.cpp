@@ -17,6 +17,9 @@
 #include "ItemTemplateWrapper.h"
 #endif
 
+// Change to 'true' to turn on debugging outputs in Output window
+bool RepeaterTrace::s_IsDebugOutputEnabled{ false };
+
 winrt::Point ItemsRepeater::ClearedElementsArrangePosition = winrt::Point(-10000.0f, -10000.0f);
 winrt::Rect ItemsRepeater::InvalidRect = { -1.f, -1.f, -1.f, -1.f };
 
@@ -110,7 +113,15 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
 
     if (auto layout = Layout())
     {
-        desiredSize = layout.Measure(GetLayoutContext(), availableSize);
+        auto layoutContext = GetLayoutContext();
+
+        // Expensive operation, do it only in debug builds.
+#ifdef _DEBUG
+        auto virtualContext = winrt::get_self<VirtualizingLayoutContext>(layoutContext);
+        virtualContext->Indent(Indent());
+#endif
+
+        desiredSize = layout.Measure(layoutContext, availableSize);
         extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, desiredSize.Width, desiredSize.Height };
 
         // Clear auto recycle candidate elements that have not been kept alive by layout - i.e layout did not
@@ -434,6 +445,30 @@ void ItemsRepeater::OnElementIndexChanged(const winrt::UIElement& element, int o
     }
 }
 
+// Provides an indentation based on repeater elements in the UI Tree that
+// can be used to make logging a little easier to read.
+int ItemsRepeater::Indent()
+{
+    int indent = 1;
+
+    // Expensive, so we do it only in debug builds.
+#ifdef _DEBUG
+    auto parent = this->Parent().as<winrt::FrameworkElement>();
+    while (parent && !parent.try_as<winrt::ItemsRepeater>())
+    {
+        parent = parent.Parent().as<winrt::FrameworkElement>();
+    }
+
+    if (parent)
+    {
+        auto parentRepeater = winrt::get_self<ItemsRepeater>(parent.as<winrt::ItemsRepeater>());
+        indent = parentRepeater->Indent();
+    }
+#endif
+
+    return indent * 4;
+}
+
 void ItemsRepeater::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
     // If we skipped an unload event, reset the scrollers now and invalidate measure so that we get a new
@@ -477,16 +512,15 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
 
     if (auto layout = Layout())
     {
-        auto args = winrt::NotifyCollectionChangedEventArgs(
-            winrt::NotifyCollectionChangedAction::Reset,
-            nullptr /* newItems */,
-            nullptr /* oldItems */,
-            -1 /* newIndex */,
-            -1 /* oldIndex */);
-        args.Action();
-
         if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
         {
+            auto args = winrt::NotifyCollectionChangedEventArgs(
+                winrt::NotifyCollectionChangedAction::Reset,
+                nullptr /* newItems */,
+                nullptr /* oldItems */,
+                -1 /* newIndex */,
+                -1 /* oldIndex */);
+            args.Action();
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
 
@@ -494,11 +528,50 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
     }
 }
 
-void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory&  oldValue, const winrt::IElementFactory&  newValue)
+void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue, const winrt::IElementFactory& newValue)
 {
     if (m_isLayoutInProgress && oldValue)
     {
         throw winrt::hresult_error(E_FAIL, L"ItemTemplate cannot be changed during layout.");
+    }
+
+    // Since the ItemTemplate has changed, we need to re-evaluate all the items that
+    // have already been created and are now in the tree. The easiest way to do that
+    // would be to do a reset.. Note that this has to be done before we change the template
+    // so that the cleared elements go back into the old template.
+    if (auto layout = Layout())
+    {
+        if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
+        {
+            auto args = winrt::NotifyCollectionChangedEventArgs(
+                winrt::NotifyCollectionChangedAction::Reset,
+                nullptr /* newItems */,
+                nullptr /* oldItems */,
+                -1 /* newIndex */,
+                -1 /* oldIndex */);
+            args.Action();
+            m_processingDataSourceChange.set(args);
+            auto processingChange = gsl::finally([this]()
+                {
+                    m_processingDataSourceChange.set(nullptr);
+                });
+
+            virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
+        }
+        else if (auto nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
+        {
+            // Walk through all the elements and make sure they are cleared for
+            // non-virtualizing layouts.
+            auto children = Children();
+            for (unsigned i = 0u; i < children.Size(); ++i)
+            {
+                auto element = children.GetAt(i);
+                if (GetVirtualizationInfo(element)->IsRealized())
+                {
+                    ClearElementImpl(element);
+                }
+            }
+        }
     }
 
     if (!SharedHelpers::IsRS5OrHigher())
@@ -528,6 +601,8 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory&  oldValu
         }
     }
 #endif
+
+    InvalidateMeasure();
 }
 
 void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::Layout& newValue)
@@ -574,7 +649,8 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
         m_arrangeInvalidated = newValue.ArrangeInvalidated(winrt::auto_revoke, { this, &ItemsRepeater::InvalidateArrangeForLayout });
     }
 
-    m_viewportManager->OnLayoutChanged();
+    bool isVirtualizingLayout = newValue != nullptr && newValue.try_as<winrt::VirtualizingLayout>() != nullptr;
+    m_viewportManager->OnLayoutChanged(isVirtualizingLayout);
     InvalidateMeasure();
 }
 

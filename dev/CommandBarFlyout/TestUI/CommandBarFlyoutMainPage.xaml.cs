@@ -4,6 +4,8 @@
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
+using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
+
 namespace MUXControlsTestApp
 {
     public sealed partial class CommandBarFlyoutMainPage : TestPage
@@ -29,6 +31,13 @@ namespace MUXControlsTestApp
         {
             var rootFrame = Window.Current.Content as Frame;
             rootFrame.NavigateWithoutAnimation(typeof(ExtraCommandBarFlyoutPage), "Extra CommandBarFlyout Tests");
+        }
+        private void CmbCommandBarFlyoutOutputDebugStringLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            MUXControlsTestHooks.SetOutputDebugStringLevelForType(
+                "CommandBarFlyout",
+                cmbCommandBarFlyoutOutputDebugStringLevel.SelectedIndex == 1 || cmbCommandBarFlyoutOutputDebugStringLevel.SelectedIndex == 2,
+                cmbCommandBarFlyoutOutputDebugStringLevel.SelectedIndex == 2);
         }
     }
 }

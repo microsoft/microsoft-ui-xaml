@@ -49,13 +49,13 @@ winrt::UIElement ViewManager::GetElement(int index, bool forceCreate, bool suppr
     if (suppressAutoRecycle)
     {
         virtInfo->AutoRecycleCandidate(false);
-        REPEATER_TRACE_INFO(L"GetElement: %d Not AutoRecycleCandidate: \n", virtInfo->Index());
+        REPEATER_TRACE_INFO(L"%* GetElement: %d Not AutoRecycleCandidate: \n", m_owner->Indent(), virtInfo->Index());
     }
     else
     {
         virtInfo->AutoRecycleCandidate(true);
         virtInfo->KeepAlive(true);
-        REPEATER_TRACE_INFO(L"GetElement: %d AutoRecycleCandidate: \n", virtInfo->Index());
+        REPEATER_TRACE_INFO(L"%* GetElement: %d AutoRecycleCandidate: \n", m_owner->Indent(), virtInfo->Index());
     }
 
     return element;

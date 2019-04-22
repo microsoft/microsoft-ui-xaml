@@ -24,6 +24,10 @@ if(IsRepeaterTracingEnabled()) \
 { \
     RepeaterTrace::TraceInfo(message, __VA_ARGS__); \
 } \
+else if (RepeaterTrace::s_IsDebugOutputEnabled) \
+{ \
+    RepeaterTrace::TraceInfo(message, __VA_ARGS__); \
+} \
 
 #define REPEATER_TRACE_PERF(info) \
 if(IsRepeaterPerfTracingEnabled()) \
@@ -34,6 +38,7 @@ if(IsRepeaterPerfTracingEnabled()) \
 class RepeaterTrace
 {
 public:
+    static bool s_IsDebugOutputEnabled;
     static void TraceInfo(PCWSTR message, ...) noexcept
     {
         va_list args;
@@ -52,6 +57,12 @@ public:
                 TraceLoggingLevel(WINEVENT_LEVEL_INFO),
                 TraceLoggingKeyword(KEYWORD_REPEATER),
                 TraceLoggingWideString(buffer, "Message"));
+
+            if (RepeaterTrace::s_IsDebugOutputEnabled)
+            {
+                OutputDebugStringW(buffer);
+            }
+
         }
         va_end(args);
     }

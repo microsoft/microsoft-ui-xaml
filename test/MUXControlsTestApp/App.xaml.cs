@@ -53,6 +53,9 @@ namespace MUXControlsTestApp
 
             // Instantiate this very early to exercise MaterialHelper's ability to be instantiated before XAML has a dispatcher.
             MaterialHelperTestApi.IgnoreAreEffectsFast = true;
+
+            // OneCore has no splash screen, so we'll ignore the splash-screen requirement there.
+            _isSplashScreenDismissed = PlatformConfiguration.IsDevice(DeviceType.OneCore);
         }
 
         public Frame RootFrame

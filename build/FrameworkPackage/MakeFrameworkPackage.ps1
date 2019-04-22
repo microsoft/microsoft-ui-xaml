@@ -62,7 +62,7 @@ Write-Verbose "Copying $inputBasePath\Themes"
 Copy-IntoNewDirectory -IfExists $inputBasePath\Themes $fullOutputPath\PackageContents\Microsoft.UI.Xaml
 
 [xml]$sdkPropsContent = Get-Content $PSScriptRoot\..\..\sdkversion.props
-$highestSdkVersion = $sdkPropsContent.GetElementsByTagName("*").'#text' -match "10." | Sort-Object | Select-Object -Last 1
+$highestSdkVersion = ($sdkPropsContent.SelectNodes("//*[contains(local-name(), 'SDKVersion')]") | Where-Object { -not $_.ToString().Contains("Insider")} | Select-Object -Last 1).'#text'
 $sdkReferencesPath=$kitsRoot10 + "References\" + $highestSdkVersion;    
 $foundationWinmdPath = Get-ChildItem -Recurse $sdkReferencesPath"\Windows.Foundation.FoundationContract" -Filter "Windows.Foundation.FoundationContract.winmd" | Select-Object -ExpandProperty FullName
 $universalWinmdPath = Get-ChildItem -Recurse $sdkReferencesPath"\Windows.Foundation.UniversalApiContract" -Filter "Windows.Foundation.UniversalApiContract.winmd" | Select-Object -ExpandProperty FullName

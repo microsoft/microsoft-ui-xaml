@@ -49,9 +49,6 @@ jobs:
   - template: MUX-InstallNuget-Steps.yml
 
   - ${{if parameters.signConfig }}:
-    # Install SDK since the custom appx generation needs to resolve winmd types from it.
-    - template: MUX-InstallWindowsSDK-Steps.yml
-
     # Re-create framework packages because we made them in the build step against unsigned binaries.
     - template: MUX-MakeFrameworkPackages-Steps.yml
 
@@ -79,6 +76,8 @@ jobs:
 
   - ${{if parameters.signConfig }}:
     - task: PkgESCodeSign@10
+      env:
+        SYSTEM_ACCESSTOKEN: $(system.accesstoken)
       displayName: CodeSign
       inputs:
         signConfigXml: ${{ parameters.signConfig }}
