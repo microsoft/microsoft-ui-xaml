@@ -59,6 +59,21 @@ namespace Flick
             }
         }
 
+        private int flexShrink;
+        public int FlexShrink
+        {
+            get
+            {
+                return flexShrink;
+            }
+
+            set
+            {
+                flexShrink = value;
+                NotifyPropertyChanged();
+            }
+        }
+
         private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
         {
             if (PropertyChanged != null)

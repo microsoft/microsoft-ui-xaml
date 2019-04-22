@@ -32,7 +32,8 @@
                         <UserControl IsTabStop="True" UseSystemFocusVisuals="True"
                                      Margin="5"
                                      local:Flex.FlexBasis="{Binding FlexBasis, Mode=OneWay}"
-                                     local:Flex.FlexGrow="{Binding FlexGrow, Mode=OneWay}">
+                                     local:Flex.FlexGrow="{Binding FlexGrow, Mode=OneWay}"
+                                     local:Flex.FlexShrink="{Binding FlexShrink, Mode=OneWay}">
                             <Grid>
                                 <!-- BorderBrush="Red" BorderThickness="1"/> -->
                                 <StackPanel>
@@ -42,6 +43,7 @@
                                 <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="20">
                                     <TextBox Text="{Binding FlexBasis, Mode=TwoWay}" Width="50" TextChanged="TextBox_TextChanged" />
                                     <TextBox Text="{Binding FlexGrow, Mode=TwoWay}" Width="50" TextChanged="TextBox_TextChanged" />
+                                    <TextBox Text="{Binding FlexShrink, Mode=TwoWay}" Width="50" TextChanged="TextBox_TextChanged" />
                                 </StackPanel>
                             </Grid>
                         </UserControl>

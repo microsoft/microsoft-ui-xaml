@@ -35,6 +35,7 @@ namespace Flick
             {
                 items[i].FlexBasis = 300;
                 items[i].FlexGrow = i % 3 + 1;
+                items[i].FlexShrink = 1;
             }
             repeater.ItemsSource = items;
         }

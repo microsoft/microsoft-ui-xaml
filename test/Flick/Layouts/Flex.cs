@@ -12,11 +12,9 @@ using Windows.UI.Xaml;
 // (2) Is there equivalent of align-items baseline in xaml ?
 //
 // (3) order is not impl - don't think it is valuable, we
-// can just change the order of the children
+// can just change the order of the children, needs a sort of children :/
 //
-// (4) FlexWrap-WrapReverse not impl - not sure if it is valuable.
-//
-// todo - basis, shrink, grow
+// (4) FlexWrap-WrapReverse not impl - not sure if it is valuable. Need one more pass?
 //
 // todo for perf - possibly cache dependency properties since they dont change often.
 //
@@ -112,7 +110,7 @@ namespace Flick
         }
 
         public static readonly DependencyProperty FlexShrinkProperty =
-            DependencyProperty.RegisterAttached("FlexShrink", typeof(int), typeof(Flex), new PropertyMetadata(0, new PropertyChangedCallback(OnPropertyChanged)));
+            DependencyProperty.RegisterAttached("FlexShrink", typeof(int), typeof(Flex), new PropertyMetadata(1, new PropertyChangedCallback(OnPropertyChanged)));
 
 
         public static int GetFlexBasis(DependencyObject obj)
@@ -171,6 +169,7 @@ namespace Flick
                         // wrap since the current item will not fit.
                         currentLine.MainSize = mainPosition;
                         GrowLineIfNeeded(ref currentLine, children, availableSize, isReverse);
+                        ShrinkLineIfNeeded(ref currentLine, children, availableSize, isReverse);
                         state.Lines.Add(currentLine);
                         mainPosition = 0.0;
                         crossPosition += currentLine.CrossSize;
@@ -182,6 +181,7 @@ namespace Flick
 
                 // Let's position child at mainPosition, crossPosition 
                 currentLine.SumGrow += GetFlexGrow(child);
+                currentLine.SumShrink += GetFlexShrink(child);
                 currentLine.CountInLine++;
 
                 // Now calculate position for next child.
@@ -193,6 +193,7 @@ namespace Flick
             {
                 currentLine.MainSize = mainPosition;
                 GrowLineIfNeeded(ref currentLine, children, availableSize, isReverse);
+                ShrinkLineIfNeeded(ref currentLine, children, availableSize, isReverse);
                 state.Lines.Add(currentLine);
             }
 
@@ -272,6 +273,34 @@ namespace Flick
                         var growBy = (extraMainSpaceInLine / currentLine.SumGrow) * currentChildFlexGrow;
                         var basis = GetFlexBasis(currentChild);
                         var measureSize = basis != 0 ? Size(Math.Min(basis + growBy, Main(availableSize)), Cross(availableSize)) : availableSize;
+                        currentChild.Measure(measureSize);
+                    }
+                    currentLine.CrossSize = Math.Max(currentLine.CrossSize, Cross(currentChild.DesiredSize));
+                }
+            }
+        }
+
+        private void ShrinkLineIfNeeded(ref LineInfo currentLine, IReadOnlyList<UIElement> children, Size availableSize, bool isReverse)
+        {
+            var mainAvailableSize = Main(availableSize);
+            if (currentLine.SumShrink > 0 && mainAvailableSize < currentLine.MainSize)
+            {
+                var deficitMainSpaceInLine = currentLine.MainSize - mainAvailableSize;
+                // Line eats up all the space.
+                currentLine.MainSize = Main(availableSize);
+                currentLine.CrossSize = 0.0;
+                for (int i = 0; i < currentLine.CountInLine; i++)
+                {
+                    // grow the item
+                    var childIndex = isReverse ? currentLine.StartIndex - i : currentLine.StartIndex + i;
+                    var currentChild = children[childIndex];
+                    var currentChildFlexShrink = GetFlexShrink(currentChild);
+                    // no need to re-measure if we are not going to grow this item.
+                    if (currentChildFlexShrink > 0)
+                    {
+                        var shrinkBy = (deficitMainSpaceInLine / currentLine.SumShrink) * currentChildFlexShrink;
+                        var basis = GetFlexBasis(currentChild);
+                        var measureSize = basis != 0 ? Size(Math.Min(basis - shrinkBy, Main(availableSize)), Cross(availableSize)) : availableSize;
                         currentChild.Measure(measureSize);
                     }
                     currentLine.CrossSize = Math.Max(currentLine.CrossSize, Cross(currentChild.DesiredSize));
@@ -463,6 +492,7 @@ namespace Flick
             public double MainSize { get; set; }
             public double CrossSize { get; set; }
             public int SumGrow { get; set; }
+            public int SumShrink { get; set; }
 
             public override string ToString()
             {
