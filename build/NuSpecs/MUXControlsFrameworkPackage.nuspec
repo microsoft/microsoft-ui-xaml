@@ -23,7 +23,8 @@
     <file target="lib\uap10.0\Design" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml.Design\Microsoft.UI.Xaml.design.dll"/>
 
     <file target="lib\uap10.0\Microsoft.UI.Xaml\Themes" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml\Generic.xaml"/>
-    <file target="lib\uap10.0" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\CustomizedPri\CustomizedPri.pri"/>
+    <file target="lib\uap10.0" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\CustomizedPri\Microsoft.UI.Xaml.pri"/>
+    <file target="lib\uap10.0\DensityStyles\Compact.xaml" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\Microsoft.UI.Xaml\DensityStyles\Compact.xaml"/>
 
     <file target="tools" src="$TOOLSDIR$\**\*.*"/>
 

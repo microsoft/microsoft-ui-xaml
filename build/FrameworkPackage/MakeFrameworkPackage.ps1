@@ -228,9 +228,9 @@ $compactxaml =
 "@
 Set-Content -Value $compactxaml $DensityStylesDir\Compact.xaml
 
-# generate CustomizedPri
+# generate CustomizedPri, the file name should be $inputBaseFileName.pri, otherwise vs will not pick it up.
 $priConfigPath = [IO.Path]::GetFullPath("$CustomizedPriDir\priconfig.xml")
-$priOutputPath = [IO.Path]::GetFullPath("$CustomizedPriDir\CustomizedPri.pri")
+$priOutputPath = [IO.Path]::GetFullPath("$CustomizedPriDir\$inputBaseFileName.pri")
 
 $makepriNew = "`"" + (Join-Path $WindowsSdkBinDir "makepri.exe") + "`" new /pr $CustomizedPriDir /cf $priConfigPath /of $priOutputPath /in $inputBaseFileName /o"
 Write-Host $makepriNew
