@@ -18,7 +18,6 @@ TeachingTip::TeachingTip()
     m_automationNameChangedRevoker = RegisterPropertyChanged(*this, winrt::AutomationProperties::NameProperty(), { this, &TeachingTip::OnAutomationNameChanged });
     m_automationIdChangedRevoker = RegisterPropertyChanged(*this, winrt::AutomationProperties::AutomationIdProperty(), { this, &TeachingTip::OnAutomationIdChanged });
     SetValue(s_TemplateSettingsProperty, winrt::make<::TeachingTipTemplateSettings>());
-    m_loadedRevoker = Loaded(winrt::auto_revoke, { this, &TeachingTip::OnLoaded });
 }
 
 TeachingTip::~TeachingTip()
@@ -118,29 +117,6 @@ void TeachingTip::OnApplyTemplate()
     EstablishShadows();
 
     m_isTemplateApplied = true;
-}
-
-void TeachingTip::OnLoaded(const winrt::IInspectable&, const winrt::IInspectable&)
-{
-#ifdef USE_INSIDER_SDK
-    if (winrt::IUIElement10 uiElement10 = *this)
-    {
-        if (auto xamlRoot = uiElement10.XamlRoot())
-        {
-            m_currentXamlRootSize = xamlRoot.Size();
-            m_xamlRootChangedRevoker.revoke();
-            m_xamlRootChangedRevoker = xamlRoot.Changed(winrt::auto_revoke, { this, &TeachingTip::XamlRootChanged });
-        }
-    }
-    else
-#endif // USE_INSIDER_SDK
-    {
-        if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
-        {
-            m_windowSizeChangedRevoker.revoke();
-            m_windowSizeChangedRevoker = coreWindow.SizeChanged(winrt::auto_revoke, { this, &TeachingTip::WindowSizeChanged });
-        }
-    }
 }
 
 void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -1087,6 +1063,29 @@ void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt:
 
 void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&)
 {
+#ifdef USE_INSIDER_SDK
+    if (winrt::IUIElement10 uiElement10 = *this)
+    {
+        if (auto xamlRoot = uiElement10.XamlRoot())
+        {
+            m_currentXamlRootSize = xamlRoot.Size();
+            if (m_xamlRootChangedToken)
+            {
+                xamlRoot.Changed(m_xamlRootChangedToken);
+            }
+            m_xamlRootChangedToken = xamlRoot.Changed({ this, &TeachingTip::XamlRootChanged });
+        }
+    }
+    else
+#endif // USE_INSIDER_SDK
+    {
+        if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
+        {
+            m_windowSizeChangedRevoker.revoke();
+            m_windowSizeChangedRevoker = coreWindow.SizeChanged(winrt::auto_revoke, { this, &TeachingTip::WindowSizeChanged });
+        }
+    }
+
     StartExpandToOpen();
 
     if (auto teachingTipPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TeachingTipAutomationPeer>())
@@ -1123,6 +1122,15 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
 
 void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
 {
+    m_windowSizeChangedRevoker.revoke();
+    if (winrt::IUIElement10 uiElement10 = *this)
+    {
+        if (auto xamlRoot = uiElement10.XamlRoot())
+        {
+            xamlRoot.Changed(m_xamlRootChangedToken);
+        }
+    }
+
     m_lightDismissIndicatorPopup.get().IsOpen(false);
     m_popup.get().Child(nullptr);
     auto myArgs = winrt::make_self<TeachingTipClosedEventArgs>();

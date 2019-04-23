@@ -66,9 +66,10 @@ private:
     winrt::Popup::Closed_revoker m_popupClosedRevoker{};
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
     winrt::CoreWindow::SizeChanged_revoker m_windowSizeChangedRevoker{};
-    winrt::XamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
-    winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
+    // The XamlRoot::Changed_revoker doesn't work for unattaching the event.
+    // Tracked by internal bug #21302432.
+    winrt::event_token m_xamlRootChangedToken{ 0 };
 	void SetPopupAutomationProperties();
     void CreateLightDismissIndicatorPopup();
     bool UpdateTail();
@@ -93,7 +94,6 @@ private:
     void OnShouldConstrainToRootBoundsChanged();
     void OnHeroContentPlacementChanged();
 
-    void OnLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnAutomationNameChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnAutomationIdChanged(const winrt::IInspectable&, const winrt::IInspectable&);
 
