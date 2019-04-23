@@ -193,27 +193,33 @@ void TreeViewNode::OnItemsSourceChanged(const winrt::IInspectable& sender, const
 
 void TreeViewNode::OnItemsAdded(int index, int count)
 {
-    for (int i = index + count - 1; i >= index; i--)
+    if (m_itemsDataSource.Count() != static_cast<int>(Children().Size()))
     {
-        auto item = m_itemsDataSource.GetAt(i);
-        auto node = winrt::make_self<TreeViewNode>();
-        node->Content(item);
-        winrt::get_self<TreeViewNodeVector>(Children())->InsertAtCore(index, *node);
+        for (int i = index + count - 1; i >= index; i--)
+        {
+            auto item = m_itemsDataSource.GetAt(i);
+            auto node = winrt::make_self<TreeViewNode>();
+            node->Content(item);
+            winrt::get_self<TreeViewNodeVector>(Children())->InsertAt(index, *node, false);
+        }
     }
 }
 
 void TreeViewNode::OnItemsRemoved(int index, int count)
 {
-    for (int i = 0; i < count; i++)
+    if (m_itemsDataSource.Count() != static_cast<int>(Children().Size()))
     {
-        winrt::get_self<TreeViewNodeVector>(Children())->RemoveAtCore(index);
+        for (int i = 0; i < count; i++)
+        {
+            winrt::get_self<TreeViewNodeVector>(Children())->RemoveAt(index, false);
+        }
     }
 }
 
 void TreeViewNode::SyncChildrenNodesWithItemsSource()
 {
     auto children = winrt::get_self<TreeViewNodeVector>(Children());
-    children->ClearCore();
+    children->Clear();
 
     if (m_itemsDataSource)
     {
@@ -224,7 +230,7 @@ void TreeViewNode::SyncChildrenNodesWithItemsSource()
             auto node = winrt::make_self<TreeViewNode>();
             node->Content(item);
             node->IsContentMode(true);
-            children->AppendCore(*node);
+            children->Append(*node, false);
         }
     }
 }
@@ -284,14 +290,6 @@ hstring TreeViewNode::ToString()
 
 #pragma region TreeViewNodeVector
 
-// Check if parent node is in "content mode".
-// We don't want users to use ItemsSource and modify TreeViewNode at the same time since that might cause some unexpected behaviors.
-// This method is used to check what "mode" is treeview currently in.
-bool TreeViewNodeVector::IsParentInContentMode()
-{
-    return winrt::get_self<TreeViewNode>(m_parent.get())->IsContentMode();
-}
-
 TreeViewNodeVector::TreeViewNodeVector()
 {
 }
@@ -303,192 +301,127 @@ TreeViewNodeVector::TreeViewNodeVector(unsigned int capacity)
 
 void TreeViewNodeVector::SetParent(winrt::TreeViewNode value) { m_parent = winrt::make_weak(value); }
 
-void TreeViewNodeVector::AppendCore(winrt::TreeViewNode const& item)
+TreeViewNode* TreeViewNodeVector::Parent()
 {
-    auto inner = GetVectorInnerImpl();
-
-    winrt::get_self<TreeViewNode>(item)->put_ParentImpl(m_parent.get());
-
-    inner->Append(item);
+    return winrt::get_self<TreeViewNode>(m_parent.get());
 }
 
-void TreeViewNodeVector::InsertAtCore(unsigned int index, winrt::TreeViewNode const& item)
+// Check if parent node is in "content mode".
+// We don't want users to use ItemsSource and modify TreeViewNode at the same time since that might cause some unexpected behaviors.
+// This method is used to check what "mode" is treeview currently in.
+bool TreeViewNodeVector::IsParentInContentMode()
+{
+    return Parent()->IsContentMode();
+}
+
+winrt::IBindableVector TreeViewNodeVector::GetParentItemsSource()
+{
+    if (IsParentInContentMode())
+    {
+        if (auto source = Parent()->ItemsSource().try_as<winrt::IBindableVector>())
+        {
+            return source;
+        }
+    }
+
+    return nullptr;
+}
+
+void TreeViewNodeVector::Append(winrt::TreeViewNode const& item, bool updateItemsSource)
+{
+    InsertAt(Size(), item, updateItemsSource);
+}
+void TreeViewNodeVector::InsertAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource)
 {
     auto inner = GetVectorInnerImpl();
-
     MUX_ASSERT(m_parent.get());
     winrt::get_self<TreeViewNode>(item)->put_ParentImpl(m_parent.get());
 
     inner->InsertAt(index, item);
+
+    if (updateItemsSource)
+    {
+        if (auto itemsSource = GetParentItemsSource())
+        {
+            itemsSource.InsertAt(index, item.Content());
+        }
+    }
 }
 
-void TreeViewNodeVector::SetAtCore(unsigned int index, winrt::TreeViewNode const& item)
+void TreeViewNodeVector::SetAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource)
 {
-    auto inner = GetVectorInnerImpl();
-
-    auto oldNode = inner->GetAt(index);
-    winrt::get_self<TreeViewNode>(oldNode)->put_ParentImpl(nullptr);
-
-    MUX_ASSERT(m_parent.get());
-    winrt::get_self<TreeViewNode>(item)->put_ParentImpl(m_parent.get());
-
-    inner->SetAt(index, item);
+    RemoveAt(index, updateItemsSource);
+    InsertAt(index, item, updateItemsSource);
 }
 
-void TreeViewNodeVector::RemoveAtCore(unsigned int index)
+void TreeViewNodeVector::RemoveAt(unsigned int index, bool updateItemsSource)
 {
     auto inner = GetVectorInnerImpl();
     auto targetNode = inner->GetAt(index);
-
     winrt::get_self<TreeViewNode>(targetNode)->put_ParentImpl(nullptr);
 
     inner->RemoveAt(index);
+
+    if (updateItemsSource)
+    {
+        if (auto source = GetParentItemsSource())
+        {
+            source.RemoveAt(index);
+        }
+    }
 }
 
-void TreeViewNodeVector::RemoveAtEndCore()
+void TreeViewNodeVector::RemoveAtEnd(bool updateItemsSource)
 {
-    auto inner = GetVectorInnerImpl();
-
-    auto index = inner->Size() - 1;
-    auto targetNode = inner->GetAt(index);
-
-    winrt::get_self<TreeViewNode>(targetNode)->put_ParentImpl(nullptr);
-
-    inner->RemoveAtEnd();
+    auto index = GetVectorInnerImpl()->Size() - 1;
+    RemoveAt(updateItemsSource);
 }
 
-void TreeViewNodeVector::ReplaceAllCore(winrt::array_view<winrt::TreeViewNode const> values)
+void TreeViewNodeVector::ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values)
 {
     auto inner = GetVectorInnerImpl();
 
     auto count = inner->Size();
-
     if (count > 0)
     {
-        // Clear parent on outgoing
-        for (unsigned int i = 0; i < count; i++)
-        {
-            auto targetNode = inner->GetAt(i);
+        Clear();
 
-            winrt::get_self<TreeViewNode>(targetNode)->put_ParentImpl(nullptr);
-        }
-
+        auto itemsSource = GetParentItemsSource();
         // Set parent on new elements
         MUX_ASSERT(m_parent.get());
         for (auto& value : values)
         {
             winrt::get_self<TreeViewNode>(value)->put_ParentImpl(m_parent.get());
+            if (itemsSource)
+            {
+                itemsSource.Append(value.Content());
+            }
         }
 
         inner->ReplaceAll(values);
     }
 }
 
-void TreeViewNodeVector::ClearCore()
+void TreeViewNodeVector::Clear()
 {
     auto inner = GetVectorInnerImpl();
-
     auto count = inner->Size();
 
     if (count > 0)
     {
         for (unsigned int i = 0; i < count; i++)
         {
-            auto targetNode = inner->GetAt(i);
-
-            winrt::get_self<TreeViewNode>(targetNode)->put_ParentImpl(nullptr);
+            auto node = inner->GetAt(i);
+            winrt::get_self<TreeViewNode>(node)->put_ParentImpl(nullptr);
         }
 
         inner->Clear();
-    }
-}
 
-void TreeViewNodeVector::Append(winrt::TreeViewNode const& item)
-{
-    if (!IsParentInContentMode())
-    {
-        AppendCore(item);
-    }
-    else
-    {
-        throwIllegalMethodCallException();
-    }
-}
-void TreeViewNodeVector::InsertAt(unsigned int index, winrt::TreeViewNode const& item)
-{
-    if (!IsParentInContentMode())
-    {
-        InsertAtCore(index, item);
-    }
-    else
-    {
-        throwIllegalMethodCallException();
-    }
-}
-
-void TreeViewNodeVector::SetAt(unsigned int index, winrt::TreeViewNode const& item)
-{
-    if (!IsParentInContentMode())
-    {
-        SetAtCore(index, item);
-    }
-    else
-    {
-        throwIllegalMethodCallException();
-    }
-}
-
-void TreeViewNodeVector::RemoveAt(unsigned int index)
-{
-    if (!IsParentInContentMode())
-    {
-        RemoveAtCore(index);
-    }
-    else
-    {
-        throwIllegalMethodCallException();
-    }
-}
-
-void TreeViewNodeVector::RemoveAtEnd()
-{
-    if (!IsParentInContentMode())
-    {
-        RemoveAtEndCore();
-    }
-    else
-    {
-        throwIllegalMethodCallException();
-    }
-}
-
-void TreeViewNodeVector::ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values)
-{
-    if (!IsParentInContentMode())
-    {
-        ReplaceAllCore(values);
-    }
-    else
-    {
-        throwIllegalMethodCallException();
-    }
-}
-
-void TreeViewNodeVector::Clear()
-{
-    if (!IsParentInContentMode())
-    {
-        ClearCore();
-    }
-    else
-    {
-        throwIllegalMethodCallException();
+        if (auto itemsSource = GetParentItemsSource())
+        {
+            itemsSource.Clear();
+        }
     }
 }
 
 #pragma endregion
-
-void throwIllegalMethodCallException()
-{
-    winrt::throw_hresult(E_ILLEGAL_METHOD_CALL);
-}
