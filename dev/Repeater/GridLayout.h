@@ -6,6 +6,7 @@
 #include "NonVirtualizingLayout.h"
 #include "GridLayout.g.h"
 #include "GridLayout.properties.h"
+#include "GridLayoutState.h"
 
 class GridLayout :
     public ReferenceTracker<GridLayout, winrt::implementation::GridLayoutT, NonVirtualizingLayout>,
@@ -97,27 +98,15 @@ private:
         winrt::GridTrackInfo Info;
     };
 
-    // Calculated info on one of the grid tracks, used to carry over calculations from Measure to Arrange
-    // PORT_TODO: Should be a struct
-    class MeasuredGridTrackInfo
-    {
-    public:
-        float Size {};
-        float Start {};
-    };
-    // TODO: Move to a State object
-    std::unique_ptr<std::map<int, MeasuredGridTrackInfo>> m_columns;
-    std::unique_ptr<std::map<int, MeasuredGridTrackInfo>> m_rows;
-
     // Tracks all the intermediate calculations of one direction (row or column) of the grid
     struct AxisInfo
     {
     public:
-        AxisInfo(winrt::IVector<winrt::GridTrackInfo> templates, winrt::IVector<winrt::GridTrackInfo> autos, std::map<int, MeasuredGridTrackInfo>* calculated);
+        AxisInfo(winrt::IVector<winrt::GridTrackInfo> templates, winrt::IVector<winrt::GridTrackInfo> autos, std::map<int, GridLayoutState::MeasuredGridTrackInfo>* calculated);
 
         std::vector<winrt::GridTrackInfo> Template;
         std::vector<winrt::GridTrackInfo> Auto;
-        std::map<int, MeasuredGridTrackInfo>* Calculated;
+        std::map<int, GridLayoutState::MeasuredGridTrackInfo>* Calculated;
 
         float Available {};
         float Remaining {};
@@ -128,8 +117,8 @@ private:
 
         int EnsureIndexAvailable(int index, bool clampIfOutOfBounds = true);
         ResolvedGridReference GetTrack(winrt::GridLocation const& location, ResolvedGridReference* previous = nullptr, bool allowOutOfRange = true);
-        MeasuredGridTrackInfo GetMeasuredTrack(int index) const;
-        MeasuredGridTrackInfo GetMeasuredTrackSafe(ResolvedGridReference track) const;
+        GridLayoutState::MeasuredGridTrackInfo GetMeasuredTrack(int index) const;
+        GridLayoutState::MeasuredGridTrackInfo GetMeasuredTrackSafe(ResolvedGridReference track) const;
         void AddCalculated(int index, winrt::GridTrackInfo track, float size);
     };
 
@@ -159,7 +148,7 @@ private:
     };
 
     void MarkOccupied(ChildGridLocations childLocation, std::map<GridCellIndex, bool> & occupied);
-    static AxisInfo InitializeMeasure(winrt::IVector<winrt::GridTrackInfo> const& templates, winrt::IVector<winrt::GridTrackInfo> const& autos, std::map<int, GridLayout::MeasuredGridTrackInfo>* calculated, float gap, float available);
+    static AxisInfo InitializeMeasure(winrt::IVector<winrt::GridTrackInfo> const& templates, winrt::IVector<winrt::GridTrackInfo> const& autos, std::map<int, GridLayoutState::MeasuredGridTrackInfo>* calculated, float gap, float available);
     static void ProcessFixedSizes(AxisInfo & measure);
     ChildGridLocations GetChildGridLocations(winrt::UIElement const& child, std::map<winrt::UIElement, ChildGridLocations> const& cache);
     bool TryGetChildGridLocations(winrt::UIElement const& child, AxisInfo & horizontal, AxisInfo & vertical, ChildGridLocations* outResult);
