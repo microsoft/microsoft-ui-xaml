@@ -116,21 +116,5 @@
     <Page Include="$(MSBuildProjectDirectory)\DensityStyles\Compact.xaml" />
     <Page Include="$(MSBuildProjectDirectory)\DensityStyles\CompactDatePickerTimePickerFlyout.xaml" />
     <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="$(OutDir)rs1_compact_themeresources.xaml" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
   </ItemGroup>
 </Project>
