@@ -38,9 +38,15 @@ Write-Host "MakeFrameworkPackage: $fullOutputPath" -ForegroundColor Magenta
 mkdir -Force $fullOutputPath\PackageContents | Out-Null
 mkdir -Force $fullOutputPath\Resources | Out-Null
 
+# CustomizedPri is used to workaround the problem like https://github.com/Microsoft/microsoft-ui-xaml/issues/599
+# it allows framework package to be used in multiple projects without conflicts.
+$CustomizedPriDir = "$fullOutputPath\CustomizedPri"
+mkdir -Force $CustomizedPriDir | Out-Null
+
 Copy-IntoNewDirectory FrameworkPackageContents\* $fullOutputPath\PackageContents
 
 Copy-IntoNewDirectory PriConfig\* $fullOutputPath
+Copy-IntoNewDirectory CustomizedPriConfig\* $CustomizedPriDir
 
 $KitsRoot10 = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows Kits\Installed Roots" -Name KitsRoot10).KitsRoot10
 $WindowsSdkBinDir = Join-Path $KitsRoot10 "bin\x86"
@@ -208,6 +214,9 @@ $rs1_genericxaml =
 
 Set-Content -Value $rs1_genericxaml $fullOutputPath\rs1_themes_generic.xaml
 
+$DensityStylesDir = "$CustomizedPriDir\$inputBaseFileName\DensityStyles"
+mkdir -Force $DensityStylesDir | Out-Null
+
 # Allow single URI to access Compact.xaml from both framework package and nuget package
 $compactxaml = 
 @"
@@ -217,7 +226,16 @@ $compactxaml =
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
 "@
-Set-Content -Value $compactxaml $fullOutputPath\Compact.xaml
+Set-Content -Value $compactxaml $DensityStylesDir\Compact.xaml
+
+# generate CustomizedPri
+$priConfigPath = [IO.Path]::GetFullPath("$CustomizedPriDir\priconfig.xml")
+$priOutputPath = [IO.Path]::GetFullPath("$CustomizedPriDir\CustomizedPri.pri")
+
+$makepriNew = "`"" + (Join-Path $WindowsSdkBinDir "makepri.exe") + "`" new /pr $CustomizedPriDir /cf $priConfigPath /of $priOutputPath /in $inputBaseFileName /o"
+Write-Host $makepriNew
+cmd /c $makepriNew
+if ($LastExitCode -ne 0) { Exit 1 }
 
 # AppxManifest needs some pieces generated per-flavor.
 $manifestContents = Get-Content $fullOutputPath\PackageContents\AppxManifest.xml

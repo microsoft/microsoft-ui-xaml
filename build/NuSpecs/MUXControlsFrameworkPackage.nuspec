@@ -23,6 +23,7 @@
     <file target="lib\uap10.0\Design" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml.Design\Microsoft.UI.Xaml.design.dll"/>
 
     <file target="lib\uap10.0\Microsoft.UI.Xaml\Themes" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml\Generic.xaml"/>
+    <file target="lib\uap10.0" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\CustomizedPri\CustomizedPri.pri"/>
 
     <file target="tools" src="$TOOLSDIR$\**\*.*"/>
 
@@ -33,6 +34,5 @@
     <file target="build\$ID$.props" src="MUXControls-Nuget-FrameworkPackage.props"/>
     <file target="build\native\$ID$.targets" src="MUXControls-Nuget-FrameworkPackage.targets"/>
     <file target="build\rs1_themes\generic.xaml" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\rs1_themes_generic.xaml"/>
-    <file target="build\DensityStyles\Compact.xaml" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\Compact.xaml"/>
   </files>
 </package>

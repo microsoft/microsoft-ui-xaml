@@ -120,13 +120,5 @@
       <SubType>Designer</SubType>
       <Link>Microsoft.UI.Xaml\Themes\generic.xaml</Link>
     </Page>
-  </ItemGroup>
-  
-  <!-- Make this URI works in framework package "ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml" -->
-  <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)DensityStyles\Compact.xaml">
-      <SubType>Designer</SubType>
-      <Link>Microsoft.UI.Xaml\DensityStyles\Compact.xaml</Link>
-    </Page>
-  </ItemGroup>
+  </ItemGroup>  
 </Project>
