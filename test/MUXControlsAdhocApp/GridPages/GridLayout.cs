@@ -421,6 +421,26 @@ namespace MUXControlsAdhocApp.GridPages
 
         #endregion Properties
 
+        private class GridLayoutState
+        {
+            public Dictionary<int, MeasuredGridTrackInfo> Columns = new Dictionary<int, MeasuredGridTrackInfo>();
+            public Dictionary<int, MeasuredGridTrackInfo> Rows = new Dictionary<int, MeasuredGridTrackInfo>();
+        }
+
+        protected override void InitializeForContextCore(NonVirtualizingLayoutContext context)
+        {
+            GridLayoutState state = context.LayoutState as GridLayoutState;
+            if (state == null)
+            {
+                state = new GridLayoutState();
+                context.LayoutState = state;
+            }
+        }
+
+        protected override void UninitializeForContextCore(NonVirtualizingLayoutContext context)
+        {
+        }
+
         private static GridTrackInfo _lastInTrack = new GridTrackInfo();
 
         // Calculated info on one of the grid tracks, used to carry over calculations from Measure to Arrange
@@ -430,8 +450,6 @@ namespace MUXControlsAdhocApp.GridPages
 
             public double Start;
         }
-        private Dictionary<int, MeasuredGridTrackInfo> _columns = new Dictionary<int, MeasuredGridTrackInfo>();
-        private Dictionary<int, MeasuredGridTrackInfo> _rows = new Dictionary<int, MeasuredGridTrackInfo>();
 
         private struct ResolvedGridReference
         {
@@ -1285,11 +1303,12 @@ namespace MUXControlsAdhocApp.GridPages
             DumpInfo($"ColumnGap={_columnGap}, RowGap={_rowGap}");
             DumpInfo($"AutoFlow={_autoFlow}");
 
-            _columns.Clear();
-            _rows.Clear();
+            GridLayoutState state = (GridLayoutState)(context.LayoutState);
+            state.Columns.Clear();
+            state.Rows.Clear();
 
-            AxisInfo measureHorizontal = InitializeMeasure(_templateColumns, _autoColumns, _columns, _columnGap, availableSize.Width);
-            AxisInfo measureVertical = InitializeMeasure(_templateRows, _autoRows, _rows, _rowGap, availableSize.Height);
+            AxisInfo measureHorizontal = InitializeMeasure(_templateColumns, _autoColumns, state.Columns, _columnGap, availableSize.Width);
+            AxisInfo measureVertical = InitializeMeasure(_templateRows, _autoRows, state.Rows, _rowGap, availableSize.Height);
             DumpChildren(ref measureHorizontal, ref measureVertical, context);
 
             // Resolve all grid references
@@ -1406,9 +1425,11 @@ namespace MUXControlsAdhocApp.GridPages
                     break;
             }
 
+            GridLayoutState state = (GridLayoutState)(context.LayoutState);
+
             // TODO: Avoid recreating these lists
-            AxisInfo measureHorizontal = InitializeMeasure(_templateColumns, _autoColumns, _columns, _columnGap, finalSize.Width);
-            AxisInfo measureVertical = InitializeMeasure(_templateRows, _autoRows, _rows, _rowGap, finalSize.Height);
+            AxisInfo measureHorizontal = InitializeMeasure(_templateColumns, _autoColumns, state.Columns, _columnGap, finalSize.Width);
+            AxisInfo measureVertical = InitializeMeasure(_templateRows, _autoRows, state.Rows, _rowGap, finalSize.Height);
 
             // Resolve all grid references
             Dictionary<UIElement, ChildGridLocations> locationCache = ResolveGridLocations(ref measureHorizontal, ref measureVertical, context);

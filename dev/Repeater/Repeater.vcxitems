@@ -28,7 +28,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgs.h" Condition="$(BuildingWithBuildExe) != 'true'" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgsDownlevel.h" Condition="$(BuildingWithBuildExe) == 'true'" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FlexboxLayout.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FlexboxLayoutState.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)GridLayout.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GridLayoutState.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)GridLocation.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)GridTrackInfo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsSourceView.h" />
