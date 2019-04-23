@@ -80,6 +80,7 @@ public:
     void CoerceToGreaterThanZero(double& value);
 
 private:
+    void ClosePaneIfNeccessaryAfterItemIsClicked();
     bool ShouldIgnoreMeasureOverride();
     bool NeedTopPaddingForRS5OrHigher(winrt::CoreApplicationViewTitleBar const& coreTitleBar);
     void OnAccessKeyInvoked(winrt::IInspectable const& sender, winrt::AccessKeyInvokedEventArgs const& args);
