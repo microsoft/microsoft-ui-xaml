@@ -250,9 +250,37 @@ namespace MUXControlsAdhocApp.FlexboxPages
                 new Point(crossAxis, mainAxis);
         }
 
+        private class FlexboxLayoutState
+        {
+            // Calculated information from Measure that we'll need during Arrange
+            public struct RowMeasureInfo
+            {
+                public double MainAxis;
+                public double CrossAxis;
+                public uint Count;
+                public double Grow;
+            }
+            public List<RowMeasureInfo> Rows = new List<RowMeasureInfo>();
+        }
+
+        protected override void InitializeForContextCore(NonVirtualizingLayoutContext context)
+        {
+            FlexboxLayoutState state = context.LayoutState as FlexboxLayoutState;
+            if (state == null)
+            {
+                state = new FlexboxLayoutState();
+                context.LayoutState = state;
+            }
+        }
+
+        protected override void UninitializeForContextCore(NonVirtualizingLayoutContext context)
+        {
+        }
+
         protected override Size MeasureOverride(NonVirtualizingLayoutContext context, Size availableSize)
         {
-            _rows.Clear();
+            FlexboxLayoutState state = (FlexboxLayoutState)(context.LayoutState);
+            state.Rows.Clear();
 
             uint itemsInRow = 0;
             double growInRow = 0.0;
@@ -265,7 +293,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
 
             Action completeRow = () =>
             {
-                _rows.Add(new RowMeasureInfo {
+                state.Rows.Add(new FlexboxLayoutState.RowMeasureInfo {
                     MainAxis = usedInCurrentMainAxis,
                     CrossAxis = usedInCurrentCrossAxis,
                     Count = itemsInRow,
@@ -330,18 +358,10 @@ namespace MUXControlsAdhocApp.FlexboxPages
             return returnSize;
         }
 
-        // Calculated information from Measure that we'll need during Arrange
-        protected struct RowMeasureInfo
-        {
-            public double MainAxis;
-            public double CrossAxis;
-            public uint Count;
-            public double Grow;
-        }
-        private List<RowMeasureInfo> _rows = new List<RowMeasureInfo>();
-
         protected override Size ArrangeOverride(NonVirtualizingLayoutContext context, Size finalSize)
         {
+            FlexboxLayoutState state = (FlexboxLayoutState)(context.LayoutState);
+
             int rowIndex = 0;
             double usedInCurrentMainAxis = 0;
             double crossOffsetForCurrentRow = 0;
@@ -349,15 +369,15 @@ namespace MUXControlsAdhocApp.FlexboxPages
 
             // In reverse wrap mode we work our way from the bottom up
             // TODO: Using finalSize here is causing us to right/bottom align, which probably isn't correct.
-            if ((Wrap == FlexboxWrap.WrapReverse) && (_rows.Count > 1))
+            if ((Wrap == FlexboxWrap.WrapReverse) && (state.Rows.Count > 1))
             {
-                crossOffsetForCurrentRow = CrossAxis(finalSize) - (_rows[_rows.Count - 1].CrossAxis);
+                crossOffsetForCurrentRow = CrossAxis(finalSize) - (state.Rows[state.Rows.Count - 1].CrossAxis);
             }
 
             List<UIElement> sortedChildren = ChildrenSortedByOrder(context);
             foreach (UIElement child in sortedChildren)
             {
-                RowMeasureInfo info = _rows[rowIndex];
+                FlexboxLayoutState.RowMeasureInfo info = state.Rows[rowIndex];
 
                 Size childDesiredSize = child.DesiredSize;
                 if (usedInCurrentMainAxis + MainAxis(childDesiredSize) > MainAxis(finalSize))
@@ -381,7 +401,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
                         crossOffsetForCurrentRow += effectiveUsedInCurrentCrossAxis;
                     }
                     rowIndex++;
-                    info = _rows[rowIndex];
+                    info = state.Rows[rowIndex];
                 }
 
                 double mainOffset = usedInCurrentMainAxis;
@@ -441,7 +461,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
                 double crossOffset = crossOffsetForCurrentRow;
                 double excessCrossAxisInRow;
                 // If there's only one row then the cross axis size is actually the final arrange size
-                if (_rows.Count == 1)
+                if (state.Rows.Count == 1)
                 {
                     excessCrossAxisInRow = CrossAxis(finalSize) - CrossAxis(childDesiredSize);
                 }
@@ -451,7 +471,7 @@ namespace MUXControlsAdhocApp.FlexboxPages
                 }
 
                 double totalCrossAxis = 0.0;
-                _rows.ForEach(row => { totalCrossAxis += row.CrossAxis; });
+                state.Rows.ForEach(row => { totalCrossAxis += row.CrossAxis; });
                 double excessCrossAxis = (CrossAxis(finalSize) - totalCrossAxis);
 
                 switch (AlignContent)
@@ -465,21 +485,21 @@ namespace MUXControlsAdhocApp.FlexboxPages
                         crossOffset += excessCrossAxis;
                         break;
                     case FlexboxAlignContent.Stretch:
-                        double extra = (excessCrossAxis / _rows.Count);
+                        double extra = (excessCrossAxis / state.Rows.Count);
                         usedInCurrentCrossAxis = (info.CrossAxis + extra);
                         excessCrossAxisInRow = 0;
                         childDesiredSize = CreateSize(MainAxis(childDesiredSize), usedInCurrentCrossAxis);
                         break;
                     case FlexboxAlignContent.SpaceBetween:
-                        if (_rows.Count > 1)
+                        if (state.Rows.Count > 1)
                         {
-                            double spaceBetween = (excessCrossAxis / (_rows.Count - 1));
+                            double spaceBetween = (excessCrossAxis / (state.Rows.Count - 1));
                             usedInCurrentCrossAxis = (info.CrossAxis + spaceBetween);
                         }
                         break;
                     case FlexboxAlignContent.SpaceAround:
                         {
-                            double spaceAround = (excessCrossAxis / _rows.Count);
+                            double spaceAround = (excessCrossAxis / state.Rows.Count);
                             crossOffset += (spaceAround * 0.5);
                             usedInCurrentCrossAxis = (info.CrossAxis + spaceAround);
                         }

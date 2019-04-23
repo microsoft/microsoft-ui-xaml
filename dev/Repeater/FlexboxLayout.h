@@ -49,16 +49,6 @@ private:
     winrt::Point CreatePoint(float mainAxis, float crossAxis);
     std::vector<winrt::UIElement> ChildrenSortedByOrder(winrt::NonVirtualizingLayoutContext const& context);
 
-    // Calculated information from Measure that we'll need during Arrange
-    struct RowMeasureInfo
-    {
-        float MainAxis;
-        float CrossAxis;
-        unsigned int Count;
-        float Grow;
-    };
-    std::vector<RowMeasureInfo> m_rows;
-
     winrt::FlexboxWrap m_wrap;
     winrt::FlexboxDirection m_direction;
     winrt::FlexboxJustifyContent m_justifyContent;

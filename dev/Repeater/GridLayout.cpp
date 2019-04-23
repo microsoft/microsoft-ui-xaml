@@ -6,6 +6,7 @@
 #include "GridLayout.h"
 #include "RuntimeProfiler.h"
 #include "Vector.h"
+#include "GridLayoutState.h"
 
 static winrt::GridTrackInfo s_lastInTrack;
 
@@ -23,9 +24,6 @@ GridLayout::GridLayout()
     {
         s_lastInTrack = winrt::GridTrackInfo();
     }
-
-    m_columns.reset(new std::map<int, MeasuredGridTrackInfo>());
-    m_rows.reset(new std::map<int, MeasuredGridTrackInfo>());
 }
 
 winrt::IVector<winrt::GridTrackInfo> GridLayout::TemplateColumns()
@@ -149,7 +147,7 @@ GridLayout::ResolvedGridReference GridLayout::ResolvedGridReference::Invalid()
     return GridLayout::ResolvedGridReference();
 }
 
-GridLayout::AxisInfo::AxisInfo(winrt::IVector<winrt::GridTrackInfo> templates, winrt::IVector<winrt::GridTrackInfo> autos, std::map<int, GridLayout::MeasuredGridTrackInfo>* calculated)
+GridLayout::AxisInfo::AxisInfo(winrt::IVector<winrt::GridTrackInfo> templates, winrt::IVector<winrt::GridTrackInfo> autos, std::map<int, GridLayoutState::MeasuredGridTrackInfo>* calculated)
 {
     // Add all the items from the markup defined template, plus one more grid line for 
     // the end (unless we have auto tracks, in which case they will define what happens 
@@ -272,18 +270,18 @@ GridLayout::ResolvedGridReference GridLayout::AxisInfo::GetTrack(winrt::GridLoca
     return GridLayout::ResolvedGridReference::Invalid();
 }
 
-GridLayout::MeasuredGridTrackInfo GridLayout::AxisInfo::GetMeasuredTrack(int index) const
+GridLayoutState::MeasuredGridTrackInfo GridLayout::AxisInfo::GetMeasuredTrack(int index) const
 {
     auto result = Calculated->find(index);
     return result->second;
 }
 
-GridLayout::MeasuredGridTrackInfo GridLayout::AxisInfo::GetMeasuredTrackSafe(GridLayout::ResolvedGridReference track) const
+GridLayoutState::MeasuredGridTrackInfo GridLayout::AxisInfo::GetMeasuredTrackSafe(GridLayout::ResolvedGridReference track) const
 {
     if (!track.IsValid())
     {
         // TODO: Is this a programming error?
-        return GridLayout::MeasuredGridTrackInfo();
+        return GridLayoutState::MeasuredGridTrackInfo();
     }
 
     auto result = Calculated->find(track.Index);
@@ -293,12 +291,12 @@ GridLayout::MeasuredGridTrackInfo GridLayout::AxisInfo::GetMeasuredTrackSafe(Gri
     }
 
     // TODO: Is this a programming error?
-    return GridLayout::MeasuredGridTrackInfo();
+    return GridLayoutState::MeasuredGridTrackInfo();
 }
 
 void GridLayout::AxisInfo::AddCalculated(int index, winrt::GridTrackInfo track, float size)
 {
-    Calculated->insert(std::make_pair(index, GridLayout::MeasuredGridTrackInfo{ size, 0.0f }));
+    Calculated->insert(std::make_pair(index, GridLayoutState::MeasuredGridTrackInfo{ size, 0.0f }));
 }
 
 void GridLayout::MarkOccupied(GridLayout::ChildGridLocations childLocation, std::map<GridLayout::GridCellIndex, bool> & occupied)
@@ -320,7 +318,7 @@ void GridLayout::MarkOccupied(GridLayout::ChildGridLocations childLocation, std:
     }
 }
 
-GridLayout::AxisInfo GridLayout::InitializeMeasure(winrt::IVector<winrt::GridTrackInfo> const& templates, winrt::IVector<winrt::GridTrackInfo> const& autos, std::map<int, GridLayout::MeasuredGridTrackInfo>* calculated, float gap, float available)
+GridLayout::AxisInfo GridLayout::InitializeMeasure(winrt::IVector<winrt::GridTrackInfo> const& templates, winrt::IVector<winrt::GridTrackInfo> const& autos, std::map<int, GridLayoutState::MeasuredGridTrackInfo>* calculated, float gap, float available)
 {
     int numberOfGaps = (templates.Size() - 1);
     if ((gap > 0.0f) && (numberOfGaps > 0))
@@ -477,7 +475,7 @@ void GridLayout::UpdateAutoBasedOnMeasured(std::vector<winrt::GridTrackInfo> con
 
     for (unsigned int i = 0; i < tracks.size(); i++)
     {
-        GridLayout::MeasuredGridTrackInfo info = measure.GetMeasuredTrack(i);
+        GridLayoutState::MeasuredGridTrackInfo info = measure.GetMeasuredTrack(i);
         float moreSize = (autoSlice - info.Size);
         if (moreSize > 0)
         {
@@ -507,7 +505,7 @@ bool GridLayout::ProcessFractionalSizes(GridLayout::AxisInfo & measure)
         }
 
         // We only apply the fraction if the item didn't also have a fixed size
-        MeasuredGridTrackInfo info = measure.GetMeasuredTrack(i);
+        GridLayoutState::MeasuredGridTrackInfo info = measure.GetMeasuredTrack(i);
         if (info.Size != 0.0f)
         {
             continue;
@@ -548,7 +546,7 @@ void GridLayout::ProcessAutoRemainingSize(GridLayout::AxisInfo & measure)
             continue;
         }
 
-        GridLayout::MeasuredGridTrackInfo info = measure.GetMeasuredTrack(i);
+        GridLayoutState::MeasuredGridTrackInfo info = measure.GetMeasuredTrack(i);
         info.Size += autoSlice;
     }
 
@@ -808,12 +806,11 @@ winrt::GridAlignItems GridLayout::Convert(winrt::GridAlignSelf const& value)
 
 void GridLayout::InitializeForContextCore(winrt::LayoutContext const& context)
 {
-#if FALSE
     auto state = context.LayoutState();
     winrt::com_ptr<GridLayoutState> gridState = nullptr;
     if (state)
     {
-        gridState = GetAsGridState(state);
+        gridState = state.as<GridLayoutState>();
     }
 
     if (!gridState)
@@ -823,21 +820,14 @@ void GridLayout::InitializeForContextCore(winrt::LayoutContext const& context)
             throw winrt::hresult_error(E_FAIL, L"LayoutState must derive from GridLayoutState.");
         }
 
-        // Custom deriving layouts could potentially be stateful.
-        // If that is the case, we will just create the base state required by ourselves.
         gridState = winrt::make_self<GridLayoutState>();
     }
 
-    gridState->InitializeForContext(context, this);
-#endif
+    context.LayoutStateCore(*gridState);
 }
 
 void GridLayout::UninitializeForContextCore(winrt::LayoutContext const& context)
 {
-#if FALSE
-    auto gridState = GetAsGridState(context.LayoutState());
-    gridState->UninitializeForContext(context);
-#endif
 }
 
 winrt::Size GridLayout::MeasureOverride(
@@ -845,15 +835,18 @@ winrt::Size GridLayout::MeasureOverride(
     winrt::Size const& availableSize)
 {
     //DumpBegin(availableSize, "Measure");
+
+    auto state = context.LayoutState().as<GridLayoutState>();
+
     //DumpTemplates();
     //DumpInfo($"ColumnGap={_columnGap}, RowGap={_rowGap}");
     //DumpInfo($"AutoFlow={_autoFlow}");
 
-    m_columns->clear();
-    m_rows->clear();
+    state->Columns->clear();
+    state->Rows->clear();
 
-    GridLayout::AxisInfo measureHorizontal = InitializeMeasure(m_templateColumns, m_autoColumns, m_columns.get(), static_cast<float>(m_columnGap), availableSize.Width);
-    GridLayout::AxisInfo measureVertical = InitializeMeasure(m_templateRows, m_autoRows, m_rows.get(), static_cast<float>(m_rowGap), availableSize.Height);
+    GridLayout::AxisInfo measureHorizontal = InitializeMeasure(m_templateColumns, m_autoColumns, state->Columns.get(), static_cast<float>(m_columnGap), availableSize.Width);
+    GridLayout::AxisInfo measureVertical = InitializeMeasure(m_templateRows, m_autoRows, state->Rows.get(), static_cast<float>(m_rowGap), availableSize.Height);
     //DumpChildren(measureHorizontal, measureVertical);
 
     // Resolve all grid references
@@ -892,8 +885,8 @@ winrt::Size GridLayout::MeasureOverride(
     {
         ChildGridLocations childLocation = GetChildGridLocations(child, locationCache);
 
-        MeasuredGridTrackInfo colMeasure = measureHorizontal.GetMeasuredTrackSafe(childLocation.ColStart);
-        MeasuredGridTrackInfo rowMeasure = measureVertical.GetMeasuredTrackSafe(childLocation.RowStart);
+        GridLayoutState::MeasuredGridTrackInfo colMeasure = measureHorizontal.GetMeasuredTrackSafe(childLocation.ColStart);
+        GridLayoutState::MeasuredGridTrackInfo rowMeasure = measureVertical.GetMeasuredTrackSafe(childLocation.RowStart);
 
         // TODO: This isn't measuring them against their entire span
         winrt::Size measureSize = winrt::Size{ colMeasure.Size, rowMeasure.Size };
@@ -925,6 +918,8 @@ winrt::Size GridLayout::ArrangeOverride(
     winrt::Size const& finalSize)
 {
     //DumpBegin(finalSize, "Arrange");
+
+    auto state = context.LayoutState().as<GridLayoutState>();
 
     auto nonVirtualizingContext = context.try_as<winrt::NonVirtualizingLayoutContext>();
 
@@ -979,8 +974,8 @@ winrt::Size GridLayout::ArrangeOverride(
     }
 
     // TODO: Avoid recreating these lists
-    GridLayout::AxisInfo measureHorizontal = InitializeMeasure(m_templateColumns, m_autoColumns, m_columns.get(), static_cast<float>(m_columnGap), finalSize.Width);
-    GridLayout::AxisInfo measureVertical = InitializeMeasure(m_templateRows, m_autoRows, m_rows.get(), static_cast<float>(m_rowGap), finalSize.Height);
+    GridLayout::AxisInfo measureHorizontal = InitializeMeasure(m_templateColumns, m_autoColumns, state->Columns.get(), static_cast<float>(m_columnGap), finalSize.Width);
+    GridLayout::AxisInfo measureVertical = InitializeMeasure(m_templateRows, m_autoRows, state->Rows.get(), static_cast<float>(m_rowGap), finalSize.Height);
 
     // Resolve all grid references
     std::map<winrt::UIElement, GridLayout::ChildGridLocations> locationCache = ResolveGridLocations(measureHorizontal, measureVertical, nonVirtualizingContext);
@@ -995,10 +990,10 @@ winrt::Size GridLayout::ArrangeOverride(
             continue;
         }
 
-        GridLayout::MeasuredGridTrackInfo colMeasure = measureHorizontal.GetMeasuredTrackSafe(childLocation.ColStart);
-        GridLayout::MeasuredGridTrackInfo rowMeasure = measureVertical.GetMeasuredTrackSafe(childLocation.RowStart);
-        GridLayout::MeasuredGridTrackInfo colEndMesure = measureHorizontal.GetMeasuredTrackSafe(childLocation.ColEnd);
-        GridLayout::MeasuredGridTrackInfo rowEndMesure = measureVertical.GetMeasuredTrackSafe(childLocation.RowEnd);
+        GridLayoutState::MeasuredGridTrackInfo colMeasure = measureHorizontal.GetMeasuredTrackSafe(childLocation.ColStart);
+        GridLayoutState::MeasuredGridTrackInfo rowMeasure = measureVertical.GetMeasuredTrackSafe(childLocation.RowStart);
+        GridLayoutState::MeasuredGridTrackInfo colEndMesure = measureHorizontal.GetMeasuredTrackSafe(childLocation.ColEnd);
+        GridLayoutState::MeasuredGridTrackInfo rowEndMesure = measureVertical.GetMeasuredTrackSafe(childLocation.RowEnd);
 
         float left = colMeasure.Start;
         float top = rowMeasure.Start;

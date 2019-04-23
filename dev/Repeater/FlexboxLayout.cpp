@@ -5,6 +5,7 @@
 #include <common.h>
 #include "FlexboxLayout.h"
 #include "RuntimeProfiler.h"
+#include "FlexboxLayoutState.h"
 
 FlexboxLayout::FlexboxLayout()
 {
@@ -121,12 +122,11 @@ std::vector<winrt::UIElement> FlexboxLayout::ChildrenSortedByOrder(winrt::NonVir
 
 void FlexboxLayout::InitializeForContextCore(winrt::LayoutContext const& context)
 {
-#if FALSE
     auto state = context.LayoutState();
     winrt::com_ptr<FlexboxLayoutState> flexboxState = nullptr;
     if (state)
     {
-        flexboxState = GetAsFlexboxState(state);
+        flexboxState = state.as<FlexboxLayoutState>();
     }
 
     if (!flexboxState)
@@ -136,28 +136,22 @@ void FlexboxLayout::InitializeForContextCore(winrt::LayoutContext const& context
             throw winrt::hresult_error(E_FAIL, L"LayoutState must derive from FlexboxLayoutState.");
         }
 
-        // Custom deriving layouts could potentially be stateful.
-        // If that is the case, we will just create the base state required by ourselves.
         flexboxState = winrt::make_self<FlexboxLayoutState>();
     }
 
-    flexboxState->InitializeForContext(context, this);
-#endif
+    context.LayoutStateCore(*flexboxState);
 }
 
 void FlexboxLayout::UninitializeForContextCore(winrt::LayoutContext const& context)
 {
-#if FALSE
-    auto flexboxState = GetAsFlexboxState(context.LayoutState());
-    flexboxState->UninitializeForContext(context);
-#endif
 }
 
 winrt::Size FlexboxLayout::MeasureOverride(
     winrt::LayoutContext const& context,
     winrt::Size const& availableSize)
 {
-    m_rows.clear();
+    auto state = context.LayoutState().as<FlexboxLayoutState>();
+    state->Rows.clear();
 
     unsigned int itemsInRow = 0;
     float growInRow = 0.0;
@@ -170,12 +164,12 @@ winrt::Size FlexboxLayout::MeasureOverride(
 
     auto completeRow = [&]()
     {
-        RowMeasureInfo newRow;
+        FlexboxLayoutState::RowMeasureInfo newRow;
         newRow.MainAxis = usedInCurrentMainAxis;
         newRow.CrossAxis = usedInCurrentCrossAxis;
         newRow.Count = itemsInRow;
         newRow.Grow = growInRow;
-        m_rows.emplace_back(newRow);
+        state->Rows.emplace_back(newRow);
 
         itemsInRow = 0;
         growInRow = 0.0;
@@ -241,6 +235,8 @@ winrt::Size FlexboxLayout::ArrangeOverride(
     winrt::LayoutContext const& context,
     winrt::Size const& finalSize)
 {
+    auto state = context.LayoutState().as<FlexboxLayoutState>();
+
     int rowIndex = 0;
     float usedInCurrentMainAxis = 0;
     float crossOffsetForCurrentRow = 0;
@@ -248,15 +244,15 @@ winrt::Size FlexboxLayout::ArrangeOverride(
 
     // In reverse wrap mode we work our way from the bottom up
     // TODO: Using finalSize here is causing us to right/bottom align, which probably isn't correct.
-    if ((m_wrap == winrt::FlexboxWrap::WrapReverse) && (m_rows.size() > 1))
+    if ((m_wrap == winrt::FlexboxWrap::WrapReverse) && (state->Rows.size() > 1))
     {
-        crossOffsetForCurrentRow = CrossAxis(finalSize) - (m_rows[m_rows.size() - 1].CrossAxis);
+        crossOffsetForCurrentRow = CrossAxis(finalSize) - (state->Rows[state->Rows.size() - 1].CrossAxis);
     }
 
     std::vector<winrt::UIElement> sortedChildren = ChildrenSortedByOrder(context.try_as<winrt::NonVirtualizingLayoutContext>());
     for (winrt::UIElement const& child : sortedChildren)
     {
-        RowMeasureInfo info = m_rows[rowIndex];
+        FlexboxLayoutState::RowMeasureInfo info = state->Rows[rowIndex];
 
         winrt::Size childDesiredSize = child.DesiredSize();
         if (usedInCurrentMainAxis + MainAxis(childDesiredSize) > MainAxis(finalSize))
@@ -280,7 +276,7 @@ winrt::Size FlexboxLayout::ArrangeOverride(
                 crossOffsetForCurrentRow += effectiveUsedInCurrentCrossAxis;
             }
             rowIndex++;
-            info = m_rows[rowIndex];
+            info = state->Rows[rowIndex];
         }
 
         float mainOffset = usedInCurrentMainAxis;
@@ -342,7 +338,7 @@ winrt::Size FlexboxLayout::ArrangeOverride(
         float crossOffset = crossOffsetForCurrentRow;
         float excessCrossAxisInRow;
         // If there's only one row then the cross axis size is actually the final arrange size
-        if (m_rows.size() == 1)
+        if (state->Rows.size() == 1)
         {
             excessCrossAxisInRow = CrossAxis(finalSize) - CrossAxis(childDesiredSize);
         }
@@ -352,7 +348,7 @@ winrt::Size FlexboxLayout::ArrangeOverride(
         }
 
         float totalCrossAxis = 0.0;
-        for (auto& row : m_rows)
+        for (auto& row : state->Rows)
         {
             totalCrossAxis += row.CrossAxis;
         }
@@ -370,22 +366,22 @@ winrt::Size FlexboxLayout::ArrangeOverride(
             break;
         case winrt::FlexboxAlignContent::Stretch:
         {
-            float extra = (excessCrossAxis / m_rows.size());
+            float extra = (excessCrossAxis / state->Rows.size());
             usedInCurrentCrossAxis = (info.CrossAxis + extra);
             excessCrossAxisInRow = 0;
             childDesiredSize = CreateSize(MainAxis(childDesiredSize), usedInCurrentCrossAxis);
             break;
         }
         case winrt::FlexboxAlignContent::SpaceBetween:
-            if (m_rows.size() > 1)
+            if (state->Rows.size() > 1)
             {
-                float spaceBetween = (excessCrossAxis / (m_rows.size() - 1));
+                float spaceBetween = (excessCrossAxis / (state->Rows.size() - 1));
                 usedInCurrentCrossAxis = (info.CrossAxis + spaceBetween);
             }
             break;
         case winrt::FlexboxAlignContent::SpaceAround:
         {
-            float spaceAround = (excessCrossAxis / m_rows.size());
+            float spaceAround = (excessCrossAxis / state->Rows.size());
             crossOffset += (spaceAround * 0.5f);
             usedInCurrentCrossAxis = (info.CrossAxis + spaceAround);
         }
