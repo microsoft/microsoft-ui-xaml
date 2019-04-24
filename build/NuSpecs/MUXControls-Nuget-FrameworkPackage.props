@@ -114,7 +114,11 @@
     </ItemGroup>
   </Target>
 
-  <!-- Workaround for https://github.com/Microsoft/microsoft-ui-xaml/issues/599. Exclude Compact.xbf which is not in this project -->
+  <!-- Workaround for https://github.com/Microsoft/microsoft-ui-xaml/issues/599. 
+  If there are more than two projects are using microsoft-ui-xaml framework package, and the projects have reference relationship,
+  more than two compact.xbf with the same destination path would be packaged and compiler would complains error. 
+  To make sure only one compact.xbf is packaged, this target excludes the compact.xbf which doesn't match MSBuildProjectName.
+  --> 
   <Target Name="_FixXamlCompactXbfPackaging" BeforeTargets="_ComputeAppxPackagePayload">
     <ItemGroup>
       <XamlCompactXbfPackagingOutput Include="@(PackagingOutputs)" Condition="'%(PackagingOutputs.TargetPath)' == '$(XamlCompactXbfName)' and '%(PackagingOutputs.ProjectName)' != '$(MSBuildProjectName)'" />
