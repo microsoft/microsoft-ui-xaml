@@ -1,0 +1,77 @@
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+jobs:
+- job: ComponentDetection
+  pool:
+    vmImage: 'VS2017-Win2016'
+
+  steps:
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: 'Component Detection'
+
+- job: Build
+  pool:
+    vmImage: 'VS2017-Win2016'
+  timeoutInMinutes: 120
+  strategy:
+    maxParallel: 10
+    matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+      Release_Arm:
+        buildPlatform: 'arm'
+        buildConfiguration: 'Release'
+      Release_Arm64:
+        buildPlatform: 'arm64'
+        buildConfiguration: 'Release'
+
+  variables:
+    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+    publishDir : $(Build.ArtifactStagingDirectory)
+
+  steps:
+  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+
+  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+
+- job: RunTests
+  dependsOn: Build
+  condition:
+    in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+  pool:
+    name: Package ES Lab E
+
+  steps:
+  - task: PkgESSetupBuild@10
+    displayName: 'XESSetupBuild'
+    inputs:
+      productName: dep.controls
+      branchVersion: false
+      nugetVer: true
+
+  - task: DownloadBuildArtifacts@0 
+    inputs: 
+      artifactName: drop 
+      downloadPath: '$(Build.ArtifactStagingDirectory)'
+
+  - task: CmdLine@1
+    displayName: 'Display build machine environment variables'
+    inputs:
+      filename: 'set'
+
+  - script: cmd /c dir /s /b $(Build.ArtifactStagingDirectory)
+    displayName: Dump artifact staging directory
+
+  - task: PkgESSpkgGeneration@10
+    displayName: 'Run Atlas Tests'
+    inputs:
+      TestExecutionMode: AtlasJobs
+      UseUNCShare: true
+      SpkgVariables: '_BINPLACEDIR=\data\test\bin'
+      PkgXmlDirRoot: '$(BUILD.SOURCESDIRECTORY)\SpkgDefsDontUse'
+      ConfigXmlRoot: '$(BUILD.SOURCESDIRECTORY)\build\TReXDefs'
+    enabled: false
