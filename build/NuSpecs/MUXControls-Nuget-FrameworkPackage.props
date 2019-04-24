@@ -92,6 +92,7 @@
     
   <PropertyGroup>
     <XamlWinmdName>Microsoft.UI.Xaml.winmd</XamlWinmdName>
+    <XamlCompactXbfName>Microsoft.UI.Xaml\DensityStyles\Compact.xbf</XamlCompactXbfName>
   </PropertyGroup>
   <Target Name="_FixWinmdCopyLocal" AfterTargets="ResolveNuGetPackageAssets">
     <ItemGroup>
@@ -113,6 +114,15 @@
     </ItemGroup>
   </Target>
 
+  <!-- Workaround for https://github.com/Microsoft/microsoft-ui-xaml/issues/599. Exclude Compact.xbf which is not in this project -->
+  <Target Name="_FixXamlCompactXbfPackaging" BeforeTargets="_ComputeAppxPackagePayload">
+    <ItemGroup>
+      <XamlCompactXbfPackagingOutput Include="@(PackagingOutputs)" Condition="'%(PackagingOutputs.TargetPath)' == '$(XamlCompactXbfName)' and '%(PackagingOutputs.ProjectName)' != '$(MSBuildProjectName)'" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(XamlCompactXbfPackagingOutput)' != ''">
+      <PackagingOutputs Remove="@(XamlCompactXbfPackagingOutput)" />
+    </ItemGroup>
+  </Target>
 
   <!-- Workaround for apps that need RS1 support, include this only if min version is RS1 -->
   <ItemGroup Condition="($([System.Version]::Parse('$(TargetPlatformMinVersion)').Build) &lt; 15063) And '$(DisableMicrosoftUIXamlRS1ThemesWorkaround)'==''">
