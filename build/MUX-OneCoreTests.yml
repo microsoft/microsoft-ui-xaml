@@ -9,6 +9,10 @@ jobs:
     displayName: 'Component Detection'
 
 - job: Build
+  # Skip the build job if we are reusing the output of a previous build.
+  # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
+  condition:
+    eq(variables['useBuildOutputFromBuildId'],'') 
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
@@ -54,7 +58,21 @@ jobs:
       nugetVer: true
 
   - task: DownloadBuildArtifacts@0 
+    condition:
+      eq(variables['useBuildOutputFromBuildId'],'')
     inputs: 
+      artifactName: drop 
+      downloadPath: '$(Build.ArtifactStagingDirectory)'
+
+  - task: DownloadBuildArtifacts@0 
+    condition:
+      ne(variables['useBuildOutputFromBuildId'],'')
+    inputs: 
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: $(useBuildOutputFromBuildId)
       artifactName: drop 
       downloadPath: '$(Build.ArtifactStagingDirectory)'
 
