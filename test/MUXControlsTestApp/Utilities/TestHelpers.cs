@@ -126,7 +126,10 @@ namespace MUXControlsTestApp.Utilities
             {
                 FrameworkElement rootElement = MUXControlsTestApp.App.TestContentRoot as FrameworkElement;
 
-                if (rootElement != null)
+                if (rootElement != null
+                // In MUXControlsTestApp.App.TestContentRoot setter, we set the content to MainPage if value is null.
+                // Therefore UnloadedEvent will never be triggered if rootElement type is MainPage, no need to add event here.
+                && rootElement.GetType() != typeof(MainPage))
                 {
                     rootElement.Unloaded += (sender, args) => unloadedEvent.Set();
                 }
