@@ -177,9 +177,6 @@ private:
     bool m_isTemplateApplied{ false };
     bool m_createNewPopupOnOpen{ false };
 
-    bool m_tipLoaded{ false };
-    bool m_targetLoaded{ false };
-
     bool m_isExpandAnimationPlaying{ false };
     bool m_isContractAnimationPlaying{ false };
 
@@ -198,8 +195,6 @@ private:
     float m_contentElevation{ 32.0f };
     float m_tailElevation{ 0.0f };
     bool m_tailShadowTargetsShadowTarget{ false };
-
-    DispatcherHelper m_dispatcherHelper{ *this };
 
     winrt::TimeSpan m_expandAnimationDuration{ 300ms };
     winrt::TimeSpan m_contractAnimationDuration{ 200ms };

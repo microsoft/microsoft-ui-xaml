@@ -1361,7 +1361,7 @@ void TeachingTip::OnTargetChanged()
 
     if (target)
     {
-        target.Loaded(winrt::auto_revoke, { this, &TeachingTip::OnTargetLoaded });
+        m_targetLoadedRevoker = target.Loaded(winrt::auto_revoke, { this, &TeachingTip::OnTargetLoaded });
     }
 
     if (IsOpen())
