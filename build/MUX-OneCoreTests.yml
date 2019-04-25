@@ -56,9 +56,6 @@ jobs:
       productName: dep.controls
       branchVersion: false
       nugetVer: true
-      
-  - task: PkgESSerializeForPostBuild@10
-    displayName: 'XESSerializeForPostbuild'
 
   - task: DownloadBuildArtifacts@0 
     condition:
@@ -113,6 +110,7 @@ jobs:
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
+      PostBuildOnly: false
       TestExecutionMode: AtlasJobs
       UseUNCShare: true
       SpkgVariables: '_BINPLACEDIR=\data\test\bin'
