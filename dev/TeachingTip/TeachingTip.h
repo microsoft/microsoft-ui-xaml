@@ -62,12 +62,13 @@ private:
     winrt::FrameworkElement::EffectiveViewportChanged_revoker m_effectiveViewportChangedRevoker{};
     winrt::FrameworkElement::EffectiveViewportChanged_revoker m_targetEffectiveViewportChangedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_targetLayoutUpdatedRevoker{};
+    winrt::FrameworkElement::Loaded_revoker m_targetLoadedRevoker{};
     winrt::Popup::Opened_revoker m_popupOpenedRevoker{};
     winrt::Popup::Closed_revoker m_popupClosedRevoker{};
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
     winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
-	void SetPopupAutomationProperties();
+    void SetPopupAutomationProperties();
     void CreateLightDismissIndicatorPopup();
     bool UpdateTail();
     void PositionPopup();
@@ -83,6 +84,9 @@ private:
         const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnIsOpenChanged();
+    void IsOpenChangedToOpen();
+    void IsOpenChangedToClose();
+    void CreateNewPopup();
     void OnTargetChanged();
     void OnTailVisibilityChanged();
     void OnIconSourceChanged();
@@ -94,21 +98,23 @@ private:
     void OnAutomationNameChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnAutomationIdChanged(const winrt::IInspectable&, const winrt::IInspectable&);
 
+    void OnContentSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args);
     void OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args);
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&);
-    void OnTailOcclusionGridLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
 
     void RaiseClosingEvent(bool attachDeferralCompletedHandler);
     void ClosePopupWithAnimationIfAvailable();
     void ClosePopup();
 
-    void SetViewportChangedEvent();
+    void SetViewportChangedEvent(const gsl::strict_not_null<winrt::FrameworkElement>& target);
     void RevokeViewportChangedEvent();
-    void TargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnTargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&);
+    void OnTargetLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
+    void RepositionPopup();
 
     void CreateExpandAnimation();
     void CreateContractAnimation();
@@ -125,6 +131,14 @@ private:
     winrt::Rect GetWindowBounds();
     static std::array<winrt::TeachingTipPlacementMode, 13> GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPalcement);
     void EstablishShadows();
+
+    // The tail is designed as an 8x16 pixel shape, however it is actually a 10x20 shape which is partially occluded by the tip content.
+    // This is done to get the border of the tip to follow the tail shape without drawing the border on the tip edge of the tail.
+    float TailLongSideActualLength();
+    float TailLongSideLength();
+    float TailShortSideLength();
+    float MinimumTipEdgeToTailEdgeMargin();
+    float MinimumTipEdgeToTailCenter();
 
     tracker_ref<winrt::Border> m_container{ this };
 
@@ -163,6 +177,9 @@ private:
     bool m_isTemplateApplied{ false };
     bool m_createNewPopupOnOpen{ false };
 
+    bool m_tipLoaded{ false };
+    bool m_targetLoaded{ false };
+
     bool m_isExpandAnimationPlaying{ false };
     bool m_isContractAnimationPlaying{ false };
 
@@ -181,6 +198,8 @@ private:
     float m_contentElevation{ 32.0f };
     float m_tailElevation{ 0.0f };
     bool m_tailShadowTargetsShadowTarget{ false };
+
+    DispatcherHelper m_dispatcherHelper{ *this };
 
     winrt::TimeSpan m_expandAnimationDuration{ 300ms };
     winrt::TimeSpan m_contractAnimationDuration{ 200ms };
@@ -264,26 +283,4 @@ private:
 
     //Ideally this would be computed from layout but it is difficult to do.
     static constexpr float s_tailOcclusionAmount = 2;
-
-    // The tail is designed as an 8x16 pixel shape, however it is actually a 10x20 shape which is partially occluded by the tip content.
-    // This is done to get the border of the tip to follow the tail shape without drawing the border on the tip edge of the tail.
-    inline float MinimumTipEdgeToTailEdgeMargin()
-    {
-        return m_tailOcclusionGrid.get().ColumnDefinitions().Size() > 1 ?
-            static_cast<float>(m_tailOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() + s_tailOcclusionAmount)
-            : 0.0f;
-    }
-
-    inline float MinimumTipEdgeToTailCenter()
-    {
-        return m_tailOcclusionGrid.get().ColumnDefinitions().Size() > 1 ?  
-            static_cast<float>(m_tailOcclusionGrid.get().ColumnDefinitions().GetAt(0).ActualWidth() +
-                m_tailOcclusionGrid.get().ColumnDefinitions().GetAt(1).ActualWidth() +
-                (std::max(m_tailPolygon.get().ActualHeight(), m_tailPolygon.get().ActualWidth()) / 2))
-            : 0.0f;
-    }
-
-    inline float TailLongSideActualLength() { return static_cast<float>(std::max(m_tailPolygon.get().ActualHeight(), m_tailPolygon.get().ActualWidth())); }
-    inline float TailLongSideLength() { return static_cast<float>(TailLongSideActualLength() - (2 * s_tailOcclusionAmount)); }
-    inline float TailShortSideLength() { return static_cast<float>(std::min(m_tailPolygon.get().ActualHeight(), m_tailPolygon.get().ActualWidth()) - s_tailOcclusionAmount); }
 };

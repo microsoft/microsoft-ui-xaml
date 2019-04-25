@@ -65,6 +65,7 @@ namespace MUXControlsTestApp
             this.TeachingTipInVisualTree.Closed += TeachingTipInVisualTree_Closed;
             this.TeachingTipInResources.Closed += TeachingTipInResources_Closed;
             this.ContentScrollViewer.ViewChanged += ContentScrollViewer_ViewChanged;
+            this.TeachingTipInResources.IsOpen = true;
         }
 
         private void TeachingTipInResources_Closed(TeachingTip sender, TeachingTipClosedEventArgs args)
@@ -792,14 +793,20 @@ namespace MUXControlsTestApp
 
         public void OnTeachingTipClosed(object sender, TeachingTipClosedEventArgs args)
         {
-            lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") " + args.ToString() + " Reason: " + args.Reason.ToString());
-            lstTeachingTipEvents.ScrollIntoView(lstTeachingTipEvents.Items.Last<object>());
+            if (lstTeachingTipEvents != null)
+            {
+                lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") " + args.ToString() + " Reason: " + args.Reason.ToString());
+                lstTeachingTipEvents.ScrollIntoView(lstTeachingTipEvents.Items.Last<object>());
+            }
         }
 
         public void OnTeachingTipClosing(TeachingTip sender, TeachingTipClosingEventArgs args)
         {
-            lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") " + args.ToString() + " Reason: " + args.Reason.ToString());
-            lstTeachingTipEvents.ScrollIntoView(lstTeachingTipEvents.Items.Last<object>());
+            if (lstTeachingTipEvents != null)
+            {
+                lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") " + args.ToString() + " Reason: " + args.Reason.ToString());
+                lstTeachingTipEvents.ScrollIntoView(lstTeachingTipEvents.Items.Last<object>());
+            }
 
             CheckBox cancelClosesCheckBox = null;
             if (sender == TeachingTipInResources)
@@ -811,7 +818,7 @@ namespace MUXControlsTestApp
                 cancelClosesCheckBox = CancelClosesCheckBoxInVisualTree;
             }
 
-            if (cancelClosesCheckBox.IsChecked == true)
+            if (cancelClosesCheckBox != null && cancelClosesCheckBox.IsChecked == true)
             {
                 deferral = args.GetDeferral();
                 args.Cancel = true;

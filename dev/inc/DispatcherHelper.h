@@ -50,7 +50,7 @@ public:
         }
         else if (coreDispatcher)
         {
-            auto asyncOp = coreDispatcher.TryRunAsync(winrt::CoreDispatcherPriority::Normal, winrt::DispatchedHandler(func));
+            auto asyncOp = coreDispatcher.TryRunAsync(winrt::CoreDispatcherPriority::Idle, winrt::DispatchedHandler(func));
 
             asyncOp.Completed([func, fallbackToThisThread](auto& asyncInfo, auto& asyncStatus)
             {
