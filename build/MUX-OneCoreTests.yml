@@ -95,10 +95,12 @@ jobs:
 
   - task: PkgESSpkgGeneration@10
     displayName: 'Run Atlas Tests'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       PostBuildOnly: false
       TestExecutionMode: AtlasJobs
       UseUNCShare: true
-      SpkgVariables: '_BINPLACEDIR=C:\data\test\bin;_ARTIFACTSDIR=$(Build.ArtifactStagingDirectory);APPSTESTROOT=%USERPROFILE%\.nuget\packages\microsoft.windows.apps.test\1.0.181203002\lib\netcoreapp2.1;NUGETROOT=%USERPROFILE%\.nuget\packages'
+      SpkgVariables: '_BINPLACEDIR=C:\data\test\bin;_ARTIFACTSDIR=$(Build.ArtifactStagingDirectory);APPSTESTROOT=$(USERPROFILE)\.nuget\packages\microsoft.windows.apps.test\1.0.181203002\lib\netcoreapp2.1;NUGETROOT=$(USERPROFILE)\.nuget\packages'
       PkgXmlDirRoot: '$(Build.SourcesDirectory)\SpkgDefsOneCoreTests'
       ConfigXmlRoot: '$(Build.SourcesDirectory)\build\TReXDefs'
