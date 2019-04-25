@@ -285,7 +285,7 @@ namespace MUXControlsTestApp
                 }
                 else
                 {
-                    Results.Text = "ItemsSourceOrder: " + itemsSourceOrder + "; TreeViewNodeOrder: " + treeViewNodeOrder;
+                    Results.Text = $"ItemsSourceOrder: {itemsSourceOrder}; TreeViewNodeOrder: {treeViewNodeOrder}";
                 }
             }
             else
