@@ -36,10 +36,6 @@ jobs:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
-    nugetRoot : $(USERPROFILE)\.nuget\packages
-    appsTestVersion : 1.0.181203002
-    netCoreAppVersion : 2.1.0
-    taefVersion : 10.31.180822002
 
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
@@ -100,8 +96,9 @@ jobs:
   - task: PkgESSpkgGeneration@10
     displayName: 'Run Atlas Tests'
     inputs:
+      PostBuildOnly: false
       TestExecutionMode: AtlasJobs
       UseUNCShare: true
-      SpkgVariables: '_BINPLACEDIR=C:\data\test\bin;_ARTIFACTSDIR=$(Build.ArtifactStagingDirectory);APPSTESTROOT=$(nugetRoot)\microsoft.windows.apps.test\$(appsTestVersion)\lib\netcoreapp2.1;NUGETROOT=$(nugetRoot)'
+      SpkgVariables: '_BINPLACEDIR=C:\data\test\bin;_ARTIFACTSDIR=$(Build.ArtifactStagingDirectory);APPSTESTROOT=%USERPROFILE%\.nuget\packages\microsoft.windows.apps.test\1.0.181203002\lib\netcoreapp2.1;NUGETROOT=%USERPROFILE%\.nuget\packages'
       PkgXmlDirRoot: '$(Build.SourcesDirectory)\SpkgDefsOneCoreTests'
       ConfigXmlRoot: '$(Build.SourcesDirectory)\build\TReXDefs'
