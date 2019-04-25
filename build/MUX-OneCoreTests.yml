@@ -105,5 +105,5 @@ jobs:
       TestExecutionMode: AtlasJobs
       UseUNCShare: true
       SpkgVariables: '_BINPLACEDIR=C:\data\test\bin;_ARTIFACTSDIR=$(Build.ArtifactStagingDirectory);NUGETROOT=$(userProfile)\.nuget\packages;APPSTESTROOT=$(userProfile)\.nuget\packages\microsoft.windows.apps.test\1.0.181203002\lib\netcoreapp2.1'
-      PkgXmlDirRoot: '$(Build.SourcesDirectory)\SpkgDefsOneCoreTests'
+      PkgXmlDirRoot: '$(Build.SourcesDirectory)\build\SpkgDefsOneCoreTests'
       ConfigXmlRoot: '$(Build.SourcesDirectory)\build\TReXDefs'
