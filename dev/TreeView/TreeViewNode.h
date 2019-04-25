@@ -115,6 +115,6 @@ public:
     void SetAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource = true);   
     void RemoveAt(unsigned int index, bool updateItemsSource = true);
     void RemoveAtEnd(bool updateItemsSource = true);
-    void ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values);    
-    void Clear();
+    void ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values, bool updateItemsSource = true);    
+    void Clear(bool updateItemsSource = true);
 };

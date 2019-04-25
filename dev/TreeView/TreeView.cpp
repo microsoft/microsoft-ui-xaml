@@ -254,7 +254,7 @@ void TreeView::SyncRootNodesWithItemsSource()
     }
 
     auto children = winrt::get_self<TreeViewNodeVector>(RootNodes());
-    children->Clear();
+    children->Clear(false /* updateItemsSource */);
 
     if (m_itemsDataSource)
     {

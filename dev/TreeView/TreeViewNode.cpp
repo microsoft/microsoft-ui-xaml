@@ -229,7 +229,7 @@ void TreeViewNode::OnItemsRemoved(int index, int count)
 void TreeViewNode::SyncChildrenNodesWithItemsSource()
 {
     auto children = winrt::get_self<TreeViewNodeVector>(Children());
-    children->Clear();
+    children->Clear(false /* updateItemsSource */);
 
     if (m_itemsDataSource)
     {
@@ -386,14 +386,14 @@ void TreeViewNodeVector::RemoveAtEnd(bool updateItemsSource)
     RemoveAt(updateItemsSource);
 }
 
-void TreeViewNodeVector::ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values)
+void TreeViewNodeVector::ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values, bool updateItemsSource)
 {
     auto inner = GetVectorInnerImpl();
 
     auto count = inner->Size();
     if (count > 0)
     {
-        Clear();
+        Clear(updateItemsSource);
 
         auto itemsSource = GetWritableParentItemsSource();
         // Set parent on new elements
@@ -411,7 +411,7 @@ void TreeViewNodeVector::ReplaceAll(winrt::array_view<winrt::TreeViewNode const>
     }
 }
 
-void TreeViewNodeVector::Clear()
+void TreeViewNodeVector::Clear(bool updateItemsSource)
 {
     auto inner = GetVectorInnerImpl();
     auto count = inner->Size();
