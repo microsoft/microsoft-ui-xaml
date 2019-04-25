@@ -810,7 +810,6 @@ void TeachingTip::OnIsOpenChanged()
 {
     auto const strongThis = get_strong();
     SharedHelpers::QueueCallbackForCompositionRendering([strongThis]() 
-    //m_dispatcherHelper.RunAsync([strongThis]()
     {
         if (strongThis->IsOpen())
         {
