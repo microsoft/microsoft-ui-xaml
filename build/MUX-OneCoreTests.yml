@@ -56,6 +56,9 @@ jobs:
       productName: dep.controls
       branchVersion: false
       nugetVer: true
+      
+  - task: PkgESSerializeForPostBuild@10
+    displayName: 'XESSerializeForPostbuild'
 
   - task: DownloadBuildArtifacts@0 
     condition:
@@ -93,19 +96,25 @@ jobs:
   - script: cmd /c dir /s /b $(Build.ArtifactStagingDirectory)
     displayName: Dump artifact staging directory
 
-  - script: echo ##vso[task.setvariable variable=userProfile]%USERPROFILE%
-    displayName: Set user profile variable
+  - task: CmdLine@1
+    displayName: PkgGen.cmd x86 release
+    inputs:
+      filename: '$(Build.SourcesDirectory)\tools\PkgGen.cmd'
+      arguments: 'x86 release'
+
+  - task: CmdLine@1
+    displayName: PkgGen.cmd x64 release
+    inputs:
+      filename: '$(Build.SourcesDirectory)\tools\PkgGen.cmd'
+      arguments: 'x64 release'
 
   - task: PkgESSpkgGeneration@10
     displayName: 'Run Atlas Tests'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
-      PostBuildOnly: false
       TestExecutionMode: AtlasJobs
       UseUNCShare: true
-      SpkgVariables: '_BINPLACEDIR=C:\data\test\bin;_ARTIFACTSDIR=$(Build.ArtifactStagingDirectory);NUGETROOT=$(userProfile)\.nuget\packages;APPSTESTROOT=$(userProfile)\.nuget\packages\microsoft.windows.apps.test\1.0.181203002\lib\netcoreapp2.1'
-      PkgXmlDirRoot: '$(Build.SourcesDirectory)\build\SpkgDefsOneCoreTests'
+      SpkgVariables: '_BINPLACEDIR=\data\test\bin'
+      PkgXmlDirRoot: '$(Build.SourcesDirectory)\SpkgDefsDontUse'
       ConfigXmlRoot: '$(Build.SourcesDirectory)\build\TReXDefs'
-      FlavorsString: 'x86;amd64'
-      BuildFlavorsString: 'x86;amd64'

@@ -8,18 +8,18 @@
    <Components>
       <OSComponent>
          <Files>
-            <File Source="$(_RELEASEDIR)\MUXControls.Test.TAEF\MUXControls.Test.dll" DestinationDir="$(_BINPLACEDIR)" />
+             <File Source="$(_ARTIFACTSDIR)\Test\MUXControls.Test.dll" DestinationDir="$(_BINPLACEDIR)" />
            
-            <File Source="$(_RELEASEDIR)\MUXControlsTestApp.TAEF\AppPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx" DestinationDir="$(_BINPLACEDIR)" />
-            <File Source="$(_RELEASEDIR)\MUXControlsTestApp.TAEF\AppPackages\MUXControlsTestApp_Test\MUXControlsTestApp.cer" DestinationDir="$(_BINPLACEDIR)" />
-            <File Source="$(_RELEASEDIR)\MUXControlsTestApp.TAEF\AppPackages\MUXControlsTestApp_Test\MUXControlsTestApp.dependencies.txt" DestinationDir="$(_BINPLACEDIR)" />
+             <File Source="$(_ARTIFACTSDIR)\AppPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx" DestinationDir="$(_BINPLACEDIR)" />
+             <File Source="$(_ARTIFACTSDIR)\AppPackages\MUXControlsTestApp_Test\MUXControlsTestApp.cer" DestinationDir="$(_BINPLACEDIR)" />
+             <File Source="$(_ARTIFACTSDIR)\AppPackages\MUXControlsTestApp_Test\MUXControlsTestApp.dependencies.txt" DestinationDir="$(_BINPLACEDIR)" />
 
-             <File Source="$(_RELEASEDIR)\IXMPTestApp.TAEF\AppPackages\IXMPTestApp_Test\IXMPTestApp.appx" DestinationDir="$(_BINPLACEDIR)" />
-             <File Source="$(_RELEASEDIR)\IXMPTestApp.TAEF\AppPackages\IXMPTestApp_Test\IXMPTestApp.cer" DestinationDir="$(_BINPLACEDIR)" />
-             <File Source="$(_RELEASEDIR)\IXMPTestApp.TAEF\AppPackages\IXMPTestApp_Test\IXMPTestApp.dependencies.txt" DestinationDir="$(_BINPLACEDIR)" />
+             <File Source="$(_ARTIFACTSDIR)\AppPackages\IXMPTestApp_Test\IXMPTestApp.appx" DestinationDir="$(_BINPLACEDIR)" />
+             <File Source="$(_ARTIFACTSDIR)\AppPackages\IXMPTestApp_Test\IXMPTestApp.cer" DestinationDir="$(_BINPLACEDIR)" />
+             <File Source="$(_ARTIFACTSDIR)\AppPackages\IXMPTestApp_Test\IXMPTestApp.dependencies.txt" DestinationDir="$(_BINPLACEDIR)" />
 
-             <File Source="$(_RELEASEDIR)\MUXControlsTestAppWPFPackage\AppPackages\MUXControlsTestAppWPFPackage_Test\MUXControlsTestAppWPFPackage.appx" DestinationDir="$(_BINPLACEDIR)" />
-             <File Source="$(_RELEASEDIR)\MUXControlsTestAppWPFPackage\AppPackages\MUXControlsTestAppWPFPackage_Test\MUXControlsTestAppWPFPackage.cer" DestinationDir="$(_BINPLACEDIR)" />
+             <File Source="$(_ARTIFACTSDIR)\AppPackages\MUXControlsTestAppWPFPackage_Test\MUXControlsTestAppWPFPackage.appx" DestinationDir="$(_BINPLACEDIR)" />
+             <File Source="$(_ARTIFACTSDIR)\AppPackages\MUXControlsTestAppWPFPackage_Test\MUXControlsTestAppWPFPackage.cer" DestinationDir="$(_BINPLACEDIR)" />
          </Files>
       </OSComponent>
    </Components>
