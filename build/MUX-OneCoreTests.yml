@@ -105,4 +105,3 @@ jobs:
       SpkgVariables: '_BINPLACEDIR=C:\data\test\bin;_ARTIFACTSDIR=$(Build.ArtifactStagingDirectory);APPSTESTROOT=$(nugetRoot)\microsoft.windows.apps.test\$(appsTestVersion)\lib\netcoreapp2.1;NUGETROOT=$(nugetRoot)'
       PkgXmlDirRoot: '$(Build.SourcesDirectory)\SpkgDefsOneCoreTests'
       ConfigXmlRoot: '$(Build.SourcesDirectory)\build\TReXDefs'
-    enabled: false
