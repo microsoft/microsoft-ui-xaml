@@ -54,7 +54,7 @@ set VARIABLES=%VARIABLES%;NETCOREAPPROOT=%NUGETROOT%\runtime.win-%BUILDPLATFORM%
 set VARIABLES=%VARIABLES%;TAEFROOT=%NUGETROOT%\taef.redist.wlk\%TAEFVERSION%\build\Binaries\%BUILDPLATFORM%
 set VARIABLES=%VARIABLES%;RELATIVEOUTPUTROOT=%RELATIVEOUTPUTROOT%
 
-set PKGPARAMS=/variables:"%VARIABLES%" /output:"%XES_OUTDIR%\prebuilt" /config:"%SPKGGEN_PATH%\pkggen.cfg.xml"
+set PKGPARAMS=/variables:"%VARIABLES%" /output:"%XES_OUTDIR%\%RELATIVEOUTPUTROOT%\prebuilt" /config:"%SPKGGEN_PATH%\pkggen.cfg.xml"
 
 echo pkggen.exe "%TFS_SourcesDirectory%\build\SpkgDefs\MUXControls.Test.pkg.xml" %PKGPARAMS%
 
@@ -95,6 +95,9 @@ if not exist %XES_OUTDIR%\prebuilt\Microsoft.MUXControls.CodeCoverageDependencie
         goto END
     )
 )
+
+robocopy %XES_OUTDIR%\%RELATIVEOUTPUTROOT%\prebuilt %XES_DFSDROP%\%RELATIVEOUTPUTROOT%\prebuilt
+robocopy %XES_DFSDROP%\%RELATIVEOUTPUTROOT%\prebuilt %XES_DFSDROP%\spkg\%RELATIVEOUTPUTROOT%\prebuilt
 
 :END
 EXIT /B %ERRORLEVEL%
