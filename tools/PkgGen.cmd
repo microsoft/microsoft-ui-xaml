@@ -66,7 +66,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 REM Package dependencies change per build, generate the package definition dynamically
 
-call GenerateAppxDependenciesXML -sourceFile %XES_OUTDIR%\MUXControlsTestApp.TAEF\AppPackages\MUXControlsTestApp_Test\MUXControlsTestApp.dependencies.txt -outputFile %XES_OUTDIR%\MUXControls.dependencies.pkg.xml -BUILDPLATFORM %BUILDPLATFORM%
+call GenerateAppxDependenciesXML -sourceFile %BUILD_ARTIFACTSTAGINGDIRECTORY%\drop\%RELATIVEOUTPUTROOT%\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.dependencies.txt -outputFile %XES_OUTDIR%\MUXControls.dependencies.pkg.xml -BUILDPLATFORM %BUILDPLATFORM%
 
 echo pkggen.exe %XES_OUTDIR%\MUXControls.dependencies.pkg.xml %PKGPARAMS%
 pkggen.exe %XES_OUTDIR%\MUXControls.dependencies.pkg.xml %PKGPARAMS%
