@@ -37,22 +37,6 @@ set
 echo ++++++++++++++++ ----------- ++++++++++++++++++++++++
 )
 
-call MakeAppxHelper.cmd %BUILDPLATFORM% %BUILDCONFIGURATION% -subversion %VERSIONBUILDREVISION:~-3%
-if %ERRORLEVEL% NEQ 0 (
-    @echo ##vso[task.logissue type=error;] Make AppxHelper failed with exit code %ERRORLEVEL%
-    goto END
-)
-
-REM Skip PkgGen for arm64 as we don't have spkg support (or need) for it yet
-if /I "%BUILDPLATFORM%" EQU "arm64" goto :END
-
-REM Also skip for arm since it is not needed.
-if /I "%BUILDPLATFORM%" EQU "arm" goto :END
-
-
-REM Set this after MakeAppxHelper because we only want to redirect the pkggen output.
-if NOT DEFINED XES_OUTDIR set XES_OUTDIR=%TFS_SourcesDirectory%\BuildOutput\%BUILDCONFIGURATION%\%BUILDPLATFORM%
-
 REM PkgGen.exe must be run from a directory above the current directory
 cd %~dp0\..
  
