@@ -22,7 +22,7 @@ foreach ($dependency in Get-Content $sourceFile)
     Write-Host "Checking '$appxRoot\$relativeSourcePath'"
     if (Test-Path "$appxRoot\$relativeSourcePath")
     {
-        Write-Output ('           <File Source="$(_RELEASEDIR)\MUXControlsTestApp.TAEF\AppPackages\MUXControlsTestApp_Test\'+$relativeSourcePath+'" DestinationDir="$(_BINPLACEDIR)" />') >> $outputFile
+        Write-Output ('           <File Source="$(_ARTIFACTSDIR)\AppxPackages\MUXControlsTestApp_Test\'+$relativeSourcePath+'" DestinationDir="$(_BINPLACEDIR)" />') >> $outputFile
     }
 }
 
