@@ -234,13 +234,16 @@ namespace MUXControlsTestApp
             while (pendingNodes.Count > 0)
             {
                 var currentNode = pendingNodes.Pop();
-                var children = currentNode.Children;
-                var size = children.Count;
+                var size = currentNode.Children.Count;
                 for (int i = 0; i < size; i++)
                 {
                     pendingNodes.Push(currentNode.Children[size - 1 - i]);
                 }
-                sb.Append(GetNodeContent(currentNode) + " | ");
+                if (sb.Length > 0)
+                {
+                    sb.Append(" | ");
+                }
+                sb.Append(GetNodeContent(currentNode));
             }
 
             return sb.ToString();
@@ -254,13 +257,16 @@ namespace MUXControlsTestApp
             while (pendingItems.Count > 0)
             {
                 var currentItem = pendingItems.Pop();
-                var children = currentItem.Children;
-                var size = children.Count;
+                var size = currentItem.Children.Count;
                 for (int i = 0; i < size; i++)
                 {
                     pendingItems.Push(currentItem.Children[size - 1 - i]);
                 }
-                sb.Append(currentItem.Content + " | ");
+                if (sb.Length > 0)
+                {
+                    sb.Append(" | ");
+                }
+                sb.Append(currentItem.Content);
             }
 
             return sb.ToString();
@@ -273,7 +279,7 @@ namespace MUXControlsTestApp
                 var itemsSourceOrder = GetItemsSourceOrder();
                 var treeViewNodeOrder = GetRootNodeChildrenOrder(ContentModeTestTreeView);
                 // Make sure ItemsSource and TreeViewNode orders are in sync
-                if(itemsSourceOrder == treeViewNodeOrder)
+                if (itemsSourceOrder == treeViewNodeOrder)
                 {
                     Results.Text = itemsSourceOrder;
                 }

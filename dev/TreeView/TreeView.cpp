@@ -232,7 +232,7 @@ void TreeView::OnItemsAdded(int index, int count)
         auto item = m_itemsDataSource.GetAt(i);
         auto node = winrt::make_self<TreeViewNode>();
         node->Content(item);
-        winrt::get_self<TreeViewNodeVector>(RootNodes())->InsertAt(index, *node, false);
+        winrt::get_self<TreeViewNodeVector>(RootNodes())->InsertAt(index, *node, false /* updateItemsSource */);
     }
 }
 
@@ -240,7 +240,7 @@ void TreeView::OnItemsRemoved(int index, int count)
 {
     for (int i = 0; i < count; i++)
     {
-        winrt::get_self<TreeViewNodeVector>(RootNodes())->RemoveAt(index, false);
+        winrt::get_self<TreeViewNodeVector>(RootNodes())->RemoveAt(index, false /* updateItemsSource */);
     }
 }
 
@@ -265,7 +265,7 @@ void TreeView::SyncRootNodesWithItemsSource()
             auto node = winrt::make_self<TreeViewNode>();
             node->IsContentMode(true);
             node->Content(item);
-            children->Append(*node, false);
+            children->Append(*node, false /* updateItemsSource */);
         }
     }
 }

@@ -705,7 +705,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Down, ModifierKey.Alt | ModifierKey.Shift);
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0", ReadResult());
 
                 InputHelper.Tap(ItemRoot);
 
@@ -713,7 +713,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Up, ModifierKey.Alt | ModifierKey.Shift);
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0", ReadResult());
 
                 InputHelper.Tap(ItemRoot);
 
@@ -723,7 +723,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Down, ModifierKey.Alt | ModifierKey.Shift);
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0", ReadResult());
 
                 InputHelper.Tap(ItemRoot);
 
@@ -733,7 +733,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("4", ReadResult());
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0", ReadResult());
             }
         }
 
@@ -796,7 +796,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("3", ReadResult());
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2", ReadResult());
             }
         }
 
@@ -857,7 +857,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.DragDistance(dragUIObject, distance, Direction.South);
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2", ReadResult());
 
                 ClickButton("GetItemCount");
                 Verify.AreEqual("4", ReadResult());
@@ -1015,7 +1015,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("2", ReadResult());
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.2 | Root.0 | Root.1 | ", ReadResult());
+                Verify.AreEqual("Root | Root.2 | Root.0 | Root.1", ReadResult());
             }
         }
 
@@ -1084,7 +1084,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.DragDistance(dragUIObject, distance, Direction.South);
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.2 | Root.0 | Root.1 | ", ReadResult());
+                Verify.AreEqual("Root | Root.2 | Root.0 | Root.1", ReadResult());
 
                 ClickButton("GetItemCount");
                 Verify.AreEqual("4", ReadResult());
@@ -1149,7 +1149,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.DragDistance(dragUIObject, distance, Direction.South);
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2", ReadResult());
 
                 ClickButton("GetItemCount");
                 Verify.AreEqual("4", ReadResult());
@@ -1231,7 +1231,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.DragDistance(dragUIObject, distance, Direction.South);
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.1.1 | Root.0 | Root.0.0 | Root.1.0 | Root.1.2 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.1.1 | Root.0 | Root.0.0 | Root.1.0 | Root.1.2 | Root.2", ReadResult());
                 Wait.ForIdle();
 
                 ClickButton("GetItemCount");
@@ -2173,7 +2173,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ClickButton("LabelItems");
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2", ReadResult());
 
                 ClickButton("DisableItemReorder");
 
@@ -2191,7 +2191,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ClickButton("GetChildrenOrder");
                 // Verify nodes are still in the same order
-                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2", ReadResult());
 
                 Log.Comment("Verify cannot drag onto a node");
                 // Drag Root.0 onto Root.1
@@ -2200,7 +2200,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ClickButton("GetChildrenOrder");
                 // Verify nodes are still in the same order
-                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2", ReadResult());
             }
         }
 
@@ -2229,7 +2229,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ClickButton("LabelItems");
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2", ReadResult());
 
                 ClickButton("DisableClickToExpand");
 
@@ -2240,7 +2240,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(root0);
                 KeyboardHelper.PressKey(Key.Down, ModifierKey.Alt | ModifierKey.Shift);
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2", ReadResult());
 
                 ClickButton("DisableItemReorder");
 
@@ -2248,7 +2248,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(root0);
                 KeyboardHelper.PressKey(Key.Down, ModifierKey.Alt | ModifierKey.Shift);
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2", ReadResult());
             }
         }
 

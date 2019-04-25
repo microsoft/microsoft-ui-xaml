@@ -193,6 +193,11 @@ void TreeViewNode::OnItemsSourceChanged(const winrt::IInspectable& sender, const
 
 void TreeViewNode::OnItemsAdded(int index, int count)
 {
+    // TreeViewNode and ItemsSource will update each other when data changes.
+    // For ItemsSource -> TreeViewNode changes, m_itemsDataSource.Count() > Children().Size()
+    // We'll add the new node to children collection.
+    // For TreeViewNode -> ItemsSource changes, m_itemsDataSource.Count() == Children().Size()
+    // the node is already in children collection, we don't want to update TreeViewNode again here.
     if (m_itemsDataSource.Count() != static_cast<int>(Children().Size()))
     {
         for (int i = index + count - 1; i >= index; i--)
@@ -200,18 +205,23 @@ void TreeViewNode::OnItemsAdded(int index, int count)
             auto item = m_itemsDataSource.GetAt(i);
             auto node = winrt::make_self<TreeViewNode>();
             node->Content(item);
-            winrt::get_self<TreeViewNodeVector>(Children())->InsertAt(index, *node, false);
+            winrt::get_self<TreeViewNodeVector>(Children())->InsertAt(index, *node, false /* updateItemsSource */);
         }
     }
 }
 
 void TreeViewNode::OnItemsRemoved(int index, int count)
 {
+    // TreeViewNode and ItemsSource will update each other when data changes.
+    // For ItemsSource -> TreeViewNode changes, m_itemsDataSource.Count() < Children().Size()
+    // We'll remove the node from children collection.
+    // For TreeViewNode -> ItemsSource changes, m_itemsDataSource.Count() == Children().Size()
+    // the node is already removed, we don't want to update TreeViewNode again here.
     if (m_itemsDataSource.Count() != static_cast<int>(Children().Size()))
     {
         for (int i = 0; i < count; i++)
         {
-            winrt::get_self<TreeViewNodeVector>(Children())->RemoveAt(index, false);
+            winrt::get_self<TreeViewNodeVector>(Children())->RemoveAt(index, false /* updateItemsSource */);
         }
     }
 }
@@ -230,7 +240,7 @@ void TreeViewNode::SyncChildrenNodesWithItemsSource()
             auto node = winrt::make_self<TreeViewNode>();
             node->Content(item);
             node->IsContentMode(true);
-            children->Append(*node, false);
+            children->Append(*node, false /* updateItemsSource */);
         }
     }
 }
@@ -306,22 +316,21 @@ TreeViewNode* TreeViewNodeVector::Parent()
     return winrt::get_self<TreeViewNode>(m_parent.get());
 }
 
-// Check if parent node is in "content mode".
-// We don't want users to use ItemsSource and modify TreeViewNode at the same time since that might cause some unexpected behaviors.
-// This method is used to check what "mode" is treeview currently in.
+// Check if parent node is in "content mode" (data binding).
 bool TreeViewNodeVector::IsParentInContentMode()
 {
-    return Parent()->IsContentMode();
+    if (auto parent = Parent())
+    {
+        return parent->IsContentMode();
+    }
+    return false;
 }
 
-winrt::IBindableVector TreeViewNodeVector::GetParentItemsSource()
+winrt::IBindableVector TreeViewNodeVector::GetWritableParentItemsSource()
 {
     if (IsParentInContentMode())
     {
-        if (auto source = Parent()->ItemsSource().try_as<winrt::IBindableVector>())
-        {
-            return source;
-        }
+        return Parent()->ItemsSource().try_as<winrt::IBindableVector>();
     }
 
     return nullptr;
@@ -341,7 +350,7 @@ void TreeViewNodeVector::InsertAt(unsigned int index, winrt::TreeViewNode const&
 
     if (updateItemsSource)
     {
-        if (auto itemsSource = GetParentItemsSource())
+        if (auto itemsSource = GetWritableParentItemsSource())
         {
             itemsSource.InsertAt(index, item.Content());
         }
@@ -364,7 +373,7 @@ void TreeViewNodeVector::RemoveAt(unsigned int index, bool updateItemsSource)
 
     if (updateItemsSource)
     {
-        if (auto source = GetParentItemsSource())
+        if (auto source = GetWritableParentItemsSource())
         {
             source.RemoveAt(index);
         }
@@ -386,7 +395,7 @@ void TreeViewNodeVector::ReplaceAll(winrt::array_view<winrt::TreeViewNode const>
     {
         Clear();
 
-        auto itemsSource = GetParentItemsSource();
+        auto itemsSource = GetWritableParentItemsSource();
         // Set parent on new elements
         MUX_ASSERT(m_parent.get());
         for (auto& value : values)
@@ -417,7 +426,7 @@ void TreeViewNodeVector::Clear()
 
         inner->Clear();
 
-        if (auto itemsSource = GetParentItemsSource())
+        if (auto itemsSource = GetWritableParentItemsSource())
         {
             itemsSource.Clear();
         }

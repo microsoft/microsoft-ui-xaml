@@ -106,7 +106,9 @@ public:
     TreeViewNodeVector();
     TreeViewNodeVector(unsigned int capacity);
 
+    TreeViewNode* Parent();
     void SetParent(winrt::TreeViewNode value);
+    winrt::IBindableVector GetWritableParentItemsSource();
 
     void Append(winrt::TreeViewNode const& item, bool updateItemsSource = true);   
     void InsertAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource = true);
@@ -115,6 +117,4 @@ public:
     void RemoveAtEnd(bool updateItemsSource = true);
     void ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values);    
     void Clear();
-    winrt::IBindableVector GetParentItemsSource();
-    TreeViewNode* Parent();
 };
