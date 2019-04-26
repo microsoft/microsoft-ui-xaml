@@ -48,6 +48,12 @@ jobs:
     in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
   pool:
     name: Package ES Lab E
+  strategy:
+    maxParallel: 10
+    matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
 
   steps:
   - task: PkgESSetupBuild@10
@@ -56,6 +62,9 @@ jobs:
       productName: dep.controls
       branchVersion: false
       nugetVer: true
+      
+  - task: PkgESSerializeForPostBuild@10
+    displayName: 'XESSerializeForPostbuild '
 
   - task: DownloadBuildArtifacts@0 
     condition:
