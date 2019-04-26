@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
+  <ItemGroup>
+    <HelixWorkItem Include="IXMPTestApp.Tests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:IXMPTestApp.Tests.*</Command>
+    </HelixWorkItem>
+  </ItemGroup>
+</Project>

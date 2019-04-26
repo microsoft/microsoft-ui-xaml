@@ -1,0 +1,120 @@
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
+  <ItemGroup>
+    <HelixWorkItem Include="InteractionTests.ColorPickerTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ColorPickerTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.RatingControlTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.RatingControlTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.ParallaxViewTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ParallaxViewTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.ScrollerTestsWithAutomationPeer" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollerTestsWithAutomationPeer.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.ScrollerTestsWithInputHelper" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollerTestsWithInputHelper.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.ScrollViewerTestsWithInputHelper" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ScrollViewerTestsWithInputHelper.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.PersonPictureTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.PersonPictureTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.AcrylicBrushTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.AcrylicBrushTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.RevealBrushTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.RevealBrushTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.SwipeControlTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.SwipeControlTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.RefreshContainerTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.RefreshContainerTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.TwoPaneViewTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TwoPaneViewTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.MenuBarTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.MenuBarTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.SplitButtonTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.SplitButtonTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.DropDownButtonTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.DropDownButtonTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.CommandBarFlyoutTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.CommandBarFlyoutTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.TextCommandBarFlyoutTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TextCommandBarFlyoutTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.CommonStylesTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.CommonStylesTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.RadioButtonsTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.RadioButtonsTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.ButtonInteractionTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.ButtonInteractionTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.SliderInteractionTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.SliderInteractionTests.*</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.TeachingTipInteractionTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TeachingTipInteractionTests.*</Command>
+    </HelixWorkItem>
+
+    <!-- NavigationView tests -->
+    <HelixWorkItem Include="InteractionTests.NavigationViewTests-A" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests.*' and @NavViewTestSuite='A')"</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.NavigationViewTests-B" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests.*' and @NavViewTestSuite='B')"</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.NavigationViewTests-C" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests.*' and @NavViewTestSuite='C')"</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.NavigationViewTests-D" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests.*' and @NavViewTestSuite='D')"</Command>
+    </HelixWorkItem>
+
+    <!-- TreeView tests -->
+    <HelixWorkItem Include="InteractionTests.TreeViewTests-A" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TreeViewTests.*' and @TreeViewTestSuite='A')"</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="InteractionTests.TreeViewTests-B" Condition=" '$(TestSuite)'=='DevTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TreeViewTests.*' and @TreeViewTestSuite='B')"</Command>
+    </HelixWorkItem>
+  </ItemGroup>
+</Project>

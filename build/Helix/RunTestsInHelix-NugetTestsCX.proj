@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
+  <ItemGroup>
+    <HelixWorkItem Include="ReleaseTest.NugetTestsCX" Condition=" '$(TestSuite)'=='NugetTestSuite' ">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:MUXControls.ReleaseTest.NugetTestsCX.*</Command>
+    </HelixWorkItem>
+  </ItemGroup>
+</Project>
