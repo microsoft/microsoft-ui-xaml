@@ -135,7 +135,7 @@
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)\AdditionalStyles.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)\Themes\AdditionalStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
