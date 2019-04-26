@@ -51,8 +51,8 @@ jobs:
   strategy:
     maxParallel: 10
     matrix:
-      Release_x86:
-        buildPlatform: 'x86'
+      Release_x64:
+        buildPlatform: 'x64'
         buildConfiguration: 'Release'
 
   steps:
@@ -104,6 +104,7 @@ jobs:
     inputs:
       filename: '$(Build.SourcesDirectory)\tools\PkgGen.cmd'
       arguments: 'x86 release'
+    enabled: false
 
   - task: CmdLine@1
     displayName: PkgGen.cmd x64 release
