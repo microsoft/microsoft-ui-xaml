@@ -62,9 +62,6 @@ jobs:
       productName: dep.controls
       branchVersion: false
       nugetVer: true
-      
-  - task: PkgESSerializeForPostBuild@10
-    displayName: 'XESSerializeForPostbuild '
 
   - task: DownloadBuildArtifacts@0 
     condition:
