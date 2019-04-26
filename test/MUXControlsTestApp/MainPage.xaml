@@ -10,7 +10,7 @@
     AutomationProperties.AutomationId="MainPage">
 
     <Page.Resources>
-        <local:NavigateToTestCommand x:Key="NavigateToTestCommand"/>
+        <local:NavigateToTestCommand x:Key="NavigateToTestCommand" Frame="{x:Bind Frame}"/>
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">

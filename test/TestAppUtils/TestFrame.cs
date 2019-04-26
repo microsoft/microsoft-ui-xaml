@@ -88,7 +88,7 @@ namespace MUXControlsTestApp
 
             Window.Current.SizeChanged += OnWindowSizeChanged;
 
-            _backButton = (Button)GetTemplateChild("BackButton");
+            _backButton = (Button)GetTemplateChild("MyBackButton");
             _backButton.Click += GoBackInvokerButton_Click;
 
             _goBackInvokerButton = (Button)GetTemplateChild("GoBackInvokerButton");
