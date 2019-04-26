@@ -166,24 +166,17 @@
     <Compile Include="$(MSBuildThisFileDirectory)\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)\SampleTestUIPage.xaml.cs">
-      <DependentUpon>SampleTestUIPage.xaml</DependentUpon>
-    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)\Properties\AssemblyInfo.cs" Condition="$(BuildingWithBuildExe) != 'true'" />
     <Compile Include="$(MSBuildThisFileDirectory)\TestInventory.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\BiDirectionalScrollController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\CompositionPropertyLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\CompositionPropertySpy.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\CompositionScrollController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\ControlStateViewer\ControlStateViewer.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\IdleSynchronizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\MaterialHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\PrivateLoggingHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\ScrollerTestHooksHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\RunOnUIThread.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\SemanticZoomTemplateItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\SemanticZoomTemplateSelector.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TabControl\TabControl.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TilePanel\TilePanel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\ViewHelper.cs" />
@@ -247,23 +240,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)\SampleTestUIPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)\Themes\AdditionalStyles.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStylesOutsideStore_rs2.xaml" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)\Utilities\TabControl\TabControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

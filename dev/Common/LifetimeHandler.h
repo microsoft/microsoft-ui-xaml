@@ -3,9 +3,8 @@
 
 #pragma once
 
-#include <ItemsRepeater.common.h>
 #include <MaterialHelper.h>
-#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
+#ifdef TWOPANEVIEW_INCLUDED
 #include <DisplayRegionHelper.h>
 #endif
 
@@ -23,23 +22,27 @@ private:
     static thread_local LifetimeHandler* s_tlsInstanceNoRef;
     static LifetimeHandler& Instance();
 
+#ifdef REPEATER_INCLUDED
     com_ptr<CachedVisualTreeHelpers> m_cachedVisualTreeHelpers;
+#endif
     com_ptr<MaterialHelper> m_materialHelper;
-#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
+#ifdef TWOPANEVIEW_INCLUDED
     com_ptr<DisplayRegionHelper> m_displayRegionHelper;
 #endif
     ~LifetimeHandler();
 public:
     LifetimeHandler() {}; // Trying to make this private gives: cannot access private member declared in class 'LifeTimeHandler'
 
+#ifdef REPEATER_INCLUDED
     static com_ptr<CachedVisualTreeHelpers> GetCachedVisualTreeHelpersInstance();
+#endif
 
     // MaterialHelper has been factored into common Base and different conditionally compiled derived types for MUX / WUXC
     // to support consumption of private API's such as MaterialProperties exclusively in WUXC.
     static com_ptr<MaterialHelper> GetMaterialHelperInstance();
     static com_ptr<MaterialHelper> TryGetMaterialHelperInstance();
 
-#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
+#ifdef TWOPANEVIEW_INCLUDED
     static com_ptr<DisplayRegionHelper> GetDisplayRegionHelperInstance();
 #endif
 };
