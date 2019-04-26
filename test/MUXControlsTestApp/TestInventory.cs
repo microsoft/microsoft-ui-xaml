@@ -53,6 +53,11 @@ namespace MUXControlsTestApp
             Tests.Add(new TestDeclaration("Reveal", typeof(RevealPage), "ms-appx:///Assets/Reveal.png"));
             Tests.Add(new TestDeclaration("ItemsRepeater", typeof(RepeaterTestUIPage), "ms-appx:///Assets/ListView.png"));
             Tests.Add(new TestDeclaration("Scroller", typeof(ScrollerPage), "ms-appx:///Assets/ScrollViewer.png"));
+
+            Tests.Sort((a, b) =>
+            {
+                return a.Name.CompareTo(b.Name);
+            });
         }
 
         public static List<TestDeclaration> Tests { get; private set; }
