@@ -7,6 +7,7 @@
 #include "ScrollBarController.h"
 #include "ScrollViewer.h"
 #include "TypeLogging.h"
+#include "ScrollerTypeLogging.h"
 #include "ScrollControllerScrollToRequestedEventArgs.h"
 #include "ScrollControllerScrollByRequestedEventArgs.h"
 #include "ScrollControllerScrollFromRequestedEventArgs.h"

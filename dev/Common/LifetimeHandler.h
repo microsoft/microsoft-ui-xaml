@@ -7,6 +7,9 @@
 #ifdef TWOPANEVIEW_INCLUDED
 #include <DisplayRegionHelper.h>
 #endif
+#ifdef REPEATER_INCLUDED
+#include <ItemsRepeater.common.h>
+#endif
 
 // Adds objects to CoreApplicationView.Properties so that they get destroyed accordingly and prevent potential deadlocks.
 class LifetimeHandler : 
