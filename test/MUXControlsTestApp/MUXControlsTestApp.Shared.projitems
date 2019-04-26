@@ -194,6 +194,29 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\TypeConverters.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Assets\AcrylicBrush.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Animations.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Button.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ColorPicker.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\CommandBarFlyout.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\CompactSizing.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\DropdownButton.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ListView.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\MenuBar.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\MenuFlyout.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\NavigationView.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ParallaxView.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\PersonPicture.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\PullToRefresh.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\RadioButton.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\RatingControl.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Reveal.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ScrollViewer.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Slider.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\SplitButton.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Swipe.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\TeachingTip.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\TreeView.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\AutoSave.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\file.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\folder.png" />
@@ -214,13 +237,6 @@
     <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_unset.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\SMPTE_WallpaperHD.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Properties\App.rd.xml" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\SplashScreen.scale-200.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\StoreLogo.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\Wide310x150Logo.scale-200.png" />
     <Content Include="$(MSBuildThisFileDirectory)\master\*.xml" />
     <Content Include="$(MSBuildThisFileDirectory)\..\..\dev\dll\DensityStyles\Compact.xaml" />
   </ItemGroup>
