@@ -35,7 +35,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Orientation="Horizontal">
-                                    <Button x:Name="MyBackButton" 
+                                    <Button x:Name="BackButton" 
                                         AutomationProperties.AutomationId="__BackButton" 
                                         Width="48"
                                         Visibility="Collapsed"
