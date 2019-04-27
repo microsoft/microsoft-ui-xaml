@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
+<Project>
   <ItemGroup>
     <HelixWorkItem Include="ReleaseTest.NugetTests" Condition=" '$(TestSuite)'=='NugetTestSuite' ">
       <Timeout>00:20:00</Timeout>

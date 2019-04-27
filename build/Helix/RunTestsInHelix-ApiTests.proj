@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
+<Project>
   <ItemGroup>
     <HelixWorkItem Include="ApiTests.ThemeResourcesTests" Condition=" '$(TestSuite)'=='DevTestSuite' ">
       <Timeout>00:20:00</Timeout>
