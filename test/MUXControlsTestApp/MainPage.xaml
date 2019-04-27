@@ -35,7 +35,8 @@
                             Command="{StaticResource NavigateToTestCommand}"
                             AutomationProperties.Name="{Binding Name}"
                             FontSize="20"
-                            Margin="0,0,12,12">
+                            Margin="0,0,12,12"
+                            VerticalAlignment="Stretch">
                             
                             <Grid Width="250">
                                 <Grid.ColumnDefinitions>
