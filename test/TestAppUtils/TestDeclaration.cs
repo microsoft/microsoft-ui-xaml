@@ -10,7 +10,7 @@ namespace MUXControlsTestApp
         public TestDeclaration(string name, Type pageType, string icon = null)
         {
             Name = name;
-            Icon = icon != null ? "ms-appx:///Assets/" + icon : null;
+            Icon = icon;
             PageType = pageType;
         }
 
