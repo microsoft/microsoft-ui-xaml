@@ -73,7 +73,7 @@
   </ItemGroup>
 
   <!-- Add a dependency for the app against VCLibs since we need it but the consuming app might be .NET only. -->
-  <ItemGroup Condition="('$(PlatformTarget)' == 'x86' or '$(PlatformTarget)' == 'x64' or '$(PlatformTarget)' == 'ARM' or '$(PlatformTarget)' == 'ARM64')">
+  <ItemGroup Condition="('$(OutputType)' == 'AppContainerExe')">
     <SDKReference Include="Microsoft.VCLibs, Version=14.0" />
   </ItemGroup>
 
