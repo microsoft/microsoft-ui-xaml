@@ -249,7 +249,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 {
                     get
                     {
-                        if(CollectionChange == CollectionChange.Reset)
+                        if (CollectionChange == CollectionChange.Reset)
                         {
                             // C++/CX observable collection fails if accessing index 
                             // when the args is for a Reset, so emulating that behavior here.
