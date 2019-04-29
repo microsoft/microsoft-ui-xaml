@@ -10,12 +10,21 @@ namespace MUXControlsTestApp
     {
         public static void Add(this List<TestDeclaration> list, string name, Type pageType)
         {
-            list.Add(new TestDeclaration(name, pageType));
+            list.Add(new TestDeclaration() {
+                Name = name,
+                AutomationName = name + " Tests",
+                PageType = pageType
+            });
         }
 
         public static void Add(this List<TestDeclaration> list, string name, Type pageType, string icon)
         {
-            list.Add(new TestDeclaration(name, pageType, "ms-appx:///Assets/" + icon));
+            list.Add(new TestDeclaration() {
+                Name = name,
+                AutomationName = name + " Tests",
+                PageType = pageType,
+                Icon = "ms-appx:///Assets/" + icon
+            });
         }
     }
 

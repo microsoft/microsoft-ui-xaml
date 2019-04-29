@@ -33,7 +33,7 @@
                         <Button
                             CommandParameter="{Binding}"
                             Command="{StaticResource NavigateToTestCommand}"
-                            AutomationProperties.Name="{Binding Name}"
+                            AutomationProperties.Name="{Binding AutomationName}"
                             FontSize="20"
                             Margin="0,0,12,12"
                             VerticalAlignment="Stretch">
