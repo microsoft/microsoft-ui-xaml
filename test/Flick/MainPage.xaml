@@ -66,6 +66,7 @@
                                 <AppBarButton Content="2D Grid" Click="On2DGridClicked" />
                                 <AppBarButton Content="Grouped" Click="OnGroupedPageClicked" />
                                 <AppBarButton Content="Flex" Click="OnFlexClicked" />
+                                <AppBarButton Content="AnimatedCarousal" Click="OnAnimatedCarousalClicked" />
                             </StackPanel>
                         </StackPanel>
                     </Grid>

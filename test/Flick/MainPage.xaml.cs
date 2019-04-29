@@ -95,6 +95,11 @@ namespace Flick
             Frame.Navigate(typeof(FlexDemo), new NavigateArgs() { Photos = Images, Selected = Images[0] });
         }
 
+        private void OnAnimatedCarousalClicked(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(AnimatedCarousalPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
+        }
+
         private void AutoSuggest_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
 
