@@ -195,7 +195,6 @@ void InspectingDataSource::OnVectorChanged(
     // Also note that we do not access the data - we just add nullptr. We just 
     // need the count.
 
-    const auto index = static_cast<int>(e.Index());
     winrt::NotifyCollectionChangedAction action{};
     int oldStartingIndex = -1;
     int newStartingIndex = -1;
@@ -207,18 +206,18 @@ void InspectingDataSource::OnVectorChanged(
     {
     case winrt::Collections::CollectionChange::ItemInserted:
         action = winrt::NotifyCollectionChangedAction::Add;
-        newStartingIndex = index;
+        newStartingIndex = static_cast<int>(e.Index());
         newItems.Append(nullptr);
         break;
     case winrt::Collections::CollectionChange::ItemRemoved:
         action = winrt::NotifyCollectionChangedAction::Remove;
-        oldStartingIndex = index;
+        oldStartingIndex = static_cast<int>(e.Index());
         oldItems.Append(nullptr);
         break;
     case winrt::Collections::CollectionChange::ItemChanged:
         action = winrt::NotifyCollectionChangedAction::Replace;
-        oldStartingIndex = index;
-        newStartingIndex = index;
+        oldStartingIndex = static_cast<int>(e.Index());
+        newStartingIndex = oldStartingIndex;
         newItems.Append(nullptr);
         oldItems.Append(nullptr);
         break;
