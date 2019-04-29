@@ -11,6 +11,7 @@ using System.Linq;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml.Controls;
 using Common;
+using System;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -242,7 +243,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             private class WinRTVectorChangedEventArgs : IVectorChangedEventArgs
             {
                 public CollectionChange CollectionChange { get; private set; }
-                public uint Index { get; private set; }
+
+                private uint _index;
+                public uint Index
+                {
+                    get
+                    {
+                        if(CollectionChange == CollectionChange.Reset)
+                        {
+                            // C++/CX observable collection fails if accessing index 
+                            // when the args is for a Reset, so emulating that behavior here.
+                            throw new InvalidOperationException();
+                        }
+
+                        return _index;
+                    }
+
+                    private set
+                    {
+                        _index = value;
+                    }
+                }
 
                 public WinRTVectorChangedEventArgs(CollectionChange change, int index)
                 {
