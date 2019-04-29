@@ -890,5 +890,27 @@ namespace MUXControlsTestApp
                 }
             }
         }
+
+        private void OnPageThemeComboBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selectedItem = ((ComboBoxItem)PageThemeComboBox.SelectedItem);
+            if (String.Equals(selectedItem?.Content, "Light"))
+            {
+                RequestedTheme = ElementTheme.Default;
+            }
+            else if (String.Equals(selectedItem?.Content, "Dark"))
+            {
+                RequestedTheme = ElementTheme.Dark;
+            }
+            else
+            {
+                RequestedTheme = ElementTheme.Default;
+            }
+        }
+
+        public Button GetActionButton(TeachingTip tip)
+        {
+            return (Button)FindVisualChildByName(tip, "ActionButton");
+        }
     }
 }

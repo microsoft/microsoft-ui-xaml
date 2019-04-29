@@ -830,6 +830,7 @@ void TeachingTip::OnIsOpenChanged()
             auto&& popup = m_popup.get();
             if (!popup.IsOpen())
             {
+                UpdatePopupRequestedTheme();
                 popup.Child(m_rootElement.get());
                 m_lightDismissIndicatorPopup.get().IsOpen(true);
                 popup.IsOpen(true);
@@ -2079,4 +2080,21 @@ double TeachingTip::GetVerticalOffset()
         return popup.VerticalOffset();
     }
     return 0.0;
+}
+
+void TeachingTip::UpdatePopupRequestedTheme()
+{
+    if (winrt::IFrameworkElement6 frameworkElement6 = *this)
+    {
+        if (!m_actualThemeChangedRevoker)
+        {
+            m_actualThemeChangedRevoker = frameworkElement6.ActualThemeChanged(winrt::auto_revoke,
+                [this](auto&&, auto&&) { UpdatePopupRequestedTheme(); });
+        }
+
+        if (auto && popup = m_popup.get())
+        {
+            popup.RequestedTheme(frameworkElement6.ActualTheme());
+        }
+    }
 }

@@ -133,6 +133,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -281,6 +282,18 @@
                     <ComboBoxItem x:Name="AutomationNameNone">None</ComboBoxItem>
                 </ComboBox>
                 <Button AutomationProperties.Name="SetAutomationNameButton" Click="OnSetAutomationNameButtonClicked" Grid.Row="36" Grid.Column="1">Set</Button>
+
+                <ComboBox x:Name="PageThemeComboBox" AutomationProperties.AutomationId="PageThemeComboBox" Grid.Row="37" SelectedIndex="0"
+                          SelectionChanged="OnPageThemeComboBoxSelectionChanged"
+                          Header="Page Theme:">
+                    <ComboBoxItem AutomationProperties.AutomationId="Default">Default</ComboBoxItem>
+                    <ComboBoxItem AutomationProperties.AutomationId="Light">Light</ComboBoxItem>
+                    <ComboBoxItem AutomationProperties.AutomationId="Dark">Dark</ComboBoxItem>
+                </ComboBox>
+
+                <TextBlock AutomationProperties.AutomationId="EffectiveForegroundOfTeachingTipButton"
+                           Text="{x:Bind GetActionButton(TeachingTipInVisualTree).Foreground.ToString(),OneWay}}"
+                           Grid.Row="37" Grid.Column="2"/>
             </Grid>
         </ScrollViewer>
 

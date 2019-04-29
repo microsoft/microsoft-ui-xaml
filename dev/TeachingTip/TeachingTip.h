@@ -67,6 +67,7 @@ private:
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
     winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
+    winrt::FrameworkElement::ActualThemeChanged_revoker m_actualThemeChangedRevoker{};
 	void SetPopupAutomationProperties();
     void CreateLightDismissIndicatorPopup();
     bool UpdateTail();
@@ -115,6 +116,8 @@ private:
 
     void StartExpandToOpen();
     void StartContractToClose();
+
+    void UpdatePopupRequestedTheme();
 
     std::tuple<winrt::TeachingTipPlacementMode, bool> DetermineEffectivePlacement();
     std::tuple<winrt::TeachingTipPlacementMode, bool> DetermineEffectivePlacementTargeted(double contentHight, double contentWidth);
