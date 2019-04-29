@@ -33,7 +33,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     [TestClass]
-    class NEWCONTROLTests
+    public class NEWCONTROLTests
     {
         [ClassInitialize]
         [TestProperty("RunAs", "User")]

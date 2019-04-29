@@ -54,6 +54,8 @@
 #include "AnimatedVisualPlayer.h"
 #include "ScrollViewer.h"
 #include "ScrollViewerTestHooksFactory.h"
+#include "TabView.h"
+#include "TabViewItem.h"
 #endif
 #endif
 
@@ -469,5 +471,7 @@ XamlRuntimeType::EnsureDependencyProperties(_In_ UINT16 typeLabel) const try
 
 } // namespace Private
 #endif
+
+
 
 

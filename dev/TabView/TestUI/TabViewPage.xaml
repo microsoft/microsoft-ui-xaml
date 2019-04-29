@@ -1,0 +1,70 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.TabViewPage"
+    x:Name="TabViewTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Padding="12" Background="LightGray" Width="250">
+                <CheckBox x:Name="CanCloseCheckBox" AutomationProperties.Name="CanCloseCheckBox" Checked="CanCloseCheckBox_CheckChanged" Unchecked="CanCloseCheckBox_CheckChanged" IsChecked="True" Content="CanCloseTabs"/>
+                <CheckBox x:Name="IsCloseableCheckBox" AutomationProperties.Name="IsCloseableCheckBox" Checked="IsCloseableCheckBox_CheckChanged" Unchecked="IsCloseableCheckBox_CheckChanged" IsChecked="True" Content="IsCloseable on first tab"/>
+                <CheckBox x:Name="CancelCloseCheckBox" AutomationProperties.Name="CancelCloseCheckBox" Content="Cancel Closing event"/>
+
+                <Button x:Name="AddTabButton" AutomationProperties.Name="AddTabButton" Content="Add Tab" Margin="0,4,0,8" Click="AddTabButton_Click"/>
+                <Button x:Name="RemoveTabButton" AutomationProperties.Name="RemoveTabButton"  Content="Remove Tab" Margin="0,0,0,8" Click="RemoveTabButton_Click"/>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock VerticalAlignment="Center">Tab Width:</TextBlock>
+                    <ComboBox x:Name="TabWidthComboBox" AutomationProperties.Name="TabWidthComboBox" Margin="4,0,0,0" SelectedIndex="1" SelectionChanged="TabWidthComboBox_SelectionChanged">
+                        <ComboBoxItem Content="SizeToContent"/>
+                        <ComboBoxItem Content="Fixed"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock>Selected Index:</TextBlock>
+                    <TextBlock x:Name="SelectedIndexTextBlock" AutomationProperties.Name="SelectedIndexTextBlock" Margin="4,0,0,0" Text="0"/>
+                </StackPanel>
+            </StackPanel>
+
+            <controls:TabView x:Name="Tabs" TabWidthMode="Fixed" CanReorderItems="True" CanDragItems="True" AllowDrop="True" SelectedIndex="0" Grid.Column="1" SelectionChanged="TabViewSelectionChanged" TabClosing="TabViewTabClosing">
+
+                <controls:TabView.Items>
+
+                    <controls:TabViewItem x:Name="FirstTab" AutomationProperties.Name="FirstTab" Icon="Home" Header="Home">
+                        <Button x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent" Padding="16">Home text</Button>
+                    </controls:TabViewItem>
+
+                    <controls:TabViewItem x:Name="SecondTab" AutomationProperties.Name="SecondTab" Icon="Shop" Header="Shop">
+                        <TextBlock Padding="16">Shop text</TextBlock>
+                    </controls:TabViewItem>
+
+                    <controls:TabViewItem x:Name="LongHeaderTab" AutomationProperties.Name="LongHeaderTab" Icon="Emoji" Header="Longer Header">
+                        <TextBlock Padding="16">Emoji text</TextBlock>
+                    </controls:TabViewItem>
+
+                    <controls:TabViewItem x:Name="NotCloseableTab" AutomationProperties.Name="NotCloseableTab" Icon="Video" Header="Video" IsCloseable="False">
+                        <TextBlock Padding="16">This tab can't be closed.</TextBlock>
+                    </controls:TabViewItem>
+
+                    <controls:TabViewItem x:Name="LastTab" AutomationProperties.Name="LastTab" Icon="Contact" Header="Contact">
+                        <TextBlock x:Name="LastTabContent" AutomationProperties.Name="LastTabContent" Padding="16">Contact text</TextBlock>
+                    </controls:TabViewItem>
+
+                </controls:TabView.Items>
+            </controls:TabView>
+        </Grid>
+    </Grid>
+</local:TestPage>

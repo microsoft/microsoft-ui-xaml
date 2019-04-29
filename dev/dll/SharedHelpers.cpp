@@ -453,8 +453,13 @@ bool SharedHelpers::DoRectsIntersect(
 
 winrt::IInspectable SharedHelpers::FindResourceOrNull(const std::wstring_view& resource, const winrt::ResourceDictionary& resources)
 {
+    return FindResource(resource, resources, nullptr);
+}
+
+winrt::IInspectable SharedHelpers::FindResource(const std::wstring_view& resource, const winrt::ResourceDictionary& resources, const winrt::IInspectable& defaultValue)
+{
     auto boxedResource = box_value(resource);
-    return resources.HasKey(boxedResource) ? resources.Lookup(boxedResource) : nullptr;
+    return resources.HasKey(boxedResource) ? resources.Lookup(boxedResource) : defaultValue;
 }
 
 // When checkVisibility is True, IsAncestor additionally checks if any UIElement from the 'child'

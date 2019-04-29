@@ -1,0 +1,74 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+enum TabViewWidthMode
+{
+    SizeToContent = 0,
+    Fixed = 1,
+};
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass TabViewTabClosingEventArgs
+{
+    Object Item { get; };
+
+    Boolean Cancel { get; set; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.ListView
+{
+    TabView();
+
+    [MUX_DEFAULT_VALUE("winrt::TabViewWidthMode::SizeToContent")]
+    TabViewWidthMode TabWidthMode{ get; set; };
+
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean CanCloseTabs{ get; set; };
+
+    Object LeftCustomContent{ get; set; };
+    Windows.UI.Xaml.DataTemplate LeftCustomContentTemplate{ get; set; };
+
+    Object RightCustomContent{ get; set; };
+    Windows.UI.Xaml.DataTemplate RightCustomContentTemplate{ get; set; };
+
+    event Windows.Foundation.TypedEventHandler<TabView, TabViewTabClosingEventArgs> TabClosing;
+
+    static Windows.UI.Xaml.DependencyProperty TabWidthModeProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty CanCloseTabsProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty LeftCustomContentProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty LeftCustomContentTemplateProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty RightCustomContentProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty RightCustomContentTemplateProperty{ get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass TabViewItem : Windows.UI.Xaml.Controls.ListViewItem
+{
+    TabViewItem();
+
+    String Header{ get; set; };
+
+    Windows.UI.Xaml.DataTemplate HeaderTemplate{ get; set; };
+
+    Windows.UI.Xaml.Controls.IconElement Icon{ get; set; };
+
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsCloseable{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IconProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsCloseableProperty{ get; };
+}
+
+}
