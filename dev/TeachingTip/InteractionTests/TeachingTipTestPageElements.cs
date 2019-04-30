@@ -305,6 +305,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Button setIconButton;
 
+        public ComboBox GetActionButtonContentComboBox()
+        {
+            return GetElement(ref actionButtonContentComboBox, "ActionButtonContentComboBox");
+        }
+        private ComboBox actionButtonContentComboBox;
+
+        public Button GetSetActionButtonContentButton()
+        {
+            return GetElement(ref setActionContentButton, "SetActionContentButton");
+        }
+        private Button setActionContentButton;
+
+
+        public ComboBox GetThemingComboBox()
+        {
+            return GetElement(ref themingComboBox, "PageThemeComboBox");
+        }
+        private ComboBox themingComboBox;
+
         public UIObject GetTeachingTipAlternateCloseButton()
         {
             ElementCache.Clear();
@@ -335,12 +354,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Button setAutomationNameButton;
 
+        public TextBlock GetEffectiveForegroundOfTeachingTipButtonTextBlock()
+        {
+            return GetElement(ref effectiveForegroundOfTeachingTipButtonTextBlock, "EffectiveForegroundOfTeachingTipButton");
+        }
+        private TextBlock effectiveForegroundOfTeachingTipButtonTextBlock;
+
+        public TextBlock GetEffectiveForegroundOfTeachingTipContentTextBlock()
+        {
+            return GetElement(ref effectiveForegroundOfTeachingTipContentTextBlock, "EffectiveForegroundOfTeachingTipContent");
+        }
+        private TextBlock effectiveForegroundOfTeachingTipContentTextBlock;
+
+
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)
             {
                 Log.Comment("Find the " + elementName);
-                element = FindElement.ByName<T>(elementName);
+                element = FindElement.ByNameOrId<T>(elementName);
                 Verify.IsNotNull(element);
             }
             return element;

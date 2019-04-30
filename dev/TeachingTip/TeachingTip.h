@@ -51,6 +51,8 @@ public:
 
     bool m_isIdle{ true };
 
+    friend class TeachingTipTestHooks;
+
 private:
     PropertyChanged_revoker m_automationNameChangedRevoker{};
     PropertyChanged_revoker m_automationIdChangedRevoker{};

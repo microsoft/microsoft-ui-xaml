@@ -465,6 +465,46 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void VerifyTheming()
+        {
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+                var actionButtonComboBox = elements.GetActionButtonContentComboBox();
+                actionButtonComboBox.SelectItemByName("Small text");
+                elements.GetSetActionButtonContentButton().Invoke();
+
+                ScrollTargetIntoView();
+                ScrollBy(10);
+
+                elements.GetShowButton().Invoke();
+
+                Wait.ForIdle();
+
+                Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
+                Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
+
+                // Change to Dark, make sure the font switches to light
+                var themingComboBox = elements.GetThemingComboBox();
+                themingComboBox.SelectItemByName("Dark");
+
+                Wait.ForIdle();
+
+                Verify.AreEqual("#FFFFFFFF", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be white");
+                Verify.AreEqual("#FFFFFFFF", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be white");
+
+                // Change to Light, make sure the font switches to dark
+                themingComboBox.SelectItemByName("Light");
+
+                Wait.ForIdle();
+
+                Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
+                Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
+            }
+        }
+
+
         private void TestAutoPlacementForWindowOrScreenBounds(Vector4 targetRect, bool forWindowBounds)
         {
             TestAutoPlacementForWindowOrScreenBounds(targetRect, forWindowBounds, "");

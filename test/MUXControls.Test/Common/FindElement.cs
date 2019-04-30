@@ -86,6 +86,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                 return default(T);
             }
         }
+
+        public static T ByNameOrId<T>(string name)
+        {
+            UIObject obj = ByNameOrId(name);
+
+            if (obj != null)
+            {
+                return (T)Activator.CreateInstance(typeof(T), obj);
+            }
+            else
+            {
+                return default(T);
+            }
+        }
     }
 
     public enum FindBy { Id, Name }

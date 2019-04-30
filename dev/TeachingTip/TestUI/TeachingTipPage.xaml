@@ -199,7 +199,7 @@
                     <ComboBoxItem x:Name="ActionButtonContentLong">Long text</ComboBoxItem>
                     <ComboBoxItem x:Name="ActionButtonButton">Button</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnSetActionButtonContentButtonClicked" Grid.Row="13" Grid.Column="1">Set</Button>
+                <Button AutomationProperties.AutomationId="SetActionContentButton" Click="OnSetActionButtonContentButtonClicked" Grid.Row="13" Grid.Column="1">Set</Button>
 
                 <TextBlock Grid.Row="14" Text="CloseButtonContent:" Foreground="Red"/>
                 <ComboBox x:Name="CloseButtonContentComboBox" AutomationProperties.Name="CloseButtonContentComboBox" SelectedIndex="0" Grid.Row="15">
@@ -286,14 +286,23 @@
                 <ComboBox x:Name="PageThemeComboBox" AutomationProperties.AutomationId="PageThemeComboBox" Grid.Row="37" SelectedIndex="0"
                           SelectionChanged="OnPageThemeComboBoxSelectionChanged"
                           Header="Page Theme:">
-                    <ComboBoxItem AutomationProperties.AutomationId="Default">Default</ComboBoxItem>
-                    <ComboBoxItem AutomationProperties.AutomationId="Light">Light</ComboBoxItem>
-                    <ComboBoxItem AutomationProperties.AutomationId="Dark">Dark</ComboBoxItem>
+                    <ComboBoxItem x:Name="Default">Default</ComboBoxItem>
+                    <ComboBoxItem x:Name="Light">Light</ComboBoxItem>
+                    <ComboBoxItem x:Name="Dark">Dark</ComboBoxItem>
                 </ComboBox>
 
-                <TextBlock AutomationProperties.AutomationId="EffectiveForegroundOfTeachingTipButton"
-                           Text="{x:Bind GetActionButton(TeachingTipInVisualTree).Foreground.ToString(),OneWay}}"
-                           Grid.Row="37" Grid.Column="2"/>
+                <StackPanel Orientation="Vertical" Grid.Row="37" Grid.Column="2">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="ActionButton.Foreground:"/>
+                        <TextBlock AutomationProperties.AutomationId="EffectiveForegroundOfTeachingTipButton"
+                               Text="{x:Bind BrushToString(ActionButton.Foreground),Mode=OneWay}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="CheckBox.Foreground:"/>
+                        <TextBlock AutomationProperties.AutomationId="EffectiveForegroundOfTeachingTipContent"
+                           Text="{x:Bind BrushToString(CancelClosesCheckBoxInVisualTree.Foreground),Mode=OneWay}"/>
+                    </StackPanel>
+                </StackPanel>
             </Grid>
         </ScrollViewer>
 

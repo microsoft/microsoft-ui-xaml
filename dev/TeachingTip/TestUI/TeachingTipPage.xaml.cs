@@ -109,6 +109,7 @@ namespace MUXControlsTestApp
         {
             this.TipHeightTextBlock.Text = ((FrameworkElement)sender).ActualHeight.ToString();
             this.TipWidthTextBlock.Text = ((FrameworkElement)sender).ActualWidth.ToString();
+            NotifyPropertyChanged("ActionButton");
         }
 
         private void TeachingTipTestHooks_OffsetChanged(TeachingTip sender, object args)
@@ -690,6 +691,7 @@ namespace MUXControlsTestApp
             TeachingTipInVisualTreeRoot = getTeachingTipRoot(getCancelClosesInTeachingTip());
             TeachingTipInVisualTreeRoot.SizeChanged += TeachingTip_SizeChanged;
             TeachingTip_SizeChanged(TeachingTipInVisualTreeRoot, null);
+            NotifyPropertyChanged("CancelClosesCheckBoxInVisualTree");
         }
 
         public void OnCloseButtonClicked(object sender, RoutedEventArgs args)
@@ -908,9 +910,27 @@ namespace MUXControlsTestApp
             }
         }
 
-        public Button GetActionButton(TeachingTip tip)
+        public Button ActionButton
         {
-            return (Button)FindVisualChildByName(tip, "ActionButton");
+            get
+            {
+                var popupChild = TeachingTipTestHooks.GetPopup(TeachingTipInVisualTree)?.Child as FrameworkElement;
+                if (popupChild != null)
+                {
+                    return (Button)FindVisualChildByName(popupChild, "ActionButton");
+                }
+                return null;
+            }
+        }
+
+        public string BrushToString(Brush brush)
+        {
+            if (brush is SolidColorBrush solidBrush)
+            {
+                return String.Format("#{0:X2}{1:X2}{2:X2}{3:X2}", solidBrush.Color.A, solidBrush.Color.R, solidBrush.Color.G, solidBrush.Color.B);
+            }
+
+            return "Unknown";
         }
     }
 }
