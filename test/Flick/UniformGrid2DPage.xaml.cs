@@ -37,11 +37,13 @@ namespace Flick
 
         private void OnItemClicked(object sender, RoutedEventArgs e)
         {
-            ScrollToCenterOfViewport(sender);
+            ScrollToCenterOfViewport(sender, 1.0f);
         }
 
-        private static void ScrollToCenterOfViewport(object sender)
+        private void ScrollToCenterOfViewport(object sender, float? zoomFactor = null)
         {
+            sv.ChangeView(null, null, zoomFactor);
+
             var item = sender as FrameworkElement;
             item.StartBringIntoView(new BringIntoViewOptions() {
                 HorizontalAlignmentRatio = 0.5,

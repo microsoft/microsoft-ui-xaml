@@ -100,6 +100,18 @@ namespace Flick
             Frame.Navigate(typeof(AnimatedCarousalPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
         }
 
+        private void OnAnimateClicked(object sender, RoutedEventArgs e)
+        {
+            if(repeater.Animator is DefaultElementAnimator)
+            {
+                repeater.Animator = null;
+            }
+            else
+            {
+                repeater.Animator = new DefaultElementAnimator();
+            }
+        }
+
         private void AutoSuggest_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
 

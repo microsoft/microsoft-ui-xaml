@@ -68,13 +68,10 @@
                                 <AppBarButton Content="Flex" Click="OnFlexClicked" />
                                 <AppBarButton Content="AnimatedCarousal" Click="OnAnimatedCarousalClicked" />
                             </StackPanel>
+                            <AppBarButton Content="Animator" Click="OnAnimateClicked" />
                         </StackPanel>
                     </Grid>
-                    <controls:ItemsRepeater x:Name="repeater" ItemTemplate="{StaticResource defaultTemplate}">
-                        <controls:ItemsRepeater.Animator>
-                            <local:DefaultElementAnimator />
-                        </controls:ItemsRepeater.Animator>
-                    </controls:ItemsRepeater>
+                    <controls:ItemsRepeater x:Name="repeater" ItemTemplate="{StaticResource defaultTemplate}" />
                 </StackPanel>
             </ScrollViewer>
         </controls:ItemsRepeaterScrollHost>

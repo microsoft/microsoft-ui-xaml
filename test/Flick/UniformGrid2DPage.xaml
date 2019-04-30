@@ -13,6 +13,7 @@
     <Grid Margin="10" KeyDown="Grid_KeyDown">
         <AppBarButton Icon="Zoom" HorizontalAlignment="Right" VerticalAlignment="Top" Click="OnZoomClicked" Canvas.ZIndex="10"/>
         <ScrollViewer x:Name="sv"
+                      ZoomMode="Enabled"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollMode="Enabled"
@@ -22,8 +23,9 @@
                     <local:UniformGrid2DLayout
                         x:Name="layout"
                         ItemWidth="200" ItemHeight="200"
-                        FocusedItemWidth="300" FocusedItemHeight="300"
-                        Spacing="10"/>
+                        FocusedItemWidth="300"
+                        FocusedItemHeight="300"
+                        Spacing="30"/>
                 </mux:ItemsRepeater.Layout>
                 <mux:ItemsRepeater.ItemTemplate>
                     <DataTemplate>
