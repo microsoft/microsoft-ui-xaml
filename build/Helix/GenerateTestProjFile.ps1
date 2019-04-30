@@ -236,20 +236,22 @@ $projFileContent = @"
   <ItemGroup>
 "@
 
+$testGroupSize = 10
+
 foreach ($testModule in $testModules)
 {
     Write-Host $testModule.Name
 
     foreach ($testClass in $testModules.TestClasses)
     {
-        if ($testClass.Tests.Count -gt 10)
+        if ($testClass.Tests.Count -gt $testGroupSize)
         {
             [System.Collections.Generic.List[string]]$tests = @()
             $helixWorkItemCount = 0
         
             foreach ($test in $testClass.Tests)
             {
-                if ($tests.Count -eq 10)
+                if ($tests.Count -eq $testGroupSize)
                 {
                     $helixWorkItemCount++
                     $projFileContent += @"
