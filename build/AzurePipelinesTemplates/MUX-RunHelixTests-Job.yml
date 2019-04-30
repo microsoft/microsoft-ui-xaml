@@ -85,7 +85,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
-      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-InteractionTests.proj' -TestSuiteName 'DevTestSuite' -Platform '$(buildPlatform)'
+      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-ApiTests.proj' -TestSuiteName 'DevTestSuite' -Platform '$(buildPlatform)'
 
   - task: powershell@2
     displayName: 'Create RunTestsInHelix-IXMPTestAppTests.proj'
