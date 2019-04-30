@@ -1063,7 +1063,6 @@ void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt:
 
 void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-#ifdef USE_INSIDER_SDK
     if (winrt::IUIElement10 uiElement10 = *this)
     {
         if (auto xamlRoot = uiElement10.XamlRoot())
@@ -1077,7 +1076,6 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
         }
     }
     else
-#endif // USE_INSIDER_SDK
     {
         if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
         {
@@ -1848,7 +1846,6 @@ winrt::Rect TeachingTip::GetEffectiveScreenBoundsInCoreWindowSpace(const winrt::
 
 winrt::Rect TeachingTip::GetWindowBounds()
 {
-#ifdef USE_INSIDER_SDK
     if (winrt::IUIElement10 uiElement10 = *this)
     {
         if (auto xamlRoot = uiElement10.XamlRoot())
@@ -1856,7 +1853,6 @@ winrt::Rect TeachingTip::GetWindowBounds()
             return winrt::Rect{ 0, 0, xamlRoot.Size().Width, xamlRoot.Size().Height };
         }
     }
-#endif // USE_INSIDER_SDK
     return winrt::CoreWindow::GetForCurrentThread().Bounds();
 }
 
@@ -1927,7 +1923,6 @@ std::array<winrt::TeachingTipPlacementMode, 13> TeachingTip::GetPlacementFallbac
 
 void TeachingTip::EstablishShadows()
 {
-#ifdef USE_INSIDER_SDK
 #ifdef TAIL_SHADOW
 #ifdef _DEBUG
     if (winrt::IUIElement10 tailPolygon_uiElement10 = m_tailPolygon.get())
@@ -1969,7 +1964,6 @@ void TeachingTip::EstablishShadows()
             m_contentRootGrid_uiElement10.Shadow(nullptr);
         }
     }
-#endif
 }
 
 void TeachingTip::OnPropertyChanged(
