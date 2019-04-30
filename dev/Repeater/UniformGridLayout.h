@@ -95,12 +95,15 @@ private:
 
     double LineSpacing()
     {
-        return ScrollOrientation() == ScrollOrientation::Vertical ? m_minColumnSpacing : m_minRowSpacing;
+        // ScrollOrientation is inverse of UniformGridLayout.Orientation
+        return ScrollOrientation() == ScrollOrientation::Horizontal ? m_minColumnSpacing : m_minRowSpacing;
+
     }
 
     double MinItemSpacing()
     {
-        return ScrollOrientation() == ScrollOrientation::Vertical ? m_minRowSpacing : m_minColumnSpacing;
+        // ScrollOrientation is inverse of UniformGridLayout.Orientation
+        return ScrollOrientation() == ScrollOrientation::Horizontal ? m_minRowSpacing : m_minColumnSpacing;
     }
 
     // Fields

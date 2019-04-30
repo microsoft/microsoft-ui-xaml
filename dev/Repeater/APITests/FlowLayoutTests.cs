@@ -140,10 +140,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         int lineSpacing = 0;
                         ValidateGridLayoutChildrenLayoutBounds(om, (i) => panel.Children[i], itemMinorSize, itemMajorSize, minItemSpacing, lineSpacing, panel.Children.Count, panel.DesiredSize);
 
-                        minItemSpacing = 10;
+                        minItemSpacing = 5;
                         lineSpacing = 10;
-                        ((UniformGridLayout)panel.Layout).MinRowSpacing = minItemSpacing;
-                        ((UniformGridLayout)panel.Layout).MinColumnSpacing = lineSpacing;
+                        ((UniformGridLayout)panel.Layout).MinRowSpacing = lineSpacing ;
+                        ((UniformGridLayout)panel.Layout).MinColumnSpacing = minItemSpacing;
                         Content.UpdateLayout();
                         ValidateGridLayoutChildrenLayoutBounds(om, (i) => panel.Children[i], itemMinorSize, itemMajorSize, minItemSpacing, lineSpacing, panel.Children.Count, panel.DesiredSize);
                     }
@@ -1385,7 +1385,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                     case LayoutChoice.Grid:
 
-                        layout = new UniformGridLayout() { MinItemWidth = itemSize, MinItemHeight = itemSize, MinColumnSpacing = lineSpacing };
+                        layout = new UniformGridLayout() { MinItemWidth = itemSize, MinItemHeight = itemSize, MinRowSpacing = lineSpacing };
                         break;
 
                     case LayoutChoice.Flow:
