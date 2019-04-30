@@ -144,6 +144,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(item1.BoundingRectangle.Left, item0.BoundingRectangle.Left);
             }
         }
+
+        [TestMethod]
+        public void TabIntoTest()
+        {
+            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            {
+                Log.Comment("The group should start with no selection");
+                ListViewItem item = FindElement.ByName<ListViewItem>("Item 1");
+                Verify.IsFalse(item.IsSelected);
+
+                Log.Comment("Place focus in the unselected radio group");
+                FindElement.ById("UnselectedRadioButtons").SetFocus();
+                Wait.ForIdle();
+
+                Log.Comment("Now the first item should be selected");
+                Verify.IsTrue(item.IsSelected);
+            }
+        }
+
         public void ItemsSourceTest()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))

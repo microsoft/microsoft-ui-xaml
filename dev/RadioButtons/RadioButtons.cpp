@@ -27,6 +27,7 @@ void RadioButtons::OnApplyTemplate()
     {
         m_listViewLoadedRevoker = listView.Loaded(winrt::auto_revoke, { this, &RadioButtons::OnListViewLoaded });
         m_listViewSelectionChangedRevoker = listView.SelectionChanged(winrt::auto_revoke, { this, &RadioButtons::OnListViewSelectionChanged });
+        m_listViewGettingFocusRevoker = listView.GettingFocus(winrt::auto_revoke, { this, &RadioButtons::OnListViewGettingFocus });
     }
 
     UpdateItemsSource();
@@ -59,6 +60,18 @@ void RadioButtons::OnListViewSelectionChanged(const winrt::IInspectable& sender,
     }
 
     m_selectionChangedEventSource(sender, args);
+}
+
+void RadioButtons::OnListViewGettingFocus(const winrt::IInspectable& /*sender*/, const winrt::GettingFocusEventArgs& args)
+{
+    if (auto listView = m_listView.get())
+    {
+        // If the we don't have selection, set it now
+        if ((listView.SelectedIndex() == -1) && (listView.Items().Size() > 0))
+        {
+            listView.SelectedIndex(0);
+        }
+    }
 }
 
 void RadioButtons::OnListViewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)

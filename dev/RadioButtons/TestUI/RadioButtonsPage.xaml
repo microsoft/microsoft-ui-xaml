@@ -55,6 +55,14 @@
                     </DataTemplate>
                 </controls:RadioButtons.ItemTemplate>
             </controls:RadioButtons>
+
+            <controls:RadioButtons Header="No default selection" x:Name="UnselectedRadioButtons" AutomationProperties.Name="UnselectedRadioButtons" Margin="12">
+                <x:String>Item 1</x:String>
+                <x:String>Item 2</x:String>
+                <x:String>Item 3</x:String>
+                <x:String>Item 4</x:String>
+            </controls:RadioButtons>
+
         </StackPanel>
 
     </Grid>

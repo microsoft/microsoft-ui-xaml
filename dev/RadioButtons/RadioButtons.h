@@ -31,6 +31,7 @@ private:
     void OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
     void OnListViewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnListViewKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
+    void OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
 
     void UpdateItemsSource();
     void UpdateMaximumColumns();
@@ -49,4 +50,5 @@ private:
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
     winrt::Control::KeyDown_revoker m_listViewKeyDownRevoker{};
     winrt::Control::KeyUp_revoker m_listViewKeyUpRevoker{};
+    winrt::Control::GettingFocus_revoker m_listViewGettingFocusRevoker{};
 };
