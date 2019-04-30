@@ -136,16 +136,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         canvas.Children.Add(panel);
                         Content = canvas;
                         Content.UpdateLayout();
-                        int minItemSpacing = 0;
-                        int lineSpacing = 0;
-                        ValidateGridLayoutChildrenLayoutBounds(om, (i) => panel.Children[i], itemMinorSize, itemMajorSize, minItemSpacing, lineSpacing, panel.Children.Count, panel.DesiredSize);
+                        int minRowSpacing = 0;
+                        int minColumnSpacing = 0;
+                        ValidateGridLayoutChildrenLayoutBounds(om, (i) => panel.Children[i], itemMinorSize, itemMajorSize, minRowSpacing, minColumnSpacing, panel.Children.Count, panel.DesiredSize);
 
-                        minItemSpacing = 5;
-                        lineSpacing = 10;
-                        ((UniformGridLayout)panel.Layout).MinRowSpacing = lineSpacing ;
-                        ((UniformGridLayout)panel.Layout).MinColumnSpacing = minItemSpacing;
+                        minRowSpacing = 5;
+                        minColumnSpacing = 10;
+                        ((UniformGridLayout)panel.Layout).MinRowSpacing = minRowSpacing;
+                        ((UniformGridLayout)panel.Layout).MinColumnSpacing = minColumnSpacing;
                         Content.UpdateLayout();
-                        ValidateGridLayoutChildrenLayoutBounds(om, (i) => panel.Children[i], itemMinorSize, itemMajorSize, minItemSpacing, lineSpacing, panel.Children.Count, panel.DesiredSize);
+                        ValidateGridLayoutChildrenLayoutBounds(om, (i) => panel.Children[i], itemMinorSize, itemMajorSize, minRowSpacing, minColumnSpacing, panel.Children.Count, panel.DesiredSize);
                     }
                 }
             });
@@ -1245,13 +1245,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             Func<int, UIElement> elementAtIndexFunc,
             double itemMinorSize,
             double itemMajorSize,
-            double minItemSpacing,
-            double lineSpacing,
+            double minRowSpacing,
+            double minColumnSpacing,
             int childCount,
             Size desiredSize)
         {
             var expectedRect = om.MinorMajorRect(0, 0, itemMinorSize, itemMajorSize);
             double extentMajor = 0;
+            var minItemSpacing = om.ScrollOrientation == ScrollOrientation.Vertical ? minColumnSpacing : minRowSpacing;
+            var lineSpacing = om.ScrollOrientation == ScrollOrientation.Vertical ? minRowSpacing : minColumnSpacing;
+
             for (int i = 0; i < childCount; i++)
             {
                 var child = (FrameworkElement)elementAtIndexFunc(i);
@@ -1384,8 +1387,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         break;
 
                     case LayoutChoice.Grid:
-
-                        layout = new UniformGridLayout() { MinItemWidth = itemSize, MinItemHeight = itemSize, MinRowSpacing = lineSpacing };
+                        var minRowSpacing = om.ScrollOrientation == ScrollOrientation.Vertical ? lineSpacing : 0;
+                        var minColumnSpacing = om.ScrollOrientation == ScrollOrientation.Horizontal ? lineSpacing : 0;
+                        layout = new UniformGridLayout() { MinItemWidth = itemSize, MinItemHeight = itemSize, MinRowSpacing = minRowSpacing, MinColumnSpacing = minColumnSpacing };
                         break;
 
                     case LayoutChoice.Flow:

@@ -95,15 +95,13 @@ private:
 
     double LineSpacing()
     {
-        // ScrollOrientation is inverse of UniformGridLayout.Orientation
-        return ScrollOrientation() == ScrollOrientation::Horizontal ? m_minColumnSpacing : m_minRowSpacing;
+        return Orientation() == winrt::Orientation::Horizontal ? m_minRowSpacing: m_minColumnSpacing;
 
     }
 
     double MinItemSpacing()
     {
-        // ScrollOrientation is inverse of UniformGridLayout.Orientation
-        return ScrollOrientation() == ScrollOrientation::Horizontal ? m_minRowSpacing : m_minColumnSpacing;
+        return Orientation() == winrt::Orientation::Horizontal ? m_minColumnSpacing: m_minRowSpacing;
     }
 
     // Fields
