@@ -72,7 +72,7 @@ jobs:
   - task: powershell@2
     displayName: 'Create RunTestsInHelix-InteractionTests.proj'
     condition:
-      ne(${{parameters.testSuite}},'NugetTestSuite') 
+      ne('${{parameters.testSuite}}','NugetTestSuite') 
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
@@ -81,7 +81,7 @@ jobs:
   - task: powershell@2
     displayName: 'Create RunTestsInHelix-ApiTests.proj'
     condition:
-      ne(${{parameters.testSuite}},'NugetTestSuite') 
+      ne('${{parameters.testSuite}}','NugetTestSuite') 
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
@@ -90,7 +90,7 @@ jobs:
   - task: powershell@2
     displayName: 'Create RunTestsInHelix-IXMPTestAppTests.proj'
     condition:
-      ne(${{parameters.testSuite}},'NugetTestSuite') 
+      ne('${{parameters.testSuite}}','NugetTestSuite') 
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
@@ -99,7 +99,7 @@ jobs:
   - task: powershell@2
     displayName: 'Create RunTestsInHelix-InteractionTests.proj'
     condition:
-      eq(${{parameters.testSuite}},'NugetTestSuite') 
+      eq('${{parameters.testSuite}}','NugetTestSuite') 
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
