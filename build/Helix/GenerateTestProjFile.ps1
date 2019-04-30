@@ -6,7 +6,10 @@ Param(
     [string]$OutputProjFile,
 
     [Parameter(Mandatory = $true)] 
-    [string]$TestSuiteName
+    [string]$TestSuiteName,
+    
+    [Parameter(Mandatory = $true)] 
+    [string]$Platform
 )
 
 $nugetPackagesDir = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path) "packages"
