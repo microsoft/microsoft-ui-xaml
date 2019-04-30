@@ -333,6 +333,7 @@ namespace winrt
     using ListViewItemPresenter = winrt::Windows::UI::Xaml::Controls::Primitives::ListViewItemPresenter;
     using OrientedVirtualizingPanel = winrt::Windows::UI::Xaml::Controls::Primitives::OrientedVirtualizingPanel;
     using Popup = winrt::Windows::UI::Xaml::Controls::Primitives::Popup;
+    using IPopup3 = winrt::Windows::UI::Xaml::Controls::Primitives::IPopup3;
     using RangeBaseValueChangedEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs;
     using ScrollBar = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollBar;
     using ScrollEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollEventArgs;

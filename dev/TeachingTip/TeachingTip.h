@@ -131,6 +131,7 @@ private:
     winrt::Rect GetWindowBounds();
     static std::array<winrt::TeachingTipPlacementMode, 13> GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPalcement);
     void EstablishShadows();
+    void TrySetCenterPoint(const winrt::IUIElement9& element, const winrt::float3& centerPoint);
 
     // The tail is designed as an 8x16 pixel shape, however it is actually a 10x20 shape which is partially occluded by the tip content.
     // This is done to get the border of the tip to follow the tail shape without drawing the border on the tip edge of the tail.

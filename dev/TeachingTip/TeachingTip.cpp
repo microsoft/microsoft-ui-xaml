@@ -272,179 +272,98 @@ bool TeachingTip::UpdateTail()
     {
     // An effective placement of auto means the tip should not display a tail.
     case winrt::TeachingTipPlacementMode::Auto:
-        if (winrt::IUIElement9 tailOcclusionGridUIElement9 = nullableTailOcclusionGrid)
-        {
-            tailOcclusionGridUIElement9.CenterPoint({ width / 2, height / 2, 0.0f });
-        }
+        TrySetCenterPoint(nullableTailOcclusionGrid, { width / 2, height / 2, 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Untargeted"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::Top:
-        if (winrt::IUIElement9 tailOcclusionGridUIElement9 = nullableTailOcclusionGrid)
-        {
-            tailOcclusionGridUIElement9.CenterPoint({ width / 2, height - lastRowHeight, 0.0f });
-        }
-        if (winrt::IUIElement9 tailEdgeBorderUIElement9 = m_tailEdgeBorder.get())
-        {
-            tailEdgeBorderUIElement9.CenterPoint({ (width / 2) - firstColumnWidth, 0.0f, 0.0f });
-        }
+        TrySetCenterPoint(nullableTailOcclusionGrid, { width / 2, height - lastRowHeight, 0.0f });
+        TrySetCenterPoint(m_tailEdgeBorder.get(), { (width / 2) - firstColumnWidth, 0.0f, 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Top"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::Bottom:
-        if (winrt::IUIElement9 tailOcclusionGridUIElement9 = nullableTailOcclusionGrid)
-        {
-            tailOcclusionGridUIElement9.CenterPoint({ width / 2, firstRowHeight, 0.0f });
-        }
-        if (winrt::IUIElement9 tailEdgeBorderUIElement9 = m_tailEdgeBorder.get())
-        {
-            tailEdgeBorderUIElement9.CenterPoint({ (width / 2) - firstColumnWidth, 0.0f, 0.0f });
-        }
+        TrySetCenterPoint(nullableTailOcclusionGrid, { width / 2, firstRowHeight, 0.0f });
+        TrySetCenterPoint(m_tailEdgeBorder.get(), { (width / 2) - firstColumnWidth, 0.0f, 0.0f });
         UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"Bottom"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::Left:
-        if (winrt::IUIElement9 tailOcclusionGridUIElement9 = nullableTailOcclusionGrid)
-        {
-            tailOcclusionGridUIElement9.CenterPoint({ width - lastColumnWidth, (height / 2), 0.0f });
-        }
-        if (winrt::IUIElement9 tailEdgeBorderUIElement9 = m_tailEdgeBorder.get())
-        {
-            tailEdgeBorderUIElement9.CenterPoint({ 0.0f, (height / 2) - firstRowHeight, 0.0f });
-        }
+        TrySetCenterPoint(nullableTailOcclusionGrid, { width - lastColumnWidth, (height / 2), 0.0f });
+        TrySetCenterPoint(m_tailEdgeBorder.get(), { 0.0f, (height / 2) - firstRowHeight, 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Left"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::Right:
-        if (winrt::IUIElement9 tailOcclusionGridUIElement9 = nullableTailOcclusionGrid)
-        {
-            tailOcclusionGridUIElement9.CenterPoint({ firstColumnWidth, height / 2, 0.0f });
-        }
-        if (winrt::IUIElement9 tailEdgeBorderUIElement9 = m_tailEdgeBorder.get())
-        {
-            tailEdgeBorderUIElement9.CenterPoint({ 0.0f, (height / 2) - firstRowHeight, 0.0f });
-        }
+        TrySetCenterPoint(nullableTailOcclusionGrid, { firstColumnWidth, height / 2, 0.0f });
+        TrySetCenterPoint(m_tailEdgeBorder.get(), { 0.0f, (height / 2) - firstRowHeight, 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Right"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::TopRight:
-        if (winrt::IUIElement9 tailOcclusionGridUIElement9 = nullableTailOcclusionGrid)
-        {
-            tailOcclusionGridUIElement9.CenterPoint({ firstColumnWidth + secondColumnWidth + 1, height - lastRowHeight, 0.0f });
-        }
-        if (winrt::IUIElement9 tailEdgeBorderUIElement9 = m_tailEdgeBorder.get())
-        {
-            tailEdgeBorderUIElement9.CenterPoint({ secondColumnWidth, 0.0f, 0.0f });
-        }
+        TrySetCenterPoint(nullableTailOcclusionGrid, { firstColumnWidth + secondColumnWidth + 1, height - lastRowHeight, 0.0f });
+        TrySetCenterPoint(m_tailEdgeBorder.get(), { secondColumnWidth, 0.0f, 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"TopRight"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::TopLeft:
-        if (winrt::IUIElement9 tailOcclusionGridUIElement9 = nullableTailOcclusionGrid)
-        {
-            tailOcclusionGridUIElement9.CenterPoint({ width - (nextToLastColumnWidth + lastColumnWidth + 1), height - lastRowHeight, 0.0f });
-        }
-        if (winrt::IUIElement9 tailEdgeBorderUIElement9 = m_tailEdgeBorder.get())
-        {
-            tailEdgeBorderUIElement9.CenterPoint({ width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
-        }
+        TrySetCenterPoint(nullableTailOcclusionGrid, { width - (nextToLastColumnWidth + lastColumnWidth + 1), height - lastRowHeight, 0.0f });
+        TrySetCenterPoint(m_tailEdgeBorder.get(), { width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"TopLeft"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::BottomRight:
-        if (winrt::IUIElement9 tailOcclusionGridUIElement9 = nullableTailOcclusionGrid)
-        {
-            tailOcclusionGridUIElement9.CenterPoint({ firstColumnWidth + secondColumnWidth + 1, firstRowHeight, 0.0f });
-        }
-        if (winrt::IUIElement9 tailEdgeBorderUIElement9 = m_tailEdgeBorder.get())
-        {
-            tailEdgeBorderUIElement9.CenterPoint({ secondColumnWidth, 0.0f, 0.0f });
-        }
+        TrySetCenterPoint(nullableTailOcclusionGrid, { firstColumnWidth + secondColumnWidth + 1, firstRowHeight, 0.0f });
+        TrySetCenterPoint(m_tailEdgeBorder.get(), { secondColumnWidth, 0.0f, 0.0f });
         UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"BottomRight"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::BottomLeft:
-        if (winrt::IUIElement9 tailOcclusionGridUIElement9 = nullableTailOcclusionGrid)
-        {
-            tailOcclusionGridUIElement9.CenterPoint({ width - (nextToLastColumnWidth + lastColumnWidth + 1), firstRowHeight, 0.0f });
-        }
-        if (winrt::IUIElement9 tailEdgeBorderUIElement9 = m_tailEdgeBorder.get())
-        {
-            tailEdgeBorderUIElement9.CenterPoint({ width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
-        }
+        TrySetCenterPoint(nullableTailOcclusionGrid, { width - (nextToLastColumnWidth + lastColumnWidth + 1), firstRowHeight, 0.0f });
+        TrySetCenterPoint(m_tailEdgeBorder.get(), { width - (nextToLastColumnWidth + firstColumnWidth + lastColumnWidth), 0.0f, 0.0f });
         UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"BottomLeft"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::LeftTop:
-        if (winrt::IUIElement9 tailOcclusionGridUIElement9 = nullableTailOcclusionGrid)
-        {
-            tailOcclusionGridUIElement9.CenterPoint({ width - lastColumnWidth,  height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
-        }
-        if (winrt::IUIElement9 tailEdgeBorderUIElement9 = m_tailEdgeBorder.get())
-        {
-            tailEdgeBorderUIElement9.CenterPoint({ 0.0f,  height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
-        }
+        TrySetCenterPoint(nullableTailOcclusionGrid, { width - lastColumnWidth,  height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
+        TrySetCenterPoint(m_tailEdgeBorder.get(), { 0.0f,  height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"LeftTop"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::LeftBottom:
-        if (winrt::IUIElement9 tailOcclusionGridUIElement9 = nullableTailOcclusionGrid)
-        {
-            tailOcclusionGridUIElement9.CenterPoint({ width - lastColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
-        }
-        if (winrt::IUIElement9 tailEdgeBorderUIElement9 = m_tailEdgeBorder.get())
-        {
-            tailEdgeBorderUIElement9.CenterPoint({ 0.0f, secondRowHeight, 0.0f });
-        }
+        TrySetCenterPoint(nullableTailOcclusionGrid, { width - lastColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
+        TrySetCenterPoint(m_tailEdgeBorder.get(), { 0.0f, secondRowHeight, 0.0f });
         UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"LeftBottom"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::RightTop:
-        if (winrt::IUIElement9 tailOcclusionGridUIElement9 = nullableTailOcclusionGrid)
-        {
-            tailOcclusionGridUIElement9.CenterPoint({ firstColumnWidth, height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
-        }
-        if (winrt::IUIElement9 tailEdgeBorderUIElement9 = m_tailEdgeBorder.get())
-        {
-            tailEdgeBorderUIElement9.CenterPoint({ 0.0f, height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
-        }
+        TrySetCenterPoint(nullableTailOcclusionGrid, { firstColumnWidth, height - (nextToLastRowHeight + lastRowHeight + 1), 0.0f });
+        TrySetCenterPoint(m_tailEdgeBorder.get(), { 0.0f, height - (nextToLastRowHeight + firstRowHeight + lastRowHeight), 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"RightTop"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::RightBottom:
-        if (winrt::IUIElement9 tailOcclusionGridUIElement9 = nullableTailOcclusionGrid)
-        {
-            tailOcclusionGridUIElement9.CenterPoint({ firstColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
-        }
-        if (winrt::IUIElement9 tailEdgeBorderUIElement9 = m_tailEdgeBorder.get())
-        {
-            tailEdgeBorderUIElement9.CenterPoint({ 0.0f, secondRowHeight, 0.0f });
-        }
+        TrySetCenterPoint(nullableTailOcclusionGrid, { firstColumnWidth, (firstRowHeight + secondRowHeight + 1), 0.0f });
+        TrySetCenterPoint(m_tailEdgeBorder.get(), { 0.0f, secondRowHeight, 0.0f });
         UpdateDynamicHeroContentPlacementToBottom();
         winrt::VisualStateManager::GoToState(*this, L"RightBottom"sv, false);
         break;
 
     case winrt::TeachingTipPlacementMode::Center:
-        if (winrt::IUIElement9 tailOcclusionGridUIElement9 = nullableTailOcclusionGrid)
-        {
-            tailOcclusionGridUIElement9.CenterPoint({ width / 2, height - lastRowHeight, 0.0f });
-        }
-        if (winrt::IUIElement9 tailEdgeBorderUIElement9 = m_tailEdgeBorder.get())
-        {
-            tailEdgeBorderUIElement9.CenterPoint({ (width / 2) - firstColumnWidth, 0.0f, 0.0f });
-        }
+        TrySetCenterPoint(nullableTailOcclusionGrid, { width / 2, height - lastRowHeight, 0.0f });
+        TrySetCenterPoint(m_tailEdgeBorder.get(), { (width / 2) - firstColumnWidth, 0.0f, 0.0f });
         UpdateDynamicHeroContentPlacementToTop();
         winrt::VisualStateManager::GoToState(*this, L"Center"sv, false);
         break;
@@ -808,8 +727,7 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottom()
 
 void TeachingTip::OnIsOpenChanged()
 {
-    auto const strongThis = get_strong();
-    SharedHelpers::QueueCallbackForCompositionRendering([strongThis]() 
+    SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong()]() 
     {
         if (strongThis->IsOpen())
         {
@@ -967,7 +885,7 @@ void TeachingTip::CreateNewPopup()
 
     m_popupOpenedRevoker = popup.Opened(winrt::auto_revoke, { this, &TeachingTip::OnPopupOpened });
     m_popupClosedRevoker = popup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnPopupClosed });
-    if (auto&& popup3 = popup.try_as<winrt::Controls::Primitives::IPopup3>())
+    if (winrt::IPopup3 popup3 = popup)
     {
         popup3.ShouldConstrainToRootBounds(ShouldConstrainToRootBounds());
     }
@@ -1278,8 +1196,7 @@ void TeachingTip::RaiseClosingEvent(bool attachDeferralCompletedHandler)
 
     if (attachDeferralCompletedHandler)
     {
-        com_ptr<TeachingTip> strongThis = get_strong();
-        winrt::DeferralCompletedHandler instance{ [strongThis, args]()
+        winrt::DeferralCompletedHandler instance{ [strongThis = get_strong(), args]()
             {
                 strongThis->CheckThread();
                 if (!args->Cancel())
@@ -1578,8 +1495,7 @@ void TeachingTip::StartExpandToOpen()
     }();
     scopedBatch.End();
 
-    auto const strongThis = get_strong();
-    scopedBatch.Completed([strongThis](auto, auto)
+    scopedBatch.Completed([strongThis = get_strong()](auto, auto)
     {
         strongThis->m_isExpandAnimationPlaying = false;
         if (!strongThis->m_isContractAnimationPlaying && !strongThis->m_isIdle)
@@ -1633,8 +1549,7 @@ void TeachingTip::StartContractToClose()
     }();
     scopedBatch.End();
 
-    auto const strongThis = get_strong();
-    scopedBatch.Completed([strongThis](auto, auto)
+    scopedBatch.Completed([strongThis = get_strong()](auto, auto)
     {
         strongThis->m_isContractAnimationPlaying = false;
         strongThis->ClosePopup();
@@ -2115,6 +2030,14 @@ void TeachingTip::EstablishShadows()
         }
     }
 #endif
+}
+
+void TeachingTip::TrySetCenterPoint(const winrt::IUIElement9& element, const winrt::float3& centerPoint)
+{
+    if (element)
+    {
+        element.CenterPoint(centerPoint);
+    }
 }
 
 void TeachingTip::OnPropertyChanged(
