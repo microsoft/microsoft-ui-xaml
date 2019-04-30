@@ -7,13 +7,10 @@ Param(
 
     [Parameter(Mandatory = $true)] 
     [string]$TestSuiteName,
-    
-    [Parameter(Mandatory = $true)] 
-    [string]$Platform
-)
 
-$nugetPackagesDir = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path) "packages"
-$taefVersion = "10.34.181220007"
+    [Parameter(Mandatory = $true)] 
+    [string]$TaefPath
+)
 
 Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xaml @"
 using System;
@@ -229,7 +226,7 @@ namespace TestProjFileGeneration
 }
 "@
 
-$taefExe = "$nugetPackagesDir\taef.redist.wlk.10.31.180822002\build\Binaries\$Platform\te.exe"
+$taefExe = "$TaefPath\te.exe"
 [string]$taefOutput = & "$taefExe" /listproperties $TestFile | Out-String
 
 [System.Collections.Generic.IList`1[TestProjFileGeneration.TestModule]]$testModules = [TestProjFileGeneration.TestInfoParser]::Parse($taefOutput)
@@ -245,13 +242,52 @@ foreach ($testModule in $testModules)
 
     foreach ($testClass in $testModules.TestClasses)
     {
-        $projFileContent += @"
+        if ($testClass.Tests.Count -gt 10)
+        {
+            [System.Collections.Generic.List[string]]$tests = @()
+            $helixWorkItemCount = 0
+        
+            foreach ($test in $testClass.Tests)
+            {
+                if ($tests.Count -eq 10)
+                {
+                    $helixWorkItemCount++
+                    $projFileContent += @"
+
+    <HelixWorkItem Include="$($testClass.Name)$helixWorkItemCount" Condition="'`$(TestSuite)'=='$($TestSuiteName)'">
+        <Timeout>00:20:00</Timeout>
+        <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='$($tests -join "' or @Name='")')"</Command>
+    </HelixWorkItem>
+"@
+                    $tests.Clear()
+                }
+
+                $tests.Add($test.Name)
+            }
+
+            if ($tests.Count -gt 0)
+            {
+                $helixWorkItemCount++
+
+                $projFileContent += @"
+
+    <HelixWorkItem Include="$($testClass.Name)$helixWorkItemCount" Condition="'`$(TestSuite)'=='$($TestSuiteName)'">
+        <Timeout>00:20:00</Timeout>
+        <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='$($tests -join "' or @Name='")')"</Command>
+    </HelixWorkItem>
+"@
+            }
+        }
+        else
+        {
+            $projFileContent += @"
 
     <HelixWorkItem Include="$($testClass.Name)" Condition="'`$(TestSuite)'=='$($TestSuiteName)'">
       <Timeout>00:20:00</Timeout>
       <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:$($testClass.Name).*</Command>
     </HelixWorkItem>
 "@
+        }
     }
 }
 
