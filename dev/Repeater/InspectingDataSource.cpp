@@ -182,7 +182,7 @@ void InspectingDataSource::OnCollectionChanged(
     const winrt::IInspectable& /*sender*/,
     const winrt::NotifyCollectionChangedEventArgs& e)
 {
-    OnDataSourceChanged(e);
+    OnItemsSourceChanged(e);
 }
 
 void InspectingDataSource::OnVectorChanged(
@@ -229,7 +229,7 @@ void InspectingDataSource::OnVectorChanged(
         break;
     }
 
-    OnDataSourceChanged(
+    OnItemsSourceChanged(
         winrt::NotifyCollectionChangedEventArgs(
             action,
             newItems,

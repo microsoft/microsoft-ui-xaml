@@ -263,9 +263,9 @@ void ItemsRepeater::ClearElementImpl(const winrt::UIElement& element)
     // unpinned and sent back to the view generator.
     const bool isClearedDueToCollectionChange =
         IsProcessingCollectionChange() &&
-        (m_processingDataSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Remove ||
-            m_processingDataSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Replace ||
-            m_processingDataSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Reset);
+        (m_processingItemsSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Remove ||
+            m_processingItemsSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Replace ||
+            m_processingItemsSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Reset);
 
     m_viewManager.ClearElement(element, isClearedDueToCollectionChange);
     m_viewportManager->OnElementCleared(element);
@@ -523,6 +523,20 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
             args.Action();
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
+        else if (auto nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
+        {
+            // Walk through all the elements and make sure they are cleared for
+            // non-virtualizing layouts.
+            auto children = Children();
+            for (unsigned i = 0u; i < children.Size(); ++i)
+            {
+                auto element = children.GetAt(i);
+                if (GetVirtualizationInfo(element)->IsRealized())
+                {
+                    ClearElementImpl(element);
+                }
+            }
+        }
 
         InvalidateMeasure();
     }
@@ -550,10 +564,10 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
                 -1 /* newIndex */,
                 -1 /* oldIndex */);
             args.Action();
-            m_processingDataSourceChange.set(args);
+            m_processingItemsSourceChange.set(args);
             auto processingChange = gsl::finally([this]()
                 {
-                    m_processingDataSourceChange.set(nullptr);
+                    m_processingItemsSourceChange.set(nullptr);
                 });
 
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
@@ -678,20 +692,24 @@ void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, 
         throw winrt::hresult_error(E_FAIL, L"Changes in the data source are not allowed during another change in the data source.");
     }
 
-    m_processingDataSourceChange.set(args);
+    m_processingItemsSourceChange.set(args);
     auto processingChange = gsl::finally([this]()
     {
-        m_processingDataSourceChange.set(nullptr);
+            m_processingItemsSourceChange.set(nullptr);
     });
 
-    m_animationManager.OnDataSourceChanged(sender, args);
-    m_viewManager.OnDataSourceChanged(sender, args);
+    m_animationManager.OnItemsSourceChanged(sender, args);
+    m_viewManager.OnItemsSourceChanged(sender, args);
 
     if (auto layout = Layout())
     {
         if (auto virtualLayout = layout.as<winrt::VirtualizingLayout>())
         {
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), sender, args);
+        }
+        else if (auto nonVirtualLayout = layout.as<winrt::NonVirtualizingLayout>())
+        {
+            InvalidateMeasure();
         }
     }
 }

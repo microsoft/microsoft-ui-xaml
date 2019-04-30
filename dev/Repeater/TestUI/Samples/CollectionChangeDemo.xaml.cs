@@ -95,11 +95,11 @@ namespace MUXControlsTestApp.Samples
 
                 if (reset)
                 {
-                    OnDataSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    OnItemsSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                 }
                 else
                 {
-                    OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                    OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                         NotifyCollectionChangedAction.Add,
                         oldStartingIndex: -1,
                         oldItemsCount: 0,
@@ -117,11 +117,11 @@ namespace MUXControlsTestApp.Samples
 
                 if (reset)
                 {
-                    OnDataSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    OnItemsSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                 }
                 else
                 {
-                    OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                    OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                         NotifyCollectionChangedAction.Remove,
                         oldStartingIndex: index,
                         oldItemsCount: count,
@@ -144,11 +144,11 @@ namespace MUXControlsTestApp.Samples
 
                 if (reset)
                 {
-                    OnDataSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    OnItemsSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                 }
                 else
                 {
-                    OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                    OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                         NotifyCollectionChangedAction.Replace,
                         oldStartingIndex: index,
                         oldItemsCount: oldCount,
@@ -171,7 +171,7 @@ namespace MUXControlsTestApp.Samples
 
                 // something changed, but i dont want to tell you the 
                 // exact changes 
-                OnDataSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                OnItemsSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
         }
     }
