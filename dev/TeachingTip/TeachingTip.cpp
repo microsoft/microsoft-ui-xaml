@@ -2084,6 +2084,9 @@ double TeachingTip::GetVerticalOffset()
 
 void TeachingTip::UpdatePopupRequestedTheme()
 {
+    // The way that TeachingTip reparents its content tree breaks ElementTheme calculations. Hook up a listener to
+    // ActualTheme on the TeachingTip and then set the Popup's RequestedTheme to match when it changes.
+
     if (winrt::IFrameworkElement6 frameworkElement6 = *this)
     {
         if (!m_actualThemeChangedRevoker)
