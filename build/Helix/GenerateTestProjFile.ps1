@@ -226,7 +226,7 @@ namespace TestProjFileGeneration
 }
 "@
 
-$taefExe = "$nugetPackagesDir\taef.redist.wlk\$taefVersion\build\Binaries\x86\te.exe"
+$taefExe = "$nugetPackagesDir\taef.redist.wlk.10.31.180822002\build\Binaries\$Platform\te.exe"
 [string]$taefOutput = & "$taefExe" /listproperties $TestFile | Out-String
 
 [System.Collections.Generic.IList`1[TestProjFileGeneration.TestModule]]$testModules = [TestProjFileGeneration.TestInfoParser]::Parse($taefOutput)
