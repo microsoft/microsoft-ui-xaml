@@ -69,6 +69,42 @@ jobs:
       filePath: build\Helix\PrepareHelixPayload.ps1
       arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
 
+  - task: powershell@2
+    displayName: 'Create RunTestsInHelix-InteractionTests.proj'
+    condition:
+      ne(${{parameters.testSuite}},'NugetTestSuite') 
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\GenerateTestProjFile.ps1
+      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.Test.dll' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-InteractionTests.proj -TestSuiteName DevTestSuite'
+
+  - task: powershell@2
+    displayName: 'Create RunTestsInHelix-ApiTests.proj'
+    condition:
+      ne(${{parameters.testSuite}},'NugetTestSuite') 
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\GenerateTestProjFile.ps1
+      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-InteractionTests.proj -TestSuiteName DevTestSuite'
+
+  - task: powershell@2
+    displayName: 'Create RunTestsInHelix-IXMPTestAppTests.proj'
+    condition:
+      ne(${{parameters.testSuite}},'NugetTestSuite') 
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\GenerateTestProjFile.ps1
+      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\IXMPTestApp_Test\IXMPTestApp.appx' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-IXMPTestAppTests.proj -TestSuiteName DevTestSuite'
+
+  - task: powershell@2
+    displayName: 'Create RunTestsInHelix-InteractionTests.proj'
+    condition:
+      eq(${{parameters.testSuite}},'NugetTestSuite') 
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\GenerateTestProjFile.ps1
+      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-NugetTests.proj -TestSuiteName NugetTestSuite'
+
   - task: DotNetCoreCLI@2
     displayName: 'Run tests in Helix'
     env:
