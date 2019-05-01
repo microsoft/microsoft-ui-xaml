@@ -6,7 +6,7 @@ Param(
     [string]$OutputProjFile,
 
     [Parameter(Mandatory = $true)] 
-    [string]$TestSuiteName,
+    [string]$JobTestSuiteName,
 
     [Parameter(Mandatory = $true)] 
     [string]$TaefPath
@@ -242,13 +242,34 @@ foreach ($testModule in $testModules)
 
     foreach ($testClass in $testModules.TestClasses)
     {
+        [System.Collections.Generic.List[string]]$testSuiteNames = @()
+
+        foreach ($tests in $testClass.Tests)
+        {
+            if ($tests.Properties.ContainsKey("TestSuite") -and -not $testSuiteNames.Contains($tests.Properties["TestSuite"]))
+            {
+                $testSuiteNames.Add($tests.Properties["TestSuite"])
+            }
+        }
+
         $projFileContent += @"
 
-    <HelixWorkItem Include="$($testClass.Name)" Condition="'`$(TestSuite)'=='$($TestSuiteName)'">
+    <HelixWorkItem Include="$($testClass.Name)" Condition="'`$(TestSuite)'=='$($JobTestSuiteName)'">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:$($testClass.Name).*</Command>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='$($testClass.Name).*' and not @TestSuite='*')"</Command>
     </HelixWorkItem>
 "@
+        
+        foreach ($testSuiteName in $testSuiteNames)
+        {
+            $projFileContent += @"
+
+    <HelixWorkItem Include="$($testClass.Name)-$testSuiteName" Condition="'`$(TestSuite)'=='$($JobTestSuiteName)'">
+      <Timeout>00:20:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='$($testClass.Name).*' and @TestSuite='$testSuiteName')"</Command>
+    </HelixWorkItem>
+"@
+        }
     }
 }
 
