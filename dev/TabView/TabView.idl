@@ -56,7 +56,7 @@ unsealed runtimeclass TabViewItem : Windows.UI.Xaml.Controls.ListViewItem
 {
     TabViewItem();
 
-    String Header{ get; set; };
+    Object Header{ get; set; };
 
     Windows.UI.Xaml.DataTemplate HeaderTemplate{ get; set; };
 

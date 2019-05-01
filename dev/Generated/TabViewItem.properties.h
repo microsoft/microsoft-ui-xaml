@@ -9,8 +9,8 @@ class TabViewItemProperties
 public:
     TabViewItemProperties();
 
-    void Header(winrt::hstring const& value);
-    winrt::hstring Header();
+    void Header(winrt::IInspectable const& value);
+    winrt::IInspectable Header();
 
     void HeaderTemplate(winrt::DataTemplate const& value);
     winrt::DataTemplate HeaderTemplate();

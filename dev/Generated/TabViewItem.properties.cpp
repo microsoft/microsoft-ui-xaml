@@ -25,10 +25,10 @@ void TabViewItemProperties::EnsureProperties()
         s_HeaderProperty =
             InitializeDependencyProperty(
                 L"Header",
-                winrt::name_of<winrt::hstring>(),
+                winrt::name_of<winrt::IInspectable>(),
                 winrt::name_of<winrt::TabViewItem>(),
                 false /* isAttached */,
-                ValueHelper<winrt::hstring>::BoxedDefaultValue(),
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnHeaderPropertyChanged));
     }
     if (!s_HeaderTemplateProperty)
@@ -106,14 +106,14 @@ void TabViewItemProperties::OnIsCloseablePropertyChanged(
     winrt::get_self<TabViewItem>(owner)->OnPropertyChanged(args);
 }
 
-void TabViewItemProperties::Header(winrt::hstring const& value)
+void TabViewItemProperties::Header(winrt::IInspectable const& value)
 {
-    static_cast<TabViewItem*>(this)->SetValue(s_HeaderProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    static_cast<TabViewItem*>(this)->SetValue(s_HeaderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
 }
 
-winrt::hstring TabViewItemProperties::Header()
+winrt::IInspectable TabViewItemProperties::Header()
 {
-    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<TabViewItem*>(this)->GetValue(s_HeaderProperty));
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TabViewItem*>(this)->GetValue(s_HeaderProperty));
 }
 
 void TabViewItemProperties::HeaderTemplate(winrt::DataTemplate const& value)
