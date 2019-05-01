@@ -127,7 +127,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 theme: Theme.Light);
         }
 
-        [TestMethod]
+        //[TestMethod] TODO: Re-enable once issue #645 is fixed.
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // The default theme is different on OneCore, leading to a test failure.
         public void VerifyVisualTreeExampleWithCustomerFilter()
         {
