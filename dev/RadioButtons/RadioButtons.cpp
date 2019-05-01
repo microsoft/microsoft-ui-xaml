@@ -66,8 +66,10 @@ void RadioButtons::OnListViewGettingFocus(const winrt::IInspectable& /*sender*/,
 {
     if (auto listView = m_listView.get())
     {
-        // If the we don't have selection, set it now
-        if ((listView.SelectedIndex() == -1) && (listView.Items().Size() > 0))
+        // If the we're tabbed/arrowed into but don't have selection, set it now
+        if ((args.InputDevice() == winrt::FocusInputDeviceKind::Keyboard) &&
+            (listView.SelectedIndex() == -1) &&
+            (listView.Items().Size() > 0))
         {
             listView.SelectedIndex(0);
         }
