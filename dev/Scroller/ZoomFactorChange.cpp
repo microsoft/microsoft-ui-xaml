@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
+#include "ScrollerTypeLogging.h"
 #include "ZoomFactorChange.h"
 
 ZoomFactorChange::ZoomFactorChange(

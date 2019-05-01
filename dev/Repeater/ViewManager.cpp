@@ -305,7 +305,7 @@ void ViewManager::UpdatePin(const winrt::UIElement& element, bool addPin)
     }
 }
 
-void ViewManager::OnDataSourceChanged(const winrt::IInspectable&, const winrt::NotifyCollectionChangedEventArgs& args)
+void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::NotifyCollectionChangedEventArgs& args)
 {
     // Note: For items that have been removed, the index will not be touched. It will hold
     // the old index before it was removed. It is not valid anymore.

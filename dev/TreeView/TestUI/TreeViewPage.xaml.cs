@@ -226,7 +226,7 @@ namespace MUXControlsTestApp
             return node.Content.ToString();
         }
 
-        private void GetRootNodeChildrenOrder(TreeView tree)
+        private String GetRootNodeChildrenOrder(TreeView tree)
         {
             StringBuilder sb = new StringBuilder();
             Stack<TreeViewNode> pendingNodes = new Stack<TreeViewNode>();
@@ -234,27 +234,63 @@ namespace MUXControlsTestApp
             while (pendingNodes.Count > 0)
             {
                 var currentNode = pendingNodes.Pop();
-                var children = currentNode.Children;
-                var size = children.Count;
+                var size = currentNode.Children.Count;
                 for (int i = 0; i < size; i++)
                 {
                     pendingNodes.Push(currentNode.Children[size - 1 - i]);
                 }
-                sb.Append(GetNodeContent(currentNode) + " | ");
+                if (sb.Length > 0)
+                {
+                    sb.Append(" | ");
+                }
+                sb.Append(GetNodeContent(currentNode));
             }
 
-            Results.Text = sb.ToString();
+            return sb.ToString();
+        }
+
+        private String GetItemsSourceOrder()
+        {
+            StringBuilder sb = new StringBuilder();
+            Stack<TreeViewItemSource> pendingItems = new Stack<TreeViewItemSource>();
+            pendingItems.Push(TestTreeViewItemsSource[0]);
+            while (pendingItems.Count > 0)
+            {
+                var currentItem = pendingItems.Pop();
+                var size = currentItem.Children.Count;
+                for (int i = 0; i < size; i++)
+                {
+                    pendingItems.Push(currentItem.Children[size - 1 - i]);
+                }
+                if (sb.Length > 0)
+                {
+                    sb.Append(" | ");
+                }
+                sb.Append(currentItem.Content);
+            }
+
+            return sb.ToString();
         }
 
         private void GetChildrenOrder_Click(object sender, RoutedEventArgs e)
         {
             if(IsInContentMode())
             {
-                GetRootNodeChildrenOrder(ContentModeTestTreeView);
+                var itemsSourceOrder = GetItemsSourceOrder();
+                var treeViewNodeOrder = GetRootNodeChildrenOrder(ContentModeTestTreeView);
+                // Make sure ItemsSource and TreeViewNode orders are in sync
+                if (itemsSourceOrder == treeViewNodeOrder)
+                {
+                    Results.Text = itemsSourceOrder;
+                }
+                else
+                {
+                    Results.Text = $"ItemsSourceOrder: {itemsSourceOrder}; TreeViewNodeOrder: {treeViewNodeOrder}";
+                }
             }
             else
             {
-                GetRootNodeChildrenOrder(TestTreeView);
+                Results.Text = GetRootNodeChildrenOrder(TestTreeView);
             }
         }
 

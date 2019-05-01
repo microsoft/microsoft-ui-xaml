@@ -95,12 +95,13 @@ private:
 
     double LineSpacing()
     {
-        return ScrollOrientation() == ScrollOrientation::Vertical ? m_minColumnSpacing : m_minRowSpacing;
+        return Orientation() == winrt::Orientation::Horizontal ? m_minRowSpacing: m_minColumnSpacing;
+
     }
 
     double MinItemSpacing()
     {
-        return ScrollOrientation() == ScrollOrientation::Vertical ? m_minRowSpacing : m_minColumnSpacing;
+        return Orientation() == winrt::Orientation::Horizontal ? m_minColumnSpacing: m_minRowSpacing;
     }
 
     // Fields

@@ -1,21 +1,20 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
-<UserControl
-    x:Class="MUXControlsTestApp.Utilities.TabControl"
+<utils:TestPage
+    x:Class="NugetPackageTestApp.CompactDictionaryTestPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NugetPackageTestApp"
+    xmlns:utils="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="400">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+        <Grid.Resources>
+            <ResourceDictionary Source="ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml" />
+        </Grid.Resources>
 
-        <StackPanel x:Name="spHeaders" Orientation="Horizontal" Background="LightGray"/>
-        <Grid x:Name="grdPanels" Grid.Row="1"/>
+        <TextBox Text="" AutomationProperties.Name="CompactTextBox"/>
     </Grid>
-</UserControl>
+</utils:TestPage>

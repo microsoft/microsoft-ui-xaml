@@ -24,7 +24,7 @@ public:
     void PrunePinnedElements();
     void UpdatePin(const winrt::UIElement& element, bool addPin);
 
-    void OnDataSourceChanged(const winrt::IInspectable& source, const winrt::NotifyCollectionChangedEventArgs& args);
+    void OnItemsSourceChanged(const winrt::IInspectable& source, const winrt::NotifyCollectionChangedEventArgs& args);
     void OnLayoutChanging();
     void OnOwnerArranged();
 

@@ -611,7 +611,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                     waiter = comboBox.GetExpandedWaiter();
                 }
             }
-            #if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
+            #if COLORPICKER_INCLUDED
             else if (obj is ColorSpectrum)
             {
                 var colorSpectrum = obj as ColorSpectrum;

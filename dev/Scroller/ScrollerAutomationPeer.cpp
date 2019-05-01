@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
+#include "ScrollerTypeLogging.h"
 #include "ScrollerAutomationPeer.h"
 #include "ResourceAccessor.h"
 #include <UIAutomationCore.h>
