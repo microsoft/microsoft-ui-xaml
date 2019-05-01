@@ -30,11 +30,7 @@ jobs:
     matrix: ${{ parameters.matrix }}
       
   steps:
-  - task: CmdLine@1
-    displayName: 'Display build machine environment variables'
-    inputs:
-      filename: 'set'
-      
+
   - task: NuGetToolInstaller@0
     displayName: 'Use NuGet 4.9.3'
     inputs:
