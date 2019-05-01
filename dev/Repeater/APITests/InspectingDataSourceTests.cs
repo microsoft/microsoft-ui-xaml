@@ -140,7 +140,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 };
 
                 // By default we use stack layout that is virtualizing.
-                if(!isVirtualLayout)
+                if (!isVirtualLayout)
                 {
                     repeater.Layout = new NonVirtualStackLayout();
                 }
