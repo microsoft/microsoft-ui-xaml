@@ -4,7 +4,6 @@ parameters:
   condition: ''
   testSuite: ''
   maxParallel: 4
-  testBatchSize: 10
   matrix: 
     Release_x86:
       buildPlatform: 'x86'
@@ -77,7 +76,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
-      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.Test.dll' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-InteractionTests.proj' -TestSuiteName 'DevTestSuite' -TaefPath '$(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)' -TestBatchSize ${{ parameters.testBatchSize }}
+      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.Test.dll' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-InteractionTests.proj' -TestSuiteName 'DevTestSuite' -TaefPath '$(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)'
 
   - task: powershell@2
     displayName: 'Create RunTestsInHelix-ApiTests.proj'
@@ -86,7 +85,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
-      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-ApiTests.proj' -TestSuiteName 'DevTestSuite' -TaefPath '$(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)' -TestBatchSize ${{ parameters.testBatchSize }}
+      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-ApiTests.proj' -TestSuiteName 'DevTestSuite' -TaefPath '$(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)'
 
   - task: powershell@2
     displayName: 'Create RunTestsInHelix-IXMPTestAppTests.proj'
@@ -95,7 +94,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
-      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\IXMPTestApp_Test\IXMPTestApp.appx' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-IXMPTestAppTests.proj' -TestSuiteName 'DevTestSuite' -TaefPath '$(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)' -TestBatchSize ${{ parameters.testBatchSize }}
+      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\IXMPTestApp_Test\IXMPTestApp.appx' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-IXMPTestAppTests.proj' -TestSuiteName 'DevTestSuite' -TaefPath '$(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)'
 
   - task: powershell@2
     displayName: 'Create RunTestsInHelix-NugetTests.proj'
@@ -104,7 +103,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
-      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-NugetTests.proj' -TestSuiteName 'NugetTestSuite' -TaefPath '$(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)' -TestBatchSize ${{ parameters.testBatchSize }}
+      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-NugetTests.proj' -TestSuiteName 'NugetTestSuite' -TaefPath '$(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish RunTestsInHelix-InteractionTests.proj'
