@@ -100,17 +100,11 @@ jobs:
     displayName: Dump artifact staging directory
 
   - task: CmdLine@1
-    displayName: PkgGen.cmd x86 release
+    displayName: PkgGen.cmd
     inputs:
       filename: '$(Build.SourcesDirectory)\tools\PkgGen.cmd'
-      arguments: 'x86 release'
+      arguments: '$(buildPlatform) $(buildConfiguration)'
     enabled: false
-
-  - task: CmdLine@1
-    displayName: PkgGen.cmd x64 release
-    inputs:
-      filename: '$(Build.SourcesDirectory)\tools\PkgGen.cmd'
-      arguments: 'x64 release'
 
   - task: PkgESSpkgGeneration@10
     displayName: 'Run Atlas Tests'
