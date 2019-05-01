@@ -695,7 +695,7 @@ void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, 
     m_processingItemsSourceChange.set(args);
     auto processingChange = gsl::finally([this]()
     {
-            m_processingItemsSourceChange.set(nullptr);
+        m_processingItemsSourceChange.set(nullptr);
     });
 
     m_animationManager.OnItemsSourceChanged(sender, args);
