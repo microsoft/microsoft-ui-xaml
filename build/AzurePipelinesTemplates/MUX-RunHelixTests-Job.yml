@@ -77,7 +77,7 @@ jobs:
   - task: powershell@2
     displayName: 'Create RunTestsInHelix-InteractionTests.proj'
     condition:
-      ne('${{parameters.testSuite}}','NugetTestSuite') 
+      ne('${{parameters.testSuite}}','NugetTestSuite')
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
@@ -86,7 +86,7 @@ jobs:
   - task: powershell@2
     displayName: 'Create RunTestsInHelix-ApiTests.proj'
     condition:
-      ne('${{parameters.testSuite}}','NugetTestSuite') 
+      ne('${{parameters.testSuite}}','NugetTestSuite')
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
@@ -95,7 +95,7 @@ jobs:
   - task: powershell@2
     displayName: 'Create RunTestsInHelix-IXMPTestAppTests.proj'
     condition:
-      ne('${{parameters.testSuite}}','NugetTestSuite') 
+      ne('${{parameters.testSuite}}','NugetTestSuite')
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
@@ -104,16 +104,42 @@ jobs:
   - task: powershell@2
     displayName: 'Create RunTestsInHelix-NugetTests.proj'
     condition:
-      eq('${{parameters.testSuite}}','NugetTestSuite') 
+      eq('${{parameters.testSuite}}','NugetTestSuite')
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
       arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-NugetTests.proj' -TestSuiteName 'NugetTestSuite' -TaefPath '$(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)' -TestBatchSize ${{ parameters.testBatchSize }}
 
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish generated .proj files'
+    displayName: 'Publish RunTestsInHelix-InteractionTests.proj'
+    condition:
+      ne('${{parameters.testSuite}}','NugetTestSuite')
     inputs:
-      PathtoPublish: $(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-*.proj
+      PathtoPublish: $(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-InteractionTests.proj
+      artifactName: 'drop'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish RunTestsInHelix-ApiTests.proj'
+    condition:
+      ne('${{parameters.testSuite}}','NugetTestSuite')
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-ApiTests.proj
+      artifactName: 'drop'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish RunTestsInHelix-IXMPTestAppTests.proj'
+    condition:
+      ne('${{parameters.testSuite}}','NugetTestSuite')
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-IXMPTestAppTests.proj
+      artifactName: 'drop'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish RunTestsInHelix-NugetTests.proj'
+    condition:
+      eq('${{parameters.testSuite}}','NugetTestSuite')
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-NugetTests.proj
       artifactName: 'drop'
       
   - task: DotNetCoreCLI@2
