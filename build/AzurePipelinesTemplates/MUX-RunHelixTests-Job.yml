@@ -110,6 +110,12 @@ jobs:
       filePath: build\Helix\GenerateTestProjFile.ps1
       arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-NugetTests.proj' -TestSuiteName 'NugetTestSuite' -TaefPath '$(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)' -TestBatchSize ${{ parameters.testBatchSize }}
 
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish generated .proj files'
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-*.proj
+      artifactName: 'drop'
+      
   - task: DotNetCoreCLI@2
     displayName: 'Run tests in Helix'
     env:
@@ -119,10 +125,3 @@ jobs:
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
       arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:TestSuite=${{parameters.testSuite}}'
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish ${{parameters.name}} binlog'
-    condition: succeededOrFailed()
-    inputs:
-      PathtoPublish: $(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog
-      artifactName: 'drop'
