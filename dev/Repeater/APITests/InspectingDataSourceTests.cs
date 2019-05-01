@@ -12,6 +12,8 @@ using Windows.Foundation.Collections;
 using Windows.UI.Xaml.Controls;
 using Common;
 using System;
+using Microsoft.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -30,7 +32,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 #endif
 
     [TestClass]
-    public class InspectingDataSourceTests
+    public class InspectingDataSourceTests: TestsBase
     {
         [TestMethod]
         public void CanCreateFromIBindableIterable()
@@ -111,6 +113,61 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(true, dataSource.HasKeyIndexMapping);
                 Verify.AreEqual(5, dataSource.IndexFromKey("5"));
                 Verify.AreEqual("5", dataSource.KeyFromIndex(5));
+            });
+        }
+
+        [TestMethod]
+        public void ValidateSwitchingItemsSourceRefreshesElementsNonVirtualLayout()
+        {
+            ValidateSwitchingItemsSourceRefreshesElements(isVirtualLayout: false);
+        }
+
+        [TestMethod]
+        public void ValidateSwitchingItemsSourceRefreshesElementsVirtualLayout()
+        {
+            ValidateSwitchingItemsSourceRefreshesElements(isVirtualLayout: true);
+        }
+
+        public void ValidateSwitchingItemsSourceRefreshesElements(bool isVirtualLayout)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                ItemsRepeater repeater = null;
+                const int numItems = 10;
+
+                repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, numItems),
+                };
+
+                // By default we use stack layout that is virtualizing.
+                if (!isVirtualLayout)
+                {
+                    repeater.Layout = new NonVirtualStackLayout();
+                }
+
+                Content = new ItemsRepeaterScrollHost() {
+                    Width = 400,
+                    Height = 400,
+                    ScrollViewer = new Windows.UI.Xaml.Controls.ScrollViewer() {
+                        Content = repeater
+                    }
+                };
+
+                Content.UpdateLayout();
+                for (int i = 0; i < numItems; i++)
+                {
+                    var element = (TextBlock)repeater.TryGetElement(i);
+                    Verify.AreEqual(i.ToString(), element.Text);
+                }
+
+                repeater.ItemsSource = Enumerable.Range(20, numItems);
+                Content.UpdateLayout();
+
+                for (int i = 0; i < numItems; i++)
+                {
+                    var element = (TextBlock)repeater.TryGetElement(i);
+                    Verify.AreEqual((i + 20).ToString(), element.Text);
+                }
             });
         }
 

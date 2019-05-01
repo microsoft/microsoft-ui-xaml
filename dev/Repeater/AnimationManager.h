@@ -14,7 +14,7 @@ public:
 
     void OnAnimatorChanged(const winrt::ElementAnimator& newAnimator);
     void OnLayoutChanging();
-    void OnDataSourceChanged(const winrt::IInspectable& source, const winrt::NotifyCollectionChangedEventArgs& args);
+    void OnItemsSourceChanged(const winrt::IInspectable& source, const winrt::NotifyCollectionChangedEventArgs& args);
     void OnElementPrepared(const winrt::UIElement& element);
     bool ClearElement(const winrt::UIElement& element);
     void OnElementBoundsChanged(const winrt::UIElement& element, winrt::Rect oldBounds, winrt::Rect newBounds);
