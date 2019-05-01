@@ -70,7 +70,7 @@ private:
     winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
     winrt::FrameworkElement::ActualThemeChanged_revoker m_actualThemeChangedRevoker{};
-	void SetPopupAutomationProperties();
+    void SetPopupAutomationProperties();
     void CreateLightDismissIndicatorPopup();
     bool UpdateTail();
     void PositionPopup();

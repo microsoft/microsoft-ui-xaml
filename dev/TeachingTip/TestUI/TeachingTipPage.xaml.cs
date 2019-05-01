@@ -53,6 +53,7 @@ namespace MUXControlsTestApp
         TipLocation tipLocation = TipLocation.VisualTree;
         FrameworkElement TeachingTipInResourcesRoot;
         FrameworkElement TeachingTipInVisualTreeRoot;
+        CheckBox CurrentCancelClosesCheckBox;
 
         public TeachingTipPage()
         {
@@ -371,6 +372,7 @@ namespace MUXControlsTestApp
                 button.Content = "A:Button in a Button!";
                 getTeachingTip().ActionButtonContent = button;
             }
+            NotifyPropertyChanged("ActionButton");
         }
 
         public void OnSetCloseButtonContentButtonClicked(object sender, RoutedEventArgs args)
@@ -660,6 +662,9 @@ namespace MUXControlsTestApp
                     }
                     break;
             }
+
+            CurrentCancelClosesCheckBox = getCancelClosesInTeachingTip();
+            NotifyPropertyChanged("CurrentCancelClosesCheckBox");
         }
 
         public void OnShowAfterDelayButtonClicked(object sender, RoutedEventArgs args)
@@ -691,7 +696,6 @@ namespace MUXControlsTestApp
             TeachingTipInVisualTreeRoot = getTeachingTipRoot(getCancelClosesInTeachingTip());
             TeachingTipInVisualTreeRoot.SizeChanged += TeachingTip_SizeChanged;
             TeachingTip_SizeChanged(TeachingTipInVisualTreeRoot, null);
-            NotifyPropertyChanged("CancelClosesCheckBoxInVisualTree");
         }
 
         public void OnCloseButtonClicked(object sender, RoutedEventArgs args)
@@ -858,7 +862,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private FrameworkElement getCancelClosesInTeachingTip()
+        private CheckBox getCancelClosesInTeachingTip()
         {
             switch(tipLocation)
             {
@@ -914,7 +918,7 @@ namespace MUXControlsTestApp
         {
             get
             {
-                var popupChild = TeachingTipTestHooks.GetPopup(TeachingTipInVisualTree)?.Child as FrameworkElement;
+                var popupChild = TeachingTipTestHooks.GetPopup(getTeachingTip())?.Child as FrameworkElement;
                 if (popupChild != null)
                 {
                     return (Button)FindVisualChildByName(popupChild, "ActionButton");

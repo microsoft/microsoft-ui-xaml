@@ -471,36 +471,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
             {
                 elements = new TeachingTipTestPageElements();
-                var actionButtonComboBox = elements.GetActionButtonContentComboBox();
-                actionButtonComboBox.SelectItemByName("Small text");
-                elements.GetSetActionButtonContentButton().Invoke();
+                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
 
-                ScrollTargetIntoView();
-                ScrollBy(10);
+                    SetActionButtonContentTo("Small text");
 
-                elements.GetShowButton().Invoke();
+                    ScrollTargetIntoView();
+                    OpenTeachingTip();
 
-                Wait.ForIdle();
+                    var themingComboBox = elements.GetThemingComboBox();
+                    themingComboBox.SelectItemByName("Default");
 
-                Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
-                Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
+                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
+                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
 
-                // Change to Dark, make sure the font switches to light
-                var themingComboBox = elements.GetThemingComboBox();
-                themingComboBox.SelectItemByName("Dark");
+                    // Change to Dark, make sure the font switches to light
+                    themingComboBox.SelectItemByName("Dark");
 
-                Wait.ForIdle();
+                    Verify.AreEqual("#FFFFFFFF", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be white");
+                    Verify.AreEqual("#FFFFFFFF", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be white");
 
-                Verify.AreEqual("#FFFFFFFF", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be white");
-                Verify.AreEqual("#FFFFFFFF", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be white");
+                    // Change to Light, make sure the font switches to dark
+                    themingComboBox.SelectItemByName("Light");
 
-                // Change to Light, make sure the font switches to dark
-                themingComboBox.SelectItemByName("Light");
-
-                Wait.ForIdle();
-
-                Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
-                Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
+                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
+                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
+                }
             }
         }
 
@@ -959,6 +956,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     break;
             }
             elements.GetSetAutomationNameButton().Invoke();
+        }
+
+        private void SetActionButtonContentTo(string option)
+        {
+            var actionButtonComboBox = elements.GetActionButtonContentComboBox();
+            actionButtonComboBox.SelectItemByName(option);
+            elements.GetSetActionButtonContentButton().Invoke();
         }
 
         // The test UI has a list box which the teaching tip populates with messages about which events have fired and other useful

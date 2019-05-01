@@ -317,7 +317,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Button setActionContentButton;
 
-
         public ComboBox GetThemingComboBox()
         {
             return GetElement(ref themingComboBox, "PageThemeComboBox");
@@ -365,7 +364,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return GetElement(ref effectiveForegroundOfTeachingTipContentTextBlock, "EffectiveForegroundOfTeachingTipContent");
         }
         private TextBlock effectiveForegroundOfTeachingTipContentTextBlock;
-
 
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {

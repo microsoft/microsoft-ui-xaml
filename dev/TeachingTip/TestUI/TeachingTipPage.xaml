@@ -300,7 +300,7 @@
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="CheckBox.Foreground:"/>
                         <TextBlock AutomationProperties.AutomationId="EffectiveForegroundOfTeachingTipContent"
-                           Text="{x:Bind BrushToString(CancelClosesCheckBoxInVisualTree.Foreground),Mode=OneWay}"/>
+                           Text="{x:Bind BrushToString(CurrentCancelClosesCheckBox.Foreground),Mode=OneWay}"/>
                     </StackPanel>
                 </StackPanel>
             </Grid>
