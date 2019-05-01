@@ -527,10 +527,8 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
         {
             // Walk through all the elements and make sure they are cleared for
             // non-virtualizing layouts.
-            auto children = Children();
-            for (unsigned i = 0u; i < children.Size(); ++i)
+            for (const auto& element: Children())
             {
-                auto element = children.GetAt(i);
                 if (GetVirtualizationInfo(element)->IsRealized())
                 {
                     ClearElementImpl(element);
@@ -707,8 +705,9 @@ void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, 
         {
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), sender, args);
         }
-        else if (auto nonVirtualLayout = layout.as<winrt::NonVirtualizingLayout>())
+        else
         {
+            // NonVirtualizingLayout
             InvalidateMeasure();
         }
     }
