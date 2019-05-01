@@ -110,4 +110,5 @@ jobs:
       name: ${{ parameters.runTestJobName }}
       dependsOn: ${{ parameters.buildJobName }}
       testSuite: 'NugetTestSuite'
+      testBatchSize: variables['testBatchSize']
   

@@ -9,7 +9,10 @@ Param(
     [string]$TestSuiteName,
 
     [Parameter(Mandatory = $true)] 
-    [string]$TaefPath
+    [string]$TaefPath,
+
+    [Parameter(Mandatory = $true)] 
+    [int]$TestBatchSize
 )
 
 Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xaml @"
@@ -236,60 +239,45 @@ $projFileContent = @"
   <ItemGroup>
 "@
 
-$testGroupSize = 10
-
 foreach ($testModule in $testModules)
 {
     Write-Host $testModule.Name
 
+    [System.Collections.Generic.List[string]]$tests = @()
+    $helixWorkItemCount = 0
+
     foreach ($testClass in $testModules.TestClasses)
     {
-        if ($testClass.Tests.Count -gt $testGroupSize)
+        foreach ($test in $testClass.Tests)
         {
-            [System.Collections.Generic.List[string]]$tests = @()
-            $helixWorkItemCount = 0
-        
-            foreach ($test in $testClass.Tests)
-            {
-                if ($tests.Count -eq $testGroupSize)
-                {
-                    $helixWorkItemCount++
-                    $projFileContent += @"
-
-    <HelixWorkItem Include="$($testClass.Name)$helixWorkItemCount" Condition="'`$(TestSuite)'=='$($TestSuiteName)'">
-        <Timeout>00:20:00</Timeout>
-        <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='$($tests -join "' or @Name='")')"</Command>
-    </HelixWorkItem>
-"@
-                    $tests.Clear()
-                }
-
-                $tests.Add($test.Name)
-            }
-
-            if ($tests.Count -gt 0)
+            if ($tests.Count -eq $TestBatchSize)
             {
                 $helixWorkItemCount++
-
                 $projFileContent += @"
 
-    <HelixWorkItem Include="$($testClass.Name)$helixWorkItemCount" Condition="'`$(TestSuite)'=='$($TestSuiteName)'">
+    <HelixWorkItem Include="TestBatch$helixWorkItemCount" Condition="'`$(TestSuite)'=='$($TestSuiteName)'">
         <Timeout>00:20:00</Timeout>
         <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='$($tests -join "' or @Name='")')"</Command>
     </HelixWorkItem>
 "@
+                $tests.Clear()
             }
-        }
-        else
-        {
-            $projFileContent += @"
 
-    <HelixWorkItem Include="$($testClass.Name)" Condition="'`$(TestSuite)'=='$($TestSuiteName)'">
-      <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /name:$($testClass.Name).*</Command>
+            $tests.Add($test.Name)
+        }
+    }
+
+    if ($tests.Count -gt 0)
+    {
+        $helixWorkItemCount++
+
+        $projFileContent += @"
+
+    <HelixWorkItem Include="TestBatch$helixWorkItemCount" Condition="'`$(TestSuite)'=='$($TestSuiteName)'">
+        <Timeout>00:20:00</Timeout>
+        <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='$($tests -join "' or @Name='")')"</Command>
     </HelixWorkItem>
 "@
-        }
     }
 }
 
