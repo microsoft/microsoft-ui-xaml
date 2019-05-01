@@ -12,7 +12,6 @@ namespace MUXControlsTestApp
         {
             Tests = new List<TestDeclaration>();
 
-            Tests.Add(new TestDeclaration("Sample Tests", typeof(SampleTestUIPage)));
 #if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
             Tests.Add(new TestDeclaration("ColorPicker Tests", typeof(ColorPickerPage)));
             Tests.Add(new TestDeclaration("Leak Tests", typeof(LeakTestPage)));

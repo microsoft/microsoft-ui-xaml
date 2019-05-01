@@ -5,6 +5,8 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <SharedGUID>c9703891-0c13-4dbd-84fc-adb77511c7d4</SharedGUID>
+    <!-- Light up shared code in test helpers-->
+    <DefineConstants>$(DefineConstants);COLORPICKER_INCLUDED</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <Import_RootNamespace>ColorPicker_InteractionTests</Import_RootNamespace>
