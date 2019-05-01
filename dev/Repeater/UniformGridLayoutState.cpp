@@ -82,7 +82,7 @@ void UniformGridLayoutState::SetSize(
     m_effectiveItemHeight = (std::isnan(LayoutItemHeight) ? UIElement.DesiredSize().Height : LayoutItemHeight);
 
     auto availableSizeMinor = orientation == winrt::Orientation::Horizontal ? availableSize.Width : availableSize.Height;
-    auto minorItemSpacing = orientation == winrt::Orientation::Horizontal ? minRowSpacing : minColumnSpacing;
+    auto minorItemSpacing = orientation == winrt::Orientation::Vertical ? minRowSpacing : minColumnSpacing;
 
     auto itemSizeMinor = orientation == winrt::Orientation::Horizontal ? m_effectiveItemWidth : m_effectiveItemHeight;
     itemSizeMinor += minorItemSpacing;

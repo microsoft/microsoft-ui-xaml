@@ -46,7 +46,7 @@ public:
         const winrt::VirtualizingLayoutContext& context,
         FlowLayoutAlgorithm::LineAlignment lineAlignment,
         const wstring_view& layoutId);
-    void OnDataSourceChanged(
+    void OnItemsSourceChanged(
         const winrt::IInspectable& source,
         winrt::NotifyCollectionChangedEventArgs const& args,
         const winrt::IVirtualizingLayoutContext& context);

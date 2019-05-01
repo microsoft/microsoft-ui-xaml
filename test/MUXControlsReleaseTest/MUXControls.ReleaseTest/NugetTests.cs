@@ -47,13 +47,12 @@ namespace MUXControls.ReleaseTest
         }
 
         [TestMethod]
-        public void CompactDictionaryTest()
+        public void CompactDictionaryNoCrashTest()
         {
             using (var setup = new TestSetupHelper("CompactDictionary Tests"))
             {
                 var textBlock = new TextBlock(FindElement.ByName("CompactTextBox"));
                 Verify.IsNotNull(textBlock);
-                Verify.AreEqual(textBlock.BoundingRectangle.Height, 24);
             }
         }
     }
