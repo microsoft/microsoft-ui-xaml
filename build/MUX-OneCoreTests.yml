@@ -104,7 +104,6 @@ jobs:
     inputs:
       filename: '$(Build.SourcesDirectory)\tools\PkgGen.cmd'
       arguments: '$(buildPlatform) $(buildConfiguration)'
-    enabled: false
 
   - task: PkgESSpkgGeneration@10
     displayName: 'Run Atlas Tests'
