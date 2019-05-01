@@ -73,7 +73,7 @@
   </ItemGroup>
 
   <!-- Add a dependency for the app against VCLibs since we need it but the consuming app might be .NET only. -->
-  <ItemGroup Condition="('$(PlatformTarget)' == 'x86' or '$(PlatformTarget)' == 'x64' or '$(PlatformTarget)' == 'ARM' or '$(PlatformTarget)' == 'ARM64')">
+  <ItemGroup Condition="('$(OutputType)' == 'AppContainerExe')">
     <SDKReference Include="Microsoft.VCLibs, Version=14.0" />
   </ItemGroup>
 
@@ -92,6 +92,7 @@
     
   <PropertyGroup>
     <XamlWinmdName>Microsoft.UI.Xaml.winmd</XamlWinmdName>
+    <XamlCompactXbfName>Microsoft.UI.Xaml\DensityStyles\Compact.xbf</XamlCompactXbfName>
   </PropertyGroup>
   <Target Name="_FixWinmdCopyLocal" AfterTargets="ResolveNuGetPackageAssets">
     <ItemGroup>
@@ -113,6 +114,21 @@
     </ItemGroup>
   </Target>
 
+  <!-- Workaround for https://github.com/Microsoft/microsoft-ui-xaml/issues/599. 
+  If there are more than two projects are using microsoft-ui-xaml framework package, and the projects have reference relationship,
+  more than two compact.xbf with the same destination path would be packaged and compiler would complains error. 
+  Assume we have two projects A and B, and A->B->microsoft-ui-xaml, compact.xbf is built into B.pri, and then built into A.pri because of project reference.
+  So we need to exclude compact.xbf in A. To make sure only one compact.xbf is packaged, this target excludes the compact.xbf which matches MSBuildProjectName.
+  --> 
+  <Target Name="_FixXamlCompactXbfPackaging" AfterTargets="GetPackagingOutputs">
+    <ItemGroup>
+      <XamlCompactXbfPackagingOutput Include="@(PackagingOutputs)" Condition="'%(PackagingOutputs.TargetPath)' == '$(XamlCompactXbfName)' and '%(PackagingOutputs.ProjectName)' != '$(MSBuildProjectName)'" />
+      <XamlCompactXbfPackagingOutputToBeRemoved Include="@(PackagingOutputs)" Condition="'%(PackagingOutputs.TargetPath)' == '$(XamlCompactXbfName)' and '%(PackagingOutputs.ProjectName)' == '$(MSBuildProjectName)'" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(XamlCompactXbfPackagingOutput)' != '' and '@(XamlCompactXbfPackagingOutputToBeRemoved)' != ''">
+      <PackagingOutputs Remove="@(XamlCompactXbfPackagingOutputToBeRemoved)" />
+    </ItemGroup>
+  </Target>
 
   <!-- Workaround for apps that need RS1 support, include this only if min version is RS1 -->
   <ItemGroup Condition="($([System.Version]::Parse('$(TargetPlatformMinVersion)').Build) &lt; 15063) And '$(DisableMicrosoftUIXamlRS1ThemesWorkaround)'==''">

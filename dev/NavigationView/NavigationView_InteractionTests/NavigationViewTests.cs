@@ -53,8 +53,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Platform", "Any")]
-        [TestProperty("MUXControlsTestSuite", "SuiteB")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("MUXControlsTestEnabledForPhone", "True")]
         [TestProperty("NavViewTestSuite", "A")]
         public static void ClassInitialize(TestContext testContext)
@@ -122,6 +121,47 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Wait.ForIdle();
                     Verify.AreEqual(expanded, displayModeTextBox.DocumentText);
                 }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "A")]
+        public void VerifyPaneIsClosedWhenClickingOnSelectedItem()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var displayModeTextBox = new TextBlock(FindElement.ByName("DisplayModeTextBox"));
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+
+                Log.Comment("Test PaneDisplayMode=LeftMinimal");
+                panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                Log.Comment("Click on ToggleButton");
+                Button navButton = new Button(FindElement.ById("TogglePaneButton"));
+                navButton.Invoke();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
+
+                Log.Comment("Select Apps");
+                UIObject appsItem = FindElement.ByName("Apps");
+                appsItem.Click();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                Log.Comment("Click on ToggleButton");
+                navButton.Invoke();
+                Wait.ForIdle();
+
+                Log.Comment("Click on SelectedItem Apps");
+                appsItem.Click();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
             }
         }
 
