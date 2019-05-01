@@ -123,7 +123,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
-        public void ValidateSwitchignItemsSourceRefreshesElementsVirtualLayout()
+        public void ValidateSwitchingItemsSourceRefreshesElementsVirtualLayout()
         {
             ValidateSwitchingItemsSourceRefreshesElements(isVirtualLayout: true);
         }
