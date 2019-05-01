@@ -7,13 +7,10 @@ Param(
 
     [Parameter(Mandatory = $true)] 
     [string]$TestSuiteName,
-    
-    [Parameter(Mandatory = $true)] 
-    [string]$Platform
-)
 
-$nugetPackagesDir = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path) "packages"
-$taefVersion = "10.34.181220007"
+    [Parameter(Mandatory = $true)] 
+    [string]$TaefPath
+)
 
 Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xaml @"
 using System;
@@ -229,7 +226,7 @@ namespace TestProjFileGeneration
 }
 "@
 
-$taefExe = "$nugetPackagesDir\taef.redist.wlk.10.31.180822002\build\Binaries\$Platform\te.exe"
+$taefExe = "$TaefPath\te.exe"
 [string]$taefOutput = & "$taefExe" /listproperties $TestFile | Out-String
 
 [System.Collections.Generic.IList`1[TestProjFileGeneration.TestModule]]$testModules = [TestProjFileGeneration.TestInfoParser]::Parse($taefOutput)
