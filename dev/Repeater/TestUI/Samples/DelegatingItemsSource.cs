@@ -55,7 +55,7 @@ namespace MUXControlsTestApp.Samples
                 e.NewStartingIndex,
                 e.NewItems == null ? -1 : e.NewItems.Count);
 
-            OnDataSourceChanged(args);
+            OnItemsSourceChanged(args);
         }
     }
 }

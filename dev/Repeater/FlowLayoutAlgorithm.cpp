@@ -113,7 +113,7 @@ void FlowLayoutAlgorithm::MakeAnchor(
     }
 }
 
-void FlowLayoutAlgorithm::OnDataSourceChanged(
+void FlowLayoutAlgorithm::OnItemsSourceChanged(
     const winrt::IInspectable& source,
     winrt::NotifyCollectionChangedEventArgs const& args,
     const winrt::IVirtualizingLayoutContext& /*context*/)

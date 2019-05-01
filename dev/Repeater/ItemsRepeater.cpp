@@ -252,9 +252,9 @@ void ItemsRepeater::ClearElementImpl(const winrt::UIElement& element)
     // unpinned and sent back to the view generator.
     const bool isClearedDueToCollectionChange =
         IsProcessingCollectionChange() &&
-        (m_processingDataSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Remove ||
-            m_processingDataSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Replace ||
-            m_processingDataSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Reset);
+        (m_processingItemsSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Remove ||
+            m_processingItemsSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Replace ||
+            m_processingItemsSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Reset);
 
     m_viewManager.ClearElement(element, isClearedDueToCollectionChange);
     m_viewportManager->OnElementCleared(element);
@@ -489,6 +489,18 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
         {
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
+        else if (auto nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
+        {
+            // Walk through all the elements and make sure they are cleared for
+            // non-virtualizing layouts.
+            for (const auto& element: Children())
+            {
+                if (GetVirtualizationInfo(element)->IsRealized())
+                {
+                    ClearElementImpl(element);
+                }
+            }
+        }
 
         InvalidateMeasure();
     }
@@ -499,6 +511,45 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory&  oldValu
     if (m_isLayoutInProgress && oldValue)
     {
         throw winrt::hresult_error(E_FAIL, L"ItemTemplate cannot be changed during layout.");
+    }
+
+    // Since the ItemTemplate has changed, we need to re-evaluate all the items that
+    // have already been created and are now in the tree. The easiest way to do that
+    // would be to do a reset.. Note that this has to be done before we change the template
+    // so that the cleared elements go back into the old template.
+    if (auto layout = Layout())
+    {
+        if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
+        {
+            auto args = winrt::NotifyCollectionChangedEventArgs(
+                winrt::NotifyCollectionChangedAction::Reset,
+                nullptr /* newItems */,
+                nullptr /* oldItems */,
+                -1 /* newIndex */,
+                -1 /* oldIndex */);
+            args.Action();
+            m_processingItemsSourceChange.set(args);
+            auto processingChange = gsl::finally([this]()
+                {
+                    m_processingItemsSourceChange.set(nullptr);
+                });
+
+            virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
+        }
+        else if (auto nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
+        {
+            // Walk through all the elements and make sure they are cleared for
+            // non-virtualizing layouts.
+            auto children = Children();
+            for (unsigned i = 0u; i < children.Size(); ++i)
+            {
+                auto element = children.GetAt(i);
+                if (GetVirtualizationInfo(element)->IsRealized())
+                {
+                    ClearElementImpl(element);
+                }
+            }
+        }
     }
 
     if (!SharedHelpers::IsRS5OrHigher())
@@ -602,20 +653,25 @@ void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, 
         throw winrt::hresult_error(E_FAIL, L"Changes in the data source are not allowed during another change in the data source.");
     }
 
-    m_processingDataSourceChange.set(args);
+    m_processingItemsSourceChange.set(args);
     auto processingChange = gsl::finally([this]()
     {
-        m_processingDataSourceChange.set(nullptr);
+        m_processingItemsSourceChange.set(nullptr);
     });
 
-    m_animationManager.OnDataSourceChanged(sender, args);
-    m_viewManager.OnDataSourceChanged(sender, args);
+    m_animationManager.OnItemsSourceChanged(sender, args);
+    m_viewManager.OnItemsSourceChanged(sender, args);
 
     if (auto layout = Layout())
     {
         if (auto virtualLayout = layout.as<winrt::VirtualizingLayout>())
         {
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), sender, args);
+        }
+        else
+        {
+            // NonVirtualizingLayout
+            InvalidateMeasure();
         }
     }
 }
