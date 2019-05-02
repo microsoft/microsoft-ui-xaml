@@ -309,7 +309,10 @@ TreeViewNodeVector::TreeViewNodeVector(unsigned int capacity)
     GetVectorInnerImpl()->reserve(capacity);
 }
 
-void TreeViewNodeVector::SetParent(winrt::TreeViewNode value) { m_parent = winrt::make_weak(value); }
+void TreeViewNodeVector::SetParent(winrt::TreeViewNode value)
+{
+    m_parent = winrt::make_weak(value);
+}
 
 TreeViewNode* TreeViewNodeVector::Parent()
 {
@@ -340,10 +343,12 @@ void TreeViewNodeVector::Append(winrt::TreeViewNode const& item, bool updateItem
 {
     InsertAt(Size(), item, updateItemsSource);
 }
+
 void TreeViewNodeVector::InsertAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource)
 {
     auto inner = GetVectorInnerImpl();
     MUX_ASSERT(m_parent.get());
+    MUX_ASSERT(index <= inner->Size());
     winrt::get_self<TreeViewNode>(item)->put_ParentImpl(m_parent.get());
 
     inner->InsertAt(index, item);
@@ -426,9 +431,12 @@ void TreeViewNodeVector::Clear(bool updateItemsSource)
 
         inner->Clear();
 
-        if (auto itemsSource = GetWritableParentItemsSource())
+        if (updateItemsSource)
         {
-            itemsSource.Clear();
+            if (auto itemsSource = GetWritableParentItemsSource())
+            {
+                itemsSource.Clear();
+            }
         }
     }
 }
