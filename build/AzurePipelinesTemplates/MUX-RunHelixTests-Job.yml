@@ -75,29 +75,29 @@ jobs:
       arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
 
   - template: MUX-CreateHelixProjFile-Steps.yml
+    condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
     parameters:
-      condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
       testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.Test.dll'
       outputProjFileName: 'RunTestsInHelix-InteractionTests.proj'
       testSuite: '${{ parameters.testSuite }}'
 
   - template: MUX-CreateHelixProjFile-Steps.yml
+    condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
     parameters:
-      condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
       testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-ApiTests.proj'
       testSuite: '${{ parameters.testSuite }}'
 
   - template: MUX-CreateHelixProjFile-Steps.yml
+    condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
     parameters:
-      condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
       testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\IXMPTestApp_Test\IXMPTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-IXMPTestAppTests.proj'
       testSuite: '${{ parameters.testSuite }}'
 
   - template: MUX-CreateHelixProjFile-Steps.yml
+    condition: eq('${{ parameters.testSuite }}','NugetTestSuite')
     parameters:
-      condition: eq('${{ parameters.testSuite }}','NugetTestSuite')
       testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll'
       outputProjFileName: 'RunTestsInHelix-NugetTests.proj'
       testSuite: '${{ parameters.testSuite }}'
@@ -120,7 +120,7 @@ jobs:
       
   - task: PublishBuildArtifacts@1
     displayName: 'Publish ${{parameters.name}} binlog'
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables['useBuildOutputFromBuildId'],''))
     inputs:
       PathtoPublish: $(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog
       artifactName: 'drop' 
