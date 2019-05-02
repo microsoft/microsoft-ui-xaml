@@ -1441,7 +1441,9 @@ NavigationViewVisualStateDisplayMode NavigationView::GetVisualStateDisplayMode(c
     // In minimal mode, when the NavView is closed, the HeaderContent doesn't have
     // its own dedicated space, and must 'share' the top of the NavView with the 
     // pane toggle button ('hamburger' button) and the back button.
-    if (ShouldShowBackButton())
+    auto visibility = IsBackButtonVisible();
+    auto backButtonVisible = (visibility == winrt::NavigationViewBackButtonVisible::Visible || (visibility == winrt::NavigationViewBackButtonVisible::Auto && !SharedHelpers::IsOnXbox()));
+    if (backButtonVisible)
     {
         return NavigationViewVisualStateDisplayMode::MinimalWithBackButton;
     }
