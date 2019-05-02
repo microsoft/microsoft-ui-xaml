@@ -5,7 +5,7 @@ parameters:
 
 steps:
   - task: powershell@2
-    displayName: 'Create ${{ parameters.outputProjFile }}'
+    displayName: 'Create ${{ parameters.outputProjFileName }}'
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
