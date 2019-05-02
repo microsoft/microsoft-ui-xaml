@@ -1,3 +1,4 @@
+[CmdLetBinding()]
 Param(
     [Parameter(Mandatory = $true)] 
     [string]$TestFile,
