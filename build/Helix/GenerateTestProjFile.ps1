@@ -12,224 +12,229 @@ Param(
     [string]$TaefPath
 )
 
-Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xaml @"
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Xml;
-using System.Xaml;
-
-namespace TestProjFileGeneration
+Class TestCollection
 {
-    public class TestCollection
+    [string]$Name
+    [string]$SetupMethodName
+    [string]$TeardownMethodName
+    [System.Collections.Generic.Dictionary[string, string]]$Properties
+
+    TestCollection()
     {
-        public string Name { get; set; }
-        public string SetupMethodName { get; set; }
-        public string TeardownMethodName { get; set; }
-
-        public IDictionary<string, string> Properties { get; private set; }
-
-        public TestCollection(string name)
+        if ($this.GetType() -eq [TestCollection])
         {
-            Name = name;
-            Properties = new Dictionary<string, string>();
+            throw "This class should never be instantiated directly; it should only be derived from."
         }
     }
 
-    public class TestModule : TestCollection
+    TestCollection([string]$name)
     {
-        public IList<TestProjFileGeneration.TestClass> TestClasses { get; private set; }
-
-        public TestModule(string name) : base(name)
-        {
-            TestClasses = new List<TestProjFileGeneration.TestClass>();
-        }
+        $this.Init($name)
     }
 
-    public class TestClass : TestCollection
+    hidden Init([string]$name)
     {
-        public IList<TestProjFileGeneration.Test> Tests { get; private set; }
-
-        public TestClass(string name) : base(name)
-        {
-            Tests = new List<TestProjFileGeneration.Test>();
-        }
-    }
-
-    public class Test : TestCollection
-    {
-        public Test(string name) : base(name) { }
-    }
-
-    public static class TestInfoParser
-    {
-        private enum LineType
-        {
-            None,
-            TestModule,
-            TestClass,
-            Test,
-            Setup,
-            Teardown,
-            Property,
-        }
-
-        public static List<TestProjFileGeneration.TestModule> Parse(string taefOutput)
-        {
-            string[] lines = taefOutput.Split(new string[] { Environment.NewLine, "\n" }, StringSplitOptions.RemoveEmptyEntries);
-            List<TestProjFileGeneration.TestModule> testModules = new List<TestProjFileGeneration.TestModule>();
-
-            TestProjFileGeneration.TestModule currentTestModule = null;
-            TestProjFileGeneration.TestClass currentTestClass = null;
-            TestProjFileGeneration.Test currentTest = null;
-
-            TestProjFileGeneration.TestCollection lastTestCollection = null;
-            
-            foreach (string rawLine in lines)
-            {
-                LineType lineType = GetLineType(rawLine);
-
-                // We don't need the whitespace around the line anymore, so we'll discard it to make things easier.
-                string line = rawLine.Trim();
-
-                switch (lineType)
-                {
-                case LineType.TestModule:
-                    if (currentTest != null && currentTestClass != null)
-                    {
-                        currentTestClass.Tests.Add(currentTest);
-                    }
-
-                    if (currentTestClass != null && currentTestModule != null)
-                    {
-                        currentTestModule.TestClasses.Add(currentTestClass);
-                    }
-
-                    if (currentTestModule != null)
-                    {
-                        testModules.Add(currentTestModule);
-                    }
-
-                    currentTestModule = new TestProjFileGeneration.TestModule(line);
-                    currentTestClass = null;
-                    currentTest = null;
-                    lastTestCollection = currentTestModule;
-                    break;
-
-                case LineType.TestClass:
-                    if (currentTest != null && currentTestClass != null)
-                    {
-                        currentTestClass.Tests.Add(currentTest);
-                    }
-
-                    if (currentTestClass != null && currentTestModule != null)
-                    {
-                        currentTestModule.TestClasses.Add(currentTestClass);
-                    }
-
-                    currentTestClass = new TestProjFileGeneration.TestClass(line);
-                    currentTest = null;
-                    lastTestCollection = currentTestClass;
-                    break;
-
-                case LineType.Test:
-                    if (currentTest != null && currentTestClass != null)
-                    {
-                        currentTestClass.Tests.Add(currentTest);
-                    }
-
-                    currentTest = new TestProjFileGeneration.Test(line);
-                    lastTestCollection = currentTest;
-                    break;
-
-                case LineType.Setup:
-                    if (lastTestCollection != null)
-                    {
-                        lastTestCollection.SetupMethodName = line.Replace(setupBeginning, "");
-                    }
-                    break;
-
-                case LineType.Teardown:
-                    if (lastTestCollection != null)
-                    {
-                        lastTestCollection.TeardownMethodName = line.Replace(teardownBeginning, "");
-                    }
-                    break;
-
-                case LineType.Property:
-                    if (lastTestCollection != null)
-                    {
-                        foreach (Match match in Regex.Matches(line, "Property\\[(.*)\\]\\s+=\\s+(.*)"))
-                        {
-                            string propertyKey = match.Groups[1].Value;
-                            string propertyValue = match.Groups[2].Value;
-                            lastTestCollection.Properties.Add(propertyKey, propertyValue);
-                        }
-                    }
-                    break;
-                }
-            }
-
-            if (currentTest != null && currentTestClass != null)
-            {
-                currentTestClass.Tests.Add(currentTest);
-            }
-
-            if (currentTestClass != null && currentTestModule != null)
-            {
-                currentTestModule.TestClasses.Add(currentTestClass);
-            }
-
-            if (currentTestModule != null)
-            {
-                testModules.Add(currentTestModule);
-            }
-
-            return testModules;
-        }
-        
-        private static readonly string testModuleIndentation = "        ";
-        private static readonly string testClassIndentation = "            ";
-        private static readonly string setupBeginning = "Setup: ";
-        private static readonly string teardownBeginning = "Teardown: ";
-        private static readonly string propertyBeginning = "Property[";
-
-        private static LineType GetLineType(string line)
-        {
-            if (line.Contains(setupBeginning))
-            {
-                return LineType.Setup;
-            }
-            else if (line.Contains(teardownBeginning))
-            {
-                return LineType.Teardown;
-            }
-            else if (line.Contains(propertyBeginning))
-            {
-                return LineType.Property;
-            }
-            else if (line.StartsWith(testModuleIndentation) && !line.StartsWith(testModuleIndentation + " "))
-            {
-                return LineType.TestModule;
-            }
-            else if (line.StartsWith(testClassIndentation) && !line.StartsWith(testClassIndentation + " "))
-            {
-                return LineType.TestClass;
-            }
-            else
-            {
-                return LineType.Test;
-            }
-        }
+        $this.Name = $name
+        $this.Properties = @{}
     }
 }
-"@
+
+Class Test : TestCollection 
+{
+    Test([string]$name)
+    {
+        $this.Init($name)
+    }
+}
+
+Class TestClass : TestCollection
+{
+    [System.Collections.Generic.List[Test]]$Tests
+
+    TestClass([string]$name)
+    {
+        $this.Init($name)
+        $this.Tests = @{}
+    }
+}
+
+Class TestModule : TestCollection
+{
+    [System.Collections.Generic.List[TestClass]]$TestClasses
+
+    TestModule([string]$name)
+    {
+        $this.Init($name)
+        $this.TestClasses = @{}
+    }
+}
+
+function Parse-TestInfo([string]$taefOutput)
+{
+    enum LineType
+    {
+        None
+        TestModule
+        TestClass
+        Test
+        Setup
+        Teardown
+        Property
+    }
+        
+    [string]$testModuleIndentation = "        "
+    [string]$testClassIndentation = "            "
+    [string]$testIndentation = "                "
+    [string]$setupBeginning = "Setup: "
+    [string]$teardownBeginning = "Teardown: "
+    [string]$propertyBeginning = "Property["
+
+    function Get-LineType([string]$line)
+    {
+        if ($line.Contains($setupBeginning))
+        {
+            return [LineType]::Setup;
+        }
+        elseif ($line.Contains($teardownBeginning))
+        {
+            return [LineType]::Teardown;
+        }
+        elseif ($line.Contains($propertyBeginning))
+        {
+            return [LineType]::Property;
+        }
+        elseif ($line.StartsWith($testModuleIndentation) -and -not $line.StartsWith("$testModuleIndentation "))
+        {
+            return [LineType]::TestModule;
+        }
+        elseif ($line.StartsWith($testClassIndentation) -and -not $line.StartsWith("$testClassIndentation "))
+        {
+            return [LineType]::TestClass;
+        }
+        elseif ($line.StartsWith($testIndentation) -and -not $line.StartsWith("$testIndentation "))
+        {
+            return [LineType]::Test;
+        }
+        else
+        {
+            return [LineType]::None;
+        }
+    }
+
+    [string[]]$lines = $taefOutput.Split(@([Environment]::NewLine, "`n"), [StringSplitOptions]::RemoveEmptyEntries)
+    [System.Collections.Generic.List[TestModule]]$testModules = @()
+
+    [TestModule]$currentTestModule = $null
+    [TestClass]$currentTestClass = $null
+    [Test]$currentTest = $null
+
+    [TestCollection]$lastTestCollection = $null
+
+    foreach ($rawLine in $lines)
+    {
+        [LineType]$lineType = (Get-LineType $rawLine)
+
+        # We don't need the whitespace around the line anymore, so we'll discard it to make things easier.
+        [string]$line = $rawLine.Trim()
+
+        if ($lineType -eq [LineType]::TestModule)
+        {
+            if ($currentTest -ne $null -and $currentTestClass -ne $null)
+            {
+                $currentTestClass.Tests.Add($currentTest)
+            }
+
+            if ($currentTestClass -ne $null -and $currentTestModule -ne $null)
+            {
+                $currentTestModule.TestClasses.Add($currentTestClass)
+            }
+
+            if ($currentTestModule -ne $null)
+            {
+                $testModules.Add($currentTestModule)
+            }
+
+            $currentTestModule = [TestModule]::new($line)
+            $currentTestClass = $null
+            $currentTest = $null
+            $lastTestCollection = $currentTestModule
+        }
+        elseif ($lineType -eq [LineType]::TestClass)
+        {
+            if ($currentTest -ne $null -and $currentTestClass -ne $null)
+            {
+                $currentTestClass.Tests.Add($currentTest)
+            }
+
+            if ($currentTestClass -ne $null -and $currentTestModule -ne $null)
+            {
+                $currentTestModule.TestClasses.Add($currentTestClass)
+            }
+
+            $currentTestClass = [TestClass]::new($line)
+            $currentTest = $null
+            $lastTestCollection = $currentTestClass
+        }
+        elseif ($lineType -eq [LineType]::Test)
+        {
+            if ($currentTest -ne $null -and $currentTestClass -ne $null)
+            {
+                $currentTestClass.Tests.Add($currentTest)
+            }
+
+            $currentTest = [Test]::new($line)
+            $lastTestCollection = $currentTest
+        }
+        elseif ($lineType -eq [LineType]::Setup)
+        {
+            if ($lastTestCollection -ne $null)
+            {
+                $lastTestCollection.SetupMethodName = $line.Replace($setupBeginning, "")
+            }
+        }
+        elseif ($lineType -eq [LineType]::Teardown)
+        {
+            if ($lastTestCollection -ne $null)
+            {
+                $lastTestCollection.TeardownMethodName = $line.Replace($teardownBeginning, "")
+            }
+        }
+        elseif ($lineType -eq [LineType]::Property)
+        {
+            if ($lastTestCollection -ne $null)
+            {
+                foreach ($match in [Regex]::Matches($line, "Property\[(.*)\]\s+=\s+(.*)"))
+                {
+                    [string]$propertyKey = $match.Groups[1].Value;
+                    [string]$propertyValue = $match.Groups[2].Value;
+                    $lastTestCollection.Properties.Add($propertyKey, $propertyValue);
+                }
+            }
+        }
+    }
+
+    if ($currentTest -ne $null -and $currentTestClass -ne $null)
+    {
+        $currentTestClass.Tests.Add($currentTest)
+    }
+
+    if ($currentTestClass -ne $null -and $currentTestModule -ne $null)
+    {
+        $currentTestModule.TestClasses.Add($currentTestClass)
+    }
+
+    if ($currentTestModule -ne $null)
+    {
+        $testModules.Add($currentTestModule)
+    }
+
+    return $testModules
+}
 
 $taefExe = "$TaefPath\te.exe"
 [string]$taefOutput = & "$taefExe" /listproperties $TestFile | Out-String
 
-[System.Collections.Generic.IList`1[TestProjFileGeneration.TestModule]]$testModules = [TestProjFileGeneration.TestInfoParser]::Parse($taefOutput)
+[System.Collections.Generic.List[TestModule]]$testModules = (Parse-TestInfo $taefOutput)
 
 $projFileContent = @"
 <Project>
@@ -238,27 +243,44 @@ $projFileContent = @"
 
 foreach ($testModule in $testModules)
 {
-    Write-Host $testModule.Name
-
     foreach ($testClass in $testModules.TestClasses)
     {
+        Write-Host "Generating Helix work item for test class $($testClass.Name)..."
         [System.Collections.Generic.List[string]]$testSuiteNames = @()
+        
+        $testSuiteExists = $false
+        $suitelessTestExists = $false
 
         foreach ($tests in $testClass.Tests)
         {
-            if ($tests.Properties.ContainsKey("TestSuite") -and -not $testSuiteNames.Contains($tests.Properties["TestSuite"]))
+            if ($tests.Properties.ContainsKey("TestSuite"))
             {
-                $testSuiteNames.Add($tests.Properties["TestSuite"])
+                [string]$testSuite = $tests.Properties["TestSuite"]
+
+                if (-not $testSuiteNames.Contains($testSuite))
+                {
+                    Write-Host "    Found test suite $testSuite. Generating Helix work item for it as well."
+                    $testSuiteNames.Add($testSuite)
+                }
+
+                $testSuiteExists = $true
+            }
+            else
+            {
+                $suitelessTestExists = $true
             }
         }
 
-        $projFileContent += @"
+        if ($suitelessTestExists)
+        {
+            $projFileContent += @"
 
     <HelixWorkItem Include="$($testClass.Name)" Condition="'`$(TestSuite)'=='$($JobTestSuiteName)'">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='$($testClass.Name).*' and not @TestSuite='*')"</Command>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='$($testClass.Name).*'$(if ($testSuiteExists) { "and not @TestSuite='*'" }))"</Command>
     </HelixWorkItem>
 "@
+        }
         
         foreach ($testSuiteName in $testSuiteNames)
         {

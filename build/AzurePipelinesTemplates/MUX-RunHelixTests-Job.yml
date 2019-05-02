@@ -74,72 +74,38 @@ jobs:
       filePath: build\Helix\PrepareHelixPayload.ps1
       arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
 
-  - task: powershell@2
-    displayName: 'Create RunTestsInHelix-InteractionTests.proj'
-    condition:
-      ne('${{parameters.testSuite}}','NugetTestSuite')
-    inputs:
-      targetType: filePath
-      filePath: build\Helix\GenerateTestProjFile.ps1
-      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.Test.dll' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-InteractionTests.proj' -JobTestSuiteName 'DevTestSuite' -TaefPath '$(taefPath)'
+  - template: MUX-CreateHelixProjFile-Steps.yml
+    parameters:
+      condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
+      testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.Test.dll'
+      outputProjFileName: 'RunTestsInHelix-InteractionTests.proj'
+      testSuite: '${{ parameters.testSuite }}'
 
-  - task: powershell@2
-    displayName: 'Create RunTestsInHelix-ApiTests.proj'
-    condition:
-      ne('${{parameters.testSuite}}','NugetTestSuite')
-    inputs:
-      targetType: filePath
-      filePath: build\Helix\GenerateTestProjFile.ps1
-      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-ApiTests.proj' -JobTestSuiteName 'DevTestSuite' -TaefPath '$(taefPath)'
+  - template: MUX-CreateHelixProjFile-Steps.yml
+    parameters:
+      condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
+      testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx'
+      outputProjFileName: 'RunTestsInHelix-ApiTests.proj'
+      testSuite: '${{ parameters.testSuite }}'
 
-  - task: powershell@2
-    displayName: 'Create RunTestsInHelix-IXMPTestAppTests.proj'
-    condition:
-      ne('${{parameters.testSuite}}','NugetTestSuite')
-    inputs:
-      targetType: filePath
-      filePath: build\Helix\GenerateTestProjFile.ps1
-      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\IXMPTestApp_Test\IXMPTestApp.appx' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-IXMPTestAppTests.proj' -JobTestSuiteName 'DevTestSuite' -TaefPath '$(taefPath)'
+  - template: MUX-CreateHelixProjFile-Steps.yml
+    parameters:
+      condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
+      testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\IXMPTestApp_Test\IXMPTestApp.appx'
+      outputProjFileName: 'RunTestsInHelix-IXMPTestAppTests.proj'
+      testSuite: '${{ parameters.testSuite }}'
 
-  - task: powershell@2
-    displayName: 'Create RunTestsInHelix-NugetTests.proj'
-    condition:
-      eq('${{parameters.testSuite}}','NugetTestSuite')
-    inputs:
-      targetType: filePath
-      filePath: build\Helix\GenerateTestProjFile.ps1
-      arguments: -TestFile '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll' -OutputProjFile '$(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-NugetTests.proj' -JobTestSuiteName 'NugetTestSuite' -TaefPath '$(taefPath)'
+  - template: MUX-CreateHelixProjFile-Steps.yml
+    parameters:
+      condition: eq('${{ parameters.testSuite }}','NugetTestSuite')
+      testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll'
+      outputProjFileName: 'RunTestsInHelix-NugetTests.proj'
+      testSuite: '${{ parameters.testSuite }}'
 
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish RunTestsInHelix-InteractionTests.proj'
-    condition:
-      ne('${{parameters.testSuite}}','NugetTestSuite')
+    displayName: 'Publish generated .proj files'
     inputs:
-      PathtoPublish: $(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-InteractionTests.proj
-      artifactName: 'drop'
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish RunTestsInHelix-ApiTests.proj'
-    condition:
-      ne('${{parameters.testSuite}}','NugetTestSuite')
-    inputs:
-      PathtoPublish: $(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-ApiTests.proj
-      artifactName: 'drop'
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish RunTestsInHelix-IXMPTestAppTests.proj'
-    condition:
-      ne('${{parameters.testSuite}}','NugetTestSuite')
-    inputs:
-      PathtoPublish: $(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-IXMPTestAppTests.proj
-      artifactName: 'drop'
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish RunTestsInHelix-NugetTests.proj'
-    condition:
-      eq('${{parameters.testSuite}}','NugetTestSuite')
-    inputs:
-      PathtoPublish: $(Build.SourcesDirectory)\build\Helix\RunTestsInHelix-NugetTests.proj
+      PathtoPublish: $(Build.ArtifactStagingDirectory)
       artifactName: 'drop'
       
   - task: DotNetCoreCLI@2
@@ -150,4 +116,11 @@ jobs:
       command: custom
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
-      arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:TestSuite=${{parameters.testSuite}}'
+      arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
+      
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish ${{parameters.name}} binlog'
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog
+      artifactName: 'drop' 
