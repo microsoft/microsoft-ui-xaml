@@ -7,14 +7,23 @@ namespace MUXControlsTestApp
 {
     public class TestDeclaration
     {
+        public TestDeclaration()
+        {
+        }
+
         public TestDeclaration(string name, Type pageType)
         {
             Name = name;
+            AutomationName = name;
             PageType = pageType;
         }
 
-        public string Name { get; private set; }
+        public string Name { get; set; }
 
-        public Type PageType { get; private set; }
+        public string AutomationName { get; set; }
+
+        public string Icon { get; set; }
+
+        public Type PageType { get; set; }
     }
 }
