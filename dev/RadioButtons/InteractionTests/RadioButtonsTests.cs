@@ -154,9 +154,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ListViewItem item = FindElement.ByName<ListViewItem>("Item 1");
                 Verify.IsFalse(item.IsSelected);
 
-                Log.Comment("Place focus in the unselected radio group");
-                FindElement.ById("UnselectedRadioButtons").SetFocus();
-                Wait.ForIdle();
+                Log.Comment("Move focus over the unselected radio group");
+                KeyboardHelper.PressKey(Key.Tab, numPresses: 7);
 
                 Log.Comment("Now the first item should be selected");
                 Verify.IsTrue(item.IsSelected);
