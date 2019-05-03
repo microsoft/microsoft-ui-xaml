@@ -29,7 +29,7 @@ using static Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TeachingTipTestP
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-    //[TestClass] TODO: Re-enable once issue #643 is fixed.
+    [TestClass]
     public class TeachingTipTests
     {
         // The longest observed animated view change took 5.4 seconds, so 9 seconds is picked
@@ -177,7 +177,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
+        // [TestMethod] // Not currently passing, tracked by issue #643
         public void AutoPlacement()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -456,7 +456,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     UseTestScreenBounds(10, 10, 10, 10);
                     SetShouldConstrainToRootBounds(false);
 
-                    elements.GetShowButton().Invoke();
+                    OpenTeachingTip();
 
                     VerifyPlacement("Top");
 
@@ -504,42 +504,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void TestAutoPlacementForWindowOrScreenBounds(Vector4 targetRect, bool forWindowBounds)
         {
-            TestAutoPlacementForWindowOrScreenBounds(targetRect, forWindowBounds, "");
+            TestAutoPlacementForWindowOrScreenBounds(targetRect, forWindowBounds, null);
         }
 
         private void TestAutoPlacementForWindowOrScreenBounds(Vector4 targetRect, bool forWindowBounds, string valueOverride)
         {
-            bool hasValueOverride = valueOverride.Length > 0;
+            Log.Comment($"TestAutoPlacementForWindowOrScreenBounds {targetRect}, {forWindowBounds}, {valueOverride}");
             UseTestBounds(targetRect.W - 329, targetRect.X - 340, targetRect.Y + 656, targetRect.Z + 680, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "Top");
+            VerifyPlacement(valueOverride ?? "Top");
             UseTestBounds(targetRect.W - 329, targetRect.X - 336, targetRect.Y + 656, targetRect.Z + 680, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "Bottom");
+            VerifyPlacement(valueOverride ?? "Bottom");
             UseTestBounds(targetRect.W - 329, targetRect.X - 318, targetRect.Y + 659, targetRect.Z + 640, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "LeftTop");
+            VerifyPlacement(valueOverride ?? "LeftTop");
             UseTestBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 659, targetRect.Z + 403, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "LeftBottom");
+            VerifyPlacement(valueOverride ?? "LeftBottom");
             UseTestBounds(targetRect.W - 327, targetRect.X - 100, targetRect.Y + 659, targetRect.Z + 403, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "RightBottom");
+            VerifyPlacement(valueOverride ?? "RightBottom");
             UseTestBounds(targetRect.W - 327, targetRect.X - 300, targetRect.Y + 659, targetRect.Z + 603, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "RightTop");
+            VerifyPlacement(valueOverride ?? "RightTop");
             UseTestBounds(targetRect.W - 327, targetRect.X - 340, targetRect.Y + 349, targetRect.Z + 608, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "TopLeft");
+            VerifyPlacement(valueOverride ?? "TopLeft");
             UseTestBounds(targetRect.W - 20, targetRect.X - 340, targetRect.Y + 348, targetRect.Z + 608, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "TopRight");
+            VerifyPlacement(valueOverride ?? "TopRight");
             UseTestBounds(targetRect.W - 327, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 444, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "BottomLeft");
+            VerifyPlacement(valueOverride ?? "BottomLeft");
             UseTestBounds(targetRect.W - 20, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 444, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "BottomRight");
+            VerifyPlacement(valueOverride ?? "BottomRight");
             UseTestBounds(targetRect.W - 327, targetRect.X - 318, targetRect.Y + 650, targetRect.Z + 444, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "Center");
+            VerifyPlacement(valueOverride ?? "Center");
 
             // Remove the hero content;
             SetHeroContent(HeroContentOptions.NoContent);
 
             UseTestBounds(targetRect.W - 329, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "Left");
+            VerifyPlacement(valueOverride ?? "Left");
             UseTestBounds(targetRect.W - 19, targetRect.X - 100, targetRect.Y + 349, targetRect.Z + 20, targetRect, forWindowBounds);
-            VerifyPlacement(hasValueOverride ? valueOverride : "Right");
+            VerifyPlacement(valueOverride ?? "Right");
 
             SetHeroContent(HeroContentOptions.RedSquare);
         }
@@ -547,7 +547,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private void VerifyPlacement(String placement)
         {
             OpenTeachingTip();
-            Verify.IsTrue(GetEffectivePlacement().Equals(placement));
+            Verify.AreEqual(placement, GetEffectivePlacement(), "VerifyPlacement");
             CloseTeachingTipProgrammatically();
         }
 
@@ -578,6 +578,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
             {
+                elements = new TeachingTipTestPageElements();
                 ScrollTargetIntoView();
                 ScrollBy(10);
                 OpenTeachingTip();
@@ -623,10 +624,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             if(elements.GetIsOpenCheckBox().ToggleState != ToggleState.On)
             {
                 elements.GetShowButton().Invoke();
-                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-                {
-                    WaitForUnchecked(elements.GetIsIdleCheckBox());
-                }
                 WaitForChecked(elements.GetIsOpenCheckBox());
                 WaitForChecked(elements.GetIsIdleCheckBox());
             }
@@ -670,20 +667,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void WaitForTipOpened()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                WaitForUnchecked(elements.GetIsIdleCheckBox());
-            }
             WaitForChecked(elements.GetIsOpenCheckBox());
             WaitForChecked(elements.GetIsIdleCheckBox());
         }
 
         private void WaitForTipClosed()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                WaitForUnchecked(elements.GetIsIdleCheckBox());
-            }
             WaitForUnchecked(elements.GetIsOpenCheckBox());
             WaitForChecked(elements.GetIsIdleCheckBox());
         }
@@ -990,29 +979,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private bool WaitForCheckBoxUpdated(CheckBox checkBox, ToggleState state, double millisecondsTimeout, bool throwOnError)
         {
-            Log.Comment(checkBox.Name + " Checked: " + checkBox.ToggleState);
-            if (checkBox.ToggleState == state)
+            using (UIEventWaiter waiter = checkBox.GetToggledWaiter())
             {
-                return true;
-            }
-            else
-            {
-                Log.Comment("Waiting for toggle state to change");
-                checkBox.GetToggledWaiter().TryWait(TimeSpan.FromMilliseconds(millisecondsTimeout));
-            }
-            if (checkBox.ToggleState != state)
-            {
-                Log.Warning(checkBox.Name + " value never changed");
-                if (throwOnError)
+                Log.Comment(checkBox.Name + " Checked: " + checkBox.ToggleState);
+                if (checkBox.ToggleState == state)
                 {
-                    throw new WaiterException();
+                    return true;
                 }
                 else
                 {
-                    return false;
+                    Log.Comment("Waiting for toggle state to change to {0} for {1}ms", state, millisecondsTimeout);
+                    waiter.TryWait(TimeSpan.FromMilliseconds(millisecondsTimeout));
                 }
+                if (checkBox.ToggleState != state)
+                {
+                    Log.Warning(checkBox.Name + " value never changed");
+                    if (throwOnError)
+                    {
+                        throw new WaiterException();
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                return true;
             }
-            return true;
         }
 
         private int WaitForOffsetUpdated(
