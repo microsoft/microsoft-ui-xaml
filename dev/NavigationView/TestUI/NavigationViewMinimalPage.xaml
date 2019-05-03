@@ -9,14 +9,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
+<!-- This page contains a NavigationView control that is in LeftMinimal mode on initial load -->
     <Grid>
         <muxcontrols:NavigationView x:Name="NavView" AutomationProperties.Name="NavView" AutomationProperties.AutomationId="NavView"
                                     IsBackEnabled="True" Header="Minimal Test Page" PaneDisplayMode="LeftMinimal">
-            <muxcontrols:NavigationView.MenuItems>
-                <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
-                <muxcontrols:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
-            </muxcontrols:NavigationView.MenuItems>
             <StackPanel>
                 <TextBlock x:Name="NavViewActiveVisualStatesResult" AutomationProperties.Name="NavViewActiveVisualStatesResult"/>
                 <Button x:Name="GetNavViewActiveVisualStates" AutomationProperties.Name="GetNavViewActiveVisualStates" Content="GetNavViewActiveVisualStates" Click="GetNavViewActiveVisualStates_Click"/>

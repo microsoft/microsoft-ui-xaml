@@ -88,7 +88,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewIsPaneOpenPage.xaml.cs">
       <DependentUpon>NavigationViewIsPaneOpenPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewMinimalPage.xaml.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewMinimalPage.xaml.cs">
+     <DependentUpon>NavigationViewMinimalPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewStretchPage.xaml.cs">
       <DependentUpon>NavigationViewStretchPage.xaml</DependentUpon>
     </Compile>
@@ -121,11 +123,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewTopNavStorePage.xaml.cs">
       <DependentUpon>NavigationViewTopNavStorePage.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="D:\microsoft-ui-xaml\dev\NavigationView\TestUI\NavigationViewMinimalPage.xaml.cs">
-      <DependentUpon>NavigationViewMinimalPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

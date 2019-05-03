@@ -3810,14 +3810,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Navigation Minimal Test" }))
             {
                 Log.Comment("Click on ToggleButton");
-                Button navButton = new Button(FindElement.ById("TogglePaneButton"));
-                navButton.Invoke();
-                Wait.ForIdle();
+                FindElement.ById<Button>("TogglePaneButton").InvokeAndWait();
 
                 Log.Comment("Get NavView Active VisualStates");
-                var getNavViewActiveVisualStatesButton = new Button(FindElement.ByName("GetNavViewActiveVisualStates"));
-                getNavViewActiveVisualStatesButton.Invoke();
-                Wait.ForIdle();
+                FindElement.ByName<Button>("GetNavViewActiveVisualStates").InvokeAndWait();
 
                 const string visualStateName = "MinimalWithBackButton";
                 var result = new TextBlock(FindElement.ByName("NavViewActiveVisualStatesResult"));
