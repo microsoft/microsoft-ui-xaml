@@ -107,7 +107,7 @@
     <Import Project="..\MenuFlyout\MenuFlyout.vcxitems" Label="Shared" />
     <Import Project="..\TeachingTip\TeachingTip.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' and $(BuildingWithBuildExe) != 'true' And $(UseInsiderSDK) == 'true'" />
+    <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' and $(UseInsiderSDK) == 'true'" />
     <Import Project="..\TabView\TabView.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   </ImportGroup>
   <ItemGroup>

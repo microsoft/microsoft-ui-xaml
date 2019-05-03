@@ -14,7 +14,7 @@ class TabViewTabClosingEventArgs :
     public winrt::implementation::TabViewTabClosingEventArgsT<TabViewTabClosingEventArgs>
 {
 public:
-    TabViewTabClosingEventArgs(winrt::IInspectable item) { m_item = item; }
+    TabViewTabClosingEventArgs(winrt::IInspectable const& item) { m_item = item; }
 
     bool Cancel() { return m_cancel; }
     void Cancel(bool value) { m_cancel = value; }
@@ -33,17 +33,16 @@ class TabView :
 
 public:
     TabView();
-    ~TabView() {}
 
     // IFrameworkElement
     void OnApplyTemplate();
 
     // IUIElement
-    virtual winrt::AutomationPeer OnCreateAutomationPeer();
+    winrt::AutomationPeer OnCreateAutomationPeer();
 
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    void CloseTab(winrt::TabViewItem item);
+    void CloseTab(winrt::TabViewItem const& item);
 
     //IItemsControlOverrides
     void OnItemsChanged(winrt::IInspectable const& item);
@@ -59,8 +58,7 @@ private:
     void UpdateTabContent();
     void UpdateTabWidths();
 
-    bool m_isTabClosing{ false };
-    int m_indexToSelect{ 0 };
+    std::optional<int> m_indexToSelectOnSelectionChanged;
 
     tracker_ref<winrt::ContentPresenter> m_tabContentPresenter{ this };
     tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ this };

@@ -9,8 +9,7 @@ class SharedHelpers
 {
 public:
     static bool IsAnimationsEnabled();
-    static winrt::IInspectable FindResourceOrNull(const std::wstring_view& resource, const winrt::ResourceDictionary& resources);
-    static winrt::IInspectable FindResource(const std::wstring_view& resource, const winrt::ResourceDictionary& resources, const winrt::IInspectable& defaultValue);
+    static winrt::IInspectable FindResource(const std::wstring_view& resource, const winrt::ResourceDictionary& resources, const winrt::IInspectable& defaultValue = nullptr);
     static bool IsInDesignMode();
     static bool IsInDesignModeV1();
     static bool IsInDesignModeV2();

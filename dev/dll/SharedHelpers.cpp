@@ -451,11 +451,6 @@ bool SharedHelpers::DoRectsIntersect(
     return doIntersect;
 }
 
-winrt::IInspectable SharedHelpers::FindResourceOrNull(const std::wstring_view& resource, const winrt::ResourceDictionary& resources)
-{
-    return FindResource(resource, resources, nullptr);
-}
-
 winrt::IInspectable SharedHelpers::FindResource(const std::wstring_view& resource, const winrt::ResourceDictionary& resources, const winrt::IInspectable& defaultValue)
 {
     auto boxedResource = box_value(resource);

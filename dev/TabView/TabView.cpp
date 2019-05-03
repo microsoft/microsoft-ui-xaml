@@ -42,14 +42,9 @@ void TabView::OnApplyTemplate()
     }
 }
 
-void TabView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    winrt::IDependencyProperty property = args.Property();
-
-    if (property == s_TabWidthModeProperty)
-    {
-        UpdateTabWidths();
-    }
+    UpdateTabWidths();
 }
 
 winrt::AutomationPeer TabView::OnCreateAutomationPeer()
@@ -99,15 +94,16 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
 {
     if (auto args = item.as< winrt::IVectorChangedEventArgs>())
     {
-        if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved && Items().Size() > 0)
+        int numItems = (int)Items().Size();
+        if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved && numItems > 0)
         {
             if (SelectedIndex() == (int32_t)args.Index())
             {
                 // Find the closest tab to select instead.
                 int startIndex = (int)args.Index();
-                if (startIndex >= (int)Items().Size())
+                if (startIndex >= numItems)
                 {
-                    startIndex = (int)Items().Size() - 1;
+                    startIndex = numItems - 1;
                 }
                 int index = startIndex;
 
@@ -118,14 +114,13 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
                     if (nextItem && nextItem.IsEnabled() && nextItem.Visibility() == winrt::Visibility::Visible)
                     {
                         // We need to wait until OnSelectionChanged fires to change the selection, otherwise it will get lost.
-                        m_isTabClosing = true;
-                        m_indexToSelect = index;
+                        m_indexToSelectOnSelectionChanged = std::optional(index);
                         break;
                     }
 
                     // try the next item
                     index++;
-                    if (index >= (int)Items().Size())
+                    if (index >= numItems)
                     {
                         index = 0;
                     }
@@ -141,10 +136,10 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
 
 void TabView::OnSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
 {
-    if (m_isTabClosing)
+    if (m_indexToSelectOnSelectionChanged)
     {
-        m_isTabClosing = false;
-        SelectedItem(Items().GetAt(m_indexToSelect));
+        SelectedItem(Items().GetAt(m_indexToSelectOnSelectionChanged.value()));
+        m_indexToSelectOnSelectionChanged = {};
     }
 
     UpdateTabContent();
@@ -171,7 +166,7 @@ void TabView::UpdateTabContent()
     }
 }
 
-void TabView::CloseTab(winrt::TabViewItem container)
+void TabView::CloseTab(winrt::TabViewItem const& container)
 {
     if (auto item = ItemFromContainer(container))
     {
@@ -208,29 +203,22 @@ void TabView::OnScrollIncreaseClick(const winrt::IInspectable& sender, const win
 
 void TabView::UpdateTabWidths()
 {
-    if (TabWidthMode() == winrt::TabViewWidthMode::SizeToContent)
+    double tabWidth = DoubleUtil::NaN;
+
+    if (TabWidthMode() == winrt::TabViewWidthMode::Fixed)
     {
-        for (int i = 0; i < (int)(Items().Size()); i++)
-        {
-            auto container = ContainerFromItem(Items().GetAt(i)).as<winrt::ListViewItem>();
-            if (container)
-            {
-                container.Width(DoubleUtil::NaN);
-            }
-        }
-    }
-    else
-    {
+        // Tabs should all be the same size, proportional to the amount of space.
         double minTabWidth = unbox_value<double>(SharedHelpers::FindResource(c_tabViewItemMinWidthName, winrt::Application::Current().Resources(), box_value(c_tabMinimumWidth)));
         double maxTabWidth = unbox_value<double>(SharedHelpers::FindResource(c_tabViewItemMaxWidthName, winrt::Application::Current().Resources(), box_value(c_tabMaximumWidth)));
 
-        double tabWidth = maxTabWidth;
         if (auto scrollViewer = m_scrollViewer.get())
         {
+            // Calculate the proportional width of each tab given the width of the ScrollViewer.
             double padding = Padding().Left + Padding().Right;
             double tabWidthForScroller = (scrollViewer.ActualWidth() - padding) / (double)(Items().Size());
             tabWidth = std::min(std::max(tabWidthForScroller, minTabWidth), maxTabWidth);
 
+            // If the min tab width causes the ScrollViewer to scroll, show the increase/decrease buttons.
             auto decreaseButton = m_scrollDecreaseButton.get();
             auto increaseButton = m_scrollIncreaseButton.get();
             if (decreaseButton && increaseButton)
@@ -247,14 +235,14 @@ void TabView::UpdateTabWidths()
                 }
             }
         }
+    }
 
-        for (int i = 0; i < (int)(Items().Size()); i++)
+    for (auto item : Items())
+    {
+        // Set the calculated width on each tab.
+        if (auto container = ContainerFromItem(item).as<winrt::ListViewItem>())
         {
-            auto container = ContainerFromItem(Items().GetAt(i)).as<winrt::ListViewItem>();
-            if (container)
-            {
-                container.Width(tabWidth);
-            }
+            container.Width(tabWidth);
         }
     }
 }

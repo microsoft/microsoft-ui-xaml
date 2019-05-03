@@ -25,7 +25,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TabViewItem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TabViewAutomationPeer.cpp" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)TabView.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
@@ -37,6 +37,5 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)TabView.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)TabViewAutomationPeer.idl" />
   </ItemGroup>
 </Project>

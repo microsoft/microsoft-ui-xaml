@@ -32,7 +32,7 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnCanCloseTabsPropertyChanged));
+                nullptr);
     }
     if (!s_LeftCustomContentProperty)
     {
@@ -43,7 +43,7 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnLeftCustomContentPropertyChanged));
+                nullptr);
     }
     if (!s_LeftCustomContentTemplateProperty)
     {
@@ -54,7 +54,7 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnLeftCustomContentTemplatePropertyChanged));
+                nullptr);
     }
     if (!s_RightCustomContentProperty)
     {
@@ -65,7 +65,7 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnRightCustomContentPropertyChanged));
+                nullptr);
     }
     if (!s_RightCustomContentTemplateProperty)
     {
@@ -76,7 +76,7 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnRightCustomContentTemplatePropertyChanged));
+                nullptr);
     }
     if (!s_TabWidthModeProperty)
     {
@@ -101,52 +101,12 @@ void TabViewProperties::ClearProperties()
     s_TabWidthModeProperty = nullptr;
 }
 
-void TabViewProperties::OnCanCloseTabsPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TabView>();
-    winrt::get_self<TabView>(owner)->OnPropertyChanged(args);
-}
-
-void TabViewProperties::OnLeftCustomContentPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TabView>();
-    winrt::get_self<TabView>(owner)->OnPropertyChanged(args);
-}
-
-void TabViewProperties::OnLeftCustomContentTemplatePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TabView>();
-    winrt::get_self<TabView>(owner)->OnPropertyChanged(args);
-}
-
-void TabViewProperties::OnRightCustomContentPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TabView>();
-    winrt::get_self<TabView>(owner)->OnPropertyChanged(args);
-}
-
-void TabViewProperties::OnRightCustomContentTemplatePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TabView>();
-    winrt::get_self<TabView>(owner)->OnPropertyChanged(args);
-}
-
 void TabViewProperties::OnTabWidthModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::TabView>();
-    winrt::get_self<TabView>(owner)->OnPropertyChanged(args);
+    winrt::get_self<TabView>(owner)->OnTabWidthModePropertyChanged(args);
 }
 
 void TabViewProperties::CanCloseTabs(bool value)
