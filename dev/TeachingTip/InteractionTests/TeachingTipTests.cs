@@ -29,7 +29,7 @@ using static Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TeachingTipTestP
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-    [TestClass]
+    //[TestClass] TODO: Re-enable once issue #643 is fixed.
     public class TeachingTipTests
     {
         // The longest observed animated view change took 5.4 seconds, so 9 seconds is picked
