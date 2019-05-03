@@ -3817,7 +3817,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 const string visualStateName = "MinimalWithBackButton";
                 var result = new TextBlock(FindElement.ByName("NavViewActiveVisualStatesResult"));
-                Verify.IsTrue(result.GetText().Contains(visualStateName), "Active VisualStates should not include " + visualStateName);
+                Verify.IsTrue(result.GetText().Contains(visualStateName), "Active VisualStates should include " + visualStateName);
             }
         }
 
