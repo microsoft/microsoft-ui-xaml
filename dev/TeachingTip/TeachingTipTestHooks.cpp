@@ -272,3 +272,12 @@ double TeachingTipTestHooks::GetHorizontalOffset(const winrt::TeachingTip& teach
     }
     return 0.0;
 }
+
+winrt::Popup TeachingTipTestHooks::GetPopup(const winrt::TeachingTip& teachingTip)
+{
+    if (teachingTip)
+    {
+        return winrt::get_self<TeachingTip>(teachingTip)->m_popup.get();
+    }
+    return nullptr;
+}
