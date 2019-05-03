@@ -26,6 +26,8 @@ runtimeclass TeachingTipTestHooks
     static Double GetVerticalOffset(MU_XC_NAMESPACE.TeachingTip teachingTip);
     static Double GetHorizontalOffset(MU_XC_NAMESPACE.TeachingTip teachingTip);
 
+    static Windows.UI.Xaml.Controls.Primitives.Popup GetPopup(MU_XC_NAMESPACE.TeachingTip teachingTip);
+
     static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TeachingTip, Object> OpenedStatusChanged;
     static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TeachingTip, Object> IdleStatusChanged;
     static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TeachingTip, Object> OffsetChanged;

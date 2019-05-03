@@ -245,7 +245,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             public bool ShouldVisitPropertyValuePair(string propertyName, string value)
             {
                 string v = _knownPropertyValueDict.ContainsKey(propertyName) ? _knownPropertyValueDict[propertyName] : VisualTreeDumper.ValueNULL;
-                return !(v.Equals(value) || (string.IsNullOrEmpty(value ) && value.StartsWith("Exception")));
+                return !(v.Equals(value) || (!string.IsNullOrEmpty(value) && value.StartsWith("Exception")));
             }
 
             public bool ShouldVisitElement(string elementName)

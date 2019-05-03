@@ -10,7 +10,7 @@
     AutomationProperties.AutomationId="MainPage">
 
     <Page.Resources>
-        <local:NavigateToTestCommand x:Key="NavigateToTestCommand"/>
+        <local:NavigateToTestCommand x:Key="NavigateToTestCommand" Frame="{x:Bind Frame}"/>
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -31,13 +31,29 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Button
-                        Content="{Binding Name}"
-                        CommandParameter="{Binding}"
-                        Command="{StaticResource NavigateToTestCommand}"
-                        AutomationProperties.Name="{Binding Name}"
-                        MinWidth="250"
-                        Margin="2"
-                        />
+                            CommandParameter="{Binding}"
+                            Command="{StaticResource NavigateToTestCommand}"
+                            AutomationProperties.Name="{Binding AutomationName}"
+                            FontSize="20"
+                            Margin="0,0,12,12"
+                            VerticalAlignment="Stretch">
+                            
+                            <Grid Width="250">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="36"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Image
+                                    Grid.Column="0"
+                                    Source="{Binding Icon}"/>
+
+                                <TextBlock
+                                    Grid.Column="2"
+                                    Text="{Binding Name}"/>
+                            </Grid>
+
+                        </Button>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

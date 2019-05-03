@@ -21,6 +21,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TeachingTipClosedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TeachingTipClosingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TeachingTipTemplateSettings.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip.xaml">
@@ -47,10 +48,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipClosedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipClosingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipTemplateSettings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)TeachingTip.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)TeachingTipAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.idl" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />

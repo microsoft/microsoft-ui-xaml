@@ -115,7 +115,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
             throw new NotImplementedException();
         }
 
-        protected void OnDataSourceChanged(NotifyCollectionChangedEventArgs args)
+        protected void OnItemsSourceChanged(NotifyCollectionChangedEventArgs args)
         {
             CollectionChanged(this, args);
         }

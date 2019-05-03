@@ -29,7 +29,7 @@ using static Windows.UI.Xaml.Tests.MUXControls.InteractionTests.TeachingTipTestP
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-    [TestClass]
+    //[TestClass] TODO: Re-enable once issue #643 is fixed.
     public class TeachingTipTests
     {
         // The longest observed animated view change took 5.4 seconds, so 9 seconds is picked
@@ -464,6 +464,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
         }
+
+        [TestMethod]
+        public void VerifyTheming()
+        {
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
+
+                    SetActionButtonContentTo("Small text");
+
+                    ScrollTargetIntoView();
+                    OpenTeachingTip();
+
+                    var themingComboBox = elements.GetThemingComboBox();
+                    themingComboBox.SelectItemByName("Default");
+
+                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
+                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
+
+                    // Change to Dark, make sure the font switches to light
+                    themingComboBox.SelectItemByName("Dark");
+
+                    Verify.AreEqual("#FFFFFFFF", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be white");
+                    Verify.AreEqual("#FFFFFFFF", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be white");
+
+                    // Change to Light, make sure the font switches to dark
+                    themingComboBox.SelectItemByName("Light");
+
+                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
+                    Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
+                }
+            }
+        }
+
 
         private void TestAutoPlacementForWindowOrScreenBounds(Vector4 targetRect, bool forWindowBounds)
         {
@@ -919,6 +956,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     break;
             }
             elements.GetSetAutomationNameButton().Invoke();
+        }
+
+        private void SetActionButtonContentTo(string option)
+        {
+            var actionButtonComboBox = elements.GetActionButtonContentComboBox();
+            actionButtonComboBox.SelectItemByName(option);
+            elements.GetSetActionButtonContentButton().Invoke();
         }
 
         // The test UI has a list box which the teaching tip populates with messages about which events have fired and other useful

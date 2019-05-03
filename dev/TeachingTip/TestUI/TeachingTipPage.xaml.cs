@@ -53,6 +53,7 @@ namespace MUXControlsTestApp
         TipLocation tipLocation = TipLocation.VisualTree;
         FrameworkElement TeachingTipInResourcesRoot;
         FrameworkElement TeachingTipInVisualTreeRoot;
+        CheckBox CurrentCancelClosesCheckBox;
 
         public TeachingTipPage()
         {
@@ -109,6 +110,7 @@ namespace MUXControlsTestApp
         {
             this.TipHeightTextBlock.Text = ((FrameworkElement)sender).ActualHeight.ToString();
             this.TipWidthTextBlock.Text = ((FrameworkElement)sender).ActualWidth.ToString();
+            NotifyPropertyChanged("ActionButton");
         }
 
         private void TeachingTipTestHooks_OffsetChanged(TeachingTip sender, object args)
@@ -370,6 +372,7 @@ namespace MUXControlsTestApp
                 button.Content = "A:Button in a Button!";
                 getTeachingTip().ActionButtonContent = button;
             }
+            NotifyPropertyChanged("ActionButton");
         }
 
         public void OnSetCloseButtonContentButtonClicked(object sender, RoutedEventArgs args)
@@ -659,6 +662,9 @@ namespace MUXControlsTestApp
                     }
                     break;
             }
+
+            CurrentCancelClosesCheckBox = getCancelClosesInTeachingTip();
+            NotifyPropertyChanged("CurrentCancelClosesCheckBox");
         }
 
         public void OnShowAfterDelayButtonClicked(object sender, RoutedEventArgs args)
@@ -856,7 +862,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private FrameworkElement getCancelClosesInTeachingTip()
+        private CheckBox getCancelClosesInTeachingTip()
         {
             switch(tipLocation)
             {
@@ -889,6 +895,46 @@ namespace MUXControlsTestApp
                     NotifyPropertyChanged();
                 }
             }
+        }
+
+        private void OnPageThemeComboBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selectedItem = ((ComboBoxItem)PageThemeComboBox.SelectedItem);
+            if (String.Equals(selectedItem?.Content, "Light"))
+            {
+                RequestedTheme = ElementTheme.Default;
+            }
+            else if (String.Equals(selectedItem?.Content, "Dark"))
+            {
+                RequestedTheme = ElementTheme.Dark;
+            }
+            else
+            {
+                RequestedTheme = ElementTheme.Default;
+            }
+        }
+
+        public Button ActionButton
+        {
+            get
+            {
+                var popupChild = TeachingTipTestHooks.GetPopup(getTeachingTip())?.Child as FrameworkElement;
+                if (popupChild != null)
+                {
+                    return (Button)FindVisualChildByName(popupChild, "ActionButton");
+                }
+                return null;
+            }
+        }
+
+        public string BrushToString(Brush brush)
+        {
+            if (brush is SolidColorBrush solidBrush)
+            {
+                return String.Format("#{0:X2}{1:X2}{2:X2}{3:X2}", solidBrush.Color.A, solidBrush.Color.R, solidBrush.Color.G, solidBrush.Color.B);
+            }
+
+            return "Unknown";
         }
     }
 }

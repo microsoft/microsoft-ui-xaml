@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
+#include "ScrollerTrace.h"
 #include "OffsetsChange.h"
 
 OffsetsChange::OffsetsChange(

@@ -788,11 +788,11 @@ namespace MUXControlsTestApp
 
                     if (reset)
                     {
-                        OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
+                        OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
                     }
                     else
                     {
-                        OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                        OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                             NotifyCollectionChangedAction.Add,
                             oldStartingIndex: -1,
                             oldItemsCount: 0,
@@ -820,11 +820,11 @@ namespace MUXControlsTestApp
 
                     if (reset)
                     {
-                        OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
+                        OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
                     }
                     else
                     {
-                        OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                        OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                             NotifyCollectionChangedAction.Remove,
                             oldStartingIndex: index,
                             oldItemsCount: count,
@@ -869,11 +869,11 @@ namespace MUXControlsTestApp
 
                     if (reset)
                     {
-                        OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
+                        OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
                     }
                     else
                     {
-                        OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                        OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                             NotifyCollectionChangedAction.Replace,
                             oldStartingIndex: index,
                             oldItemsCount: oldCount,
@@ -905,7 +905,7 @@ namespace MUXControlsTestApp
                         Inner.Insert(to, value);
                     }
 
-                    OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
+                    OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
                 }
                 catch (Exception ex)
                 {
