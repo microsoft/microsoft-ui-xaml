@@ -7,6 +7,7 @@
        in the WinUI repo or the Windows repo, we can just use the standard VS properties we've been using to date. -->
   <PropertyGroup Condition="$(BuildingWithBuildExe) != 'true'">
     <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' >= '16.0'">v142</PlatformToolset>
     <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     <CppTargetsFilePath>$(VCTargetsPath)\Microsoft.Cpp.targets</CppTargetsFilePath>
