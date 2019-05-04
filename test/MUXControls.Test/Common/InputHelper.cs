@@ -68,7 +68,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         public static void LeftClick(UIObject obj)
         {
             Log.Comment("Left-click on {0}.", obj.GetIdentifier());
-            using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Tap))
+            using (var waiter = GetWaiterForInputEvent(obj, InputEvent.LeftClick))
             {
                 obj.Click(PointerButtons.Primary);
             }
@@ -78,7 +78,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         public static void LeftClick(UIObject obj, double offsetX, double offsetY)
         {
             Log.Comment("Left-click on {0}, at ({1}, {2}).", obj.GetIdentifier(), offsetX, offsetY);
-            using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Tap))
+            using (var waiter = GetWaiterForInputEvent(obj, InputEvent.LeftClick))
             {
                 obj.Click(PointerButtons.Primary, offsetX, offsetY);
             }

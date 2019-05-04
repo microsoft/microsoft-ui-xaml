@@ -642,7 +642,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
             {
-                elements.GetLstTeachingTipEvents().Tap();
+                InputHelper.LeftClick(elements.GetActionButtonContentComboBox());
                 WaitForTipClosed();
             }
         }
@@ -651,7 +651,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
             {
-                InputHelper.Tap(elements.GetTeachingTipAlternateCloseButton());
+                InputHelper.LeftClick(elements.GetTeachingTipAlternateCloseButton());
                 WaitForTipClosed();
             }
         }
@@ -660,7 +660,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
             {
-                InputHelper.Tap(elements.GetTeachingTipCloseButton());
+                InputHelper.LeftClick(elements.GetTeachingTipCloseButton());
                 WaitForTipClosed();
             }
         }
