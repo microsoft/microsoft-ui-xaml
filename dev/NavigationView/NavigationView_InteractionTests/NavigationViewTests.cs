@@ -3803,6 +3803,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("NavViewTestSuite", "D")]
+        public void EnsureDisplayModeGroupUpdatesOnPaneClosedToMinimalWithBackButton()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Navigation Minimal Test" }))
+            {
+                Log.Comment("Click on ToggleButton");
+                FindElement.ById<Button>("TogglePaneButton").InvokeAndWait();
+
+                Log.Comment("Get NavView Active VisualStates");
+                FindElement.ByName<Button>("GetNavViewActiveVisualStates").InvokeAndWait();
+
+                const string visualStateName = "MinimalWithBackButton";
+                var result = new TextBlock(FindElement.ByName("NavViewActiveVisualStatesResult"));
+                Verify.IsTrue(result.GetText().Contains(visualStateName), "Active VisualStates should include " + visualStateName);
+            }
+        }
+
         // Test for issue 450 https://github.com/Microsoft/microsoft-ui-xaml/issues/450
         [TestMethod]
         [TestProperty("TestSuite", "D")]
