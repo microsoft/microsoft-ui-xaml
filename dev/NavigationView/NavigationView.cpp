@@ -2584,6 +2584,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     if (property == s_IsPaneOpenProperty)
     {
         OnIsPaneOpenChanged();
+        UpdateVisualStateForDisplayModeGroup(DisplayMode());
     }
     else if (property == s_CompactModeThresholdWidthProperty ||
         property == s_ExpandedModeThresholdWidthProperty)
