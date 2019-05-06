@@ -227,7 +227,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("Unchecked", toggleStateOnClickTextBlock.DocumentText);
 
                 Log.Comment("Click primary button to check button");
-                ClickPrimaryButton(splitButton);
+                using (var toggleStateWaiter = new PropertyChangedEventWaiter(splitButton, Scope.Element, UIProperty.Get("Toggle.ToggleState")))
+                {
+                    ClickPrimaryButton(splitButton);
+                    Verify.IsTrue(toggleStateWaiter.TryWait(TimeSpan.FromSeconds(1)), "Waiting for the Toggle.ToggleState event should succeed");
+                }
 
                 Verify.AreEqual("Checked", toggleStateTextBlock.DocumentText);
                 Verify.AreEqual("Checked", toggleStateOnClickTextBlock.DocumentText);

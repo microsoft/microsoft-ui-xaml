@@ -136,7 +136,7 @@ private:
     void InvalidateArrangeForLayout(winrt::Layout const& sender, winrt::IInspectable const& args);
 
     winrt::VirtualizingLayoutContext GetLayoutContext();
-    bool IsProcessingCollectionChange() const { return m_processingDataSourceChange != nullptr; }
+    bool IsProcessingCollectionChange() const { return m_processingItemsSourceChange != nullptr; }
 
     winrt::IIterable<winrt::DependencyObject> CreateChildrenInTabFocusOrderIterable();
 
@@ -152,8 +152,8 @@ private:
 
     tracker_ref<winrt::VirtualizingLayoutContext> m_layoutContext{ this };
     tracker_ref<winrt::IInspectable> m_layoutState{ this };
-    // Value is different from null only while we are on the OnDataSourceChanged call stack.
-    tracker_ref<winrt::NotifyCollectionChangedEventArgs> m_processingDataSourceChange{ this };
+    // Value is different from null only while we are on the OnItemsSourceChanged call stack.
+    tracker_ref<winrt::NotifyCollectionChangedEventArgs> m_processingItemsSourceChange{ this };
 
     winrt::Size m_lastAvailableSize{};
     bool m_isLayoutInProgress{ false };

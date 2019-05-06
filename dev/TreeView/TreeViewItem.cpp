@@ -87,7 +87,7 @@ void TreeViewItem::OnDrop(winrt::DragEventArgs const& e)
                         if (treeViewList->IsFlatIndexValid(nodeIndex))
                         {
                             treeViewList->RemoveNodeFromParent(node);
-                            winrt::get_self<TreeViewNodeVector>(droppedOnNode.Children())->AppendCore(node);
+                            winrt::get_self<TreeViewNodeVector>(droppedOnNode.Children())->Append(node);
                         }
                     }
 
@@ -104,10 +104,10 @@ void TreeViewItem::OnDrop(winrt::DragEventArgs const& e)
 
                     if (droppedNode != droppedOnNode)
                     {
-                        winrt::get_self<TreeViewNodeVector>(droppedNode.Parent().Children())->RemoveAtCore(removeIndex);
+                        winrt::get_self<TreeViewNodeVector>(droppedNode.Parent().Children())->RemoveAt(removeIndex);
 
                         // Append the dragged dropped item as a child of the node it was dropped onto
-                        winrt::get_self<TreeViewNodeVector>(droppedOnNode.Children())->AppendCore(droppedNode);
+                        winrt::get_self<TreeViewNodeVector>(droppedOnNode.Children())->Append(droppedNode);
 
                         // If not set to true then the Reorder code of listview will override what is being done here.
                         args.Handled(true);
@@ -558,8 +558,8 @@ void TreeViewItem::ReorderItems(const winrt::ListView& listControl, const winrt:
 
     auto parentNode = targetNode.Parent();
     auto children = winrt::get_self<TreeViewNodeVector>(parentNode.Children());
-    children->RemoveAtCore(childIndex);
-    children->InsertAtCore(childIndex + positionModifier, targetNode);
+    children->RemoveAt(childIndex);
+    children->InsertAt(childIndex + positionModifier, targetNode);
     listControl.UpdateLayout();
 
     auto treeView = AncestorTreeView();

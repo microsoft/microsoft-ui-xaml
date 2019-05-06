@@ -45,5 +45,15 @@ namespace MUXControls.ReleaseTest
                 Verify.AreEqual(textBlock.DocumentText, "Loaded");
             }
         }
+
+        [TestMethod]
+        public void CompactDictionaryNoCrashTest()
+        {
+            using (var setup = new TestSetupHelper("CompactDictionary Tests"))
+            {
+                var textBlock = new TextBlock(FindElement.ByName("CompactTextBox"));
+                Verify.IsNotNull(textBlock);
+            }
+        }
     }
 }

@@ -55,6 +55,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScrollerWithSimpleScrollControllersPage.xaml.cs">
       <DependentUpon>ScrollerWithSimpleScrollControllersPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)BiDirectionalScrollController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionScrollController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollerTestHooksHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ScrollerAccessibilityPage.xaml">
@@ -131,6 +134,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)\Themes\AdditionalStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
 </Project>

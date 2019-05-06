@@ -820,6 +820,7 @@ void TeachingTip::IsOpenChangedToOpen()
         {
             if (!popup.IsOpen())
             {
+                UpdatePopupRequestedTheme();
                 popup.Child(m_rootElement.get());
                 if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
                 {
@@ -2252,4 +2253,24 @@ double TeachingTip::GetVerticalOffset()
         return popup.VerticalOffset();
     }
     return 0.0;
+}
+
+void TeachingTip::UpdatePopupRequestedTheme()
+{
+    // The way that TeachingTip reparents its content tree breaks ElementTheme calculations. Hook up a listener to
+    // ActualTheme on the TeachingTip and then set the Popup's RequestedTheme to match when it changes.
+
+    if (winrt::IFrameworkElement6 frameworkElement6 = *this)
+    {
+        if (!m_actualThemeChangedRevoker)
+        {
+            m_actualThemeChangedRevoker = frameworkElement6.ActualThemeChanged(winrt::auto_revoke,
+                [this](auto&&, auto&&) { UpdatePopupRequestedTheme(); });
+        }
+
+        if (auto && popup = m_popup.get())
+        {
+            popup.RequestedTheme(frameworkElement6.ActualTheme());
+        }
+    }
 }

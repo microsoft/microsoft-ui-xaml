@@ -55,7 +55,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Classification", "Integration")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("MUXControlsTestEnabledForPhone", "True")]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
@@ -68,7 +68,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void DisplayModeTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -125,7 +125,48 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
+        public void VerifyPaneIsClosedWhenClickingOnSelectedItem()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var displayModeTextBox = new TextBlock(FindElement.ByName("DisplayModeTextBox"));
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+
+                Log.Comment("Test PaneDisplayMode=LeftMinimal");
+                panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                Log.Comment("Click on ToggleButton");
+                Button navButton = new Button(FindElement.ById("TogglePaneButton"));
+                navButton.Invoke();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
+
+                Log.Comment("Select Apps");
+                UIObject appsItem = FindElement.ByName("Apps");
+                appsItem.Click();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                Log.Comment("Click on ToggleButton");
+                navButton.Invoke();
+                Wait.ForIdle();
+
+                Log.Comment("Click on SelectedItem Apps");
+                appsItem.Click();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void PaneDisplayModeLeftLeftCompactLeftMinimalTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -257,7 +298,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void MenuItemInvokedTest()
         {
             var testScenarios = RegressionTestScenario.BuildTopNavRegressionTestScenarios();
@@ -294,7 +335,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void PaneOpenCloseTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -343,7 +384,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod] // Bug 18159731
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void PaneOpenForceCloseTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -393,7 +434,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void PaneOpenCloseTestPartTwo() // Otherwise this test will exceed the 30 second timeout in catgates chk runs
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -447,7 +488,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void IsSettingsVisibleTest()
         {
             var testScenarios = RegressionTestScenario.BuildAllRegressionTestScenarios();
@@ -476,7 +517,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void IsPaneToggleButtonVisibleTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -503,7 +544,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void AlwaysShowHeaderTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -540,7 +581,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void PaneFooterContentTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -551,7 +592,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void AddRemoveItemTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -587,7 +628,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void AddRemoveOriginalItemTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -612,7 +653,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void VerifyNavigationViewItemIsSelectedWorks()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
@@ -630,7 +671,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void ItemSourceTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
@@ -656,7 +697,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void VerifyNavigationViewItemResponseToClickAfterBeingMovedBetweenFrames()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
@@ -686,7 +727,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void ForceIsPaneOpenToFalseOnLeftNavTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Navigation IsPaneOpen Test" }))
@@ -705,7 +746,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void DisabledItemTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -737,7 +778,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod] // bug 16644730
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void VerifySettingsWidthOnLeftNavMediumMode()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -760,7 +801,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void AutoSuggestBoxTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -815,7 +856,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void AutoSuggestBoxOnTopNavTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView TopNav Test" }))
@@ -841,7 +882,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void VerifyFocusNotLostWhenTabbingWithBackButtonEnabled()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView TopNav Test" }))
@@ -872,7 +913,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod] //bug 17792706
-        [TestProperty("NavViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void BackButtonPlaceHolderOnTopNavTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
@@ -915,7 +956,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void NavigationViewDensityChange()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -926,7 +967,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         //[TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         // Disabled due to: Bug 18650478: Test instability: NavigationViewTests.TitleBarTest
         public void TitleBarTest()
         {
@@ -1034,7 +1075,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void VerifyBackButtonHidesWhenInMinimalOpenState()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -1059,7 +1100,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void ArrowKeyNavigationTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -1159,7 +1200,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TabNavigationTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -1210,7 +1251,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void LeftNavigationFocusKindRevealTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -1277,7 +1318,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         // To verify two problems:
         // 1. NavigationViewItem not in overflow menu
         //      Layout doesn't know about overflow, so changing the content of NavigationViewItem may not trigger MeasureOverride
@@ -1334,7 +1375,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TopNavigationOverflowWidthLongNavItemTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
@@ -1371,7 +1412,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TopNavigationOverflowButtonTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
@@ -1409,7 +1450,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void ContentOverlayTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
@@ -1447,7 +1488,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TopPaddingTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Store Test" }))
@@ -1513,7 +1554,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         //[TestMethod]
-        //[TestProperty("NavViewTestSuite", "B")]
+        //[TestProperty("TestSuite", "B")]
         // Disabled due to: Multiple unreliable NavigationView tests #134
         public void SuppressSelectionItemInvokeTest()
         {
@@ -1573,7 +1614,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod] //bug 18033309
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TopNavigationSecondClickOnSuppressSelectionItemTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
@@ -1641,7 +1682,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TopNavigationWithAccessKeysTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
@@ -1662,7 +1703,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void LeftNavigationWithAccessKeysTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -1695,7 +1736,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TopNavigationSelectionTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
@@ -1798,7 +1839,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TopNavigationSetSelectedItemToNullInItemInvoke()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
@@ -1857,7 +1898,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void VerifyTopNavigationItemFocusVisualKindRevealTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Store Test" }))
@@ -1889,7 +1930,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void PaneTabNavigationTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -1960,7 +2001,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void HomeEndNavigationTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -2035,7 +2076,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void SelectionFollowFocusTest()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -2086,7 +2127,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void MenuItemAutomationSelectionTest()
         {
             var testScenarios = RegressionTestScenario.BuildAllRegressionTestScenarios();
@@ -2142,7 +2183,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void SettingsCanBeUnselected()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -2171,7 +2212,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // NavigationView doesn't use quirk, but we determine the version by themeresource.
         // As a workaround, we 'quirk' it for RS4 or before release. if it's RS4 or before, HeaderVisible is not related to Header().
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void HeaderIsVisibleForTargetRS4OrBelowApp()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -2196,7 +2237,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void TopNavigationOverflowButtonClickTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
@@ -2245,7 +2286,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void TopNavigationItemsAccessibilitySetTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
@@ -2284,7 +2325,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void TopNavigationMenuItemTemplateBindingTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView ItemTemplate Test" }))
@@ -2302,7 +2343,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // Bug 17512989. If we change the menu items for multiple times, the item may be not selected.
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void TopNavigationHaveCorrectSelectionWhenChangingMenuItems()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
@@ -2330,7 +2371,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void SettingsAccessibilitySetTest()
         {
             var testScenarios = RegressionTestScenario.BuildAllRegressionTestScenarios();
@@ -2354,7 +2395,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void ItemsAccessibilitySetTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -2390,7 +2431,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void ItemsSourceAccessibilitySetTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
@@ -2432,7 +2473,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void SettingsItemInvokeTest()
         {
             var testScenarios = RegressionTestScenario.BuildAllRegressionTestScenarios();
@@ -2460,7 +2501,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void SettingsItemGamepadTest()
         {
             var testScenarios = RegressionTestScenario.BuildAllRegressionTestScenarios();
@@ -2491,7 +2532,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void ScrollToMenuItemTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -2543,7 +2584,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void SystemBackTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -2594,7 +2635,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void AccTypeTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -2609,7 +2650,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void ToolTipTest() // Verify tooltips appear, and that their contents change when headers change
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -2679,7 +2720,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         //[TestMethod]
-        //[TestProperty("NavViewTestSuite", "C")]
+        //[TestProperty("TestSuite", "C")]
         // Disabled due to: Multiple unreliable NavigationView tests #134
         public void KeyboardFocusToolTipTest() // Verify tooltips appear when Keyboard focused
         {
@@ -2750,7 +2791,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void ToolTipCustomContentTest() // Verify tooltips don't appear for custom NavViewItems (split off due to CatGates timeout)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -2788,7 +2829,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void PaneOpenCloseEventsTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -2824,7 +2865,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void VerifyPaneTitlePresentAndUpdates()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -2845,7 +2886,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "C")]
+        [TestProperty("TestSuite", "C")]
         public void VerifyCustomHeaderContentTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -2867,7 +2908,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void BackRequestedTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -2893,7 +2934,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void BackToolTipTest()
         {
             if (PlatformConfiguration.IsDevice(DeviceType.Phone))
@@ -2954,7 +2995,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void LightDismissTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -3020,7 +3061,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void CheckSelectedItemEdgeCase()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "SelectedItem edge case test" }))
@@ -3035,7 +3076,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void VerifyCanCancelClosing()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -3126,7 +3167,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void VerifyLightDismissDoesntSendDuplicateEvents()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -3197,7 +3238,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void VerifyDeselectionDisabled()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -3219,7 +3260,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void EnsureClearingListIsSafe()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -3239,7 +3280,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         [TestProperty("Description", "Ensure that the NavigationView button isn't running with rs3+ themeresource on when they're off :)")]
         public void VerifyNotShouldPreserveNavigationViewRS3Behavior() // Regression test to make sure that we aren't accidentally running quirks all the time
         {
@@ -3276,7 +3317,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         [TestProperty("Description", "Ensure that the NavigationView button is rendering as expected if it's targeting RS3")]
         public void VerifyShouldPreserveNavigationViewRS3Behavior()
         {
@@ -3333,7 +3374,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         [TestProperty("Description", "Temporary bootstrapping test, can be retired once Horizontal Nav View is out of incubation")]
         public void EnsureNoCrashesInHorizontalFlipMenuItems() 
         {
@@ -3350,7 +3391,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         [TestProperty("Description", "VisualState DisplayModeGroup is decoupled from DisplayMode, and it has strong connection with PaneDisplayMode")]
         public void VerifyCorrectVisualStateWhenChangingPaneDisplayMode()
         {
@@ -3428,7 +3469,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void EnsureTopSettingsRetainsFocusAfterOrientationChanges()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -3463,7 +3504,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void EnsureDynamicSizeForPaneHeaderFooterAndCustomContent()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Stretch Test" }))
@@ -3521,7 +3562,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void VerifyHeaderContentMarginOnTopNav()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -3542,7 +3583,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void VerifyTopNavigationMinimalVisualStateOnTopNav()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -3576,7 +3617,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void EnsureLeftSettingsRetainsFocusAfterOrientationChanges()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -3615,7 +3656,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         [TestProperty("Description", "Temporary bootstrapping test, can be retired once Horizontal Nav View is out of incubation")]
         public void EnsureNoCrashesInHorizontalFlipMenuItemsSource()
         {
@@ -3629,7 +3670,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void VerifyMoreButtonIsOnlyReadOnce()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
@@ -3644,7 +3685,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void CanDoSelectionChangedOfItemTemplate()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView ItemTemplate Test" }))
@@ -3661,7 +3702,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void EnsurePaneHeaderCanBeModifiedForLeftNav()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -3671,7 +3712,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void EnsurePaneHeaderCanBeModifiedForTopNav()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -3682,7 +3723,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         //Bug 19342138: Text of navigation menu items text is lost when shrinking the width of the UWP application
         //[TestMethod]
-        //[TestProperty("NavViewTestSuite", "D")]
+        //[TestProperty("TestSuite", "D")]
         public void EnsurePaneCanBeHidden()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -3700,7 +3741,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         //Bug 19342138: Text of navigation menu items text is lost when shrinking the width of the UWP application
         //[TestMethod]
-        //[TestProperty("NavViewTestSuite", "D")]
+        //[TestProperty("TestSuite", "D")]
         public void EnsurePaneCanBeHiddenWithFixedWindowSize()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -3723,7 +3764,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void EnsureDisplayModeGroupUpdatesWhenBackButtonVisibilityChanged()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -3764,7 +3805,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // Test for issue 450 https://github.com/Microsoft/microsoft-ui-xaml/issues/450
         [TestMethod]
-        [TestProperty("NavViewTestSuite", "D")]
+        [TestProperty("TestSuite", "D")]
         public void CompactModeAutoPaneClosingTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))

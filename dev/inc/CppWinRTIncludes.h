@@ -53,7 +53,9 @@
 #include <winrt\Microsoft.UI.Private.Media.h>
 #include <winrt\Microsoft.UI.Xaml.Controls.h>
 #include <winrt\Microsoft.UI.Xaml.XamlTypeInfo.h>
+#if __has_include("winrt\Microsoft.UI.Xaml.Controls.Primitives.h")
 #include <winrt\Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
 
 #include <winrt\Microsoft.UI.Xaml.Media.h>
 #include <winrt\Microsoft.UI.Xaml.Automation.Peers.h>
@@ -108,11 +110,17 @@ namespace winrt
     using namespace ::winrt::Windows::System::Profile;
 #ifndef BUILD_WINDOWS
     using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo;
+    namespace Microsoft::UI::Private::Controls {}
     using namespace ::winrt::Microsoft::UI::Private::Controls;
+    namespace Microsoft::UI::Private::Media {}
     using namespace ::winrt::Microsoft::UI::Private::Media;
+    namespace Microsoft::UI::Xaml::Controls {}
     using namespace ::winrt::Microsoft::UI::Xaml::Controls;
+    namespace Microsoft::UI::Xaml::Controls::Primitives {}
     using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives;
+    namespace Microsoft::UI::Xaml::Media {}
     using namespace ::winrt::Microsoft::UI::Xaml::Media;
+    namespace Microsoft::UI::Xaml::Automation::Peers {}
     using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers;
 
     // using namespace will affect headers included later as well, so crack these namespaces now for convenience
@@ -367,6 +375,7 @@ namespace winrt
     using ItemAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::ItemAutomationPeer;
     using ListViewItemAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::ListViewItemAutomationPeer;
     using PatternInterface = winrt::Windows::UI::Xaml::Automation::Peers::PatternInterface;
+    using ItemsControlAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::ItemsControlAutomationPeer;
     using SelectorAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::SelectorAutomationPeer;
     using SliderAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::SliderAutomationPeer;
 
@@ -375,11 +384,7 @@ namespace winrt
     using IElementFactoryRecycleArgs = winrt::Windows::UI::Xaml::IElementFactoryRecycleArgs;
     
 
-#ifdef BUILD_WINDOWS
-    using ElementFactoryGetArgs = winrt::Windows::UI::Xaml::ElementFactoryGetArgs;
-    using ElementFactoryRecycleArgs = winrt::Windows::UI::Xaml::ElementFactoryRecycleArgs;
-    using IElementFactory = winrt::Windows::UI::Xaml::IElementFactory;
-#else
+#ifdef REPEATER_INCLUDED
     using ElementFactoryGetArgs = winrt::Microsoft::UI::Xaml::Controls::ElementFactoryGetArgs;
     using ElementFactoryRecycleArgs = winrt::Microsoft::UI::Xaml::Controls::ElementFactoryRecycleArgs;
     using IElementFactory = winrt::IInspectable;

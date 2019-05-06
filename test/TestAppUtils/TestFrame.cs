@@ -88,8 +88,9 @@ namespace MUXControlsTestApp
 
             Window.Current.SizeChanged += OnWindowSizeChanged;
 
+            // NOTE: The "BackButton" element automatically has a handler hooked up to it by Frame
+            // just by being named "BackButton"
             _backButton = (Button)GetTemplateChild("BackButton");
-            _backButton.Click += GoBackInvokerButton_Click;
 
             _goBackInvokerButton = (Button)GetTemplateChild("GoBackInvokerButton");
             _goBackInvokerButton.Click += GoBackInvokerButton_Click;
