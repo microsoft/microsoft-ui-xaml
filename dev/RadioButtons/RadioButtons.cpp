@@ -23,7 +23,7 @@ void RadioButtons::OnApplyTemplate()
     winrt::IControlProtected controlProtected{ *this };
     
     m_listView.set(GetTemplateChildT<winrt::ListView>(L"InnerListView", controlProtected));
-    if (auto listView = m_listView.get())
+    if (auto&& listView = m_listView.get())
     {
         m_listViewLoadedRevoker = listView.Loaded(winrt::auto_revoke, { this, &RadioButtons::OnListViewLoaded });
         m_listViewSelectionChangedRevoker = listView.SelectionChanged(winrt::auto_revoke, { this, &RadioButtons::OnListViewSelectionChanged });
@@ -35,7 +35,7 @@ void RadioButtons::OnApplyTemplate()
 
 void RadioButtons::OnListViewLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& args)
 {
-    if (auto listView = m_listView.get())
+    if (auto&& listView = m_listView.get())
     {
         m_itemsWrapGrid.set(SharedHelpers::FindInVisualTreeByType<winrt::ItemsWrapGrid>(listView));
         if (auto itemsWrapGrid = m_itemsWrapGrid.get())
@@ -53,7 +53,7 @@ void RadioButtons::OnListViewLoaded(const winrt::IInspectable& /*sender*/, const
 
 void RadioButtons::OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
 {
-    if (auto listView = m_listView.get())
+    if (auto&& listView = m_listView.get())
     {
         SelectedIndex(listView.SelectedIndex());
         SelectedItem(listView.SelectedItem());
@@ -64,9 +64,9 @@ void RadioButtons::OnListViewSelectionChanged(const winrt::IInspectable& sender,
 
 void RadioButtons::OnListViewGettingFocus(const winrt::IInspectable& /*sender*/, const winrt::GettingFocusEventArgs& args)
 {
-    if (auto listView = m_listView.get())
+    if (auto&& listView = m_listView.get())
     {
-        // If the we're tabbed/arrowed into but don't have selection, set it now
+        // If we are tabbed or navigated into but don't have a selection we should set it now
         if ((args.InputDevice() == winrt::FocusInputDeviceKind::Keyboard) &&
             (listView.SelectedIndex() == -1) &&
             (listView.Items().Size() > 0))
@@ -104,7 +104,7 @@ bool RadioButtons::MoveSelection(int direction)
 {
     bool found = false;
 
-    if (auto listView = m_listView.get())
+    if (auto&& listView = m_listView.get())
     {
         if (auto focusedElement = winrt::FocusManager::GetFocusedElement())
         {
@@ -178,7 +178,7 @@ void RadioButtons::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
 
 void RadioButtons::UpdateItemsSource()
 {
-    if (auto listView = m_listView.get())
+    if (auto&& listView = m_listView.get())
     {
         if (ItemsSource())
         {
@@ -193,7 +193,7 @@ void RadioButtons::UpdateItemsSource()
 
 void RadioButtons::UpdateMaximumColumns()
 {
-    if (auto itemsWrapGrid = m_itemsWrapGrid.get())
+    if (auto&& itemsWrapGrid = m_itemsWrapGrid.get())
     {
         itemsWrapGrid.MaximumRowsOrColumns(MaximumColumns());
     }
@@ -201,7 +201,7 @@ void RadioButtons::UpdateMaximumColumns()
 
 void RadioButtons::UpdateSelectedItem()
 {
-    if (auto listView = m_listView.get())
+    if (auto&& listView = m_listView.get())
     {
         // Setting ListView.SelectedItem will not work here in all cases.
         // The reason why that doesn't work but this does is unknown.
@@ -215,7 +215,7 @@ void RadioButtons::UpdateSelectedItem()
 
 void RadioButtons::UpdateSelectedIndex()
 {
-    if (auto listView = m_listView.get())
+    if (auto&& listView = m_listView.get())
     {
         listView.SelectedIndex(SelectedIndex());
     }
@@ -223,7 +223,7 @@ void RadioButtons::UpdateSelectedIndex()
 
 winrt::DependencyObject RadioButtons::ContainerFromItem(winrt::IInspectable const& item)
 {
-    if (auto listView = m_listView.get())
+    if (auto&& listView = m_listView.get())
     {
         return listView.ContainerFromItem(item);
     }
@@ -232,7 +232,7 @@ winrt::DependencyObject RadioButtons::ContainerFromItem(winrt::IInspectable cons
 
 winrt::DependencyObject RadioButtons::ContainerFromIndex(int index)
 {
-    if (auto listView = m_listView.get())
+    if (auto&& listView = m_listView.get())
     {
         return listView.ContainerFromIndex(index);
     }
