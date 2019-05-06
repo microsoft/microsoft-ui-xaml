@@ -5,7 +5,7 @@
   <Properties>
     <DisplayName>MUXControlsTestApp</DisplayName>
     <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
-    <Logo>Assets\StoreLogo.png</Logo>
+    <Logo>Assets\Tile\StoreLogo.png</Logo>
     <uap:SupportedUsers>multiple</uap:SupportedUsers>
   </Properties>
   <Dependencies>
