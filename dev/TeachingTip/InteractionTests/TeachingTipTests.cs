@@ -927,6 +927,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private string GetEffectivePlacement()
         {
+            try
+            {
+                // The first call to this can sometimes return a stale value or throw an exception (E_UNEXPECTED)
+                // on older OSes like RS3 and earlier. Call it once and ignore the value, then call it again seems
+                // to be all that's needed to work around. Presumably this is happening because the app is changing
+                // the TextBlock's value in quick succession and there's either a UIA caching bug or a XAML framework
+                // issue that has since been fixed.
+                elements.GetEffectivePlacementTextBlock().GetText();
+            }
+            catch { }
             return elements.GetEffectivePlacementTextBlock().GetText();
         }
 
