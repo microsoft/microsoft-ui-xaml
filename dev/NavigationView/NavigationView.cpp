@@ -280,12 +280,10 @@ void NavigationView::OnApplyTemplate()
         auto visual = winrt::ElementCompositionPreview::GetElementVisual(topNavOverflowButton);
         CreateAndAttachHeaderAnimation(visual);
 
-#ifdef USE_INSIDER_SDK
         if (winrt::IFlyoutBase6 topNavOverflowButtonAsFlyoutBase6 = topNavOverflowButton.Flyout())
         {
             topNavOverflowButtonAsFlyoutBase6.ShouldConstrainToRootBounds(false);
         }
-#endif
     }
 
     if (auto topNavGrid = GetTemplateChildT<winrt::Grid>(c_topNavGrid, controlProtected))
@@ -2759,7 +2757,6 @@ void NavigationView::OnIsPaneOpenChanged()
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-#ifdef USE_INSIDER_SDK
         if (auto splitView = m_rootSplitView.get())
         {
             auto displayMode = splitView.DisplayMode();
@@ -2771,7 +2768,6 @@ void NavigationView::OnIsPaneOpenChanged()
                 paneRoot.Translation(translation);
             }
         }
-#endif
     }
 }
 
@@ -3405,7 +3401,6 @@ void NavigationView::UpdatePaneShadow()
 {
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-#ifdef USE_INSIDER_SDK
         winrt::Canvas shadowReceiver = GetTemplateChildT<winrt::Canvas>(c_paneShadowReceiverCanvas, *this);
         if (!shadowReceiver)
         {
@@ -3436,6 +3431,5 @@ void NavigationView::UpdatePaneShadow()
         // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
         winrt::Thickness shadowReceiverMargin = { -CompactPaneLength(), -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
         shadowReceiver.Margin(shadowReceiverMargin);
-#endif
     }
 }

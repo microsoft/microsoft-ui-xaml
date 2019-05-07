@@ -437,9 +437,7 @@ void CommandBarFlyoutCommandBar::UpdateUI(
     UpdateTemplateSettings();
     UpdateVisualState(useTransitions);
 
-#ifdef USE_INSIDER_SDK
     UpdateShadow();
-#endif
 }
 
 void CommandBarFlyoutCommandBar::UpdateVisualState(
@@ -466,12 +464,10 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
             bool isConstrainedToRootBounds = true;
             auto controlBounds = TransformToVisual(nullptr).TransformBounds({ 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()) });
             
-#ifdef USE_INSIDER_SDK
             if (winrt::IFlyoutBase6 owningFlyoutAsFlyoutBase6 = m_owningFlyout.get())
             {
                 isConstrainedToRootBounds = owningFlyoutAsFlyoutBase6.IsConstrainedToRootBounds();
             }
-#endif
 
             try
             {
@@ -1071,7 +1067,6 @@ void CommandBarFlyoutCommandBar::EnsureTabStopUniqueness(
     }
 }
 
-#ifdef USE_INSIDER_SDK
 void CommandBarFlyoutCommandBar::UpdateShadow()
 {
     if (PrimaryCommands().Size() > 0)
@@ -1127,4 +1122,3 @@ void CommandBarFlyoutCommandBar::ClearShadow()
         }
     }
 }
-#endif
