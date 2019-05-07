@@ -356,6 +356,7 @@ namespace winrt
     using ButtonAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::ButtonAutomationPeer;
     using FrameworkElementAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::FrameworkElementAutomationPeer;
     using IAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::IAutomationPeer;
+    using IAutomationPeer7 = winrt::Windows::UI::Xaml::Automation::Peers::IAutomationPeer7;
     using IAutomationPeerOverrides = winrt::Windows::UI::Xaml::Automation::Peers::IAutomationPeerOverrides;
     using IFrameworkElementAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::IFrameworkElementAutomationPeer;
     using IFrameworkElementAutomationPeerFactory = winrt::Windows::UI::Xaml::Automation::Peers::IFrameworkElementAutomationPeerFactory;
