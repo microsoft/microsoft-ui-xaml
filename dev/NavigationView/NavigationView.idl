@@ -265,6 +265,11 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
         static Windows.UI.Xaml.DependencyProperty ShoulderNavigationEnabledProperty { get; };
         static Windows.UI.Xaml.DependencyProperty OverflowLabelModeProperty { get; };
     }
+
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsTitleBarAutoPaddingEnabled{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty IsTitleBarAutoPaddingEnabledProperty{ get; };
 }
 
 [WUXC_VERSION_RS3]
