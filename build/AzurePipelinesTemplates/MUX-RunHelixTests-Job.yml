@@ -124,6 +124,10 @@ jobs:
         "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:SYSTEM_ACCESSTOKEN)")))"
       }
       
+      Write-Host "Test runs for this build:"
+      Invoke-RestMethod -Uri "https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=vstfs:///Build/Build/$($env:BUILD_BUILDID)"
+      
+      Write-Host "Test run results for run 1176654 (a randomly selected run):"
       Invoke-RestMethod -Uri "https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/Runs/1176654/results?api-version=5.0" -Method Get -Headers $azureDevOpsRestApiHeaders
     displayName: 'Dump test results thus far'
     env:
