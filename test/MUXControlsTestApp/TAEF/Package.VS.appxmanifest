@@ -5,7 +5,7 @@
   <Properties>
     <DisplayName>MUXControlsTestApp</DisplayName>
     <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
-    <Logo>Assets\StoreLogo.png</Logo>
+    <Logo>Assets\Tile\StoreLogo.png</Logo>
     <uap:SupportedUsers>multiple</uap:SupportedUsers>
   </Properties>
   <Dependencies>
@@ -16,10 +16,10 @@
   </Resources>
   <Applications>
     <Application Id="taef.executionengine.universal.App" Executable="MUXControlsTestApp.exe" EntryPoint="MUXControlsTestApp.App">
-     <uap:VisualElements DisplayName="MUXControlsTestApp" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="MUXControlsTestApp" BackgroundColor="transparent">
-       <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png">
+      <uap:VisualElements Square150x150Logo="Assets\Tile\Square150x150Logo.png" Square44x44Logo="Assets\Tile\Square44x44Logo.png" DisplayName="MUXControlsTestApp" Description="MUXControlsTestApp" BackgroundColor="transparent">
+        <uap:DefaultTile Square71x71Logo="Assets\Tile\SmallTile.png">
         </uap:DefaultTile>
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        <uap:SplashScreen Image="Assets\Tile\SplashScreen.png" />
       </uap:VisualElements>
     </Application>
   </Applications>
