@@ -468,6 +468,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void VerifyTheming()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("TeachingTip theming doesn't work page-level before RS3, skipping test.");
+                return;
+            }
+
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
             {
                 elements = new TeachingTipTestPageElements();
