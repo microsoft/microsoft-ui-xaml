@@ -542,11 +542,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // so we'll use a point 10 pixels from the text box's left edge as a point
                 // known to be within the word's bounding box.
                 Log.Comment("Right-click on the word's location in the text box to get the proofing menu.");
-                InputHelper.RightClick(textBox, 10 - textBox.BoundingRectangle.Width / 2, 0);
+                InputHelper.RightClick(textBox, 10, textBox.BoundingRectangle.Height / 2);
 
-                Log.Comment("Tap on \"ads\" in the proofing menu to fix the spelling error.");
-                var proofingItem = FindElement.ByNameAndClassName("ads", "MenuFlyoutItem");
-                InputHelper.Tap(proofingItem);
+                Log.Comment("Find \"ads\" in the proofing menu to fix the spelling error.");
+                var proofingItem = new MenuItem(FindElement.ByNameAndClassName("ads", "MenuFlyoutItem"));
+                Log.Comment($"Invoke {proofingItem}");
+                proofingItem.Invoke();
 
                 Verify.AreEqual("ads ", textBox.Value);
             }
