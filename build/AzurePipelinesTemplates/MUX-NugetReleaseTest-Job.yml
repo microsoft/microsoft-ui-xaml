@@ -9,6 +9,9 @@ parameters:
     Debug_x86:
       buildPlatform: 'x86'
       buildConfiguration: 'Debug'
+    Release_x86:
+      buildPlatform: 'x86'
+      buildConfiguration: 'Release'
     Debug_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'Debug'

@@ -66,9 +66,7 @@ namespace MUXControlsTestApp
                 {"ButtonInteraction", typeof(ButtonInteractionPage), "Button.png"},
                 {"SliderInteraction", typeof(SliderInteractionPage), "Slider.png"},
 #endif
-#if (USE_INSIDER_SDK)
                 {"AnimatedVisualPlayer", typeof(AnimatedVisualPlayerPage), "Animations.png"},
-#endif
 #endif
                 {"NavigationView", typeof(NavigationViewCaseBundle), "NavigationView.png"},
                 {"ParallaxView", typeof(ParallaxViewPage), "ParallaxView.png"},

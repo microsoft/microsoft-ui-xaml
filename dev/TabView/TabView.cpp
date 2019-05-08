@@ -72,14 +72,6 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable& sender, const winr
         {
             m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
         }
-
-        if (SharedHelpers::IsRS2OrHigher())
-        {
-            if (auto scrollContentPresenter = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollContentPresenter").as<winrt::ScrollContentPresenter>())
-            {
-                scrollContentPresenter.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
-            }
-        }
     }
 
     UpdateTabWidths();
