@@ -12,53 +12,57 @@
     <Grid Background="#eee">
         <Grid.Resources>
             <controls:FlowLayout x:Key="flow" MinRowSpacing="5" MinColumnSpacing="5" />
-            <controls:StackLayout x:Key="stack"  Spacing="5" />
+            <controls:StackLayout x:Key="stack" Spacing="5" />
         </Grid.Resources>
 
-        <StackPanel>
-            <Button x:Name="defaultDemo" >Default Demo</Button>
-            <Button x:Name="basicDemo" >Basic Demo</Button>
-            <Button x:Name="itemTemplateDemo" >ItemTemplate Demo</Button>
-            <Button x:Name="collectionChangeDemo" >Collection Changes Demo</Button>
-            <Button x:Name="animationsDemo" >Animations Demo</Button>
-            <Button x:Name="circleLayoutDemo">Circle Layout Demo</Button>
-            <Button x:Name="activityFeedLayoutDemo">Xbox Activity Feed Layout Demo</Button>
-            <Button x:Name="nonVirtualStackLayoutDemo">Non Virtual Stack Layout Demo</Button>
-            <Button x:Name="virtualFixedStackLayoutDemo">Virtual Fixed Stack Layout Demo</Button>
-            <Button x:Name="virtualStackLayoutDemo">Virtual Variable Stack Layout Demo (Estimated)</Button>
-            <Button x:Name="pinterestLayoutDemo">Pinterest Layout Demo</Button>
-            <Button x:Name="flowLayoutDemo">Flow Layout Demo</Button>
-            <Button x:Name="storeDemo">Store demo</Button>
-            <Button x:Name="animatedScrollDemo">Animated scroll demo</Button>
-            <TextBlock>Selection Demo</TextBlock>
-            <StackPanel Orientation="Horizontal">
+        <StackPanel Spacing="4">
+            <TextBlock>Demos</TextBlock>
+            <Button x:Name="defaultDemo" >Default</Button>
+            <Button x:Name="basicDemo" >Basic</Button>
+            <Button x:Name="itemTemplateDemo" >ItemTemplate</Button>
+            <Button x:Name="collectionChangeDemo" >Collection Changes</Button>
+            <Button x:Name="animationsDemo" >Animations</Button>
+            <Button x:Name="circleLayoutDemo">Circle Layout</Button>
+            <Button x:Name="activityFeedLayoutDemo">Xbox Activity Feed Layout</Button>
+            <Button x:Name="nonVirtualStackLayoutDemo">Non Virtual Stack Layout</Button>
+            <Button x:Name="virtualFixedStackLayoutDemo">Virtual Fixed Stack Layout</Button>
+            <Button x:Name="virtualStackLayoutDemo">Virtual Variable Stack Layout (Estimated)</Button>
+            <Button x:Name="pinterestLayoutDemo">Pinterest Layout</Button>
+            <Button x:Name="flowLayoutDemo">Flow Layout</Button>
+            <Button x:Name="storeDemo">Store</Button>
+            <Button x:Name="animatedScrollDemo">Animated scroll</Button>
+            <TextBlock>Selection</TextBlock>
+            <StackPanel Orientation="Horizontal" Spacing="4">
                 <Button x:Name="flatSelectionDemo">Flat</Button>
                 <Button x:Name="groupedSelectionDemo">Grouped</Button>
                 <Button x:Name="treeSelectionDemo">Tree</Button>
             </StackPanel>
 
             <StackPanel>
-                <TextBlock>ItemSpacing</TextBlock>
-                <TextBox x:Name="itemSpacing" Text="10"></TextBox>
-                <TextBlock>MinColumnSpacing</TextBlock>
-                <TextBox x:Name="lineSpacing" Text="10"></TextBox>
-                <TextBlock>LineAlignment</TextBlock>
-                <TextBlock>(Start/Center/End/SpaceEvenly/SpaceAround/SpaceBetween)</TextBlock>
-                <TextBox x:Name="lineAlingment" Text="Start"></TextBox>
-                <ToggleSwitch x:Name="orientation" OnContent="Horizontal" OffContent="Vertical">Scroll Orientation</ToggleSwitch>
+                <TextBox x:Name="itemSpacing" Text="10" Header="ItemSpacing"></TextBox>
+                <TextBox x:Name="lineSpacing" Text="10" Header="MinColumnSpacing"></TextBox>
+                <ComboBox x:Name="lineAlignment" Header="LineAlignment" SelectedIndex="0">
+                    <x:String>Start</x:String>
+                    <x:String>Center</x:String>
+                    <x:String>End</x:String>
+                    <x:String>SpaceEvenly</x:String>
+                    <x:String>SpaceAround</x:String>
+                    <x:String>SpaceBetween</x:String>
+                </ComboBox>
+                <ToggleSwitch x:Name="orientation" OnContent="Horizontal" OffContent="Vertical" Header="Scroll Orientation"/>
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Spacing="4">
                 <Button x:Name="noGroupingList">Flat List</Button>
                 <Button x:Name="noGroupingGrid">Flat Grid</Button>
                 <Button x:Name="noGroupingFlow">Flat Flow</Button>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Spacing="4">
                 <Button x:Name="groupedList">Grouped List</Button>
                 <Button x:Name="groupedGrid">Grouped Grid</Button>
                 <Button x:Name="groupedFlow">Grouped Flow</Button>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Spacing="4">
                 <Button x:Name="nestedList">Nested List</Button>
                 <Button x:Name="nestedGrid">Nested Grid</Button>
                 <Button x:Name="nestedFlow">Nested Flow</Button>
