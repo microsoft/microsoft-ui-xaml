@@ -23,7 +23,7 @@ public:
 #pragma endregion
 
 #pragma region Consume API for internal use only.
-    void OnDataSourceChanged(winrt::NotifyCollectionChangedEventArgs const& args);
+    void OnItemsSourceChanged(winrt::NotifyCollectionChangedEventArgs const& args);
 
     virtual int32_t GetSizeCore();
     virtual winrt::IInspectable GetAtCore(int index);

@@ -24,7 +24,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class RevealTests
     {
-        [TestMethod]
+        //[TestMethod] TODO: Re-enable once issue #644 is fixed.
         public void ValidateAppBarButtonRevealStyles()
         {
             AppBarButton buttonLabelsOnRight = null;

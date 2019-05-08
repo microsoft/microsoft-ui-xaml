@@ -8,6 +8,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);REPEATER_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -17,6 +18,7 @@
     <Midl Include="$(MSBuildThisFileDirectory)ItemsRepeater.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)RepeaterAutomationPeer.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)RepeaterPrivate.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimationManager.h" />
@@ -80,6 +82,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)VirtualizingLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)VirtualizingLayoutContext.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)VirtualLayoutContextAdapter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterTestHooksFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\FlowLayout.properties.cpp" />
@@ -143,5 +147,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)VirtualizingLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)VirtualizingLayoutContext.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)VirtualLayoutContextAdapter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterTestHooksFactory.cpp" />
   </ItemGroup>
 </Project>

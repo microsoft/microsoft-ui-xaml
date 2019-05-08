@@ -280,12 +280,10 @@ void NavigationView::OnApplyTemplate()
         auto visual = winrt::ElementCompositionPreview::GetElementVisual(topNavOverflowButton);
         CreateAndAttachHeaderAnimation(visual);
 
-#ifdef USE_INSIDER_SDK
         if (winrt::IFlyoutBase6 topNavOverflowButtonAsFlyoutBase6 = topNavOverflowButton.Flyout())
         {
             topNavOverflowButtonAsFlyoutBase6.ShouldConstrainToRootBounds(false);
         }
-#endif
     }
 
     if (auto topNavGrid = GetTemplateChildT<winrt::Grid>(c_topNavGrid, controlProtected))
@@ -1324,10 +1322,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
 
             AnimateSelectionChanged(prevItem, nextActualItem);
 
-            if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded)
-            {
-                ClosePane();
-            }
+            ClosePaneIfNeccessaryAfterItemIsClicked();
         }
     }
 }
@@ -1348,6 +1343,8 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
     if (!m_shouldIgnoreNextSelectionChange && DoesSelectedItemContainContent(clickedItem, itemContainer) && !IsSelectionSuppressed(selectedItem))
     {
         RaiseItemInvoked(selectedItem, false /*isSettings*/, itemContainer);
+
+        ClosePaneIfNeccessaryAfterItemIsClicked();
     }
 }
 
@@ -2587,6 +2584,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     if (property == s_IsPaneOpenProperty)
     {
         OnIsPaneOpenChanged();
+        UpdateVisualStateForDisplayModeGroup(DisplayMode());
     }
     else if (property == s_CompactModeThresholdWidthProperty ||
         property == s_ExpandedModeThresholdWidthProperty)
@@ -2759,7 +2757,6 @@ void NavigationView::OnIsPaneOpenChanged()
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-#ifdef USE_INSIDER_SDK
         if (auto splitView = m_rootSplitView.get())
         {
             auto displayMode = splitView.DisplayMode();
@@ -2771,7 +2768,6 @@ void NavigationView::OnIsPaneOpenChanged()
                 paneRoot.Translation(translation);
             }
         }
-#endif
     }
 }
 
@@ -3228,6 +3224,14 @@ void NavigationView::OnTitleBarIsVisibleChanged(const winrt::CoreApplicationView
     UpdateTitleBarPadding();
 }
 
+void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked()
+{
+    if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded)
+    {
+        ClosePane();
+    }
+}
+
 bool NavigationView::ShouldIgnoreMeasureOverride()
 {
     return m_shouldIgnoreNextMeasureOverride || m_shouldIgnoreOverflowItemSelectionChange || m_shouldIgnoreNextSelectionChange;
@@ -3397,7 +3401,6 @@ void NavigationView::UpdatePaneShadow()
 {
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-#ifdef USE_INSIDER_SDK
         winrt::Canvas shadowReceiver = GetTemplateChildT<winrt::Canvas>(c_paneShadowReceiverCanvas, *this);
         if (!shadowReceiver)
         {
@@ -3428,6 +3431,5 @@ void NavigationView::UpdatePaneShadow()
         // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
         winrt::Thickness shadowReceiverMargin = { -CompactPaneLength(), -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
         shadowReceiver.Margin(shadowReceiverMargin);
-#endif
     }
 }
