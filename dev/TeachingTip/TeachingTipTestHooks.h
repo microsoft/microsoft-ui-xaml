@@ -57,6 +57,8 @@ public:
     static winrt::event_token OffsetChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value);
     static void OffsetChanged(winrt::event_token const& token);
 
+    static winrt::Popup GetPopup(const winrt::TeachingTip& teachingTip);
+
 private:
     static com_ptr<TeachingTipTestHooks> s_testHooks;
     winrt::event<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_openedStatusChangedEventSource;

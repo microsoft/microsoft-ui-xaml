@@ -93,22 +93,25 @@ void TeachingTipAutomationPeer::RaiseWindowClosedEvent()
     if (winrt::get_self<TeachingTip>(GetTeachingTip())->IsLightDismissEnabled() &&
         winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::WindowClosed))
     {
-        __super::RaiseAutomationEvent(winrt::AutomationEvents::WindowClosed);
+        RaiseAutomationEvent(winrt::AutomationEvents::WindowClosed);
     }
 }
 
 void TeachingTipAutomationPeer::RaiseWindowOpenedEvent(wstring_view const& displayString)
 {
-    __super::RaiseNotificationEvent(winrt::Automation::Peers::AutomationNotificationKind::Other,
-        winrt::Peers::AutomationNotificationProcessing::CurrentThenMostRecent,
-        displayString,
-        L"TeachingTipOpenedActivityId");
+    if (winrt::IAutomationPeer7 automationPeer7 = *this)
+    {
+        automationPeer7.RaiseNotificationEvent(winrt::Automation::Peers::AutomationNotificationKind::Other,
+            winrt::Peers::AutomationNotificationProcessing::CurrentThenMostRecent,
+            displayString,
+            L"TeachingTipOpenedActivityId");
+    }
 
     // We only report as a window when light dismiss is enabled.
     if (winrt::get_self<TeachingTip>(GetTeachingTip())->IsLightDismissEnabled() &&
         winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::WindowOpened))
     {
-        __super::RaiseAutomationEvent(winrt::AutomationEvents::WindowOpened);
+        RaiseAutomationEvent(winrt::AutomationEvents::WindowOpened);
     }
 }
 

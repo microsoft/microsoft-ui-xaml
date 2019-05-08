@@ -16,12 +16,10 @@ CommandBarFlyout::CommandBarFlyout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_CommandBarFlyout);
 
-#ifdef USE_INSIDER_SDK
     if (winrt::IFlyoutBase6 thisAsFlyoutBase6 = *this)
     {
         thisAsFlyoutBase6.ShouldConstrainToRootBounds(false);
     }
-#endif
     
     if (winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this)
     {
@@ -165,12 +163,10 @@ CommandBarFlyout::CommandBarFlyout()
                     commandBar->IsOpen(false);
                 }
 
-#ifdef USE_INSIDER_SDK
                 //CommandBarFlyoutCommandBar.Closed will be called when
                 //clicking the more (...) button, we clear the translations
                 //here
                 commandBar->ClearShadow();
-#endif
             }
         }
     });
@@ -240,7 +236,6 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     presenter.Padding(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Content(*commandBar);
 
-#ifdef USE_INSIDER_SDK
     // We will provide our own shadow, not the one that FlyoutPresenter has by default.
     // We need to specifically target the CommandBar for the shadow, not the default node far
     // above that.
@@ -248,7 +243,6 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     {
         presenter2.IsDefaultShadowEnabled(false);
     }
-#endif
 
     commandBar->SetOwningFlyout(*this);
 

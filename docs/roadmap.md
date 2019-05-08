@@ -36,4 +36,4 @@ New **stable** NuGet packages are released approximately twice a year.
 The list of WinUI packages can be found here:  
 https://www.nuget.org/profiles/winui
 
-The next stable release scheduled for the first half of 2019 will be WinUI 2.1.
+The next stable release scheduled for the summer of 2019 will be WinUI 2.2.

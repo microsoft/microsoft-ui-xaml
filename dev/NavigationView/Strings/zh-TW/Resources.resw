@@ -138,7 +138,7 @@
     <comment>Name for the compact view search button</comment>
   </data>
   <data name="NavigationBackButtonName" xml:space="preserve">
-    <value>[上一頁] 按鈕</value>
+    <value>上一步</value>
     <comment>Automation name for the nav view provided back button</comment>
   </data>
   <data name="NavigationBackButtonToolTip" xml:space="preserve">
