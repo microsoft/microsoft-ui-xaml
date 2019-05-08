@@ -110,6 +110,7 @@ jobs:
       
   - task: DotNetCoreCLI@2
     displayName: 'Run tests in Helix'
+    continueOnError: 'true'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
@@ -125,18 +126,28 @@ jobs:
       }
       
       Write-Host "Test runs for this build:"
-      Invoke-RestMethod -Uri "https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=vstfs:///Build/Build/$($env:BUILD_BUILDID)"
+      $testRuns = Invoke-RestMethod -Uri "https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)" -Method Get -Headers $azureDevOpsRestApiHeaders
+      $testRuns
       
-      Write-Host "Test run results for run 1176654 (a randomly selected run):"
-      Invoke-RestMethod -Uri "https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/Runs/1176654/results?api-version=5.0" -Method Get -Headers $azureDevOpsRestApiHeaders
+      $testRuns.value | ForEach-Object {
+        $runData = $_
+        
+        Write-Host "Test results for run $($runData.id):"
+        $testResults = Invoke-RestMethod -Uri "$($runData.url)/results?api-version=5.0" -Method Get -Headers $azureDevOpsRestApiHeaders
+        $testResults
+        
+        $runResults.value | ForEach-Object {
+          $testResult = $_
+          Write-Host "Test $($testResult.testCaseTitle) : $($runResults.outcome)"
+        }
+      }
+      
     displayName: 'Dump test results thus far'
-    condition: succeededOrFailed()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
       
   - task: DotNetCoreCLI@2
     displayName: 'Re-run tests in Helix'
-    condition: succeededOrFailed()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
