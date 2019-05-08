@@ -963,7 +963,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Inner.Insert(index + i, string.Format("ItemI #{0}", Inner.Count));
                 }
 
-                OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                     NotifyCollectionChangedAction.Add,
                     oldStartingIndex: -1,
                     oldItemsCount: 0,
@@ -978,7 +978,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Inner.RemoveAt(index);
                 }
 
-                OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                     NotifyCollectionChangedAction.Remove,
                     oldStartingIndex: index,
                     oldItemsCount: count,

@@ -59,6 +59,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     public class CommonStylesVisualTreeTestSamples
     {
         [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // The default theme is different on OneCore, leading to a test failure.
         public void VerifyVisualTreeForAppBarAndAppBarToggleButton()
         {
             if (!PlatformConfiguration.IsOsVersion(OSVersion.Redstone5))
@@ -127,6 +128,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // The default theme is different on OneCore, leading to a test failure.
         public void VerifyVisualTreeExampleWithCustomerFilter()
         {
             if (!PlatformConfiguration.IsOsVersion(OSVersion.Redstone5))
@@ -144,6 +146,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // The default theme is different on OneCore, leading to a test failure.
         public void VerifyVisualTreeExampleWithCustomerPropertyValueTranslator()
         {
             if (!PlatformConfiguration.IsOsVersion(OSVersion.Redstone5))
@@ -242,7 +245,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             public bool ShouldVisitPropertyValuePair(string propertyName, string value)
             {
                 string v = _knownPropertyValueDict.ContainsKey(propertyName) ? _knownPropertyValueDict[propertyName] : VisualTreeDumper.ValueNULL;
-                return !(v.Equals(value) || (string.IsNullOrEmpty(value ) && value.StartsWith("Exception")));
+                return !(v.Equals(value) || (!string.IsNullOrEmpty(value) && value.StartsWith("Exception")));
             }
 
             public bool ShouldVisitElement(string elementName)

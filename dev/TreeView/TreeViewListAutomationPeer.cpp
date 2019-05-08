@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TreeViewList.h"
 #include "TreeViewListAutomationPeer.h"
+#include "TreeViewItemDataAutomationPeer.h"
 
 CppWinRTActivatableClassWithBasicFactory(TreeViewListAutomationPeer);
 
@@ -16,7 +17,7 @@ TreeViewListAutomationPeer::TreeViewListAutomationPeer(winrt::TreeViewList const
 //IItemsControlAutomationPeerOverrides2
 winrt::ItemAutomationPeer TreeViewListAutomationPeer::OnCreateItemAutomationPeer(winrt::IInspectable const& item)
 {
-    winrt::ItemAutomationPeer itemPeer{ item, *this };
+    winrt::TreeViewItemDataAutomationPeer itemPeer{ item, *this };
     return itemPeer;
 }
 

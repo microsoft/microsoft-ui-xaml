@@ -318,7 +318,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                     waiter = (comboBox.ExpandCollapseState == ExpandCollapseState.Expanded ? comboBox.GetCollapsedWaiter() : null);
                 }
             }
-            #if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
+            #if COLORPICKER_INCLUDED
             else if (obj is ColorSpectrum)
             {
                 var colorSpectrum = obj as ColorSpectrum;

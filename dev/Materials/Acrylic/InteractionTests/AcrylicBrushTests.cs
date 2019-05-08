@@ -52,8 +52,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Platform", "Any")]
-        [TestProperty("MUXControlsTestSuite", "SuiteB")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("MUXControlsTestEnabledForPhone", "True")]
         public static void ClassInitialize(TestContext testContext)
         {
@@ -150,7 +149,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
 
         [TestMethod]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void HideAndShowWindow()
         {
             if (!OnRS2OrGreater()) { return; }

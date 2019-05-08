@@ -673,7 +673,6 @@ void SwipeControl::AttachDismissingHandlers()
 
     DetachDismissingHandlers();
 
-#ifdef USE_INSIDER_SDK
     if (winrt::IUIElement10 uiElement10 = *this)
     {
         if (auto xamlRoot = uiElement10.XamlRoot())
@@ -690,7 +689,6 @@ void SwipeControl::AttachDismissingHandlers()
         }
     }
     else
-#endif
     {
         if (auto currentWindow = winrt::Window::Current())
         {
@@ -717,7 +715,6 @@ void SwipeControl::DetachDismissingHandlers()
 {
     SWIPECONTROL_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
-#ifdef USE_INSIDER_SDK
     if (winrt::IUIElement10 uiElement10 = *this)
     {
         if (auto xamlRoot = uiElement10.XamlRoot())
@@ -738,7 +735,6 @@ void SwipeControl::DetachDismissingHandlers()
         }
     }
     m_xamlRootChangedRevoker.revoke();
-#endif
 
     m_acceleratorKeyActivatedRevoker.revoke();
     m_coreWindowPointerPressedRevoker.revoke();
@@ -751,8 +747,6 @@ void SwipeControl::DismissSwipeOnAcceleratorKeyActivator(const winrt::Windows::U
 {
     CloseIfNotRemainOpenExecuteItem();
 }
-
-#ifdef USE_INSIDER_SDK
 
 void SwipeControl::DismissSwipeOnXamlRootKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {
@@ -768,8 +762,6 @@ void SwipeControl::DismissSwipeOnAnExternalXamlRootTap(const winrt::IInspectable
 {
     DismissSwipeOnAnExternalTap(args.GetCurrentPoint(nullptr).Position());
 }
-
-#endif
 
 void SwipeControl::DismissSwipeOnCoreWindowKeyDown(const winrt::CoreWindow& sender, const winrt::KeyEventArgs& args)
 {

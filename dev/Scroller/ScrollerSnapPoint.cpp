@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
+#include "ScrollerTypeLogging.h"
 #include "ScrollerSnapPoint.h"
 
 // Required for Modern Idl bug, should never be called.
