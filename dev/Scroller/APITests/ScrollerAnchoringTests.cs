@@ -63,7 +63,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringAtNearEdge(Orientation orientation)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 Scroller scroller = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
@@ -150,7 +153,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 Scroller scroller = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
@@ -260,7 +266,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 Scroller scroller = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
@@ -354,7 +363,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringAtAlmostNearEdge(Orientation orientation)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 Scroller scroller = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
@@ -421,7 +433,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringAtAlmostFarEdge(Orientation orientation)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 Scroller scroller = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
@@ -495,7 +510,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringElementWithResizedViewport(Orientation orientation, double viewportSizeChange)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 Scroller scroller = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
@@ -688,7 +706,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringWithOffsetCoercion(bool reduceAnchorOffset)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 Scroller scroller = null;
                 Border anchorElement = null;
@@ -786,7 +807,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies VerticalOffset adjusts when inserting and removing items at the beginning (VerticalAnchorRatio=0.5).")]
         public void AnchoringAtRepeaterMiddle()
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Scroller"))
                 {

@@ -960,7 +960,8 @@ void Scroller::IdleStateEntered(
     {
         int32_t requestId = args.RequestId();
 
-        // Complete all operations recorded through ChangeOffsets and ChangeZoomFactor calls.
+        // Complete all operations recorded through ChangeOffsetsPrivate/ChangeOffsetsWithAdditionalVelocityPrivate
+        // and ChangeZoomFactorPrivate/ChangeZoomFactorWithAdditionalVelocityPrivate calls.
         if (requestId != 0)
         {
             CompleteInteractionTrackerOperations(
@@ -968,11 +969,15 @@ void Scroller::IdleStateEntered(
                 ScrollerViewChangeResult::Completed   /*operationResult*/,
                 ScrollerViewChangeResult::Completed   /*priorNonAnimatedOperationsResult*/,
                 ScrollerViewChangeResult::Interrupted /*priorAnimatedOperationsResult*/,
-                true  /*completeOperation*/,
+                true  /*completeNonAnimatedOperation*/,
+                true  /*completeAnimatedOperation*/,
                 true  /*completePriorNonAnimatedOperations*/,
                 true  /*completePriorAnimatedOperations*/);
         }
     }
+
+    // Stop Scale animation if needed, to trigger rasterization of Content & avoid fuzzy text rendering for instance.
+    StopZoomFactorExpressionAnimation();
 }
 
 void Scroller::InertiaStateEntered(
@@ -1080,13 +1085,15 @@ void Scroller::InteractingStateEntered(
 
     if (!m_interactionTrackerAsyncOperations.empty())
     {
-        // Complete all operations recorded through ChangeOffsets and ChangeZoomFactor calls.
+        // Complete all operations recorded through ChangeOffsetsPrivate/ChangeOffsetsWithAdditionalVelocityPrivate
+        // and ChangeZoomFactorPrivate/ChangeZoomFactorWithAdditionalVelocityPrivate calls.
         CompleteInteractionTrackerOperations(
             -1 /*requestId*/,
             ScrollerViewChangeResult::Interrupted /*operationResult*/,
             ScrollerViewChangeResult::Completed   /*priorNonAnimatedOperationsResult*/,
             ScrollerViewChangeResult::Interrupted /*priorAnimatedOperationsResult*/,
-            true  /*completeOperation*/,
+            true  /*completeNonAnimatedOperation*/,
+            true  /*completeAnimatedOperation*/,
             true  /*completePriorNonAnimatedOperations*/,
             true  /*completePriorAnimatedOperations*/);
     }
@@ -1105,7 +1112,8 @@ void Scroller::RequestIgnored(
             ScrollerViewChangeResult::Ignored /*operationResult*/,
             ScrollerViewChangeResult::Ignored /*unused priorNonAnimatedOperationsResult*/,
             ScrollerViewChangeResult::Ignored /*unused priorAnimatedOperationsResult*/,
-            true  /*completeOperation*/,
+            true  /*completeNonAnimatedOperation*/,
+            true  /*completeAnimatedOperation*/,
             false /*completePriorNonAnimatedOperations*/,
             false /*completePriorAnimatedOperations*/);
     }
@@ -1148,10 +1156,11 @@ void Scroller::ValuesChanged(
     {
         CompleteInteractionTrackerOperations(
             requestId,
-            ScrollerViewChangeResult::Ignored     /*unused operationResult*/,
+            ScrollerViewChangeResult::Completed   /*operationResult*/,
             ScrollerViewChangeResult::Completed   /*priorNonAnimatedOperationsResult*/,
             ScrollerViewChangeResult::Interrupted /*priorAnimatedOperationsResult*/,
-            false /*completeOperation*/,
+            true  /*completeNonAnimatedOperation*/,
+            false /*completeAnimatedOperation*/,
             true  /*completePriorNonAnimatedOperations*/,
             true  /*completePriorAnimatedOperations*/);
     }
@@ -3038,66 +3047,185 @@ void Scroller::SetupTransformExpressionAnimations(
         m_transformMatrixZoomFactorExpressionAnimation.SetReferenceParameter(L"it", m_interactionTracker);
     }
 
-    StartTransformExpressionAnimations(content);
+    StartTransformExpressionAnimations(content, false /*forZoomFactorAnimationInterruption*/);
 }
 
 void Scroller::StartTransformExpressionAnimations(
-    const winrt::UIElement& content)
+    const winrt::UIElement& content,
+    bool forZoomFactorAnimationInterruption)
 {
     if (content)
     {
         if (SharedHelpers::IsTranslationFacadeAvailable(content))
         {
-            m_translationExpressionAnimation.Target(GetVisualTargetedPropertyName(ScrollerDimension::Scroll));
-            m_zoomFactorExpressionAnimation.Target(GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor));
-            content.StartAnimation(m_translationExpressionAnimation);
+            wstring_view zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+
+            if (!forZoomFactorAnimationInterruption)
+            {
+                wstring_view scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+
+                m_translationExpressionAnimation.Target(scrollPropertyName);
+                m_zoomFactorExpressionAnimation.Target(zoomFactorPropertyName);
+
+                content.StartAnimation(m_translationExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
+            }
+
             content.StartAnimation(m_zoomFactorExpressionAnimation);
+            RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
         }
-        else
+        else if (!forZoomFactorAnimationInterruption) // The zoom factor animation interruption is only effective with facades.
         {
             const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(content);
             if (IsVisualTranslationPropertyAvailable())
             {
+                wstring_view scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+                wstring_view zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+
                 winrt::ElementCompositionPreview::SetIsTranslationEnabled(content, true);
-                contentVisual.StartAnimation(GetVisualTargetedPropertyName(ScrollerDimension::Scroll), m_translationExpressionAnimation);
-                contentVisual.StartAnimation(GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor), m_zoomFactorExpressionAnimation);
+
+                contentVisual.StartAnimation(scrollPropertyName, m_translationExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
+
+                contentVisual.StartAnimation(zoomFactorPropertyName, m_zoomFactorExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
             }
             else
             {
-                contentVisual.StartAnimation(GetVisualTargetedPropertyName(ScrollerDimension::HorizontalScroll), m_transformMatrixTranslateXExpressionAnimation);
-                contentVisual.StartAnimation(GetVisualTargetedPropertyName(ScrollerDimension::VerticalScroll), m_transformMatrixTranslateYExpressionAnimation);
-                contentVisual.StartAnimation(GetVisualTargetedPropertyName(ScrollerDimension::HorizontalZoomFactor), m_transformMatrixZoomFactorExpressionAnimation);
-                contentVisual.StartAnimation(GetVisualTargetedPropertyName(ScrollerDimension::VerticalZoomFactor), m_transformMatrixZoomFactorExpressionAnimation);
+                wstring_view horizontalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalScroll);
+                wstring_view verticalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalScroll);
+                wstring_view horizontalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalZoomFactor);
+                wstring_view verticalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalZoomFactor);
+
+                contentVisual.StartAnimation(horizontalScrollPropertyName, m_transformMatrixTranslateXExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, horizontalScrollPropertyName /*propertyName*/);
+
+                contentVisual.StartAnimation(verticalScrollPropertyName, m_transformMatrixTranslateYExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, verticalScrollPropertyName /*propertyName*/);
+
+                contentVisual.StartAnimation(horizontalZoomFactorPropertyName, m_transformMatrixZoomFactorExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, horizontalZoomFactorPropertyName /*propertyName*/);
+
+                contentVisual.StartAnimation(verticalZoomFactorPropertyName, m_transformMatrixZoomFactorExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, verticalZoomFactorPropertyName /*propertyName*/);
             }
         }
     }
 }
 
 void Scroller::StopTransformExpressionAnimations(
-    const winrt::UIElement& content)
+    const winrt::UIElement& content,
+    bool forZoomFactorAnimationInterruption)
 {
     if (content)
     {
         if (SharedHelpers::IsTranslationFacadeAvailable(content))
         {
-            content.StopAnimation(m_translationExpressionAnimation);
+            if (!forZoomFactorAnimationInterruption)
+            {
+                wstring_view scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+
+                content.StopAnimation(m_translationExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
+            }
+
+            wstring_view zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+
             content.StopAnimation(m_zoomFactorExpressionAnimation);
+            RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
         }
-        else
+        else if (!forZoomFactorAnimationInterruption) // The zoom factor animation interruption is only effective with facades.
         {
             const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(content);
             if (IsVisualTranslationPropertyAvailable())
             {
-                contentVisual.StopAnimation(GetVisualTargetedPropertyName(ScrollerDimension::Scroll));
-                contentVisual.StopAnimation(GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor));
+                wstring_view scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+                wstring_view zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+
+                contentVisual.StopAnimation(scrollPropertyName);
+                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
+
+                contentVisual.StopAnimation(zoomFactorPropertyName);
+                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
             }
             else
             {
-                contentVisual.StopAnimation(GetVisualTargetedPropertyName(ScrollerDimension::HorizontalScroll));
-                contentVisual.StopAnimation(GetVisualTargetedPropertyName(ScrollerDimension::VerticalScroll));
-                contentVisual.StopAnimation(GetVisualTargetedPropertyName(ScrollerDimension::HorizontalZoomFactor));
-                contentVisual.StopAnimation(GetVisualTargetedPropertyName(ScrollerDimension::VerticalZoomFactor));
+                wstring_view horizontalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalScroll);
+                wstring_view verticalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalScroll);
+                wstring_view horizontalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalZoomFactor);
+                wstring_view verticalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalZoomFactor);
+
+                contentVisual.StopAnimation(horizontalScrollPropertyName);
+                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, horizontalScrollPropertyName /*propertyName*/);
+
+                contentVisual.StopAnimation(verticalScrollPropertyName);
+                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, verticalScrollPropertyName /*propertyName*/);
+
+                contentVisual.StopAnimation(horizontalZoomFactorPropertyName);
+                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, horizontalZoomFactorPropertyName /*propertyName*/);
+
+                contentVisual.StopAnimation(verticalZoomFactorPropertyName);
+                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, verticalZoomFactorPropertyName /*propertyName*/);
             }
+        }
+    }
+}
+
+// Returns True when Scroller::OnCompositionTargetRendering calls are not needed for restarting the Scale animation.
+bool Scroller::StartZoomFactorExpressionAnimation()
+{
+    if (m_zoomFactorAnimationRestartTicksCountdown > 0)
+    {
+        MUX_ASSERT(IsVisualTranslationPropertyAvailable());
+
+        // A Scale animation restart is pending after the Idle State was reached or a zoom factor change operation completed.
+        m_zoomFactorAnimationRestartTicksCountdown--;
+
+        if (m_zoomFactorAnimationRestartTicksCountdown == 0)
+        {
+            // Countdown is over, restart the Scale animation.
+            MUX_ASSERT(m_interactionTracker);
+
+            SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, m_animationRestartZoomFactor, m_zoomFactor);
+
+            StartTransformExpressionAnimations(Content(), true /*forZoomFactorAnimationInterruption*/);
+        }
+        else
+        {
+            // Countdown needs to continue.
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void Scroller::StopZoomFactorExpressionAnimation()
+{
+    if (m_zoomFactorExpressionAnimation && m_animationRestartZoomFactor != m_zoomFactor)
+    {
+        // The zoom factor has changed since the last restart of the Scale animation.
+        MUX_ASSERT(IsVisualTranslationPropertyAvailable());
+
+        const winrt::UIElement content = Content();
+
+        // The zoom factor animation interruption is only effective with facades.
+        if (SharedHelpers::IsTranslationFacadeAvailable(content))
+        {
+            if (m_zoomFactorAnimationRestartTicksCountdown == 0)
+            {
+                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, m_animationRestartZoomFactor, m_zoomFactor);
+
+                // Stop Scale animation to trigger rasterization of Content, to avoid fuzzy text rendering for instance.
+                StopTransformExpressionAnimations(content, true /*forZoomFactorAnimationInterruption*/);
+
+                // Trigger Scroller::OnCompositionTargetRendering calls in order to re-establish the Scale animation
+                // after the Content rasterization was triggered within a few ticks.
+                HookCompositionTargetRendering();
+            }
+
+            m_animationRestartZoomFactor = m_zoomFactor;
+            m_zoomFactorAnimationRestartTicksCountdown = s_zoomFactorAnimationRestartTicks;
         }
     }
 }
@@ -3112,25 +3240,16 @@ void Scroller::StartExpressionAnimationSourcesAnimations()
     MUX_ASSERT(m_zoomFactorSourceExpressionAnimation);
 
     m_expressionAnimationSources.StartAnimation(s_positionSourcePropertyName, m_positionSourceExpressionAnimation);
+    RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_positionSourcePropertyName /*propertyName*/);
+
     m_expressionAnimationSources.StartAnimation(s_minPositionSourcePropertyName, m_minPositionSourceExpressionAnimation);
+    RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_minPositionSourcePropertyName /*propertyName*/);
+
     m_expressionAnimationSources.StartAnimation(s_maxPositionSourcePropertyName, m_maxPositionSourceExpressionAnimation);
+    RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_maxPositionSourcePropertyName /*propertyName*/);
+
     m_expressionAnimationSources.StartAnimation(s_zoomFactorSourcePropertyName, m_zoomFactorSourceExpressionAnimation);
-}
-
-void Scroller::StopExpressionAnimationSourcesAnimations()
-{
-    MUX_ASSERT(m_interactionTracker);
-    MUX_ASSERT(m_expressionAnimationSources);
-    MUX_ASSERT(m_positionSourceExpressionAnimation);
-    MUX_ASSERT(m_minPositionSourceExpressionAnimation);
-    MUX_ASSERT(m_maxPositionSourceExpressionAnimation);
-    MUX_ASSERT(m_zoomFactorSourceExpressionAnimation);
-
-    //m_expressionAnimationSources.StopAnimation(s_offsetSourcePropertyName);
-    m_expressionAnimationSources.StopAnimation(s_positionSourcePropertyName);
-    m_expressionAnimationSources.StopAnimation(s_minPositionSourcePropertyName);
-    m_expressionAnimationSources.StopAnimation(s_maxPositionSourcePropertyName);
-    m_expressionAnimationSources.StopAnimation(s_zoomFactorSourcePropertyName);
+    RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_zoomFactorSourcePropertyName /*propertyName*/);
 }
 
 void Scroller::StartScrollControllerExpressionAnimationSourcesAnimations(
@@ -3146,7 +3265,10 @@ void Scroller::StartScrollControllerExpressionAnimationSourcesAnimations(
         MUX_ASSERT(m_horizontalScrollControllerMaxOffsetExpressionAnimation);
 
         m_horizontalScrollControllerExpressionAnimationSources.StartAnimation(s_offsetPropertyName, m_horizontalScrollControllerOffsetExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_offsetPropertyName /*propertyName*/);
+
         m_horizontalScrollControllerExpressionAnimationSources.StartAnimation(s_maxOffsetPropertyName, m_horizontalScrollControllerMaxOffsetExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_maxOffsetPropertyName /*propertyName*/);
     }
     else
     {
@@ -3155,7 +3277,10 @@ void Scroller::StartScrollControllerExpressionAnimationSourcesAnimations(
         MUX_ASSERT(m_verticalScrollControllerMaxOffsetExpressionAnimation);
 
         m_verticalScrollControllerExpressionAnimationSources.StartAnimation(s_offsetPropertyName, m_verticalScrollControllerOffsetExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_offsetPropertyName /*propertyName*/);
+
         m_verticalScrollControllerExpressionAnimationSources.StartAnimation(s_maxOffsetPropertyName, m_verticalScrollControllerMaxOffsetExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_maxOffsetPropertyName /*propertyName*/);
     }
 }
 
@@ -3170,14 +3295,20 @@ void Scroller::StopScrollControllerExpressionAnimationSourcesAnimations(
         MUX_ASSERT(m_horizontalScrollControllerExpressionAnimationSources);
 
         m_horizontalScrollControllerExpressionAnimationSources.StopAnimation(s_offsetPropertyName);
+        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_offsetPropertyName /*propertyName*/);
+
         m_horizontalScrollControllerExpressionAnimationSources.StopAnimation(s_maxOffsetPropertyName);
+        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_maxOffsetPropertyName /*propertyName*/);
     }
     else
     {
         MUX_ASSERT(m_verticalScrollControllerExpressionAnimationSources);
 
         m_verticalScrollControllerExpressionAnimationSources.StopAnimation(s_offsetPropertyName);
+        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_offsetPropertyName /*propertyName*/);
+
         m_verticalScrollControllerExpressionAnimationSources.StopAnimation(s_maxOffsetPropertyName);
+        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_maxOffsetPropertyName /*propertyName*/);
     }
 }
 
@@ -3648,7 +3779,7 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    bool unhookCompositionTargetRendering = true;
+    bool unhookCompositionTargetRendering = StartZoomFactorExpressionAnimation();
 
     if (!m_interactionTrackerAsyncOperations.empty() && IsLoaded())
     {
@@ -3692,6 +3823,11 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
                 {
                     // The non-animated view change request did not result in a status change or ValuesChanged notification. Consider it completed.
                     CompleteViewChange(interactionTrackerAsyncOperation, ScrollerViewChangeResult::Completed);
+                    if (m_zoomFactorAnimationRestartTicksCountdown > 0)
+                    {
+                        // Do not unhook the Rendering event when there is a pending restart of the Scale animation. 
+                        unhookCompositionTargetRendering = false;
+                    }
                     m_interactionTrackerAsyncOperations.remove(interactionTrackerAsyncOperation);
                 }
                 else
@@ -3781,7 +3917,8 @@ void Scroller::OnUnloaded(
             ScrollerViewChangeResult::Interrupted /*operationResult*/,
             ScrollerViewChangeResult::Ignored     /*unused priorNonAnimatedOperationsResult*/,
             ScrollerViewChangeResult::Ignored     /*unused priorAnimatedOperationsResult*/,
-            true  /*completeOperation*/,
+            true  /*completeNonAnimatedOperation*/,
+            true  /*completeAnimatedOperation*/,
             false /*completePriorNonAnimatedOperations*/,
             false /*completePriorAnimatedOperations*/);
 
@@ -4851,7 +4988,8 @@ void Scroller::UpdateContent(
                 ScrollerViewChangeResult::Interrupted /*operationResult*/,
                 ScrollerViewChangeResult::Ignored     /*unused priorNonAnimatedOperationsResult*/,
                 ScrollerViewChangeResult::Ignored     /*unused priorAnimatedOperationsResult*/,
-                true  /*completeOperation*/,
+                true  /*completeNonAnimatedOperation*/,
+                true  /*completeAnimatedOperation*/,
                 false /*completePriorNonAnimatedOperations*/,
                 false /*completePriorAnimatedOperations*/);
         }
@@ -4865,7 +5003,7 @@ void Scroller::UpdateContent(
             if ((m_transformMatrixTranslateXExpressionAnimation && m_transformMatrixTranslateYExpressionAnimation && m_transformMatrixZoomFactorExpressionAnimation && !useTranslationProperty) ||
                 (m_translationExpressionAnimation && m_zoomFactorExpressionAnimation && useTranslationProperty))
             {
-                StopTransformExpressionAnimations(oldContent);
+                StopTransformExpressionAnimations(oldContent, false /*forZoomFactorAnimationInterruption*/);
             }
             ScrollToOffsets(0.0 /*zoomedHorizontalOffset*/, 0.0 /*zoomedVerticalOffset*/);
         }
@@ -4903,8 +5041,11 @@ void Scroller::UpdatePositionBoundaries(
         m_minPositionExpressionAnimation.SetScalarParameter(L"contentLayoutOffsetY", m_contentLayoutOffsetY);
         m_maxPositionExpressionAnimation.SetScalarParameter(L"contentLayoutOffsetY", m_contentLayoutOffsetY);
 
-        m_interactionTracker.StartAnimation(L"MinPosition", m_minPositionExpressionAnimation);
-        m_interactionTracker.StartAnimation(L"MaxPosition", m_maxPositionExpressionAnimation);
+        m_interactionTracker.StartAnimation(s_minPositionSourcePropertyName, m_minPositionExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_minPositionSourcePropertyName /*propertyName*/);
+
+        m_interactionTracker.StartAnimation(s_maxPositionSourcePropertyName, m_maxPositionExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_maxPositionSourcePropertyName /*propertyName*/);
     }
 
 #ifdef _DEBUG
@@ -4920,8 +5061,8 @@ void Scroller::UpdateTransformSource(
         (m_translationExpressionAnimation && m_zoomFactorExpressionAnimation && IsVisualTranslationPropertyAvailable()));
     MUX_ASSERT(m_interactionTracker);
 
-    StopTransformExpressionAnimations(oldContent);
-    StartTransformExpressionAnimations(newContent);
+    StopTransformExpressionAnimations(oldContent, false /*forZoomFactorAnimationInterruption*/);
+    StartTransformExpressionAnimations(newContent, false /*forZoomFactorAnimationInterruption*/);
 }
 
 void Scroller::UpdateState(
@@ -6472,6 +6613,9 @@ void Scroller::CompleteViewChange(
                 RaiseViewChangeCompleted(true /*isForScroll*/, result, interactionTrackerAsyncOperation->GetViewChangeId());
                 break;
             default:
+                // Stop Scale animation if needed, to trigger rasterization of Content & avoid fuzzy text rendering for instance.
+                StopZoomFactorExpressionAnimation();
+
                 RaiseViewChangeCompleted(false /*isForScroll*/, result, interactionTrackerAsyncOperation->GetViewChangeId());
                 break;
             }
@@ -6509,12 +6653,13 @@ void Scroller::CompleteInteractionTrackerOperations(
     ScrollerViewChangeResult operationResult,
     ScrollerViewChangeResult priorNonAnimatedOperationsResult,
     ScrollerViewChangeResult priorAnimatedOperationsResult,
-    bool completeOperation,
+    bool completeNonAnimatedOperation,
+    bool completeAnimatedOperation,
     bool completePriorNonAnimatedOperations,
     bool completePriorAnimatedOperations)
 {
     MUX_ASSERT(requestId != 0);
-    MUX_ASSERT(completeOperation || completePriorNonAnimatedOperations || completePriorAnimatedOperations);
+    MUX_ASSERT(completeNonAnimatedOperation || completeAnimatedOperation || completePriorNonAnimatedOperations || completePriorAnimatedOperations);
 
     if (m_interactionTrackerAsyncOperations.empty())
     {
@@ -6531,10 +6676,12 @@ void Scroller::CompleteInteractionTrackerOperations(
         bool isPriorMatch = requestId > interactionTrackerAsyncOperation->GetRequestId() && -1 != interactionTrackerAsyncOperation->GetRequestId();
 
         if ((isPriorMatch && (completePriorNonAnimatedOperations || completePriorAnimatedOperations)) ||
-            (isMatch && completeOperation))
+            (isMatch && (completeNonAnimatedOperation || completeAnimatedOperation)))
         {
             bool isOperationAnimated = interactionTrackerAsyncOperation->IsAnimated();
-            bool complete = (isMatch && completeOperation) ||
+            bool complete =
+                (isMatch && completeNonAnimatedOperation && !isOperationAnimated) ||
+                (isMatch && completeAnimatedOperation && isOperationAnimated) ||
                 (isPriorMatch && completePriorNonAnimatedOperations && !isOperationAnimated) ||
                 (isPriorMatch && completePriorAnimatedOperations && isOperationAnimated);
 
@@ -7061,6 +7208,18 @@ void Scroller::RaiseInteractionSourcesChanged()
     if (globalTestHooks && globalTestHooks->AreInteractionSourcesNotificationsRaised())
     {
         globalTestHooks->NotifyInteractionSourcesChanged(*this, m_interactionTracker.InteractionSources());
+    }
+}
+
+void Scroller::RaiseExpressionAnimationStatusChanged(
+    bool isExpressionAnimationStarted,
+    wstring_view const& propertyName)
+{
+    com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
+
+    if (globalTestHooks && globalTestHooks->AreExpressionAnimationStatusNotificationsRaised())
+    {
+        globalTestHooks->NotifyExpressionAnimationStatusChanged(*this, isExpressionAnimationStarted, propertyName);
     }
 }
 

@@ -75,6 +75,11 @@ public:
     static constexpr int s_zoomFactorChangeMinMs{ 50 };
     static constexpr int s_zoomFactorChangeMaxMs{ 1000 };
 
+    // Number of ticks ellapsed before restarting the Scale animation to allow
+    // the Content rasterization to be triggered after the Idle State is reached
+    // or a zoom factor change operation completed.
+    static constexpr int s_zoomFactorAnimationRestartTicks = 4;
+
     // Mouse-wheel-triggered scrolling/zooming constants
     // Mouse wheel delta amount required per initial velocity unit
     // 120 matches the built-in InteractionTracker scrolling/zooming behavior introduced in RS5.
@@ -351,11 +356,14 @@ private:
     void SetupTransformExpressionAnimations(
         const winrt::UIElement& content);
     void StartTransformExpressionAnimations(
-        const winrt::UIElement& content);
+        const winrt::UIElement& content,
+        bool forZoomFactorAnimationInterruption);
     void StopTransformExpressionAnimations(
-        const winrt::UIElement& content);
+        const winrt::UIElement& content,
+        bool forZoomFactorAnimationInterruption);
+    bool StartZoomFactorExpressionAnimation();
+    void StopZoomFactorExpressionAnimation();
     void StartExpressionAnimationSourcesAnimations();
-    void StopExpressionAnimationSourcesAnimations();
     void StartScrollControllerExpressionAnimationSourcesAnimations(
         ScrollerDimension dimension);
     void StopScrollControllerExpressionAnimationSourcesAnimations(
@@ -456,7 +464,8 @@ private:
         ScrollerViewChangeResult operationResult,
         ScrollerViewChangeResult priorNonAnimatedOperationsResult,
         ScrollerViewChangeResult priorAnimatedOperationsResult,
-        bool completeOperation,
+        bool completeNonAnimatedOperation,
+        bool completeAnimatedOperation,
         bool completePriorNonAnimatedOperations,
         bool completePriorAnimatedOperations);
     void CompleteDelayedOperations();
@@ -554,6 +563,9 @@ private:
         const winrt::IScrollController& verticalScrollController);
 
     void RaiseInteractionSourcesChanged();
+    void RaiseExpressionAnimationStatusChanged(
+        bool isExpressionAnimationStarted,
+        wstring_view const& propertyName);
     void RaiseExtentChanged();
     void RaiseStateChanged();
     void RaiseViewChanged();
@@ -742,6 +754,7 @@ private:
     int m_latestInteractionTrackerRequest{ 0 };
     InteractionTrackerAsyncOperationType m_lastInteractionTrackerAsyncOperationType{ InteractionTrackerAsyncOperationType::None };
     winrt::float2 m_endOfInertiaPosition{ 0.0f, 0.0f };
+    float m_animationRestartZoomFactor{ 1.0f };
     float m_endOfInertiaZoomFactor{ 1.0f };
     float m_zoomFactor{ 1.0f };
     float m_contentLayoutOffsetX{ 0.0f };
@@ -760,6 +773,11 @@ private:
     double m_rawPixelsPerViewPixel{};
     uint32_t m_screenWidthInRawPixels{};
     uint32_t m_screenHeightInRawPixels{};
+
+    // Number of ticks remaining before restarting the Scale animation to allow
+    // the Content rasterization to be triggered after the Idle State is reached
+    // or a zoom factor change operation completed.
+    uint8_t m_zoomFactorAnimationRestartTicksCountdown{};
 
     // For perf reasons, the value of ContentOrientation is cached.
     winrt::ContentOrientation m_contentOrientation{ s_defaultContentOrientation };
