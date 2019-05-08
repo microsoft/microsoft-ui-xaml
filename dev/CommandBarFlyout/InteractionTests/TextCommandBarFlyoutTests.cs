@@ -547,7 +547,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Find \"ads\" in the proofing menu to fix the spelling error.");
                 var proofingItem = new MenuItem(FindElement.ByNameAndClassName("ads", "MenuFlyoutItem"));
                 Log.Comment($"Invoke {proofingItem}");
-                proofingItem.Invoke();
+                proofingItem.InvokeAndWait();
 
                 Verify.AreEqual("ads ", textBox.Value);
             }

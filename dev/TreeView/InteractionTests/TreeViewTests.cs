@@ -857,7 +857,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 dragUIObject.Click();
 
                 Log.Comment("Starting Drag...distance:" + distance);
-                InputHelper.DragDistance(dragUIObject, distance, Direction.South, 4000);
+                InputHelper.DragDistance(dragUIObject, distance, Direction.South);
 
                 TestEnvironment.VerifyAreEqualWithRetry(
                     5,
@@ -2581,7 +2581,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private void ClickButton(string buttonName)
         {
             var button = new Button(FindElement.ByName(buttonName));
-            button.Invoke();
+            button.InvokeAndWait();
             Wait.ForIdle();
         }
 
