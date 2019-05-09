@@ -1,0 +1,98 @@
+﻿<Page
+    x:Class="MUXControlsTestApp.Samples.FlexboxGrowPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp.Samples"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel>
+        <StackPanel.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="FontSize" Value="24"/>
+            </Style>
+            <Style TargetType="Grid">
+                <Setter Property="Background" Value="Orange"/>
+                <Setter Property="MinWidth" Value="80"/>
+                <Setter Property="MinHeight" Value="50"/>
+                <Setter Property="Margin" Value="6"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="BorderBrush" Value="Black"/>
+                <Setter Property="BorderThickness" Value="2"/>
+            </Style>
+            <Style TargetType="controls:LayoutPanel">
+                <Setter Property="Background" Value="Purple"/>
+                <Setter Property="Margin" Value="0,0,0,20"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+            </Style>
+        </StackPanel.Resources>
+
+        <controls:LayoutPanel MinWidth="500">
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout/>
+            </controls:LayoutPanel.Layout>
+            <Grid controls:FlexboxLayout.Grow="0">
+                <TextBlock>0</TextBlock>
+            </Grid>
+            <Grid controls:FlexboxLayout.Grow="0">
+                <TextBlock>0</TextBlock>
+            </Grid>
+            <Grid controls:FlexboxLayout.Grow="0">
+                <TextBlock>0</TextBlock>
+            </Grid>
+        </controls:LayoutPanel>
+
+        <controls:LayoutPanel MinWidth="500">
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout/>
+            </controls:LayoutPanel.Layout>
+            <Grid controls:FlexboxLayout.Grow="0">
+                <TextBlock>0</TextBlock>
+            </Grid>
+            <Grid controls:FlexboxLayout.Grow="1">
+                <TextBlock>1</TextBlock>
+            </Grid>
+            <Grid controls:FlexboxLayout.Grow="0">
+                <TextBlock>0</TextBlock>
+            </Grid>
+        </controls:LayoutPanel>
+
+        <controls:LayoutPanel MinWidth="500">
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout/>
+            </controls:LayoutPanel.Layout>
+            <Grid controls:FlexboxLayout.Grow="1">
+                <TextBlock>1</TextBlock>
+            </Grid>
+            <Grid controls:FlexboxLayout.Grow="1">
+                <TextBlock>1</TextBlock>
+            </Grid>
+            <Grid controls:FlexboxLayout.Grow="1">
+                <TextBlock>1</TextBlock>
+            </Grid>
+        </controls:LayoutPanel>
+
+        <controls:LayoutPanel MinWidth="500">
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout/>
+            </controls:LayoutPanel.Layout>
+            <Grid controls:FlexboxLayout.Grow="1">
+                <TextBlock>1</TextBlock>
+            </Grid>
+            <Grid controls:FlexboxLayout.Grow="2">
+                <TextBlock>2</TextBlock>
+            </Grid>
+            <Grid controls:FlexboxLayout.Grow="1">
+                <TextBlock>1</TextBlock>
+            </Grid>
+        </controls:LayoutPanel>
+    </StackPanel>
+    
+</Page>

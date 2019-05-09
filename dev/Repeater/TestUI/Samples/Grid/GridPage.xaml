@@ -1,0 +1,45 @@
+﻿<Page
+    x:Class="MUXControlsTestApp.Samples.GridPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp.Samples"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <controls:NavigationView x:Name="_navView"
+            IsBackEnabled="True"
+            PaneDisplayMode="Left"
+            ItemInvoked="NavigationView_ItemInvoked"
+            BackRequested="NavigationView_BackRequested">
+        <controls:NavigationView.MenuItems>
+            <controls:NavigationViewItem Tag="Home" Icon="Play" Content="Playground"/>
+            <controls:NavigationViewItemSeparator/>
+            <controls:NavigationViewItemHeader>Container Properties</controls:NavigationViewItemHeader>
+            <controls:NavigationViewItem Tag="TemplateColumnsAndRows" Icon="DockLeft" Content="TemplateColumns &amp; TemplateRows"/>
+            <controls:NavigationViewItem Tag="TemplateAreas" Icon="PreviewLink" Content="TemplateAreas (NYI)"/>
+            <controls:NavigationViewItem Tag="ColumnAndRowGap" Icon="SelectAll" Content="ColumnGap &amp; RowGap"/>
+            <controls:NavigationViewItem Tag="JustifyAndAlignItems" Icon="AlignLeft" Content="JustifyItems &amp; AlignItems"/>
+            <controls:NavigationViewItem Tag="JustifyAndAlignContent" Icon="NewWindow" Content="JustifyContent &amp; AlignContent"/>
+            <controls:NavigationViewItem Tag="AutoColumnsAndRows" Icon="ShowBcc" Content="AutoColumns &amp; AutoRows"/>
+            <controls:NavigationViewItem Tag="AutoFlow" Icon="ImportAll" Content="AutoFlow"/>
+            <controls:NavigationViewItemSeparator/>
+            <controls:NavigationViewItemHeader>Item Properties</controls:NavigationViewItemHeader>
+            <controls:NavigationViewItem Tag="ColumnStartAndRowStart" Icon="Sort" Content="ColumnStart &amp; RowStart"/>
+            <controls:NavigationViewItem Tag="ColumnEndAndRowEnd" Icon="Switch" Content="ColumnEnd &amp; RowEnd"/>
+            <controls:NavigationViewItem Tag="Area" Icon="StopSlideShow" Content="Area"/>
+            <controls:NavigationViewItem Tag="JustifyAndAlignSelf" Icon="ContactInfo" Content="JustifySelf &amp; AlignSelf"/>
+            <controls:NavigationViewItemSeparator/>
+            <controls:NavigationViewItemHeader>Scenarios</controls:NavigationViewItemHeader>
+            <controls:NavigationViewItem Tag="AutoFlowColumnsScenarios" Icon="Contact2" Content="AutoFlow &amp; AutoColumns/Rows"/>
+        </controls:NavigationView.MenuItems>
+
+        <ScrollViewer>
+            <Frame x:Name="_contentFrame"/>
+        </ScrollViewer>
+
+    </controls:NavigationView>
+    
+</Page>
