@@ -1,0 +1,322 @@
+﻿<Page
+    x:Class="MUXControlsTestApp.Samples.GridAutoFlowPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp.Samples"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel>
+        <StackPanel.Resources>
+            <Style x:Key="HeaderStyle" TargetType="TextBlock">
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="Margin" Value="0,12,0,0"/>
+            </Style>
+        </StackPanel.Resources>
+
+        <TextBlock>Columns: 120px 120px 120px 120px 120px</TextBlock>
+        <TextBlock>Rows: 60px 60px</TextBlock>
+        
+        <!--
+            grid-template-columns: 60px 60px 60px 60px 60px;
+            grid-template-rows: 30px 30px;
+            grid-auto-flow: Row;
+        -->
+        <TextBlock Style="{StaticResource HeaderStyle}">AutoFlow: Row</TextBlock>
+        <controls:LayoutPanel>
+            <controls:LayoutPanel.Layout>
+                <controls:GridLayout AutoFlow="Row">
+                    <controls:GridLayout.TemplateColumns>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                    </controls:GridLayout.TemplateColumns>
+                    <controls:GridLayout.TemplateRows>
+                        <controls:GridTrackInfo Length="60"/>
+                        <controls:GridTrackInfo Length="60"/>
+                    </controls:GridLayout.TemplateRows>
+
+                </controls:GridLayout>
+            </controls:LayoutPanel.Layout>
+            <controls:LayoutPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="FontSize" Value="18"/>
+                </Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="Orange"/>
+                    <Setter Property="Margin" Value="2"/>
+                    <Setter Property="CornerRadius" Value="6"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalAlignment" Value="Stretch"/>
+                </Style>
+            </controls:LayoutPanel.Resources>
+                
+            <Grid Background="#FFA500">
+                <TextBlock>item-a</TextBlock>
+            </Grid>
+
+            <Grid Background="#0000FF">
+                <TextBlock>item-b</TextBlock>
+            </Grid>
+
+            <Grid Background="#FF0000">
+                <TextBlock>item-c</TextBlock>
+            </Grid>
+
+            <Grid Background="#8FBC8F">
+                <TextBlock>item-d</TextBlock>
+            </Grid>
+
+            <Grid Background="#BC8FBC">
+                <TextBlock>item-e</TextBlock>
+            </Grid>
+
+        </controls:LayoutPanel>
+
+        <!--
+            grid-template-columns: 60px 60px 60px 60px 60px;
+            grid-template-rows: 30px 30px;
+            grid-auto-flow: Column;
+        -->
+        <TextBlock Style="{StaticResource HeaderStyle}">AutoFlow: Column</TextBlock>
+        <controls:LayoutPanel>
+            <controls:LayoutPanel.Layout>
+                <controls:GridLayout AutoFlow="Column">
+                    <controls:GridLayout.TemplateColumns>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                    </controls:GridLayout.TemplateColumns>
+                    <controls:GridLayout.TemplateRows>
+                        <controls:GridTrackInfo Length="60"/>
+                        <controls:GridTrackInfo Length="60"/>
+                    </controls:GridLayout.TemplateRows>
+                </controls:GridLayout>
+            </controls:LayoutPanel.Layout>
+            <controls:LayoutPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="FontSize" Value="18"/>
+                </Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="Orange"/>
+                    <Setter Property="Margin" Value="2"/>
+                    <Setter Property="CornerRadius" Value="6"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalAlignment" Value="Stretch"/>
+                </Style>
+            </controls:LayoutPanel.Resources>
+
+            <Grid Background="#FFA500">
+                <TextBlock>item-a</TextBlock>
+            </Grid>
+
+            <Grid Background="#0000FF">
+                <TextBlock>item-b</TextBlock>
+            </Grid>
+
+            <Grid Background="#FF0000">
+                <TextBlock>item-c</TextBlock>
+            </Grid>
+
+            <Grid Background="#8FBC8F">
+                <TextBlock>item-d</TextBlock>
+            </Grid>
+
+            <Grid Background="#BC8FBC">
+                <TextBlock>item-e</TextBlock>
+            </Grid>
+
+        </controls:LayoutPanel>
+
+        <!--
+            .container {
+              display: grid;
+              grid-template-columns: 60px 60px 60px 60px 60px;
+              grid-template-rows: 30px 30px;
+              grid-auto-flow: row;
+            }
+
+            .item-a {
+              grid-column: 1;
+              grid-row: 1 / 3;
+            }
+            .item-e {
+              grid-column: 5;
+              grid-row: 1 / 3;
+            }
+        -->
+        <TextBlock Style="{StaticResource HeaderStyle}">AutoFlow: Row</TextBlock>
+        <TextBlock>With fixed row spanning items at columns 0 and 4</TextBlock>
+        <controls:LayoutPanel>
+            <controls:LayoutPanel.Layout>
+                <controls:GridLayout AutoFlow="Row">
+                    <controls:GridLayout.TemplateColumns>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                    </controls:GridLayout.TemplateColumns>
+                    <controls:GridLayout.TemplateRows>
+                        <controls:GridTrackInfo Length="60"/>
+                        <controls:GridTrackInfo Length="60"/>
+                    </controls:GridLayout.TemplateRows>
+                </controls:GridLayout>
+            </controls:LayoutPanel.Layout>
+            <controls:LayoutPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="FontSize" Value="18"/>
+                </Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="Orange"/>
+                    <Setter Property="Margin" Value="2"/>
+                    <Setter Property="CornerRadius" Value="6"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalAlignment" Value="Stretch"/>
+                </Style>
+            </controls:LayoutPanel.Resources>
+                
+            <Grid Background="#FFA500">
+                <controls:GridLayout.ColumnStart>
+                    <controls:GridLocation Index="0"/>
+                </controls:GridLayout.ColumnStart>
+                <controls:GridLayout.RowStart>
+                    <controls:GridLocation Index="0"/>
+                </controls:GridLayout.RowStart>
+                <controls:GridLayout.RowEnd>
+                    <controls:GridLocation Index="2"/>
+                </controls:GridLayout.RowEnd>
+                <TextBlock>item-a</TextBlock>
+            </Grid>
+
+            <Grid Background="#0000FF">
+                <TextBlock>item-b</TextBlock>
+            </Grid>
+
+            <Grid Background="#FF0000">
+                <TextBlock>item-c</TextBlock>
+            </Grid>
+
+            <Grid Background="#8FBC8F">
+                <TextBlock>item-d</TextBlock>
+            </Grid>
+
+            <Grid Background="#BC8FBC">
+                <controls:GridLayout.ColumnStart>
+                    <controls:GridLocation Index="4"/>
+                </controls:GridLayout.ColumnStart>
+                <controls:GridLayout.RowStart>
+                    <controls:GridLocation Index="0"/>
+                </controls:GridLayout.RowStart>
+                <controls:GridLayout.RowEnd>
+                    <controls:GridLocation Index="2"/>
+                </controls:GridLayout.RowEnd>
+                <TextBlock>item-e</TextBlock>
+            </Grid>
+
+        </controls:LayoutPanel>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">AutoFlow: Column</TextBlock>
+        <TextBlock>With fixed row spanning items at columns 0 and 4</TextBlock>
+        <controls:LayoutPanel>
+            <controls:LayoutPanel.Layout>
+                <controls:GridLayout AutoFlow="Column">
+                    <controls:GridLayout.TemplateColumns>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                        <controls:GridTrackInfo Length="120"/>
+                    </controls:GridLayout.TemplateColumns>
+                    <controls:GridLayout.TemplateRows>
+                        <controls:GridTrackInfo Length="60"/>
+                        <controls:GridTrackInfo Length="60"/>
+                    </controls:GridLayout.TemplateRows>
+                </controls:GridLayout>
+            </controls:LayoutPanel.Layout>
+            <controls:LayoutPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="FontSize" Value="18"/>
+                </Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="Orange"/>
+                    <Setter Property="Margin" Value="2"/>
+                    <Setter Property="CornerRadius" Value="6"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalAlignment" Value="Stretch"/>
+                </Style>
+            </controls:LayoutPanel.Resources>
+                
+            <Grid Background="#FFA500">
+                <controls:GridLayout.ColumnStart>
+                    <controls:GridLocation Index="0"/>
+                </controls:GridLayout.ColumnStart>
+                <controls:GridLayout.RowStart>
+                    <controls:GridLocation Index="0"/>
+                </controls:GridLayout.RowStart>
+                <controls:GridLayout.RowEnd>
+                    <controls:GridLocation Index="2"/>
+                </controls:GridLayout.RowEnd>
+                <TextBlock>item-a</TextBlock>
+            </Grid>
+
+            <Grid Background="#0000FF">
+                <TextBlock>item-b</TextBlock>
+            </Grid>
+
+            <Grid Background="#FF0000">
+                <TextBlock>item-c</TextBlock>
+            </Grid>
+
+            <Grid Background="#8FBC8F">
+                <TextBlock>item-d</TextBlock>
+            </Grid>
+
+            <Grid Background="#BC8FBC">
+                <controls:GridLayout.ColumnStart>
+                    <controls:GridLocation Index="4"/>
+                </controls:GridLayout.ColumnStart>
+                <controls:GridLayout.RowStart>
+                    <controls:GridLocation Index="0"/>
+                </controls:GridLayout.RowStart>
+                <controls:GridLayout.RowEnd>
+                    <controls:GridLocation Index="2"/>
+                </controls:GridLayout.RowEnd>
+                <TextBlock>item-e</TextBlock>
+            </Grid>
+
+        </controls:LayoutPanel>
+        
+    </StackPanel>
+</Page>

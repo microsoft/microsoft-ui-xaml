@@ -44,7 +44,95 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxAlignContentPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxAlignItemsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxAlignSelfPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxDirectionPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxGrowPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxJustifyContentPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxOrderPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxPlaygroundPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxShrinkPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxWrapPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Samples\FlowLayoutDemoPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Grid\GridAutoColumnsAndRowsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Grid\GridAutoFlowColumnsScenariosPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Grid\GridAutoFlowPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Grid\GridColumnAndRowGapPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Grid\GridColumnAndRowStartPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Grid\GridJustifyAndAlignContentPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Grid\GridJustifyAndAlignItemsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Grid\GridJustifyAndAlignSelfPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Grid\GridPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Grid\GridPlaygroundPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\Grid\GridTemplateColumnsAndRowsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -115,8 +203,74 @@
     <Compile Include="$(MSBuildThisFileDirectory)Samples\Defaults.xaml.cs">
       <DependentUpon>Defaults.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxAlignContentPage.xaml.cs">
+      <DependentUpon>FlexboxAlignContentPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxAlignItemsPage.xaml.cs">
+      <DependentUpon>FlexboxAlignItemsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxAlignSelfPage.xaml.cs">
+      <DependentUpon>FlexboxAlignSelfPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxDirectionPage.xaml.cs">
+      <DependentUpon>FlexboxDirectionPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxGrowPage.xaml.cs">
+      <DependentUpon>FlexboxGrowPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxJustifyContentPage.xaml.cs">
+      <DependentUpon>FlexboxJustifyContentPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxOrderPage.xaml.cs">
+      <DependentUpon>FlexboxOrderPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxPage.xaml.cs">
+      <DependentUpon>FlexboxPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxPlaygroundPage.xaml.cs">
+      <DependentUpon>FlexboxPlaygroundPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxShrinkPage.xaml.cs">
+      <DependentUpon>FlexboxShrinkPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Flexbox\FlexboxWrapPage.xaml.cs">
+      <DependentUpon>FlexboxWrapPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Samples\FlowLayoutDemoPage.xaml.cs">
       <DependentUpon>FlowLayoutDemoPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Grid\GridAutoColumnsAndRowsPage.xaml.cs">
+      <DependentUpon>GridAutoColumnsAndRowsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Grid\GridAutoFlowColumnsScenariosPage.xaml.cs">
+      <DependentUpon>GridAutoFlowColumnsScenariosPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Grid\GridAutoFlowPage.xaml.cs">
+      <DependentUpon>GridAutoFlowPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Grid\GridColumnAndRowGapPage.xaml.cs">
+      <DependentUpon>GridColumnAndRowGapPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Grid\GridColumnAndRowStartPage.xaml.cs">
+      <DependentUpon>GridColumnAndRowStartPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Grid\GridJustifyAndAlignContentPage.xaml.cs">
+      <DependentUpon>GridJustifyAndAlignContentPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Grid\GridJustifyAndAlignItemsPage.xaml.cs">
+      <DependentUpon>GridJustifyAndAlignItemsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Grid\GridJustifyAndAlignSelfPage.xaml.cs">
+      <DependentUpon>GridJustifyAndAlignSelfPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Grid\GridPage.xaml.cs">
+      <DependentUpon>GridPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Grid\GridPlaygroundPage.xaml.cs">
+      <DependentUpon>GridPlaygroundPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\Grid\GridTemplateColumnsAndRowsPage.xaml.cs">
+      <DependentUpon>GridTemplateColumnsAndRowsPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Samples\ItemTemplateSamples\ItemTemplateDemo.xaml.cs">
       <DependentUpon>ItemTemplateDemo.xaml</DependentUpon>

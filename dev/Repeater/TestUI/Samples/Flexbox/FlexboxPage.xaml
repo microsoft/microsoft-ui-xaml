@@ -1,0 +1,40 @@
+﻿<Page
+    x:Class="MUXControlsTestApp.Samples.FlexboxPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp.Samples"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <controls:NavigationView x:Name="_navView"
+            IsBackEnabled="True"
+            PaneDisplayMode="Left"
+            ItemInvoked="NavigationView_ItemInvoked"
+            BackRequested="NavigationView_BackRequested">
+        <controls:NavigationView.MenuItems>
+            <controls:NavigationViewItem Tag="Home" Icon="Play" Content="Playground"/>
+            <controls:NavigationViewItemSeparator/>
+            <controls:NavigationViewItemHeader>Container Properties</controls:NavigationViewItemHeader>
+            <controls:NavigationViewItem Tag="Direction" Icon="Switch" Content="Direction"/>
+            <controls:NavigationViewItem Tag="Wrap" Icon="FullScreen" Content="Wrap"/>
+            <controls:NavigationViewItem Tag="JustifyContent" Icon="AlignCenter" Content="JustifyContent"/>
+            <controls:NavigationViewItem Tag="AlignItems" Icon="AlignLeft" Content="AlignItems"/>
+            <controls:NavigationViewItem Tag="AlignContent" Icon="NewWindow" Content="AlignContent"/>
+            <controls:NavigationViewItemSeparator/>
+            <controls:NavigationViewItemHeader>Item Properties</controls:NavigationViewItemHeader>
+            <controls:NavigationViewItem Tag="Order" Icon="AllApps" Content="Order"/>
+            <controls:NavigationViewItem Tag="Grow" Icon="ZoomIn" Content="Grow"/>
+            <controls:NavigationViewItem Tag="Shrink" Icon="ZoomOut" Content="Shrink"/>
+            <controls:NavigationViewItem Tag="AlignSelf" Icon="ContactInfo" Content="AlignSelf"/>
+        </controls:NavigationView.MenuItems>
+
+        <ScrollViewer>
+            <Frame x:Name="_contentFrame"/>
+        </ScrollViewer>
+
+    </controls:NavigationView>
+    
+</Page>

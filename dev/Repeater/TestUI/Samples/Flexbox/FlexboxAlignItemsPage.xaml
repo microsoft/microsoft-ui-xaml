@@ -1,0 +1,111 @@
+﻿<Page
+    x:Class="MUXControlsTestApp.Samples.FlexboxAlignItemsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp.Samples"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel>
+        <StackPanel.Resources>
+            <Style TargetType="Grid">
+                <Setter Property="Background" Value="Orange"/>
+                <Setter Property="MinWidth" Value="50"/>
+                <Setter Property="MinHeight" Value="50"/>
+                <Setter Property="Margin" Value="6"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="BorderBrush" Value="Black"/>
+                <Setter Property="BorderThickness" Value="2"/>
+            </Style>
+            <Style TargetType="controls:LayoutPanel">
+                <Setter Property="Background" Value="Purple"/>
+                <Setter Property="Margin" Value="0,0,0,20"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+            </Style>
+            <Style x:Key="HeaderStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+            </Style>
+        </StackPanel.Resources>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">Start</TextBlock>
+
+        <controls:LayoutPanel>
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout Direction="Row" AlignItems="Start"/>
+            </controls:LayoutPanel.Layout>
+            <Grid MinHeight="100"/>
+            <Grid MinHeight="120"/>
+            <Grid MinHeight="60"/>
+            <Grid MinHeight="100"/>
+        </controls:LayoutPanel>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">End</TextBlock>
+
+        <controls:LayoutPanel>
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout Direction="Row" AlignItems="End"/>
+            </controls:LayoutPanel.Layout>
+            <Grid MinHeight="100"/>
+            <Grid MinHeight="120"/>
+            <Grid MinHeight="60"/>
+            <Grid MinHeight="100"/>
+        </controls:LayoutPanel>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">Center</TextBlock>
+
+        <controls:LayoutPanel>
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout Direction="Row" AlignItems="Center"/>
+            </controls:LayoutPanel.Layout>
+            <Grid MinHeight="100"/>
+            <Grid MinHeight="120"/>
+            <Grid MinHeight="60"/>
+            <Grid MinHeight="100"/>
+        </controls:LayoutPanel>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">Stretch</TextBlock>
+
+        <controls:LayoutPanel>
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout Direction="Row" AlignItems="Stretch"/>
+            </controls:LayoutPanel.Layout>
+            <Grid MinHeight="100"/>
+            <Grid MinHeight="120"/>
+            <Grid MinHeight="60"/>
+            <Grid MinHeight="100"/>
+        </controls:LayoutPanel>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">Baseline</TextBlock>
+
+        <!-- NYI: Baseline -->
+        <!--<controls:LayoutPanel>
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout Direction="Row" AlignItems="Baseline"/>
+            </controls:LayoutPanel.Layout>
+            <controls:LayoutPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="Black"/>
+                    <Setter Property="VerticalAlignment" Value="Top"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="Margin" Value="0,20,0,0"/>
+                </Style>
+            </controls:LayoutPanel.Resources>
+            <Grid MinHeight="100" MinWidth="80">
+                <TextBlock FontSize="15">text text</TextBlock>
+            </Grid>
+            <Grid MinHeight="120" MinWidth="80">
+                <TextBlock FontSize="12">text text</TextBlock>
+            </Grid>
+            <Grid MinHeight="60" MinWidth="80">
+                <TextBlock FontSize="18">text text</TextBlock>
+            </Grid>
+            <Grid MinHeight="100" MinWidth="80">
+                <TextBlock FontSize="15">text text</TextBlock>
+            </Grid>
+        </controls:LayoutPanel>-->
+    </StackPanel>
+</Page>

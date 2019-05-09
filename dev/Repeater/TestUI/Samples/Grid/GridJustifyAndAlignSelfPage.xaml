@@ -1,0 +1,64 @@
+﻿<Page
+    x:Class="MUXControlsTestApp.Samples.GridJustifyAndAlignSelfPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp.Samples"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel>
+
+        <controls:LayoutPanel>
+            <controls:LayoutPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="FontSize" Value="18"/>
+                </Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="Orange"/>
+                    <Setter Property="Margin" Value="2"/>
+                    <Setter Property="CornerRadius" Value="6"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalAlignment" Value="Stretch"/>
+                </Style>
+            </controls:LayoutPanel.Resources>
+            <controls:LayoutPanel.Layout>
+                <controls:GridLayout>
+                    <controls:GridLayout.TemplateColumns>
+                        <controls:GridTrackInfo Length="180"/>
+                        <controls:GridTrackInfo Length="60"/>
+                        <controls:GridTrackInfo Length="180"/>
+                    </controls:GridLayout.TemplateColumns>
+                    <controls:GridLayout.TemplateRows>
+                        <controls:GridTrackInfo Length="60"/>
+                        <controls:GridTrackInfo Length="40"/>
+                        <controls:GridTrackInfo Length="40"/>
+                    </controls:GridLayout.TemplateRows>
+                </controls:GridLayout>
+            </controls:LayoutPanel.Layout>
+
+            <Grid Background="#FFA500">
+                <controls:GridLayout.ColumnStart>
+                    <controls:GridLocation Index="0"/>
+                </controls:GridLayout.ColumnStart>
+                <controls:GridLayout.RowStart>
+                    <controls:GridLocation Index="0"/>
+                </controls:GridLayout.RowStart>
+                <controls:GridLayout.JustifySelf>
+                    <controls:GridJustifySelf>Start</controls:GridJustifySelf>
+                </controls:GridLayout.JustifySelf>
+                <TextBlock>item-a</TextBlock>
+            </Grid>
+
+        </controls:LayoutPanel>
+
+    </StackPanel>
+</Page>

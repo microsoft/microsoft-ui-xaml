@@ -31,6 +31,8 @@
             <Button x:Name="flowLayoutDemo">Flow Layout</Button>
             <Button x:Name="storeDemo">Store</Button>
             <Button x:Name="animatedScrollDemo">Animated scroll</Button>
+            <Button x:Name="flexboxDemo">Flexbox Layout</Button>
+            <Button x:Name="gridDemo">Grid Layout</Button>
             <TextBlock>Selection</TextBlock>
             <StackPanel Orientation="Horizontal" Spacing="4">
                 <Button x:Name="flatSelectionDemo">Flat</Button>

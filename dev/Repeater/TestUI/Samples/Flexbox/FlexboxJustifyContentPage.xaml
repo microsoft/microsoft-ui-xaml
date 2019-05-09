@@ -1,0 +1,105 @@
+﻿<Page
+    x:Class="MUXControlsTestApp.Samples.FlexboxJustifyContentPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp.Samples"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel Width="500" HorizontalAlignment="Stretch">
+        <StackPanel.Resources>
+
+            <Style TargetType="Grid">
+                <Setter Property="Background" Value="Orange"/>
+                <Setter Property="MinWidth" Value="80"/>
+                <Setter Property="MinHeight" Value="50"/>
+                <Setter Property="Margin" Value="6"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="BorderBrush" Value="Black"/>
+                <Setter Property="BorderThickness" Value="2"/>
+            </Style>
+            <Style TargetType="controls:LayoutPanel">
+                <Setter Property="Background" Value="Purple"/>
+                <Setter Property="Margin" Value="0,0,0,20"/>
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            </Style>
+            <Style x:Key="HeaderStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+            </Style>
+        </StackPanel.Resources>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">Start</TextBlock>
+
+        <controls:LayoutPanel Background="Purple">
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout JustifyContent="Start"/>
+            </controls:LayoutPanel.Layout>
+            <Grid MinWidth="120"/>
+            <Grid MinWidth="60"/>
+            <Grid MinWidth="120"/>
+        </controls:LayoutPanel>
+
+        
+        <TextBlock Style="{StaticResource HeaderStyle}">End</TextBlock>
+
+        <controls:LayoutPanel Background="Purple">
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout JustifyContent="End"/>
+            </controls:LayoutPanel.Layout>
+            <Grid MinWidth="120"/>
+            <Grid MinWidth="60"/>
+            <Grid MinWidth="120"/>
+        </controls:LayoutPanel>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">Center</TextBlock>
+
+        <controls:LayoutPanel Background="Purple">
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout JustifyContent="Center"/>
+            </controls:LayoutPanel.Layout>
+            <Grid MinWidth="120"/>
+            <Grid MinWidth="60"/>
+            <Grid MinWidth="120"/>
+        </controls:LayoutPanel>
+
+        <TextBlock Style="{StaticResource HeaderStyle}">SpaceBetween</TextBlock>
+
+        <controls:LayoutPanel Background="Purple">
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout JustifyContent="SpaceBetween"/>
+            </controls:LayoutPanel.Layout>
+            <Grid MinWidth="120"/>
+            <Grid MinWidth="60"/>
+            <Grid MinWidth="120"/>
+        </controls:LayoutPanel>
+
+        
+        <TextBlock Style="{StaticResource HeaderStyle}">SpaceAround</TextBlock>
+
+        <controls:LayoutPanel Background="Purple">
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout JustifyContent="SpaceAround"/>
+            </controls:LayoutPanel.Layout>
+            <Grid MinWidth="120"/>
+            <Grid MinWidth="60"/>
+            <Grid MinWidth="120"/>
+        </controls:LayoutPanel>
+
+        
+        <TextBlock Style="{StaticResource HeaderStyle}">SpaceEvenly</TextBlock>
+
+        <controls:LayoutPanel Background="Purple">
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout JustifyContent="SpaceEvenly"/>
+            </controls:LayoutPanel.Layout>
+            <Grid MinWidth="120"/>
+            <Grid MinWidth="60"/>
+            <Grid MinWidth="120"/>
+        </controls:LayoutPanel>
+    </StackPanel>
+
+</Page>
