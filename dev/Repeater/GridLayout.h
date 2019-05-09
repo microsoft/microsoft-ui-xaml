@@ -139,9 +139,18 @@ private:
 
         bool operator <(const GridCellIndex& rhs) const
         {
-            return
-                (ColumnIndex < rhs.ColumnIndex) ||
-                (RowIndex < rhs.RowIndex);
+            if (RowIndex < rhs.RowIndex)
+            {
+                return true;
+            }
+            else if (RowIndex > rhs.RowIndex)
+            {
+                return false;
+            }
+            else
+            {
+                return (ColumnIndex < rhs.ColumnIndex);
+            }
         }
     };
 
