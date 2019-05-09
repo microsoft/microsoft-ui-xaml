@@ -219,7 +219,7 @@ winrt::ExpressionAnimation ScrollSnapPoint::CreateRestingPointExpression(
 
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
-    winrt::ExpressionAnimation restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
+    auto restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
     SetScalarParameter(restingPointExpressionAnimation, s_snapPointValue, static_cast<float>(ActualValue()));
 
@@ -264,7 +264,7 @@ winrt::ExpressionAnimation ScrollSnapPoint::CreateConditionalExpression(
 
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
-    winrt::ExpressionAnimation conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
+    auto conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
     SetScalarParameter(conditionExpressionAnimation, s_minApplicableValue, static_cast<float>(std::get<0>(actualApplicableZone)));
     SetScalarParameter(conditionExpressionAnimation, s_maxApplicableValue, static_cast<float>(std::get<1>(actualApplicableZone)));
@@ -293,6 +293,9 @@ void ScrollSnapPoint::UpdateRestingPointExpressionAnimationForImpulse(
     double ignoredValue,
     std::tuple<double, double> actualImpulseApplicableZone) const
 {
+    // An irregular snap point like ScrollSnapPoint is either completely ignored in impulse mode or not ignored at all, unlike repeated snap points
+    // which can be partially ignored. Its conditional expression depends on the impulse mode, whereas its resting point expression does not,
+    // thus this method has no job to do.
 }
 
 ScrollerSnapPointSortPredicate ScrollSnapPoint::SortPredicate()
@@ -307,9 +310,9 @@ std::tuple<double, double> ScrollSnapPoint::DetermineActualApplicableZone(
     SnapPointBase* previousSnapPoint,
     SnapPointBase* nextSnapPoint)
 {
-    return std::tuple<double, double>{
+    return std::make_tuple(
         DetermineMinActualApplicableZone(previousSnapPoint),
-        DetermineMaxActualApplicableZone(nextSnapPoint) };
+        DetermineMaxActualApplicableZone(nextSnapPoint));
 }
 
 std::tuple<double, double> ScrollSnapPoint::DetermineActualImpulseApplicableZone(
@@ -319,7 +322,7 @@ std::tuple<double, double> ScrollSnapPoint::DetermineActualImpulseApplicableZone
     double previousIgnoredValue,
     double nextIgnoredValue)
 {
-    return std::tuple<double, double>{
+    return std::make_tuple(
         DetermineMinActualImpulseApplicableZone(
             previousSnapPoint,
             currentIgnoredValue,
@@ -327,7 +330,7 @@ std::tuple<double, double> ScrollSnapPoint::DetermineActualImpulseApplicableZone
         DetermineMaxActualImpulseApplicableZone(
             nextSnapPoint,
             currentIgnoredValue,
-            nextIgnoredValue) };
+            nextIgnoredValue));
 }
 
 double ScrollSnapPoint::ActualValue() const
@@ -695,7 +698,7 @@ winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateRestingPointExpression
 
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
-    winrt::ExpressionAnimation restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
+    auto restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
     SetScalarParameter(restingPointExpressionAnimation, s_interval, static_cast<float>(m_interval));
     SetScalarParameter(restingPointExpressionAnimation, s_end, static_cast<float>(ActualEnd()));
@@ -756,7 +759,7 @@ winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateConditionalExpression(
 
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
-    winrt::ExpressionAnimation conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
+    auto conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
     SetScalarParameter(conditionExpressionAnimation, s_interval, static_cast<float>(m_interval));
     SetScalarParameter(conditionExpressionAnimation, s_first, static_cast<float>(DetermineFirstRepeatedSnapPointValue()));
@@ -803,9 +806,9 @@ std::tuple<double, double> RepeatedScrollSnapPoint::DetermineActualApplicableZon
     SnapPointBase* previousSnapPoint,
     SnapPointBase* nextSnapPoint)
 {
-    std::tuple<double, double> actualApplicableZoneReturned = std::tuple<double, double>{
+    std::tuple<double, double> actualApplicableZoneReturned = std::make_tuple(
         DetermineMinActualApplicableZone(previousSnapPoint),
-        DetermineMaxActualApplicableZone(nextSnapPoint) };
+        DetermineMaxActualApplicableZone(nextSnapPoint));
 
     // Influence() will not have thrown if either of the adjacent snap points are also repeated snap points which have the same start and end, however this is not allowed.
     // We only need to check the nextSnapPoint because of the symmetry in the algorithm.
@@ -825,7 +828,7 @@ std::tuple<double, double> RepeatedScrollSnapPoint::DetermineActualImpulseApplic
     double previousIgnoredValue,
     double nextIgnoredValue)
 {
-    return std::tuple<double, double>{
+    return std::make_tuple(
         DetermineMinActualImpulseApplicableZone(
             previousSnapPoint,
             currentIgnoredValue,
@@ -833,7 +836,7 @@ std::tuple<double, double> RepeatedScrollSnapPoint::DetermineActualImpulseApplic
         DetermineMaxActualImpulseApplicableZone(
             nextSnapPoint,
             currentIgnoredValue,
-            nextIgnoredValue) };
+            nextIgnoredValue));
 }
 
 double RepeatedScrollSnapPoint::ActualOffset() const
@@ -1128,7 +1131,7 @@ winrt::ExpressionAnimation ZoomSnapPoint::CreateRestingPointExpression(
 {
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
-    winrt::ExpressionAnimation restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(s_snapPointValue);
+    auto restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(s_snapPointValue);
 
     SetScalarParameter(restingPointExpressionAnimation, s_snapPointValue, static_cast<float>(m_value));
 
@@ -1161,7 +1164,7 @@ winrt::ExpressionAnimation ZoomSnapPoint::CreateConditionalExpression(
 
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
-    winrt::ExpressionAnimation conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
+    auto conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
     SetScalarParameter(conditionExpressionAnimation, s_minApplicableValue, static_cast<float>(std::get<0>(actualApplicableZone)));
     SetScalarParameter(conditionExpressionAnimation, s_maxApplicableValue, static_cast<float>(std::get<1>(actualApplicableZone)));
@@ -1190,6 +1193,9 @@ void ZoomSnapPoint::UpdateRestingPointExpressionAnimationForImpulse(
     double ignoredValue,
     std::tuple<double, double> actualImpulseApplicableZone) const
 {
+    // An irregular snap point like ZoomSnapPoint is either completely ignored in impulse mode or not ignored at all, unlike repeated snap points
+    // which can be partially ignored. Its conditional expression depends on the impulse mode, whereas its resting point expression does not,
+    // thus this method has no job to do.
 }
 
 ScrollerSnapPointSortPredicate ZoomSnapPoint::SortPredicate()
@@ -1202,9 +1208,9 @@ std::tuple<double, double> ZoomSnapPoint::DetermineActualApplicableZone(
     SnapPointBase* previousSnapPoint,
     SnapPointBase* nextSnapPoint)
 {
-    return std::tuple<double, double>{
+    return std::make_tuple(
         DetermineMinActualApplicableZone(previousSnapPoint),
-        DetermineMaxActualApplicableZone(nextSnapPoint) };
+        DetermineMaxActualApplicableZone(nextSnapPoint));
 }
 
 std::tuple<double, double> ZoomSnapPoint::DetermineActualImpulseApplicableZone(
@@ -1214,7 +1220,7 @@ std::tuple<double, double> ZoomSnapPoint::DetermineActualImpulseApplicableZone(
     double previousIgnoredValue,
     double nextIgnoredValue)
 {
-    return std::tuple<double, double>{
+    return std::make_tuple(
         DetermineMinActualImpulseApplicableZone(
             previousSnapPoint,
             currentIgnoredValue,
@@ -1222,7 +1228,7 @@ std::tuple<double, double> ZoomSnapPoint::DetermineActualImpulseApplicableZone(
         DetermineMaxActualImpulseApplicableZone(
             nextSnapPoint,
             currentIgnoredValue,
-            nextIgnoredValue) };
+            nextIgnoredValue));
 }
 
 double ZoomSnapPoint::DetermineMinActualApplicableZone(
@@ -1580,7 +1586,7 @@ winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateRestingPointExpression(
 
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
-    winrt::ExpressionAnimation restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
+    auto restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
     SetScalarParameter(restingPointExpressionAnimation, s_interval, static_cast<float>(m_interval));
     SetScalarParameter(restingPointExpressionAnimation, s_end, static_cast<float>(m_end));
@@ -1642,7 +1648,7 @@ winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateConditionalExpression(
 
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
-    winrt::ExpressionAnimation conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
+    auto conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
     SetScalarParameter(conditionExpressionAnimation, s_interval, static_cast<float>(m_interval));
     SetScalarParameter(conditionExpressionAnimation, s_first, static_cast<float>(DetermineFirstRepeatedSnapPointValue()));
@@ -1689,9 +1695,9 @@ std::tuple<double, double> RepeatedZoomSnapPoint::DetermineActualApplicableZone(
     SnapPointBase* previousSnapPoint,
     SnapPointBase* nextSnapPoint)
 {
-    std::tuple<double, double> actualApplicableZoneReturned = std::tuple<double, double>{
+    std::tuple<double, double> actualApplicableZoneReturned = std::make_tuple(
         DetermineMinActualApplicableZone(previousSnapPoint),
-        DetermineMaxActualApplicableZone(nextSnapPoint) };
+        DetermineMaxActualApplicableZone(nextSnapPoint));
 
     // Influence() will not have thrown if either of the adjacent snap points are also repeated snap points which have the same start and end, however this is not allowed.
     // We only need to check the nextSnapPoint because of the symmetry in the algorithm.
@@ -1711,7 +1717,7 @@ std::tuple<double, double> RepeatedZoomSnapPoint::DetermineActualImpulseApplicab
     double previousIgnoredValue,
     double nextIgnoredValue)
 {
-    return std::tuple<double, double>{
+    return std::make_tuple(
         DetermineMinActualImpulseApplicableZone(
             previousSnapPoint,
             currentIgnoredValue,
@@ -1719,7 +1725,7 @@ std::tuple<double, double> RepeatedZoomSnapPoint::DetermineActualImpulseApplicab
         DetermineMaxActualImpulseApplicableZone(
             nextSnapPoint,
             currentIgnoredValue,
-            nextIgnoredValue) };
+            nextIgnoredValue));
 }
 
 double RepeatedZoomSnapPoint::DetermineFirstRepeatedSnapPointValue() const

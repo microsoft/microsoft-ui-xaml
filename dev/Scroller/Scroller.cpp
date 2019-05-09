@@ -1862,22 +1862,21 @@ void Scroller::SetupSnapPoints(
 
     if (m_state == winrt::InteractionState::Idle)
     {
-        double ignoredValue = 0.0;
-
-        switch (dimension)
+        const double ignoredValue = [this, dimension]()
         {
-        case ScrollerDimension::VerticalScroll:
-            ignoredValue = m_zoomedVerticalOffset / m_zoomFactor;
-            break;
-        case ScrollerDimension::HorizontalScroll:
-            ignoredValue = m_zoomedHorizontalOffset / m_zoomFactor;
-            break;
-        case ScrollerDimension::ZoomFactor:
-            ignoredValue = m_zoomFactor;
-            break;
-        default:
-            MUX_ASSERT(false);
-        }
+            switch (dimension)
+            {
+            case ScrollerDimension::VerticalScroll:
+                return m_zoomedVerticalOffset / m_zoomFactor;
+            case ScrollerDimension::HorizontalScroll:
+                return m_zoomedHorizontalOffset / m_zoomFactor;
+            case ScrollerDimension::ZoomFactor:
+                return static_cast<double>(m_zoomFactor);
+            default:
+                MUX_ASSERT(false);
+                return 0.0;
+            }
+        }();
 
         // When snap points are changed while in the Idle State, update
         // ignored snapping values for any potential start of an impulse inertia.
@@ -1931,7 +1930,7 @@ void Scroller::SetupSnapPoints(
     }
     else
     {
-        for (std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper : *snapPointsSet)
+        for (auto snapPointWrapper : *snapPointsSet)
         {
             winrt::InteractionTrackerInertiaRestingValue modifier = GetInertiaRestingValue(
                 snapPointWrapper,
@@ -1981,7 +1980,7 @@ void Scroller::UpdateSnapPointsRanges(
     std::shared_ptr<SnapPointWrapper<T>> previousSnapPointWrapper = nullptr;
     std::shared_ptr<SnapPointWrapper<T>> nextSnapPointWrapper = nullptr;
 
-    for (std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper : *snapPointsSet)
+    for (auto snapPointWrapper : *snapPointsSet)
     {
         previousSnapPointWrapper = currentSnapPointWrapper;
         currentSnapPointWrapper = nextSnapPointWrapper;
@@ -2010,22 +2009,21 @@ void Scroller::UpdateSnapPointsIgnoredValue(
     std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
     ScrollerDimension dimension)
 {
-    double newIgnoredValue = 0.0;
-
-    switch (dimension)
+    const double newIgnoredValue = [this, dimension]()
     {
-    case ScrollerDimension::VerticalScroll:
-        newIgnoredValue = m_zoomedVerticalOffset / m_zoomFactor;
-        break;
-    case ScrollerDimension::HorizontalScroll:
-        newIgnoredValue = m_zoomedHorizontalOffset / m_zoomFactor;
-        break;
-    case ScrollerDimension::ZoomFactor:
-        newIgnoredValue = m_zoomFactor;
-        break;
-    default:
-        MUX_ASSERT(false);
-    }
+        switch (dimension)
+        {
+        case ScrollerDimension::VerticalScroll:
+            return m_zoomedVerticalOffset / m_zoomFactor;
+        case ScrollerDimension::HorizontalScroll:
+            return m_zoomedHorizontalOffset / m_zoomFactor;
+        case ScrollerDimension::ZoomFactor:
+            return static_cast<double>(m_zoomFactor);
+        default:
+            MUX_ASSERT(false);
+            return 0.0;
+        }
+    }();
 
     if (UpdateSnapPointsIgnoredValue(snapPointsSet, newIgnoredValue))
     {
@@ -2035,15 +2033,10 @@ void Scroller::UpdateSnapPointsIgnoredValue(
         winrt::Compositor compositor = m_interactionTracker.Compositor();
         winrt::IVector<winrt::InteractionTrackerInertiaModifier> modifiers = winrt::make<Vector<winrt::InteractionTrackerInertiaModifier>>();
 
-        for (std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper : *snapPointsSet)
+        for (auto snapPointWrapper : *snapPointsSet)
         {
-            winrt::InteractionTrackerInertiaRestingValue modifier = winrt::InteractionTrackerInertiaRestingValue::Create(compositor);
-            winrt::ExpressionAnimation conditionExpressionAnimation = nullptr;
-            winrt::ExpressionAnimation restingValueExpressionAnimation = nullptr;
-
-            snapPointWrapper->GetUpdatedExpressionAnimationsForImpulse(
-                &conditionExpressionAnimation,
-                &restingValueExpressionAnimation);
+            auto modifier = winrt::InteractionTrackerInertiaRestingValue::Create(compositor);
+            auto const [conditionExpressionAnimation, restingValueExpressionAnimation] = snapPointWrapper->GetUpdatedExpressionAnimationsForImpulse();
 
             modifier.Condition(conditionExpressionAnimation);
             modifier.RestingValue(restingValueExpressionAnimation);
@@ -2075,7 +2068,7 @@ bool Scroller::UpdateSnapPointsIgnoredValue(
 {
     bool ignoredValueUpdated = false;
 
-    for (std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper : *snapPointsSet)
+    for (auto snapPointWrapper : *snapPointsSet)
     {
         if (snapPointWrapper->ResetIgnoredValue())
         {
@@ -2086,7 +2079,7 @@ bool Scroller::UpdateSnapPointsIgnoredValue(
 
     int snapCount = 0;
 
-    for (std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper : *snapPointsSet)
+    for (auto snapPointWrapper : *snapPointsSet)
     {
         SnapPointBase* snapPoint = SnapPointWrapper<T>::GetSnapPointFromWrapper(snapPointWrapper);
 
@@ -2100,7 +2093,7 @@ bool Scroller::UpdateSnapPointsIgnoredValue(
 
     if (snapCount > 1)
     {
-        for (std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper : *snapPointsSet)
+        for (auto snapPointWrapper : *snapPointsSet)
         {
             if (snapPointWrapper->SnapsAt(newIgnoredValue))
             {
@@ -2127,16 +2120,10 @@ void Scroller::UpdateSnapPointsInertiaFromImpulse(
         winrt::Compositor compositor = m_interactionTracker.Compositor();
         winrt::IVector<winrt::InteractionTrackerInertiaModifier> modifiers = winrt::make<Vector<winrt::InteractionTrackerInertiaModifier>>();
 
-        for (std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper : *snapPointsSet)
+        for (auto snapPointWrapper : *snapPointsSet)
         {
-            winrt::InteractionTrackerInertiaRestingValue modifier = winrt::InteractionTrackerInertiaRestingValue::Create(compositor);
-            winrt::ExpressionAnimation conditionExpressionAnimation = nullptr;
-            winrt::ExpressionAnimation restingValueExpressionAnimation = nullptr;
-
-            snapPointWrapper->GetUpdatedExpressionAnimationsForImpulse(
-                isInertiaFromImpulse,
-                &conditionExpressionAnimation,
-                &restingValueExpressionAnimation);
+            auto modifier = winrt::InteractionTrackerInertiaRestingValue::Create(compositor);
+            auto const [conditionExpressionAnimation, restingValueExpressionAnimation] = snapPointWrapper->GetUpdatedExpressionAnimationsForImpulse(isInertiaFromImpulse);
 
             modifier.Condition(conditionExpressionAnimation);
             modifier.RestingValue(restingValueExpressionAnimation);
@@ -7063,9 +7050,11 @@ winrt::InteractionTrackerInertiaRestingValue Scroller::GetInertiaRestingValue(
 // returns the replacement field m_isInertiaFromImpulse otherwise.
 bool Scroller::IsInertiaFromImpulse() const
 {
-    if (SharedHelpers::IsRS5OrHigher() && m_interactionTracker)
+    if (m_interactionTracker)
     {
-        return m_interactionTracker.IsInertiaFromImpulse();
+        winrt::IInteractionTracker4 interactionTracker4 = m_interactionTracker;
+
+        return interactionTracker4 ? interactionTracker4.IsInertiaFromImpulse() : m_isInertiaFromImpulse;
     }
     else
     {

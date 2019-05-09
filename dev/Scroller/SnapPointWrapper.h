@@ -34,13 +34,9 @@ public:
         winrt::hstring const& target,
         winrt::hstring const& scale,
         bool isInertiaFromImpulse);
-    void GetUpdatedExpressionAnimationsForImpulse(
-        winrt::ExpressionAnimation* conditionalExpressionAnimation,
-        winrt::ExpressionAnimation* restingPointExpressionAnimation);
-    void GetUpdatedExpressionAnimationsForImpulse(
-        bool isInertiaFromImpulse,
-        winrt::ExpressionAnimation* conditionalExpressionAnimation,
-        winrt::ExpressionAnimation* restingPointExpressionAnimation);
+    std::tuple<winrt::ExpressionAnimation, winrt::ExpressionAnimation> GetUpdatedExpressionAnimationsForImpulse();
+    std::tuple<winrt::ExpressionAnimation, winrt::ExpressionAnimation> GetUpdatedExpressionAnimationsForImpulse(
+        bool isInertiaFromImpulse);
     void DetermineActualApplicableZone(
         SnapPointWrapper<T>* previousSnapPointWrapper,
         SnapPointWrapper<T>* nextSnapPointWrapper,
