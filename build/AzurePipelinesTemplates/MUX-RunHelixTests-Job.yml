@@ -125,20 +125,20 @@ jobs:
         "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:SYSTEM_ACCESSTOKEN)")))"
       }
       
-      Write-Host "Test runs for this build:"
+      Write-Host "Invoke-RestMethod -Uri `"https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)`" -Method Get -Headers $azureDevOpsRestApiHeaders"
+      Invoke-RestMethod -Uri "https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)" -Method Get -Headers $azureDevOpsRestApiHeaders
       $testRuns = Invoke-RestMethod -Uri "https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)" -Method Get -Headers $azureDevOpsRestApiHeaders
-      $testRuns
       
       $testRuns.value | ForEach-Object {
-        $runData = $_
+        $testRun = $_
         
-        Write-Host "Test results for run $($runData.id):"
-        $testResults = Invoke-RestMethod -Uri "$($runData.url)/results?api-version=5.0" -Method Get -Headers $azureDevOpsRestApiHeaders
-        $testResults
+        Write-Host "Invoke-RestMethod -Uri `"$($testRun.url)/results?api-version=5.0`" -Method Get -Headers $azureDevOpsRestApiHeaders"
+        Invoke-RestMethod -Uri "$($testRun.url)/results?api-version=5.0" -Method Get -Headers $azureDevOpsRestApiHeaders
+        $testResults = Invoke-RestMethod -Uri "$($testRun.url)/results?api-version=5.0" -Method Get -Headers $azureDevOpsRestApiHeaders
         
-        $runResults.value | ForEach-Object {
+        $testResults.value | ForEach-Object {
           $testResult = $_
-          Write-Host "Test $($testResult.testCaseTitle) : $($runResults.outcome)"
+          Write-Host "Test $($testResult.testCaseTitle) : $($testResult.outcome)"
         }
       }
       
