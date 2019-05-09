@@ -1100,3 +1100,7 @@ winrt::Size GridLayout::ArrangeOverride(
 void GridLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
 }
+
+void GridLayout::OnChildPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args)
+{
+}

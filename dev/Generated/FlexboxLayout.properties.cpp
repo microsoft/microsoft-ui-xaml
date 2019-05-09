@@ -8,7 +8,10 @@
 
 CppWinRTActivatableClassWithDPFactory(FlexboxLayout)
 
-GlobalDependencyProperty FlexboxLayoutProperties::s_PlaceholderProperty{ nullptr };
+GlobalDependencyProperty FlexboxLayoutProperties::s_AlignSelfProperty{ nullptr };
+GlobalDependencyProperty FlexboxLayoutProperties::s_GrowProperty{ nullptr };
+GlobalDependencyProperty FlexboxLayoutProperties::s_OrderProperty{ nullptr };
+GlobalDependencyProperty FlexboxLayoutProperties::s_ShrinkProperty{ nullptr };
 
 FlexboxLayoutProperties::FlexboxLayoutProperties()
 {
@@ -17,38 +20,100 @@ FlexboxLayoutProperties::FlexboxLayoutProperties()
 
 void FlexboxLayoutProperties::EnsureProperties()
 {
-    if (!s_PlaceholderProperty)
+    if (!s_AlignSelfProperty)
     {
-        s_PlaceholderProperty =
+        s_AlignSelfProperty =
             InitializeDependencyProperty(
-                L"Placeholder",
-                winrt::name_of<winrt::IInspectable>(),
+                L"AlignSelf",
+                winrt::name_of<winrt::FlexboxAlignSelf>(),
                 winrt::name_of<winrt::FlexboxLayout>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPlaceholderPropertyChanged));
+                true /* isAttached */,
+                ValueHelper<winrt::FlexboxAlignSelf>::BoxedDefaultValue(),
+                &FlexboxLayout::OnChildPropertyChanged);
+    }
+    if (!s_GrowProperty)
+    {
+        s_GrowProperty =
+            InitializeDependencyProperty(
+                L"Grow",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::FlexboxLayout>(),
+                true /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                &FlexboxLayout::OnChildPropertyChanged);
+    }
+    if (!s_OrderProperty)
+    {
+        s_OrderProperty =
+            InitializeDependencyProperty(
+                L"Order",
+                winrt::name_of<int>(),
+                winrt::name_of<winrt::FlexboxLayout>(),
+                true /* isAttached */,
+                ValueHelper<int>::BoxedDefaultValue(),
+                &FlexboxLayout::OnChildPropertyChanged);
+    }
+    if (!s_ShrinkProperty)
+    {
+        s_ShrinkProperty =
+            InitializeDependencyProperty(
+                L"Shrink",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::FlexboxLayout>(),
+                true /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                &FlexboxLayout::OnChildPropertyChanged);
     }
 }
 
 void FlexboxLayoutProperties::ClearProperties()
 {
-    s_PlaceholderProperty = nullptr;
+    s_AlignSelfProperty = nullptr;
+    s_GrowProperty = nullptr;
+    s_OrderProperty = nullptr;
+    s_ShrinkProperty = nullptr;
 }
 
-void FlexboxLayoutProperties::OnPlaceholderPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
+
+void FlexboxLayoutProperties::SetAlignSelf(winrt::UIElement const& target, winrt::FlexboxAlignSelf const& value)
 {
-    auto owner = sender.as<winrt::FlexboxLayout>();
-    winrt::get_self<FlexboxLayout>(owner)->OnPropertyChanged(args);
+    target.SetValue(s_AlignSelfProperty, ValueHelper<winrt::FlexboxAlignSelf>::BoxValueIfNecessary(value));
 }
 
-void FlexboxLayoutProperties::Placeholder(winrt::IInspectable const& value)
+winrt::FlexboxAlignSelf FlexboxLayoutProperties::GetAlignSelf(winrt::UIElement const& target)
 {
-    static_cast<FlexboxLayout*>(this)->SetValue(s_PlaceholderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    return ValueHelper<winrt::FlexboxAlignSelf>::CastOrUnbox(target.GetValue(s_AlignSelfProperty));
 }
 
-winrt::IInspectable FlexboxLayoutProperties::Placeholder()
+
+void FlexboxLayoutProperties::SetGrow(winrt::UIElement const& target, double value)
 {
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<FlexboxLayout*>(this)->GetValue(s_PlaceholderProperty));
+    target.SetValue(s_GrowProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double FlexboxLayoutProperties::GetGrow(winrt::UIElement const& target)
+{
+    return ValueHelper<double>::CastOrUnbox(target.GetValue(s_GrowProperty));
+}
+
+
+void FlexboxLayoutProperties::SetOrder(winrt::UIElement const& target, int value)
+{
+    target.SetValue(s_OrderProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+}
+
+int FlexboxLayoutProperties::GetOrder(winrt::UIElement const& target)
+{
+    return ValueHelper<int>::CastOrUnbox(target.GetValue(s_OrderProperty));
+}
+
+
+void FlexboxLayoutProperties::SetShrink(winrt::UIElement const& target, double value)
+{
+    target.SetValue(s_ShrinkProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double FlexboxLayoutProperties::GetShrink(winrt::UIElement const& target)
+{
+    return ValueHelper<double>::CastOrUnbox(target.GetValue(s_ShrinkProperty));
 }
