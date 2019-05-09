@@ -479,6 +479,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             if (!File.Exists(appxPath))
             {
+                Log.Comment($".appx not found at '{appxPath}'");
                 // If the AppX doesn't even exist, then we definitely need to package it.
                 appXPackagingNecessary = true;
             }
@@ -486,10 +487,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             {
                 // Otherwise, we need to package it if any of its contents have been built since the last packaging.
                 DateTime appxWriteTime = File.GetLastWriteTime(appxPath);
+                DateTime exeWriteTime = File.GetLastWriteTime(Path.Combine(testAppDirectory, _packageName + ".exe"));
+                DateTime dllWriteTime = File.GetLastWriteTime(Path.Combine(architectureDirectory, "Microsoft.UI.Xaml", "Microsoft.UI.Xaml.dll"));
 
                 appXPackagingNecessary =
-                    File.GetLastWriteTime(Path.Combine(testAppDirectory, _packageName + ".exe")) > appxWriteTime ||
-                    File.GetLastWriteTime(Path.Combine(architectureDirectory, "Microsoft.UI.Xaml", "Microsoft.UI.Xaml.dll")) > appxWriteTime;
+                    exeWriteTime > appxWriteTime ||
+                    dllWriteTime > appxWriteTime;
+
+                Log.Comment($"AppX packaging necessary: {appXPackagingNecessary} (appxWriteTime = {appxWriteTime}, exeWriteTime = {exeWriteTime}, dllWriteTime = {dllWriteTime})");
             }
 
             // Only package the AppX or install the app if we need to - otherwise, we'll get unnecessary console windows showing up

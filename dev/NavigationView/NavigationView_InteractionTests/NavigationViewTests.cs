@@ -1676,6 +1676,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(keyTipBounds.IntersectsWith(targetBounds), "KeyTip bounds should be close to target bounds.");
             }
 
+
             // Invoke the AccessKey:
             TextInput.SendText(keyTipText);
             Wait.ForIdle();
@@ -1698,7 +1699,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InvokeNavigationViewAccessKeyAndVerifyKeyTipPlacement("TopNavOverflowButton");
 
                 Log.Comment("Verify overflow menu is opened");
-                Verify.IsTrue(GetTopNavigationItems(TopNavPosition.Overflow).Count > 0);
+                // Flyout doesn't seem raise any UIA WindowOpened/MenuOpened events so just check a few times for the menu to
+                // have opened.
+                TestEnvironment.VerifyAreEqualWithRetry(5,
+                    () => true,
+                    () => GetTopNavigationItems(TopNavPosition.Overflow).Count > 0);
             }
         }
 

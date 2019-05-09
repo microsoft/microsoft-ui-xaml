@@ -853,17 +853,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // 5% from the edge of the next item 
                 var distance = (int)(height * 1.45);
 
+                Log.Comment("Click on the item to help make the drag more reliable");
+                dragUIObject.Click();
+
                 Log.Comment("Starting Drag...distance:" + distance);
                 InputHelper.DragDistance(dragUIObject, distance, Direction.South);
 
-                ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2", ReadResult());
+                TestEnvironment.VerifyAreEqualWithRetry(
+                    5,
+                    () => "Root | Root.1 | Root.0 | Root.2",
+                    () => {
+                        ClickButton("GetChildrenOrder");
+                        return ReadResult();
+                    });
 
                 ClickButton("GetItemCount");
                 Verify.AreEqual("4", ReadResult());
 
                 ClickButton("GetItemCommonStates");
-                Verify.AreEqual("Selected Selected Selected Selected", ReadResult().Trim());
+                Verify.AreEqual("Normal Normal Normal Normal", ReadResult().Trim());
             }
         }
 
@@ -1355,10 +1363,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject dropTarget = FindElement.ByName("DropTarget");
                 Verify.IsNotNull(dropTarget);
 
+                Log.Comment($"Dragging from {dragUIObject} to {dropTarget}");
                 InputHelper.DragToTarget(dragUIObject, dropTarget);
 
-                var droppedItem = new TextBlock(FindElement.ByName("DropTargetTextBlock")).DocumentText;
-                Verify.AreEqual("Root.2", droppedItem);
+                TestEnvironment.VerifyAreEqualWithRetry(
+                    5,
+                    () => "Root.2",
+                    () => new TextBlock(FindElement.ByName("DropTargetTextBlock")).DocumentText,
+                    () => {
+                        // The drag&drop operation may not have worked because the input is unreliable, just try again.
+                        InputHelper.DragToTarget(dragUIObject, dropTarget);
+                    });
             }
         }
 
@@ -2566,7 +2581,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private void ClickButton(string buttonName)
         {
             var button = new Button(FindElement.ByName(buttonName));
-            button.Invoke();
+            button.InvokeAndWait();
             Wait.ForIdle();
         }
 
