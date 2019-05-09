@@ -110,6 +110,7 @@ jobs:
       
   - task: DotNetCoreCLI@2
     displayName: 'Run tests in Helix'
+    continueOnError: true
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
@@ -149,6 +150,7 @@ jobs:
   - task: DotNetCoreCLI@2
     displayName: 'Re-run tests in Helix'
     condition: succeededOrFailed()
+    enabled: false
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:

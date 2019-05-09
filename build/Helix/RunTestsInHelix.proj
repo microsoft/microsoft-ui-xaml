@@ -13,7 +13,7 @@
     
     <HelixWorkItem Include="DummyTests">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='*DummyTests*')"</Command>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='Windows.UI.Xaml.Tests.MUXControls.InteractionTests.DummyTests.*')"</Command>
     </HelixWorkItem>
   </ItemGroup>
   
