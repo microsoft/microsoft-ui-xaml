@@ -9,17 +9,28 @@ class FlexboxLayoutProperties
 public:
     FlexboxLayoutProperties();
 
-    void Placeholder(winrt::IInspectable const& value);
-    winrt::IInspectable Placeholder();
+    static void SetAlignSelf(winrt::UIElement const& target, winrt::FlexboxAlignSelf const& value);
+    static winrt::FlexboxAlignSelf GetAlignSelf(winrt::UIElement const& target);
 
-    static winrt::DependencyProperty PlaceholderProperty() { return s_PlaceholderProperty; }
+    static void SetGrow(winrt::UIElement const& target, double value);
+    static double GetGrow(winrt::UIElement const& target);
 
-    static GlobalDependencyProperty s_PlaceholderProperty;
+    static void SetOrder(winrt::UIElement const& target, int value);
+    static int GetOrder(winrt::UIElement const& target);
+
+    static void SetShrink(winrt::UIElement const& target, double value);
+    static double GetShrink(winrt::UIElement const& target);
+
+    static winrt::DependencyProperty AlignSelfProperty() { return s_AlignSelfProperty; }
+    static winrt::DependencyProperty GrowProperty() { return s_GrowProperty; }
+    static winrt::DependencyProperty OrderProperty() { return s_OrderProperty; }
+    static winrt::DependencyProperty ShrinkProperty() { return s_ShrinkProperty; }
+
+    static GlobalDependencyProperty s_AlignSelfProperty;
+    static GlobalDependencyProperty s_GrowProperty;
+    static GlobalDependencyProperty s_OrderProperty;
+    static GlobalDependencyProperty s_ShrinkProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
-
-    static void OnPlaceholderPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
 };

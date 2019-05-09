@@ -58,6 +58,10 @@ public:
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+    static void OnChildPropertyChanged(
+        const winrt::DependencyObject& sender,
+        const winrt::DependencyPropertyChangedEventArgs& args);
+
 private:
     winrt::IVector<winrt::GridTrackInfo> m_templateColumns;
     winrt::IVector<winrt::GridTrackInfo> m_templateRows;
@@ -70,12 +74,6 @@ private:
     winrt::IVector<winrt::GridTrackInfo> m_autoColumns;
     winrt::IVector<winrt::GridTrackInfo> m_autoRows;
     winrt::GridAutoFlow m_autoFlow { winrt::GridAutoFlow::Row };
-
-    // PORT_TODO
-    winrt::GridLocation GetColumnStart(winrt::UIElement const& element) { return nullptr; }
-    winrt::GridLocation GetRowStart(winrt::UIElement const& element) { return nullptr; }
-    winrt::GridLocation GetColumnEnd(winrt::UIElement const& element) { return nullptr; }
-    winrt::GridLocation GetRowEnd(winrt::UIElement const& element) { return nullptr; }
 
     struct ResolvedGridReference
     {

@@ -444,3 +444,8 @@ winrt::Size FlexboxLayout::ArrangeOverride(
 void FlexboxLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
 }
+
+void FlexboxLayout::OnChildPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args)
+{
+}
+

@@ -37,6 +37,10 @@ public:
     winrt::Size ArrangeOverride(winrt::LayoutContext const& context, winrt::Size const& finalSize);
 #pragma endregion
 
+    static void OnChildPropertyChanged(
+        const winrt::DependencyObject& sender,
+        const winrt::DependencyPropertyChangedEventArgs& args);
+
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:

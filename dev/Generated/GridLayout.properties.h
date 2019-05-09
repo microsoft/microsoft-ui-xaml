@@ -9,17 +9,38 @@ class GridLayoutProperties
 public:
     GridLayoutProperties();
 
-    void Placeholder(winrt::IInspectable const& value);
-    winrt::IInspectable Placeholder();
+    static void SetAlignSelf(winrt::UIElement const& target, winrt::GridAlignSelf const& value);
+    static winrt::GridAlignSelf GetAlignSelf(winrt::UIElement const& target);
 
-    static winrt::DependencyProperty PlaceholderProperty() { return s_PlaceholderProperty; }
+    static void SetColumnEnd(winrt::UIElement const& target, winrt::GridLocation const& value);
+    static winrt::GridLocation GetColumnEnd(winrt::UIElement const& target);
 
-    static GlobalDependencyProperty s_PlaceholderProperty;
+    static void SetColumnStart(winrt::UIElement const& target, winrt::GridLocation const& value);
+    static winrt::GridLocation GetColumnStart(winrt::UIElement const& target);
+
+    static void SetJustifySelf(winrt::UIElement const& target, winrt::GridJustifySelf const& value);
+    static winrt::GridJustifySelf GetJustifySelf(winrt::UIElement const& target);
+
+    static void SetRowEnd(winrt::UIElement const& target, winrt::GridLocation const& value);
+    static winrt::GridLocation GetRowEnd(winrt::UIElement const& target);
+
+    static void SetRowStart(winrt::UIElement const& target, winrt::GridLocation const& value);
+    static winrt::GridLocation GetRowStart(winrt::UIElement const& target);
+
+    static winrt::DependencyProperty AlignSelfProperty() { return s_AlignSelfProperty; }
+    static winrt::DependencyProperty ColumnEndProperty() { return s_ColumnEndProperty; }
+    static winrt::DependencyProperty ColumnStartProperty() { return s_ColumnStartProperty; }
+    static winrt::DependencyProperty JustifySelfProperty() { return s_JustifySelfProperty; }
+    static winrt::DependencyProperty RowEndProperty() { return s_RowEndProperty; }
+    static winrt::DependencyProperty RowStartProperty() { return s_RowStartProperty; }
+
+    static GlobalDependencyProperty s_AlignSelfProperty;
+    static GlobalDependencyProperty s_ColumnEndProperty;
+    static GlobalDependencyProperty s_ColumnStartProperty;
+    static GlobalDependencyProperty s_JustifySelfProperty;
+    static GlobalDependencyProperty s_RowEndProperty;
+    static GlobalDependencyProperty s_RowStartProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
-
-    static void OnPlaceholderPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
 };

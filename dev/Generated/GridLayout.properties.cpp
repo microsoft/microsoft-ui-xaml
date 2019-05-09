@@ -8,7 +8,12 @@
 
 CppWinRTActivatableClassWithDPFactory(GridLayout)
 
-GlobalDependencyProperty GridLayoutProperties::s_PlaceholderProperty{ nullptr };
+GlobalDependencyProperty GridLayoutProperties::s_AlignSelfProperty{ nullptr };
+GlobalDependencyProperty GridLayoutProperties::s_ColumnEndProperty{ nullptr };
+GlobalDependencyProperty GridLayoutProperties::s_ColumnStartProperty{ nullptr };
+GlobalDependencyProperty GridLayoutProperties::s_JustifySelfProperty{ nullptr };
+GlobalDependencyProperty GridLayoutProperties::s_RowEndProperty{ nullptr };
+GlobalDependencyProperty GridLayoutProperties::s_RowStartProperty{ nullptr };
 
 GridLayoutProperties::GridLayoutProperties()
 {
@@ -17,38 +22,146 @@ GridLayoutProperties::GridLayoutProperties()
 
 void GridLayoutProperties::EnsureProperties()
 {
-    if (!s_PlaceholderProperty)
+    if (!s_AlignSelfProperty)
     {
-        s_PlaceholderProperty =
+        s_AlignSelfProperty =
             InitializeDependencyProperty(
-                L"Placeholder",
-                winrt::name_of<winrt::IInspectable>(),
+                L"AlignSelf",
+                winrt::name_of<winrt::GridAlignSelf>(),
                 winrt::name_of<winrt::GridLayout>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPlaceholderPropertyChanged));
+                true /* isAttached */,
+                ValueHelper<winrt::GridAlignSelf>::BoxedDefaultValue(),
+                &GridLayout::OnChildPropertyChanged);
+    }
+    if (!s_ColumnEndProperty)
+    {
+        s_ColumnEndProperty =
+            InitializeDependencyProperty(
+                L"ColumnEnd",
+                winrt::name_of<winrt::GridLocation>(),
+                winrt::name_of<winrt::GridLayout>(),
+                true /* isAttached */,
+                ValueHelper<winrt::GridLocation>::BoxedDefaultValue(),
+                &GridLayout::OnChildPropertyChanged);
+    }
+    if (!s_ColumnStartProperty)
+    {
+        s_ColumnStartProperty =
+            InitializeDependencyProperty(
+                L"ColumnStart",
+                winrt::name_of<winrt::GridLocation>(),
+                winrt::name_of<winrt::GridLayout>(),
+                true /* isAttached */,
+                ValueHelper<winrt::GridLocation>::BoxedDefaultValue(),
+                &GridLayout::OnChildPropertyChanged);
+    }
+    if (!s_JustifySelfProperty)
+    {
+        s_JustifySelfProperty =
+            InitializeDependencyProperty(
+                L"JustifySelf",
+                winrt::name_of<winrt::GridJustifySelf>(),
+                winrt::name_of<winrt::GridLayout>(),
+                true /* isAttached */,
+                ValueHelper<winrt::GridJustifySelf>::BoxedDefaultValue(),
+                &GridLayout::OnChildPropertyChanged);
+    }
+    if (!s_RowEndProperty)
+    {
+        s_RowEndProperty =
+            InitializeDependencyProperty(
+                L"RowEnd",
+                winrt::name_of<winrt::GridLocation>(),
+                winrt::name_of<winrt::GridLayout>(),
+                true /* isAttached */,
+                ValueHelper<winrt::GridLocation>::BoxedDefaultValue(),
+                &GridLayout::OnChildPropertyChanged);
+    }
+    if (!s_RowStartProperty)
+    {
+        s_RowStartProperty =
+            InitializeDependencyProperty(
+                L"RowStart",
+                winrt::name_of<winrt::GridLocation>(),
+                winrt::name_of<winrt::GridLayout>(),
+                true /* isAttached */,
+                ValueHelper<winrt::GridLocation>::BoxedDefaultValue(),
+                &GridLayout::OnChildPropertyChanged);
     }
 }
 
 void GridLayoutProperties::ClearProperties()
 {
-    s_PlaceholderProperty = nullptr;
+    s_AlignSelfProperty = nullptr;
+    s_ColumnEndProperty = nullptr;
+    s_ColumnStartProperty = nullptr;
+    s_JustifySelfProperty = nullptr;
+    s_RowEndProperty = nullptr;
+    s_RowStartProperty = nullptr;
 }
 
-void GridLayoutProperties::OnPlaceholderPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
+
+void GridLayoutProperties::SetAlignSelf(winrt::UIElement const& target, winrt::GridAlignSelf const& value)
 {
-    auto owner = sender.as<winrt::GridLayout>();
-    winrt::get_self<GridLayout>(owner)->OnPropertyChanged(args);
+    target.SetValue(s_AlignSelfProperty, ValueHelper<winrt::GridAlignSelf>::BoxValueIfNecessary(value));
 }
 
-void GridLayoutProperties::Placeholder(winrt::IInspectable const& value)
+winrt::GridAlignSelf GridLayoutProperties::GetAlignSelf(winrt::UIElement const& target)
 {
-    static_cast<GridLayout*>(this)->SetValue(s_PlaceholderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    return ValueHelper<winrt::GridAlignSelf>::CastOrUnbox(target.GetValue(s_AlignSelfProperty));
 }
 
-winrt::IInspectable GridLayoutProperties::Placeholder()
+
+void GridLayoutProperties::SetColumnEnd(winrt::UIElement const& target, winrt::GridLocation const& value)
 {
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<GridLayout*>(this)->GetValue(s_PlaceholderProperty));
+    target.SetValue(s_ColumnEndProperty, ValueHelper<winrt::GridLocation>::BoxValueIfNecessary(value));
+}
+
+winrt::GridLocation GridLayoutProperties::GetColumnEnd(winrt::UIElement const& target)
+{
+    return ValueHelper<winrt::GridLocation>::CastOrUnbox(target.GetValue(s_ColumnEndProperty));
+}
+
+
+void GridLayoutProperties::SetColumnStart(winrt::UIElement const& target, winrt::GridLocation const& value)
+{
+    target.SetValue(s_ColumnStartProperty, ValueHelper<winrt::GridLocation>::BoxValueIfNecessary(value));
+}
+
+winrt::GridLocation GridLayoutProperties::GetColumnStart(winrt::UIElement const& target)
+{
+    return ValueHelper<winrt::GridLocation>::CastOrUnbox(target.GetValue(s_ColumnStartProperty));
+}
+
+
+void GridLayoutProperties::SetJustifySelf(winrt::UIElement const& target, winrt::GridJustifySelf const& value)
+{
+    target.SetValue(s_JustifySelfProperty, ValueHelper<winrt::GridJustifySelf>::BoxValueIfNecessary(value));
+}
+
+winrt::GridJustifySelf GridLayoutProperties::GetJustifySelf(winrt::UIElement const& target)
+{
+    return ValueHelper<winrt::GridJustifySelf>::CastOrUnbox(target.GetValue(s_JustifySelfProperty));
+}
+
+
+void GridLayoutProperties::SetRowEnd(winrt::UIElement const& target, winrt::GridLocation const& value)
+{
+    target.SetValue(s_RowEndProperty, ValueHelper<winrt::GridLocation>::BoxValueIfNecessary(value));
+}
+
+winrt::GridLocation GridLayoutProperties::GetRowEnd(winrt::UIElement const& target)
+{
+    return ValueHelper<winrt::GridLocation>::CastOrUnbox(target.GetValue(s_RowEndProperty));
+}
+
+
+void GridLayoutProperties::SetRowStart(winrt::UIElement const& target, winrt::GridLocation const& value)
+{
+    target.SetValue(s_RowStartProperty, ValueHelper<winrt::GridLocation>::BoxValueIfNecessary(value));
+}
+
+winrt::GridLocation GridLayoutProperties::GetRowStart(winrt::UIElement const& target)
+{
+    return ValueHelper<winrt::GridLocation>::CastOrUnbox(target.GetValue(s_RowStartProperty));
 }

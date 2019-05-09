@@ -770,20 +770,31 @@ unsealed runtimeclass FlexboxLayout : NonVirtualizingLayout
 {
     FlexboxLayout();
 
-    // Avoiding CLASS_E_CLASSNOTAVAILABLE
-    Object Placeholder{ get; set; };
-    static Windows.UI.Xaml.DependencyProperty PlaceholderProperty{ get; };
-
     FlexboxWrap Wrap{ get; set; };
     FlexboxDirection Direction{ get; set; };
     FlexboxJustifyContent JustifyContent{ get; set; };
     FlexboxAlignItems AlignItems{ get; set; };
     FlexboxAlignContent AlignContent{ get; set; };
 
-    //static Windows.UI.Xaml.DependencyProperty OrderProperty{ get; };
-    //static Windows.UI.Xaml.DependencyProperty GrowProperty{ get; };
-    //static Windows.UI.Xaml.DependencyProperty ShrinkProperty{ get; };
-    //static Windows.UI.Xaml.DependencyProperty AlignSelfProperty{ get; };
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty OrderProperty{ get; };
+    static void SetOrder(Windows.UI.Xaml.UIElement element, Int32 value);
+    static Int32 GetOrder(Windows.UI.Xaml.UIElement element);
+
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty GrowProperty{ get; };
+    static void SetGrow(Windows.UI.Xaml.UIElement element, Double value);
+    static Double GetGrow(Windows.UI.Xaml.UIElement element);
+
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty ShrinkProperty{ get; };
+    static void SetShrink(Windows.UI.Xaml.UIElement element, Double value);
+    static Double GetShrink(Windows.UI.Xaml.UIElement element);
+
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty AlignSelfProperty{ get; };
+    static void SetAlignSelf(Windows.UI.Xaml.UIElement element, FlexboxAlignSelf value);
+    static FlexboxAlignSelf GetAlignSelf(Windows.UI.Xaml.UIElement element);
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -826,10 +837,6 @@ unsealed runtimeclass GridLayout : NonVirtualizingLayout
 {
     GridLayout();
 
-    // Avoiding CLASS_E_CLASSNOTAVAILABLE
-    Object Placeholder{ get; set; };
-    static Windows.UI.Xaml.DependencyProperty PlaceholderProperty{ get; };
-
     Windows.Foundation.Collections.IVector<GridTrackInfo> TemplateColumns{ get; set; };
     Windows.Foundation.Collections.IVector<GridTrackInfo> TemplateRows{ get; set; };
     Double ColumnGap{ get; set; };
@@ -842,12 +849,35 @@ unsealed runtimeclass GridLayout : NonVirtualizingLayout
     Windows.Foundation.Collections.IVector<GridTrackInfo> AutoRows{ get; set; };
     GridAutoFlow AutoFlow{ get; set; };
 
-    //static Windows.UI.Xaml.DependencyProperty ColumnStartProperty{ get; };
-    //static Windows.UI.Xaml.DependencyProperty ColumnEndProperty{ get; };
-    //static Windows.UI.Xaml.DependencyProperty RowStartProperty{ get; };
-    //static Windows.UI.Xaml.DependencyProperty RowEndProperty{ get; };
-    //static Windows.UI.Xaml.DependencyProperty JustifySelfProperty{ get; };
-    //static Windows.UI.Xaml.DependencyProperty AlignSelfProperty{ get; };
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty ColumnStartProperty{ get; };
+    static void SetColumnStart(Windows.UI.Xaml.UIElement element, GridLocation value);
+    static GridLocation GetColumnStart(Windows.UI.Xaml.UIElement element);
+
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty ColumnEndProperty{ get; };
+    static void SetColumnEnd(Windows.UI.Xaml.UIElement element, GridLocation value);
+    static GridLocation GetColumnEnd(Windows.UI.Xaml.UIElement element);
+
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty RowStartProperty{ get; };
+    static void SetRowStart(Windows.UI.Xaml.UIElement element, GridLocation value);
+    static GridLocation GetRowStart(Windows.UI.Xaml.UIElement element);
+
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty RowEndProperty{ get; };
+    static void SetRowEnd(Windows.UI.Xaml.UIElement element, GridLocation value);
+    static GridLocation GetRowEnd(Windows.UI.Xaml.UIElement element);
+
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty JustifySelfProperty{ get; };
+    static void SetJustifySelf(Windows.UI.Xaml.UIElement element, GridJustifySelf value);
+    static GridJustifySelf GetJustifySelf(Windows.UI.Xaml.UIElement element);
+
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty AlignSelfProperty{ get; };
+    static void SetAlignSelf(Windows.UI.Xaml.UIElement element, GridAlignSelf value);
+    static GridAlignSelf GetAlignSelf(Windows.UI.Xaml.UIElement element);
 }
 
 }
