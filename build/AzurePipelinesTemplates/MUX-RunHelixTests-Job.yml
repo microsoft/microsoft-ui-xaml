@@ -77,7 +77,8 @@ jobs:
   - task: CmdLine@1
     displayName: 'Display Helix payload contents'
     inputs:
-      filename: 'dir /s $(Build.SourcesDirectory)\HelixPayload'
+      filename: 'dir'
+      arguments: '/s $(Build.SourcesDirectory)\HelixPayload'
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
