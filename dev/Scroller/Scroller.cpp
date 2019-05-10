@@ -7050,11 +7050,9 @@ winrt::InteractionTrackerInertiaRestingValue Scroller::GetInertiaRestingValue(
 // returns the replacement field m_isInertiaFromImpulse otherwise.
 bool Scroller::IsInertiaFromImpulse() const
 {
-    if (m_interactionTracker)
+    if (winrt::IInteractionTracker4 interactionTracker4 = m_interactionTracker)
     {
-        winrt::IInteractionTracker4 interactionTracker4 = m_interactionTracker;
-
-        return interactionTracker4 ? interactionTracker4.IsInertiaFromImpulse() : m_isInertiaFromImpulse;
+        return interactionTracker4.IsInertiaFromImpulse();
     }
     else
     {
