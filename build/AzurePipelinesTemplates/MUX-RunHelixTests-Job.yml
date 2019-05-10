@@ -167,7 +167,7 @@ jobs:
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish ${{parameters.name}} binlog'
-    condition: and(succeededOrFailed(), eq(variables['useBuildOutputFromBuildId'],''))
+    condition: succeededOrFailed()
     inputs:
       PathtoPublish: $(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog
       artifactName: 'drop' 
