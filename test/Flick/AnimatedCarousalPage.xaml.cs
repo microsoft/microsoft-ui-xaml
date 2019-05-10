@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Microsoft.UI.Xaml.Controls;
+using System;
 using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
@@ -11,6 +13,34 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Flick
 {
+
+    public class SnappPointForwardingRepeater : ItemsRepeater, IScrollSnapPointsInfo
+    {
+        public IReadOnlyList<float> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment alignment)
+        {
+            return null;
+        }
+
+        public float GetRegularSnapPoints(Orientation orientation, SnapPointsAlignment alignment, out float offset)
+        {
+            if (alignment == SnapPointsAlignment.Center && orientation == Orientation.Horizontal)
+            {
+                var l = (Layout as VirtualizingUniformCarousalStackLayout);
+                offset = (float)(l.ItemWidth / 2 + l.Spacing);
+                return (float)(l.ItemWidth + l.Spacing);
+            }
+
+            offset = 0;
+            return 0.0f;
+        }
+
+        public bool AreHorizontalSnapPointsRegular => true;
+
+        public bool AreVerticalSnapPointsRegular => false;
+
+        public event EventHandler<object> HorizontalSnapPointsChanged;
+        public event EventHandler<object> VerticalSnapPointsChanged;
+    }
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
@@ -35,11 +65,15 @@ namespace Flick
 
             repeater.ItemsSource = subsetOf7Photos;
             int selectedIndex = args.Photos.IndexOf(args.Selected);
-            
-            var anchor = repeater.GetOrCreateElement(selectedIndex);
-            (anchor as UserControl).Focus(FocusState.Keyboard);
-            UpdateLayout();
-            ScrollToCenterOfViewport(anchor);
+
+            repeater.Loaded += Repeater_Loaded;
+        }
+
+        private void Repeater_Loaded(object sender, RoutedEventArgs e)
+        {
+            sv.ChangeView((layout.ItemWidth + layout.Spacing) * 500, null, null, true);
+           // sv.HorizontalSnapPointsType = SnapPointsType.Mandatory;
+           // sv.HorizontalSnapPointsAlignment = SnapPointsAlignment.Center;
         }
 
         private void OnElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
@@ -72,6 +106,7 @@ namespace Flick
         private void OnItemClicked(object sender, RoutedEventArgs e)
         {
             ScrollToCenterOfViewport(sender);
+            //sv.ChangeView((layout.ItemWidth + layout.Spacing) * 500, null, null);
         }
 
         private static void ScrollToCenterOfViewport(object sender)

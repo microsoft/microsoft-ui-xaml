@@ -12,14 +12,16 @@
 
     <Grid Margin="10" KeyDown="Grid_KeyDown">
         <ScrollViewer x:Name="sv" Height="300"
-                      HorizontalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Hidden"
                       VerticalScrollBarVisibility="Disabled"
                       HorizontalScrollMode="Enabled"
                       VerticalScrollMode="Disabled"
+                      HorizontalSnapPointsAlignment="Center"
+                      HorizontalSnapPointsType="Mandatory"
                       Grid.Row="1">
-            <mux:ItemsRepeater x:Name="repeater" HorizontalCacheLength="0" VerticalCacheLength="0" ElementPrepared="OnElementPrepared">
+            <local:SnappPointForwardingRepeater x:Name="repeater" HorizontalCacheLength="0" VerticalCacheLength="0" ElementPrepared="OnElementPrepared">
                 <mux:ItemsRepeater.Layout>
-                    <local:VirtualizingUniformCarousalStackLayout ItemWidth="300" ItemHeight="350" Spacing="10"/>
+                    <local:VirtualizingUniformCarousalStackLayout x:Name="layout" ItemWidth="300" ItemHeight="350" Spacing="10"/>
                 </mux:ItemsRepeater.Layout>
                 <mux:ItemsRepeater.ItemTemplate>
                     <DataTemplate>
@@ -31,7 +33,7 @@
                         </UserControl>
                     </DataTemplate>
                 </mux:ItemsRepeater.ItemTemplate>
-            </mux:ItemsRepeater>
+            </local:SnappPointForwardingRepeater>
         </ScrollViewer>
     </Grid>
 </Page>

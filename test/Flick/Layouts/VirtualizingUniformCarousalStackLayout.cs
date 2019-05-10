@@ -31,14 +31,6 @@ namespace Flick
                 element.Measure(new Size(ItemWidth, ItemHeight));
             }
 
-            //// Anchor 
-            //var anchorIndex = context.RecommendedAnchorIndex;
-            //if (anchorIndex >= 0)
-            //{
-            //    var anchorElement = context.GetOrCreateElementAt(anchorIndex);
-            //    anchorElement.Measure(new Size(ItemWidth, ItemHeight));
-            //}
-
             return new Size(ItemWidth * context.ItemCount * 1000, ItemHeight);
         }
 
@@ -59,16 +51,6 @@ namespace Flick
                 element.Arrange(arrangeRect);
                 Debug.WriteLine("   Arrange:" + currentIndex + " :" + arrangeRect);
             }
-
-            // Anchor 
-            //var anchorIndex = context.RecommendedAnchorIndex;
-            //if (anchorIndex >= 0)
-            //{
-            //    var anchor = context.GetOrCreateElementAt(anchorIndex);
-            //    var arrangeRect = new Rect(anchorIndex * (ItemWidth + Spacing), 0, ItemWidth, ItemHeight);
-            //    anchor.Arrange(arrangeRect);
-            //    Debug.WriteLine("   Arrange:" + anchorIndex + " :" + arrangeRect);
-            //}
 
             return finalSize;
         }
