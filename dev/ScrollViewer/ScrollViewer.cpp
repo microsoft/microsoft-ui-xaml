@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
+#include "ScrollerTypeLogging.h"
 #include "Scroller.h"
 #include "RuntimeProfiler.h"
 #include "FocusHelper.h"

@@ -506,7 +506,7 @@
                                     </Grid.RowDefinitions>
                                     <Border x:Name="HeroContentBorder" Grid.Row="0" Child="{TemplateBinding HeroContent}" Background="{TemplateBinding Background}"/>
                                     <Grid x:Name="NonHeroContentRootGrid" Grid.Row="1">
-                                        <ScrollViewer>
+                                        <ScrollViewer Foreground="{TemplateBinding Foreground}">
                                             <StackPanel Margin="{StaticResource TeachingTipContentMargin}">
                                                 <Grid Grid.Row="0">
                                                     <Grid.ColumnDefinitions>
@@ -548,7 +548,8 @@
                                                 Background="Transparent"
                                                 VerticalAlignment="Top"
                                                 HorizontalAlignment="Right"
-                                                BorderThickness="{ThemeResource TeachingTipAlternateCloseButtonBorderThickness}">
+                                                BorderThickness="{ThemeResource TeachingTipAlternateCloseButtonBorderThickness}"
+                                                Foreground="{TemplateBinding Foreground}">
                                             <Viewbox Width="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}"
                                                      Height="{StaticResource TeachingTipAlternateCloseButtonGlyphSize}">
                                                 <SymbolIcon Symbol="Cancel"/>

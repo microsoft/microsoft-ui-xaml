@@ -50,6 +50,7 @@ LifetimeHandler& LifetimeHandler::Instance()
     return *s_tlsInstanceNoRef;
 }
 
+#ifdef REPEATER_INCLUDED
 /* static */
 com_ptr<CachedVisualTreeHelpers> LifetimeHandler::GetCachedVisualTreeHelpersInstance()
 {
@@ -60,8 +61,9 @@ com_ptr<CachedVisualTreeHelpers> LifetimeHandler::GetCachedVisualTreeHelpersInst
 
     return Instance().m_cachedVisualTreeHelpers;
 }
+#endif
 
-#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
+#ifdef TWOPANEVIEW_INCLUDED
 /* static */
 com_ptr<DisplayRegionHelper> LifetimeHandler::GetDisplayRegionHelperInstance()
 {

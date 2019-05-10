@@ -138,7 +138,7 @@
     <comment>Name for the compact view search button</comment>
   </data>
   <data name="NavigationBackButtonName" xml:space="preserve">
-    <value>מקש \'הקודם\'</value>
+    <value>הקודם</value>
     <comment>Automation name for the nav view provided back button</comment>
   </data>
   <data name="NavigationBackButtonToolTip" xml:space="preserve">

@@ -426,9 +426,12 @@ void TreeViewNodeVector::Clear(bool updateItemsSource)
 
         inner->Clear();
 
-        if (auto itemsSource = GetWritableParentItemsSource())
+        if (updateItemsSource)
         {
-            itemsSource.Clear();
+            if (auto itemsSource = GetWritableParentItemsSource())
+            {
+                itemsSource.Clear();
+            }
         }
     }
 }

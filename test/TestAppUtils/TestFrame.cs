@@ -88,8 +88,9 @@ namespace MUXControlsTestApp
 
             Window.Current.SizeChanged += OnWindowSizeChanged;
 
+            // NOTE: The "BackButton" element automatically has a handler hooked up to it by Frame
+            // just by being named "BackButton"
             _backButton = (Button)GetTemplateChild("BackButton");
-            _backButton.Click += GoBackInvokerButton_Click;
 
             _goBackInvokerButton = (Button)GetTemplateChild("GoBackInvokerButton");
             _goBackInvokerButton.Click += GoBackInvokerButton_Click;
@@ -171,7 +172,6 @@ namespace MUXControlsTestApp
         {
             var size = new Size(Window.Current.Bounds.Width, Window.Current.Bounds.Height);
 
-#if USE_INSIDER_SDK
             if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.Xaml.XamlRoot"))
             {
                 try
@@ -184,7 +184,6 @@ namespace MUXControlsTestApp
                     // If running on mismatched OS build, just fall back to window bounds.
                 }
             }
-#endif
             _rootGrid.Width = size.Width;
             _rootGrid.Height = size.Height;
         }

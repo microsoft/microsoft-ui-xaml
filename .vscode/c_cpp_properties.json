@@ -21,10 +21,10 @@
                 "${workspaceFolder}/BuildOutput/Intermediates/Microsoft.UI.Xaml/obj/CppWinRT/Component/Microsoft/UI/Private/Media",
                 "${workspaceFolder}/BuildOutput/Intermediates/Microsoft.UI.Xaml/obj/CppWinRT/Component/XamlTypeInfo",
                 "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\VC\\Tools\\MSVC\\14.16.27023\\include",
-                "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18323.0\\shared",
-                "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18323.0\\um",
-                "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18323.0\\winrt",
-                "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18323.0\\ucrt",
+                "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\shared",
+                "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\um",
+                "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\winrt",
+                "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\ucrt",
                 "${workspaceFolder}/dev/Telemetry",
                 "${workspaceFolder}/dev/Repeater"
             ],
@@ -39,7 +39,7 @@
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": "${workspaceFolder}/.vscode/"
             },
-            "windowsSdkVersion": "10.0.18323.0",
+            "windowsSdkVersion": "10.0.18362.0",
             "configurationProvider": "microsoft.vscode-nmake-tools",
             "cppStandard": "c++17",
             "intelliSenseMode": "msvc-x64"

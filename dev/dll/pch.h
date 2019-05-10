@@ -32,11 +32,7 @@
 #define MUX_FAIL_FAST() RaiseFailFastException(nullptr, nullptr, 0);
 #define MUX_FAIL_FAST_MSG(MSG) RaiseFailFastException(nullptr, nullptr, 0);
 
-#ifdef BUILD_WINDOWS
-#include <gsl/gsl_util>
-#else
-#include <gsl_util.h>
-#endif
+#include "gsl/gsl"
 
 // windows.ui.xaml.h accesses LoadLibrary in its inline declaration of CreateXamlUiPresenter
 // Accessing LoadLibrary is not always allowed (e.g. on phone), so we need to suppress that.

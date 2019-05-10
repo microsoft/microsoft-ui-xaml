@@ -13,76 +13,8 @@
 #include "pch.h"
 #include "common.h"
 
-#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
-#include "ColorSpectrum.h"
-#include "ColorPicker.h"
-#include "ColorPickerSlider.h"
-#include "CommandBarFlyout.h"
-#include "CommandBarFlyoutCommandBar.h"
-#include "CommandBarFlyoutCommandBarTemplateSettings.h"
-#include "SpectrumBrush.h"
-#include "PersonPicture.h"
-#include "PersonPictureTemplateSettings.h"
-#include "RatingControl.h"
-#include "RatingItemInfo.h"
-#include "RatingItemImageInfo.h"
-#include "RatingItemFontInfo.h"
-#include "TreeView.h"
-#include "TreeViewNode.h"
-#include "TreeViewItem.h"
-#include "TreeViewItemTemplateSettings.h"
-#include "SwipeItem.h"
-#include "SwipeItems.h"
-#include "SwipeControl.h"
-#include "TwoPaneView.h"
-#include "DisplayRegionHelperTestApiFactory.h"
-#include "RefreshContainer.h"
-#include "RefreshVisualizer.h"
-#include "MenuBar.h"
-#include "MenuBarItem.h"
-#include "SplitButton.h"
-#include "SplitButtonTestApi.h"
-#include "ToggleSplitButton.h"
-#include "DropDownButton.h"
-#include "TeachingTip.h"
-#include "RadioButtons.h"
-#include "RadioButtonsListView.h"
-#include "RadioButtonsListViewItem.h"
-#include "RadioButtonsListViewItemAutomationPeer.h"
-#include "RadioMenuFlyoutItem.h"
-#ifndef BUILD_WINDOWS
-#include "AnimatedVisualPlayer.h"
-#include "ScrollViewer.h"
-#include "ScrollViewerTestHooksFactory.h"
-#endif
-#endif
-
-#include "AcrylicBrush.h"
-#include "NavigationView.h"
-#include "NavigationViewItem.h"
-#include "ParallaxView.h"
-#include "RevealBrush.h"
-#include "XamlAmbientLight.h"
-#include "MaterialHelperTestApiFactory.h"
-#include "MUXControlsTestHooksFactory.h"
-#include "ItemsRepeater.h"
-#include "RepeaterTestHooksFactory.h"
-#include "FlowLayout.h"
-#include "UniformGridLayout.h"
-#include "StackLayout.h"
-#include "RecyclePoolFactory.h"
-#include "Scroller.h"
-#include "ScrollerTestHooksFactory.h"
-#include "NavigationViewTemplateSettings.h"
-#include "NavigationViewItemPresenter.h"
-#include "LayoutPanel.h"
 
 #ifndef BUILD_WINDOWS
-#include "IconSource.h"
-#include "SymbolIconSource.h"
-#include "FontIconSource.h"
-#include "BitmapIconSource.h"
-#include "PathIconSource.h"
 
 #include "XamlMetadataProvider.h"
 #include "XamlMetadataProviderGenerated.h"
@@ -116,17 +48,6 @@
 
             RegisteredTypes.Add(GetInferedTypeName(type), type);
             RegisterXamlType(type, true /* exploreBaseAndProperties */ );
-
-            // Add asserts on the MUXControls side for the EnsureProperties calls we need to call in Windows
-            if (HasDependencyProperties(type))
-            {
-#>
-// If you triggered these asserts, and HAVE implemented the methods, you probably need to add an include to the top of XamlMetadataProviderGenerated.tt
-static_assert(!!&<#= type.Name #>::EnsureProperties, "<#= type.Name #>::EnsureProperties does not exist; it needs to for windows compilation");
-static_assert(!!&<#= type.Name #>::ClearProperties, "<#= type.Name #>::ClearProperties does not exist; it needs to for windows compilation");
-
-<#
-            }
         }
 
         // The explicit casts to PCWSTR below ensures the compiler instantiate one template instead of multiple
