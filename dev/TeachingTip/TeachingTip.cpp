@@ -1353,11 +1353,6 @@ void TeachingTip::RevokeViewportChangedEvent()
     m_targetLayoutUpdatedRevoker.revoke();
 }
 
-void TeachingTip::RepositionPopup()
-{
-    RepositionPopup();
-}
-
 void TeachingTip::WindowSizeChanged(const winrt::CoreWindow&, const winrt::WindowSizeChangedEventArgs&)
 {
     RepositionPopup();
@@ -2063,6 +2058,7 @@ void TeachingTip::EstablishShadows()
             tailPolygon_uiElement10.Shadow(nullptr);
         }
     }
+#endif
 #endif
     if (winrt::IUIElement10 m_contentRootGrid_uiElement10 = m_contentRootGrid.get())
     {
