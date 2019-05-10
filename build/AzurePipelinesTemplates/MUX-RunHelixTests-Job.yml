@@ -73,6 +73,11 @@ jobs:
       targetType: filePath
       filePath: build\Helix\PrepareHelixPayload.ps1
       arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
+      
+  - task: CmdLine@1
+    displayName: 'Display Helix payload contents'
+    inputs:
+      filename: 'dir /s $(Build.SourcesDirectory)\HelixPayload'
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
