@@ -30,9 +30,7 @@
 #include <winrt\Windows.UI.Input.h>
 #include <winrt\Windows.UI.Text.h>
 #include <winrt\Windows.UI.ViewManagement.h>
-#ifdef USE_INSIDER_SDK
 #include <winrt\Windows.UI.WindowManagement.h>
-#endif
 #include <winrt\Windows.UI.Xaml.h>
 #include <winrt\Windows.UI.Xaml.Automation.Peers.h>
 #include <winrt\Windows.UI.Xaml.Automation.Provider.h>
@@ -92,9 +90,7 @@ namespace winrt
     using namespace ::winrt::Windows::UI::Input;
     using namespace ::winrt::Windows::UI::Text;
     using namespace ::winrt::Windows::UI::ViewManagement;
-#ifdef USE_INSIDER_SDK
     using namespace ::winrt::Windows::UI::WindowManagement;
-#endif
     using namespace ::winrt::Windows::UI::Xaml;
     using namespace ::winrt::Windows::UI::Xaml::Automation;
     using namespace ::winrt::Windows::UI::Xaml::Automation::Provider;
@@ -331,9 +327,7 @@ namespace winrt
     using FlyoutShowOptions = winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutShowOptions;
     using IFlyoutBase3 = winrt::Windows::UI::Xaml::Controls::Primitives::IFlyoutBase3;
     using IFlyoutBase5 = winrt::Windows::UI::Xaml::Controls::Primitives::IFlyoutBase5;
-#ifdef USE_INSIDER_SDK
     using IFlyoutBase6 = winrt::Windows::UI::Xaml::Controls::Primitives::IFlyoutBase6;
-#endif
     using ILayoutInformationStatics = winrt::Windows::UI::Xaml::Controls::Primitives::ILayoutInformationStatics;
     using IListViewItemPresenterFactory = winrt::Windows::UI::Xaml::Controls::Primitives::IListViewItemPresenterFactory;
     using IScrollEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::IScrollEventArgs;
@@ -341,6 +335,7 @@ namespace winrt
     using ListViewItemPresenter = winrt::Windows::UI::Xaml::Controls::Primitives::ListViewItemPresenter;
     using OrientedVirtualizingPanel = winrt::Windows::UI::Xaml::Controls::Primitives::OrientedVirtualizingPanel;
     using Popup = winrt::Windows::UI::Xaml::Controls::Primitives::Popup;
+    using IPopup3 = winrt::Windows::UI::Xaml::Controls::Primitives::IPopup3;
     using RangeBaseValueChangedEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs;
     using ScrollBar = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollBar;
     using ScrollEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollEventArgs;
@@ -362,6 +357,7 @@ namespace winrt
     using ButtonAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::ButtonAutomationPeer;
     using FrameworkElementAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::FrameworkElementAutomationPeer;
     using IAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::IAutomationPeer;
+    using IAutomationPeer7 = winrt::Windows::UI::Xaml::Automation::Peers::IAutomationPeer7;
     using IAutomationPeerOverrides = winrt::Windows::UI::Xaml::Automation::Peers::IAutomationPeerOverrides;
     using IFrameworkElementAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::IFrameworkElementAutomationPeer;
     using IFrameworkElementAutomationPeerFactory = winrt::Windows::UI::Xaml::Automation::Peers::IFrameworkElementAutomationPeerFactory;

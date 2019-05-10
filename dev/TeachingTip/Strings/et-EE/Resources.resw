@@ -121,4 +121,20 @@
     <value>Sule</value>
     <comment>This is the automation name of the alternate close button.</comment>
   </data>
+  <data name="TeachingTipAlternateCloseButtonTooltip" xml:space="preserve">
+    <value>Sule</value>
+    <comment>This is the string used for the alternate close button's tooltip</comment>
+  </data>
+  <data name="TeachingTipCustomLandmarkName" xml:space="preserve">
+    <value>Näpunäide</value>
+    <comment>This is the custom landmark used to denote a tip to narrator.</comment>
+  </data>
+  <data name="TeachingTipNotification" xml:space="preserve">
+    <value>Vajutage klahvi F6, et avada rakenduse %1!s! uus teatis, %2!s!.</value>
+    <comment>This is the formarted string read by narrator when a new tip is opened. It is "Press F6 to go to new notification from 'AppName', 'TipTitle'.</comment>
+  </data>
+  <data name="TeachingTipNotificationWithoutAppName" xml:space="preserve">
+    <value>Vajutage klahvi F6, et avada uus teatis, %1!s!.</value>
+    <comment>This is the formatted string read by narrator when a new tip is opened and the app name is not available. it is "Press F6 to go to new notification, 'TipTitle'.</comment>
+  </data>
 </root>
