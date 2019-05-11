@@ -1,14 +1,5 @@
 setlocal ENABLEDELAYEDEXPANSION
 
-rem cd scripts
-for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTests.ps1 C:\Temp\te.wtl`) DO (
-  set FailingTestQuery=%%A
-)
-
-echo %FailingTestQuery%
-rem cd ..
-goto:eof
-
 robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP
 
 reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
