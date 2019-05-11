@@ -7,117 +7,27 @@ using System.Xml.Linq;
 
 namespace HelixTestHelpers
 {
-    public static class TestResultParser
+    public class TestResult
     {
-        public class TestPass
+        public TestResult()
         {
-            public TimeSpan TestPassExecutionTime { get; set; }
-            public List<TestResult> TestResults { get; set; }
+            Screenshots = new List<string>();
         }
 
-        public class TestResult
-        {
-            public TestResult()
-            {
-                Screenshots = new List<string>();
-            }
+        public string Name { get; set; }
+        public bool Passed { get; set; }
+        public bool CleanupPassed { get; set; }
+        public TimeSpan ExecutionTime { get; set; }
+        public string Details { get; set; }
 
-            public string Name { get; set; }
-            public bool Passed { get; set; }
-            public bool CleanupPassed { get; set; }
-            public TimeSpan ExecutionTime { get; set; }
-            public string Details { get; set; }
-
-            public List<string> Screenshots { get; private set; }
-        }
-
-        public static void ConvertWttLogToXUnitLog(string wttInputPath, string xunitOutputPath, string testNamePrefix, string helixResultsContainerUri, string helixResultsContainerRsas)
-        {
-            var testPass = TestResultParser.ParseTestWttFile(wttInputPath, true);
-            var results = testPass.TestResults;
-
-            int resultCount = results.Count;
-            int passedCount = results.Where(r => r.Passed).Count();
-            int failedCount = resultCount - passedCount;
-
-            var root = new XElement("assemblies");
-
-            var assembly = new XElement("assembly");
-            assembly.SetAttributeValue("name", "MUXControls.Test.dll");
-            assembly.SetAttributeValue("test-framework", "TAEF");
-            assembly.SetAttributeValue("run-date", DateTime.Now.ToString("yyyy-mm-dd"));
-
-            // This doesn't need to be completely accurate since it's not exposed anywhere.
-            // If we need accurate an start time we can probably calculate it from the te.wtl file, but for
-            // now this is fine.
-            assembly.SetAttributeValue("run-time", (DateTime.Now - testPass.TestPassExecutionTime).ToString("hh:mm:ss"));
-            
-            assembly.SetAttributeValue("total", resultCount);
-            assembly.SetAttributeValue("passed", passedCount);
-            assembly.SetAttributeValue("failed", failedCount);
-            assembly.SetAttributeValue("skipped", 0);
-            assembly.SetAttributeValue("time", (int)testPass.TestPassExecutionTime.TotalSeconds);
-            assembly.SetAttributeValue("errors", 0);
-            root.Add(assembly);
-
-            var collection = new XElement("collection");
-            collection.SetAttributeValue("total", resultCount);
-            collection.SetAttributeValue("passed", passedCount);
-            collection.SetAttributeValue("failed", failedCount);
-            collection.SetAttributeValue("skipped", 0);
-            collection.SetAttributeValue("name", "Test collection");
-            collection.SetAttributeValue("time", (int)testPass.TestPassExecutionTime.TotalSeconds);
-            assembly.Add(collection);
-
-            foreach (var result in results)
-            {
-                var test = new XElement("test");
-                test.SetAttributeValue("name", testNamePrefix + "." + result.Name);
-
-                var className = result.Name.Substring(0, result.Name.LastIndexOf('.'));
-                var methodName = result.Name.Substring(result.Name.LastIndexOf('.') + 1);
-                test.SetAttributeValue("type", className);
-                test.SetAttributeValue("method", methodName);
-
-                test.SetAttributeValue("time", result.ExecutionTime.TotalSeconds);
-                test.SetAttributeValue("result", result.Passed ? "Pass" : "Fail");
-
-                if (!result.Passed)
-                {
-                    var failure = new XElement("failure");
-                    failure.SetAttributeValue("exception-type", "Exception");
-
-                    var message = new XElement("message");
-
-                    StringBuilder errorMessage = new StringBuilder();
-
-                    errorMessage.AppendLine("Log: " + GetUploadedFileUrl(wttInputPath, helixResultsContainerUri, helixResultsContainerRsas));
-                    errorMessage.AppendLine();
-                    
-                    if(result.Screenshots.Any())
-                    {
-                        errorMessage.AppendLine("Screenshots:");
-                        foreach(var screenshot in result.Screenshots)
-                        {
-                            errorMessage.AppendLine(GetUploadedFileUrl(screenshot, helixResultsContainerUri, helixResultsContainerRsas));
-                            errorMessage.AppendLine();
-                        }
-                    }
-
-                    errorMessage.AppendLine("Error Log: ");
-                    errorMessage.AppendLine(result.Details);
-
-                    message.Add(new XCData(errorMessage.ToString()));
-                    failure.Add(message);
-
-                    test.Add(failure);
-                }
-
-                collection.Add(test);
-            }
-
-            File.WriteAllText(xunitOutputPath, root.ToString());
-        }
+        public List<string> Screenshots { get; private set; }
+    }
+    
+    public class TestPass
+    {
+        public TimeSpan TestPassExecutionTime { get; set; }
+        public List<TestResult> TestResults { get; set; }
+        
         public static TestPass ParseTestWttFile(string fileName, bool cleanupFailuresAreRegressions)
         {
             using (var stream = System.IO.File.OpenRead(fileName))
@@ -345,6 +255,131 @@ namespace HelixTestHelpers
 
             return null;
         }
+    }
+
+    public static class FailedTestDetector
+    {
+        public static void OutputFailedTests(string wttInputPath)
+        {
+            var testPass = TestPass.ParseTestWttFile(wttInputPath, true);
+            
+            List<string> failedTestNames = new List<string>();
+            
+            foreach (var result in testPass.TestResults)
+            {
+                if (!result.Passed)
+                {
+                    failedTestNames.Add(result.Name);
+                }
+            }
+            
+            string failedTestSelectQuery = "(@Name='";
+            
+            for (int i = 0; i < failedTestNames.Count; i++)
+            {
+                failedTestSelectQuery += failedTestNames[i];
+                
+                if (i < failedTestNames.Count - 1)
+                {
+                    failedTestSelectQuery += "' or @Name='";
+                }
+            }
+            
+            failedTestSelectQuery += "')";
+            
+            Console.WriteLine(failedTestSelectQuery);
+        }
+    }
+
+    public static class TestResultParser
+    {
+        public static void ConvertWttLogToXUnitLog(string wttInputPath, string xunitOutputPath, string testNamePrefix, string helixResultsContainerUri, string helixResultsContainerRsas)
+        {
+            var testPass = TestPass.ParseTestWttFile(wttInputPath, true);
+            var results = testPass.TestResults;
+
+            int resultCount = results.Count;
+            int passedCount = results.Where(r => r.Passed).Count();
+            int failedCount = resultCount - passedCount;
+
+            var root = new XElement("assemblies");
+
+            var assembly = new XElement("assembly");
+            assembly.SetAttributeValue("name", "MUXControls.Test.dll");
+            assembly.SetAttributeValue("test-framework", "TAEF");
+            assembly.SetAttributeValue("run-date", DateTime.Now.ToString("yyyy-mm-dd"));
+
+            // This doesn't need to be completely accurate since it's not exposed anywhere.
+            // If we need accurate an start time we can probably calculate it from the te.wtl file, but for
+            // now this is fine.
+            assembly.SetAttributeValue("run-time", (DateTime.Now - testPass.TestPassExecutionTime).ToString("hh:mm:ss"));
+            
+            assembly.SetAttributeValue("total", resultCount);
+            assembly.SetAttributeValue("passed", passedCount);
+            assembly.SetAttributeValue("failed", failedCount);
+            assembly.SetAttributeValue("skipped", 0);
+            assembly.SetAttributeValue("time", (int)testPass.TestPassExecutionTime.TotalSeconds);
+            assembly.SetAttributeValue("errors", 0);
+            root.Add(assembly);
+
+            var collection = new XElement("collection");
+            collection.SetAttributeValue("total", resultCount);
+            collection.SetAttributeValue("passed", passedCount);
+            collection.SetAttributeValue("failed", failedCount);
+            collection.SetAttributeValue("skipped", 0);
+            collection.SetAttributeValue("name", "Test collection");
+            collection.SetAttributeValue("time", (int)testPass.TestPassExecutionTime.TotalSeconds);
+            assembly.Add(collection);
+
+            foreach (var result in results)
+            {
+                var test = new XElement("test");
+                test.SetAttributeValue("name", testNamePrefix + "." + result.Name);
+
+                var className = result.Name.Substring(0, result.Name.LastIndexOf('.'));
+                var methodName = result.Name.Substring(result.Name.LastIndexOf('.') + 1);
+                test.SetAttributeValue("type", className);
+                test.SetAttributeValue("method", methodName);
+
+                test.SetAttributeValue("time", result.ExecutionTime.TotalSeconds);
+                test.SetAttributeValue("result", result.Passed ? "Pass" : "Fail");
+
+                if (!result.Passed)
+                {
+                    var failure = new XElement("failure");
+                    failure.SetAttributeValue("exception-type", "Exception");
+
+                    var message = new XElement("message");
+
+                    StringBuilder errorMessage = new StringBuilder();
+
+                    errorMessage.AppendLine("Log: " + GetUploadedFileUrl(wttInputPath, helixResultsContainerUri, helixResultsContainerRsas));
+                    errorMessage.AppendLine();
+                    
+                    if(result.Screenshots.Any())
+                    {
+                        errorMessage.AppendLine("Screenshots:");
+                        foreach(var screenshot in result.Screenshots)
+                        {
+                            errorMessage.AppendLine(GetUploadedFileUrl(screenshot, helixResultsContainerUri, helixResultsContainerRsas));
+                            errorMessage.AppendLine();
+                        }
+                    }
+
+                    errorMessage.AppendLine("Error Log: ");
+                    errorMessage.AppendLine(result.Details);
+
+                    message.Add(new XCData(errorMessage.ToString()));
+                    failure.Add(message);
+
+                    test.Add(failure);
+                }
+
+                collection.Add(test);
+            }
+
+            File.WriteAllText(xunitOutputPath, root.ToString());
+        }
 
         private static string GetUploadedFileUrl(string filePath, string helixResultsContainerUri, string helixResultsContainerRsas)
         {
@@ -352,6 +387,4 @@ namespace HelixTestHelpers
             return string.Format("{0}/{1}{2}", helixResultsContainerUri, filename, helixResultsContainerRsas);
         }
     }
-
-
 }
