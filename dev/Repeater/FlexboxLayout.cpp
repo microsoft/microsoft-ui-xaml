@@ -109,13 +109,10 @@ std::vector<winrt::UIElement> FlexboxLayout::ChildrenSortedByOrder(winrt::NonVir
     {
         sorted.push_back(child);
     }
-    // PORT_TODO
-#if FALSE
-    sorted.Sort((winrt::UIElement const& a, winrt::UIElement const& b) = >
+    std::sort(sorted.begin(), sorted.end(), [](winrt::UIElement const& a, winrt::UIElement const& b)
     {
         return (GetOrder(a) - GetOrder(b));
     });
-#endif
 
     return sorted;
 }
@@ -291,9 +288,7 @@ winrt::Size FlexboxLayout::ArrangeOverride(
         }
 
         // Grow to take up leftover space according to the grow ratio
-        // PORT_TODO
-        float grow = 0.0;
-        //float grow = GetGrow(child);
+        float grow = static_cast<float>(GetGrow(child));
         if (grow > 0.0)
         {
             childDesiredSize = CreateSize(MainAxis(childDesiredSize) + (grow * growSlice), CrossAxis(childDesiredSize));
@@ -390,9 +385,7 @@ winrt::Size FlexboxLayout::ArrangeOverride(
 
         winrt::FlexboxAlignItems alignItems;
 
-        // PORT_TODO
-        switch (winrt::FlexboxAlignSelf::Auto)
-        //switch (GetAlignSelf(child))
+        switch (GetAlignSelf(child))
         {
         default:
         case winrt::FlexboxAlignSelf::Auto:
