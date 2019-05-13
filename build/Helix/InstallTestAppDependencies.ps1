@@ -1,6 +1,7 @@
 Push-Location ..\
 
-$dependencyFiles = Get-ChildItem -Filter "*dependencies.txt"
+$payloadFolder = Resolve-Path "$PSScriptRoot\.."
+$dependencyFiles = Get-ChildItem -Filter "$payloadFolder\*dependencies.txt"
 
 foreach($file in $dependencyFiles)
 {

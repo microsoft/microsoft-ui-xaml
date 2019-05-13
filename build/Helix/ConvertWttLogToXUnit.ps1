@@ -14,6 +14,6 @@ Param(
 $helixResultsContainerUri = $Env:HELIX_RESULTS_CONTAINER_URI
 $helixResultsContainerRsas = $Env:HELIX_RESULTS_CONTAINER_RSAS
 
-Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xml.Linq (Get-Content .\HelixTestHelpers.cs -Raw)
+Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xml.Linq (Get-Content $PSScriptRoot\HelixTestHelpers.cs -Raw)
 
 [HelixTestHelpers.TestResultParser]::ConvertWttLogToXUnitLog($WttInputPath, $XUnitOutputPath, $testNamePrefix, $helixResultsContainerUri, $helixResultsContainerRsas)

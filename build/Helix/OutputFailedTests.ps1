@@ -3,6 +3,6 @@ Param(
     [string]$WttInputPath
 )
 
-Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xml.Linq (Get-Content .\HelixTestHelpers.cs -Raw)
+Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xml.Linq (Get-Content $PSScriptRoot\HelixTestHelpers.cs -Raw)
 
 [HelixTestHelpers.FailedTestDetector]::OutputFailedTests($WttInputPath)
