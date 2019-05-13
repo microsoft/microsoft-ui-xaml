@@ -82,20 +82,29 @@ namespace Flick
             var svVisual = ElementCompositionPreview.GetElementVisual(sv);
             var scrollProperties = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(sv);
 
-            var scaleExpresion = scrollProperties.Compositor.CreateExpressionAnimation();
-            scaleExpresion.SetReferenceParameter("svVisual", svVisual);
-            scaleExpresion.SetReferenceParameter("scrollProperties", scrollProperties);
-            scaleExpresion.SetReferenceParameter("item", item);
+            var scaleExpression = scrollProperties.Compositor.CreateExpressionAnimation();
+            scaleExpression.SetReferenceParameter("svVisual", svVisual);
+            scaleExpression.SetReferenceParameter("scrollProperties", scrollProperties);
+            scaleExpression.SetReferenceParameter("item", item);
 
-            // scale the item based on the distance of the item relative to the center of the viewport.
-            scaleExpresion.Expression = "1 - abs((svVisual.Size.X/2 - scrollProperties.Translation.X) - (item.Offset.X + item.Size.X/2))*(.75/(svVisual.Size.X/2))";
-            item.StartAnimation("Scale.X", scaleExpresion);
-            item.StartAnimation("Scale.Y", scaleExpresion);
+            /* TODO: Expose ItemScaleRatio (scaleRatioXY) as a DependencyProperty in the custom Carousel
+             * control so the user can set it to any value */
+            scaleExpression.SetScalarParameter("scaleRatioXY", 0.5f);
+            scaleExpression.SetScalarParameter("spacing", (float)layout.Spacing);
 
             var centerPointExpression = scrollProperties.Compositor.CreateExpressionAnimation();
             centerPointExpression.SetReferenceParameter("item", item);
             centerPointExpression.Expression = "Vector3(item.Size.X/2, item.Size.Y/2, 0)";
             item.StartAnimation("CenterPoint", centerPointExpression);
+
+            // scale the item based on the distance of the item relative to the center of the viewport.
+            //scaleExpression.Expression = "1 - abs((svVisual.Size.X/2 - scrollProperties.Translation.X) - (item.Offset.X + item.Size.X/2))*(.75/(svVisual.Size.X/2))";
+            scaleExpression.Expression = "clamp((1 - (abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing))), scaleRatioXY, 1)";
+            item.StartAnimation("Scale.X", scaleExpression);
+            item.StartAnimation("Scale.Y", scaleExpression);
+
+            /* TODO: Create an ExpressionAnimation to be applied to each item's Offset property that will 
+             * allow each item to maintain the fixed Layout.Spacing even when a Scale animation has been applied */
         }
 
         private void OnItemGotFocus(object sender, RoutedEventArgs e)
