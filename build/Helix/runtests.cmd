@@ -5,7 +5,7 @@ robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP
 reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
 
 cd scripts
-powershell -ExecutionPolicy Bypass InstallTestAppDependencies.ps1
+powershell -ExecutionPolicy Bypass %~dp0\scripts\InstallTestAppDependencies.ps1
 cd ..
 
 set testBinaryCandidates=MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx MUXControls.ReleaseTest.dll NugetPackageTestApp.appx NugetPackageTestAppCX.appx
@@ -27,7 +27,7 @@ FOR %%I in (WexLogFileOutput\*.jpg) DO (
 
 cd scripts
 set FailingTestQuery=
-for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass OutputFailedTests.ps1 %~dp0\te.wtl`) DO (
+for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass %~dp0\scripts\OutputFailedTests.ps1 %~dp0\te.wtl`) DO (
   set FailingTestQuery=%%A
 )
 cd ..
@@ -61,7 +61,7 @@ if exist te.wtl (
 )
 
 cd scripts
-powershell -ExecutionPolicy Bypass ConvertWttLogToXUnit.ps1 %~dp0\te.wtl %~dp0\te_old.wtl %~dp0\testResults.xml %testnameprefix%
+powershell -ExecutionPolicy Bypass %~dp0\scripts\ConvertWttLogToXUnit.ps1 %~dp0\te.wtl %~dp0\te_old.wtl %~dp0\testResults.xml %testnameprefix%
 cd ..
 
 type testResults.xml
