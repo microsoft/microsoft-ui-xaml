@@ -24,7 +24,7 @@ https://github.com/Microsoft/microsoft-ui-xaml/blob/master/docs/feature_proposal
 ## Rationale
 <!-- Please describe WHY the feature should be added to WinUI for all developers and users.
 If applicable you can also describe how it aligns to the current WinUI roadmap and priorities:
-https://github.com/Microsoft/microsoft-ui-xaml-specs/blob/master/docs/roadmap.md
+https://github.com/Microsoft/microsoft-ui-xaml/blob/master/docs/roadmap.md
 -->
 
 <!----------------------
