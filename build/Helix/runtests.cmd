@@ -4,7 +4,9 @@ robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP
 
 reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
 
-powershell -ExecutionPolicy Bypass scripts\InstallTestAppDependencies.ps1
+cd scripts
+powershell -ExecutionPolicy Bypass InstallTestAppDependencies.ps1
+cd ..
 
 set testBinaryCandidates=MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx MUXControls.ReleaseTest.dll NugetPackageTestApp.appx NugetPackageTestAppCX.appx
 set testBinaries=
@@ -23,10 +25,12 @@ FOR %%I in (WexLogFileOutput\*.jpg) DO (
     %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI%%~xI 
 )
 
+cd scripts
 set FailingTestQuery=
-for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass scripts\OutputFailedTests.ps1 %~dp0\te.wtl`) DO (
+for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass OutputFailedTests.ps1 %~dp0\te.wtl`) DO (
   set FailingTestQuery=%%A
 )
+cd ..
 
 if '%FailingTestQuery%' neq '' (
     move te.wtl te_old.wtl
@@ -56,6 +60,8 @@ if exist te.wtl (
     type te.wtl
 )
 
-powershell -ExecutionPolicy Bypass scripts\ConvertWttLogToXUnit.ps1 %~dp0\te.wtl %~dp0\te_old.wtl %~dp0\testResults.xml %testnameprefix%
+cd scripts
+powershell -ExecutionPolicy Bypass ConvertWttLogToXUnit.ps1 %~dp0\te.wtl %~dp0\te_old.wtl %~dp0\testResults.xml %testnameprefix%
+cd ..
 
 type testResults.xml
