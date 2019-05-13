@@ -16,6 +16,7 @@ namespace HelixTestHelpers
 
         public string Name { get; set; }
         public bool Passed { get; set; }
+        public bool PassedOnRerun { get; set; }
         public bool CleanupPassed { get; set; }
         public TimeSpan ExecutionTime { get; set; }
         public string Details { get; set; }
@@ -28,9 +29,9 @@ namespace HelixTestHelpers
         public TimeSpan TestPassExecutionTime { get; set; }
         public List<TestResult> TestResults { get; set; }
         
-        public static TestPass ParseTestWttFile(string fileName, bool cleanupFailuresAreRegressions)
+        public static TestPass ParseTestWttFile(string fileName, bool cleanupFailuresAreRegressions, bool truncateTestNames)
         {
-            using (var stream = System.IO.File.OpenRead(fileName))
+            using (var stream = File.OpenRead(fileName))
             {
                 var doc = XDocument.Load(stream);
                 var testResults = new List<TestResult>();
@@ -113,15 +114,19 @@ namespace HelixTestHelpers
                         if (testsExecuting == 1)
                         {
                             string testName = element.Attribute("Title").Value;
-                            const string xamlNativePrefix = "Windows::UI::Xaml::Tests::";
-                            const string xamlManagedPrefix = "Windows.UI.Xaml.Tests.";
-                            if (testName.StartsWith(xamlNativePrefix))
+                            
+                            if (truncateTestNames)
                             {
-                                testName = testName.Substring(xamlNativePrefix.Length);
-                            }
-                            else if (testName.StartsWith(xamlManagedPrefix))
-                            {
-                                testName = testName.Substring(xamlManagedPrefix.Length);
+                                const string xamlNativePrefix = "Windows::UI::Xaml::Tests::";
+                                const string xamlManagedPrefix = "Windows.UI.Xaml.Tests.";
+                                if (testName.StartsWith(xamlNativePrefix))
+                                {
+                                    testName = testName.Substring(xamlNativePrefix.Length);
+                                }
+                                else if (testName.StartsWith(xamlManagedPrefix))
+                                {
+                                    testName = testName.Substring(xamlManagedPrefix.Length);
+                                }
                             }
 
                             currentResult = new TestResult() { Name = testName, Passed = true, CleanupPassed = true };
@@ -245,6 +250,25 @@ namespace HelixTestHelpers
                 return testpass;
             }
         }
+        
+        public static TestPass ParseTestWttFileWithReruns(string fileName, string rerunFileName, bool cleanupFailuresAreRegressions, bool truncateTestNames)
+        {
+            TestPass testPass = ParseTestWttFile(fileName, cleanupFailuresAreRegressions, truncateTestNames);
+            TestPass rerunTestPass = ParseTestWttFile(rerunFileName, cleanupFailuresAreRegressions, truncateTestNames);
+            
+            // For each failed test result, we'll check to see whether the test passed at least once upon rerun.
+            // If so, we'll set PassedOnRerun to true to flag the fact that this is an unreliable test
+            // rather than a genuine test failure.
+            foreach (TestResult failedTestResult in testPass.TestResults.Where(r => !r.Passed))
+            {
+                if (rerunTestPass.TestResults.Where(r => r.Name == failedTestResult.Name && r.Passed).Count() > 0)
+                {
+                    failedTestResult.PassedOnRerun = true;
+                }
+            }
+            
+            return testPass;
+        }
 
         private static string GetAttributeValue(XElement element, string attributeName)
         {
@@ -261,7 +285,7 @@ namespace HelixTestHelpers
     {
         public static void OutputFailedTests(string wttInputPath)
         {
-            var testPass = TestPass.ParseTestWttFile(wttInputPath, true);
+            var testPass = TestPass.ParseTestWttFile(wttInputPath, cleanupFailuresAreRegressions: true, truncateTestNames: false);
             
             List<string> failedTestNames = new List<string>();
             
@@ -293,13 +317,26 @@ namespace HelixTestHelpers
 
     public static class TestResultParser
     {
-        public static void ConvertWttLogToXUnitLog(string wttInputPath, string xunitOutputPath, string testNamePrefix, string helixResultsContainerUri, string helixResultsContainerRsas)
+        public static void ConvertWttLogToXUnitLog(string wttInputPath, string wttOriginalInputPath, string xunitOutputPath, string testNamePrefix, string helixResultsContainerUri, string helixResultsContainerRsas)
         {
-            var testPass = TestPass.ParseTestWttFile(wttInputPath, true);
+            TestPass testPass = null;
+            
+            // If we reran tests due to test failures, then wttOriginalInputPath will exist, and we'll want to
+            // use it as the source for our original test pass.  Otherwise, wttInputPath is our original test pass,
+            // and there are no reran tests.
+            if (File.Exists(wttOriginalInputPath))
+            {
+                testPass = TestPass.ParseTestWttFileWithReruns(wttOriginalInputPath, wttInputPath, cleanupFailuresAreRegressions: true, truncateTestNames: false);
+            }
+            else
+            {
+                testPass = TestPass.ParseTestWttFile(wttInputPath, cleanupFailuresAreRegressions: true, truncateTestNames: false);
+            }
+            
             var results = testPass.TestResults;
 
             int resultCount = results.Count;
-            int passedCount = results.Where(r => r.Passed).Count();
+            int passedCount = results.Where(r => r.Passed || r.PassedOnRerun).Count();
             int failedCount = resultCount - passedCount;
 
             var root = new XElement("assemblies");
@@ -342,37 +379,51 @@ namespace HelixTestHelpers
                 test.SetAttributeValue("method", methodName);
 
                 test.SetAttributeValue("time", result.ExecutionTime.TotalSeconds);
-                test.SetAttributeValue("result", result.Passed ? "Pass" : "Fail");
+                test.SetAttributeValue("result", result.Passed || result.PassedOnRerun ? "Pass" : "Fail");
 
                 if (!result.Passed)
                 {
-                    var failure = new XElement("failure");
-                    failure.SetAttributeValue("exception-type", "Exception");
-
-                    var message = new XElement("message");
-
-                    StringBuilder errorMessage = new StringBuilder();
-
-                    errorMessage.AppendLine("Log: " + GetUploadedFileUrl(wttInputPath, helixResultsContainerUri, helixResultsContainerRsas));
-                    errorMessage.AppendLine();
-                    
-                    if(result.Screenshots.Any())
+                    // If the test passed on rerun, then we'll add a trait noting as much.
+                    // Otherwise, we'll mark down the failure information.
+                    if (result.PassedOnRerun)
                     {
-                        errorMessage.AppendLine("Screenshots:");
-                        foreach(var screenshot in result.Screenshots)
-                        {
-                            errorMessage.AppendLine(GetUploadedFileUrl(screenshot, helixResultsContainerUri, helixResultsContainerRsas));
-                            errorMessage.AppendLine();
-                        }
+                        var traits = new XElement("traits");
+                        var passedOnRerunTrait = new XElement("trait");
+                        passedOnRerunTrait.SetAttributeValue("name", "PassedOnRerun");
+                        passedOnRerunTrait.SetAttributeValue("value", "True");
+                        traits.Add(passedOnRerunTrait);
+                        test.Add(traits);
                     }
+                    else
+                    {
+                        var failure = new XElement("failure");
+                        failure.SetAttributeValue("exception-type", "Exception");
 
-                    errorMessage.AppendLine("Error Log: ");
-                    errorMessage.AppendLine(result.Details);
+                        var message = new XElement("message");
 
-                    message.Add(new XCData(errorMessage.ToString()));
-                    failure.Add(message);
+                        StringBuilder errorMessage = new StringBuilder();
 
-                    test.Add(failure);
+                        errorMessage.AppendLine("Log: " + GetUploadedFileUrl(wttInputPath, helixResultsContainerUri, helixResultsContainerRsas));
+                        errorMessage.AppendLine();
+                        
+                        if(result.Screenshots.Any())
+                        {
+                            errorMessage.AppendLine("Screenshots:");
+                            foreach(var screenshot in result.Screenshots)
+                            {
+                                errorMessage.AppendLine(GetUploadedFileUrl(screenshot, helixResultsContainerUri, helixResultsContainerRsas));
+                                errorMessage.AppendLine();
+                            }
+                        }
+
+                        errorMessage.AppendLine("Error Log: ");
+                        errorMessage.AppendLine(result.Details);
+
+                        message.Add(new XCData(errorMessage.ToString()));
+                        failure.Add(message);
+
+                        test.Add(failure);
+                    }
                 }
 
                 collection.Add(test);

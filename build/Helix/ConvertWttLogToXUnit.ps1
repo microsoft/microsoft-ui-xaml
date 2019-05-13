@@ -3,6 +3,9 @@ Param(
     [string]$WttInputPath,
 
     [Parameter(Mandatory = $true)] 
+    [string]$WttOriginalInputPath,
+
+    [Parameter(Mandatory = $true)] 
     [string]$XUnitOutputPath,
 
     [Parameter(Mandatory = $true)] 
@@ -16,4 +19,4 @@ $helixResultsContainerRsas = $Env:HELIX_RESULTS_CONTAINER_RSAS
 
 Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xml.Linq (Get-Content $PSScriptRoot\HelixTestHelpers.cs -Raw)
 
-[HelixTestHelpers.TestResultParser]::ConvertWttLogToXUnitLog($WttInputPath, $XUnitOutputPath, $testNamePrefix, $helixResultsContainerUri, $helixResultsContainerRsas)
+[HelixTestHelpers.TestResultParser]::ConvertWttLogToXUnitLog($WttInputPath, $WttOriginalInputPath, $XUnitOutputPath, $testNamePrefix, $helixResultsContainerUri, $helixResultsContainerRsas)

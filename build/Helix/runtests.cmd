@@ -23,13 +23,15 @@ FOR %%I in (WexLogFileOutput\*.jpg) DO (
     %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI%%~xI 
 )
 
-move te.wtl te_old.wtl
-
+set FailingTestQuery=
 for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass scripts\OutputFailedTests.ps1 %~dp0\te.wtl`) DO (
   set FailingTestQuery=%%A
 )
 
-te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /testmode:Loop /LoopTest:10 /select:"%FailingTestQuery%"
+if '%FailingTestQuery%' neq '' (
+    move te.wtl te_old.wtl
+    te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /testmode:Loop /LoopTest:10 /select:"%FailingTestQuery%"
+)
 
 %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te.wtl -result_name te_rerun.wtl
 
@@ -38,18 +40,22 @@ FOR %%I in (WexLogFileOutput\*.jpg) DO (
     %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI%%~xI_rerun
 )
 
-echo.
-echo te_old.wtl:
-echo.
+if exist te_old.wtl (
+    echo.
+    echo te_old.wtl:
+    echo.
 
-type te_old.wtl
+    type te_old.wtl
+)
 
-echo.
-echo te.wtl:
-echo.
+if exist te.wtl (
+    echo.
+    echo te.wtl:
+    echo.
 
-type te.wtl
+    type te.wtl
+)
 
-powershell -ExecutionPolicy Bypass scripts\ConvertWttLogToXUnit.ps1 %~dp0\te.wtl %~dp0\testResults.xml %testnameprefix%
+powershell -ExecutionPolicy Bypass scripts\ConvertWttLogToXUnit.ps1 %~dp0\te.wtl %~dp0\te_old.wtl %~dp0\testResults.xml %testnameprefix%
 
 type testResults.xml
