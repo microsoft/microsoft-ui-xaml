@@ -3252,11 +3252,11 @@ void Scroller::StartTransformExpressionAnimations(
     {
         if (SharedHelpers::IsTranslationFacadeAvailable(content))
         {
-            wstring_view zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+            auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
 
             if (!forZoomFactorAnimationInterruption)
             {
-                wstring_view scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+                auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
 
                 m_translationExpressionAnimation.Target(scrollPropertyName);
                 m_zoomFactorExpressionAnimation.Target(zoomFactorPropertyName);
@@ -3271,10 +3271,11 @@ void Scroller::StartTransformExpressionAnimations(
         else if (!forZoomFactorAnimationInterruption) // The zoom factor animation interruption is only effective with facades.
         {
             const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(content);
+
             if (IsVisualTranslationPropertyAvailable())
             {
-                wstring_view scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
-                wstring_view zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+                auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+                auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
 
                 winrt::ElementCompositionPreview::SetIsTranslationEnabled(content, true);
 
@@ -3286,10 +3287,10 @@ void Scroller::StartTransformExpressionAnimations(
             }
             else
             {
-                wstring_view horizontalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalScroll);
-                wstring_view verticalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalScroll);
-                wstring_view horizontalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalZoomFactor);
-                wstring_view verticalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalZoomFactor);
+                auto const horizontalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalScroll);
+                auto const verticalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalScroll);
+                auto const horizontalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalZoomFactor);
+                auto const verticalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalZoomFactor);
 
                 contentVisual.StartAnimation(horizontalScrollPropertyName, m_transformMatrixTranslateXExpressionAnimation);
                 RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, horizontalScrollPropertyName /*propertyName*/);
@@ -3317,13 +3318,13 @@ void Scroller::StopTransformExpressionAnimations(
         {
             if (!forZoomFactorAnimationInterruption)
             {
-                wstring_view scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+                auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
 
                 content.StopAnimation(m_translationExpressionAnimation);
                 RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
             }
 
-            wstring_view zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+            auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
 
             content.StopAnimation(m_zoomFactorExpressionAnimation);
             RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
@@ -3331,10 +3332,11 @@ void Scroller::StopTransformExpressionAnimations(
         else if (!forZoomFactorAnimationInterruption) // The zoom factor animation interruption is only effective with facades.
         {
             const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(content);
+
             if (IsVisualTranslationPropertyAvailable())
             {
-                wstring_view scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
-                wstring_view zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+                auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+                auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
 
                 contentVisual.StopAnimation(scrollPropertyName);
                 RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
@@ -3344,10 +3346,10 @@ void Scroller::StopTransformExpressionAnimations(
             }
             else
             {
-                wstring_view horizontalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalScroll);
-                wstring_view verticalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalScroll);
-                wstring_view horizontalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalZoomFactor);
-                wstring_view verticalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalZoomFactor);
+                auto const horizontalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalScroll);
+                auto const verticalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalScroll);
+                auto const horizontalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalZoomFactor);
+                auto const verticalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalZoomFactor);
 
                 contentVisual.StopAnimation(horizontalScrollPropertyName);
                 RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, horizontalScrollPropertyName /*propertyName*/);
