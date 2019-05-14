@@ -44,22 +44,6 @@ FOR %%I in (WexLogFileOutput\*.jpg) DO (
     %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI%%~xI_rerun
 )
 
-if exist te_old.wtl (
-    echo.
-    echo te_old.wtl:
-    echo.
-
-    type te_old.wtl
-)
-
-if exist te.wtl (
-    echo.
-    echo te.wtl:
-    echo.
-
-    type te.wtl
-)
-
 cd scripts
 powershell -ExecutionPolicy Bypass .\ConvertWttLogToXUnit.ps1 ..\te.wtl ..\te_old.wtl ..\testResults.xml %testnameprefix%
 cd ..

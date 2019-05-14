@@ -116,7 +116,6 @@ jobs:
       
   - task: DotNetCoreCLI@2
     displayName: 'Run tests in Helix'
-    continueOnError: true
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
@@ -125,73 +124,9 @@ jobs:
       custom: msbuild
       arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
       
-  - task: DotNetCoreCLI@2
-    displayName: 'Re-run tests in Helix'
-    condition: succeededOrFailed()
-    enabled: false
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    inputs:
-      command: custom
-      projects: build\Helix\RunTestsInHelix.proj
-      custom: msbuild
-      arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
-
   - task: PublishBuildArtifacts@1
     displayName: 'Publish ${{parameters.name}} binlog'
     condition: succeededOrFailed()
     inputs:
       PathtoPublish: $(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog
       artifactName: 'drop'
-
-- job: UpdateTests
-  dependsOn: ${{ parameters.name }}
-  condition: in(dependencies.${{ parameters.name }}.result, 'Succeeded', 'SucceededWithIssues')
-  pool:
-    vmImage: 'VS2017-Win2016'
-  timeoutInMinutes: 120
-
-  steps:
-  - checkout: none
-  
-  - powershell: |
-      Write-Host "TestWriteAccessToken: $($env:TESTWRITEACCESSTOKEN)"
-      
-      $azureDevOpsRestApiHeaders = @{
-        "Accept"="application/json"
-        "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:TESTWRITEACCESSTOKEN)")))"
-      }
-      
-      Write-Host "Invoke-RestMethod -Uri `"https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)`" -Method Get -Headers $azureDevOpsRestApiHeaders"
-      Invoke-RestMethod -Uri "https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)" -Method Get -Headers $azureDevOpsRestApiHeaders
-      $testRuns = Invoke-RestMethod -Uri "https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)" -Method Get -Headers $azureDevOpsRestApiHeaders
-      
-      $testRuns.value | ForEach-Object {
-        $testRun = $_
-        $testRunResultsUri = "$($testRun.url)/results?api-version=5.0"
-        
-        Write-Host "Invoke-RestMethod -Uri `"$($testRun.url)/results?api-version=5.0`" -Method Get -Headers $azureDevOpsRestApiHeaders"
-        Invoke-RestMethod -Uri $testRunResultsUri -Method Get -Headers $azureDevOpsRestApiHeaders
-        $testResults = Invoke-RestMethod -Uri "$($testRun.url)/results?api-version=5.0" -Method Get -Headers $azureDevOpsRestApiHeaders
-        
-        $testResults.value | ForEach-Object {
-          $testResult = $_
-          Write-Host "Test $($testResult.testCaseTitle) : $($testResult.outcome)"
-          
-          if ($testResult.outcome -eq "NotExecuted" -and $testResult.errorMessage -eq "PassedOnRerun")
-          {
-            Write-Host "(Actually passed on re-run. Updating.)"
-            
-            $updateBody = ConvertTo-Json @(@{ "id" = $testResult.id; "outcome" = "PassedOnRerun"; "errorMessage" = ""})
-            Write-Host "Invoke-RestMethod -Uri $testRunResultsUri -Method Patch -Headers $azureDevOpsRestApiHeaders -Body $updateBody -ContentType `"application/json-patch+json`""
-            Write-Host "`$updateBody:"
-            $updateBody
-            Invoke-RestMethod -Uri $testRunResultsUri -Method Patch -Headers $azureDevOpsRestApiHeaders -Body $updateBody -ContentType "application/json-patch+json"
-          }
-        }
-      }
-      
-    displayName: 'Dump test results thus far'
-    condition: succeededOrFailed()
-    env:
-      TESTWRITEACCESSTOKEN: $(TestWriteAccessToken)

@@ -385,26 +385,14 @@ namespace HelixTestHelpers
 
                 test.SetAttributeValue("time", result.ExecutionTime.TotalSeconds);
                 
-                string resultString = string.Empty;
-                
-                if (result.Passed)
-                {
-                    resultString = "Pass";
-                }
-                else if (result.PassedOnRerun)
-                {
-                    resultString = "Skip";
-                }
-                else
-                {
-                    resultString = "Fail";
-                }
-                
-                test.SetAttributeValue("result", resultString);
+                // TODO (https://github.com/dotnet/arcade/issues/2773): Once we're able to
+                // report things in a more granular fashion than just a binary pass/fail result,
+                // we should do that.
+                test.SetAttributeValue("result", result.Passed || result.PassedOnRerun ? "Pass" : "Fail");
 
                 if (!result.Passed)
                 {
-                    // If the test passed on rerun, then we'll add a trait noting as much.
+                    // If the test passed on rerun, then we'll add metadata noting as much.
                     // Otherwise, we'll mark down the failure information.
                     if (result.PassedOnRerun)
                     {
