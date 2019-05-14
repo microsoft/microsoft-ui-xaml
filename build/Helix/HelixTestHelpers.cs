@@ -336,7 +336,8 @@ namespace HelixTestHelpers
             var results = testPass.TestResults;
 
             int resultCount = results.Count;
-            int passedCount = results.Where(r => r.Passed || r.PassedOnRerun).Count();
+            int passedCount = results.Where(r => r.Passed).Count();
+            int passedOnRerunCount = results.Where(r => r.PassedOnRerun).Count();
             int failedCount = resultCount - passedCount;
 
             var root = new XElement("assemblies");
@@ -354,7 +355,11 @@ namespace HelixTestHelpers
             assembly.SetAttributeValue("total", resultCount);
             assembly.SetAttributeValue("passed", passedCount);
             assembly.SetAttributeValue("failed", failedCount);
-            assembly.SetAttributeValue("skipped", 0);
+            
+            // There's no way using the xUnit format to report that a test passed on re-run, so since we
+            // aren't using the notion of a "skipped" test, we'll use that as a proxy.
+            assembly.SetAttributeValue("skipped", passedOnRerunCount);
+            
             assembly.SetAttributeValue("time", (int)testPass.TestPassExecutionTime.TotalSeconds);
             assembly.SetAttributeValue("errors", 0);
             root.Add(assembly);
@@ -379,7 +384,23 @@ namespace HelixTestHelpers
                 test.SetAttributeValue("method", methodName);
 
                 test.SetAttributeValue("time", result.ExecutionTime.TotalSeconds);
-                test.SetAttributeValue("result", result.Passed || result.PassedOnRerun ? "Pass" : "Fail");
+                
+                string resultString = string.Empty;
+                
+                if (result.Passed)
+                {
+                    resultString = "Pass";
+                }
+                else if (result.PassedOnRerun)
+                {
+                    resultString = "Skip";
+                }
+                else
+                {
+                    resultString = "Fail";
+                }
+                
+                test.SetAttributeValue("result", resultString);
 
                 if (!result.Passed)
                 {
@@ -387,12 +408,9 @@ namespace HelixTestHelpers
                     // Otherwise, we'll mark down the failure information.
                     if (result.PassedOnRerun)
                     {
-                        var traits = new XElement("traits");
-                        var passedOnRerunTrait = new XElement("trait");
-                        passedOnRerunTrait.SetAttributeValue("name", "PassedOnRerun");
-                        passedOnRerunTrait.SetAttributeValue("value", "True");
-                        traits.Add(passedOnRerunTrait);
-                        test.Add(traits);
+                        var reason = new XElement("reason");
+                        reason.Add(new XCData("PassedOnRerun"));
+                        test.Add(reason);
                     }
                     else
                     {
