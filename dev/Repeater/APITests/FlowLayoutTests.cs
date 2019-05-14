@@ -1202,6 +1202,45 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        [TestMethod]
+        public void VerifyItemsGetFullSpaceInMajorDirectionWhenSmallerThanLineSize()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var layoutPanel = (LayoutPanel)XamlReader.Load(
+                    @"<controls:LayoutPanel Width='800'  
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                        <controls:LayoutPanel.Layout>
+                            <controls:FlowLayout  />
+                        </controls:LayoutPanel.Layout>
+                        <Border Width='300' Height='300' />
+                        <Border Width='350' Height='150' />
+                        <Border Width='300' Height='300' />
+                        <Border Width='350' Height='250' />
+                    </controls:LayoutPanel>");
+
+                Content = layoutPanel;
+                layoutPanel.UpdateLayout();
+
+                var expected = new List<Rect>() 
+                {
+                    new Rect(0, 0, 300, 300),
+                    new Rect(300, 0, 350, 300),
+                    new Rect(0, 300, 300, 300),
+                    new Rect(300, 300, 350, 300),
+                    new Rect(0, 600, 200, 250)
+                };
+
+                for (int i = 0; i < layoutPanel.Children.Count; i++)
+                {
+                    var child = (FrameworkElement)layoutPanel.Children[i];
+                    var actualRect = LayoutInformation.GetLayoutSlot(child);
+                    Verify.AreEqual(expected[i], actualRect);
+                }
+            });
+        }
+
         #region Private Helpers
 
         private enum LayoutChoice

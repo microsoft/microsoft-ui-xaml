@@ -976,8 +976,27 @@ void Scroller::IdleStateEntered(
         }
     }
 
+    // Check if resting position corresponds to a non-unique mandatory snap point, for the three dimensions
+    UpdateSnapPointsIgnoredValue(&m_sortedConsolidatedHorizontalSnapPoints, ScrollerDimension::HorizontalScroll);
+    UpdateSnapPointsIgnoredValue(&m_sortedConsolidatedVerticalSnapPoints, ScrollerDimension::VerticalScroll);
+    UpdateSnapPointsIgnoredValue(&m_sortedConsolidatedZoomSnapPoints, ScrollerDimension::ZoomFactor);
+
     // Stop Scale animation if needed, to trigger rasterization of Content & avoid fuzzy text rendering for instance.
     StopZoomFactorExpressionAnimation();
+}
+
+// On pre-RS5 releases, updates the SnapPointBase::s_isInertiaFromImpulse boolean parameters of the snap points' composition expressions.
+void Scroller::UpdateIsInertiaFromImpulse(
+    bool isInertiaFromImpulse)
+{
+    if (!SharedHelpers::IsRS5OrHigher() && m_isInertiaFromImpulse != isInertiaFromImpulse)
+    {
+        m_isInertiaFromImpulse = isInertiaFromImpulse;
+
+        UpdateSnapPointsInertiaFromImpulse(&m_sortedConsolidatedHorizontalSnapPoints, ScrollerDimension::HorizontalScroll, isInertiaFromImpulse);
+        UpdateSnapPointsInertiaFromImpulse(&m_sortedConsolidatedVerticalSnapPoints, ScrollerDimension::VerticalScroll, isInertiaFromImpulse);
+        UpdateSnapPointsInertiaFromImpulse(&m_sortedConsolidatedZoomSnapPoints, ScrollerDimension::ZoomFactor, isInertiaFromImpulse);
+    }
 }
 
 void Scroller::InertiaStateEntered(
@@ -1080,6 +1099,9 @@ void Scroller::InteractingStateEntered(
     const winrt::InteractionTrackerInteractingStateEnteredArgs& args)
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, args.RequestId());
+
+    // On pre-RS5 versions, turn off the SnapPointBase::s_isInertiaFromImpulse boolean parameters on the snap points' composition expressions.
+    UpdateIsInertiaFromImpulse(false /*isInertiaFromImpulse*/);
 
     UpdateState(winrt::InteractionState::Interaction);
 
@@ -1842,12 +1864,37 @@ void Scroller::SetupSnapPoints(
     MUX_ASSERT(!SharedHelpers::IsTH2OrLower());
     MUX_ASSERT(snapPointsSet);
 
-    FixSnapPointRanges(snapPointsSet);
-
     if (!m_interactionTracker)
     {
         EnsureInteractionTracker();
     }
+
+    if (m_state == winrt::InteractionState::Idle)
+    {
+        const double ignoredValue = [this, dimension]()
+        {
+            switch (dimension)
+            {
+            case ScrollerDimension::VerticalScroll:
+                return m_zoomedVerticalOffset / m_zoomFactor;
+            case ScrollerDimension::HorizontalScroll:
+                return m_zoomedHorizontalOffset / m_zoomFactor;
+            case ScrollerDimension::ZoomFactor:
+                return static_cast<double>(m_zoomFactor);
+            default:
+                MUX_ASSERT(false);
+                return 0.0;
+            }
+        }();
+
+        // When snap points are changed while in the Idle State, update
+        // ignored snapping values for any potential start of an impulse inertia.
+        UpdateSnapPointsIgnoredValue(snapPointsSet, ignoredValue);
+    }
+
+    // Update the regular and impulse actual applicable ranges.
+    UpdateSnapPointsRanges(snapPointsSet, false /*forImpulseOnly*/);
+
     winrt::Compositor compositor = m_interactionTracker.Compositor();
     winrt::IVector<winrt::InteractionTrackerInertiaModifier> modifiers = winrt::make<Vector<winrt::InteractionTrackerInertiaModifier>>();
 
@@ -1863,15 +1910,15 @@ void Scroller::SetupSnapPoints(
         MUX_ASSERT(false);
         break;
     case ScrollerDimension::HorizontalScroll:
-        target = L"NaturalRestingPosition.x";
-        scale = L"this.Target.Scale";
+        target = s_naturalRestingPositionXPropertyName;
+        scale = s_targetScalePropertyName;
         break;
     case ScrollerDimension::VerticalScroll:
-        target = L"NaturalRestingPosition.y";
-        scale = L"this.Target.Scale";
+        target = s_naturalRestingPositionYPropertyName;
+        scale = s_targetScalePropertyName;
         break;
     case ScrollerDimension::ZoomFactor:
-        target = L"NaturalRestingScale";
+        target = s_naturalRestingScalePropertyName;
         scale = L"1.0";
         break;
     default:
@@ -1892,7 +1939,7 @@ void Scroller::SetupSnapPoints(
     }
     else
     {
-        for (std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper : *snapPointsSet)
+        for (auto snapPointWrapper : *snapPointsSet)
         {
             winrt::InteractionTrackerInertiaRestingValue modifier = GetInertiaRestingValue(
                 snapPointWrapper,
@@ -1932,8 +1979,9 @@ void Scroller::SetupSnapPoints(
 //space between it and its neighbors. If the neighbors are also mandatory, this point will be the midpoint between them. If the neighbors are optional then this
 //point will fall on the midpoint or on the Optional neighbor's edge of ApplicableRange, whichever is furthest. 
 template <typename T>
-void Scroller::FixSnapPointRanges(
-    std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet)
+void Scroller::UpdateSnapPointsRanges(
+    std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
+    bool forImpulseOnly)
 {
     MUX_ASSERT(snapPointsSet);
 
@@ -1941,7 +1989,7 @@ void Scroller::FixSnapPointRanges(
     std::shared_ptr<SnapPointWrapper<T>> previousSnapPointWrapper = nullptr;
     std::shared_ptr<SnapPointWrapper<T>> nextSnapPointWrapper = nullptr;
 
-    for (std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper : *snapPointsSet)
+    for (auto snapPointWrapper : *snapPointsSet)
     {
         previousSnapPointWrapper = currentSnapPointWrapper;
         currentSnapPointWrapper = nextSnapPointWrapper;
@@ -1951,7 +1999,8 @@ void Scroller::FixSnapPointRanges(
         {
             currentSnapPointWrapper->DetermineActualApplicableZone(
                 previousSnapPointWrapper ? previousSnapPointWrapper.get() : nullptr,
-                nextSnapPointWrapper ? nextSnapPointWrapper.get() : nullptr);
+                nextSnapPointWrapper ? nextSnapPointWrapper.get() : nullptr,
+                forImpulseOnly);
         }
     }
 
@@ -1959,7 +2008,152 @@ void Scroller::FixSnapPointRanges(
     {
         nextSnapPointWrapper->DetermineActualApplicableZone(
             currentSnapPointWrapper ? currentSnapPointWrapper.get() : nullptr,
-            nullptr);
+            nullptr,
+            forImpulseOnly);
+    }
+}
+
+template <typename T>
+void Scroller::UpdateSnapPointsIgnoredValue(
+    std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
+    ScrollerDimension dimension)
+{
+    const double newIgnoredValue = [this, dimension]()
+    {
+        switch (dimension)
+        {
+        case ScrollerDimension::VerticalScroll:
+            return m_zoomedVerticalOffset / m_zoomFactor;
+        case ScrollerDimension::HorizontalScroll:
+            return m_zoomedHorizontalOffset / m_zoomFactor;
+        case ScrollerDimension::ZoomFactor:
+            return static_cast<double>(m_zoomFactor);
+        default:
+            MUX_ASSERT(false);
+            return 0.0;
+        }
+    }();
+
+    if (UpdateSnapPointsIgnoredValue(snapPointsSet, newIgnoredValue))
+    {
+        // The ignored snap point value has changed.
+        UpdateSnapPointsRanges(snapPointsSet, true /*forImpulseOnly*/);
+
+        winrt::Compositor compositor = m_interactionTracker.Compositor();
+        winrt::IVector<winrt::InteractionTrackerInertiaModifier> modifiers = winrt::make<Vector<winrt::InteractionTrackerInertiaModifier>>();
+
+        for (auto snapPointWrapper : *snapPointsSet)
+        {
+            auto modifier = winrt::InteractionTrackerInertiaRestingValue::Create(compositor);
+            auto const [conditionExpressionAnimation, restingValueExpressionAnimation] = snapPointWrapper->GetUpdatedExpressionAnimationsForImpulse();
+
+            modifier.Condition(conditionExpressionAnimation);
+            modifier.RestingValue(restingValueExpressionAnimation);
+
+            modifiers.Append(modifier);
+        }
+
+        switch (dimension)
+        {
+        case ScrollerDimension::VerticalScroll:
+            m_interactionTracker.ConfigurePositionYInertiaModifiers(modifiers);
+            break;
+        case ScrollerDimension::HorizontalScroll:
+            m_interactionTracker.ConfigurePositionXInertiaModifiers(modifiers);
+            break;
+        case ScrollerDimension::ZoomFactor:
+            m_interactionTracker.ConfigureScaleInertiaModifiers(modifiers);
+            break;
+        }
+    }
+}
+
+// Updates the ignored snapping value of the provided snap points set when inertia is caused by an impulse.
+// Returns True when an old ignored value was reset or a new ignored value was set.
+template <typename T>
+bool Scroller::UpdateSnapPointsIgnoredValue(
+    std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
+    double newIgnoredValue)
+{
+    bool ignoredValueUpdated = false;
+
+    for (auto snapPointWrapper : *snapPointsSet)
+    {
+        if (snapPointWrapper->ResetIgnoredValue())
+        {
+            ignoredValueUpdated = true;
+            break;
+        }
+    }
+
+    int snapCount = 0;
+
+    for (auto snapPointWrapper : *snapPointsSet)
+    {
+        SnapPointBase* snapPoint = SnapPointWrapper<T>::GetSnapPointFromWrapper(snapPointWrapper);
+
+        snapCount += snapPoint->SnapCount();
+
+        if (snapCount > 1)
+        {
+            break;
+        }
+    }
+
+    if (snapCount > 1)
+    {
+        for (auto snapPointWrapper : *snapPointsSet)
+        {
+            if (snapPointWrapper->SnapsAt(newIgnoredValue))
+            {
+                snapPointWrapper->SetIgnoredValue(newIgnoredValue);
+                ignoredValueUpdated = true;
+                break;
+            }
+        }
+    }
+
+    return ignoredValueUpdated;
+}
+
+template <typename T>
+void Scroller::UpdateSnapPointsInertiaFromImpulse(
+    std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
+    ScrollerDimension dimension,
+    bool isInertiaFromImpulse)
+{
+    MUX_ASSERT(!SharedHelpers::IsRS5OrHigher());
+
+    if (snapPointsSet->size() > 0)
+    {
+        winrt::Compositor compositor = m_interactionTracker.Compositor();
+        winrt::IVector<winrt::InteractionTrackerInertiaModifier> modifiers = winrt::make<Vector<winrt::InteractionTrackerInertiaModifier>>();
+
+        for (auto snapPointWrapper : *snapPointsSet)
+        {
+            auto modifier = winrt::InteractionTrackerInertiaRestingValue::Create(compositor);
+            auto const [conditionExpressionAnimation, restingValueExpressionAnimation] = snapPointWrapper->GetUpdatedExpressionAnimationsForImpulse(isInertiaFromImpulse);
+
+            modifier.Condition(conditionExpressionAnimation);
+            modifier.RestingValue(restingValueExpressionAnimation);
+
+            modifiers.Append(modifier);
+        }
+
+        switch (dimension)
+        {
+        case ScrollerDimension::VerticalScroll:
+            m_interactionTracker.ConfigurePositionYInertiaModifiers(modifiers);
+            break;
+        case ScrollerDimension::HorizontalScroll:
+            m_interactionTracker.ConfigurePositionXInertiaModifiers(modifiers);
+            break;
+        case ScrollerDimension::ZoomFactor:
+            m_interactionTracker.ConfigureScaleInertiaModifiers(modifiers);
+            break;
+        default:
+            MUX_ASSERT(false);
+        }
     }
 }
 
@@ -6275,6 +6469,9 @@ void Scroller::ProcessOffsetsChange(
         zoomedVerticalOffset = ComputeValueAfterSnapPoints<winrt::ScrollSnapPointBase>(zoomedVerticalOffset, m_sortedConsolidatedVerticalSnapPoints);
     }
 
+    // On pre-RS5 versions, turn off the SnapPointBase::s_isInertiaFromImpulse boolean parameters on the snap points' composition expressions.
+    UpdateIsInertiaFromImpulse(false /*isInertiaFromImpulse*/);
+
     switch (animationMode)
     {
         case winrt::AnimationMode::Disabled:
@@ -6373,6 +6570,10 @@ void Scroller::ProcessOffsetsChange(
         }
     }
 
+    // On pre-RS5 versions, the SnapPointBase::s_isInertiaFromImpulse boolean parameters of the snap points' composition expressions
+    // depend on whether the request was triggere by the mouse wheel or not.
+    UpdateIsInertiaFromImpulse(operationTrigger == InteractionTrackerAsyncOperationTrigger::MouseWheel /*isInertiaFromImpulse*/);
+
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_STR, METH_NAME, this,
         L"TryUpdatePositionWithAdditionalVelocity", TypeLogging::Float2ToString(winrt::float2(offsetsVelocity)).c_str());
 
@@ -6453,6 +6654,9 @@ void Scroller::ProcessZoomFactorChange(
         zoomFactor = static_cast<float>(ComputeValueAfterSnapPoints<winrt::ZoomSnapPointBase>(zoomFactor, m_sortedConsolidatedZoomSnapPoints));
     }
 
+    // On pre-RS5 versions, turn off the SnapPointBase::s_isInertiaFromImpulse boolean parameters on the snap points' composition expressions.
+    UpdateIsInertiaFromImpulse(false /*isInertiaFromImpulse*/);
+
     switch (animationMode)
     {
         case winrt::AnimationMode::Disabled:
@@ -6526,6 +6730,10 @@ void Scroller::ProcessZoomFactorChange(
             zoomFactorVelocity = std::max(zoomFactorVelocity - c_minVelocity, -c_maxVelocity);
         }
     }
+
+    // On pre-RS5 versions, the SnapPointBase::s_isInertiaFromImpulse boolean parameters of the snap points' composition expressions
+    // depend on whether the request was triggere by the mouse wheel or not.
+    UpdateIsInertiaFromImpulse(operationTrigger == InteractionTrackerAsyncOperationTrigger::MouseWheel /*isInertiaFromImpulse*/);
 
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_FLT_STR, METH_NAME, this,
         L"TryUpdateScaleWithAdditionalVelocity", zoomFactorVelocity, TypeLogging::Float2ToString(winrt::float2(centerPoint.x, centerPoint.y)).c_str());
@@ -6974,9 +7182,10 @@ winrt::InteractionTrackerInertiaRestingValue Scroller::GetInertiaRestingValue(
     winrt::hstring const& target,
     winrt::hstring const& scale) const
 {
+    bool isInertiaFromImpulse = IsInertiaFromImpulse();
     winrt::InteractionTrackerInertiaRestingValue modifier = winrt::InteractionTrackerInertiaRestingValue::Create(compositor);
-    winrt::ExpressionAnimation conditionExpressionAnimation = snapPointWrapper->CreateConditionalExpression(compositor, target, scale);
-    winrt::ExpressionAnimation restingPointExpressionAnimation = snapPointWrapper->CreateRestingPointExpression(compositor, target, scale);
+    winrt::ExpressionAnimation conditionExpressionAnimation = snapPointWrapper->CreateConditionalExpression(m_interactionTracker, target, scale, isInertiaFromImpulse);
+    winrt::ExpressionAnimation restingPointExpressionAnimation = snapPointWrapper->CreateRestingPointExpression(m_interactionTracker, target, scale, isInertiaFromImpulse);
 
     modifier.Condition(conditionExpressionAnimation);
     modifier.RestingValue(restingPointExpressionAnimation);
@@ -6984,12 +7193,26 @@ winrt::InteractionTrackerInertiaRestingValue Scroller::GetInertiaRestingValue(
     return modifier;
 }
 
-bool Scroller::IsLoaded()
+// Relies on InteractionTracker.IsInertiaFromImpulse starting with RS5,
+// returns the replacement field m_isInertiaFromImpulse otherwise.
+bool Scroller::IsInertiaFromImpulse() const
+{
+    if (winrt::IInteractionTracker4 interactionTracker4 = m_interactionTracker)
+    {
+        return interactionTracker4.IsInertiaFromImpulse();
+    }
+    else
+    {
+        return m_isInertiaFromImpulse;
+    }
+}
+
+bool Scroller::IsLoaded() const
 {
     return winrt::VisualTreeHelper::GetParent(*this) != nullptr;
 }
 
-bool Scroller::IsLoadedAndSetUp()
+bool Scroller::IsLoadedAndSetUp() const
 {
     return IsLoaded() && m_interactionTracker;
 }
