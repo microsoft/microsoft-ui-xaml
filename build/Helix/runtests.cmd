@@ -28,16 +28,16 @@ FOR %%I in (WexLogFileOutput\*.jpg) DO (
 move te.wtl te_original.wtl
 
 cd scripts
-set FailingTestQuery=
-for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTests.ps1 ..\te_original.wtl`) DO (
-  set FailingTestQuery=%%A
+set FailedTestQuery=
+for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTestQuery.ps1 ..\te_original.wtl`) DO (
+  set FailedTestQuery=%%A
 )
 cd ..
 
 rem The first time, we'll just re-run failed tests once.  In many cases, tests fail very rarely, such that
 rem a single re-run will be sufficient to detect many unreliable tests.
-if "%FailingTestQuery%" neq "" (
-    te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /select:"%FailingTestQuery%"
+if "%FailedTestQuery%" neq "" (
+    te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /select:"%FailedTestQuery%"
 
     move te.wtl te_rerun.wtl
     %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te_rerun.wtl -result_name te_rerun.wtl
@@ -52,14 +52,14 @@ rem If there are still failing tests remaining, we'll run them eight more times,
 rem If any tests fail all ten times, we can be pretty confident that these are actual test failures rather than unreliable tests.
 if exist te_rerun.wtl (
     cd scripts
-    set FailingTestQuery=
-    for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTests.ps1 ..\te_rerun.wtl`) DO (
-      set FailingTestQuery=%%A
+    set FailedTestQuery=
+    for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTestQuery.ps1 ..\te_rerun.wtl`) DO (
+      set FailedTestQuery=%%A
     )
     cd ..
 
-    if "%FailingTestQuery%" neq "" (
-        te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /testmode:Loop /LoopTest:8 /select:"%FailingTestQuery%"
+    if "%FailedTestQuery%" neq "" (
+        te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /testmode:Loop /LoopTest:8 /select:"%FailedTestQuery%"
         
         move te.wtl te_rerun_multiple.wtl
         %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te_rerun_multiple.wtl -result_name te_rerun_multiple.wtl

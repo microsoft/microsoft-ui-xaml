@@ -296,7 +296,7 @@ namespace HelixTestHelpers
 
     public static class FailedTestDetector
     {
-        public static void OutputFailedTests(string wttInputPath)
+        public static void OutputFailedTestQuery(string wttInputPath)
         {
             var testPass = TestPass.ParseTestWttFile(wttInputPath, cleanupFailuresAreRegressions: true, truncateTestNames: false);
             
@@ -310,21 +310,28 @@ namespace HelixTestHelpers
                 }
             }
             
-            string failedTestSelectQuery = "(@Name='";
-            
-            for (int i = 0; i < failedTestNames.Count; i++)
+            if (failedTestNames.Count > 0)
             {
-                failedTestSelectQuery += failedTestNames[i];
+                string failedTestSelectQuery = "(@Name='";
                 
-                if (i < failedTestNames.Count - 1)
+                for (int i = 0; i < failedTestNames.Count; i++)
                 {
-                    failedTestSelectQuery += "' or @Name='";
+                    failedTestSelectQuery += failedTestNames[i];
+                    
+                    if (i < failedTestNames.Count - 1)
+                    {
+                        failedTestSelectQuery += "' or @Name='";
+                    }
                 }
+                
+                failedTestSelectQuery += "')";
+            
+                Console.WriteLine(failedTestSelectQuery);
             }
-            
-            failedTestSelectQuery += "')";
-            
-            Console.WriteLine(failedTestSelectQuery);
+            else
+            {
+                Console.WriteLine("");
+            }
         }
     }
 
@@ -333,7 +340,6 @@ namespace HelixTestHelpers
         public static void ConvertWttLogToXUnitLog(string wttInputPath, string wttSingleRerunInputPath, string wttMultipleRerunInputPath, string xunitOutputPath, string testNamePrefix, string helixResultsContainerUri, string helixResultsContainerRsas)
         {
             TestPass testPass = TestPass.ParseTestWttFileWithReruns(wttInputPath, wttSingleRerunInputPath, wttMultipleRerunInputPath, cleanupFailuresAreRegressions: true, truncateTestNames: false);
-            
             var results = testPass.TestResults;
 
             int resultCount = results.Count;

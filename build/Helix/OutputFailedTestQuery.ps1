@@ -5,4 +5,4 @@ Param(
 
 Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xml.Linq (Get-Content $PSScriptRoot\HelixTestHelpers.cs -Raw)
 
-[HelixTestHelpers.FailedTestDetector]::OutputFailedTests($WttInputPath)
+[HelixTestHelpers.FailedTestDetector]::OutputFailedTestQuery($WttInputPath)

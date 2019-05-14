@@ -3,13 +3,16 @@ Param(
     [string]$WttInputPath,
 
     [Parameter(Mandatory = $true)] 
-    [string]$WttOriginalInputPath,
+    [string]$WttSingleRerunInputPath,
+
+    [Parameter(Mandatory = $true)] 
+    [string]$WttMultipleRerunInputPath,
 
     [Parameter(Mandatory = $true)] 
     [string]$XUnitOutputPath,
 
     [Parameter(Mandatory = $true)] 
-    [string]$testNamePrefix
+    [string]$TestNamePrefix
 )
 
 # Ideally these would be passed as parameters to the script. However ps makes it difficult to deal with string literals containing '&', so we just 
@@ -19,4 +22,4 @@ $helixResultsContainerRsas = $Env:HELIX_RESULTS_CONTAINER_RSAS
 
 Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xml.Linq (Get-Content $PSScriptRoot\HelixTestHelpers.cs -Raw)
 
-[HelixTestHelpers.TestResultParser]::ConvertWttLogToXUnitLog($WttInputPath, $WttOriginalInputPath, $XUnitOutputPath, $testNamePrefix, $helixResultsContainerUri, $helixResultsContainerRsas)
+[HelixTestHelpers.TestResultParser]::ConvertWttLogToXUnitLog($WttInputPath, $WttSingleRerunInputPath, $WttMultipleRerunInputPath, $XUnitOutputPath, $TestNamePrefix, $helixResultsContainerUri, $helixResultsContainerRsas)
