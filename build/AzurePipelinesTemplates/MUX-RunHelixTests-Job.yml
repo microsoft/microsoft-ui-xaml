@@ -155,7 +155,7 @@ jobs:
   - powershell: |
       $azureDevOpsRestApiHeaders = @{
         "Accept"="application/json"
-        "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:ACCESSTOKEN)")))"
+        "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:TESTWRITEACCESSTOKEN)")))"
       }
       
       Write-Host "Invoke-RestMethod -Uri `"https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)`" -Method Get -Headers $azureDevOpsRestApiHeaders"
@@ -190,4 +190,4 @@ jobs:
     displayName: 'Dump test results thus far'
     condition: succeededOrFailed()
     env:
-      ACCESSTOKEN: variables['AccessToken']
+      TESTWRITEACCESSTOKEN: variables['TestWriteAccessToken']
