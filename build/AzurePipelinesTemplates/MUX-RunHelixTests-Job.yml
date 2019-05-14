@@ -124,6 +124,33 @@ jobs:
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
       arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
+      
+  - task: DotNetCoreCLI@2
+    displayName: 'Re-run tests in Helix'
+    condition: succeededOrFailed()
+    enabled: false
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      command: custom
+      projects: build\Helix\RunTestsInHelix.proj
+      custom: msbuild
+      arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish ${{parameters.name}} binlog'
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog
+      artifactName: 'drop'
+
+jobs:
+- job: UpdateTests
+  dependsOn: ${{ parameters.name }}
+  condition: ${{ parameters.condition }}
+  pool:
+    vmImage: 'VS2017-Win2016'
+  timeoutInMinutes: 120
 
   - powershell: |
       $azureDevOpsRestApiHeaders = @{
@@ -145,6 +172,11 @@ jobs:
         $testResults.value | ForEach-Object {
           $testResult = $_
           Write-Host "Test $($testResult.testCaseTitle) : $($testResult.outcome)"
+          
+          if ($testResult.outcome -eq "NotExecuted" -and $testResult.errorMessage -eq "PassedOnRerun")
+          {
+            Write-Host "(Actually passed on re-run.)"
+          }
         }
       }
       
@@ -152,22 +184,3 @@ jobs:
     condition: succeededOrFailed()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-      
-  - task: DotNetCoreCLI@2
-    displayName: 'Re-run tests in Helix'
-    condition: succeededOrFailed()
-    enabled: false
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    inputs:
-      command: custom
-      projects: build\Helix\RunTestsInHelix.proj
-      custom: msbuild
-      arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish ${{parameters.name}} binlog'
-    condition: succeededOrFailed()
-    inputs:
-      PathtoPublish: $(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog
-      artifactName: 'drop' 
