@@ -1,11 +1,10 @@
 Push-Location ..\
 
-$payloadFolder = Resolve-Path "$PSScriptRoot\.."
-$dependencyFiles = Get-ChildItem -Filter "$payloadFolder\*dependencies.txt"
+$dependencyFiles = Get-ChildItem (Get-Item (Get-Location).Path).Parent -Filter "*dependencies.txt"
 
-foreach($file in $dependencyFiles)
+foreach ($file in $dependencyFiles)
 {
-    foreach($line in Get-Content $file)
+    foreach ($line in Get-Content $file)
     {
         Add-AppxPackage $line
     }
