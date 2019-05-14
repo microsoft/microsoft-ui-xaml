@@ -46,7 +46,7 @@ All sections are required before we'll accept a PR to master, but aren't necessa
 This list will evolve and grow as the proposal becomes more refined over time.
 A good rule of thumb is to start your proposal with no more than 7 high-level requirements.
 -->
-| Requirement | Priority |
+| Capability | Priority |
 | :---------- | :------- |
 | Feature can do W | Must |
 | Feature can do X | Should |
