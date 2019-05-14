@@ -155,7 +155,7 @@ jobs:
   - powershell: |
       $azureDevOpsRestApiHeaders = @{
         "Accept"="application/json"
-        "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:SYSTEM_ACCESSTOKEN)")))"
+        "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:ACCESSTOKEN)")))"
       }
       
       Write-Host "Invoke-RestMethod -Uri `"https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)`" -Method Get -Headers $azureDevOpsRestApiHeaders"
@@ -179,6 +179,9 @@ jobs:
             Write-Host "(Actually passed on re-run. Updating.)"
             
             $updateBody = ConvertTo-Json @(@{ "id" = $testResult.id; "outcome" = "PassedOnRerun"; "errorMessage" = ""})
+            Write-Host "Invoke-RestMethod -Uri $testRunResultsUri -Method Patch -Headers $azureDevOpsRestApiHeaders -Body $updateBody -ContentType `"application/json-patch+json`""
+            Write-Host "`$updateBody:"
+            $updateBody
             Invoke-RestMethod -Uri $testRunResultsUri -Method Patch -Headers $azureDevOpsRestApiHeaders -Body $updateBody -ContentType "application/json-patch+json"
           }
         }
@@ -187,4 +190,4 @@ jobs:
     displayName: 'Dump test results thus far'
     condition: succeededOrFailed()
     env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      ACCESSTOKEN: variables['AccessToken']
