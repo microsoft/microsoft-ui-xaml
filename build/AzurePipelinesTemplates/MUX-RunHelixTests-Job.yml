@@ -155,6 +155,8 @@ jobs:
   - checkout: none
   
   - powershell: |
+      Write-Host "TestWriteAccessToken: $($env:TESTWRITEACCESSTOKEN)"
+      
       $azureDevOpsRestApiHeaders = @{
         "Accept"="application/json"
         "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:TESTWRITEACCESSTOKEN)")))"
@@ -192,4 +194,4 @@ jobs:
     displayName: 'Dump test results thus far'
     condition: succeededOrFailed()
     env:
-      TESTWRITEACCESSTOKEN: variables['TestWriteAccessToken']
+      TESTWRITEACCESSTOKEN: $(TestWriteAccessToken)
