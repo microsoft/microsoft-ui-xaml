@@ -146,7 +146,7 @@ jobs:
 
 - job: UpdateTests
   dependsOn: ${{ parameters.name }}
-  condition: ${{ parameters.condition }}
+  condition: in(dependencies.${{ parameters.name }}.result, 'Succeeded', 'SucceededWithIssues')
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
