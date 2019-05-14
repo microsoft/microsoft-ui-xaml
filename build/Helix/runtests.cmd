@@ -32,7 +32,7 @@ for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass .\OutputF
 )
 cd ..
 
-if '%FailingTestQuery%' neq '' (
+if "%FailingTestQuery%" neq "" (
     move te.wtl te_old.wtl
     te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /testmode:Loop /LoopTest:10 /select:"%FailingTestQuery%"
 )
