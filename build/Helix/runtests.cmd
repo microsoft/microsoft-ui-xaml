@@ -27,7 +27,7 @@ FOR %%I in (WexLogFileOutput\*.jpg) DO (
 
 cd scripts
 set FailingTestQuery=
-for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass OutputFailedTests.ps1 ..\te.wtl`) DO (
+for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTests.ps1 ..\te.wtl`) DO (
   set FailingTestQuery=%%A
 )
 cd ..
@@ -61,7 +61,7 @@ if exist te.wtl (
 )
 
 cd scripts
-powershell -ExecutionPolicy Bypass %~dp0\scripts\ConvertWttLogToXUnit.ps1 ..\te.wtl ..\te_old.wtl ..\testResults.xml %testnameprefix%
+powershell -ExecutionPolicy Bypass .\ConvertWttLogToXUnit.ps1 ..\te.wtl ..\te_old.wtl ..\testResults.xml %testnameprefix%
 cd ..
 
 type testResults.xml

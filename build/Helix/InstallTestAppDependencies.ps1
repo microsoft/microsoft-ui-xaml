@@ -1,6 +1,6 @@
 Push-Location ..\
 
-$dependencyFiles = Get-ChildItem (Get-Item (Get-Location).Path).Parent -Filter "*dependencies.txt"
+$dependencyFiles = Get-ChildItem (Get-Item (Get-Location).Path).Parent.FullName -Filter "*dependencies.txt"
 
 foreach ($file in $dependencyFiles)
 {
