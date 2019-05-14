@@ -251,17 +251,30 @@ namespace HelixTestHelpers
             }
         }
         
-        public static TestPass ParseTestWttFileWithReruns(string fileName, string rerunFileName, bool cleanupFailuresAreRegressions, bool truncateTestNames)
+        public static TestPass ParseTestWttFileWithReruns(string fileName, string singleRerunFileName, string multipleRerunFileName, bool cleanupFailuresAreRegressions, bool truncateTestNames)
         {
             TestPass testPass = ParseTestWttFile(fileName, cleanupFailuresAreRegressions, truncateTestNames);
-            TestPass rerunTestPass = ParseTestWttFile(rerunFileName, cleanupFailuresAreRegressions, truncateTestNames);
+            TestPass singleRerunTestPass = File.Exists(singleRerunFileName) ? ParseTestWttFile(singleRerunFileName, cleanupFailuresAreRegressions, truncateTestNames) : null;
+            TestPass multipleRerunTestPass = File.Exists(multipleRerunFileName) ? ParseTestWttFile(multipleRerunFileName, cleanupFailuresAreRegressions, truncateTestNames) : null;
             
+            List<TestResult> rerunTestResults = new List<TestResult>();
+
+            if (singleRerunTestPass != null)
+            {
+                rerunTestResults.AddRange(singleRerunTestPass.TestResults);
+            }
+
+            if (multipleRerunTestPass != null)
+            {
+                rerunTestResults.AddRange(multipleRerunTestPass.TestResults);
+            }
+
             // For each failed test result, we'll check to see whether the test passed at least once upon rerun.
             // If so, we'll set PassedOnRerun to true to flag the fact that this is an unreliable test
             // rather than a genuine test failure.
             foreach (TestResult failedTestResult in testPass.TestResults.Where(r => !r.Passed))
             {
-                if (rerunTestPass.TestResults.Where(r => r.Name == failedTestResult.Name && r.Passed).Count() > 0)
+                if (rerunTestResults.Where(r => r.Name == failedTestResult.Name && r.Passed).Count() > 0)
                 {
                     failedTestResult.PassedOnRerun = true;
                 }
@@ -317,21 +330,9 @@ namespace HelixTestHelpers
 
     public static class TestResultParser
     {
-        public static void ConvertWttLogToXUnitLog(string wttInputPath, string wttOriginalInputPath, string xunitOutputPath, string testNamePrefix, string helixResultsContainerUri, string helixResultsContainerRsas)
+        public static void ConvertWttLogToXUnitLog(string wttInputPath, string wttSingleRerunInputPath, string wttMultipleRerunInputPath, string xunitOutputPath, string testNamePrefix, string helixResultsContainerUri, string helixResultsContainerRsas)
         {
-            TestPass testPass = null;
-            
-            // If we reran tests due to test failures, then wttOriginalInputPath will exist, and we'll want to
-            // use it as the source for our original test pass.  Otherwise, wttInputPath is our original test pass,
-            // and there are no reran tests.
-            if (File.Exists(wttOriginalInputPath))
-            {
-                testPass = TestPass.ParseTestWttFileWithReruns(wttOriginalInputPath, wttInputPath, cleanupFailuresAreRegressions: true, truncateTestNames: false);
-            }
-            else
-            {
-                testPass = TestPass.ParseTestWttFile(wttInputPath, cleanupFailuresAreRegressions: true, truncateTestNames: false);
-            }
+            TestPass testPass = TestPass.ParseTestWttFileWithReruns(wttInputPath, wttSingleRerunInputPath, wttMultipleRerunInputPath, cleanupFailuresAreRegressions: true, truncateTestNames: false);
             
             var results = testPass.TestResults;
 
