@@ -144,7 +144,6 @@ jobs:
       PathtoPublish: $(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog
       artifactName: 'drop'
 
-jobs:
 - job: UpdateTests
   dependsOn: ${{ parameters.name }}
   condition: ${{ parameters.condition }}
