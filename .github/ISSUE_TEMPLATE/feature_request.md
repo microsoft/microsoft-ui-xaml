@@ -48,10 +48,10 @@ A good rule of thumb is to start your proposal with no more than 7 high-level re
 -->
 | Capability | Priority |
 | :---------- | :------- |
-| Feature can do W | Must |
-| Feature can do X | Should |
-| Feature can do Y | Could |
-| Feature can do Z | Won't |
+| This proposal will allow developers to accomplish W | Must |
+| This proposal will allow developers to accomplish X | Should |
+| This proposal will allow developers to accomplish Y | Could |
+| This proposal will allow developers to accomplish Z | Won't |
 
 ## Important Notes
 <!-- Please include any other important details.
