@@ -73,6 +73,7 @@ namespace MUXControlsTestApp
                 {"Reveal", typeof(RevealPage), "Reveal.png"},
                 {"ItemsRepeater", typeof(RepeaterTestUIPage), "ListView.png"},
                 {"Scroller", typeof(ScrollerPage), "ScrollViewer.png"},
+                {"CheckBox", typeof(CheckBoxPage)},
             };
 
             Tests.Sort((a, b) =>
