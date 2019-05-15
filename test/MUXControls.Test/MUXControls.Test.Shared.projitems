@@ -143,7 +143,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)\DummyTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Common\AppsTestExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Common\FindElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Common\FocusHelper.cs" />
