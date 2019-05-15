@@ -28,7 +28,7 @@ If applicable you can also describe how the proposal aligns to the current WinUI
 https://github.com/Microsoft/microsoft-ui-xaml/blob/master/docs/roadmap.md
 -->
 * {First reason for why we should consider this proposal}
-* {First reason for why we should consider this proposal}
+* {Second reason for why we should consider this proposal}
 * {etc}
 
 
