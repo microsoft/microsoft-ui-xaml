@@ -22,14 +22,14 @@ https://github.com/Microsoft/microsoft-ui-xaml/blob/master/docs/feature_proposal
 <!-- Include 1-2 sentences summarizing your feature or API proposal -->
 
 ## Rationale
-<!-- Fill in the table below to describe WHY the feature should be added to WinUI for all developers and users.
-Proposals often have multiple motives for why we should do the work, so list each one as a separate row item.
-If applicable you can also describe how it aligns to the current WinUI roadmap and priorities in a separate paragraph:
+<!-- Create a list that describes WHY the feature should be added to WinUI for all developers and users.
+Proposals often have multiple motives for why we should do the work, so list each one as a separate bullet.
+If applicable you can also describe how the proposal aligns to the current WinUI roadmap and priorities in a separate paragraph:
 https://github.com/Microsoft/microsoft-ui-xaml/blob/master/docs/roadmap.md
 -->
-| Motive |
-| :----- |
-| {list each motivating reason as a separate row} |
+* {First reason for why we should consider this proposal}
+* {First reason for why we should consider this proposal}
+* {etc}
 
 
 <!----------------------
