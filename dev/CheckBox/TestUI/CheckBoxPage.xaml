@@ -10,7 +10,11 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel>
-        <CheckBox Content="Hello World"/>
+        <CheckBox Content="Two-state CheckBox"/>
+
+        <CheckBox Content="Two-state CheckBox" IsThreeState="True"/>
+
+        <CheckBox Content="Cornered CheckBox" CornerRadius="2"/>
     </StackPanel>
 
 </local:TestPage>
