@@ -11,26 +11,29 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid Margin="10" KeyDown="Grid_KeyDown">
-        <ScrollViewer x:Name="sv" Height="300"
+        <ScrollViewer x:Name="sv"
                       HorizontalScrollBarVisibility="Hidden"
                       VerticalScrollBarVisibility="Disabled"
                       HorizontalScrollMode="Enabled"
                       VerticalScrollMode="Disabled"
                       HorizontalSnapPointsAlignment="Center"
                       HorizontalSnapPointsType="Mandatory"
+                      VerticalAlignment="Center"
                       Grid.Row="1">
             <local:SnappPointForwardingRepeater x:Name="repeater" HorizontalCacheLength="0" VerticalCacheLength="0" ElementPrepared="OnElementPrepared">
                 <mux:ItemsRepeater.Layout>
-                    <local:VirtualizingUniformCarousalStackLayout x:Name="layout" ItemWidth="300" ItemHeight="350" Spacing="10"/>
+                    <local:VirtualizingUniformCarousalStackLayout x:Name="layout" ItemWidth="450" ItemHeight="525" Spacing="20"/>
                 </mux:ItemsRepeater.Layout>
                 <mux:ItemsRepeater.ItemTemplate>
                     <DataTemplate>
-                        <UserControl IsTabStop="True" UseSystemFocusVisuals="True" GotFocus="OnItemGotFocus" >
-                            <StackPanel>
-                                <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="OnItemClicked" Height="250"  />
-                                <TextBlock Text="{Binding Description}"  HorizontalAlignment="Center" FontSize="32" Foreground="Gray"/>
-                            </StackPanel>
-                        </UserControl>
+                        <Border>
+                            <UserControl IsTabStop="True" UseSystemFocusVisuals="True" GotFocus="OnItemGotFocus" >
+                                <StackPanel>
+                                    <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="OnItemClicked" Height="375"  />
+                                    <TextBlock Text="{Binding Description}"  HorizontalAlignment="Center" FontSize="32" Foreground="Gray"/>
+                                </StackPanel>
+                            </UserControl>
+                        </Border>
                     </DataTemplate>
                 </mux:ItemsRepeater.ItemTemplate>
             </local:SnappPointForwardingRepeater>
