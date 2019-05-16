@@ -375,7 +375,7 @@ namespace HelixTestHelpers
             collection.SetAttributeValue("total", resultCount);
             collection.SetAttributeValue("passed", passedCount);
             collection.SetAttributeValue("failed", failedCount);
-            collection.SetAttributeValue("skipped", 0);
+            collection.SetAttributeValue("skipped", passedOnRerunCount);
             collection.SetAttributeValue("name", "Test collection");
             collection.SetAttributeValue("time", (int)testPass.TestPassExecutionTime.TotalSeconds);
             assembly.Add(collection);
@@ -394,8 +394,23 @@ namespace HelixTestHelpers
                 
                 // TODO (https://github.com/dotnet/arcade/issues/2773): Once we're able to
                 // report things in a more granular fashion than just a binary pass/fail result,
-                // we should do that.
-                test.SetAttributeValue("result", result.Passed || result.PassedOnRerun ? "Pass" : "Fail");
+                // we should do that.  For now, we'll use "Skip" to mean "this test was unreliable".
+                string resultString = string.Empty;
+                
+                if (result.Passed)
+                {
+                    resultString = "Pass";
+                }
+                else if (result.PassedOnRerun)
+                {
+                    resultString = "Skip";
+                }
+                else
+                {
+                    resultString = "Fail";
+                }
+                
+                test.SetAttributeValue("result", resultString);
 
                 if (!result.Passed)
                 {
