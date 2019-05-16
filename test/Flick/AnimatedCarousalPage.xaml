@@ -26,12 +26,14 @@
                 </mux:ItemsRepeater.Layout>
                 <mux:ItemsRepeater.ItemTemplate>
                     <DataTemplate>
-                        <UserControl IsTabStop="True" UseSystemFocusVisuals="True" GotFocus="OnItemGotFocus" >
-                            <StackPanel>
-                                <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="OnItemClicked" Height="375"  />
-                                <TextBlock Text="{Binding Description}"  HorizontalAlignment="Center" FontSize="32" Foreground="Gray"/>
-                            </StackPanel>
-                        </UserControl>
+                        <Border>
+                            <UserControl IsTabStop="True" UseSystemFocusVisuals="True" GotFocus="OnItemGotFocus" >
+                                <StackPanel>
+                                    <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="OnItemClicked" Height="375"  />
+                                    <TextBlock Text="{Binding Description}"  HorizontalAlignment="Center" FontSize="32" Foreground="Gray"/>
+                                </StackPanel>
+                            </UserControl>
+                        </Border>
                     </DataTemplate>
                 </mux:ItemsRepeater.ItemTemplate>
             </local:SnappPointForwardingRepeater>
