@@ -73,7 +73,11 @@ namespace MUXControlsTestApp
                 {"Reveal", typeof(RevealPage), "Reveal.png"},
                 {"ItemsRepeater", typeof(RepeaterTestUIPage), "ListView.png"},
                 {"Scroller", typeof(ScrollerPage), "ScrollViewer.png"},
-                {"CheckBox", typeof(CheckBoxPage)},
+                {"AutoSuggestBox", typeof(AutoSuggestBoxPage), "AutoSuggestBox.png"},
+                {"CheckBox", typeof(CheckBoxPage), "CheckBox.png"},
+                {"CalendarDatePicker", typeof(CalendarDatePickerPage), "CalendarDatePicker.png"},
+                {"DatePicker", typeof(DatePickerPage), "DatePicker.png"},
+                {"TimePicker", typeof(TimePickerPage), "TimePicker.png"},
             };
 
             Tests.Sort((a, b) =>
