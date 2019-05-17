@@ -43,7 +43,7 @@ steps:
     displayName: 'VsTest - DummyUnitTestProject.dll'
     inputs:
       testAssemblyVer2: '**\DummyUnitTestProject.dll'
-      searchFolder: '$(Build.SourcesDirectory)\BuildOutput\$(buildConfiguration)\$(buildPlatform)\'
+      searchFolder: '$(Build.SourcesDirectory)'
       rerunFailedTests: true
       rerunType: basedOnTestFailureCount
       rerunFailedTestCasesMaxLimit: 10
