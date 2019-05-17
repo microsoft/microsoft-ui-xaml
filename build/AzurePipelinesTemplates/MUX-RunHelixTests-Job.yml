@@ -19,7 +19,6 @@ jobs:
 - job: ${{ parameters.name }}
   dependsOn: ${{ parameters.dependsOn }}
   condition: ${{ parameters.condition }}
-  enabled: false
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
@@ -147,7 +146,6 @@ jobs:
 - job: UpdateTests
   dependsOn: ${{ parameters.name }}
   condition: succeededOrFailed()
-  enabled: false
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
