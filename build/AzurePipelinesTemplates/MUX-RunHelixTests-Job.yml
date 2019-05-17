@@ -123,6 +123,17 @@ jobs:
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
       arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
+      enabled: false
+
+  - task: VSTest@2
+    displayName: 'VsTest - DummyUnitTestProject.dll'
+    inputs:
+      testAssemblyVer2: '**\DummyUnitTestProject.dll'
+      searchFolder: '$(Build.BinariesDirectory)'
+      rerunFailedTests: true
+      rerunType: basedOnTestFailureCount
+      rerunFailedTestCasesMaxLimit: 10
+      rerunMaxAttempts: 10
       
   - task: PublishBuildArtifacts@1
     displayName: 'Publish ${{parameters.name}} binlog'
