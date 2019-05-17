@@ -127,7 +127,6 @@ jobs:
 
   - task: VSTest@2
     displayName: 'VsTest - DummyUnitTestProject.dll'
-    enabled: false
     inputs:
       testAssemblyVer2: '**\DummyUnitTestProject.dll'
       searchFolder: '$(artifactsDir)'
