@@ -11,9 +11,6 @@ jobs:
   strategy:
     maxParallel: 4
     matrix:
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'release'
       Release_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'release'
