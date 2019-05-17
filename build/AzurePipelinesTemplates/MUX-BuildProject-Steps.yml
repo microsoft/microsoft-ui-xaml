@@ -42,8 +42,8 @@ steps:
   - task: VSTest@2
     displayName: 'VsTest - DummyUnitTestProject.dll'
     inputs:
-      testAssemblyVer2: '$(Build.BinariesDirectory)\$(buildConfiguration)\$(buildPlatform)\DummyUnitTestProject.dll'
-      searchFolder: '$(Build.BinariesDirectory)'
+      testAssemblyVer2: '$(Build.SourcesDirectory)\BuildOutput\$(buildConfiguration)\$(buildPlatform)\DummyUnitTestProject.dll'
+      searchFolder: '$(Build.SourcesDirectory)'
       rerunFailedTests: true
       rerunType: basedOnTestFailureCount
       rerunFailedTestCasesMaxLimit: 10
