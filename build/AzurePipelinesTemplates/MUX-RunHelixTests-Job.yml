@@ -115,6 +115,7 @@ jobs:
       artifactName: 'drop'
       
   - task: DotNetCoreCLI@2
+    enabled: false
     displayName: 'Run tests in Helix'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -123,7 +124,6 @@ jobs:
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
       arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
-      enabled: false
 
   - task: VSTest@2
     displayName: 'VsTest - DummyUnitTestProject.dll'
