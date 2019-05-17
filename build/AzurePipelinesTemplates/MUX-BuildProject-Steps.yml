@@ -14,7 +14,8 @@ steps:
       echo parameters.buildOutputDir = '${{ parameters.buildOutputDir }}'
     displayName: 'BuildProject: Display parameters'
 
-  
+  - template: MUX-InstallWindowsSDK-Steps.yml
+    enabled: false
 
   - template: MUX-InstallNuget-Steps.yml
 
