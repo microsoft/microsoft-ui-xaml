@@ -158,7 +158,8 @@ jobs:
         $testRunResultsUri = "$($testRun.url)/results?api-version=5.0"
         
         Write-Host "Marking test as in progress, so we can change its values if need be."
-        Write-Host "Invoke-RestMethod -Uri `"$($testRun.url)?api-version=5.0`" -Method Patch -Body (ConvertTo-Json @{ "state" = "InProgress" }) -Headers $azureDevOpsRestApiHeaders"
+        Write-Host "Invoke-RestMethod -Uri `"$($testRun.url)?api-version=5.0`" -Method Patch -Body (ConvertTo-Json @{ `"state`" = `"InProgress`" }) -Headers $azureDevOpsRestApiHeaders -ContentType `"application/json`""
+        Invoke-RestMethod -Uri "$($testRun.url)?api-version=5.0" -Method Patch -Body (ConvertTo-Json @{ "state" = "InProgress" }) -Headers $azureDevOpsRestApiHeaders -ContentType "application/json"
         
         Write-Host "Invoke-RestMethod -Uri `"$($testRun.url)/results?api-version=5.0`" -Method Get -Headers $azureDevOpsRestApiHeaders"
         Invoke-RestMethod -Uri $testRunResultsUri -Method Get -Headers $azureDevOpsRestApiHeaders
@@ -173,15 +174,16 @@ jobs:
             Write-Host "(Actually passed on re-run. Updating.)"
             
             $updateBody = ConvertTo-Json @(@{ "id" = $testResult.id; "outcome" = "Warning"; "errorMessage" = "" })
-            Write-Host "Invoke-RestMethod -Uri $testRunResultsUri -Method Patch -Headers $azureDevOpsRestApiHeaders -Body $updateBody -ContentType `"application/json-patch+json`""
+            Write-Host "Invoke-RestMethod -Uri $testRunResultsUri -Method Patch -Headers $azureDevOpsRestApiHeaders -Body $updateBody -ContentType `"application/json`""
             Write-Host "`$updateBody:"
             $updateBody
-            Invoke-RestMethod -Uri $testRunResultsUri -Method Patch -Headers $azureDevOpsRestApiHeaders -Body $updateBody -ContentType "application/json-patch+json"
+            Invoke-RestMethod -Uri $testRunResultsUri -Method Patch -Headers $azureDevOpsRestApiHeaders -Body $updateBody -ContentType "application/json"
           }
         }
         
         Write-Host "Marking test as completed again."
-        Write-Host "Invoke-RestMethod -Uri `"$($testRun.url)?api-version=5.0`" -Method Patch -Body (ConvertTo-Json @{ "state" = "Completed" }) -Headers $azureDevOpsRestApiHeaders"
+        Write-Host "Invoke-RestMethod -Uri `"$($testRun.url)?api-version=5.0`" -Method Patch -Body (ConvertTo-Json @{ `"state`" = `"Completed`" }) -Headers $azureDevOpsRestApiHeaders -ContentType `"application/json`""
+        Invoke-RestMethod -Uri "$($testRun.url)?api-version=5.0" -Method Patch -Body (ConvertTo-Json @{ "state" = "Completed" }) -Headers $azureDevOpsRestApiHeaders -ContentType "application/json"
       }
       
     displayName: 'Dump test results thus far'
