@@ -12,6 +12,7 @@ namespace HelixTestHelpers
         public TestResult()
         {
             Screenshots = new List<string>();
+            RerunResults = new List<TestResult>();
         }
 
         public string Name { get; set; }
@@ -22,6 +23,7 @@ namespace HelixTestHelpers
         public string Details { get; set; }
 
         public List<string> Screenshots { get; private set; }
+        public List<TestResult> RerunResults { get; private set; }
     }
     
     public class TestPass
@@ -274,6 +276,8 @@ namespace HelixTestHelpers
             // rather than a genuine test failure.
             foreach (TestResult failedTestResult in testPass.TestResults.Where(r => !r.Passed))
             {
+                failedTestResult.RerunResults.AddRange(failedTestResult);
+                
                 if (rerunTestResults.Where(r => r.Name == failedTestResult.Name && r.Passed).Count() > 0)
                 {
                     failedTestResult.PassedOnRerun = true;
@@ -382,82 +386,94 @@ namespace HelixTestHelpers
 
             foreach (var result in results)
             {
-                var test = new XElement("test");
-                test.SetAttributeValue("name", testNamePrefix + "." + result.Name);
-
-                var className = result.Name.Substring(0, result.Name.LastIndexOf('.'));
-                var methodName = result.Name.Substring(result.Name.LastIndexOf('.') + 1);
-                test.SetAttributeValue("type", className);
-                test.SetAttributeValue("method", methodName);
-
-                test.SetAttributeValue("time", result.ExecutionTime.TotalSeconds);
-                
-                // TODO (https://github.com/dotnet/arcade/issues/2773): Once we're able to
-                // report things in a more granular fashion than just a binary pass/fail result,
-                // we should do that.  For now, we'll use "Skip" to mean "this test was unreliable".
-                string resultString = string.Empty;
-                
-                if (result.Passed)
-                {
-                    resultString = "Pass";
-                }
-                else if (result.PassedOnRerun)
-                {
-                    resultString = "Skip";
-                }
-                else
-                {
-                    resultString = "Fail";
-                }
-                
-                test.SetAttributeValue("result", resultString);
-
-                if (!result.Passed)
-                {
-                    // If the test passed on rerun, then we'll add metadata noting as much.
-                    // Otherwise, we'll mark down the failure information.
-                    if (result.PassedOnRerun)
-                    {
-                        var reason = new XElement("reason");
-                        reason.Add(new XCData("PassedOnRerun"));
-                        test.Add(reason);
-                    }
-                    else
-                    {
-                        var failure = new XElement("failure");
-                        failure.SetAttributeValue("exception-type", "Exception");
-
-                        var message = new XElement("message");
-
-                        StringBuilder errorMessage = new StringBuilder();
-
-                        errorMessage.AppendLine("Log: " + GetUploadedFileUrl(wttInputPath, helixResultsContainerUri, helixResultsContainerRsas));
-                        errorMessage.AppendLine();
-                        
-                        if(result.Screenshots.Any())
-                        {
-                            errorMessage.AppendLine("Screenshots:");
-                            foreach(var screenshot in result.Screenshots)
-                            {
-                                errorMessage.AppendLine(GetUploadedFileUrl(screenshot, helixResultsContainerUri, helixResultsContainerRsas));
-                                errorMessage.AppendLine();
-                            }
-                        }
-
-                        errorMessage.AppendLine("Error Log: ");
-                        errorMessage.AppendLine(result.Details);
-
-                        message.Add(new XCData(errorMessage.ToString()));
-                        failure.Add(message);
-
-                        test.Add(failure);
-                    }
-                }
-
-                collection.Add(test);
+                collection.Add(TestResultToXElement(result));
             }
 
             File.WriteAllText(xunitOutputPath, root.ToString());
+        }
+        
+        private static XElement TestResultToXElement(TestResult result)
+        {
+            var test = new XElement("test");
+            test.SetAttributeValue("name", testNamePrefix + "." + result.Name);
+
+            var className = result.Name.Substring(0, result.Name.LastIndexOf('.'));
+            var methodName = result.Name.Substring(result.Name.LastIndexOf('.') + 1);
+            test.SetAttributeValue("type", className);
+            test.SetAttributeValue("method", methodName);
+
+            test.SetAttributeValue("time", result.ExecutionTime.TotalSeconds);
+            
+            // TODO (https://github.com/dotnet/arcade/issues/2773): Once we're able to
+            // report things in a more granular fashion than just a binary pass/fail result,
+            // we should do that.  For now, we'll use "Skip" to mean "this test was unreliable".
+            string resultString = string.Empty;
+            
+            if (result.Passed)
+            {
+                resultString = "Pass";
+            }
+            else if (result.PassedOnRerun)
+            {
+                resultString = "Skip";
+            }
+            else
+            {
+                resultString = "Fail";
+            }
+            
+            test.SetAttributeValue("result", resultString);
+
+            if (!result.Passed)
+            {
+                // If the test passed on rerun, then we'll add metadata noting as much.
+                // Otherwise, we'll mark down the failure information.
+                if (result.PassedOnRerun)
+                {
+                    var reason = new XElement("reason");
+                    var reruns = new XElement("reruns");
+                    
+                    foreach (TestResult rerunResult in result.RerunResults)
+                    {
+                        reruns.Add(TestResultToXElement(rerunResult);
+                    }
+                    
+                    reason.Add(new XCData(reruns.ToString()));
+                    test.Add(reason);
+                }
+                else
+                {
+                    var failure = new XElement("failure");
+                    failure.SetAttributeValue("exception-type", "Exception");
+
+                    var message = new XElement("message");
+
+                    StringBuilder errorMessage = new StringBuilder();
+
+                    errorMessage.AppendLine("Log: " + GetUploadedFileUrl(wttInputPath, helixResultsContainerUri, helixResultsContainerRsas));
+                    errorMessage.AppendLine();
+                    
+                    if(result.Screenshots.Any())
+                    {
+                        errorMessage.AppendLine("Screenshots:");
+                        foreach(var screenshot in result.Screenshots)
+                        {
+                            errorMessage.AppendLine(GetUploadedFileUrl(screenshot, helixResultsContainerUri, helixResultsContainerRsas));
+                            errorMessage.AppendLine();
+                        }
+                    }
+
+                    errorMessage.AppendLine("Error Log: ");
+                    errorMessage.AppendLine(result.Details);
+
+                    message.Add(new XCData(errorMessage.ToString()));
+                    failure.Add(message);
+
+                    test.Add(failure);
+                }
+            }
+            
+            return test;
         }
 
         private static string GetUploadedFileUrl(string filePath, string helixResultsContainerUri, string helixResultsContainerRsas)

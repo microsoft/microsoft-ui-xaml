@@ -169,7 +169,7 @@ jobs:
           $testResult = $_
           Write-Host "Test $($testResult.testCaseTitle) : $($testResult.outcome)"
           
-          if ($testResult.outcome -eq "NotExecuted" -and $testResult.errorMessage -eq "PassedOnRerun")
+          if ($testResult.outcome -eq "NotExecuted" -and $testResult.errorMessage -match "<reruns>")
           {
             Write-Host "(Actually passed on re-run. Updating.)"
             
