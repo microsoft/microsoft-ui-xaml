@@ -8,6 +8,7 @@ Param(
 
 $FullBuildOutput = "$($BuildOutputDir)\$($Configuration)\$($Platform)"
 $FullPublishDir = "$($PublishDir)\$($Configuration)\$($Platform)"
+$nugetPackagesDir = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path) "Helix\packages"
 
 if (!(Test-Path $FullPublishDir)) { mkdir $FullPublishDir }
 
@@ -37,7 +38,8 @@ PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Generic.xaml $FullPubli
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml.Design\Microsoft.UI.Xaml.Design.dll $FullPublishDir\Microsoft.UI.Xaml.Design\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\MUXControls.Test.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\MUXControls.ReleaseTest.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\DummyUnitTestProject\*.* $FullPublishDir\Test\
+PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\DummyUnitTestProject\*.* $FullPublishDir\DummyUnitTestProject\
+PublishFile -IfExists $nugetPackagesDir\microsoft.testplatform.testhost\15.9.0\lib\netstandard1.5\*.* $FullPublishDir\DummyUnitTestProject\
 PublishFile -IfExists $FullBuildOutput\FrameworkPackage\*.* $FullPublishDir\FrameworkPackage
 
 # Publish pdbs:
