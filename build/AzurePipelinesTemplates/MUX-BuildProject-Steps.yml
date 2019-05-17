@@ -15,6 +15,7 @@ steps:
     displayName: 'BuildProject: Display parameters'
 
   - template: MUX-InstallWindowsSDK-Steps.yml
+    enabled: false
 
   - template: MUX-InstallNuget-Steps.yml
 
@@ -42,7 +43,7 @@ steps:
   - task: VSTest@2
     displayName: 'VsTest - DummyUnitTestProject.dll'
     inputs:
-      testAssemblyVer2: '**\DummyUnitTestProject.dll'
+      testAssemblyVer2: '$(Build.BinariesDirectory)\$(buildConfiguration)\$(buildPlatform)\DummyUnitTestProject.dll'
       searchFolder: '$(Build.BinariesDirectory)'
       rerunFailedTests: true
       rerunType: basedOnTestFailureCount
