@@ -129,7 +129,7 @@ jobs:
     displayName: 'VsTest - DummyUnitTestProject.dll'
     inputs:
       testAssemblyVer2: '**\DummyUnitTestProject.dll'
-      searchFolder: '$(Build.BinariesDirectory)'
+      searchFolder: '$(artifactsDir)'
       rerunFailedTests: true
       rerunType: basedOnTestFailureCount
       rerunFailedTestCasesMaxLimit: 10
