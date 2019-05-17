@@ -8,6 +8,12 @@ WinUI is the easiest way to build great [Fluent Design](https://docs.microsoft.c
 
 WinUI can be used in any Windows 10 UWP XAML app, or in a Xamarin.Forms app running on Windows 10 using [native view embedding](https://docs.microsoft.com/xamarin/xamarin-forms/platform/native-views).
 
+## WinUI 3.0 Announcement
+
+At the Microsoft Build conference in May 2019 we [shared our plans for WinUI 3.0](https://mybuild.techcommunity.microsoft.com/sessions/77008), which will greatly expand the scope of WinUI to include the full native Windows UI platform. 
+
+For more info check out the updated [**roadmap**](https://github.com/microsoft/microsoft-ui-xaml/blob/master/docs/roadmap.md) and join the discussion in the [**3.0 discussion issue**](https://github.com/microsoft/microsoft-ui-xaml/issues/717).
+
 ## Using WinUI
 You can download and use WinUI packages in your app using the NuGet package manager: see the [Getting Started with the Windows UI Library](https://docs.microsoft.com/uwp/toolkits/winui/getting-started) page for more information.
 
