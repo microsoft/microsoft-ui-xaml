@@ -173,7 +173,21 @@ jobs:
           {
             Write-Host "(Actually passed on re-run. Updating.)"
             
-            $updateBody = ConvertTo-Json @(@{ "id" = $testResult.id; "outcome" = "Warning" })
+            $rerunList = ConvertFrom-Json $testResult.errorMessage
+            [System.Collections.Generic.List[System.Collections.Generic.Dictionary[string, string]]]$rerunDataList = @()
+            $attemptCount = 0
+            
+            foreach ($rerun in $rerunList)
+            {
+                #should also do sequenceId, outcome, and errorMessage (with log, screenshots, and error message)
+                $rerunData = @{
+                    "displayName" = "Attempt #$attemptCount - $($testResult.testCaseTitle)";
+                    "durationInMs" = $($rerun.durationInMs);
+                    "outcome" = $($rerun.outcome)
+                }
+            }
+            
+            $updateBody = ConvertTo-Json @(@{ "id" = $testResult.id; "outcome" = "Warning"; "subResults" = $rerunData; "resultGroupType" = "rerun" })
             Write-Host "Invoke-RestMethod -Uri $testRunResultsUri -Method Patch -Headers $azureDevOpsRestApiHeaders -Body $updateBody -ContentType `"application/json`""
             Write-Host "`$updateBody:"
             $updateBody
