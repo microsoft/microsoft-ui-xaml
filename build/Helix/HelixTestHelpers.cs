@@ -255,11 +255,11 @@ namespace HelixTestHelpers
                                 {
                                     string fileNameSuffix = string.Empty;
                                     
-                                    if (filename.Contains("_rerun_multiple"))
+                                    if (fileName.Contains("_rerun_multiple"))
                                     {
                                         fileNameSuffix = "_rerun_multiple";
                                     }
-                                    else if (filename.Contains("_rerun"))
+                                    else if (fileName.Contains("_rerun"))
                                     {
                                         fileNameSuffix = "_rerun";
                                     }
