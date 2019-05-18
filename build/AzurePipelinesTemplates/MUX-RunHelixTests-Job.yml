@@ -169,11 +169,11 @@ jobs:
           $testResult = $_
           Write-Host "Test $($testResult.testCaseTitle) : $($testResult.outcome)"
           
-          if ($testResult.outcome -eq "NotExecuted" -and $testResult.errorMessage -match "<reruns>")
+          if ($testResult.outcome -eq "NotExecuted")
           {
             Write-Host "(Actually passed on re-run. Updating.)"
             
-            $updateBody = ConvertTo-Json @(@{ "id" = $testResult.id; "outcome" = "Warning"; "errorMessage" = "" })
+            $updateBody = ConvertTo-Json @(@{ "id" = $testResult.id; "outcome" = "Warning" })
             Write-Host "Invoke-RestMethod -Uri $testRunResultsUri -Method Patch -Headers $azureDevOpsRestApiHeaders -Body $updateBody -ContentType `"application/json`""
             Write-Host "`$updateBody:"
             $updateBody
@@ -186,7 +186,7 @@ jobs:
         Invoke-RestMethod -Uri "$($testRun.url)?api-version=5.0" -Method Patch -Body (ConvertTo-Json @{ "state" = "Completed" }) -Headers $azureDevOpsRestApiHeaders -ContentType "application/json"
       }
       
-    displayName: 'Dump test results thus far'
+    displayName: 'Process results of unreliable tests'
     condition: succeededOrFailed()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)

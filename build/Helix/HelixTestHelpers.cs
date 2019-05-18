@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Xml.Linq;
 
@@ -25,6 +27,25 @@ namespace HelixTestHelpers
 
         public List<string> Screenshots { get; private set; }
         public List<TestResult> RerunResults { get; private set; }
+    }
+    
+    [DataContract]  
+    internal class JsonSerializableTestResult  
+    {  
+        [DataMember]
+        internal string outcome;
+
+        [DataMember]
+        internal int durationInMs;
+        
+        [DataMember]
+        internal string log;
+        
+        [DataMember]
+        internal string[] screenshots;
+        
+        [DataMember]
+        internal string errorMessage;
     }
     
     public class TestPass
@@ -342,15 +363,15 @@ namespace HelixTestHelpers
 
     public class TestResultParser
     {
-        public string TestNamePrefix { get; set; }
-        public string HelixResultsContainerUri { get; set; }
-        public string HelixResultsContainerRsas { get; set; }
+        private string testNamePrefix;
+        private string helixResultsContainerUri;
+        private string helixResultsContainerRsas;
     
         public TestResultParser(string testNamePrefix, string helixResultsContainerUri, string helixResultsContainerRsas)
         {
-            TestNamePrefix = testNamePrefix;
-            HelixResultsContainerUri = helixResultsContainerUri;
-            HelixResultsContainerRsas = helixResultsContainerRsas;
+            this.testNamePrefix = testNamePrefix;
+            this.helixResultsContainerUri = helixResultsContainerUri;
+            this.helixResultsContainerRsas = helixResultsContainerRsas;
         }
         
         public void ConvertWttLogToXUnitLog(string wttInputPath, string wttSingleRerunInputPath, string wttMultipleRerunInputPath, string xunitOutputPath)
@@ -398,98 +419,127 @@ namespace HelixTestHelpers
 
             foreach (var result in results)
             {
-                collection.Add(TestResultToXElement(result));
+                var test = new XElement("test");
+                test.SetAttributeValue("name", testNamePrefix + "." + result.Name);
+
+                var className = result.Name.Substring(0, result.Name.LastIndexOf('.'));
+                var methodName = result.Name.Substring(result.Name.LastIndexOf('.') + 1);
+                test.SetAttributeValue("type", className);
+                test.SetAttributeValue("method", methodName);
+
+                test.SetAttributeValue("time", result.ExecutionTime.TotalSeconds);
+                
+                // TODO (https://github.com/dotnet/arcade/issues/2773): Once we're able to
+                // report things in a more granular fashion than just a binary pass/fail result,
+                // we should do that.  For now, we'll use "Skip" to mean "this test was unreliable".
+                string resultString = string.Empty;
+                
+                if (result.Passed)
+                {
+                    resultString = "Pass";
+                }
+                else if (result.PassedOnRerun)
+                {
+                    resultString = "Skip";
+                }
+                else
+                {
+                    resultString = "Fail";
+                }
+                
+                test.SetAttributeValue("result", resultString);
+
+                if (!result.Passed)
+                {
+                    // If the test passed on rerun, then we'll add metadata noting as much.
+                    // Otherwise, we'll mark down the failure information.
+                    if (result.PassedOnRerun)
+                    {
+                        var reason = new XElement("reason");
+                        List<JsonSerializableTestResult> serializableResults = new List<JsonSerializableTestResult>();
+                        serializableResults.Add(ConvertToSerializableResult(result));
+                        
+                        foreach (TestResult rerunResult in result.RerunResults)
+                        {
+                            serializableResults.Add(ConvertToSerializableResult(rerunResult));
+                        }
+                        
+                        MemoryStream stream = new MemoryStream();  
+                        DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(JsonSerializableTestResult[]));
+                        serializer.WriteObject(stream, serializableResults.ToArray());
+                        stream.Position = 0;  
+                        StreamReader streamReader = new StreamReader(stream);  
+                        
+                        reason.Add(new XCData(streamReader.ReadToEnd()));
+                        test.Add(reason);
+                    }
+                    else
+                    {
+                        var failure = new XElement("failure");
+                        failure.SetAttributeValue("exception-type", "Exception");
+
+                        var message = new XElement("message");
+
+                        StringBuilder errorMessage = new StringBuilder();
+
+                        errorMessage.AppendLine("Log: " + GetUploadedFileUrl(result.SourceWttFile, helixResultsContainerUri, helixResultsContainerRsas));
+                        errorMessage.AppendLine();
+                        
+                        if(result.Screenshots.Any())
+                        {
+                            errorMessage.AppendLine("Screenshots:");
+                            foreach(var screenshot in result.Screenshots)
+                            {
+                                errorMessage.AppendLine(GetUploadedFileUrl(screenshot, helixResultsContainerUri, helixResultsContainerRsas));
+                                errorMessage.AppendLine();
+                            }
+                        }
+
+                        errorMessage.AppendLine("Error Log: ");
+                        errorMessage.AppendLine(result.Details);
+
+                        message.Add(new XCData(errorMessage.ToString()));
+                        failure.Add(message);
+
+                        test.Add(failure);
+                    }
+                }
+                collection.Add(test);
             }
 
             File.WriteAllText(xunitOutputPath, root.ToString());
         }
         
-        private XElement TestResultToXElement(TestResult result, bool ignoreReruns = false)
+        private JsonSerializableTestResult ConvertToSerializableResult(TestResult rerunResult)
         {
-            var test = new XElement("test");
-            test.SetAttributeValue("name", TestNamePrefix + "." + result.Name);
-
-            var className = result.Name.Substring(0, result.Name.LastIndexOf('.'));
-            var methodName = result.Name.Substring(result.Name.LastIndexOf('.') + 1);
-            test.SetAttributeValue("type", className);
-            test.SetAttributeValue("method", methodName);
-
-            test.SetAttributeValue("time", result.ExecutionTime.TotalSeconds);
+            var serializableResult = new JsonSerializableTestResult();
             
-            // TODO (https://github.com/dotnet/arcade/issues/2773): Once we're able to
-            // report things in a more granular fashion than just a binary pass/fail result,
-            // we should do that.  For now, we'll use "Skip" to mean "this test was unreliable".
-            string resultString = string.Empty;
+            serializableResult.outcome = rerunResult.Passed ? "Passed" : "Failed";
+            serializableResult.durationInMs = (int)Math.Round(rerunResult.ExecutionTime.TotalMilliseconds);
             
-            if (result.Passed)
+            if (!rerunResult.Passed)
             {
-                resultString = "Pass";
-            }
-            else if (result.PassedOnRerun && !ignoreReruns)
-            {
-                resultString = "Skip";
-            }
-            else
-            {
-                resultString = "Fail";
-            }
-            
-            test.SetAttributeValue("result", resultString);
-
-            if (!result.Passed)
-            {
-                // If the test passed on rerun, then we'll add metadata noting as much.
-                // Otherwise, we'll mark down the failure information.
-                if (result.PassedOnRerun && !ignoreReruns)
+                serializableResult.log = GetUploadedFileUrl(rerunResult.SourceWttFile, helixResultsContainerUri, helixResultsContainerRsas);
+                
+                if (rerunResult.Screenshots.Any())
                 {
-                    var reason = new XElement("reason");
-                    var runs = new XElement("runs");
-                    runs.Add(TestResultToXElement(result, ignoreReruns: true));
+                    List<string> screenshots = new List<string>();
                     
-                    foreach (TestResult rerunResult in result.RerunResults)
+                    foreach (var screenshot in rerunResult.Screenshots)
                     {
-                        runs.Add(TestResultToXElement(rerunResult));
+                        screenshots.Add(GetUploadedFileUrl(screenshot, helixResultsContainerUri, helixResultsContainerRsas));
                     }
                     
-                    reason.Add(new XCData(runs.ToString()));
-                    test.Add(reason);
+                    serializableResult.screenshots = screenshots.ToArray();
                 }
-                else
-                {
-                    var failure = new XElement("failure");
-                    failure.SetAttributeValue("exception-type", "Exception");
-
-                    var message = new XElement("message");
-
-                    StringBuilder errorMessage = new StringBuilder();
-
-                    errorMessage.AppendLine("Log: " + GetUploadedFileUrl(result.SourceWttFile, HelixResultsContainerUri, HelixResultsContainerRsas));
-                    errorMessage.AppendLine();
-                    
-                    if(result.Screenshots.Any())
-                    {
-                        errorMessage.AppendLine("Screenshots:");
-                        foreach(var screenshot in result.Screenshots)
-                        {
-                            errorMessage.AppendLine(GetUploadedFileUrl(screenshot, HelixResultsContainerUri, HelixResultsContainerRsas));
-                            errorMessage.AppendLine();
-                        }
-                    }
-
-                    errorMessage.AppendLine("Error Log: ");
-                    errorMessage.AppendLine(result.Details);
-
-                    message.Add(new XCData(errorMessage.ToString()));
-                    failure.Add(message);
-
-                    test.Add(failure);
-                }
+                
+                serializableResult.errorMessage = rerunResult.Details.Trim();
             }
             
-            return test;
+            return serializableResult;
         }
 
-        private static string GetUploadedFileUrl(string filePath, string helixResultsContainerUri, string helixResultsContainerRsas)
+        private string GetUploadedFileUrl(string filePath, string helixResultsContainerUri, string helixResultsContainerRsas)
         {
             var filename = Path.GetFileName(filePath);
             return string.Format("{0}/{1}{2}", helixResultsContainerUri, filename, helixResultsContainerRsas);
