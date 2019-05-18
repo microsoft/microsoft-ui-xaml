@@ -18,7 +18,8 @@ for %%B in (%testBinaryCandidates%) do (
 
 te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError %*
 
-%HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te.wtl -result_name te.wtl
+move te.wtl te_original.wtl
+%HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te_original.wtl -result_name te_original.wtl
 
 FOR %%I in (WexLogFileOutput\*.jpg) DO (
     echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%I%HELIX_RESULTS_CONTAINER_RSAS%"
@@ -44,7 +45,7 @@ if "%FailedTestQuery%" neq "" (
 
     FOR %%I in (WexLogFileOutput\*.jpg) DO (
         echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%I%HELIX_RESULTS_CONTAINER_RSAS%"
-        %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI%%~xI_rerun
+        %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI_rerun%%~xI
     )
 )
 
@@ -66,7 +67,7 @@ if exist te_rerun.wtl (
 
         FOR %%I in (WexLogFileOutput\*.jpg) DO (
             echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%I%HELIX_RESULTS_CONTAINER_RSAS%"
-            %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI%%~xI_rerun_multiple
+            %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI_rerun_multiple%%~xI
         )
     )
 )

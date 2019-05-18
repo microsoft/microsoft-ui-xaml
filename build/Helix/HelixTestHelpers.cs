@@ -253,7 +253,18 @@ namespace HelixTestHelpers
 
                                 foreach(var screenshot in screenshots)
                                 {
-                                    currentResult.Screenshots.Add(screenshot);
+                                    string fileNameSuffix = string.Empty;
+                                    
+                                    if (filename.Contains("_rerun_multiple"))
+                                    {
+                                        fileNameSuffix = "_rerun_multiple";
+                                    }
+                                    else if (filename.Contains("_rerun"))
+                                    {
+                                        fileNameSuffix = "_rerun";
+                                    }
+                                    
+                                    currentResult.Screenshots.Add(screenshot.Replace(".jpg", fileNameSuffix + ".jpg"));
                                 }
                             }
                         }
