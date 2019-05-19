@@ -36,7 +36,7 @@ foreach ($testRun in $testRuns.value)
             
             foreach ($rerun in $rerunResults.results)
             {
-                $rerunData = @{
+                [System.Collections.Generic.Dictionary[string, string]]$rerunData = @{
                     "displayName" = "Attempt #$attemptCount - $($testResult.testCaseTitle)";
                     "durationInMs" = $rerun.duration;
                     "outcome" = $rerun.outcome;
