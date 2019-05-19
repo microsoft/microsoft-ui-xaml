@@ -139,8 +139,6 @@ jobs:
   timeoutInMinutes: 120
 
   steps:
-  - checkout: none
-
   - task: powershell@2
     displayName: 'UpdateUnreliableTests.ps1'
     condition: succeededOrFailed()
