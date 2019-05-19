@@ -30,7 +30,7 @@ foreach ($testRun in $testRuns.value)
             Write-Host "(Actually passed on re-run. Updating.)"
             
             $rerunResults = ConvertFrom-Json $testResult.errorMessage
-            [System.Collections.Generic.List[System.Collections.Generic.Dictionary[string, string]]]$rerunDataList = @()
+            [System.Collections.Generic.List[System.Collections.Hashtable]]$rerunDataList = @()
             $attemptCount = 0
             $totalDuration = 0
             
