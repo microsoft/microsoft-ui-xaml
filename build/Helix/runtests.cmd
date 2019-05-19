@@ -26,51 +26,51 @@ FOR %%I in (WexLogFileOutput\*.jpg) DO (
     %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI%%~xI 
 )
 
-move te.wtl te_original.wtl
-
 cd scripts
 set FailedTestQuery=
-for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTestQuery.ps1 ..\te_original.wtl`) DO (
-  set FailedTestQuery=%%A
+for /F "tokens=* usebackq" %%I IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTestQuery.ps1 ..\te_original.wtl`) DO (
+  set FailedTestQuery=%%I
 )
 cd ..
 
 rem The first time, we'll just re-run failed tests once.  In many cases, tests fail very rarely, such that
 rem a single re-run will be sufficient to detect many unreliable tests.
-if "%FailedTestQuery%" neq "" (
-    te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /select:"%FailedTestQuery%"
+if "%FailedTestQuery%" == "" goto :SkipReruns
 
-    move te.wtl te_rerun.wtl
-    %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te_rerun.wtl -result_name te_rerun.wtl
+te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /select:"%FailedTestQuery%"
 
-    FOR %%I in (WexLogFileOutput\*.jpg) DO (
-        echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%I%HELIX_RESULTS_CONTAINER_RSAS%"
-        %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI_rerun%%~xI
-    )
+move te.wtl te_rerun.wtl
+%HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te_rerun.wtl -result_name te_rerun.wtl
+
+FOR %%I in (WexLogFileOutput\*.jpg) DO (
+    echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%~nI_rerun%%~xI%HELIX_RESULTS_CONTAINER_RSAS%"
+    %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI_rerun%%~xI
 )
 
 rem If there are still failing tests remaining, we'll run them eight more times, so they'll have been run a total of ten times.
 rem If any tests fail all ten times, we can be pretty confident that these are actual test failures rather than unreliable tests.
-if exist te_rerun.wtl (
-    cd scripts
-    set FailedTestQuery=
-    for /F "tokens=* usebackq" %%A IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTestQuery.ps1 ..\te_rerun.wtl`) DO (
-      set FailedTestQuery=%%A
-    )
-    cd ..
+if not exist te_rerun.wtl goto :SkipReruns
 
-    if "%FailedTestQuery%" neq "" (
-        te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /testmode:Loop /LoopTest:8 /select:"%FailedTestQuery%"
-        
-        move te.wtl te_rerun_multiple.wtl
-        %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te_rerun_multiple.wtl -result_name te_rerun_multiple.wtl
-
-        FOR %%I in (WexLogFileOutput\*.jpg) DO (
-            echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%I%HELIX_RESULTS_CONTAINER_RSAS%"
-            %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI_rerun_multiple%%~xI
-        )
-    )
+cd scripts
+set FailedTestQuery=
+for /F "tokens=* usebackq" %%I IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTestQuery.ps1 ..\te_rerun.wtl`) DO (
+  set FailedTestQuery=%%I
 )
+cd ..
+
+if "%FailedTestQuery%" == "" goto :SkipReruns
+
+te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /testmode:Loop /LoopTest:8 /select:"%FailedTestQuery%"
+
+move te.wtl te_rerun_multiple.wtl
+%HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te_rerun_multiple.wtl -result_name te_rerun_multiple.wtl
+
+FOR %%I in (WexLogFileOutput\*.jpg) DO (
+    echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%~nI_rerun_multiple%%~xI%HELIX_RESULTS_CONTAINER_RSAS%"
+    %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI_rerun_multiple%%~xI
+)
+
+:SkipReruns
 
 cd scripts
 powershell -ExecutionPolicy Bypass .\ConvertWttLogToXUnit.ps1 ..\te_original.wtl ..\te_rerun.wtl ..\te_rerun_multiple.wtl ..\testResults.xml %testnameprefix%
