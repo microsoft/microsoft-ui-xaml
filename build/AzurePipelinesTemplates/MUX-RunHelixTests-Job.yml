@@ -173,21 +173,51 @@ jobs:
           {
             Write-Host "(Actually passed on re-run. Updating.)"
             
-            $rerunList = ConvertFrom-Json $testResult.errorMessage
+            $rerunResults = ConvertFrom-Json $testResult.errorMessage
             [System.Collections.Generic.List[System.Collections.Generic.Dictionary[string, string]]]$rerunDataList = @()
             $attemptCount = 0
+            $totalDuration = 0
             
-            foreach ($rerun in $rerunList)
+            foreach ($rerun in $rerunResults.results)
             {
-                #should also do sequenceId, outcome, and errorMessage (with log, screenshots, and error message)
-                $rerunData = @{
-                    "displayName" = "Attempt #$attemptCount - $($testResult.testCaseTitle)";
-                    "durationInMs" = $($rerun.durationInMs);
-                    "outcome" = $($rerun.outcome)
-                }
+              $rerunData = @{
+                "displayName" = "Attempt #$attemptCount - $($testResult.testCaseTitle)";
+                "durationInMs" = $rerun.duration;
+                "outcome" = $rerun.outcome;
+              }
+                
+              if ($attemptCount -gt 0)
+              {
+                $rerunData["sequenceId"] = $attemptCount
+              }
+                
+              if ($rerun.outcome -eq "Passed")
+              {
+                $screenshots = "$($rerunResults.blobPrefix)$($rerun.screenshots -join @"
+$($rerunResults.blobSuffix)
+$($rerunResults.blobPrefix)
+"@)$($rerunResults.blobSuffix)"
+
+                $fullErrorMessage = @"
+Log: $($rerunResults.blobPrefix)/$($rerun.log)$($rerunResults.blobSuffix)
+
+Screenshots:
+$screenshots
+
+Error log:
+$($rerunResults.errors[$rerun.errorIndex])
+"@
+
+                $rerunData["errorMessage"] = $fullErrorMessage
+              }
+                
+              $attemptCount++
+              $totalDuration += $rerun.duration
+                
+              $rerunDataList.Add($rerunData)
             }
             
-            $updateBody = ConvertTo-Json @(@{ "id" = $testResult.id; "outcome" = "Warning"; "subResults" = $rerunData; "resultGroupType" = "rerun" })
+            $updateBody = ConvertTo-Json @(@{ "id" = $testResult.id; "outcome" = "Warning"; durationInMs = $totalDuration; "subResults" = $rerunDataList; "resultGroupType" = "rerun" })
             Write-Host "Invoke-RestMethod -Uri $testRunResultsUri -Method Patch -Headers $azureDevOpsRestApiHeaders -Body $updateBody -ContentType `"application/json`""
             Write-Host "`$updateBody:"
             $updateBody

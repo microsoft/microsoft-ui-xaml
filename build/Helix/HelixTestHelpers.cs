@@ -30,22 +30,41 @@ namespace HelixTestHelpers
     }
     
     [DataContract]  
-    internal class JsonSerializableTestResult  
+    internal class JsonSerializableTestResults
     {  
+        [DataMember]
+        internal string blobPrefix;
+        
+        [DataMember]
+        internal string blobSuffix;
+        
+        // To conserve space, we'll only log unique error messages,
+        // since it's very likely that multiple failures of the same test
+        // will be the same failure.
+        [DataMember]
+        internal string[] errors;
+        
+        [DataMember]
+        internal JsonSerializableTestResult[] results;
+    }
+    
+    [DataContract]  
+    internal class JsonSerializableTestResult  
+    {
         [DataMember]
         internal string outcome;
 
         [DataMember]
-        internal int durationInMs;
+        internal int duration;
         
-        [DataMember]
+        [DataMember(EmitDefaultValue = false)]
         internal string log;
         
-        [DataMember]
+        [DataMember(EmitDefaultValue = false)]
         internal string[] screenshots;
         
-        [DataMember]
-        internal string errorMessage;
+        [DataMember(EmitDefaultValue = false)]
+        internal int errorIndex;
     }
     
     public class TestPass
@@ -275,6 +294,14 @@ namespace HelixTestHelpers
                 testPassStopTime = Int64.Parse(doc.Root.Descendants("WexTraceInfo").Last().Attribute("TimeStamp").Value);
 
                 var testPassTime = TimeSpan.FromSeconds((double)(testPassStopTime - testPassStartTime) / frequency);
+                
+                foreach (TestResult testResult in testResults)
+                {
+                    if (testResult.Details != null)
+                    {
+                        testResult.Details = testResult.Details.Trim();
+                    }
+                }
 
                 var testpass = new TestPass
                 {
@@ -466,20 +493,36 @@ namespace HelixTestHelpers
                     // Otherwise, we'll mark down the failure information.
                     if (result.PassedOnRerun)
                     {
-                        var reason = new XElement("reason");
-                        List<JsonSerializableTestResult> serializableResults = new List<JsonSerializableTestResult>();
-                        serializableResults.Add(ConvertToSerializableResult(result));
+                        JsonSerializableTestResults serializableResults = new JsonSerializableTestResults();
+                        serializableResults.blobPrefix = helixResultsContainerUri;
+                        serializableResults.blobSuffix = helixResultsContainerRsas;
+                        
+                        List<string> errorList = new List<string>();
+                        errorList.Add(result.Details);
                         
                         foreach (TestResult rerunResult in result.RerunResults)
                         {
-                            serializableResults.Add(ConvertToSerializableResult(rerunResult));
+                            errorList.Add(rerunResult.Details);
                         }
                         
-                        MemoryStream stream = new MemoryStream();  
-                        DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(JsonSerializableTestResult[]));
-                        serializer.WriteObject(stream, serializableResults.ToArray());
-                        stream.Position = 0;  
-                        StreamReader streamReader = new StreamReader(stream);  
+                        serializableResults.errors = errorList.Distinct().Where(s => s != null).ToArray();
+                    
+                        var reason = new XElement("reason");
+                        List<JsonSerializableTestResult> serializableResultList = new List<JsonSerializableTestResult>();
+                        serializableResultList.Add(ConvertToSerializableResult(result, serializableResults.errors));
+                        
+                        foreach (TestResult rerunResult in result.RerunResults)
+                        {
+                            serializableResultList.Add(ConvertToSerializableResult(rerunResult, serializableResults.errors));
+                        }
+                        
+                        serializableResults.results = serializableResultList.ToArray();
+                        
+                        MemoryStream stream = new MemoryStream();
+                        DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(JsonSerializableTestResults));
+                        serializer.WriteObject(stream, serializableResults);
+                        stream.Position = 0;
+                        StreamReader streamReader = new StreamReader(stream);
                         
                         reason.Add(new XCData(streamReader.ReadToEnd()));
                         test.Add(reason);
@@ -521,16 +564,16 @@ namespace HelixTestHelpers
             File.WriteAllText(xunitOutputPath, root.ToString());
         }
         
-        private JsonSerializableTestResult ConvertToSerializableResult(TestResult rerunResult)
+        private JsonSerializableTestResult ConvertToSerializableResult(TestResult rerunResult, string[] uniqueErrors)
         {
             var serializableResult = new JsonSerializableTestResult();
             
             serializableResult.outcome = rerunResult.Passed ? "Passed" : "Failed";
-            serializableResult.durationInMs = (int)Math.Round(rerunResult.ExecutionTime.TotalMilliseconds);
+            serializableResult.duration = (int)Math.Round(rerunResult.ExecutionTime.TotalMilliseconds);
             
             if (!rerunResult.Passed)
             {
-                serializableResult.log = GetUploadedFileUrl(rerunResult.SourceWttFile, helixResultsContainerUri, helixResultsContainerRsas);
+                serializableResult.log = Path.GetFileName(rerunResult.SourceWttFile);
                 
                 if (rerunResult.Screenshots.Any())
                 {
@@ -538,13 +581,16 @@ namespace HelixTestHelpers
                     
                     foreach (var screenshot in rerunResult.Screenshots)
                     {
-                        screenshots.Add(GetUploadedFileUrl(screenshot, helixResultsContainerUri, helixResultsContainerRsas));
+                        screenshots.Add(Path.GetFileName(screenshot));
                     }
                     
                     serializableResult.screenshots = screenshots.ToArray();
                 }
                 
-                serializableResult.errorMessage = rerunResult.Details.Trim();
+                // To conserve space, we'll log the index of the error to index in a list of unique errors,
+                // rather than jotting down every single error in its entirety.
+                // We'll add one to the result so we can not serialize the default value of 0.
+                serializableResult.errorIndex = Array.IndexOf(uniqueErrors, rerunResult.Details) + 1;
             }
             
             return serializableResult;
