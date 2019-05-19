@@ -49,7 +49,7 @@ foreach ($testRun in $testRuns.value)
                 
                 if ($rerun.outcome -ne "Passed")
                 {
-                    $screenshots = "$($rerunResults.blobPrefix)$($rerun.screenshots -join @"
+                    $screenshots = "$($rerunResults.blobPrefix)/$($rerun.screenshots -join @"
 $($rerunResults.blobSuffix)
 $($rerunResults.blobPrefix)
 "@)$($rerunResults.blobSuffix)"
@@ -71,6 +71,7 @@ $($rerunResults.errors[$rerun.errorIndex - 1])
                     $rerunData["errorMessage"] = $fullErrorMessage
                 }
                 
+                $attemptCount++
                 $totalDuration += $rerun.duration
                 $rerunDataList.Add($rerunData)
             }
