@@ -77,7 +77,7 @@ $($rerunResults.errors[$rerun.errorIndex - 1])
                 $rerunDataList.Add($rerunData)
             }
             
-            $updateBody = ConvertTo-Json @(@{ "id" = $testResult.id; "outcome" = "Warning"; durationInMs = $totalDuration; "subResults" = $rerunDataList; "resultGroupType" = "rerun" })
+            $updateBody = ConvertTo-Json @(@{ "id" = $testResult.id; "outcome" = "Warning"; durationInMs = $totalDuration; "subResults" = $rerunDataList; "resultGroupType" = "rerun" }) -Depth 5
             Write-Host "Invoke-RestMethod -Uri $testRunResultsUri -Method Patch -Headers $azureDevOpsRestApiHeaders -Body $updateBody -ContentType `"application/json`""
             Write-Host "`$updateBody:"
             $updateBody
