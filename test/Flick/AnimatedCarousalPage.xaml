@@ -22,7 +22,7 @@
                       Grid.Row="1">
             <local:SnappPointForwardingRepeater x:Name="repeater" HorizontalCacheLength="0" VerticalCacheLength="0" ElementPrepared="OnElementPrepared">
                 <mux:ItemsRepeater.Layout>
-                    <local:VirtualizingUniformCarousalStackLayout x:Name="layout" ItemWidth="450" ItemHeight="525" Spacing="25"/>
+                    <local:VirtualizingUniformCarousalStackLayout x:Name="layout" ItemWidth="450" ItemHeight="525" Spacing="100"/>
                 </mux:ItemsRepeater.Layout>
                 <mux:ItemsRepeater.ItemTemplate>
                     <DataTemplate>
