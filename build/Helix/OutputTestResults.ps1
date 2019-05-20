@@ -23,7 +23,7 @@ foreach ($testRun in $testRuns.value)
                 $failingTests.Add($shortTestCaseTitle)
             }
         }
-        elseif ($testResult.outcome -eq "NotExecuted")
+        elseif ($testResult.outcome -eq "Warning")
         {
             if (-not $unreliableTests.Contains($shortTestCaseTitle))
             {
