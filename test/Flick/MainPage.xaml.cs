@@ -34,6 +34,7 @@ namespace Flick
 
             repeater.ItemsSource = Images;
             repeater.Layout = uniformGridLayout;
+
             banner.Source = new BitmapImage(new Uri(Images.Last().LargeUrl));
         }
 

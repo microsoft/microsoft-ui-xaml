@@ -18,7 +18,7 @@ namespace Flick
         private static async Task<PhotoReel> LoadFeed(string tag, int count)
         {
             // https://www.flickr.com/services/api/flickr.photos.search.html
-            var url = string.Format("https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=dc318dbb02bf7cd2ab3daca1ae7d93c8&tags={0}&styles=depthoffield&safe_search=1&per_page={1}&page=1", tag, count);
+            var url = string.Format("https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=6c67e040d4f2639b17b2a00fc181f79d&tags={0}&styles=depthoffield&safe_search=1&per_page={1}&page=1", tag, count);
 
 
             Windows.Web.Http.HttpClient httpClient = new Windows.Web.Http.HttpClient();

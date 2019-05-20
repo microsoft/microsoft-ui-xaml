@@ -90,8 +90,13 @@ namespace Flick
 
             var centerPointExpression = scrollProperties.Compositor.CreateExpressionAnimation();
             centerPointExpression.SetReferenceParameter("item", item);
-            centerPointExpression.Expression = "Vector3(item.Size.X/2, item.Size.Y/2, 0)";
-            // item.StartAnimation("CenterPoint", centerPointExpression);
+            centerPointExpression.SetReferenceParameter("svVisual", svVisual);
+            centerPointExpression.SetReferenceParameter("scrollProperties", scrollProperties);
+            centerPointExpression.SetScalarParameter("spacing", (float)layout.Spacing);
+            //centerPointExpression.Expression = "Vector3(((item.Size.X/2) + ((((item.Offset.X + (item.Size.X/2)) < ((svVisual.Size.X/2) - scrollProperties.Translation.X)) ? 1 : -1) * ((item.Size.X/2) * clamp((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing)), 0, 1)))), item.Size.Y/2, 0)";
+            //item.StartAnimation("CenterPoint", centerPointExpression);
+            //centerPointExpression.Expression = "Vector3(item.Size.X/2, item.Size.Y/2, 0)";
+            centerPointExpression.Expression = "Vector3(((item.Size.X/2) + ((((item.Offset.X + (item.Size.X/2)) < ((svVisual.Size.X/2) - scrollProperties.Translation.X)) ? 1 : -1) * (((item.Size.X/2) * clamp((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing)), 0, 1)) + ((item.Size.X) * max((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing)) - 1, 0))) )), item.Size.Y/2, 0)";
             centerPointExpression.Target = "CenterPoint";
             animationGroup.Add(centerPointExpression);
 
@@ -137,10 +142,11 @@ namespace Flick
             offsetExpression.SetReferenceParameter("svVisual", svVisual);
             offsetExpression.SetReferenceParameter("scrollProperties", scrollProperties);
             offsetExpression.SetReferenceParameter("item", item);
-            offsetExpression.SetScalarParameter("scaleRatioXY", 0.5f);
+            offsetExpression.SetScalarParameter("itemScaleRatio", 0.5f);
             offsetExpression.SetScalarParameter("spacing", (float)layout.Spacing);
-            offsetExpression.Expression = "200";
-            offsetExpression.Expression = "Vector3(((((item.Offset.X + (item.Size.X/2)) < ((svVisual.Size.X/2) - scrollProperties.Translation.X)) ? 1 : -1) * (item.Size.X * (1 - clamp((scaleRatioXY * (1 + (1 - (abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing))))), scaleRatioXY, 1)) / 2)), 0, 0)";
+            //offsetExpression.Expression = "Vector3(0,200,0)";
+            //offsetExpression.Expression = "Vector3(((((item.Offset.X + (item.Size.X/2)) < ((svVisual.Size.X/2) - scrollProperties.Translation.X)) ? 1 : -1) * (item.Size.X * (1 - clamp((scaleRatioXY * (1 + (1 - (abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing))))), scaleRatioXY, 1)) / 2)), 0, 0)";
+            //offsetExpression.Expression = "Vector3(((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) > (item.Size.X + spacing)) ? ((((item.Offset.X + (item.Size.X/2)) < ((svVisual.Size.X/2) - scrollProperties.Translation.X)) ? 1 : -1) * min((((item.Size.X * (1 - itemScaleRatio)) * ((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X))) / (item.Size.X + spacing))) - (item.Size.X + spacing)), 0)) : 0), 0, 0)";
             //item.StartAnimation("Offset", offsetExpression);
             offsetExpression.Target = "Translation";
             //offsetExpression.Target = "Offset.Y";
@@ -157,6 +163,7 @@ namespace Flick
 
         private void OnItemClicked(object sender, RoutedEventArgs e)
         {
+
             ScrollToCenterOfViewport(sender);
             //sv.ChangeView((layout.ItemWidth + layout.Spacing) * 500, null, null);
         }
