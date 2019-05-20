@@ -14,13 +14,21 @@ foreach ($testRun in $testRuns.value)
         
     foreach ($testResult in $testResults.value)
     {
+        $shortTestCaseTitle = $testResult.testCaseTitle -replace "release.[a-zA-Z0-9]+.Windows.UI.Xaml.Tests.MUXControls.",""
+
         if ($testResult.outcome -eq "Failed")
         {
-            $failingTests.Add($testResult.testCaseTitle)
+            if (-not $failingTests.Contains($shortTestCaseTitle))
+            {
+                $failingTests.Add($shortTestCaseTitle)
+            }
         }
         elseif ($testResult.outcome -eq "NotExecuted")
         {
-            $unreliableTests.Add($testResult.testCaseTitle)
+            if (-not $unreliableTests.Contains($shortTestCaseTitle))
+            {
+                $unreliableTests.Add($shortTestCaseTitle)
+            }
         }
     }
 }
@@ -29,7 +37,7 @@ if ($unreliableTests.Count -gt 0)
 {
     Write-Warning @"
 ##vso[task.logissue type=warning;]Unreliable tests:
-##vso[task.logissue type=warning;]
+
 ##vso[task.logissue type=warning;]$($unreliableTests -join "$([Environment]::NewLine)##vso[task.logissue type=warning;]")
 "@
 }
@@ -38,7 +46,7 @@ if ($failingTests.Count -gt 0)
 {
     Write-Error @"
 ##vso[task.logissue type=error;]Failing tests:
-##vso[task.logissue type=error;]
+
 ##vso[task.logissue type=error;]$($failingTests -join "$([Environment]::NewLine)##vso[task.logissue type=error;]")
 "@
 }
