@@ -22,8 +22,8 @@
   <Target Name="CustomCheckTestRuns"
           BeforeTargets="AfterTest"
           Outputs="%(HelixTargetQueue.Identity)">
-    <Message Text="##vso[task.logissue type=error;] Testing a custom CheckTestRuns target." />
-    <Error Text="##vso[task.logissue type=error;] Testing a custom CheckTestRuns target." />
+    <Message Text="##vso[task.logissue type=error;]Testing a custom CheckTestRuns target via 'Message'." />
+    <Error Text="##vso[task.logissue type=error;]Testing a custom CheckTestRuns target via 'Error'." />
     <CheckAzurePipelinesTestRun TestRunId="%(HelixTargetQueue.TestRunId)"/>
   </Target>
 </Project>
