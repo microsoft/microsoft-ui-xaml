@@ -3,6 +3,8 @@ $azureDevOpsRestApiHeaders = @{
     "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:SYSTEM_ACCESSTOKEN)")))"
 }
 
+Write-Host "Checking test results..."
+
 $testRuns = Invoke-RestMethod -Uri "https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)" -Method Get -Headers $azureDevOpsRestApiHeaders
 [System.Collections.Generic.List[string]]$failingTests = @()
 [System.Collections.Generic.List[string]]$unreliableTests = @()
@@ -47,4 +49,17 @@ if ($failingTests.Count -gt 0)
 ##vso[task.logissue type=error;]Failing tests:
 ##vso[task.logissue type=error;]$($failingTests -join "$([Environment]::NewLine)##vso[task.logissue type=error;]")
 "@
+}
+
+if ($failingTests.Count -gt 0)
+{
+    Write-Host "##vso[task.complete result=Failed;]At least one test failed."
+}
+elseif ($unreliableTests.Count -gt 0)
+{
+    Write-Host "##vso[task.complete result=SucceededWithIssues;]All tests eventually passed, but some initially failed."
+}
+else
+{
+    Write-Host "##vso[task.complete result=Succeeded;]All tests passed."
 }
