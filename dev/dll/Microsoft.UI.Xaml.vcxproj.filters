@@ -92,6 +92,9 @@
     <ClInclude Include="..\inc\enum_vector.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="..\inc\RegUtil.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Microsoft.UI.Xaml.def" />

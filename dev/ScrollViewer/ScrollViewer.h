@@ -80,7 +80,8 @@ public:
 #pragma endregion
 
     // Invoked by ScrollViewerTestHooks
-    winrt::Scroller GetScrollerPart();
+    static void ScrollControllersAutoHidingChanged();
+    winrt::Scroller GetScrollerPart() const;
 
     static void ValidateAnchorRatio(double value);
     static void ValidateZoomFactoryBoundary(double value);
@@ -103,6 +104,13 @@ public:
 #pragma endregion
 
 private:
+    static bool AreScrollControllersAutoHiding();    
+    static void OnAutoHideScrollBarsChanged(
+        winrt::UISettings const& uiSettings,
+        winrt::UISettingsAutoHideScrollBarsChangedEventArgs const& args);
+    static void ProcessScrollControllersAutoHidingChange();
+    static void UpdateScrollControllersAutoHiding(bool forceUpdate = false);
+
     void OnScrollViewerGettingFocus(
         const winrt::IInspectable& /*sender*/,
         const winrt::GettingFocusEventArgs& args);
@@ -190,8 +198,9 @@ private:
         const winrt::IInspectable& sender,
         const winrt::ScrollerAnchorRequestedEventArgs& args);
 
-    void StopHideIndicatorsTimer(bool isForDestructor);
+    void ResetHideIndicatorsTimer(bool isForDestructor = false, bool restart = false);
 
+    void HookUISettingsEvent();
     void HookScrollViewerEvents();
     void UnhookScrollViewerEvents();
     void HookScrollerEvents();
@@ -213,15 +222,20 @@ private:
     void UpdateScrollerVerticalScrollController(const winrt::IScrollController& verticalScrollController);
     void UpdateScrollControllersVisibility(bool horizontalChange, bool verticalChange);
 
-    bool IsLoaded();
+    const std::vector<winrt::weak_ref<winrt::ScrollViewer>>::const_iterator GetLoadedScrollViewer() const;
+    bool IsLoaded() const;
     bool IsInputKindIgnored(winrt::InputKind const& inputKind);
 
-    bool AreAllScrollControllersCollapsed();
-    bool AreBothScrollControllersVisible();
-    void ShowIndicators();
-    void HideIndicators(bool useTransitions);
+    bool AreAllScrollControllersCollapsed() const;
+    bool AreBothScrollControllersVisible() const;
+    bool IsScrollControllersSeparatorVisible() const;
+    void HideIndicators(bool useTransitions = true);
     void HideIndicatorsAfterDelay();
-    
+    void UpdateVisualStates(bool useTransitions = true, bool showIndicators = false, bool hideIndicators = false, bool scrollControllersAutoHidingChanged = false);
+    void UpdateScrollControllersVisualState(bool useTransitions = true, bool showIndicators = false, bool hideIndicators = false);
+    void UpdateScrollControllersSeparatorVisualState(bool useTransitions = true, bool scrollControllersAutoHidingChanged = false);
+    void GoToState(std::wstring_view const& stateName, bool useTransitions = true);
+
     void HandleKeyDownForStandardScroll(winrt::KeyRoutedEventArgs);
     void HandleKeyDownForXYNavigation(winrt::KeyRoutedEventArgs);
 
@@ -292,7 +306,7 @@ private:
     winrt::IInspectable m_onVerticalScrollControllerPointerExitedHandler{ nullptr };
 
     winrt::FocusInputDeviceKind m_focusInputDeviceKind{ winrt::FocusInputDeviceKind::None };
-    
+
     bool m_isLeftMouseButtonPressedForFocus{ false };
     
     // Set to True when the mouse scrolling indicators are currently showing.
@@ -304,6 +318,9 @@ private:
     // Set to True to favor mouse indicators over panning indicators for the scroll controllers.
     bool m_preferMouseIndicators{ false };
 
+    // Indicates whether the NoIndicator visual state has a Storyboard for which a completion event was hooked up.
+    bool m_hasNoIndicatorStateStoryboardCompletedHandler{ false };
+
     // Set to the values of IScrollController::IsInteracting.
     bool m_isHorizontalScrollControllerInteracting{ false };
     bool m_isVerticalScrollControllerInteracting{ false };
@@ -312,18 +329,35 @@ private:
     bool m_isPointerOverHorizontalScrollController{ false };
     bool m_isPointerOverVerticalScrollController{ false };
 
-    // Private constants    
+    int m_verticalScrollWithKeyboardDirection{ 0 };
+    int m_verticalScrollWithKeyboardOffsetChangeId{ -1 };
+
+    int m_horizontalScrollWithKeyboardDirection{ 0 };
+    int m_horizontalScrollWithKeyboardOffsetChangeId{ -1 };
+
+    // Private constants
     // 2 seconds delay used to hide the indicators for example when OS animations are turned off.
     static constexpr int64_t s_noIndicatorCountdown = 2000 * 10000; 
 
     static constexpr std::wstring_view s_noIndicatorStateName{ L"NoIndicator"sv };
     static constexpr std::wstring_view s_touchIndicatorStateName{ L"TouchIndicator"sv };
     static constexpr std::wstring_view s_mouseIndicatorStateName{ L"MouseIndicator"sv };
-    static constexpr std::wstring_view s_mouseIndicatorFullStateName{ L"MouseIndicatorFull"sv };
 
-    int m_verticalScrollWithKeyboardDirection = 0;
-    int m_verticalScrollWithKeyboardOffsetChangeId = -1;
+    static constexpr std::wstring_view s_scrollBarsSeparatorExpanded{ L"ScrollBarsSeparatorExpanded"sv };
+    static constexpr std::wstring_view s_scrollBarsSeparatorCollapsed{ L"ScrollBarsSeparatorCollapsed"sv };
+    static constexpr std::wstring_view s_scrollBarsSeparatorCollapsedDisabled{ L"ScrollBarsSeparatorCollapsedDisabled"sv };
+    static constexpr std::wstring_view s_scrollBarsSeparatorCollapsedWithoutAnimation{ L"ScrollBarsSeparatorCollapsedWithoutAnimation"sv };
+    static constexpr std::wstring_view s_scrollBarsSeparatorDisplayedWithoutAnimation{ L"ScrollBarsSeparatorDisplayedWithoutAnimation"sv };
+    static constexpr std::wstring_view s_scrollBarsSeparatorExpandedWithoutAnimation{ L"ScrollBarsSeparatorExpandedWithoutAnimation"sv };
 
-    int m_horizontalScrollWithKeyboardDirection = 0;
-    int m_horizontalScrollWithKeyboardOffsetChangeId = -1;
+    // Used to detect changes for UISettings.AutoHiScrollBars.
+    static winrt::IUISettings5 s_uiSettings5;
+    static winrt::IUISettings5::AutoHideScrollBarsChanged_revoker s_autoHideScrollBarsChangedRevoker;
+
+    // Used on RS4+ to update the visual states when the ScrollBars auto-hiding setting changed.
+    static std::vector<winrt::weak_ref<winrt::ScrollViewer>> s_loadedScrollViewers;
+
+    // Cache of the ScrollControllers auto-hiding setting.
+    static bool s_autoHideScrollControllersValid;
+    static bool s_autoHideScrollControllers;
 };

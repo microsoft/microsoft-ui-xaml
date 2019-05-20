@@ -19,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScrollViewersWithSimpleContentsPage.xaml.cs">
       <DependentUpon>ScrollViewersWithSimpleContentsPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooksHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerWithRTLFlowDirectionPage.xaml.cs">
       <DependentUpon>ScrollViewerWithRTLFlowDirectionPage.xaml</DependentUpon>
     </Compile>

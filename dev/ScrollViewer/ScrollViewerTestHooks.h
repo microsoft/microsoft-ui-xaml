@@ -10,5 +10,20 @@ class ScrollViewerTestHooks :
     public winrt::implementation::ScrollViewerTestHooksT<ScrollViewerTestHooks>
 {
 public:
+    static com_ptr<ScrollViewerTestHooks> GetGlobalTestHooks()
+    {
+        return s_testHooks;
+    }
+
+    static com_ptr<ScrollViewerTestHooks> EnsureGlobalTestHooks();
+
+    static winrt::IReference<bool> AutoHideScrollControllers();
+    static void AutoHideScrollControllers(winrt::IReference<bool> value);
+
     static winrt::Scroller GetScrollerPart(const winrt::ScrollViewer& scrollViewer);
+
+private:
+    static com_ptr<ScrollViewerTestHooks> s_testHooks;
+
+    winrt::IReference<bool> m_autoHideScrollControllers{ nullptr };
 };

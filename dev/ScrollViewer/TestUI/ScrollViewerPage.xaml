@@ -13,6 +13,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -26,6 +27,8 @@
             </ComboBox>
             <CheckBox x:Name="chkIsInteractionTrackerPointerWheelRedirectionEnabled" Margin="2" Grid.ColumnSpan="2" Grid.Row="1"
                 Content="IsInteractionTrackerPointerWheelRedirectionEnabled?" Checked="ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Checked" Unchecked="ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Unchecked"/>
+            <CheckBox x:Name="chkAutoHideScrollControllers" Margin="2" Grid.ColumnSpan="2" Grid.Row="2" IsThreeState="True" IsChecked="{x:Null}"
+                Content="AutoHideScrollControllers?" Indeterminate="ChkAutoHideScrollControllers_Indeterminate" Checked="ChkAutoHideScrollControllers_Checked" Unchecked="ChkAutoHideScrollControllers_Unchecked"/>
         </Grid>
         <Button x:Name="navigateToSimpleContents" AutomationProperties.Name="navigateToSimpleContents" Margin="2" HorizontalAlignment="Stretch">ScrollViewers with simple contents</Button>
         <Button x:Name="navigateToDynamic" AutomationProperties.Name="navigateToDynamic" Margin="2" HorizontalAlignment="Stretch">Exercise ScrollViewer API</Button>

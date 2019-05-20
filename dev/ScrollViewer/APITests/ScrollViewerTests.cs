@@ -3,10 +3,9 @@
 
 using MUXControlsTestApp.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Windows.Foundation;
-using Windows.UI;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Shapes;
 using Windows.UI.Xaml.Media;
@@ -22,6 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
+using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
@@ -260,6 +260,194 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies the ScrollViewer visual state changes based on the AutoHideScrollBars, IsEnabled and ScrollBarVisibility settings.")]
+        public void VerifyVisualStates()
+        {
+            VerifyVisualStates(ScrollBarVisibility.Auto, autoHideScrollControllers: true);
+            VerifyVisualStates(ScrollBarVisibility.Visible, autoHideScrollControllers: true);
+
+            // Non-auto-hiding ScrollControllers are only supported starting with RS4.
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
+            {
+                VerifyVisualStates(ScrollBarVisibility.Auto, autoHideScrollControllers: false);
+                VerifyVisualStates(ScrollBarVisibility.Visible, autoHideScrollControllers: false);
+            }
+        }
+
+        private void VerifyVisualStates(ScrollBarVisibility scrollBarVisibility, bool autoHideScrollControllers)
+        {
+            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer"))
+            {
+                using (ScrollViewerTestHooksHelper scrollViewerTestHooksHelper = new ScrollViewerTestHooksHelper(autoHideScrollControllers))
+                {
+                    ScrollViewerWithCustomVisualStateManager scrollViewer = null;
+                    Rectangle rectangleScrollViewerContent = null;
+                    AutoResetEvent scrollViewerLoadedEvent = new AutoResetEvent(false);
+                    AutoResetEvent scrollViewerUnloadedEvent = new AutoResetEvent(false);                    
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        rectangleScrollViewerContent = new Rectangle();
+                        scrollViewer = new ScrollViewerWithCustomVisualStateManager();
+                        scrollViewer.HorizontalScrollBarVisibility = scrollBarVisibility;
+                        scrollViewer.VerticalScrollBarVisibility = scrollBarVisibility;
+
+                        SetupDefaultUI(scrollViewer, rectangleScrollViewerContent, scrollViewerLoadedEvent, scrollViewerUnloadedEvent);
+                    });
+
+                    WaitForEvent("Waiting for Loaded event", scrollViewerLoadedEvent);
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment("Resetting window content");
+                        MUXControlsTestApp.App.TestContentRoot = null;
+                    });
+
+                    WaitForEvent("Waiting for Unloaded event", scrollViewerUnloadedEvent);
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment($"VerifyVisualStates: isEnabled:True, scrollBarVisibility:{scrollBarVisibility}, autoHideScrollControllers:{autoHideScrollControllers}");
+
+                        VerifyVisualStates(
+                            stateChanges: scrollViewer.StateChanges,
+                            expectedMouseIndicatorStateCount: autoHideScrollControllers ? 0u : 2u,
+                            expectedTouchIndicatorStateCount: 0,
+                            expectedNoIndicatorStateCount: autoHideScrollControllers ? 2u : 0u,
+                            expectedScrollBarsSeparatorCollapsedStateCount: autoHideScrollControllers ? (scrollBarVisibility == ScrollBarVisibility.Auto ? 1u : 2u) : 0u,
+                            expectedScrollBarsSeparatorCollapsedDisabledStateCount: 0,
+                            expectedScrollBarsSeparatorExpandedStateCount: autoHideScrollControllers ? 0u : (scrollBarVisibility == ScrollBarVisibility.Auto ? 1u : 2u),
+                            expectedScrollBarsSeparatorDisplayedWithoutAnimationStateCount: 0,
+                            expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount: 0,
+                            expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount: 0);
+
+                        scrollViewer.StateChanges.Clear();
+
+                        Log.Comment("Disabling ScrollViewer");
+                        scrollViewer.IsEnabled = false;
+                    });
+
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment($"VerifyVisualStates: isEnabled:False, scrollBarVisibility:{scrollBarVisibility}, autoHideScrollControllers:{autoHideScrollControllers}");
+
+                        VerifyVisualStates(
+                            stateChanges: scrollViewer.StateChanges,
+                            expectedMouseIndicatorStateCount: autoHideScrollControllers ? 0u : (scrollBarVisibility == ScrollBarVisibility.Auto ? 1u : 2u),
+                            expectedTouchIndicatorStateCount: 0,
+                            expectedNoIndicatorStateCount: autoHideScrollControllers ? (scrollBarVisibility == ScrollBarVisibility.Auto ? 1u : 2u) : 0u,
+                            expectedScrollBarsSeparatorCollapsedStateCount: 0,
+                            expectedScrollBarsSeparatorCollapsedDisabledStateCount: scrollBarVisibility == ScrollBarVisibility.Auto ? 0u : 2u,
+                            expectedScrollBarsSeparatorExpandedStateCount: 0,
+                            expectedScrollBarsSeparatorDisplayedWithoutAnimationStateCount: 0,
+                            expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount: 0,
+                            expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount: 0);
+
+                        scrollViewer.StateChanges.Clear();
+
+                        Log.Comment("Enabling ScrollViewer");
+                        scrollViewer.IsEnabled = true;
+                    });
+
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment($"VerifyVisualStates: isEnabled:True, scrollBarVisibility:{scrollBarVisibility}, autoHideScrollControllers:{autoHideScrollControllers}");
+
+                        VerifyVisualStates(
+                            stateChanges: scrollViewer.StateChanges,
+                            expectedMouseIndicatorStateCount: autoHideScrollControllers ? 0u : 2u,
+                            expectedTouchIndicatorStateCount: 0,
+                            expectedNoIndicatorStateCount: autoHideScrollControllers ? 2u : 0u,
+                            expectedScrollBarsSeparatorCollapsedStateCount: autoHideScrollControllers ? (scrollBarVisibility == ScrollBarVisibility.Auto ? 1u : 2u) : 0u,
+                            expectedScrollBarsSeparatorCollapsedDisabledStateCount: 0,
+                            expectedScrollBarsSeparatorExpandedStateCount: autoHideScrollControllers ? 0u : (scrollBarVisibility == ScrollBarVisibility.Auto ? 1u : 2u),
+                            expectedScrollBarsSeparatorDisplayedWithoutAnimationStateCount: 0,
+                            expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount: 0,
+                            expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount: 0);
+                    });
+                }
+            }
+        }
+
+        private void VerifyVisualStates(
+            List<StateChange> stateChanges,
+            uint expectedMouseIndicatorStateCount,
+            uint expectedTouchIndicatorStateCount,
+            uint expectedNoIndicatorStateCount,
+            uint expectedScrollBarsSeparatorCollapsedStateCount,
+            uint expectedScrollBarsSeparatorCollapsedDisabledStateCount,
+            uint expectedScrollBarsSeparatorExpandedStateCount,
+            uint expectedScrollBarsSeparatorDisplayedWithoutAnimationStateCount,
+            uint expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount,
+            uint expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount)
+        {
+            uint mouseIndicatorStateCount = 0;
+            uint touchIndicatorStateCount = 0;
+            uint noIndicatorStateCount = 0;
+
+            uint scrollBarsSeparatorCollapsedStateCount = 0;
+            uint scrollBarsSeparatorCollapsedDisabledStateCount = 0;
+            uint scrollBarsSeparatorExpandedStateCount = 0;
+
+            uint scrollBarsSeparatorDisplayedWithoutAnimationStateCount = 0;
+            uint scrollBarsSeparatorExpandedWithoutAnimationStateCount = 0;
+            uint scrollBarsSeparatorCollapsedWithoutAnimationStateCount = 0;
+
+            foreach (StateChange stateChange in stateChanges)
+            {
+                Log.Comment($"StateChange: stateName:{stateChange.StateName}, group:{stateChange.Group.Name}, useTransitions:{stateChange.UseTransitions}");
+
+                switch (stateChange.StateName)
+                {
+                    case "MouseIndicator":
+                        mouseIndicatorStateCount++;
+                        break;
+                    case "TouchIndicator":
+                        touchIndicatorStateCount++;
+                        break;
+                    case "NoIndicator":
+                        noIndicatorStateCount++;
+                        break;
+                    case "ScrollBarsSeparatorCollapsed":
+                        scrollBarsSeparatorCollapsedStateCount++;
+                        break;
+                    case "ScrollBarsSeparatorCollapsedDisabled":
+                        scrollBarsSeparatorCollapsedDisabledStateCount++;
+                        break;
+                    case "ScrollBarsSeparatorExpanded":
+                        scrollBarsSeparatorExpandedStateCount++;
+                        break;
+                    case "ScrollBarsSeparatorDisplayedWithoutAnimation":
+                        scrollBarsSeparatorDisplayedWithoutAnimationStateCount++;
+                        break;
+                    case "ScrollBarsSeparatorExpandedWithoutAnimation":
+                        scrollBarsSeparatorExpandedWithoutAnimationStateCount++;
+                        break;
+                    case "ScrollBarsSeparatorCollapsedWithoutAnimation":
+                        scrollBarsSeparatorCollapsedWithoutAnimationStateCount++;
+                        break;
+                    default:
+                        Verify.Fail("Unexpected ScrollViewer StateName");
+                        break;
+                }
+            }
+
+            Verify.AreEqual(expectedMouseIndicatorStateCount, mouseIndicatorStateCount);
+            Verify.AreEqual(expectedTouchIndicatorStateCount, touchIndicatorStateCount);
+            Verify.AreEqual(expectedNoIndicatorStateCount, noIndicatorStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedStateCount, scrollBarsSeparatorCollapsedStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedDisabledStateCount, scrollBarsSeparatorCollapsedDisabledStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorExpandedStateCount, scrollBarsSeparatorExpandedStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorDisplayedWithoutAnimationStateCount, scrollBarsSeparatorDisplayedWithoutAnimationStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount, scrollBarsSeparatorExpandedWithoutAnimationStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount, scrollBarsSeparatorCollapsedWithoutAnimationStateCount);
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies anchor candidate registration and unregistration.")]
         public void VerifyAnchorCandidateRegistration()
         {
@@ -413,11 +601,97 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             if (args.IsVerboseLevel)
             {
-                Log.Comment("  Verbose: " + senderName + "m:" + msg);
+                Log.Comment($"  Verbose: {senderName}m:{msg}");
             }
             else
             {
-                Log.Comment("  Info:    " + senderName + "m:" + msg);
+                Log.Comment($"  Info:    {senderName}m:{msg}");
+            }
+        }
+    }
+
+    public struct StateChange
+    {
+        public StateChange(FrameworkElement templateRoot, string stateName, VisualStateGroup group, VisualState state, bool useTransitions)
+        {
+            TemplateRoot = templateRoot;
+            StateName = stateName;
+            Group = group;
+            State = state;
+            UseTransitions = useTransitions;
+        }
+
+        public FrameworkElement TemplateRoot;
+        public string StateName;
+        public VisualStateGroup Group;
+        public VisualState State;
+        public bool UseTransitions;
+    }
+
+    // Custom VisualStateManager used to record all visual state changes of a ScrollViewer.
+    public class CustomScrollViewerVisualStateManager : VisualStateManager
+    {
+        public CustomScrollViewerVisualStateManager(ScrollViewerWithCustomVisualStateManager customScrollViewer)
+        {
+            CustomScrollViewer = customScrollViewer;
+        }
+
+        private ScrollViewerWithCustomVisualStateManager CustomScrollViewer
+        {
+            get;
+            set;
+        }
+
+        protected override bool GoToStateCore(Control control, FrameworkElement templateRoot, string stateName, VisualStateGroup group, VisualState state, bool useTransitions)
+        {
+            string controlName = control == null ? string.Empty : control.Name;
+
+            Log.Comment($"CustomScrollViewerVisualStateManager control:{controlName}, stateName:{stateName}, group:{group.Name}, useTransitions:{useTransitions}");
+
+            if (CustomScrollViewer != null)
+            {
+                CustomScrollViewer.OnGoToState(control, templateRoot, stateName, group, state, useTransitions);
+            }
+
+            return base.GoToStateCore(control, templateRoot, stateName, group, state, useTransitions);
+        }
+    }
+
+    // Custom ScrollViewer that records its visual state changes.
+    public class ScrollViewerWithCustomVisualStateManager : ScrollViewer
+    {
+        public ScrollViewerWithCustomVisualStateManager()
+        {
+            CustomScrollViewerVisualStateManager = new CustomScrollViewerVisualStateManager(this);
+            StateChanges = new List<StateChange>();
+        }
+
+        public CustomScrollViewerVisualStateManager CustomScrollViewerVisualStateManager
+        {
+            get;
+            private set;
+        }
+
+        public List<StateChange> StateChanges
+        {
+            get;
+            private set;
+        }
+
+        public void OnGoToState(Control control, FrameworkElement templateRoot, string stateName, VisualStateGroup group, VisualState state, bool useTransitions)
+        {
+            StateChanges.Add(new StateChange(templateRoot, stateName, group, state, useTransitions));
+        }
+
+        protected override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+
+            var layoutRoot = GetTemplateChild("PART_Root") as FrameworkElement;
+
+            if (layoutRoot != null)
+            {
+                VisualStateManager.SetCustomVisualStateManager(layoutRoot, CustomScrollViewerVisualStateManager);
             }
         }
     }

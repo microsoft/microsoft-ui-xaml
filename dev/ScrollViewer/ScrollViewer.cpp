@@ -8,6 +8,7 @@
 #include "Scroller.h"
 #include "RuntimeProfiler.h"
 #include "FocusHelper.h"
+#include "RegUtil.h"
 #include "ScrollViewerTestHooks.h"
 
 // Change to 'true' to turn on debugging outputs in Output window
@@ -17,12 +18,19 @@ bool ScrollViewerTrace::s_IsVerboseDebugOutputEnabled{ false };
 const winrt::ScrollInfo ScrollViewer::s_noOpScrollInfo{ -1 };
 const winrt::ZoomInfo ScrollViewer::s_noOpZoomInfo{ -1 };
 
+std::vector<winrt::weak_ref<winrt::ScrollViewer>> ScrollViewer::s_loadedScrollViewers{};
+winrt::IUISettings5 ScrollViewer::s_uiSettings5{ nullptr };
+winrt::IUISettings5::AutoHideScrollBarsChanged_revoker ScrollViewer::s_autoHideScrollBarsChangedRevoker{};
+bool ScrollViewer::s_autoHideScrollControllersValid{ false };
+bool ScrollViewer::s_autoHideScrollControllers{ false };
+
 ScrollViewer::ScrollViewer()
 {
     SCROLLVIEWER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     EnsureProperties();
     SetDefaultStyleKey(this);
+    HookUISettingsEvent();
     HookScrollViewerEvents();
 }
 
@@ -32,7 +40,7 @@ ScrollViewer::~ScrollViewer()
 
     UnhookScrollerEvents(true /*isForDestructor*/);
     UnhookScrollViewerEvents();
-    StopHideIndicatorsTimer(true /*isForDestructor*/);
+    ResetHideIndicatorsTimer(true /*isForDestructor*/);
 }
 
 #pragma region IScrollViewer
@@ -344,6 +352,19 @@ void ScrollViewer::OnApplyTemplate()
 
     __super::OnApplyTemplate();
 
+    if (SharedHelpers::IsRS4OrHigher())
+    {
+        const auto it = GetLoadedScrollViewer();
+
+        if (it == s_loadedScrollViewers.cend())
+        {
+            const auto scrollViewer = winrt::make_weak<winrt::ScrollViewer>(*this);
+
+            s_loadedScrollViewers.push_back(scrollViewer);
+        }
+    }
+
+    m_hasNoIndicatorStateStoryboardCompletedHandler = false;
     m_keepIndicatorsShowing = false;
 
     winrt::IControlProtected thisAsControlProtected = *this;
@@ -452,8 +473,9 @@ void ScrollViewer::OnApplyTemplate()
                                     if (stateName == s_noIndicatorStateName)
                                     {
                                         winrt::event_token noIndicatorStateStoryboardCompletedToken = stateStoryboard.Completed({ this, &ScrollViewer::OnNoIndicatorStateStoryboardCompleted });
+                                        m_hasNoIndicatorStateStoryboardCompletedHandler = true;
                                     }
-                                    else if (stateName == s_touchIndicatorStateName || stateName == s_mouseIndicatorStateName || stateName == s_mouseIndicatorFullStateName)
+                                    else if (stateName == s_touchIndicatorStateName || stateName == s_mouseIndicatorStateName)
                                     {
                                         winrt::event_token indicatorStateStoryboardCompletedToken = stateStoryboard.Completed({ this, &ScrollViewer::OnIndicatorStateStoryboardCompleted });
                                     }
@@ -466,7 +488,7 @@ void ScrollViewer::OnApplyTemplate()
         }
     }
 
-    HideIndicators(false /*useTransitions*/);
+    UpdateVisualStates(false /*useTransitions*/);
 }
 
 #pragma endregion
@@ -483,10 +505,126 @@ void ScrollViewer::OnGotFocus(winrt::RoutedEventArgs const& args)
         m_focusInputDeviceKind == winrt::FocusInputDeviceKind::Mouse ||
         m_focusInputDeviceKind == winrt::FocusInputDeviceKind::Pen;
 
-    ShowIndicators();
+    UpdateScrollControllersAutoHiding();
+    if (AreScrollControllersAutoHiding())
+    {
+        UpdateVisualStates(true /*useTransitions*/, true /*showIndicators*/);
+    }
 }
 
 #pragma endregion
+
+bool ScrollViewer::AreScrollControllersAutoHiding()
+{
+    // Use the cached value unless it was invalidated.
+    if (s_autoHideScrollControllersValid)
+    {
+        return s_autoHideScrollControllers;
+    }
+
+    s_autoHideScrollControllersValid = true;
+
+    if (SharedHelpers::IsRS4OrHigher())
+    {
+        com_ptr<ScrollViewerTestHooks> globalTestHooks = ScrollViewerTestHooks::GetGlobalTestHooks();
+
+        if (globalTestHooks)
+        {
+            winrt::IReference<bool> autoHideScrollControllers = globalTestHooks->AutoHideScrollControllers();
+
+            if (autoHideScrollControllers)
+            {
+                // Test hook takes precedence over UISettings and registry key settings.
+                s_autoHideScrollControllers = autoHideScrollControllers.Value();
+                return s_autoHideScrollControllers;
+            }
+        }
+    }
+
+    if (s_uiSettings5)
+    {
+        // Use the 19H1+ UISettings property.
+        s_autoHideScrollControllers = s_uiSettings5.AutoHideScrollBars();
+    }
+    else if (SharedHelpers::IsRS4OrHigher())
+    {
+        // Use the RS4+ registry key HKEY_CURRENT_USER\Control Panel\Accessibility\DynamicScrollbars
+        s_autoHideScrollControllers = RegUtil::UseDynamicScrollbars();
+    }
+    else
+    {
+        // ScrollBars are auto-hiding prior to RS4.
+        s_autoHideScrollControllers = true;
+    }
+
+    return s_autoHideScrollControllers;
+}
+
+void ScrollViewer::OnAutoHideScrollBarsChanged(
+    winrt::UISettings const& uiSettings,
+    winrt::UISettingsAutoHideScrollBarsChangedEventArgs const& args)
+{
+    MUX_ASSERT(SharedHelpers::IsRS4OrHigher());
+
+    // OnAutoHideScrollBarsChanged is called on a non-UI thread, process notification on the UI thread using a dispatcher.
+    for (winrt::weak_ref<winrt::ScrollViewer> const& loadedScrollViewer : s_loadedScrollViewers)
+    {
+        const auto scrollViewer = loadedScrollViewer.get();
+
+        if (scrollViewer)
+        {
+            DispatcherHelper dispatcherHelper(scrollViewer);
+
+            dispatcherHelper.RunAsync([]()
+            {
+                s_autoHideScrollControllersValid = false;
+
+                ProcessScrollControllersAutoHidingChange();
+            });
+            break;
+        }
+    }
+}
+
+void ScrollViewer::ProcessScrollControllersAutoHidingChange()
+{
+    SCROLLVIEWER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, nullptr);
+
+    MUX_ASSERT(SharedHelpers::IsRS4OrHigher());
+
+    for (winrt::weak_ref<winrt::ScrollViewer> const& loadedScrollViewer : s_loadedScrollViewers)
+    {
+        ScrollViewer* scrollViewer = winrt::get_self<ScrollViewer>(loadedScrollViewer.get());
+
+        if (scrollViewer)
+        {
+            scrollViewer->UpdateVisualStates(
+                true  /*useTransitions*/,
+                false /*showIndicators*/,
+                false /*hideIndicators*/,
+                true  /*scrollControllersAutoHidingChanged*/);
+        }
+    }
+}
+
+// On RS4 and RS5, update s_autoHideScrollControllers based on the DynamicScrollbars registry key value
+// and update the visual states if the value changed.
+void ScrollViewer::UpdateScrollControllersAutoHiding(
+    bool forceUpdate)
+{
+    if ((forceUpdate || (!s_uiSettings5 && SharedHelpers::IsRS4OrHigher())) && s_autoHideScrollControllersValid)
+    {
+        s_autoHideScrollControllersValid = false;
+
+        bool oldAutoHideScrollControllers = s_autoHideScrollControllers;
+        bool newAutoHideScrollControllers = AreScrollControllersAutoHiding();
+
+        if (oldAutoHideScrollControllers != newAutoHideScrollControllers)
+        {
+            ProcessScrollControllersAutoHidingChange();
+        }
+    }
+}
 
 void ScrollViewer::OnScrollViewerGettingFocus(
     const winrt::IInspectable& /*sender*/,
@@ -503,10 +641,8 @@ void ScrollViewer::OnScrollViewerIsEnabledChanged(
 {
     SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    if (!IsEnabled())
-    {
-        HideIndicators(true /*useTransitions*/);
-    }
+    UpdateScrollControllersAutoHiding();
+    UpdateVisualStates();
 }
 
 void ScrollViewer::OnScrollViewerUnloaded(
@@ -515,8 +651,22 @@ void ScrollViewer::OnScrollViewerUnloaded(
 {
     SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    m_showingMouseIndicators = false;
-    m_keepIndicatorsShowing = false;
+    if (!IsLoaded())
+    {
+        m_showingMouseIndicators = false;
+        m_keepIndicatorsShowing = false;
+        ResetHideIndicatorsTimer();
+
+        if (SharedHelpers::IsRS4OrHigher())
+        {
+            const auto it = GetLoadedScrollViewer();
+
+            if (it != s_loadedScrollViewers.cend())
+            {
+                s_loadedScrollViewers.erase(it);
+            }
+        }
+    }
 }
 
 void ScrollViewer::OnScrollViewerPointerEntered(
@@ -529,7 +679,12 @@ void ScrollViewer::OnScrollViewerPointerEntered(
     {
         // Mouse/Pen inputs dominate. If touch panning indicators are shown, switch to mouse indicators.
         m_preferMouseIndicators = true;
-        ShowIndicators();
+
+        UpdateScrollControllersAutoHiding();
+        if (AreScrollControllersAutoHiding())
+        {
+            UpdateVisualStates(true /*useTransitions*/, true /*showIndicators*/);
+        }
     }
 }
 
@@ -547,13 +702,17 @@ void ScrollViewer::OnScrollViewerPointerMoved(
     {
         // Mouse/Pen inputs dominate. If touch panning indicators are shown, switch to mouse indicators.
         m_preferMouseIndicators = true;
-        ShowIndicators();
 
-        if (!SharedHelpers::IsAnimationsEnabled() &&
-            m_hideIndicatorsTimer &&
-            (m_isPointerOverHorizontalScrollController || m_isPointerOverVerticalScrollController))
+        if (AreScrollControllersAutoHiding())
         {
-            StopHideIndicatorsTimer(false /*isForDestructor*/);
+            UpdateVisualStates(true /*useTransitions*/, true /*showIndicators*/);
+
+            if (!SharedHelpers::IsAnimationsEnabled() &&
+                m_hideIndicatorsTimer &&
+                (m_isPointerOverHorizontalScrollController || m_isPointerOverVerticalScrollController))
+            {
+                ResetHideIndicatorsTimer();
+            }
         }
     }
 }
@@ -570,9 +729,14 @@ void ScrollViewer::OnScrollViewerPointerExited(
         m_isPointerOverHorizontalScrollController = false;
         m_isPointerOverVerticalScrollController = false;
         m_preferMouseIndicators = true;
-        ShowIndicators();
 
-        HideIndicatorsAfterDelay();
+        UpdateScrollControllersAutoHiding();
+        if (AreScrollControllersAutoHiding())
+        {
+            UpdateVisualStates(true /*useTransitions*/, true /*showIndicators*/);
+
+            HideIndicatorsAfterDelay();
+        }
     }
 }
 
@@ -595,8 +759,12 @@ void ScrollViewer::OnScrollViewerPointerPressed(
         m_isLeftMouseButtonPressedForFocus = pointerPointProperties.IsLeftButtonPressed();
     }
 
-    // Show the scroll controller indicators as soon as a pointer is pressed on the ScrollViewer.
-    ShowIndicators();
+    UpdateScrollControllersAutoHiding();
+    if (AreScrollControllersAutoHiding())
+    {
+        // Show the scroll controller indicators as soon as a pointer is pressed on the ScrollViewer.
+        UpdateVisualStates(true /*useTransitions*/, true /*showIndicators*/);
+    }
 }
 
 void ScrollViewer::OnScrollViewerPointerReleased(
@@ -665,7 +833,8 @@ void ScrollViewer::OnVerticalScrollControllerPointerEntered(
 
     m_isPointerOverVerticalScrollController = true;
 
-    if (!SharedHelpers::IsAnimationsEnabled())
+    UpdateScrollControllersAutoHiding();
+    if (AreScrollControllersAutoHiding() && !SharedHelpers::IsAnimationsEnabled())
     {
         HideIndicatorsAfterDelay();
     }
@@ -679,7 +848,11 @@ void ScrollViewer::OnVerticalScrollControllerPointerExited(
 
     m_isPointerOverVerticalScrollController = false;
 
-    HideIndicatorsAfterDelay();
+    UpdateScrollControllersAutoHiding();
+    if (AreScrollControllersAutoHiding())
+    {
+        HideIndicatorsAfterDelay();
+    }
 }
 
 // Handler for when the NoIndicator state's storyboard completes animating.
@@ -689,10 +862,12 @@ void ScrollViewer::OnNoIndicatorStateStoryboardCompleted(
 {
     SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
+    MUX_ASSERT(m_hasNoIndicatorStateStoryboardCompletedHandler);
+
     m_showingMouseIndicators = false;
 }
 
-// Handler for when a TouchIndicator, MouseIndicator or MouseIndicatorFull state's storyboard completes animating.
+// Handler for when a TouchIndicator or MouseIndicator state's storyboard completes animating.
 void ScrollViewer::OnIndicatorStateStoryboardCompleted(
     const winrt::IInspectable& /*sender*/,
     const winrt::IInspectable& /*args*/)
@@ -700,26 +875,25 @@ void ScrollViewer::OnIndicatorStateStoryboardCompleted(
     SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     // If the cursor is currently directly over either scroll controller then do not automatically hide the indicators
-    if (!m_keepIndicatorsShowing &&
+    if (AreScrollControllersAutoHiding() &&
+        !m_keepIndicatorsShowing &&
         !m_isPointerOverVerticalScrollController &&
         !m_isPointerOverHorizontalScrollController)
     {
-        // Go to the NoIndicator state using transitions.
-        if (SharedHelpers::IsAnimationsEnabled())
-        {
-            // By default there is a delay before the NoIndicator state actually shows.
-            HideIndicators(true /*useTransitions*/);
-        }
-        else
-        {
-            // Since OS animations are turned off, use a timer to delay the indicators' hiding.
-            HideIndicatorsAfterDelay();
-        }
+        UpdateScrollControllersVisualState(true /*useTransitions*/, false /*showIndicators*/, true /*hideIndicators*/);
     }
 }
 
 // Invoked by ScrollViewerTestHooks
-winrt::Scroller ScrollViewer::GetScrollerPart()
+void ScrollViewer::ScrollControllersAutoHidingChanged()
+{
+    if (SharedHelpers::IsRS4OrHigher())
+    {
+        UpdateScrollControllersAutoHiding(true /*forceUpdate*/);
+    }
+}
+
+winrt::Scroller ScrollViewer::GetScrollerPart() const
 {
     return safe_cast<winrt::Scroller>(m_scroller.get());
 }
@@ -733,7 +907,6 @@ void ScrollViewer::ValidateZoomFactoryBoundary(double value)
 {
     Scroller::ValidateZoomFactoryBoundary(value);
 }
-
 
 // Invoked when a dependency property of this ScrollViewer has changed.
 void ScrollViewer::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -750,6 +923,8 @@ void ScrollViewer::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
     if (horizontalChange || verticalChange)
     {
         UpdateScrollControllersVisibility(horizontalChange, verticalChange);
+        UpdateScrollControllersAutoHiding();
+        UpdateVisualStates();
     }
 }
 
@@ -757,65 +932,67 @@ void ScrollViewer::OnScrollControllerInteractionInfoChanged(
     const winrt::IScrollController& sender,
     const winrt::IInspectable& /*args*/)
 {
+    bool isScrollControllerInteracting = sender.IsInteracting();
+    bool showIndicators = false;
+    bool hideIndicators = false;
+
     if (m_horizontalScrollController && m_horizontalScrollController == sender)
     {
-        bool isHorizontalScrollControllerInteracting = sender.IsInteracting();
+        UpdateScrollControllersAutoHiding();
 
-        if (m_isHorizontalScrollControllerInteracting != isHorizontalScrollControllerInteracting)
+        if (m_isHorizontalScrollControllerInteracting != isScrollControllerInteracting)
         {
-            SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT_INT, METH_NAME, this, L"HorizontalScrollController.IsInteracting changed: ", m_isHorizontalScrollControllerInteracting, isHorizontalScrollControllerInteracting);
+            SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT_INT, METH_NAME, this, L"HorizontalScrollController.IsInteracting changed: ", m_isHorizontalScrollControllerInteracting, isScrollControllerInteracting);
 
-            m_isHorizontalScrollControllerInteracting = isHorizontalScrollControllerInteracting;
+            m_isHorizontalScrollControllerInteracting = isScrollControllerInteracting;
 
-            if (isHorizontalScrollControllerInteracting)
+            if (isScrollControllerInteracting)
             {
                 // Prevent the vertical scroll controller from fading out while the user is interacting with the horizontal one.
                 m_keepIndicatorsShowing = true;
-
-                ShowIndicators();
+                showIndicators = true;
             }
             else
             {
-                // Make the scroll controllers fade out, after the normal delay.
+                // Make the scroll controllers fade out, after the normal delay, if they are auto-hiding.
                 m_keepIndicatorsShowing = false;
-
-                HideIndicators(true /*useTransitions*/);
+                hideIndicators = AreScrollControllersAutoHiding();
             }
         }
 
         // IScrollController::AreInteractionsAllowed might have changed and affect the scroll controller's visibility
         // when its visibility mode is Auto.
         UpdateScrollControllersVisibility(true /*horizontalChange*/, false /*verticalChange*/);
+        UpdateVisualStates(true /*useTransitions*/, showIndicators, hideIndicators);
     }
     else if (m_verticalScrollController && m_verticalScrollController == sender)
     {
-        bool isVerticalScrollControllerInteracting = sender.IsInteracting();
+        UpdateScrollControllersAutoHiding();
 
-        if (m_isVerticalScrollControllerInteracting != isVerticalScrollControllerInteracting)
+        if (m_isVerticalScrollControllerInteracting != isScrollControllerInteracting)
         {
-            SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT_INT, METH_NAME, this, L"VerticalScrollController.IsInteracting changed: ", m_isVerticalScrollControllerInteracting, isVerticalScrollControllerInteracting);
+            SCROLLVIEWER_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT_INT, METH_NAME, this, L"VerticalScrollController.IsInteracting changed: ", m_isVerticalScrollControllerInteracting, isScrollControllerInteracting);
 
-            m_isVerticalScrollControllerInteracting = isVerticalScrollControllerInteracting;
+            m_isVerticalScrollControllerInteracting = isScrollControllerInteracting;
 
-            if (isVerticalScrollControllerInteracting)
+            if (isScrollControllerInteracting)
             {
                 // Prevent the horizontal scroll controller from fading out while the user is interacting with the vertical one.
                 m_keepIndicatorsShowing = true;
-
-                ShowIndicators();
+                showIndicators = true;
             }
             else
             {
-                // Make the scroll controllers fade out, after the normal delay.
+                // Make the scroll controllers fade out, after the normal delay, if they are auto-hiding.
                 m_keepIndicatorsShowing = false;
-
-                HideIndicators(true /*useTransitions*/);
+                hideIndicators = AreScrollControllersAutoHiding();
             }
         }
 
         // IScrollController::AreInteractionsAllowed might have changed and affect the scroll controller's visibility
         // when its visibility mode is Auto.
         UpdateScrollControllersVisibility(false /*horizontalChange*/, true /*verticalChange*/);
+        UpdateVisualStates(true /*useTransitions*/, showIndicators, hideIndicators);
     }
 }
 
@@ -825,8 +1002,12 @@ void ScrollViewer::OnHideIndicatorsTimerTick(
 {
     SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    StopHideIndicatorsTimer(false /*isForDestructor*/);
-    HideIndicators(true /*useTransitions*/);
+    ResetHideIndicatorsTimer();
+
+    if (AreScrollControllersAutoHiding())
+    {
+        HideIndicators();
+    }
 }
 
 void ScrollViewer::OnScrollerExtentChanged(
@@ -891,9 +1072,9 @@ void ScrollViewer::OnScrollerViewChanged(
 {
     // Unless the control is still loading, show the scroll controller indicators when the view changes. For example,
     // when using Ctrl+/- to zoom, mouse-wheel to scroll or zoom, or any other input type. Keep the existing indicator type.
-    if (IsLoaded())
+    if (IsLoaded() && AreScrollControllersAutoHiding())
     {
-        ShowIndicators();
+        UpdateVisualStates(true /*useTransitions*/, true /*showIndicators*/);
     }
 
     if (m_viewChangedEventSource)
@@ -979,13 +1160,34 @@ void ScrollViewer::OnScrollerPropertyChanged(
 }
 #endif
 
-void ScrollViewer::StopHideIndicatorsTimer(bool isForDestructor)
+void ScrollViewer::ResetHideIndicatorsTimer(bool isForDestructor, bool restart)
 {
-    winrt::DispatcherTimer hideIndicatorsTimer = m_hideIndicatorsTimer.safe_get(isForDestructor /*useSafeGet*/);
+    auto hideIndicatorsTimer = m_hideIndicatorsTimer.safe_get(isForDestructor /*useSafeGet*/);
 
     if (hideIndicatorsTimer && hideIndicatorsTimer.IsEnabled())
     {
         hideIndicatorsTimer.Stop();
+        if (restart)
+        {
+            hideIndicatorsTimer.Start();
+        }
+    }
+}
+
+void ScrollViewer::HookUISettingsEvent()
+{
+    // Introduced in 19H1, IUISettings5 exposes the AutoHideScrollBars property and AutoHideScrollBarsChanged event.
+    if (!s_uiSettings5)
+    {
+        winrt::UISettings uiSettings;
+
+        s_uiSettings5 = uiSettings.try_as<winrt::IUISettings5>();
+        if (s_uiSettings5)
+        {
+            s_autoHideScrollBarsChangedRevoker = s_uiSettings5.AutoHideScrollBarsChanged(
+                winrt::auto_revoke,
+                { &ScrollViewer::OnAutoHideScrollBarsChanged });
+        }
     }
 }
 
@@ -1451,7 +1653,17 @@ void ScrollViewer::UpdateScrollControllersVisibility(
     }
 }
 
-bool ScrollViewer::IsLoaded()
+const std::vector<winrt::weak_ref<winrt::ScrollViewer>>::const_iterator ScrollViewer::GetLoadedScrollViewer() const
+{
+    MUX_ASSERT(SharedHelpers::IsRS4OrHigher());
+
+    const auto it = std::find_if(s_loadedScrollViewers.cbegin(), s_loadedScrollViewers.cend(), [this](winrt::weak_ref<winrt::ScrollViewer> const& sv)
+        { return winrt::get_self<ScrollViewer>(sv.get()) == this; });
+
+    return it;
+}
+
+bool ScrollViewer::IsLoaded() const
 {
     return winrt::VisualTreeHelper::GetParent(*this) != nullptr;
 }
@@ -1461,75 +1673,46 @@ bool ScrollViewer::IsInputKindIgnored(winrt::InputKind const& inputKind)
     return (IgnoredInputKind() & inputKind) == inputKind;
 }
 
-bool ScrollViewer::AreAllScrollControllersCollapsed()
+bool ScrollViewer::AreAllScrollControllersCollapsed() const
 {
     return (!m_horizontalScrollControllerElement || m_horizontalScrollControllerElement.get().Visibility() == winrt::Visibility::Collapsed) &&
            (!m_verticalScrollControllerElement || m_verticalScrollControllerElement.get().Visibility() == winrt::Visibility::Collapsed);
 }
 
-bool ScrollViewer::AreBothScrollControllersVisible()
+bool ScrollViewer::AreBothScrollControllersVisible() const
 {
     return m_horizontalScrollControllerElement && m_horizontalScrollControllerElement.get().Visibility() == winrt::Visibility::Visible &&
            m_verticalScrollControllerElement && m_verticalScrollControllerElement.get().Visibility() == winrt::Visibility::Visible;
 }
 
-// Show the appropriate scrolling indicators.
-void ScrollViewer::ShowIndicators()
+bool ScrollViewer::IsScrollControllersSeparatorVisible() const
 {
-    if (!AreAllScrollControllersCollapsed())
-    {
-        if (m_hideIndicatorsTimer)
-        {
-            winrt::DispatcherTimer hideIndicatorsTimer = m_hideIndicatorsTimer.get();
-
-            if (hideIndicatorsTimer.IsEnabled())
-            {
-                hideIndicatorsTimer.Stop();
-                hideIndicatorsTimer.Start();
-            }
-        }
-
-        // Mouse indicators dominate if they are already showing or if we have set the flag to prefer them.
-        if (m_preferMouseIndicators || m_showingMouseIndicators)
-        {
-            if (AreBothScrollControllersVisible() && (m_isPointerOverHorizontalScrollController || m_isPointerOverVerticalScrollController))
-            {
-                winrt::VisualStateManager::GoToState(*this, s_mouseIndicatorFullStateName, true /*useTransitions*/);
-
-                SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, s_mouseIndicatorFullStateName);
-            }
-            else
-            {
-                winrt::VisualStateManager::GoToState(*this, s_mouseIndicatorStateName, true /*useTransitions*/);
-
-                SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, s_mouseIndicatorStateName);
-            }
-
-            m_showingMouseIndicators = true;
-        }
-        else
-        {
-            winrt::VisualStateManager::GoToState(*this, s_touchIndicatorStateName, true /*useTransitions*/);
-
-            SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, s_touchIndicatorStateName);
-        }
-    }
+    return m_scrollControllersSeparatorElement && m_scrollControllersSeparatorElement.get().Visibility() == winrt::Visibility::Visible;
 }
 
 void ScrollViewer::HideIndicators(
     bool useTransitions)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_INT_INT, METH_NAME, this, s_noIndicatorStateName, useTransitions, m_keepIndicatorsShowing);
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, useTransitions, m_keepIndicatorsShowing);
 
-    if (!m_keepIndicatorsShowing)
+    MUX_ASSERT(AreScrollControllersAutoHiding());
+
+    if (!AreAllScrollControllersCollapsed() && !m_keepIndicatorsShowing)
     {
-        winrt::VisualStateManager::GoToState(*this, s_noIndicatorStateName, useTransitions);
+        GoToState(s_noIndicatorStateName, useTransitions);
+
+        if (!m_hasNoIndicatorStateStoryboardCompletedHandler)
+        {
+            m_showingMouseIndicators = false;
+        }
     }
 }
 
 void ScrollViewer::HideIndicatorsAfterDelay()
 {
     SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, m_keepIndicatorsShowing);
+
+    MUX_ASSERT(AreScrollControllersAutoHiding());
 
     if (!m_keepIndicatorsShowing)
     {
@@ -1553,6 +1736,137 @@ void ScrollViewer::HideIndicatorsAfterDelay()
 
         hideIndicatorsTimer.Start();
     }
+}
+
+void ScrollViewer::UpdateVisualStates(
+    bool useTransitions,
+    bool showIndicators,
+    bool hideIndicators,
+    bool scrollControllersAutoHidingChanged)
+{
+    UpdateScrollControllersVisualState(useTransitions, showIndicators, hideIndicators);
+    UpdateScrollControllersSeparatorVisualState(useTransitions, scrollControllersAutoHidingChanged);
+}
+
+// Updates the state for the ScrollingIndicatorStates state group.
+void ScrollViewer::UpdateScrollControllersVisualState(
+    bool useTransitions,
+    bool showIndicators,
+    bool hideIndicators)
+{
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, useTransitions);
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, showIndicators, hideIndicators);
+
+    MUX_ASSERT(!(showIndicators && hideIndicators));
+
+    bool areScrollControllersAutoHiding = AreScrollControllersAutoHiding();
+
+    MUX_ASSERT(!(!areScrollControllersAutoHiding && hideIndicators));
+
+    if ((!areScrollControllersAutoHiding || showIndicators) && !hideIndicators)
+    {
+        if (AreAllScrollControllersCollapsed())
+        {
+            return;
+        }
+
+        ResetHideIndicatorsTimer(false /*isForDestructor*/, true /*restart*/);
+
+        // Mouse indicators dominate if they are already showing or if we have set the flag to prefer them.
+        if (m_preferMouseIndicators || m_showingMouseIndicators || !areScrollControllersAutoHiding)
+        {
+            GoToState(s_mouseIndicatorStateName, useTransitions);
+
+            m_showingMouseIndicators = true;
+        }
+        else
+        {
+            GoToState(s_touchIndicatorStateName, useTransitions);
+        }
+    }
+    else if (!m_keepIndicatorsShowing)
+    {
+        if (SharedHelpers::IsAnimationsEnabled())
+        {
+            // By default there is a delay before the NoIndicator state actually shows.
+            HideIndicators();
+        }
+        else
+        {
+            // Since OS animations are turned off, use a timer to delay the indicators' hiding.
+            HideIndicatorsAfterDelay();
+        }
+    }
+}
+
+// Updates the state for the ScrollBarsSeparatorStates state group.
+void ScrollViewer::UpdateScrollControllersSeparatorVisualState(
+    bool useTransitions,
+    bool scrollControllersAutoHidingChanged)
+{
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, useTransitions, scrollControllersAutoHidingChanged);
+
+    if (!IsScrollControllersSeparatorVisible())
+    {
+        return;
+    }
+
+    bool isEnabled = IsEnabled();
+    bool areScrollControllersAutoHiding = AreScrollControllersAutoHiding();
+    bool showScrollControllersSeparator = !areScrollControllersAutoHiding;
+
+    if (!showScrollControllersSeparator &&
+        AreBothScrollControllersVisible() &&
+        (m_preferMouseIndicators || m_showingMouseIndicators) &&
+        (m_isPointerOverHorizontalScrollController || m_isPointerOverVerticalScrollController))
+    {
+        showScrollControllersSeparator = true;
+    }
+
+    // Select the proper state for the scroll controllers separator within the ScrollBarsSeparatorStates group:
+    if (SharedHelpers::IsAnimationsEnabled())
+    {
+        // When OS animations are turned on, show the separator when a scroll controller is shown unless the ScrollViewer is disabled, using an animation.
+        if (showScrollControllersSeparator && isEnabled)
+        {
+            GoToState(s_scrollBarsSeparatorExpanded, useTransitions);
+        }
+        else if (isEnabled)
+        {
+            GoToState(s_scrollBarsSeparatorCollapsed, useTransitions);
+        }
+        else
+        {
+            GoToState(s_scrollBarsSeparatorCollapsedDisabled, useTransitions);
+        }
+    }
+    else
+    {
+        // OS animations are turned off. Show or hide the separator depending on the presence of scroll controllers, without an animation.
+        // When the ScrollViewer is disabled, hide the separator in sync with the ScrollBar(s).
+        if (showScrollControllersSeparator)
+        {
+            if (isEnabled)
+            {
+                GoToState((areScrollControllersAutoHiding || scrollControllersAutoHidingChanged) ? s_scrollBarsSeparatorExpandedWithoutAnimation : s_scrollBarsSeparatorDisplayedWithoutAnimation, useTransitions);
+            }
+            else
+            {
+                GoToState(s_scrollBarsSeparatorCollapsed, useTransitions);
+            }
+        }
+        else
+        {
+            GoToState(isEnabled ? s_scrollBarsSeparatorCollapsedWithoutAnimation : s_scrollBarsSeparatorCollapsed, useTransitions);
+        }
+    }
+}
+
+void ScrollViewer::GoToState(std::wstring_view const& stateName, bool useTransitions)
+{
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, stateName, useTransitions);
+
+    winrt::VisualStateManager::GoToState(*this, stateName, useTransitions);
 }
 
 void ScrollViewer::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
