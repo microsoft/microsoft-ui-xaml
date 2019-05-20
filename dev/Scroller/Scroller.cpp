@@ -16,8 +16,8 @@
 #include "Vector.h"
 
 // Change to 'true' to turn on debugging outputs in Output window
-bool ScrollerTrace::s_IsDebugOutputEnabled{ true };
-bool ScrollerTrace::s_IsVerboseDebugOutputEnabled{ true };
+bool ScrollerTrace::s_IsDebugOutputEnabled{ false };
+bool ScrollerTrace::s_IsVerboseDebugOutputEnabled{ false };
 
 // Number of pixels scrolled when the automation peer requests a line-type change.
 const double c_scrollerLineDelta = 16.0;
@@ -7205,7 +7205,7 @@ void Scroller::RaiseViewChangeCompleted(
 
     // Raise viewport changed only when effective viewport
     // support is not available.
-    if (SharedHelpers::IsRS5OrHigher())
+    if (!SharedHelpers::IsRS5OrHigher())
     {
         RaiseViewportChanged(true /* isFinal */);
     }
