@@ -1,5 +1,3 @@
-Write-Host "SYSTEM_ACCESSTOKEN: $($env:SYSTEM_ACCESSTOKEN)"
-      
 $azureDevOpsRestApiHeaders = @{
     "Accept"="application/json"
     "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:SYSTEM_ACCESSTOKEN)")))"
@@ -27,20 +25,20 @@ foreach ($testRun in $testRuns.value)
     }
 }
 
-if ($failingTests.Count -gt 0)
-{
-    Write-Error @"
-##vso[task.logissue type=error;]Failing tests:
-
-$($failingTests -join [Environment]::NewLine)
-"@
-}
-
 if ($unreliableTests.Count -gt 0)
 {
     Write-Warning @"
 ##vso[task.logissue type=warning;]Unreliable tests:
+##vso[task.logissue type=warning;]
+##vso[task.logissue type=warning;]$($unreliableTests -join "$([Environment]::NewLine)##vso[task.logissue type=warning;]")
+"@
+}
 
-$($unreliableTests -join [Environment]::NewLine)
+if ($failingTests.Count -gt 0)
+{
+    Write-Error @"
+##vso[task.logissue type=error;]Failing tests:
+##vso[task.logissue type=error;]
+##vso[task.logissue type=error;]$($failingTests -join "$([Environment]::NewLine)##vso[task.logissue type=error;]")
 "@
 }
