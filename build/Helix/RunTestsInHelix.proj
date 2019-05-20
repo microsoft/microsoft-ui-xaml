@@ -5,6 +5,7 @@
     <EnableXUnitReporter>true</EnableXUnitReporter>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
+    <FailOnTestFailure>false</FailOnTestFailure>
     <HelixPreCommands>$(HelixPreCommands);set testnameprefix=$(Configuration).$(Platform);set testbuildplatform=$(Platform)</HelixPreCommands>
   </PropertyGroup>
 
@@ -17,4 +18,11 @@
   <Import Project="$(ProjFilesPath)\RunTestsInHelix-ApiTests.proj" Condition=" '$(TestSuite)'=='DevTestSuite' " />
   <Import Project="$(ProjFilesPath)\RunTestsInHelix-IXMPTestAppTests.proj" Condition=" '$(TestSuite)'=='DevTestSuite' " />
   <Import Project="$(ProjFilesPath)\RunTestsInHelix-NugetTests.proj" Condition=" '$(TestSuite)'=='NugetTestSuite' " />
+  
+  <Target Name="CustomCheckTestRuns"
+          BeforeTargets="AfterTest"
+          Outputs="%(HelixTargetQueue.Identity)">
+    <Error Text="Testing a custom CheckTestRuns target." />
+    <CheckAzurePipelinesTestRun TestRunId="%(HelixTargetQueue.TestRunId)"/>
+  </Target>
 </Project>
