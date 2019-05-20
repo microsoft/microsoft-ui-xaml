@@ -87,7 +87,7 @@ This means we won't be adding many new features in the first WinUI 3.0 release.
 However, we are planning at least a few new features, including:
 
 1. Downlevel support (backward compatibility) for all existing features: new Xaml and Composition features that were added in the Windows May 2019 Update will now work on Creators Update and newer!
-2. A new [Microsoft Edge (Chromium) WebView](https://docs.microsoft.commicrosoft-edge/hosting/webview2) Xaml control
+2. A new [Microsoft Edge (Chromium) WebView](https://docs.microsoft.com/microsoft-edge/hosting/webview2) Xaml control
 3. [Input validation support](https://github.com/microsoft/microsoft-ui-xaml/issues/179)
 4. New Visual Studio 2019 app templates for different combinations of app type (Win32, UWP) and language (C#, C++)
 
