@@ -10,7 +10,7 @@
     <!-- We'll output a custom error message that explicitly lists the failing tests,
          so we don't want Helix to output a standard error message, as it's not nearly
          as helpful - it just says "an error occurred", essentially. -->
-    <FailOnTestFailure>false</FailOnTestFailure>
+    <FailOnWorkItemFailure>false</FailOnWorkItemFailure>
   </PropertyGroup>
 
   <ItemGroup>
