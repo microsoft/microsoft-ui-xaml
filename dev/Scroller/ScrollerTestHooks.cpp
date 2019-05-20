@@ -55,6 +55,18 @@ void ScrollerTestHooks::AreInteractionSourcesNotificationsRaised(bool areInterac
     hooks->m_areInteractionSourcesNotificationsRaised = areInteractionSourcesNotificationsRaised;
 }
 
+bool ScrollerTestHooks::AreExpressionAnimationStatusNotificationsRaised()
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_areExpressionAnimationStatusNotificationsRaised;
+}
+
+void ScrollerTestHooks::AreExpressionAnimationStatusNotificationsRaised(bool areExpressionAnimationStatusNotificationsRaised)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_areExpressionAnimationStatusNotificationsRaised = areExpressionAnimationStatusNotificationsRaised;
+}
+
 bool ScrollerTestHooks::IsInteractionTrackerPointerWheelRedirectionEnabled()
 {
     auto hooks = EnsureGlobalTestHooks();
@@ -235,6 +247,33 @@ void ScrollerTestHooks::InteractionSourcesChanged(winrt::event_token const& toke
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_interactionSourcesChangedEventSource.remove(token);
+}
+
+void ScrollerTestHooks::NotifyExpressionAnimationStatusChanged(
+    const winrt::Scroller& sender,
+    bool isExpressionAnimationStarted,
+    wstring_view const& propertyName)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    if (hooks->m_expressionAnimationStatusChangedEventSource)
+    {
+        auto expressionAnimationStatusChangedEventArgs = winrt::make<ScrollerTestHooksExpressionAnimationStatusChangedEventArgs>(
+            isExpressionAnimationStarted, propertyName);
+
+        hooks->m_expressionAnimationStatusChangedEventSource(sender, expressionAnimationStatusChangedEventArgs);
+    }
+}
+
+winrt::event_token ScrollerTestHooks::ExpressionAnimationStatusChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksExpressionAnimationStatusChangedEventArgs> const& value)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_expressionAnimationStatusChangedEventSource.add(value);
+}
+
+void ScrollerTestHooks::ExpressionAnimationStatusChanged(winrt::event_token const& token)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_expressionAnimationStatusChangedEventSource.remove(token);
 }
 
 void ScrollerTestHooks::NotifyContentLayoutOffsetXChanged(const winrt::Scroller& sender)
