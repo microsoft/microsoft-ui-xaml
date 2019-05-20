@@ -133,7 +133,6 @@ jobs:
       
 - job: ProcessTestResults
   dependsOn: ${{ parameters.name }}
-  condition: succeededOrFailed()
   pool:
     vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
@@ -141,7 +140,6 @@ jobs:
   steps:
   - task: powershell@2
     displayName: 'UpdateUnreliableTests.ps1'
-    condition: succeededOrFailed()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
@@ -150,7 +148,6 @@ jobs:
       
   - task: powershell@2
     displayName: 'OutputTestResults.ps1'
-    condition: succeededOrFailed()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
