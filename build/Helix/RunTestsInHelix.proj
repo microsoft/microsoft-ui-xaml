@@ -11,6 +11,7 @@
          as helpful - it just says "an error occurred", essentially. -->
     <FailOnMissionControlTestFailure>false</FailOnMissionControlTestFailure>
     <FailOnWorkItemFailure>false</FailOnWorkItemFailure>
+    <FailOnTestFailure>false</FailOnTestFailure>
   </PropertyGroup>
 
   <ItemGroup>

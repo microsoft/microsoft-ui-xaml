@@ -35,18 +35,16 @@ foreach ($testRun in $testRuns.value)
 
 if ($unreliableTests.Count -gt 0)
 {
-    Write-Warning @"
+    Write-Host @"
 ##vso[task.logissue type=warning;]Unreliable tests:
-
 ##vso[task.logissue type=warning;]$($unreliableTests -join "$([Environment]::NewLine)##vso[task.logissue type=warning;]")
 "@
 }
 
 if ($failingTests.Count -gt 0)
 {
-    Write-Error @"
+    Write-Host @"
 ##vso[task.logissue type=error;]Failing tests:
-
 ##vso[task.logissue type=error;]$($failingTests -join "$([Environment]::NewLine)##vso[task.logissue type=error;]")
 "@
 }
