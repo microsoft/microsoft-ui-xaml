@@ -148,7 +148,6 @@ jobs:
       targetType: filePath
       filePath: build\Helix\OutputTestResults.ps1
 
-  steps:
   - task: powershell@2
     displayName: 'UpdateUnreliableTests.ps1'
     condition: succeededOrFailed()
