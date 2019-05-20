@@ -140,6 +140,16 @@ jobs:
 
   steps:
   - task: powershell@2
+    displayName: 'OutputTestResults.ps1'
+    condition: succeededOrFailed()
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\OutputTestResults.ps1
+
+  steps:
+  - task: powershell@2
     displayName: 'UpdateUnreliableTests.ps1'
     condition: succeededOrFailed()
     env:

@@ -5,8 +5,12 @@
     <EnableXUnitReporter>true</EnableXUnitReporter>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
-    <FailOnTestFailure>false</FailOnTestFailure>
     <HelixPreCommands>$(HelixPreCommands);set testnameprefix=$(Configuration).$(Platform);set testbuildplatform=$(Platform)</HelixPreCommands>
+    
+    <!-- We'll output a custom error message that explicitly lists the failing tests,
+         so we don't want Helix to output a standard error message, as it's not nearly
+         as helpful - it just says "an error occurred", essentially. -->
+    <FailOnTestFailure>false</FailOnTestFailure>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,12 +22,4 @@
   <Import Project="$(ProjFilesPath)\RunTestsInHelix-ApiTests.proj" Condition=" '$(TestSuite)'=='DevTestSuite' " />
   <Import Project="$(ProjFilesPath)\RunTestsInHelix-IXMPTestAppTests.proj" Condition=" '$(TestSuite)'=='DevTestSuite' " />
   <Import Project="$(ProjFilesPath)\RunTestsInHelix-NugetTests.proj" Condition=" '$(TestSuite)'=='NugetTestSuite' " />
-  
-  <Target Name="CustomCheckTestRuns"
-          BeforeTargets="AfterTest"
-          Outputs="%(HelixTargetQueue.Identity)">
-    <Message Text="##vso[task.logissue type=error;]Testing a custom CheckTestRuns target via 'Message'." />
-    <Error Text="##vso[task.logissue type=error;]Testing a custom CheckTestRuns target via 'Error'." />
-    <CheckAzurePipelinesTestRun TestRunId="%(HelixTargetQueue.TestRunId)"/>
-  </Target>
 </Project>
