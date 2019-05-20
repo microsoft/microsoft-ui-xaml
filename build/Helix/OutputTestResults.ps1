@@ -35,31 +35,37 @@ foreach ($testRun in $testRuns.value)
     }
 }
 
+$testResultOutput = [string]::Empty
+
 if ($unreliableTests.Count -gt 0)
 {
-    Write-Host @"
+    $testResultOutput += @"
 ##vso[task.logissue type=warning;]Unreliable tests:
 ##vso[task.logissue type=warning;]$($unreliableTests -join "$([Environment]::NewLine)##vso[task.logissue type=warning;]")
+
 "@
 }
 
 if ($failingTests.Count -gt 0)
 {
-    Write-Host @"
+    $testResultOutput += @"
 ##vso[task.logissue type=error;]Failing tests:
 ##vso[task.logissue type=error;]$($failingTests -join "$([Environment]::NewLine)##vso[task.logissue type=error;]")
+
 "@
 }
 
 if ($failingTests.Count -gt 0)
 {
-    Write-Host "##vso[task.complete result=Failed;]At least one test failed."
+    $testResultOutput += "##vso[task.complete result=Failed;]At least one test failed."
 }
 elseif ($unreliableTests.Count -gt 0)
 {
-    Write-Host "##vso[task.complete result=SucceededWithIssues;]All tests eventually passed, but some initially failed."
+    $testResultOutput += "##vso[task.complete result=SucceededWithIssues;]All tests eventually passed, but some initially failed."
 }
 else
 {
-    Write-Host "##vso[task.complete result=Succeeded;]All tests passed."
+    $testResultOutput += "##vso[task.complete result=Succeeded;]All tests passed."
 }
+
+Write-Host $testResultOutput
