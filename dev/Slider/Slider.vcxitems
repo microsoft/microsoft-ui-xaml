@@ -14,9 +14,10 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)Slider_rs1_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Slider_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
   </ItemGroup>
 </Project>
