@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Numerics;
 using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -9,6 +10,7 @@ using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
+using System.Diagnostics;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -42,6 +44,7 @@ namespace Flick
         public event EventHandler<object> HorizontalSnapPointsChanged;
         public event EventHandler<object> VerticalSnapPointsChanged;
     }
+
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
@@ -52,6 +55,43 @@ namespace Flick
             this.InitializeComponent();
 
             ElementCompositionPreview.GetElementVisual(sv).Clip = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(sv).Compositor.CreateInsetClip();
+        }
+
+        private object selectedItem = null;
+
+        public object SelectedItem
+        {
+            get
+            {
+                return selectedItem;
+            }
+            set
+            {
+                selectedItem = value;
+            }
+        }
+
+        protected void OnScrollViewerViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        {
+            var svCenterPoint = sv.HorizontalOffset + sv.ViewportWidth / 2;
+            int selectedItemIndex = (int)Math.Floor((svCenterPoint + layout.Spacing / 2) / (layout.Spacing + layout.ItemWidth));
+            selectedItemIndex %= ((System.Collections.Generic.IReadOnlyList<object>)repeater.ItemsSource).Count;
+            var selectedUIElement = repeater.TryGetElement(selectedItemIndex);
+            SelectedItem = (selectedUIElement == null ? null : ((UserControl)selectedUIElement).DataContext);
+
+            if (e.IsIntermediate)
+            {
+                //textBlock.Text = "Scrolling started";
+            }
+            else
+            {
+                textBlock.Text = "Selected Item: " + (SelectedItem == null ? "null" : selectedItemIndex.ToString());
+            }
+        }
+
+        protected void OnScrollViewerViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
+        {
+            //textBlock.Text = "Scrolling started";
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -184,6 +224,21 @@ namespace Flick
             {
                 Frame.GoBack();
             }
+        }
+
+        private void Sv_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+
+        }
+
+        private void Sv_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            textBlock.Text = "Scrolling started";
+        }
+
+        private void Sv_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            
         }
     }
 }
