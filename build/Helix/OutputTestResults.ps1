@@ -8,7 +8,7 @@ Write-Host "Checking test results..."
 $testRuns = Invoke-RestMethod -Uri "https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)" -Method Get -Headers $azureDevOpsRestApiHeaders
 [System.Collections.Generic.List[string]]$failingTests = @()
 [System.Collections.Generic.List[string]]$unreliableTests = @()
-      
+
 foreach ($testRun in $testRuns.value)
 {
     $testRunResultsUri = "$($testRun.url)/results?api-version=5.0"
