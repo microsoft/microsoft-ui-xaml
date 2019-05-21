@@ -6,6 +6,7 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -237,6 +238,9 @@
                     </Button.ContextFlyout>
                 </Button>
             </Grid>
+            <Grid Grid.Row="12" Style="{StaticResource RightColumn}">
+                <TextBlock>N/A</TextBlock>
+            </Grid>
 
             <TextBlock Grid.Row="13" Text="MenuFlyout" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="13" Style="{StaticResource LeftColumn}">
@@ -270,6 +274,9 @@
                         </MenuFlyout>
                     </Button.ContextFlyout>
                 </Button>
+            </Grid>
+            <Grid Grid.Row="13" Style="{StaticResource RightColumn}">
+                <TextBlock>N/A</TextBlock>
             </Grid>
 
             <TextBlock Grid.Row="14" Text="ContentDialog" Style="{StaticResource SideHeader}"/>
@@ -349,16 +356,19 @@
             </Grid>
 
             <TextBlock Grid.Row="31" Text="ProgressBar" Style="{StaticResource SideHeader}"/>
-            <Grid Grid.Row="31" Style="{StaticResource LeftColumn}" MinWidth="50">
+            <Grid Grid.Row="31" Style="{StaticResource LeftColumn}" MinWidth="100">
                 <ProgressBar Minimum="0" Maximum="100" Value="50"/>
             </Grid>
-            <Grid Grid.Row="31" Style="{StaticResource RightColumn}" MinWidth="50">
+            <Grid Grid.Row="31" Style="{StaticResource RightColumn}" MinWidth="100">
                 <ProgressBar Minimum="0" Maximum="100" Value="50" CornerRadius="6"/>
             </Grid>
 
             <TextBlock Grid.Row="32" Text="TextBlock" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="32" Style="{StaticResource LeftColumn}">
                 <TextBlock Text="Hello World"/>
+            </Grid>
+            <Grid Grid.Row="32" Style="{StaticResource RightColumn}">
+                <TextBlock>N/A</TextBlock>
             </Grid>
 
             <TextBlock Grid.Row="33" Text="RichTextBlock" Style="{StaticResource SideHeader}"/>
@@ -368,6 +378,9 @@
                         Hello World
                     </Paragraph>
                 </RichTextBlock>
+            </Grid>
+            <Grid Grid.Row="33" Style="{StaticResource RightColumn}">
+                <TextBlock>N/A</TextBlock>
             </Grid>
 
             <TextBlock Grid.Row="34" Text="CheckBox" Style="{StaticResource SideHeader}"/>
@@ -408,6 +421,22 @@
             </Grid>
             <Grid Grid.Row="38" Style="{StaticResource RightColumn}">
                 <RichEditBox CornerRadius="6"/>
+            </Grid>
+
+            <TextBlock Grid.Row="39" Text="FlipView" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Row="39" Style="{StaticResource LeftColumn}" Width="200" Height="200">
+                <FlipView>
+                    <Grid Background="Red"/>
+                    <Grid Background="Green"/>
+                    <Grid Background="Blue"/>
+                </FlipView>
+            </Grid>
+            <Grid Grid.Row="39" Style="{StaticResource RightColumn}" Width="200" Height="200">
+                <FlipView CornerRadius="6">
+                    <Grid Background="Red"/>
+                    <Grid Background="Green"/>
+                    <Grid Background="Blue"/>
+                </FlipView>
             </Grid>
 
             <TextBlock Grid.Row="40" Text="RadioButton" Style="{StaticResource SideHeader}"/>
@@ -460,6 +489,30 @@
             </Grid>
             <Grid Grid.Row="44" Style="{StaticResource RightColumn}">
                 <HyperlinkButton Content="Hello World" CornerRadius="6"/>
+            </Grid>
+
+            <TextBlock Grid.Row="45" Text="DropDownButton" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Row="45" Style="{StaticResource LeftColumn}">
+                <controls:DropDownButton Content="Hello World"/>
+            </Grid>
+            <Grid Grid.Row="45" Style="{StaticResource RightColumn}">
+                <controls:DropDownButton Content="Hello World" CornerRadius="6"/>
+            </Grid>
+
+            <TextBlock Grid.Row="46" Text="SplitButton" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Row="46" Style="{StaticResource LeftColumn}">
+                <controls:SplitButton Content="Hello World"/>
+            </Grid>
+            <Grid Grid.Row="46" Style="{StaticResource RightColumn}">
+                <controls:SplitButton Content="Hello World" CornerRadius="6"/>
+            </Grid>
+
+            <TextBlock Grid.Row="47" Text="ColorPicker" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Row="47" Style="{StaticResource LeftColumn}">
+                <controls:ColorPicker/>
+            </Grid>
+            <Grid Grid.Row="47" Style="{StaticResource RightColumn}">
+                <controls:ColorPicker CornerRadius="6"/>
             </Grid>
 
             <TextBlock Grid.Row="48" Text="ListView" Style="{StaticResource SideHeader}"/>
