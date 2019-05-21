@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Xml.Linq;
 
@@ -12,9 +14,11 @@ namespace HelixTestHelpers
         public TestResult()
         {
             Screenshots = new List<string>();
+            RerunResults = new List<TestResult>();
         }
 
         public string Name { get; set; }
+        public string SourceWttFile { get; set; }
         public bool Passed { get; set; }
         public bool PassedOnRerun { get; set; }
         public bool CleanupPassed { get; set; }
@@ -22,6 +26,63 @@ namespace HelixTestHelpers
         public string Details { get; set; }
 
         public List<string> Screenshots { get; private set; }
+        public List<TestResult> RerunResults { get; private set; }
+    }
+    
+    //
+    // Azure DevOps doesn't currently provide a way to directly report sub-results for unreliable tests
+    // that were run multiple times.  To get around that limitation, we'll mark the test as "Skip" since
+    // that's the only non-pass/fail result we can return, and will then report the information about the
+    // runs in the "reason" category for the skipped test.  The Azure DevOps REST API enforces a restriction
+    // on the maximum length that that string value can be, so in order to ensure that we don't exceed that
+    // length, we'll make the following space optimizations:
+    //
+    //   1. Serializing as JSON, which is more compact than XML;
+    //   2. Don't serialize values that we don't need;
+    //   3. Store the URL prefix and suffix for the blob storage URL only once instead of
+    //      storing every log and screenshot URL in its entirety; and
+    //   4. Storing a list of unique error messages and then indexing into that instead of
+    //      storing every error message in its entirety.
+    //
+    // #4 is motivated by the fact that if a test fails multiple times, it probably failed for the same reason
+    // each time, in which case we'd just be repeating ourselves if we stored every error message each time.
+    //
+    // TODO (https://github.com/dotnet/arcade/issues/2773): Once we're able to directly report things in a
+    // more granular fashion than just a binary pass/fail result, we should do that.
+    //
+    [DataContract]  
+    internal class JsonSerializableTestResults
+    {  
+        [DataMember]
+        internal string blobPrefix;
+        
+        [DataMember]
+        internal string blobSuffix;
+        
+        [DataMember]
+        internal string[] errors;
+        
+        [DataMember]
+        internal JsonSerializableTestResult[] results;
+    }
+    
+    [DataContract]  
+    internal class JsonSerializableTestResult  
+    {
+        [DataMember]
+        internal string outcome;
+
+        [DataMember]
+        internal int duration;
+        
+        [DataMember(EmitDefaultValue = false)]
+        internal string log;
+        
+        [DataMember(EmitDefaultValue = false)]
+        internal string[] screenshots;
+        
+        [DataMember(EmitDefaultValue = false)]
+        internal int errorIndex;
     }
     
     public class TestPass
@@ -129,7 +190,7 @@ namespace HelixTestHelpers
                                 }
                             }
 
-                            currentResult = new TestResult() { Name = testName, Passed = true, CleanupPassed = true };
+                            currentResult = new TestResult() { Name = testName, SourceWttFile = fileName, Passed = true, CleanupPassed = true };
                             testResults.Add(currentResult);
                             startTime = Int64.Parse(element.Descendants("WexTraceInfo").First().Attribute("TimeStamp").Value);
                             inTestCleanup = false;
@@ -229,7 +290,18 @@ namespace HelixTestHelpers
 
                                 foreach(var screenshot in screenshots)
                                 {
-                                    currentResult.Screenshots.Add(screenshot);
+                                    string fileNameSuffix = string.Empty;
+                                    
+                                    if (fileName.Contains("_rerun_multiple"))
+                                    {
+                                        fileNameSuffix = "_rerun_multiple";
+                                    }
+                                    else if (fileName.Contains("_rerun"))
+                                    {
+                                        fileNameSuffix = "_rerun";
+                                    }
+                                    
+                                    currentResult.Screenshots.Add(screenshot.Replace(".jpg", fileNameSuffix + ".jpg"));
                                 }
                             }
                         }
@@ -240,6 +312,14 @@ namespace HelixTestHelpers
                 testPassStopTime = Int64.Parse(doc.Root.Descendants("WexTraceInfo").Last().Attribute("TimeStamp").Value);
 
                 var testPassTime = TimeSpan.FromSeconds((double)(testPassStopTime - testPassStartTime) / frequency);
+                
+                foreach (TestResult testResult in testResults)
+                {
+                    if (testResult.Details != null)
+                    {
+                        testResult.Details = testResult.Details.Trim();
+                    }
+                }
 
                 var testpass = new TestPass
                 {
@@ -274,6 +354,8 @@ namespace HelixTestHelpers
             // rather than a genuine test failure.
             foreach (TestResult failedTestResult in testPass.TestResults.Where(r => !r.Passed))
             {
+                failedTestResult.RerunResults.AddRange(rerunTestResults.Where(r => r.Name == failedTestResult.Name));
+                
                 if (rerunTestResults.Where(r => r.Name == failedTestResult.Name && r.Passed).Count() > 0)
                 {
                     failedTestResult.PassedOnRerun = true;
@@ -335,9 +417,20 @@ namespace HelixTestHelpers
         }
     }
 
-    public static class TestResultParser
+    public class TestResultParser
     {
-        public static void ConvertWttLogToXUnitLog(string wttInputPath, string wttSingleRerunInputPath, string wttMultipleRerunInputPath, string xunitOutputPath, string testNamePrefix, string helixResultsContainerUri, string helixResultsContainerRsas)
+        private string testNamePrefix;
+        private string helixResultsContainerUri;
+        private string helixResultsContainerRsas;
+    
+        public TestResultParser(string testNamePrefix, string helixResultsContainerUri, string helixResultsContainerRsas)
+        {
+            this.testNamePrefix = testNamePrefix;
+            this.helixResultsContainerUri = helixResultsContainerUri;
+            this.helixResultsContainerRsas = helixResultsContainerRsas;
+        }
+        
+        public void ConvertWttLogToXUnitLog(string wttInputPath, string wttSingleRerunInputPath, string wttMultipleRerunInputPath, string xunitOutputPath)
         {
             TestPass testPass = TestPass.ParseTestWttFileWithReruns(wttInputPath, wttSingleRerunInputPath, wttMultipleRerunInputPath, cleanupFailuresAreRegressions: true, truncateTestNames: false);
             var results = testPass.TestResults;
@@ -362,9 +455,6 @@ namespace HelixTestHelpers
             assembly.SetAttributeValue("total", resultCount);
             assembly.SetAttributeValue("passed", passedCount);
             assembly.SetAttributeValue("failed", failedCount);
-            
-            // There's no way using the xUnit format to report that a test passed on re-run, so since we
-            // aren't using the notion of a "skipped" test, we'll use that as a proxy.
             assembly.SetAttributeValue("skipped", passedOnRerunCount);
             
             assembly.SetAttributeValue("time", (int)testPass.TestPassExecutionTime.TotalSeconds);
@@ -392,9 +482,6 @@ namespace HelixTestHelpers
 
                 test.SetAttributeValue("time", result.ExecutionTime.TotalSeconds);
                 
-                // TODO (https://github.com/dotnet/arcade/issues/2773): Once we're able to
-                // report things in a more granular fashion than just a binary pass/fail result,
-                // we should do that.  For now, we'll use "Skip" to mean "this test was unreliable".
                 string resultString = string.Empty;
                 
                 if (result.Passed)
@@ -414,12 +501,42 @@ namespace HelixTestHelpers
 
                 if (!result.Passed)
                 {
-                    // If the test passed on rerun, then we'll add metadata noting as much.
+                    // If the test failed but then passed on rerun, then we'll add metadata to report the results of each run.
                     // Otherwise, we'll mark down the failure information.
                     if (result.PassedOnRerun)
                     {
+                        JsonSerializableTestResults serializableResults = new JsonSerializableTestResults();
+                        serializableResults.blobPrefix = helixResultsContainerUri;
+                        serializableResults.blobSuffix = helixResultsContainerRsas;
+                        
+                        List<string> errorList = new List<string>();
+                        errorList.Add(result.Details);
+                        
+                        foreach (TestResult rerunResult in result.RerunResults)
+                        {
+                            errorList.Add(rerunResult.Details);
+                        }
+                        
+                        serializableResults.errors = errorList.Distinct().Where(s => s != null).ToArray();
+                    
                         var reason = new XElement("reason");
-                        reason.Add(new XCData("PassedOnRerun"));
+                        List<JsonSerializableTestResult> serializableResultList = new List<JsonSerializableTestResult>();
+                        serializableResultList.Add(ConvertToSerializableResult(result, serializableResults.errors));
+                        
+                        foreach (TestResult rerunResult in result.RerunResults)
+                        {
+                            serializableResultList.Add(ConvertToSerializableResult(rerunResult, serializableResults.errors));
+                        }
+                        
+                        serializableResults.results = serializableResultList.ToArray();
+                        
+                        MemoryStream stream = new MemoryStream();
+                        DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(JsonSerializableTestResults));
+                        serializer.WriteObject(stream, serializableResults);
+                        stream.Position = 0;
+                        StreamReader streamReader = new StreamReader(stream);
+                        
+                        reason.Add(new XCData(streamReader.ReadToEnd()));
                         test.Add(reason);
                     }
                     else
@@ -431,7 +548,7 @@ namespace HelixTestHelpers
 
                         StringBuilder errorMessage = new StringBuilder();
 
-                        errorMessage.AppendLine("Log: " + GetUploadedFileUrl(wttInputPath, helixResultsContainerUri, helixResultsContainerRsas));
+                        errorMessage.AppendLine("Log: " + GetUploadedFileUrl(result.SourceWttFile, helixResultsContainerUri, helixResultsContainerRsas));
                         errorMessage.AppendLine();
                         
                         if(result.Screenshots.Any())
@@ -453,14 +570,45 @@ namespace HelixTestHelpers
                         test.Add(failure);
                     }
                 }
-
                 collection.Add(test);
             }
 
             File.WriteAllText(xunitOutputPath, root.ToString());
         }
+        
+        private JsonSerializableTestResult ConvertToSerializableResult(TestResult rerunResult, string[] uniqueErrors)
+        {
+            var serializableResult = new JsonSerializableTestResult();
+            
+            serializableResult.outcome = rerunResult.Passed ? "Passed" : "Failed";
+            serializableResult.duration = (int)Math.Round(rerunResult.ExecutionTime.TotalMilliseconds);
+            
+            if (!rerunResult.Passed)
+            {
+                serializableResult.log = Path.GetFileName(rerunResult.SourceWttFile);
+                
+                if (rerunResult.Screenshots.Any())
+                {
+                    List<string> screenshots = new List<string>();
+                    
+                    foreach (var screenshot in rerunResult.Screenshots)
+                    {
+                        screenshots.Add(Path.GetFileName(screenshot));
+                    }
+                    
+                    serializableResult.screenshots = screenshots.ToArray();
+                }
+                
+                // To conserve space, we'll log the index of the error to index in a list of unique errors rather than
+                // jotting down every single error in its entirety. We'll add one to the result so we can avoid
+                // serializing this property when it has the default value of 0.
+                serializableResult.errorIndex = Array.IndexOf(uniqueErrors, rerunResult.Details) + 1;
+            }
+            
+            return serializableResult;
+        }
 
-        private static string GetUploadedFileUrl(string filePath, string helixResultsContainerUri, string helixResultsContainerRsas)
+        private string GetUploadedFileUrl(string filePath, string helixResultsContainerUri, string helixResultsContainerRsas)
         {
             var filename = Path.GetFileName(filePath);
             return string.Format("{0}/{1}{2}", helixResultsContainerUri, filename, helixResultsContainerRsas);

@@ -1,9 +1,11 @@
 Push-Location ..\
 
-$dependencyFiles = Get-ChildItem (Get-Item (Get-Location).Path).Parent.FullName -Filter "*dependencies.txt"
+$dependencyFiles = Get-ChildItem -Filter "*dependencies.txt"
 
 foreach ($file in $dependencyFiles)
 {
+    Write-Host "Adding dependency $($file)..."
+
     foreach ($line in Get-Content $file)
     {
         Add-AppxPackage $line
