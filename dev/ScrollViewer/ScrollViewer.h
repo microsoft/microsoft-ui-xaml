@@ -80,7 +80,7 @@ public:
 #pragma endregion
 
     // Invoked by ScrollViewerTestHooks
-    static void ScrollControllersAutoHidingChanged();
+    void ScrollControllersAutoHidingChanged();
     winrt::Scroller GetScrollerPart() const;
 
     static void ValidateAnchorRatio(double value);
@@ -104,13 +104,6 @@ public:
 #pragma endregion
 
 private:
-    static bool AreScrollControllersAutoHiding();    
-    static void OnAutoHideScrollBarsChanged(
-        winrt::UISettings const& uiSettings,
-        winrt::UISettingsAutoHideScrollBarsChangedEventArgs const& args);
-    static void ProcessScrollControllersAutoHidingChange();
-    static void UpdateScrollControllersAutoHiding(bool forceUpdate = false);
-
     void OnScrollViewerGettingFocus(
         const winrt::IInspectable& /*sender*/,
         const winrt::GettingFocusEventArgs& args);
@@ -163,6 +156,9 @@ private:
     void OnHideIndicatorsTimerTick(
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);
+    void OnAutoHideScrollBarsChanged(
+        winrt::UISettings const& uiSettings,
+        winrt::UISettingsAutoHideScrollBarsChangedEventArgs const& args);
 
     // Internal event handlers
     void OnScrollerExtentChanged(
@@ -222,15 +218,16 @@ private:
     void UpdateScrollerVerticalScrollController(const winrt::IScrollController& verticalScrollController);
     void UpdateScrollControllersVisibility(bool horizontalChange, bool verticalChange);
 
-    const std::vector<winrt::weak_ref<winrt::ScrollViewer>>::const_iterator GetLoadedScrollViewer() const;
     bool IsLoaded() const;
     bool IsInputKindIgnored(winrt::InputKind const& inputKind);
 
     bool AreAllScrollControllersCollapsed() const;
     bool AreBothScrollControllersVisible() const;
+    bool AreScrollControllersAutoHiding();
     bool IsScrollControllersSeparatorVisible() const;
     void HideIndicators(bool useTransitions = true);
     void HideIndicatorsAfterDelay();
+    void UpdateScrollControllersAutoHiding(bool forceUpdate = false);
     void UpdateVisualStates(bool useTransitions = true, bool showIndicators = false, bool hideIndicators = false, bool scrollControllersAutoHidingChanged = false);
     void UpdateScrollControllersVisualState(bool useTransitions = true, bool showIndicators = false, bool hideIndicators = false);
     void UpdateScrollControllersSeparatorVisualState(bool useTransitions = true, bool scrollControllersAutoHidingChanged = false);
@@ -307,6 +304,13 @@ private:
 
     winrt::FocusInputDeviceKind m_focusInputDeviceKind{ winrt::FocusInputDeviceKind::None };
 
+    // Used to detect changes for UISettings.AutoHiScrollBars.
+    winrt::IUISettings5 m_uiSettings5{ nullptr };
+    winrt::IUISettings5::AutoHideScrollBarsChanged_revoker m_autoHideScrollBarsChangedRevoker{};
+
+    bool m_autoHideScrollControllersValid{ false };
+    bool m_autoHideScrollControllers{ false };
+
     bool m_isLeftMouseButtonPressedForFocus{ false };
     
     // Set to True when the mouse scrolling indicators are currently showing.
@@ -349,15 +353,4 @@ private:
     static constexpr std::wstring_view s_scrollBarsSeparatorCollapsedWithoutAnimation{ L"ScrollBarsSeparatorCollapsedWithoutAnimation"sv };
     static constexpr std::wstring_view s_scrollBarsSeparatorDisplayedWithoutAnimation{ L"ScrollBarsSeparatorDisplayedWithoutAnimation"sv };
     static constexpr std::wstring_view s_scrollBarsSeparatorExpandedWithoutAnimation{ L"ScrollBarsSeparatorExpandedWithoutAnimation"sv };
-
-    // Used to detect changes for UISettings.AutoHiScrollBars.
-    static winrt::IUISettings5 s_uiSettings5;
-    static winrt::IUISettings5::AutoHideScrollBarsChanged_revoker s_autoHideScrollBarsChangedRevoker;
-
-    // Used on RS4+ to update the visual states when the ScrollBars auto-hiding setting changed.
-    static std::vector<winrt::weak_ref<winrt::ScrollViewer>> s_loadedScrollViewers;
-
-    // Cache of the ScrollControllers auto-hiding setting.
-    static bool s_autoHideScrollControllersValid;
-    static bool s_autoHideScrollControllers;
 };

@@ -18,12 +18,6 @@ bool ScrollViewerTrace::s_IsVerboseDebugOutputEnabled{ false };
 const winrt::ScrollInfo ScrollViewer::s_noOpScrollInfo{ -1 };
 const winrt::ZoomInfo ScrollViewer::s_noOpZoomInfo{ -1 };
 
-std::vector<winrt::weak_ref<winrt::ScrollViewer>> ScrollViewer::s_loadedScrollViewers{};
-winrt::IUISettings5 ScrollViewer::s_uiSettings5{ nullptr };
-winrt::IUISettings5::AutoHideScrollBarsChanged_revoker ScrollViewer::s_autoHideScrollBarsChangedRevoker{};
-bool ScrollViewer::s_autoHideScrollControllersValid{ false };
-bool ScrollViewer::s_autoHideScrollControllers{ false };
-
 ScrollViewer::ScrollViewer()
 {
     SCROLLVIEWER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
@@ -352,18 +346,6 @@ void ScrollViewer::OnApplyTemplate()
 
     __super::OnApplyTemplate();
 
-    if (SharedHelpers::IsRS4OrHigher())
-    {
-        const auto it = GetLoadedScrollViewer();
-
-        if (it == s_loadedScrollViewers.cend())
-        {
-            const auto scrollViewer = winrt::make_weak<winrt::ScrollViewer>(*this);
-
-            s_loadedScrollViewers.push_back(scrollViewer);
-        }
-    }
-
     m_hasNoIndicatorStateStoryboardCompletedHandler = false;
     m_keepIndicatorsShowing = false;
 
@@ -514,118 +496,6 @@ void ScrollViewer::OnGotFocus(winrt::RoutedEventArgs const& args)
 
 #pragma endregion
 
-bool ScrollViewer::AreScrollControllersAutoHiding()
-{
-    // Use the cached value unless it was invalidated.
-    if (s_autoHideScrollControllersValid)
-    {
-        return s_autoHideScrollControllers;
-    }
-
-    s_autoHideScrollControllersValid = true;
-
-    if (SharedHelpers::IsRS4OrHigher())
-    {
-        com_ptr<ScrollViewerTestHooks> globalTestHooks = ScrollViewerTestHooks::GetGlobalTestHooks();
-
-        if (globalTestHooks)
-        {
-            winrt::IReference<bool> autoHideScrollControllers = globalTestHooks->AutoHideScrollControllers();
-
-            if (autoHideScrollControllers)
-            {
-                // Test hook takes precedence over UISettings and registry key settings.
-                s_autoHideScrollControllers = autoHideScrollControllers.Value();
-                return s_autoHideScrollControllers;
-            }
-        }
-    }
-
-    if (s_uiSettings5)
-    {
-        // Use the 19H1+ UISettings property.
-        s_autoHideScrollControllers = s_uiSettings5.AutoHideScrollBars();
-    }
-    else if (SharedHelpers::IsRS4OrHigher())
-    {
-        // Use the RS4+ registry key HKEY_CURRENT_USER\Control Panel\Accessibility\DynamicScrollbars
-        s_autoHideScrollControllers = RegUtil::UseDynamicScrollbars();
-    }
-    else
-    {
-        // ScrollBars are auto-hiding prior to RS4.
-        s_autoHideScrollControllers = true;
-    }
-
-    return s_autoHideScrollControllers;
-}
-
-void ScrollViewer::OnAutoHideScrollBarsChanged(
-    winrt::UISettings const& uiSettings,
-    winrt::UISettingsAutoHideScrollBarsChangedEventArgs const& args)
-{
-    MUX_ASSERT(SharedHelpers::IsRS4OrHigher());
-
-    // OnAutoHideScrollBarsChanged is called on a non-UI thread, process notification on the UI thread using a dispatcher.
-    for (winrt::weak_ref<winrt::ScrollViewer> const& loadedScrollViewer : s_loadedScrollViewers)
-    {
-        const auto scrollViewer = loadedScrollViewer.get();
-
-        if (scrollViewer)
-        {
-            DispatcherHelper dispatcherHelper(scrollViewer);
-
-            dispatcherHelper.RunAsync([]()
-            {
-                s_autoHideScrollControllersValid = false;
-
-                ProcessScrollControllersAutoHidingChange();
-            });
-            break;
-        }
-    }
-}
-
-void ScrollViewer::ProcessScrollControllersAutoHidingChange()
-{
-    SCROLLVIEWER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, nullptr);
-
-    MUX_ASSERT(SharedHelpers::IsRS4OrHigher());
-
-    for (winrt::weak_ref<winrt::ScrollViewer> const& loadedScrollViewer : s_loadedScrollViewers)
-    {
-        ScrollViewer* scrollViewer = winrt::get_self<ScrollViewer>(loadedScrollViewer.get());
-
-        if (scrollViewer)
-        {
-            scrollViewer->UpdateVisualStates(
-                true  /*useTransitions*/,
-                false /*showIndicators*/,
-                false /*hideIndicators*/,
-                true  /*scrollControllersAutoHidingChanged*/);
-        }
-    }
-}
-
-// On RS4 and RS5, update s_autoHideScrollControllers based on the DynamicScrollbars registry key value
-// and update the visual states if the value changed.
-void ScrollViewer::UpdateScrollControllersAutoHiding(
-    bool forceUpdate)
-{
-    if ((forceUpdate || (!s_uiSettings5 && SharedHelpers::IsRS4OrHigher())) && s_autoHideScrollControllersValid)
-    {
-        s_autoHideScrollControllersValid = false;
-
-        bool oldAutoHideScrollControllers = s_autoHideScrollControllers;
-        bool newAutoHideScrollControllers = AreScrollControllersAutoHiding();
-
-        if (oldAutoHideScrollControllers != newAutoHideScrollControllers)
-        {
-            ProcessScrollControllersAutoHidingChange();
-        }
-    }
-}
-
 void ScrollViewer::OnScrollViewerGettingFocus(
     const winrt::IInspectable& /*sender*/,
     const winrt::GettingFocusEventArgs& args)
@@ -651,22 +521,9 @@ void ScrollViewer::OnScrollViewerUnloaded(
 {
     SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    if (!IsLoaded())
-    {
-        m_showingMouseIndicators = false;
-        m_keepIndicatorsShowing = false;
-        ResetHideIndicatorsTimer();
-
-        if (SharedHelpers::IsRS4OrHigher())
-        {
-            const auto it = GetLoadedScrollViewer();
-
-            if (it != s_loadedScrollViewers.cend())
-            {
-                s_loadedScrollViewers.erase(it);
-            }
-        }
-    }
+    m_showingMouseIndicators = false;
+    m_keepIndicatorsShowing = false;
+    ResetHideIndicatorsTimer();
 }
 
 void ScrollViewer::OnScrollViewerPointerEntered(
@@ -1010,6 +867,26 @@ void ScrollViewer::OnHideIndicatorsTimerTick(
     }
 }
 
+void ScrollViewer::OnAutoHideScrollBarsChanged(
+    winrt::UISettings const& uiSettings,
+    winrt::UISettingsAutoHideScrollBarsChangedEventArgs const& args)
+{
+    MUX_ASSERT(SharedHelpers::Is19H1OrHigher());
+
+    // OnAutoHideScrollBarsChanged is called on a non-UI thread, process notification on the UI thread using a dispatcher.
+    auto strongThis = get_strong();
+
+    m_dispatcherHelper.RunAsync([strongThis]()
+    {
+        strongThis->m_autoHideScrollControllersValid = false;
+        strongThis->UpdateVisualStates(
+            true /*useTransitions*/,
+            false /*showIndicators*/,
+            false /*hideIndicators*/,
+            true /*scrollControllersAutoHidingChanged*/);
+    });
+}
+
 void ScrollViewer::OnScrollerExtentChanged(
     const winrt::IInspectable& /*sender*/,
     const winrt::IInspectable& args)
@@ -1177,16 +1054,16 @@ void ScrollViewer::ResetHideIndicatorsTimer(bool isForDestructor, bool restart)
 void ScrollViewer::HookUISettingsEvent()
 {
     // Introduced in 19H1, IUISettings5 exposes the AutoHideScrollBars property and AutoHideScrollBarsChanged event.
-    if (!s_uiSettings5)
+    if (!m_uiSettings5)
     {
         winrt::UISettings uiSettings;
 
-        s_uiSettings5 = uiSettings.try_as<winrt::IUISettings5>();
-        if (s_uiSettings5)
+        m_uiSettings5 = uiSettings.try_as<winrt::IUISettings5>();
+        if (m_uiSettings5)
         {
-            s_autoHideScrollBarsChangedRevoker = s_uiSettings5.AutoHideScrollBarsChanged(
+            m_autoHideScrollBarsChangedRevoker = m_uiSettings5.AutoHideScrollBarsChanged(
                 winrt::auto_revoke,
-                { &ScrollViewer::OnAutoHideScrollBarsChanged });
+                { this, &ScrollViewer::OnAutoHideScrollBarsChanged });
         }
     }
 }
@@ -1653,16 +1530,6 @@ void ScrollViewer::UpdateScrollControllersVisibility(
     }
 }
 
-const std::vector<winrt::weak_ref<winrt::ScrollViewer>>::const_iterator ScrollViewer::GetLoadedScrollViewer() const
-{
-    MUX_ASSERT(SharedHelpers::IsRS4OrHigher());
-
-    const auto it = std::find_if(s_loadedScrollViewers.cbegin(), s_loadedScrollViewers.cend(), [this](winrt::weak_ref<winrt::ScrollViewer> const& sv)
-        { return winrt::get_self<ScrollViewer>(sv.get()) == this; });
-
-    return it;
-}
-
 bool ScrollViewer::IsLoaded() const
 {
     return winrt::VisualTreeHelper::GetParent(*this) != nullptr;
@@ -1683,6 +1550,52 @@ bool ScrollViewer::AreBothScrollControllersVisible() const
 {
     return m_horizontalScrollControllerElement && m_horizontalScrollControllerElement.get().Visibility() == winrt::Visibility::Visible &&
            m_verticalScrollControllerElement && m_verticalScrollControllerElement.get().Visibility() == winrt::Visibility::Visible;
+}
+
+bool ScrollViewer::AreScrollControllersAutoHiding()
+{
+    // Use the cached value unless it was invalidated.
+    if (m_autoHideScrollControllersValid)
+    {
+        return m_autoHideScrollControllers;
+    }
+
+    m_autoHideScrollControllersValid = true;
+
+    if (SharedHelpers::IsRS4OrHigher())
+    {
+        com_ptr<ScrollViewerTestHooks> globalTestHooks = ScrollViewerTestHooks::GetGlobalTestHooks();
+
+        if (globalTestHooks)
+        {
+            winrt::IReference<bool> autoHideScrollControllers = globalTestHooks->GetAutoHideScrollControllers(*this);
+
+            if (autoHideScrollControllers)
+            {
+                // Test hook takes precedence over UISettings and registry key settings.
+                m_autoHideScrollControllers = autoHideScrollControllers.Value();
+                return m_autoHideScrollControllers;
+            }
+        }
+    }
+
+    if (m_uiSettings5)
+    {
+        // Use the 19H1+ UISettings property.
+        m_autoHideScrollControllers = m_uiSettings5.AutoHideScrollBars();
+    }
+    else if (SharedHelpers::IsRS4OrHigher())
+    {
+        // Use the RS4+ registry key HKEY_CURRENT_USER\Control Panel\Accessibility\DynamicScrollbars
+        m_autoHideScrollControllers = RegUtil::UseDynamicScrollbars();
+    }
+    else
+    {
+        // ScrollBars are auto-hiding prior to RS4.
+        m_autoHideScrollControllers = true;
+    }
+
+    return m_autoHideScrollControllers;
 }
 
 bool ScrollViewer::IsScrollControllersSeparatorVisible() const
@@ -1735,6 +1648,29 @@ void ScrollViewer::HideIndicatorsAfterDelay()
         }
 
         hideIndicatorsTimer.Start();
+    }
+}
+
+// On RS4 and RS5, update m_autoHideScrollControllers based on the DynamicScrollbars registry key value
+// and update the visual states if the value changed.
+void ScrollViewer::UpdateScrollControllersAutoHiding(
+    bool forceUpdate)
+{
+    if ((forceUpdate || (!m_uiSettings5 && SharedHelpers::IsRS4OrHigher())) && m_autoHideScrollControllersValid)
+    {
+        m_autoHideScrollControllersValid = false;
+
+        bool oldAutoHideScrollControllers = m_autoHideScrollControllers;
+        bool newAutoHideScrollControllers = AreScrollControllersAutoHiding();
+
+        if (oldAutoHideScrollControllers != newAutoHideScrollControllers)
+        {
+            UpdateVisualStates(
+                true  /*useTransitions*/,
+                false /*showIndicators*/,
+                false /*hideIndicators*/,
+                true  /*scrollControllersAutoHidingChanged*/);
+        }
     }
 }
 

@@ -278,17 +278,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer"))
             {
-                using (ScrollViewerTestHooksHelper scrollViewerTestHooksHelper = new ScrollViewerTestHooksHelper(autoHideScrollControllers))
+                ScrollViewerWithCustomVisualStateManager scrollViewer = null;
+
+                RunOnUIThread.Execute(() =>
                 {
-                    ScrollViewerWithCustomVisualStateManager scrollViewer = null;
+                    scrollViewer = new ScrollViewerWithCustomVisualStateManager();
+                });
+
+                using (ScrollViewerTestHooksHelper scrollViewerTestHooksHelper = new ScrollViewerTestHooksHelper(scrollViewer, autoHideScrollControllers))
+                {
                     Rectangle rectangleScrollViewerContent = null;
                     AutoResetEvent scrollViewerLoadedEvent = new AutoResetEvent(false);
-                    AutoResetEvent scrollViewerUnloadedEvent = new AutoResetEvent(false);                    
+                    AutoResetEvent scrollViewerUnloadedEvent = new AutoResetEvent(false);
 
                     RunOnUIThread.Execute(() =>
                     {
                         rectangleScrollViewerContent = new Rectangle();
-                        scrollViewer = new ScrollViewerWithCustomVisualStateManager();
                         scrollViewer.HorizontalScrollBarVisibility = scrollBarVisibility;
                         scrollViewer.VerticalScrollBarVisibility = scrollBarVisibility;
 

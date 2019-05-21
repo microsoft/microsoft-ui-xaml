@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
+using Microsoft.UI.Xaml.Controls;
 using System;
 
 #if USING_TAEF
@@ -17,19 +18,30 @@ namespace MUXControlsTestApp.Utilities
     // Utility class used to set up ScrollViewer test hooks and automatically reset them when the instance gets disposed.
     public class ScrollViewerTestHooksHelper : IDisposable
     {
-        public ScrollViewerTestHooksHelper(bool? autoHideScrollControllers = null)
+        public ScrollViewerTestHooksHelper(ScrollViewer scrollViewer, bool? autoHideScrollControllers = null)
         {
             RunOnUIThread.Execute(() =>
             {
-                AutoHideScrollControllers = autoHideScrollControllers;
+                if (scrollViewer != null)
+                {
+                    ScrollViewer = scrollViewer;
+
+                    ScrollViewerTestHooks.SetAutoHideScrollControllers(scrollViewer, autoHideScrollControllers);
+                }
             });
+        }
+
+        public ScrollViewer ScrollViewer
+        {
+            get;
+            set;
         }
 
         public bool? AutoHideScrollControllers
         {
             get
             {
-                return ScrollViewerTestHooks.AutoHideScrollControllers;
+                return ScrollViewer == null ? true : ScrollViewerTestHooks.GetAutoHideScrollControllers(ScrollViewer);
             }
 
             set
@@ -37,7 +49,10 @@ namespace MUXControlsTestApp.Utilities
                 if (value != AutoHideScrollControllers)
                 {
                     Log.Comment($"ScrollViewerTestHooksHelper: AutoHideScrollControllers set to {value}.");
-                    ScrollViewerTestHooks.AutoHideScrollControllers = value;
+                    if (ScrollViewer != null)
+                    {
+                         ScrollViewerTestHooks.SetAutoHideScrollControllers(ScrollViewer, value);
+                    }
                 }
             }
         }

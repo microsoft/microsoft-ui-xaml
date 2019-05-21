@@ -17,27 +17,47 @@ com_ptr<ScrollViewerTestHooks> ScrollViewerTestHooks::EnsureGlobalTestHooks()
     return s_testHooks;
 }
 
-winrt::IReference<bool> ScrollViewerTestHooks::AutoHideScrollControllers()
+winrt::IReference<bool> ScrollViewerTestHooks::GetAutoHideScrollControllers(const winrt::ScrollViewer& scrollViewer)
 {
-    if (!s_testHooks)
+    if (scrollViewer && s_testHooks)
     {
-        return nullptr;
+        auto hooks = EnsureGlobalTestHooks();
+        auto iterator = hooks->m_autoHideScrollControllersMap.find(scrollViewer);
+
+        if (iterator != hooks->m_autoHideScrollControllersMap.end())
+        {
+            return iterator->second;
+        }
     }
 
-    auto hooks = EnsureGlobalTestHooks();
-    return hooks->m_autoHideScrollControllers;
+    return nullptr;
 }
 
-void ScrollViewerTestHooks::AutoHideScrollControllers(winrt::IReference<bool> value)
+void ScrollViewerTestHooks::SetAutoHideScrollControllers(const winrt::ScrollViewer& scrollViewer, winrt::IReference<bool> value)
 {
-    if (!s_testHooks && !value)
+    if (scrollViewer && (s_testHooks || value))
     {
-        return;
-    }
+        auto hooks = EnsureGlobalTestHooks();
+        auto iterator = hooks->m_autoHideScrollControllersMap.find(scrollViewer);
 
-    auto hooks = EnsureGlobalTestHooks();
-    hooks->m_autoHideScrollControllers = value;
-    ScrollViewer::ScrollControllersAutoHidingChanged();
+        if (iterator != hooks->m_autoHideScrollControllersMap.end())
+        {
+            if (value)
+            {
+                iterator->second = value;
+            }
+            else
+            {
+                hooks->m_autoHideScrollControllersMap.erase(iterator);
+            }
+        }
+        else if (value)
+        {
+            hooks->m_autoHideScrollControllersMap.emplace(scrollViewer, value);
+        }
+
+        winrt::get_self<ScrollViewer>(scrollViewer)->ScrollControllersAutoHidingChanged();
+    }
 }
 
 winrt::Scroller ScrollViewerTestHooks::GetScrollerPart(const winrt::ScrollViewer& scrollViewer)

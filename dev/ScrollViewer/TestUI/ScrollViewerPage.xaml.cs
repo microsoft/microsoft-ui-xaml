@@ -17,7 +17,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #if !BUILD_WINDOWS
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
-using ScrollViewerTestHooks = Microsoft.UI.Private.Controls.ScrollViewerTestHooks;
 #endif
 
 namespace MUXControlsTestApp
@@ -61,21 +60,6 @@ namespace MUXControlsTestApp
         private void ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Unchecked(object sender, RoutedEventArgs e)
         {
             ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = false;
-        }
-
-        private void ChkAutoHideScrollControllers_Indeterminate(object sender, RoutedEventArgs e)
-        {
-            ScrollViewerTestHooks.AutoHideScrollControllers = null;
-        }
-
-        private void ChkAutoHideScrollControllers_Checked(object sender, RoutedEventArgs e)
-        {
-            ScrollViewerTestHooks.AutoHideScrollControllers = true;
-        }
-
-        private void ChkAutoHideScrollControllers_Unchecked(object sender, RoutedEventArgs e)
-        {
-            ScrollViewerTestHooks.AutoHideScrollControllers = false;
         }
     }
 }
