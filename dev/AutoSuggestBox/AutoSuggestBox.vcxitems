@@ -13,4 +13,10 @@
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)AutoSuggestBox_rs1_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+  </ItemGroup>
 </Project>
