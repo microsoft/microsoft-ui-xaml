@@ -53,7 +53,7 @@ $($rerunResults.blobPrefix)
 "@)$($rerunResults.blobSuffix)"
 
                     # We subtract 1 from the error index because we added 1 so we could use 0
-                    # as a default value not injected into the JSON, in order to keep its size down.
+                    # as a default value not injected into the JSON in order to keep its size down.
                     # We did this because there's a maximum size enforced for the errorMessage parameter
                     # in the Azure DevOps REST API.
                     $fullErrorMessage = @"

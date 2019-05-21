@@ -29,6 +29,27 @@ namespace HelixTestHelpers
         public List<TestResult> RerunResults { get; private set; }
     }
     
+    //
+    // Azure DevOps doesn't currently provide a way to directly report sub-results for unreliable tests
+    // that were run multiple times.  To get around that limitation, we'll mark the test as "Skip" since
+    // that's the only non-pass/fail result we can return, and will then report the information about the
+    // runs in the "reason" category for the skipped test.  The Azure DevOps REST API enforces a restriction
+    // on the maximum length that that string value can be, so in order to ensure that we don't exceed that
+    // length, we'll make the following space optimizations:
+    //
+    //   1. Serializing as JSON, which is more compact than XML;
+    //   2. Don't serialize values that we don't need;
+    //   3. Store the URL prefix and suffix for the blob storage URL only once instead of
+    //      storing every log and screenshot URL in its entirety; and
+    //   4. Storing a list of unique error messages and then indexing into that instead of
+    //      storing every error message in its entirety.
+    //
+    // #4 is motivated by the fact that if a test fails multiple times, it probably failed for the same reason
+    // each time, in which case we'd just be repeating ourselves if we stored every error message each time.
+    //
+    // TODO (https://github.com/dotnet/arcade/issues/2773): Once we're able to directly report things in a
+    // more granular fashion than just a binary pass/fail result, we should do that.
+    //
     [DataContract]  
     internal class JsonSerializableTestResults
     {  
@@ -38,9 +59,6 @@ namespace HelixTestHelpers
         [DataMember]
         internal string blobSuffix;
         
-        // To conserve space, we'll only log unique error messages,
-        // since it's very likely that multiple failures of the same test
-        // will be the same failure.
         [DataMember]
         internal string[] errors;
         
@@ -437,9 +455,6 @@ namespace HelixTestHelpers
             assembly.SetAttributeValue("total", resultCount);
             assembly.SetAttributeValue("passed", passedCount);
             assembly.SetAttributeValue("failed", failedCount);
-            
-            // There's no way using the xUnit format to report that a test passed on re-run, so since we
-            // aren't using the notion of a "skipped" test, we'll use that as a proxy.
             assembly.SetAttributeValue("skipped", passedOnRerunCount);
             
             assembly.SetAttributeValue("time", (int)testPass.TestPassExecutionTime.TotalSeconds);
@@ -467,9 +482,6 @@ namespace HelixTestHelpers
 
                 test.SetAttributeValue("time", result.ExecutionTime.TotalSeconds);
                 
-                // TODO (https://github.com/dotnet/arcade/issues/2773): Once we're able to
-                // report things in a more granular fashion than just a binary pass/fail result,
-                // we should do that.  For now, we'll use "Skip" to mean "this test was unreliable".
                 string resultString = string.Empty;
                 
                 if (result.Passed)
@@ -489,7 +501,7 @@ namespace HelixTestHelpers
 
                 if (!result.Passed)
                 {
-                    // If the test passed on rerun, then we'll add metadata noting as much.
+                    // If the test failed but then passed on rerun, then we'll add metadata to report the results of each run.
                     // Otherwise, we'll mark down the failure information.
                     if (result.PassedOnRerun)
                     {
@@ -587,9 +599,9 @@ namespace HelixTestHelpers
                     serializableResult.screenshots = screenshots.ToArray();
                 }
                 
-                // To conserve space, we'll log the index of the error to index in a list of unique errors,
-                // rather than jotting down every single error in its entirety.
-                // We'll add one to the result so we can not serialize the default value of 0.
+                // To conserve space, we'll log the index of the error to index in a list of unique errors rather than
+                // jotting down every single error in its entirety. We'll add one to the result so we can avoid
+                // serializing this property when it has the default value of 0.
                 serializableResult.errorIndex = Array.IndexOf(uniqueErrors, rerunResult.Details) + 1;
             }
             
