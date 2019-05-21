@@ -78,6 +78,7 @@ namespace MUXControlsTestApp
                 {"CalendarDatePicker", typeof(CalendarDatePickerPage), "CalendarDatePicker.png"},
                 {"DatePicker", typeof(DatePickerPage), "DatePicker.png"},
                 {"TimePicker", typeof(TimePickerPage), "TimePicker.png"},
+                {"ToolTip", typeof(ToolTipPage), "ToolTip.png"},
                 {"CornerRadius", typeof(CornerRadiusPage)},
             };
 

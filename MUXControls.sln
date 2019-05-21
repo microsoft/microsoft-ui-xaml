@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2006
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28809.33
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dev", "dev", "{67599AD5-51EC-44CB-85CE-B60CD8CBA270}"
 EndProject
@@ -607,6 +607,12 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "DatePicker_TestUI", "dev\Da
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TimePicker_TestUI", "dev\TimePicker\TestUI\TimePicker_TestUI.shproj", "{C2DE2B41-F6C4-4243-A71B-3A67E9CE528F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ToolTip", "ToolTip", "{6924BE51-E13D-41D1-8E0F-DEC70EE821B3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ToolTip", "dev\ToolTip\ToolTip.vcxitems", "{8D9266E9-C250-4BB4-A362-AEB4643203B0}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ToolTip_TestUI", "dev\ToolTip\TestUI\ToolTip_TestUI.shproj", "{3AD7543B-020C-4C9F-99B9-252F666F59A8}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ParallaxView\TestUI\ParallaxView_TestUI.projitems*{00c52fd5-42fd-33b4-84a0-795c9b5a014d}*SharedItemsImports = 13
@@ -642,6 +648,7 @@ Global
 		dev\CheckBox\TestUI\CheckBox_TestUI.projitems*{38410f2a-d1f0-4373-8b77-ae25d6c36451}*SharedItemsImports = 13
 		dev\Collections\Collections.vcxitems*{395a71a1-4327-477b-85d4-af0851732ccb}*SharedItemsImports = 9
 		dev\CommonStyles\CommonStyles.vcxitems*{3a07fa59-c5c1-4b46-8b31-043f9ca91226}*SharedItemsImports = 9
+		dev\ToolTip\TestUI\ToolTip_TestUI.projitems*{3ad7543b-020c-4c9f-99b9-252f666f59a8}*SharedItemsImports = 13
 		dev\Materials\Acrylic\AcrylicBrush.vcxitems*{3affd0ce-c682-4e59-a9d4-be8ec3f485da}*SharedItemsImports = 9
 		dev\AutoSuggestBox\AutoSuggestBox.vcxitems*{417000d9-2641-4629-99f2-8f6033a6ac52}*SharedItemsImports = 9
 		dev\TeachingTip\TestUI\TeachingTip_TestUI.projitems*{42a51d3e-f06a-41a0-be4c-f94cddb80678}*SharedItemsImports = 13
@@ -707,6 +714,7 @@ Global
 		dev\CalendarDatePicker\TestUI\CalendarDatePicker_TestUI.projitems*{8cd16537-aad0-4905-aa85-3face7f99034}*SharedItemsImports = 13
 		dev\TwoPaneView\TwoPaneView.vcxitems*{8d0e4610-b51d-45c1-8b82-240bd2f73a92}*SharedItemsImports = 9
 		dev\Repeater\APITests\Repeater_APITests.projitems*{8d2da979-6313-49e2-8cf3-b568436d2944}*SharedItemsImports = 13
+		dev\ToolTip\ToolTip.vcxitems*{8d9266e9-c250-4bb4-a362-aeb4643203b0}*SharedItemsImports = 9
 		dev\Interactions\ButtonInteraction\APITests\ButtonInteraction_APITests.projitems*{8dc0ea14-d850-4c6e-8918-beeb89e877bd}*SharedItemsImports = 13
 		dev\CommandBarFlyout\APITests\CommandBarFlyout_APITests.projitems*{8f6f9336-c45c-40c1-abda-3679a20434b1}*SharedItemsImports = 13
 		dev\Scroller\InteractionTests\Scroller_InteractionTests.projitems*{8faad013-139c-8d2a-2285-45f717d9e64a}*SharedItemsImports = 13
@@ -842,6 +850,7 @@ Global
 		dev\TeachingTip\APITests\TeachingTip_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\TeachingTip\TestUI\TeachingTip_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\TimePicker\TestUI\TimePicker_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\ToolTip\TestUI\ToolTip_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\TreeView\APITests\TreeView_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\TreeView\TestUI\TreeView_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
@@ -913,6 +922,7 @@ Global
 		dev\TeachingTip\APITests\TeachingTip_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\TeachingTip\TestUI\TeachingTip_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\TimePicker\TestUI\TimePicker_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\ToolTip\TestUI\ToolTip_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\TreeView\APITests\TreeView_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\TreeView\TestUI\TreeView_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
@@ -1515,6 +1525,9 @@ Global
 		{8CD16537-AAD0-4905-AA85-3FACE7F99034} = {D64E9699-B55E-424D-B5B1-A2092E994CBE}
 		{E20F725C-3A53-463B-ADA9-FF2088AACA4D} = {D93E5469-52F7-4CAB-A13A-1B78B873D8CC}
 		{C2DE2B41-F6C4-4243-A71B-3A67E9CE528F} = {EAE98696-D70B-4BCE-8E57-0BD6DCD40A86}
+		{6924BE51-E13D-41D1-8E0F-DEC70EE821B3} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
+		{8D9266E9-C250-4BB4-A362-AEB4643203B0} = {6924BE51-E13D-41D1-8E0F-DEC70EE821B3}
+		{3AD7543B-020C-4C9F-99B9-252F666F59A8} = {6924BE51-E13D-41D1-8E0F-DEC70EE821B3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}

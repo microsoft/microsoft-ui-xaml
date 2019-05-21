@@ -257,6 +257,7 @@
     <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\WideTile.scale-150.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\WideTile.scale-200.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\TimePicker.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ToolTip.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\TreeView.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\AutoSave.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\file.png" />
