@@ -40,8 +40,6 @@ private:
     void EnsureAutomationSetCountAndPosition();
     void EnsureFocusedPrimaryCommand();
 
-    static bool IsFrameworkElementLoaded(
-        winrt::FrameworkElement const& frameworkElement);
     static bool IsControlFocusable(
         winrt::Control const& control,
         bool checkTabStop);

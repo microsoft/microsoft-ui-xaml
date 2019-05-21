@@ -218,7 +218,6 @@ private:
     void UpdateScrollerVerticalScrollController(const winrt::IScrollController& verticalScrollController);
     void UpdateScrollControllersVisibility(bool horizontalChange, bool verticalChange);
 
-    bool IsLoaded() const;
     bool IsInputKindIgnored(winrt::InputKind const& inputKind);
 
     bool AreAllScrollControllersCollapsed() const;
@@ -228,7 +227,13 @@ private:
     void HideIndicators(bool useTransitions = true);
     void HideIndicatorsAfterDelay();
     void UpdateScrollControllersAutoHiding(bool forceUpdate = false);
-    void UpdateVisualStates(bool useTransitions = true, bool showIndicators = false, bool hideIndicators = false, bool scrollControllersAutoHidingChanged = false);
+    void UpdateVisualStates(
+        bool useTransitions = true,
+        bool showIndicators = false,
+        bool hideIndicators = false,
+        bool scrollControllersAutoHidingChanged = false,
+        bool updateScrollControllersAutoHiding = false,
+        bool onlyForAutoHidingScrollControllers = false);
     void UpdateScrollControllersVisualState(bool useTransitions = true, bool showIndicators = false, bool hideIndicators = false);
     void UpdateScrollControllersSeparatorVisualState(bool useTransitions = true, bool scrollControllersAutoHidingChanged = false);
     void GoToState(std::wstring_view const& stateName, bool useTransitions = true);

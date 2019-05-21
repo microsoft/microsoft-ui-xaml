@@ -31,7 +31,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 
                 if (firstCommandAsFrameworkElement)
                 {
-                    if (IsFrameworkElementLoaded(firstCommandAsFrameworkElement))
+                    if (SharedHelpers::IsFrameworkElementLoaded(firstCommandAsFrameworkElement))
                     {
                         FocusCommand(
                             commands,
@@ -890,19 +890,6 @@ void CommandBarFlyoutCommandBar::OnKeyDown(
     }
 
     __super::OnKeyDown(args);
-}
-
-bool CommandBarFlyoutCommandBar::IsFrameworkElementLoaded(
-    winrt::FrameworkElement const& frameworkElement)
-{
-    if (SharedHelpers::IsRS5OrHigher())
-    {
-        return frameworkElement.IsLoaded();
-    }
-    else
-    {
-        return winrt::VisualTreeHelper::GetParent(frameworkElement) != nullptr;
-    }
 }
 
 bool CommandBarFlyoutCommandBar::IsControlFocusable(
