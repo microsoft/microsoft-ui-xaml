@@ -132,6 +132,7 @@ jobs:
       artifactName: 'drop'
       
 - job: ProcessTestResults
+  condition: succeededOrFailed()
   dependsOn: ${{ parameters.name }}
   pool:
     vmImage: 'VS2017-Win2016'
@@ -140,6 +141,7 @@ jobs:
   steps:
   - task: powershell@2
     displayName: 'UpdateUnreliableTests.ps1'
+    condition: succeededOrFailed()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
@@ -148,6 +150,7 @@ jobs:
       
   - task: powershell@2
     displayName: 'OutputTestResults.ps1'
+    condition: succeededOrFailed()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
