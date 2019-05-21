@@ -13,10 +13,23 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CornerRadiusPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CheckBoxPage.xaml.cs">
       <DependentUpon>CheckBoxPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)CornerRadiusPage.xaml.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="D:\microsoft-ui-xaml2\dev\CheckBox\TestUI\CornerRadiusPage.xaml.cs">
+      <DependentUpon>CornerRadiusPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="D:\microsoft-ui-xaml2\dev\CheckBox\TestUI\HeadersPage.xaml.cs">
+      <DependentUpon>HeadersPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>
