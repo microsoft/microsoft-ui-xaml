@@ -15,13 +15,20 @@
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CornerRadiusPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CommonStylesPage.xaml.cs">
       <DependentUpon>CommonStylesPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)CornerRadiusPage.xaml.cs">
+      <DependentUpon>CornerRadiusPage.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
-    <ItemGroup>
+  <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)CompactPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
