@@ -112,6 +112,7 @@
     <Import Project="..\CheckBox\CheckBox.vcxitems" Label="Shared" />
     <Import Project="..\CalendarDatePicker\CalendarDatePicker.vcxitems" Label="Shared" />
     <Import Project="..\DatePicker\DatePicker.vcxitems" Label="Shared" />
+    <Import Project="..\Slider\Slider.vcxitems" Label="Shared" />
     <Import Project="..\TimePicker\TimePicker.vcxitems" Label="Shared" />
     <Import Project="..\ToolTip\ToolTip.vcxitems" Label="Shared" />
   </ImportGroup>

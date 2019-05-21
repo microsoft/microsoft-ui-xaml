@@ -56,6 +56,7 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\DatePicker\TestUI\DatePicker_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarDatePicker\TestUI\CalendarDatePicker_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AutoSuggestBox\TestUI\AutoSuggestBox_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Slider\TestUI\Slider_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TimePicker\TestUI\TimePicker_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ToolTip\TestUI\ToolTip_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
 

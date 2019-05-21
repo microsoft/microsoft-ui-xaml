@@ -613,6 +613,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ToolTip", "dev\ToolTip\Tool
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ToolTip_TestUI", "dev\ToolTip\TestUI\ToolTip_TestUI.shproj", "{3AD7543B-020C-4C9F-99B9-252F666F59A8}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Slider", "Slider", "{B69C8F1D-2492-4526-AA53-5AB0CDE591B2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Slider", "dev\Slider\Slider.vcxitems", "{FC2178CA-7F72-40F0-916C-A2B3750BBB6C}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Slider_TestUI", "dev\Slider\TestUI\Slider_TestUI.shproj", "{22B10561-4E56-430C-BCAA-D3C8B21BF753}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ParallaxView\TestUI\ParallaxView_TestUI.projitems*{00c52fd5-42fd-33b4-84a0-795c9b5a014d}*SharedItemsImports = 13
@@ -632,6 +638,7 @@ Global
 		dev\Materials\Reveal\InteractionTests\Reveal_InteractionTests\Reveal_InteractionTests.projitems*{1f2872e7-28c9-4c01-88ed-73c43ee1c9a4}*SharedItemsImports = 13
 		dev\ScrollViewer\TestUI\ScrollViewer_TestUI.projitems*{20c52fd5-62fd-53b4-a4a0-995c9b5a014d}*SharedItemsImports = 13
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\ScrollViewerIRefreshInfoProviderAdapter.vcxitems*{22a3d1c4-4d1c-4b04-b695-8fec39bfed86}*SharedItemsImports = 9
+		dev\Slider\TestUI\Slider_TestUI.projitems*{22b10561-4e56-430c-bcaa-d3c8b21bf753}*SharedItemsImports = 13
 		dev\DatePicker\DatePicker.vcxitems*{239f3422-24b8-433a-9d49-dd9c12f0dbfc}*SharedItemsImports = 9
 		dev\Interactions\ButtonInteraction\ButtonInteraction.vcxitems*{2459bc06-2ae5-4c65-ba73-ab28090b6fab}*SharedItemsImports = 9
 		dev\ColorPicker\ColorPicker.vcxitems*{248cc96d-67a2-4359-a4e3-ab0dad110a1e}*SharedItemsImports = 9
@@ -762,11 +769,13 @@ Global
 		dev\ResourceHelper\ResourceHelper.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Scroller\Scroller.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\ScrollViewer\ScrollViewer.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
+		dev\Slider\Slider.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\SplitButton\SplitButton.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\SwipeControl\SwipeControl.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\TeachingTip\TeachingTip.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Telemetry\Telemetry.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\TestHooks\TestHooks.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
+		dev\Slider\Slider.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\TimePicker\TimePicker.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\ToolTip\ToolTip.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\TreeView\TreeView.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
@@ -844,6 +853,7 @@ Global
 		dev\Scroller\TestUI\Scroller_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\ScrollViewer\APITests\ScrollViewer_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\ScrollViewer\TestUI\ScrollViewer_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\Slider\TestUI\Slider_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\SplitButton\APITests\SplitButton_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\SplitButton\TestUI\SplitButton_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\SwipeControl\SwipeControl_APITests\SwipeControl_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
@@ -916,6 +926,7 @@ Global
 		dev\Scroller\TestUI\Scroller_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\ScrollViewer\APITests\ScrollViewer_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\ScrollViewer\TestUI\ScrollViewer_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\Slider\TestUI\Slider_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\SplitButton\APITests\SplitButton_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\SplitButton\TestUI\SplitButton_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\SwipeControl\SwipeControl_APITests\SwipeControl_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
@@ -929,6 +940,7 @@ Global
 		dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\TwoPaneView\TestUI\TwoPaneView_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		test\TestAppUtils\TestAppUtils.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\Slider\Slider.vcxitems*{fc2178ca-7f72-40f0-916c-a2b3750bbb6c}*SharedItemsImports = 9
 		dev\CommonManaged\CommonManaged.projitems*{fcc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\LayoutPanel\LayoutPanel.vcxitems*{fd3c1a00-0d07-4849-a3b9-646f0ff21d7b}*SharedItemsImports = 9
 		dev\SwipeControl\SwipeControl.vcxitems*{fd63f767-bd98-45d9-8a63-3cd4a148d527}*SharedItemsImports = 9
@@ -1529,6 +1541,9 @@ Global
 		{6924BE51-E13D-41D1-8E0F-DEC70EE821B3} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{8D9266E9-C250-4BB4-A362-AEB4643203B0} = {6924BE51-E13D-41D1-8E0F-DEC70EE821B3}
 		{3AD7543B-020C-4C9F-99B9-252F666F59A8} = {6924BE51-E13D-41D1-8E0F-DEC70EE821B3}
+		{B69C8F1D-2492-4526-AA53-5AB0CDE591B2} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
+		{FC2178CA-7F72-40F0-916C-A2B3750BBB6C} = {B69C8F1D-2492-4526-AA53-5AB0CDE591B2}
+		{22B10561-4E56-430C-BCAA-D3C8B21BF753} = {B69C8F1D-2492-4526-AA53-5AB0CDE591B2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}
