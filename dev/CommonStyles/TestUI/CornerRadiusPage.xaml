@@ -27,6 +27,12 @@
                     <Setter Property="VerticalAlignment" Value="Top"/>
                     <Setter Property="Grid.Column" Value="2"/>
                 </Style>
+                <!-- Rounding slider thumb until that becomes the default -->
+                <x:Double x:Key="SliderThumbCornerRadius">10</x:Double>
+                <x:Double x:Key="SliderHorizontalThumbWidth">20</x:Double>
+                <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
+                <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
+                <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
             </Grid.Resources>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="150"/>
@@ -324,26 +330,26 @@
             </Grid>
 
             <TextBlock Grid.Row="21" Text="Slider" Style="{StaticResource SideHeader}"/>
-            <Grid Grid.Row="21" Style="{StaticResource LeftColumn}" MinWidth="50">
+            <Grid Grid.Row="21" Style="{StaticResource LeftColumn}" MinWidth="200">
                 <Slider Orientation="Horizontal"/>
             </Grid>
-            <Grid Grid.Row="21" Style="{StaticResource RightColumn}" MinWidth="50">
+            <Grid Grid.Row="21" Style="{StaticResource RightColumn}" MinWidth="200">
                 <Slider Orientation="Horizontal" CornerRadius="6"/>
             </Grid>
 
             <TextBlock Grid.Row="22" Text="Slider" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="22" Style="{StaticResource LeftColumn}">
-                <Slider Orientation="Horizontal" TickFrequency="1" Width="100" TickPlacement="Outside"/>
+                <Slider Orientation="Horizontal" TickFrequency="1" Width="200" TickPlacement="Outside"/>
             </Grid>
             <Grid Grid.Row="22" Style="{StaticResource RightColumn}">
-                <Slider Orientation="Horizontal" TickFrequency="1" Width="100" TickPlacement="Outside" CornerRadius="6"/>
+                <Slider Orientation="Horizontal" TickFrequency="1" Width="200" TickPlacement="Outside" CornerRadius="6"/>
             </Grid>
 
             <TextBlock Grid.Row="23" Text="" Style="{StaticResource SideHeader}"/>
-            <Grid Grid.Row="23" Style="{StaticResource LeftColumn}" MinHeight="50">
+            <Grid Grid.Row="23" Style="{StaticResource LeftColumn}" MinHeight="100">
                 <Slider Orientation="Vertical"/>
             </Grid>
-            <Grid Grid.Row="23" Style="{StaticResource RightColumn}" MinHeight="50">
+            <Grid Grid.Row="23" Style="{StaticResource RightColumn}" MinHeight="100">
                 <Slider Orientation="Vertical" CornerRadius="6"/>
             </Grid>
 
