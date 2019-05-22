@@ -209,20 +209,22 @@ enum GridAutoFlow
 [webhosthidden]
 enum GridJustifySelf
 {
-    Start = 0,
-    End = 1,
-    Center = 2,
-    Stretch = 3,
+    Unset = 0,
+    Start = 1,
+    End = 2,
+    Center = 3,
+    Stretch = 4,
 };
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 enum GridAlignSelf
 {
-    Start = 0,
-    End = 1,
-    Center = 2,
-    Stretch = 3,
+    Unset = 0,
+    Start = 1,
+    End = 2,
+    Center = 3,
+    Stretch = 4,
 };
 
 [WUXC_VERSION_PREVIEW]
@@ -871,11 +873,19 @@ unsealed runtimeclass GridLayout : NonVirtualizingLayout
 
     [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
     static Windows.UI.Xaml.DependencyProperty JustifySelfProperty{ get; };
+    //[MUX_DEFAULT_VALUE("nullptr")]
+    [MUX_DEFAULT_VALUE("winrt::GridJustifySelf::Unset")]
+    /*static void SetJustifySelf(Windows.UI.Xaml.UIElement element, Windows.Foundation.IReference<GridJustifySelf> value);
+    static Windows.Foundation.IReference<GridJustifySelf> GetJustifySelf(Windows.UI.Xaml.UIElement element);*/
     static void SetJustifySelf(Windows.UI.Xaml.UIElement element, GridJustifySelf value);
     static GridJustifySelf GetJustifySelf(Windows.UI.Xaml.UIElement element);
 
     [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    //[MUX_DEFAULT_VALUE("nullptr")]
+    [MUX_DEFAULT_VALUE("winrt::GridAlignSelf::Unset")]
     static Windows.UI.Xaml.DependencyProperty AlignSelfProperty{ get; };
+    /*static void SetAlignSelf(Windows.UI.Xaml.UIElement element, Windows.Foundation.IReference<GridAlignSelf> value);
+    static Windows.Foundation.IReference<GridAlignSelf> GetAlignSelf(Windows.UI.Xaml.UIElement element);*/
     static void SetAlignSelf(Windows.UI.Xaml.UIElement element, GridAlignSelf value);
     static GridAlignSelf GetAlignSelf(Windows.UI.Xaml.UIElement element);
 }

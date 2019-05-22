@@ -30,7 +30,7 @@ void GridLayoutProperties::EnsureProperties()
                 winrt::name_of<winrt::GridAlignSelf>(),
                 winrt::name_of<winrt::GridLayout>(),
                 true /* isAttached */,
-                ValueHelper<winrt::GridAlignSelf>::BoxedDefaultValue(),
+                ValueHelper<winrt::GridAlignSelf>::BoxValueIfNecessary(winrt::GridAlignSelf::Unset),
                 &GridLayout::OnChildPropertyChanged);
     }
     if (!s_ColumnEndProperty)

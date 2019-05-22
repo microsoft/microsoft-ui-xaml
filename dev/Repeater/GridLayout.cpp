@@ -136,6 +136,27 @@ void GridLayout::AutoFlow(winrt::GridAutoFlow const& value)
     m_autoFlow = value;
 }
 
+std::optional<winrt::GridJustifySelf> GridLayout::TryGetJustifySelf(winrt::UIElement const& target)
+{
+    auto value = GetJustifySelf(target);
+    if (value == winrt::GridJustifySelf::Unset)
+    {
+        return std::optional<winrt::GridJustifySelf>();
+    }
+
+    return value;
+}
+
+std::optional<winrt::GridAlignSelf> GridLayout::TryGetAlignSelf(winrt::UIElement const& target)
+{
+    auto value = GetAlignSelf(target);
+    if (value == winrt::GridAlignSelf::Unset)
+    {
+        return std::optional<winrt::GridAlignSelf>();
+    }
+
+    return value;
+}
 
 bool GridLayout::ResolvedGridReference::IsValid()
 {
@@ -231,8 +252,7 @@ GridLayout::ResolvedGridReference GridLayout::AxisInfo::GetTrack(winrt::GridLoca
         }
 
         // Friendly track name
-        // PORT_TODO
-        //if (!String.IsNullOrEmpty(location.LineName))
+        if (!location.LineName().empty())
         {
             for (unsigned int i = 0u; i < Template.size(); i++)
             {
@@ -311,7 +331,6 @@ void GridLayout::MarkOccupied(GridLayout::ChildGridLocations childLocation, std:
         for (int row = childLocation.RowStart.Index; row < childLocation.RowEnd.Index; row++)
         {
             //DumpInfo($"Mark occupied {{{column},{row}}}");
-            // PORT_TODO
             auto index = GridLayout::GridCellIndex{ column, row };
             occupied[index] = true;
         }
@@ -704,8 +723,6 @@ GridLayout::ChildGridLocations GridLayout::AssignUnoccupiedGridLocation(winrt::U
 
     // The child has no preference. Find them the first available spot according to the 
     // AutoFlow policy.
-    // TODO: Implement difference between Dense and not Dense
-    // TODO: Should Dense be a different enum value or a separate property (bool AutoFlowDense)
     switch (autoFlow)
     {
     case winrt::GridAutoFlow::Column:
@@ -1028,14 +1045,12 @@ winrt::Size GridLayout::ArrangeOverride(
         float desiredWidth = std::min(child.DesiredSize().Width, width);
         float unusedWidth = (width - desiredWidth);
         winrt::GridJustifyItems justify = m_justifyItems;
-        // PORT_TODO
-#if FALSE
-        winrt::GridJustifySelf? justifySelf = TryGetJustifySelf(child);
-        if (justifySelf.HasValue)
+        std::optional<winrt::GridJustifySelf> justifySelf = TryGetJustifySelf(child);
+        if (justifySelf.has_value())
         {
-            justify = Convert(justifySelf.Value);
+            justify = Convert(justifySelf.value());
         }
-#endif
+
         switch (justify)
         {
         case winrt::GridJustifyItems::Start:
@@ -1056,14 +1071,11 @@ winrt::Size GridLayout::ArrangeOverride(
         float desiredHeight = std::min(child.DesiredSize().Height, height);
         float unusedHeight = (height - desiredHeight);
         winrt::GridAlignItems align = m_alignItems;
-        // PORT_TODO
-#if FALSE
-        winrt::GridAlignSelf? alignSelf = TryGetAlignSelf(child);
-        if (alignSelf.HasValue)
+        std::optional<winrt::GridAlignSelf> alignSelf = TryGetAlignSelf(child);
+        if (alignSelf.has_value())
         {
-            align = Convert(alignSelf.Value);
+            align = Convert(alignSelf.value());
         }
-#endif
         switch (align)
         {
         case winrt::GridAlignItems::Start:
@@ -1103,4 +1115,16 @@ void GridLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
 
 void GridLayout::OnChildPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    winrt::FrameworkElement senderAsFrameworkElement = sender.try_as<winrt::FrameworkElement>();
+
+    if (senderAsFrameworkElement)
+    {
+        auto parent = senderAsFrameworkElement.Parent();
+        if (parent)
+        {
+            auto parentAsFrameworkElement = parent.try_as<winrt::FrameworkElement>();
+            parentAsFrameworkElement.InvalidateMeasure();
+        }
+    }
+    
 }
