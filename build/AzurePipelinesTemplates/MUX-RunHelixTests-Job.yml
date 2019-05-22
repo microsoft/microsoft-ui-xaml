@@ -4,6 +4,7 @@ parameters:
   condition: ''
   testSuite: ''
   maxParallel: 4
+  rerunPassesRequiredToAvoidFailure: 5
   matrix: 
     Release_x86:
       buildPlatform: 'x86'
@@ -147,6 +148,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\UpdateUnreliableTests.ps1
+      arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}'
       
   - task: powershell@2
     displayName: 'OutputTestResults.ps1'

@@ -1,3 +1,9 @@
+[CmdLetBinding()]
+Param(
+    [Parameter(Mandatory = $true)] 
+    [int]$RerunPassesRequiredToAvoidFailure
+)
+
 $azureDevOpsRestApiHeaders = @{
     "Accept"="application/json"
     "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:SYSTEM_ACCESSTOKEN)")))"
@@ -26,7 +32,8 @@ foreach ($testRun in $testRuns.value)
             
             $rerunResults = ConvertFrom-Json $testResult.errorMessage
             [System.Collections.Generic.List[System.Collections.Hashtable]]$rerunDataList = @()
-            $attemptCount = 1
+            $attemptCount = 0
+            $passCount = 0
             $totalDuration = 0
             
             foreach ($rerun in $rerunResults.results)
@@ -36,14 +43,18 @@ foreach ($testRun in $testRuns.value)
                     "durationInMs" = $rerun.duration;
                     "outcome" = $rerun.outcome;
                 }
-                
-                if ($attemptCount -gt 1)
+
+                if ($rerun.outcome -eq "Passed")
                 {
-                    # -1 to make this zero-indexed.
-                    $rerunData["sequenceId"] = $attemptCount - 1
+                    $passCount++
+                }
+                
+                if ($attemptCount -gt 0)
+                {
+                    $rerunData["sequenceId"] = $attemptCount
                 }
 
-                Write-Host "    Attempt #$($attemptCount): $($rerun.outcome)"
+                Write-Host "    Attempt #$($attemptCount + 1): $($rerun.outcome)"
                 
                 if ($rerun.outcome -ne "Passed")
                 {
@@ -73,8 +84,24 @@ $($rerunResults.errors[$rerun.errorIndex - 1])
                 $totalDuration += $rerun.duration
                 $rerunDataList.Add($rerunData)
             }
+
+            $overallOutcome = "Warning"
             
-            $updateBody = ConvertTo-Json @(@{ "id" = $testResult.id; "outcome" = "Warning"; "errorMessage" = " "; "durationInMs" = $totalDuration; "subResults" = $rerunDataList; "resultGroupType" = "rerun" }) -Depth 5
+            if ($attemptCount -eq 2)
+            {
+                Write-Host "  Test $($testResult.testCaseTitle) passed on the immediate rerun, so we'll mark it as unreliable."
+            }
+            elseif ($passCount -gt $RerunPassesRequiredToAvoidFailure)
+            {
+                Write-Host "  Test $($testResult.testCaseTitle) passed on $passCount of $attemptCount attempts, which is greater than or equal to the $RerunPassesRequiredToAvoidFailure passes required to avoid being marked as failed. Marking as unreliable."
+            }
+            else
+            {
+                Write-Host "  Test $($testResult.testCaseTitle) passed on only $passCount of $attemptCount attempts, which is less than the $RerunPassesRequiredToAvoidFailure passes required to avoid being marked as failed. Marking as failed."
+                $overallOutcome = "Failed"
+            }
+            
+            $updateBody = ConvertTo-Json @(@{ "id" = $testResult.id; "outcome" = $overallOutcome; "errorMessage" = " "; "durationInMs" = $totalDuration; "subResults" = $rerunDataList; "resultGroupType" = "rerun" }) -Depth 5
             Invoke-RestMethod -Uri $testRunResultsUri -Method Patch -Headers $azureDevOpsRestApiHeaders -Body $updateBody -ContentType "application/json"
         }
     }
