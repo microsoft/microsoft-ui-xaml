@@ -63,6 +63,9 @@ public:
         const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
+    std::optional<winrt::GridJustifySelf> TryGetJustifySelf(winrt::UIElement const& target);
+    std::optional<winrt::GridAlignSelf> TryGetAlignSelf(winrt::UIElement const& target);
+
     winrt::IVector<winrt::GridTrackInfo> m_templateColumns;
     winrt::IVector<winrt::GridTrackInfo> m_templateRows;
     double m_columnGap {};
