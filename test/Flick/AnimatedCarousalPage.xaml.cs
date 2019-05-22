@@ -19,6 +19,10 @@ namespace Flick
 
     public class SnappPointForwardingRepeater : ItemsRepeater, IScrollSnapPointsInfo
     {
+        public SnappPointForwardingRepeater()
+        {
+        }
+
         public IReadOnlyList<float> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment alignment)
         {
             return null;
@@ -71,6 +75,30 @@ namespace Flick
             }
         }
 
+        private bool isScrolling = false;
+
+        public bool IsScrolling
+        {
+            get
+            {
+                return isScrolling;
+            }
+        }
+
+        private double itemScaleRatio = 0.5;
+
+        public double ItemScaleRatio
+        {
+            get
+            {
+                return itemScaleRatio;
+            }
+            set
+            {
+                itemScaleRatio = value;
+            }
+        }
+
         protected void OnScrollViewerViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
             var svCenterPoint = sv.HorizontalOffset + sv.ViewportWidth / 2;
@@ -81,17 +109,24 @@ namespace Flick
 
             if (e.IsIntermediate)
             {
-                //textBlock.Text = "Scrolling started";
+                if (!isScrolling)
+                {
+                    isScrolling = true;
+                }
             }
             else
             {
                 textBlock.Text = "Selected Item: " + (SelectedItem == null ? "null" : selectedItemIndex.ToString());
+                isScrolling = false;
             }
         }
 
         protected void OnScrollViewerViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
-            //textBlock.Text = "Scrolling started";
+            if (!isScrolling)
+            {
+                isScrolling = true;
+            }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -147,7 +182,7 @@ namespace Flick
 
             /* TODO: Expose ItemScaleRatio (scaleRatioXY) as a DependencyProperty in the custom Carousel
              * control so the user can set it to any value */
-            scaleXExpression.SetScalarParameter("scaleRatioXY", 0.5f);
+            scaleXExpression.SetScalarParameter("scaleRatioXY", (float)ItemScaleRatio);
             scaleXExpression.SetScalarParameter("spacing", (float)layout.Spacing);
 
             // scale the item based on the distance of the item relative to the center of the viewport.
@@ -166,7 +201,7 @@ namespace Flick
 
             /* TODO: Expose ItemScaleRatio (scaleRatioXY) as a DependencyProperty in the custom Carousel
              * control so the user can set it to any value */
-            scaleYExpression.SetScalarParameter("scaleRatioXY", 0.5f);
+            scaleYExpression.SetScalarParameter("scaleRatioXY", (float)ItemScaleRatio);
             scaleYExpression.SetScalarParameter("spacing", (float)layout.Spacing);
 
             // scale the item based on the distance of the item relative to the center of the viewport.
@@ -182,7 +217,7 @@ namespace Flick
             offsetExpression.SetReferenceParameter("svVisual", svVisual);
             offsetExpression.SetReferenceParameter("scrollProperties", scrollProperties);
             offsetExpression.SetReferenceParameter("item", item);
-            offsetExpression.SetScalarParameter("itemScaleRatio", 0.5f);
+            offsetExpression.SetScalarParameter("itemScaleRatio", (float)ItemScaleRatio);
             offsetExpression.SetScalarParameter("spacing", (float)layout.Spacing);
             //offsetExpression.Expression = "Vector3(0,200,0)";
             //offsetExpression.Expression = "Vector3(((((item.Offset.X + (item.Size.X/2)) < ((svVisual.Size.X/2) - scrollProperties.Translation.X)) ? 1 : -1) * (item.Size.X * (1 - clamp((scaleRatioXY * (1 + (1 - (abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing))))), scaleRatioXY, 1)) / 2)), 0, 0)";
@@ -199,13 +234,6 @@ namespace Flick
         private void OnItemGotFocus(object sender, RoutedEventArgs e)
         {
             //ScrollToCenterOfViewport(sender);
-        }
-
-        private void OnItemClicked(object sender, RoutedEventArgs e)
-        {
-
-            ScrollToCenterOfViewport(sender);
-            //sv.ChangeView((layout.ItemWidth + layout.Spacing) * 500, null, null);
         }
 
         private static void ScrollToCenterOfViewport(object sender)
@@ -226,19 +254,47 @@ namespace Flick
             }
         }
 
-        private void Sv_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void Sv_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            if (!isScrolling)
+            {
+                // Get x position of the scrollviewer's center point if the currently selected item.Offset.X + item.Size.X/2 was the center point
+                var svCenterPoint = sv.HorizontalOffset + sv.ViewportWidth / 2;
+                svCenterPoint -= (svCenterPoint + layout.Spacing / 2) % (layout.Spacing + layout.ItemWidth);
+                svCenterPoint += layout.Spacing / 2 + layout.ItemWidth / 2;
+                var tapPositionInSV = e.GetPosition(sv).X + sv.HorizontalOffset;
+                var tapPositionDistanceFromSVCenterPoint = Math.Abs(tapPositionInSV - svCenterPoint);
+                int tappedItemIndex;
 
-        }
+                if (tapPositionDistanceFromSVCenterPoint <= (layout.ItemWidth / 2 + layout.Spacing / 2))
+                {
+                    var svOffsetForGivenCenterPoint = svCenterPoint - sv.ViewportWidth / 2;
 
-        private void Sv_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            textBlock.Text = "Scrolling started";
-        }
+                    if (svOffsetForGivenCenterPoint != sv.HorizontalOffset)
+                    {
+                        sv.ChangeView(svOffsetForGivenCenterPoint , null, null, false);
+                    }
+                }
+                else
+                {
+                    tapPositionDistanceFromSVCenterPoint -= layout.ItemWidth / 2 + layout.Spacing / 2;
+                    var tappedItemIndexDifferenceFromCenter = (int)Math.Floor(tapPositionDistanceFromSVCenterPoint / (layout.ItemWidth * ItemScaleRatio + layout.Spacing)) + 1;
+                    //var distanceToScroll = -1 * ((sv.ViewportWidth / 2) - (tappedItemIndexDifferenceFromCenter * (layout.ItemWidth + layout.Spacing)));
+                    //sv.ChangeView(distanceToScroll, null, null, false);
+                    var centerItemIndex = (int)Math.Floor((svCenterPoint + layout.Spacing / 2) / (layout.Spacing + layout.ItemWidth));
+                    var offsetToScroll = sv.HorizontalOffset + (((tapPositionInSV < svCenterPoint) ? -1 : 1) * (tappedItemIndexDifferenceFromCenter * (layout.ItemWidth + layout.Spacing)));
+                    sv.ChangeView(offsetToScroll, null, null, false);
+                    //tappedItemIndex = (tapPositionInSV > svCenterPoint ? (centerItemIndex + tappedItemIndexDifferenceFromCenter) : (centerItemIndex - tappedItemIndexDifferenceFromCenter));
+                    //tappedItemIndex %= ((System.Collections.Generic.IReadOnlyList<object>)repeater.ItemsSource).Count;
+                }
 
-        private void Sv_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
-        {
-            
+                //var tappedUIElement = repeater.TryGetElement(tappedItemIndex);
+
+                //if (tappedUIElement != null)
+                //{
+                //    ScrollToCenterOfViewport(tappedUIElement);
+                //}
+            }
         }
     }
 }

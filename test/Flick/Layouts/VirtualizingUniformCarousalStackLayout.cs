@@ -31,7 +31,7 @@ namespace Flick
                 element.Measure(new Size(ItemWidth, ItemHeight));
             }
 
-            return new Size(ItemWidth * context.ItemCount * 1000, ItemHeight);
+            return new Size(((ItemWidth + Spacing) * context.ItemCount * 1000) - Spacing, ItemHeight);
         }
 
         protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)

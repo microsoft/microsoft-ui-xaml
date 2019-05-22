@@ -27,9 +27,7 @@
                       Grid.Row="1"
                       ViewChanged="OnScrollViewerViewChanged"
                       ViewChanging="OnScrollViewerViewChanging"
-                      ManipulationDelta="Sv_ManipulationDelta"
-                      ManipulationStarted="Sv_ManipulationStarted"
-                      ManipulationCompleted="Sv_ManipulationCompleted">
+                      Tapped="Sv_Tapped">
             <local:SnappPointForwardingRepeater x:Name="repeater" HorizontalCacheLength="0.5" VerticalCacheLength="0" ElementPrepared="OnElementPrepared">
                 <mux:ItemsRepeater.Layout>
                     <local:VirtualizingUniformCarousalStackLayout x:Name="layout" ItemWidth="450" ItemHeight="525" Spacing="50"/>
@@ -39,7 +37,7 @@
                         <!--<Border>-->
                         <UserControl IsTabStop="True" UseSystemFocusVisuals="True" GotFocus="OnItemGotFocus" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
                             <StackPanel>
-                                <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Tapped="OnItemClicked" Height="375"  />
+                                <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Height="375"  />
                                 <TextBlock Text="{Binding Description}"  HorizontalAlignment="Center" FontSize="32" Foreground="Gray"/>
                             </StackPanel>
                         </UserControl>
