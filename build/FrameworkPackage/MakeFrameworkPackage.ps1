@@ -96,6 +96,31 @@ $ActivatableTypes += @"
 
 Copy-IntoNewDirectory ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png $fullOutputPath\Assets
 
+$customPropsFile = "$PSScriptRoot\..\..\version.props"
+Write-Verbose "Looking in $customPropsFile"
+
+if (-not (Test-Path $customPropsFile))
+{
+    Write-Error "Expected '$customPropsFile' to exist"
+    Exit 1
+}
+[xml]$customProps = (Get-Content $customPropsFile)
+$versionMajor = $customProps.GetElementsByTagName("MUXVersionMajor").'#text'
+$versionMinor = $customProps.GetElementsByTagName("MUXVersionMinor").'#text'
+
+Write-Verbose "CustomProps = $customProps, VersionMajor = '$versionMajor', VersionMinor = '$versionMinor'"
+
+if ((!$versionMajor) -or (!$versionMinor))
+{
+    Write-Error "Expected MUXVersionMajor and MUXVersionMinor tags to be in version.props file"
+    Exit 1
+}
+
+if (-not $PackageNameSuffix)
+{
+    $PackageNameSuffix = "$($versionMajor).$($versionMinor)"
+}
+
 # Calculate the version the same as our nuget package.
 
 if ($VersionOverride)
