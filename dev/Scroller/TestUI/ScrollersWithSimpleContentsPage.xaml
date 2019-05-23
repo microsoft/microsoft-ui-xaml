@@ -67,6 +67,10 @@
             <ComboBox x:Name="cmbFullLog" AutomationProperties.Name="cmbFullLog" Margin="6,2,2,2" VerticalAlignment="Center" Width="175"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="20" Margin="2">
+            <TextBlock Text="ContentLayoutOffsetX:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtScrollerContentLayoutOffsetX" AutomationProperties.AutomationId="txtScrollerContentLayoutOffsetX" Text="0.0" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="75"/>
+            <TextBlock Text="ContentLayoutOffsetY:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtScrollerContentLayoutOffsetY" AutomationProperties.AutomationId="txtScrollerContentLayoutOffsetY" Text="0.0" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="75"/>
             <TextBlock Text="HorizontalOffset:" Margin="6,2,2,2" VerticalAlignment="Center"/>
             <TextBox x:Name="txtScrollerHorizontalOffset" AutomationProperties.AutomationId="txtScrollerHorizontalOffset" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="175"/>
             <TextBlock Text="VerticalOffset:" Margin="6,2,2,2" VerticalAlignment="Center"/>
@@ -95,26 +99,26 @@
         </Border>
         <Border Margin="1" Background="AliceBlue" Grid.Row="2" Grid.Column="2">
             <controlsPrimitives:Scroller x:Name="scroller31" AutomationProperties.Name="Scroller31" 
-                                    VerticalScrollMode="Disabled">
+                VerticalScrollMode="Disabled">
                 <Image x:Name="img2" Source="Assets/ingredient8.png" MinWidth="900" MinHeight="900"/>
             </controlsPrimitives:Scroller>
         </Border>
         <Border Margin="1" Background="BlueViolet" Grid.Row="2" Grid.Column="3">
             <controlsPrimitives:Scroller x:Name="scroller41" AutomationProperties.Name="Scroller41" 
-                                    HorizontalScrollMode="Disabled">
+                HorizontalScrollMode="Disabled">
                 <Image x:Name="img3" Source="Assets/ingredient6.png"/>
             </controlsPrimitives:Scroller>
         </Border>
         <Border Margin="1" Background="CadetBlue" Grid.Row="2" Grid.Column="4">
             <controlsPrimitives:Scroller x:Name="scroller51" AutomationProperties.Name="Scroller51" 
-                                    HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled">
+                HorizontalAnchorRatio="1.0" VerticalAnchorRatio="1.0" HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled">
                 <Image x:Name="img4" Source="Assets/ingredient5.png" Width="800" Height="800"/>
             </controlsPrimitives:Scroller>
         </Border>
 
         <Border Margin="1" Background="Cyan" Grid.Row="3" Grid.Column="0">
             <controlsPrimitives:Scroller x:Name="scroller12" AutomationProperties.Name="Scroller12"
-                                    ZoomMode="Enabled" MinZoomFactor="0.5" MaxZoomFactor="2.0">
+                ZoomMode="Enabled" MinZoomFactor="0.5" MaxZoomFactor="2.0">
                 <Rectangle x:Name="rect2" Width="500" Height="700">
                     <Rectangle.Fill>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -128,25 +132,25 @@
         </Border>
         <Border Margin="1" Background="LightBlue" Grid.Row="3" Grid.Column="1">
             <controlsPrimitives:Scroller x:Name="scroller22" AutomationProperties.Name="Scroller22"
-                                    ZoomMode="Enabled">
+                ZoomMode="Enabled">
                 <Image x:Name="img12" Source="Assets/ingredient7.png"/>
             </controlsPrimitives:Scroller>
         </Border>
         <Border Margin="1" Background="AliceBlue" Grid.Row="3" Grid.Column="2">
             <controlsPrimitives:Scroller x:Name="scroller32" AutomationProperties.Name="Scroller32" 
-                                    VerticalScrollMode="Disabled" ZoomMode="Enabled">
+                VerticalScrollMode="Disabled" ZoomMode="Enabled">
                 <Image x:Name="img22" Source="Assets/ingredient8.png" MinWidth="900" MinHeight="900"/>
             </controlsPrimitives:Scroller>
         </Border>
         <Border Margin="1" Background="BlueViolet" Grid.Row="3" Grid.Column="3">
             <controlsPrimitives:Scroller x:Name="scroller42" AutomationProperties.Name="Scroller42" 
-                                    HorizontalScrollMode="Disabled" ZoomMode="Enabled">
+                HorizontalScrollMode="Disabled" ZoomMode="Enabled">
                 <Image x:Name="img32" Source="Assets/ingredient6.png"/>
             </controlsPrimitives:Scroller>
         </Border>
         <Border Margin="1" Background="CadetBlue" Grid.Row="3" Grid.Column="4">
             <controlsPrimitives:Scroller x:Name="scroller52" AutomationProperties.Name="Scroller52" 
-                                    HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled" ZoomMode="Enabled">
+                HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled" ZoomMode="Enabled">
                 <Image x:Name="img42" Source="Assets/ingredient5.png" Width="800" Height="800"/>
             </controlsPrimitives:Scroller>
         </Border>
