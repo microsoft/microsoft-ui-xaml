@@ -132,7 +132,7 @@ jobs:
       PathtoPublish: $(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog
       artifactName: 'drop'
       
-- job: ProcessTestResults
+- job: Process${{ parameters.name }}TestResults
   condition: succeededOrFailed()
   dependsOn: ${{ parameters.name }}
   pool:
