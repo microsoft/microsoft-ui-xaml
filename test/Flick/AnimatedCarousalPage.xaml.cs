@@ -174,7 +174,7 @@ namespace Flick
             scaleYExpression.SetReferenceParameter("item", item);
             scaleYExpression.SetScalarParameter("scaleRatioXY", (float)ItemScaleRatio);
             scaleYExpression.SetScalarParameter("spacing", (float)layout.Spacing);
-            scaleYExpression.Expression = scaleXExpression.Expression;
+            scaleYExpression.Expression = scaleExpressionString;
             scaleYExpression.Target = "Scale.Y";
             animationGroup.Add(scaleYExpression);
 
