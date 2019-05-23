@@ -7,6 +7,7 @@
   <Import Project="$(MSBuildProjectDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildProjectDirectory)\..\..\mux.controls.props')" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\environment.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\ProjectConfigurations.props" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\version.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</ProjectGuid>
     <Keyword>DynamicLibrary</Keyword>
@@ -250,6 +251,7 @@
     <ClInclude Include="MUXControlsFactory.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="version.h" />
     <ClInclude Include="XamlControlsResources.h" />
     <ClInclude Include="XamlMember.h" />
     <ClInclude Include="XamlMetadataProvider.h" />
@@ -278,8 +280,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Microsoft.UI.Xaml.def" />
-    <None Include="Microsoft.UI.Xaml.rc" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Microsoft.UI.Xaml.rc" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(OutDir)Generic.xaml">

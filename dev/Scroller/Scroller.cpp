@@ -826,9 +826,10 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         {
             float unzoomedDelta = 0.0f;
 
-            if (newUnzoomedExtentWidth > m_unzoomedExtentWidth)
+            if (newUnzoomedExtentWidth > m_unzoomedExtentWidth ||                                  // ExtentWidth grew
+                m_zoomedHorizontalOffset + m_viewportWidth > m_zoomFactor * m_unzoomedExtentWidth) // ExtentWidth shrank while overpanning
             {
-                // ExtentWidth grew: Perform horizontal offset adjustment due to edge anchoring
+                // Perform horizontal offset adjustment due to edge anchoring
                 unzoomedDelta = static_cast<float>(newUnzoomedExtentWidth - m_unzoomedExtentWidth);
             }
 
@@ -849,9 +850,10 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         {
             float unzoomedDelta = 0.0f;
 
-            if (newUnzoomedExtentHeight > m_unzoomedExtentHeight)
+            if (newUnzoomedExtentHeight > m_unzoomedExtentHeight ||                                // ExtentHeight grew
+                m_zoomedVerticalOffset + m_viewportHeight > m_zoomFactor * m_unzoomedExtentHeight) // ExtentHeight shrank while overpanning
             {
-                // ExtentHeight grew: Perform vertical offset adjustment due to edge anchoring
+                // Perform vertical offset adjustment due to edge anchoring
                 unzoomedDelta = static_cast<float>(newUnzoomedExtentHeight - m_unzoomedExtentHeight);
             }
 
@@ -1369,14 +1371,14 @@ void Scroller::ComputeMinMaxPositions(float zoomFactor, _Out_opt_ winrt::float2*
 
         if (minPosition)
         {
-            // When the zoomed content is smaller than the viewport, scrollableHeight < 0, minPosY is scrollableHeight so it is right-aligned at idle.
+            // When the zoomed content is smaller than the viewport, scrollableHeight < 0, minPosY is scrollableHeight so it is bottom-aligned at idle.
             // When the zoomed content is larger than the viewport, scrollableHeight > 0, minPosY is 0.
             minPosY = std::min(0.0f, scrollableHeight);
         }
 
         if (maxPosition)
         {
-            // When the zoomed content is smaller than the viewport, scrollableHeight < 0, maxPosY is -scrollableHeight so it is right-aligned at idle.
+            // When the zoomed content is smaller than the viewport, scrollableHeight < 0, maxPosY is -scrollableHeight so it is bottom-aligned at idle.
             // When the zoomed content is larger than the viewport, scrollableHeight > 0, maxPosY is scrollableHeight.
             maxPosY = scrollableHeight;
             if (maxPosY < 0.0f)
