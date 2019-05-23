@@ -53,7 +53,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+       [TestMethod] 
         public void CloseReasonIsAccurate()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -121,7 +121,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]// TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void TipCanFollowTarget()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -177,7 +177,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // [TestMethod] // Not currently passing, tracked by issue #643
+        //[TestMethod]  Not currently passing, tracked by issue #643
         public void AutoPlacement()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -203,7 +203,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod] //TODO: Re-enable after fixing issue #643
+        [TestMethod] 
         public void SpecifiedPlacement()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -374,7 +374,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod] //TODO: Re-enable after fixing issue #643
+        [TestMethod] 
         public void NoIconDoesNotCrash()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -398,7 +398,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod] //TODO: Re-enable after fixing issue #643
+        [TestMethod] 
         public void CanSwitchShouldConstrainToRootBounds()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -432,7 +432,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
 
-        [TestMethod] //TODO: Re-enable after fixing issue #643
+        [TestMethod] 
         public void TipsWhichDoNotFitDoNotOpen()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -466,7 +466,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod] //TODO: Re-enable after fixing issue #643
+        [TestMethod] 
         public void VerifyTheming()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -558,7 +558,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             CloseTeachingTipProgrammatically();
         }
 
-        [TestMethod]//TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void AutomationNameIsForwardedToPopup()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -580,7 +580,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod] //TODO: Re-enable after fixing issue #643
+        [TestMethod] 
         public void F6PutsFocusOnCloseButton()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
