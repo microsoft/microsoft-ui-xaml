@@ -113,4 +113,5 @@ jobs:
       name: ${{ parameters.runTestJobName }}
       dependsOn: ${{ parameters.buildJobName }}
       testSuite: 'NugetTestSuite'
+      rerunPassesRequiredToAvoidFailure: 5
   
