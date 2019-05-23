@@ -78,19 +78,7 @@ namespace Flick
 
         private bool IsScrolling { get; set; }
 
-        private double itemScaleRatio = 0.5;
-
-        public double ItemScaleRatio
-        {
-            get
-            {
-                return itemScaleRatio;
-            }
-            set
-            {
-                itemScaleRatio = value;
-            }
-        }
+        public double ItemScaleRatio { get; set; } = 0.5;
 
         protected void OnScrollViewerViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
