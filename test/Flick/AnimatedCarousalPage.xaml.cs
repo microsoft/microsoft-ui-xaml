@@ -58,6 +58,7 @@ namespace Flick
         {
             this.InitializeComponent();
 
+            // Workaround for known numerical limitation on inset clips where scrollviewer fails to clip content on right side of viewport
             ElementCompositionPreview.GetElementVisual(sv).Clip = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(sv).Compositor.CreateInsetClip();
         }
 
