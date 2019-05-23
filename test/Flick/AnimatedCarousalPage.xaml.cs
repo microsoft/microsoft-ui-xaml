@@ -282,6 +282,8 @@ namespace Flick
 
                 if (offsetToScrollTo != sv.HorizontalOffset)
                 {
+                    // This odd delay is required in order to ensure that the scrollviewer animates the scroll
+                    // on every call to ChangeView.
                     var period = TimeSpan.FromMilliseconds(10);
                     Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
                     {
