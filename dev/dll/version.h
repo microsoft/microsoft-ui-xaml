@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+// Macro to convert the value of a variable to a string
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
 
