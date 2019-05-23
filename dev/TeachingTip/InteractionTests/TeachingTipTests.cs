@@ -121,7 +121,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]// TODO: Re-enable after fixing issue #643
         public void TipCanFollowTarget()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -203,7 +203,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod] //TODO: Re-enable after fixing issue #643
         public void SpecifiedPlacement()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -374,7 +374,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod] //TODO: Re-enable after fixing issue #643
         public void NoIconDoesNotCrash()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -398,7 +398,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod] //TODO: Re-enable after fixing issue #643
         public void CanSwitchShouldConstrainToRootBounds()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -432,7 +432,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod] //TODO: Re-enable after fixing issue #643
         public void TipsWhichDoNotFitDoNotOpen()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -448,6 +448,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     UseTestWindowBounds(10, 10, 10, 10);
 
                     elements.GetShowButton().Invoke();
+                    Wait.ForIdle();
 
                     var message1 = GetTeachingTipDebugMessage(1);
                     Verify.IsTrue(message1.ToString().Contains("Closed"));
@@ -465,7 +466,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod] //TODO: Re-enable after fixing issue #643
         public void VerifyTheming()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -487,7 +488,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     OpenTeachingTip();
 
                     var themingComboBox = elements.GetThemingComboBox();
-                    themingComboBox.SelectItemByName("Default");
+                    themingComboBox.SelectItemByName("Light");
 
                     Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
                     Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
@@ -557,7 +558,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             CloseTeachingTipProgrammatically();
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]//TODO: Re-enable after fixing issue #643
         public void AutomationNameIsForwardedToPopup()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -579,7 +580,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod] //TODO: Re-enable after fixing issue #643
         public void F6PutsFocusOnCloseButton()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
