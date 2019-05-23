@@ -167,6 +167,16 @@
     <None Include="Flick_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Tulips\tulips_10_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_1_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_2_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_3_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_4_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_5_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_6_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_7_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_8_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_9_1000x1000.jpg" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />

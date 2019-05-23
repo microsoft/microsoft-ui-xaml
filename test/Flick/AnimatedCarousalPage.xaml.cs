@@ -258,42 +258,39 @@ namespace Flick
         {
             if (!isScrolling)
             {
-                // Get x position of the scrollviewer's center point if the currently selected item.Offset.X + item.Size.X/2 was the center point
-                var svCenterPoint = sv.HorizontalOffset + sv.ViewportWidth / 2;
-                svCenterPoint -= (svCenterPoint + layout.Spacing / 2) % (layout.Spacing + layout.ItemWidth);
-                svCenterPoint += layout.Spacing / 2 + layout.ItemWidth / 2;
-                var tapPositionInSV = e.GetPosition(sv).X + sv.HorizontalOffset;
-                var tapPositionDistanceFromSVCenterPoint = Math.Abs(tapPositionInSV - svCenterPoint);
-                int tappedItemIndex;
+                // In the nominal case, centerOfViewportOffsetInScrollViewer will be the offset of the current centerpoint in the scrollviewer's viewport;
+                // however, if the "center" item is not perfectly centered (i.e. where the centerpoint falls on the item's size.x/2)
+                // then set centerOfViewportOffsetInScrollViewer equal to the offset where the "centered" item would be perfectly centered.
+                // This makes later calculations much simpler with respect to item animations.
+                var centerOfViewportOffsetInScrollViewer = sv.HorizontalOffset + sv.ViewportWidth / 2;
+                centerOfViewportOffsetInScrollViewer -= (centerOfViewportOffsetInScrollViewer + layout.Spacing / 2) % (layout.Spacing + layout.ItemWidth);
+                centerOfViewportOffsetInScrollViewer += layout.Spacing / 2 + layout.ItemWidth / 2;
+                var tapPositionOffsetInScrollViewer = e.GetPosition(sv).X + sv.HorizontalOffset;
+                var tapPositionDistanceFromSVCenterPoint = Math.Abs(tapPositionOffsetInScrollViewer - centerOfViewportOffsetInScrollViewer);
+                double offsetToScrollTo;
 
                 if (tapPositionDistanceFromSVCenterPoint <= (layout.ItemWidth / 2 + layout.Spacing / 2))
                 {
-                    var svOffsetForGivenCenterPoint = svCenterPoint - sv.ViewportWidth / 2;
-
-                    if (svOffsetForGivenCenterPoint != sv.HorizontalOffset)
-                    {
-                        sv.ChangeView(svOffsetForGivenCenterPoint , null, null, false);
-                    }
+                    offsetToScrollTo = centerOfViewportOffsetInScrollViewer - sv.ViewportWidth / 2;
                 }
                 else
                 {
                     tapPositionDistanceFromSVCenterPoint -= layout.ItemWidth / 2 + layout.Spacing / 2;
                     var tappedItemIndexDifferenceFromCenter = (int)Math.Floor(tapPositionDistanceFromSVCenterPoint / (layout.ItemWidth * ItemScaleRatio + layout.Spacing)) + 1;
-                    //var distanceToScroll = -1 * ((sv.ViewportWidth / 2) - (tappedItemIndexDifferenceFromCenter * (layout.ItemWidth + layout.Spacing)));
-                    //sv.ChangeView(distanceToScroll, null, null, false);
-                    var centerItemIndex = (int)Math.Floor((svCenterPoint + layout.Spacing / 2) / (layout.Spacing + layout.ItemWidth));
-                    var offsetToScroll = sv.HorizontalOffset + (((tapPositionInSV < svCenterPoint) ? -1 : 1) * (tappedItemIndexDifferenceFromCenter * (layout.ItemWidth + layout.Spacing)));
-                    sv.ChangeView(offsetToScroll, null, null, false);
-                    //tappedItemIndex = (tapPositionInSV > svCenterPoint ? (centerItemIndex + tappedItemIndexDifferenceFromCenter) : (centerItemIndex - tappedItemIndexDifferenceFromCenter));
-                    //tappedItemIndex %= ((System.Collections.Generic.IReadOnlyList<object>)repeater.ItemsSource).Count;
+                    offsetToScrollTo = sv.HorizontalOffset + (((tapPositionOffsetInScrollViewer < centerOfViewportOffsetInScrollViewer) ? -1 : 1) * (tappedItemIndexDifferenceFromCenter * (layout.ItemWidth + layout.Spacing)));
                 }
 
-                //var tappedUIElement = repeater.TryGetElement(tappedItemIndex);
-
-                //if (tappedUIElement != null)
-                //{
-                //    ScrollToCenterOfViewport(tappedUIElement);
-                //}
+                if (offsetToScrollTo != sv.HorizontalOffset)
+                {
+                    var period = TimeSpan.FromMilliseconds(10);
+                    Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
+                    {
+                        await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                        {
+                            var Succes = sv.ChangeView(offsetToScrollTo, null, null, false);
+                        });
+                    }, period);
+                }
             }
         }
     }

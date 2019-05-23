@@ -25,7 +25,16 @@ namespace Flick
 
         private async void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            Images = await FlickApi.GetPhotos("tulips");
+            try
+            {
+                Images = await FlickApi.GetPhotos("tulips");
+            }
+            catch (Exception)
+            {
+                FlickApi.LoadImagesLocally = true;
+                Images = await FlickApi.GetPhotos("tulips");
+            }
+
             for (int i = 0; i < Images.Count; i++)
             {
                 Images[i].FlexBasis = 300;
@@ -35,7 +44,7 @@ namespace Flick
             repeater.ItemsSource = Images;
             repeater.Layout = uniformGridLayout;
 
-            banner.Source = new BitmapImage(new Uri(Images.Last().LargeUrl));
+            banner.Source = FlickApi.LoadImagesLocally ? new BitmapImage(new Uri("ms-appx:///" + Images.Last().LargeUrl)) : new BitmapImage(new Uri(Images.First().LargeUrl));
         }
 
         private void Image_Tapped(object sender, TappedRoutedEventArgs e)

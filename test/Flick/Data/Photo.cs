@@ -24,12 +24,23 @@ namespace Flick
 
         public string Title { get; set; }
 
+        public string LocalSourcePath { get; set; }
+
+        public bool UseLocalSourcePath { get; set; }
+
         public string UrlMedium
         {
             get
             {
-                //  https://www.flickr.com/services/api/misc.urls.html
-                return string.Format("https://farm{0}.staticflickr.com/{1}/{2}_{3}_m.jpg", Farm, Server, Id, Secret);
+                if (!UseLocalSourcePath)
+                {
+                    //  https://www.flickr.com/services/api/misc.urls.html
+                    return string.Format("https://farm{0}.staticflickr.com/{1}/{2}_{3}_m.jpg", Farm, Server, Id, Secret);
+                }
+                else
+                {
+                    return LocalSourcePath;
+                }
             }
         }
 
@@ -37,8 +48,15 @@ namespace Flick
         {
             get
             {
-                //  https://www.flickr.com/services/api/misc.urls.html
-                return string.Format("https://farm{0}.staticflickr.com/{1}/{2}_{3}_b.jpg", Farm, Server, Id, Secret);
+                if (!UseLocalSourcePath)
+                {
+                    //  https://www.flickr.com/services/api/misc.urls.html
+                    return string.Format("https://farm{0}.staticflickr.com/{1}/{2}_{3}_b.jpg", Farm, Server, Id, Secret);
+                }
+                else
+                {
+                    return LocalSourcePath;
+                }
             }
         }
 
