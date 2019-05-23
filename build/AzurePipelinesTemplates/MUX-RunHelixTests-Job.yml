@@ -3,6 +3,7 @@ parameters:
   dependsOn: ''
   condition: ''
   testSuite: ''
+  artifactName: 'drop'
   maxParallel: 4
   rerunPassesRequiredToAvoidFailure: 5
   matrix: 
@@ -53,7 +54,7 @@ jobs:
     condition:
       and(succeeded(),eq(variables['useBuildOutputFromBuildId'],''))
     inputs: 
-      artifactName: drop 
+      artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactsDir)'
 
   - task: DownloadBuildArtifacts@0 
@@ -65,7 +66,7 @@ jobs:
       project: $(System.TeamProjectId)
       pipeline: $(System.DefinitionId)
       buildId: $(useBuildOutputFromBuildId)
-      artifactName: drop 
+      artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactsDir)'
 
   - task: powershell@2
@@ -84,28 +85,28 @@ jobs:
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
       condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
-      testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.Test.dll'
+      testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.Test.dll'
       outputProjFileName: 'RunTestsInHelix-InteractionTests.proj'
       testSuite: '${{ parameters.testSuite }}'
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
       condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
-      testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx'
+      testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-ApiTests.proj'
       testSuite: '${{ parameters.testSuite }}'
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
       condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
-      testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\IXMPTestApp_Test\IXMPTestApp.appx'
+      testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\AppxPackages\IXMPTestApp_Test\IXMPTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-IXMPTestAppTests.proj'
       testSuite: '${{ parameters.testSuite }}'
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
       condition: and(succeeded(),eq('${{ parameters.testSuite }}','NugetTestSuite'))
-      testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll'
+      testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll'
       outputProjFileName: 'RunTestsInHelix-NugetTests.proj'
       testSuite: '${{ parameters.testSuite }}'
 
@@ -113,7 +114,7 @@ jobs:
     displayName: 'Publish generated .proj files'
     inputs:
       PathtoPublish: $(Build.ArtifactStagingDirectory)
-      artifactName: 'drop'
+      artifactName: ${{ parameters.artifactName }}
       
   - task: DotNetCoreCLI@2
     displayName: 'Run tests in Helix'
@@ -130,7 +131,7 @@ jobs:
     condition: succeededOrFailed()
     inputs:
       PathtoPublish: $(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog
-      artifactName: 'drop'
+      artifactName: ${{ parameters.artifactName }}
       
 - job: Process${{ parameters.name }}TestResults
   condition: succeededOrFailed()
