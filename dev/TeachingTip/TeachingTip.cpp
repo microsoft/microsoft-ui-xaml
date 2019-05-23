@@ -1116,7 +1116,7 @@ void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt:
 void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     // Expand animation requires IUIElement9
-    if (this->try_as<winrt::IUIElement9>())
+    if (this->try_as<winrt::IUIElement9>() && SharedHelpers::IsAnimationsEnabled())
     {
         StartExpandToOpen();
     }
@@ -1229,7 +1229,7 @@ void TeachingTip::ClosePopupWithAnimationIfAvailable()
 {
     if (m_popup && m_popup.get().IsOpen())
     {
-        if (SharedHelpers::IsRS5OrHigher())
+        if (SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsAnimationsEnabled())
         {
             StartContractToClose();
         }
