@@ -76,15 +76,7 @@ namespace Flick
             }
         }
 
-        private bool isScrolling = false;
-
-        public bool IsScrolling
-        {
-            get
-            {
-                return isScrolling;
-            }
-        }
+        private bool IsScrolling { get; set; }
 
         private double itemScaleRatio = 0.5;
 
@@ -110,23 +102,23 @@ namespace Flick
 
             if (e.IsIntermediate)
             {
-                if (!isScrolling)
+                if (!IsScrolling)
                 {
-                    isScrolling = true;
+                    IsScrolling = true;
                 }
             }
             else
             {
                 textBlock.Text = "Selected Item: " + (SelectedItem == null ? "null" : selectedItemIndex.ToString());
-                isScrolling = false;
+                IsScrolling = false;
             }
         }
 
         protected void OnScrollViewerViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
-            if (!isScrolling)
+            if (!IsScrolling)
             {
-                isScrolling = true;
+                IsScrolling = true;
             }
         }
 
@@ -224,7 +216,7 @@ namespace Flick
 
         private void Sv_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (!isScrolling)
+            if (!IsScrolling)
             {
                 // In the nominal case, centerOfViewportOffsetInScrollViewer will be the offset of the current centerpoint in the scrollviewer's viewport;
                 // however, if the "center" item is not perfectly centered (i.e. where the centerpoint falls on the item's size.x/2)
