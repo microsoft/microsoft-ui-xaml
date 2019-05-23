@@ -6,7 +6,7 @@ param([Parameter(Mandatory=$true, Position=0)]
 $ErrorActionPreference = 'Stop'
 
 # Constants
-$WindowsSDKOptions = @("OptionId.UWPCpp")
+$WindowsSDKOptions = @("OptionId.UWPCpp", "OptionId.DesktopCPPx64", "OptionId.DesktopCPPx86", "OptionId.DesktopCPPARM64", "OptionId.DesktopCPPARM")
 $WindowsSDKRegPath = "HKLM:\Software\Microsoft\Windows Kits\Installed Roots"
 $WindowsSDKRegRootKey = "KitsRoot10"
 $WindowsSDKVersion = "10.0.$buildNumber.0"
