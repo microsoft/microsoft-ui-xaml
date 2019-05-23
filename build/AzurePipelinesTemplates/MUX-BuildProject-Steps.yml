@@ -3,6 +3,7 @@ parameters:
   nugetConfigPath: ''
   buildOutputDir: '$(Build.SourcesDirectory)\BuildOutput'
   appxPackageDir: '$(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages'
+  artifactName: 'drop'
 
 steps:
   - template: MUX-PopulateBuildDateAndRevision-Steps.yml
@@ -44,7 +45,7 @@ steps:
     condition: succeededOrFailed()
     inputs:
       PathtoPublish: $(Build.SourcesDirectory)/${{ parameters.solutionPath }}.$(buildPlatform).$(buildConfiguration).binlog
-      artifactName: 'drop'
+      artifactName: ${{ parameters.artifactName }}
 
   - task: powershell@2
     displayName: 'Source Index PDBs'
