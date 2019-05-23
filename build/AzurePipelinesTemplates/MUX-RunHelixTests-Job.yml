@@ -5,6 +5,7 @@ parameters:
   testSuite: ''
   artifactName: 'drop'
   maxParallel: 4
+  rerunPassesRequiredToAvoidFailure: 5
   matrix: 
     Release_x86:
       buildPlatform: 'x86'
@@ -51,14 +52,14 @@ jobs:
 
   - task: DownloadBuildArtifacts@0 
     condition:
-      eq(variables['useBuildOutputFromBuildId'],'') 
+      and(succeeded(),eq(variables['useBuildOutputFromBuildId'],''))
     inputs: 
       artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactsDir)'
 
   - task: DownloadBuildArtifacts@0 
     condition:
-      ne(variables['useBuildOutputFromBuildId'],'') 
+      and(succeeded(),ne(variables['useBuildOutputFromBuildId'],''))
     inputs: 
       buildType: specific
       buildVersionToDownload: specific
@@ -73,32 +74,38 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\PrepareHelixPayload.ps1
-      arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)' -ArtifactName '${{ parameters.artifactName }}'
+      arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
+      
+  - task: CmdLine@1
+    displayName: 'Display Helix payload contents'
+    inputs:
+      filename: 'dir'
+      arguments: '/s $(Build.SourcesDirectory)\HelixPayload'
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
-      condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
+      condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
       testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.Test.dll'
       outputProjFileName: 'RunTestsInHelix-InteractionTests.proj'
       testSuite: '${{ parameters.testSuite }}'
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
-      condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
+      condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
       testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-ApiTests.proj'
       testSuite: '${{ parameters.testSuite }}'
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
-      condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
+      condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
       testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\AppxPackages\IXMPTestApp_Test\IXMPTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-IXMPTestAppTests.proj'
       testSuite: '${{ parameters.testSuite }}'
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
-      condition: eq('${{ parameters.testSuite }}','NugetTestSuite')
+      condition: and(succeeded(),eq('${{ parameters.testSuite }}','NugetTestSuite'))
       testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll'
       outputProjFileName: 'RunTestsInHelix-NugetTests.proj'
       testSuite: '${{ parameters.testSuite }}'
@@ -121,7 +128,34 @@ jobs:
       
   - task: PublishBuildArtifacts@1
     displayName: 'Publish ${{parameters.name}} binlog'
-    condition: and(succeededOrFailed(), eq(variables['useBuildOutputFromBuildId'],''))
+    condition: succeededOrFailed()
     inputs:
       PathtoPublish: $(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog
-      artifactName: ${{ parameters.artifactName }} 
+      artifactName: ${{ parameters.artifactName }}
+      
+- job: ProcessTestResults
+  condition: succeededOrFailed()
+  dependsOn: ${{ parameters.name }}
+  pool:
+    vmImage: 'VS2017-Win2016'
+  timeoutInMinutes: 120
+
+  steps:
+  - task: powershell@2
+    displayName: 'UpdateUnreliableTests.ps1'
+    condition: succeededOrFailed()
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\UpdateUnreliableTests.ps1
+      arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}'
+      
+  - task: powershell@2
+    displayName: 'OutputTestResults.ps1'
+    condition: succeededOrFailed()
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\OutputTestResults.ps1

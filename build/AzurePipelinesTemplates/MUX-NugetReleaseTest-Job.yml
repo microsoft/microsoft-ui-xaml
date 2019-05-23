@@ -118,4 +118,5 @@ jobs:
       dependsOn: ${{ parameters.buildJobName }}
       testSuite: 'NugetTestSuite'
       artifactName: ${{ parameters.buildArtifactName }}
+      rerunPassesRequiredToAvoidFailure: 5
   
