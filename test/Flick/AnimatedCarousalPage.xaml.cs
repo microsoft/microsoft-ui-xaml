@@ -150,47 +150,40 @@ namespace Flick
         private void Repeater_Loaded(object sender, RoutedEventArgs e)
         {
             sv.ChangeView(((layout.ItemWidth + layout.Spacing) * 500), null, null, true);
-           // sv.HorizontalSnapPointsType = SnapPointsType.Mandatory;
-           // sv.HorizontalSnapPointsAlignment = SnapPointsAlignment.Center;
         }
 
         private void OnElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
         {
             var item = ElementCompositionPreview.GetElementVisual(args.Element);
-            //var item = ElementCompositionPreview.GetElementVisual(((Border)args.Element).Child);
-
             var svVisual = ElementCompositionPreview.GetElementVisual(sv);
             var scrollProperties = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(sv);
             var animationGroup = scrollProperties.Compositor.CreateAnimationGroup();
 
+            // Animate each item's centerpoint based on the item's distance from the center of the viewport
+            // translate the position of each item horizontally closer to the center of the viewport as much as is necessary
+            // in order to ensure that the Spacing property of the ItemsRepeater is still respected after the items have been scaled.
+            var centerPointExpressionString = "Vector3(((item.Size.X/2) + ((((item.Offset.X + (item.Size.X/2)) < ((svVisual.Size.X/2) - scrollProperties.Translation.X)) ? 1 : -1) * (((item.Size.X/2) * clamp((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing)), 0, 1)) + ((item.Size.X) * max((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing)) - 1, 0))) )), item.Size.Y/2, 0)";
             var centerPointExpression = scrollProperties.Compositor.CreateExpressionAnimation();
             centerPointExpression.SetReferenceParameter("item", item);
             centerPointExpression.SetReferenceParameter("svVisual", svVisual);
             centerPointExpression.SetReferenceParameter("scrollProperties", scrollProperties);
             centerPointExpression.SetScalarParameter("spacing", (float)layout.Spacing);
-            //centerPointExpression.Expression = "Vector3(((item.Size.X/2) + ((((item.Offset.X + (item.Size.X/2)) < ((svVisual.Size.X/2) - scrollProperties.Translation.X)) ? 1 : -1) * ((item.Size.X/2) * clamp((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing)), 0, 1)))), item.Size.Y/2, 0)";
-            //item.StartAnimation("CenterPoint", centerPointExpression);
-            //centerPointExpression.Expression = "Vector3(item.Size.X/2, item.Size.Y/2, 0)";
-            centerPointExpression.Expression = "Vector3(((item.Size.X/2) + ((((item.Offset.X + (item.Size.X/2)) < ((svVisual.Size.X/2) - scrollProperties.Translation.X)) ? 1 : -1) * (((item.Size.X/2) * clamp((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing)), 0, 1)) + ((item.Size.X) * max((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing)) - 1, 0))) )), item.Size.Y/2, 0)";
+            centerPointExpression.Expression = centerPointExpressionString;
             centerPointExpression.Target = "CenterPoint";
             animationGroup.Add(centerPointExpression);
+
+            // scale the item based on the distance of the item relative to the center of the viewport.
+            var scaleExpressionString = "clamp((scaleRatioXY * (1 + (1 - (abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing))))), scaleRatioXY, 1)";
 
             var scaleXExpression = scrollProperties.Compositor.CreateExpressionAnimation();
             scaleXExpression.SetReferenceParameter("svVisual", svVisual);
             scaleXExpression.SetReferenceParameter("scrollProperties", scrollProperties);
             scaleXExpression.SetReferenceParameter("item", item);
-
             /* TODO: Expose ItemScaleRatio (scaleRatioXY) as a DependencyProperty in the custom Carousel
              * control so the user can set it to any value */
             scaleXExpression.SetScalarParameter("scaleRatioXY", (float)ItemScaleRatio);
             scaleXExpression.SetScalarParameter("spacing", (float)layout.Spacing);
-
-            // scale the item based on the distance of the item relative to the center of the viewport.
-            //scaleExpression.Expression = "1 - abs((svVisual.Size.X/2 - scrollProperties.Translation.X) - (item.Offset.X + item.Size.X/2))*(.75/(svVisual.Size.X/2))";
-            var scaleExpressionString = "clamp((scaleRatioXY * (1 + (1 - (abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing))))), scaleRatioXY, 1)";
             scaleXExpression.Expression = scaleExpressionString;
-
-            // item.StartAnimation("Scale.X", scaleXExpression);
             scaleXExpression.Target = "Scale.X";
             animationGroup.Add(scaleXExpression);
 
@@ -198,44 +191,18 @@ namespace Flick
             scaleYExpression.SetReferenceParameter("svVisual", svVisual);
             scaleYExpression.SetReferenceParameter("scrollProperties", scrollProperties);
             scaleYExpression.SetReferenceParameter("item", item);
-
-            /* TODO: Expose ItemScaleRatio (scaleRatioXY) as a DependencyProperty in the custom Carousel
-             * control so the user can set it to any value */
             scaleYExpression.SetScalarParameter("scaleRatioXY", (float)ItemScaleRatio);
             scaleYExpression.SetScalarParameter("spacing", (float)layout.Spacing);
-
-            // scale the item based on the distance of the item relative to the center of the viewport.
             scaleYExpression.Expression = scaleExpressionString;
-
-            // item.StartAnimation("Scale.Y", scaleXExpression);
             scaleYExpression.Target = "Scale.Y";
             animationGroup.Add(scaleYExpression);
-
-            /* TODO: Create an ExpressionAnimation to be applied to each item's Offset property that will 
-             * allow each item to maintain the fixed Layout.Spacing even when a Scale animation has been applied */
-            var offsetExpression = scrollProperties.Compositor.CreateExpressionAnimation();
-            offsetExpression.SetReferenceParameter("svVisual", svVisual);
-            offsetExpression.SetReferenceParameter("scrollProperties", scrollProperties);
-            offsetExpression.SetReferenceParameter("item", item);
-            offsetExpression.SetScalarParameter("itemScaleRatio", (float)ItemScaleRatio);
-            offsetExpression.SetScalarParameter("spacing", (float)layout.Spacing);
-            //offsetExpression.Expression = "Vector3(0,200,0)";
-            //offsetExpression.Expression = "Vector3(((((item.Offset.X + (item.Size.X/2)) < ((svVisual.Size.X/2) - scrollProperties.Translation.X)) ? 1 : -1) * (item.Size.X * (1 - clamp((scaleRatioXY * (1 + (1 - (abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing))))), scaleRatioXY, 1)) / 2)), 0, 0)";
-            //offsetExpression.Expression = "Vector3(((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) > (item.Size.X + spacing)) ? ((((item.Offset.X + (item.Size.X/2)) < ((svVisual.Size.X/2) - scrollProperties.Translation.X)) ? 1 : -1) * min((((item.Size.X * (1 - itemScaleRatio)) * ((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X))) / (item.Size.X + spacing))) - (item.Size.X + spacing)), 0)) : 0), 0, 0)";
-            //item.StartAnimation("Offset", offsetExpression);
-            offsetExpression.Target = "Translation";
-            //offsetExpression.Target = "Offset.Y";
-            //args.Element.StartAnimation(offsetExpression);
-            //animationGroup.Add(offsetExpression);
 
             item.StartAnimationGroup(animationGroup);
         }
 
-        private void OnItemGotFocus(object sender, RoutedEventArgs e)
-        {
-            //ScrollToCenterOfViewport(sender);
-        }
-
+        // ScrollToCenterOfViewport is currently not being used due to it
+        // not being able to correctly animate an item to center if said item
+        // has been animated to a different location from its original layout location
         private static void ScrollToCenterOfViewport(object sender)
         {
             var item = sender as FrameworkElement;

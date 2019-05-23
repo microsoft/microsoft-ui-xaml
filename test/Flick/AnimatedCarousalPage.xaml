@@ -35,7 +35,7 @@
                 <mux:ItemsRepeater.ItemTemplate>
                     <DataTemplate>
                         <!--<Border>-->
-                        <UserControl IsTabStop="True" UseSystemFocusVisuals="True" GotFocus="OnItemGotFocus" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                        <UserControl IsTabStop="True" UseSystemFocusVisuals="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
                             <StackPanel>
                                 <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Height="375"  />
                                 <TextBlock Text="{Binding Description}"  HorizontalAlignment="Center" FontSize="32" Foreground="Gray"/>
