@@ -154,29 +154,20 @@ namespace Flick
             animationGroup.Add(centerPointExpression);
 
             // scale the item based on the distance of the item relative to the center of the viewport.
-            var scaleExpressionString = "clamp((scaleRatioXY * (1 + (1 - (abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing))))), scaleRatioXY, 1)";
+            var scalarScaleExpressionString = "clamp((scaleRatioXY * (1 + (1 - (abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing))))), scaleRatioXY, 1)";
+            var scaleExpressionString = string.Format("Vector3({0}, {0}, 0)", scalarScaleExpressionString);
 
-            var scaleXExpression = scrollProperties.Compositor.CreateExpressionAnimation();
-            scaleXExpression.SetReferenceParameter("svVisual", svVisual);
-            scaleXExpression.SetReferenceParameter("scrollProperties", scrollProperties);
-            scaleXExpression.SetReferenceParameter("item", item);
+            var scaleExpression = scrollProperties.Compositor.CreateExpressionAnimation();
+            scaleExpression.SetReferenceParameter("svVisual", svVisual);
+            scaleExpression.SetReferenceParameter("scrollProperties", scrollProperties);
+            scaleExpression.SetReferenceParameter("item", item);
             /* TODO: Expose ItemScaleRatio (scaleRatioXY) as a DependencyProperty in the custom Carousel
              * control so the user can set it to any value */
-            scaleXExpression.SetScalarParameter("scaleRatioXY", (float)ItemScaleRatio);
-            scaleXExpression.SetScalarParameter("spacing", (float)layout.Spacing);
-            scaleXExpression.Expression = scaleExpressionString;
-            scaleXExpression.Target = "Scale.X";
-            animationGroup.Add(scaleXExpression);
-
-            var scaleYExpression = scrollProperties.Compositor.CreateExpressionAnimation();
-            scaleYExpression.SetReferenceParameter("svVisual", svVisual);
-            scaleYExpression.SetReferenceParameter("scrollProperties", scrollProperties);
-            scaleYExpression.SetReferenceParameter("item", item);
-            scaleYExpression.SetScalarParameter("scaleRatioXY", (float)ItemScaleRatio);
-            scaleYExpression.SetScalarParameter("spacing", (float)layout.Spacing);
-            scaleYExpression.Expression = scaleExpressionString;
-            scaleYExpression.Target = "Scale.Y";
-            animationGroup.Add(scaleYExpression);
+            scaleExpression.SetScalarParameter("scaleRatioXY", (float)ItemScaleRatio);
+            scaleExpression.SetScalarParameter("spacing", (float)layout.Spacing);
+            scaleExpression.Expression = scaleExpressionString;
+            scaleExpression.Target = "Scale";
+            animationGroup.Add(scaleExpression);
 
             item.StartAnimationGroup(animationGroup);
         }
