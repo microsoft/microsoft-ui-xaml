@@ -22,13 +22,14 @@ void TabViewItem::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
 
-    m_closeButton.set(GetTemplateChildT<winrt::Button>(L"CloseButton", controlProtected));
-    if (auto closeButton = m_closeButton.get())
-    {
-        m_closeButtonClickRevoker = closeButton.Click(winrt::auto_revoke, { this, &TabViewItem::OnCloseButtonClick });
-    }
-
-    m_IsSelectedChangedRevoker = RegisterPropertyChanged(*this, winrt::SelectorItem::IsSelectedProperty(), { this, &TabViewItem::OnCloseButtonPropertyChanged });
+    m_closeButton.set([this, controlProtected]() {
+        auto closeButton = GetTemplateChildT<winrt::Button>(L"CloseButton", controlProtected);
+        if (closeButton)
+        {
+            m_closeButtonClickRevoker = closeButton.Click(winrt::auto_revoke, { this, &TabViewItem::OnCloseButtonClick });
+        }
+        return closeButton;
+    }());
 
     if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
     {
@@ -43,7 +44,7 @@ void TabViewItem::OnLoaded(const winrt::IInspectable& sender, const winrt::Route
 
 void TabViewItem::UpdateCloseButton()
 {
-    if (auto closeButton = m_closeButton.get())
+    if (auto&& closeButton = m_closeButton.get())
     {
         bool canClose = IsCloseable();
         if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
@@ -55,17 +56,7 @@ void TabViewItem::UpdateCloseButton()
     }
 }
 
-void TabViewItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    winrt::IDependencyProperty property = args.Property();
-
-    if (property == s_IsCloseableProperty)
-    {
-        UpdateCloseButton();
-    }
-}
-
-void TabViewItem::OnCloseButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void TabViewItem::OnCloseButtonClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
     {
@@ -74,7 +65,12 @@ void TabViewItem::OnCloseButtonClick(const winrt::IInspectable& sender, const wi
     }
 }
 
-void TabViewItem::OnCloseButtonPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+void TabViewItem::OnCloseButtonPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    UpdateCloseButton();
+}
+
+void TabViewItem::OnIsCloseablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
     UpdateCloseButton();
 }

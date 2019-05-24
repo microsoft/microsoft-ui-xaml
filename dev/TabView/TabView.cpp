@@ -35,6 +35,16 @@ void TabView::OnApplyTemplate()
     winrt::IControlProtected controlProtected{ *this };
 
     m_tabContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"TabContentPresenter", controlProtected));
+
+    m_scrollViewer.set([this, controlProtected]() {
+        auto scrollViewer = GetTemplateChildT<winrt::FxScrollViewer>(L"ScrollViewer", controlProtected);
+        if (scrollViewer)
+        {
+            m_scrollViewerLoadedRevoker = scrollViewer.Loaded(winrt::auto_revoke, { this, &TabView::OnScrollViewerLoaded });
+        }
+        return scrollViewer;
+    }());
+
     m_scrollViewer.set(GetTemplateChildT<winrt::FxScrollViewer>(L"ScrollViewer", controlProtected));
     if (auto scrollViewer = m_scrollViewer.get())
     {
@@ -42,7 +52,7 @@ void TabView::OnApplyTemplate()
     }
 }
 
-void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
     UpdateTabWidths();
 }
@@ -52,32 +62,32 @@ winrt::AutomationPeer TabView::OnCreateAutomationPeer()
     return winrt::make<TabViewAutomationPeer>(*this);
 }
 
-void TabView::OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void TabView::OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     UpdateTabContent();
 }
 
-void TabView::OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
 {
-    if (auto scrollViewer = m_scrollViewer.get())
+    if (auto&& scrollViewer = m_scrollViewer.get())
     {
-        m_scrollDecreaseButton.set(SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollDecreaseButton").as<winrt::RepeatButton>());
-        if (auto decreaseButton = m_scrollDecreaseButton.get())
-        {
+        m_scrollDecreaseButton.set([this, scrollViewer]() {
+            auto decreaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollDecreaseButton").as<winrt::RepeatButton>();
             m_scrollDecreaseClickRevoker = decreaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollDecreaseClick });
-        }
+            return decreaseButton;
+        }());
 
-        m_scrollIncreaseButton.set(SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>());
-        if (auto increaseButton = m_scrollIncreaseButton.get())
-        {
+        m_scrollIncreaseButton.set([this, scrollViewer]() {
+            auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
             m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
-        }
+            return increaseButton;
+        }());
     }
 
     UpdateTabWidths();
 }
 
-void TabView::OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
+void TabView::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs&)
 {
     UpdateTabWidths();
 }
@@ -86,13 +96,13 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
 {
     if (auto args = item.as< winrt::IVectorChangedEventArgs>())
     {
-        int numItems = (int)Items().Size();
+        int numItems = static_cast<int>(Items().Size());
         if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved && numItems > 0)
         {
-            if (SelectedIndex() == (int32_t)args.Index())
+            if (SelectedIndex() == static_cast<int32_t>(args.Index()))
             {
                 // Find the closest tab to select instead.
-                int startIndex = (int)args.Index();
+                int startIndex = static_cast<int>(args.Index());
                 if (startIndex >= numItems)
                 {
                     startIndex = numItems - 1;
@@ -126,7 +136,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
     __super::OnItemsChanged(item);
 }
 
-void TabView::OnSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
+void TabView::OnSelectionChanged(const winrt::IInspectable&, const winrt::SelectionChangedEventArgs&)
 {
     if (m_indexToSelectOnSelectionChanged)
     {
@@ -148,8 +158,7 @@ void TabView::UpdateTabContent()
         }
         else
         {
-            auto container = ContainerFromItem(SelectedItem()).as<winrt::ListViewItem>();
-            if (container)
+            if (auto container = ContainerFromItem(SelectedItem()).as<winrt::ListViewItem>())
             {
                 tabContentPresenter.Content(container.Content());
                 tabContentPresenter.ContentTemplate(container.ContentTemplate());
@@ -177,7 +186,7 @@ void TabView::CloseTab(winrt::TabViewItem const& container)
     }
 }
 
-void TabView::OnScrollDecreaseClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void TabView::OnScrollDecreaseClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     if (auto scrollViewer = m_scrollViewer.get())
     {
@@ -185,7 +194,7 @@ void TabView::OnScrollDecreaseClick(const winrt::IInspectable& sender, const win
     }
 }
 
-void TabView::OnScrollIncreaseClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void TabView::OnScrollIncreaseClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     if (auto scrollViewer = m_scrollViewer.get())
     {
@@ -206,9 +215,8 @@ void TabView::UpdateTabWidths()
         if (auto scrollViewer = m_scrollViewer.get())
         {
             // Calculate the proportional width of each tab given the width of the ScrollViewer.
-            double padding = Padding().Left + Padding().Right;
-            double tabWidthForScroller = (scrollViewer.ActualWidth() - padding) / (double)(Items().Size());
-            tabWidth = std::min(std::max(tabWidthForScroller, minTabWidth), maxTabWidth);
+            double tabWidthForScroller = (scrollViewer.ActualWidth() - (Padding().Left + Padding().Right)) / (double)(Items().Size());
+            tabWidth = std::clamp(tabWidthForScroller, minTabWidth, maxTabWidth);
 
             // If the min tab width causes the ScrollViewer to scroll, show the increase/decrease buttons.
             auto decreaseButton = m_scrollDecreaseButton.get();

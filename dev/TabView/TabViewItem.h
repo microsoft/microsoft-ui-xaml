@@ -21,14 +21,13 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
 
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsCloseablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
  private:
     tracker_ref<winrt::Button> m_closeButton{ this };
 
     void UpdateCloseButton();
 
-    PropertyChanged_revoker m_IsSelectedChangedRevoker{};
     PropertyChanged_revoker m_CanCloseTabsChangedRevoker{};
     winrt::ButtonBase::Click_revoker m_closeButtonClickRevoker{};
 

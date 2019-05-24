@@ -39,7 +39,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("Platform", "Any")]
-        [TestProperty("MUXControlsTestSuite", "SuiteB")]
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
@@ -78,8 +77,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Log.Comment("Adding tab.");
                 Button addTabButton = FindElement.ByName<Button>("AddTabButton");
-                addTabButton.Invoke();
-                Wait.ForIdle();
+                addTabButton.InvokeAndWait();
 
                 ElementCache.Refresh();
                 UIObject newTab = FindElement.ByName("New Tab 1");
@@ -87,8 +85,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Removing tab.");
                 Button removeTabButton = FindElement.ByName<Button>("RemoveTabButton");
-                removeTabButton.Invoke();
-                Wait.ForIdle();
+                removeTabButton.InvokeAndWait();
 
                 ElementCache.Refresh();
                 newTab = FindElement.ByName("New Tab 1");
@@ -130,8 +127,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
 
                 Log.Comment("When the selected tab is closed, selection should move to the next one.");
-                closeButton.Invoke();
-                Wait.ForIdle();
+                closeButton.InvokeAndWait();
                 Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
 
                 Log.Comment("Select last tab.");
@@ -143,8 +139,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("When the selected tab is last and is closed, selection should move to the previous item.");
                 closeButton = FindCloseButton(lastTab);
                 Verify.IsNotNull(closeButton);
-                closeButton.Invoke();
-                Wait.ForIdle();
+                closeButton.InvokeAndWait();
                 Verify.AreEqual(selectedIndexTextBlock.DocumentText, "2");
             }
         }
@@ -200,8 +195,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 Log.Comment("Clicking close button should not close tab if app returns cancel = true.");
-                closeButton.Invoke();
-                Wait.ForIdle();
+                closeButton.InvokeAndWait();
 
                 ElementCache.Refresh();
                 firstTab = TryFindElement.ByName("FirstTab");
@@ -211,8 +205,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 Log.Comment("Clicking close button should close tab if app doesn't handle TabClosing event.");
-                closeButton.Invoke();
-                Wait.ForIdle();
+                closeButton.InvokeAndWait();
 
                 ElementCache.Refresh();
                 firstTab = TryFindElement.ByName("FirstTab");

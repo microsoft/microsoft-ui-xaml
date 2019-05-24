@@ -29,7 +29,7 @@ void TabViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TabViewItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnHeaderPropertyChanged));
+                nullptr);
     }
     if (!s_HeaderTemplateProperty)
     {
@@ -40,7 +40,7 @@ void TabViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TabViewItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnHeaderTemplatePropertyChanged));
+                nullptr);
     }
     if (!s_IconProperty)
     {
@@ -51,7 +51,7 @@ void TabViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TabViewItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IconElement>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnIconPropertyChanged));
+                nullptr);
     }
     if (!s_IsCloseableProperty)
     {
@@ -74,36 +74,12 @@ void TabViewItemProperties::ClearProperties()
     s_IsCloseableProperty = nullptr;
 }
 
-void TabViewItemProperties::OnHeaderPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TabViewItem>();
-    winrt::get_self<TabViewItem>(owner)->OnPropertyChanged(args);
-}
-
-void TabViewItemProperties::OnHeaderTemplatePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TabViewItem>();
-    winrt::get_self<TabViewItem>(owner)->OnPropertyChanged(args);
-}
-
-void TabViewItemProperties::OnIconPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TabViewItem>();
-    winrt::get_self<TabViewItem>(owner)->OnPropertyChanged(args);
-}
-
 void TabViewItemProperties::OnIsCloseablePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::TabViewItem>();
-    winrt::get_self<TabViewItem>(owner)->OnPropertyChanged(args);
+    winrt::get_self<TabViewItem>(owner)->OnIsCloseablePropertyChanged(args);
 }
 
 void TabViewItemProperties::Header(winrt::IInspectable const& value)
