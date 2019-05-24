@@ -630,7 +630,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if(elements.GetIsOpenCheckBox().ToggleState != ToggleState.On)
             {
-                elements.GetShowButton().Invoke();
+                elements.GetShowButton().InvokeAndWait();
                 WaitForChecked(elements.GetIsOpenCheckBox());
                 WaitForChecked(elements.GetIsIdleCheckBox());
             }
@@ -640,7 +640,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
             {
-                elements.GetCloseButton().Invoke();
+                elements.GetCloseButton().InvokeAndWait();
                 WaitForTipClosed();
             }
         }
