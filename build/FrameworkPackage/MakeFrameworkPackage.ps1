@@ -96,7 +96,7 @@ $ActivatableTypes += @"
 
 Copy-IntoNewDirectory ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png $fullOutputPath\Assets
 
-$customPropsFile = "$PSScriptRoot\..\..\custom.props"
+$customPropsFile = "$PSScriptRoot\..\..\version.props"
 Write-Verbose "Looking in $customPropsFile"
 
 if (-not (Test-Path $customPropsFile))
@@ -105,14 +105,14 @@ if (-not (Test-Path $customPropsFile))
     Exit 1
 }
 [xml]$customProps = (Get-Content $customPropsFile)
-$versionMajor = $customProps.GetElementsByTagName("VersionMajor").'#text'
-$versionMinor = $customProps.GetElementsByTagName("VersionMinor").'#text'
+$versionMajor = $customProps.GetElementsByTagName("MUXVersionMajor").'#text'
+$versionMinor = $customProps.GetElementsByTagName("MUXVersionMinor").'#text'
 
 Write-Verbose "CustomProps = $customProps, VersionMajor = '$versionMajor', VersionMinor = '$versionMinor'"
 
 if ((!$versionMajor) -or (!$versionMinor))
 {
-    Write-Error "Expected VersionMajor and VersionMinor tags to be in custom.props file"
+    Write-Error "Expected MUXVersionMajor and MUXVersionMinor tags to be in version.props file"
     Exit 1
 }
 

@@ -6,6 +6,7 @@
 #include "Scroller.h"
 #include "ScrollerTestHooksAnchorEvaluatedEventArgs.h"
 #include "ScrollerTestHooksInteractionSourcesChangedEventArgs.h"
+#include "ScrollerTestHooksExpressionAnimationStatusChangedEventArgs.h"
 
 #include "ScrollerTestHooks.g.h"
 
@@ -26,6 +27,8 @@ public:
     static void AreAnchorNotificationsRaised(bool areAnchorNotificationsRaised);
     static bool AreInteractionSourcesNotificationsRaised();
     static void AreInteractionSourcesNotificationsRaised(bool areInteractionSourcesNotificationsRaised);
+    static bool AreExpressionAnimationStatusNotificationsRaised();
+    static void AreExpressionAnimationStatusNotificationsRaised(bool areExpressionAnimationStatusNotificationsRaised);
     static bool IsInteractionTrackerPointerWheelRedirectionEnabled();
     static void IsInteractionTrackerPointerWheelRedirectionEnabled(bool isInteractionTrackerPointerWheelRedirectionEnabled);
     static int MouseWheelDeltaForVelocityUnit();
@@ -46,9 +49,14 @@ public:
     static void NotifyAnchorEvaluated(const winrt::Scroller& sender, const winrt::UIElement& anchorElement, double viewportAnchorPointHorizontalOffset, double viewportAnchorPointVerticalOffset);
     static winrt::event_token AnchorEvaluated(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksAnchorEvaluatedEventArgs> const& value);
     static void AnchorEvaluated(winrt::event_token const& token);
+
     static void NotifyInteractionSourcesChanged(const winrt::Scroller& sender, const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources);
     static winrt::event_token InteractionSourcesChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksInteractionSourcesChangedEventArgs> const& value);
     static void InteractionSourcesChanged(winrt::event_token const& token);
+
+    static void NotifyExpressionAnimationStatusChanged(const winrt::Scroller& sender, bool isExpressionAnimationStarted, wstring_view const& propertyName);
+    static winrt::event_token ExpressionAnimationStatusChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksExpressionAnimationStatusChangedEventArgs> const& value);
+    static void ExpressionAnimationStatusChanged(winrt::event_token const& token);
 
     static void NotifyContentLayoutOffsetXChanged(const winrt::Scroller& sender);
     static winrt::event_token ContentLayoutOffsetXChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
@@ -88,10 +96,12 @@ private:
     static com_ptr<ScrollerTestHooks> s_testHooks;
     winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksAnchorEvaluatedEventArgs>> m_anchorEvaluatedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksInteractionSourcesChangedEventArgs>> m_interactionSourcesChangedEventSource;
+    winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksExpressionAnimationStatusChangedEventArgs>> m_expressionAnimationStatusChangedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_contentLayoutOffsetXChangedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_contentLayoutOffsetYChangedEventSource;
     bool m_areAnchorNotificationsRaised{ false };
     bool m_areInteractionSourcesNotificationsRaised{ false };
+    bool m_areExpressionAnimationStatusNotificationsRaised{ false };
     bool m_isInteractionTrackerPointerWheelRedirectionEnabled{ true };
     int m_offsetsChangeMsPerUnit{ 0 };
     int m_offsetsChangeMinMs{ 0 };

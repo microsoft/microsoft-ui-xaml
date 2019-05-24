@@ -29,6 +29,12 @@ jobs:
 
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
   parameters:
+    name: 'RunTestsInHelix'
     dependsOn: Build
     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
     testSuite: 'DevTestSuite'
+
+- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+  parameters:
+    dependsOn: RunTestsInHelix
+    rerunPassesRequiredToAvoidFailure: 5

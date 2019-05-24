@@ -307,7 +307,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies the InteractionTracker's VisualInteractionSource properties get set according to Scroller properties.")]
         public void VerifyInteractionSourceSettings()
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(enableAnchorNotifications: false, enableInteractionSourcesNotifications: true))
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: false,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications : false))
             {
                 Scroller scroller = null;
                 Rectangle rectangleScrollerContent = null;
