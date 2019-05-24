@@ -120,6 +120,7 @@ jobs:
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
+    buildJobName: 'BuildNugetPkgTests'
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop'
     matrix: 
@@ -135,3 +136,25 @@ jobs:
       Release_arm:
         buildPlatform: 'arm'
         buildConfiguration: 'Release'
+
+- job: WACKTests
+  dependsOn: BuildNugetPkgTests
+  pool:
+    name: Package ES Lab E
+  strategy:
+    maxParallel: 10
+    matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+      Release_Arm:
+        buildPlatform: 'arm'
+        buildConfiguration: 'Release'
+  steps:
+  - task: PkgESWACKTests@10
+    inputs:
+      AppxFolder: '$(artifactDownloadPath)\NugetPkgTestsDrop\$(BuildConfiguration)\$(BuildPlatform)\NugetPackageTestApp\AppPackages\NugetPackageTestApp_Test'
+      WACKFailbuild: true
