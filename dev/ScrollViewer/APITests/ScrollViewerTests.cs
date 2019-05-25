@@ -67,6 +67,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const double c_defaultUIScrollViewerWidth = 300.0;
         private const double c_defaultUIScrollViewerHeight = 200.0;
 
+        private ScrollViewerVisualStateCounts m_scrollViewerVisualStateCounts;
+
         [TestCleanup]
         public void TestCleanup()
         {
@@ -278,12 +280,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer"))
             {
-                ScrollViewerWithVisualStateCounts scrollViewer = null;
+                ScrollViewer scrollViewer = null;
 
                 RunOnUIThread.Execute(() =>
                 {
                     MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessageForVisualStateChange;
-                    scrollViewer = new ScrollViewerWithVisualStateCounts();
+                    m_scrollViewerVisualStateCounts = new ScrollViewerVisualStateCounts();
+                    scrollViewer = new ScrollViewer();
                 });
 
                 using (ScrollViewerTestHooksHelper scrollViewerTestHooksHelper = new ScrollViewerTestHooksHelper(scrollViewer, autoHideScrollControllers))
@@ -309,7 +312,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         Log.Comment($"VerifyVisualStates: isEnabled:True, scrollBarVisibility:{scrollBarVisibility}, autoHideScrollControllers:{autoHideScrollControllers}");
 
                         VerifyVisualStates(
-                            scrollViewer: scrollViewer,
                             expectedMouseIndicatorStateCount: autoHideScrollControllers ? 0u : (scrollBarVisibility == ScrollBarVisibility.Auto ? 2u : 3u),
                             expectedTouchIndicatorStateCount: 0,
                             expectedNoIndicatorStateCount: autoHideScrollControllers ? (scrollBarVisibility == ScrollBarVisibility.Auto ? 2u : 3u) : 0u,
@@ -320,7 +322,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                             expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount: 0,
                             expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount: 0);
 
-                        scrollViewer.ResetStateCounts();
+                        m_scrollViewerVisualStateCounts.ResetStateCounts();
                         MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessageForVisualStateChange;
 
                         Log.Comment("Disabling ScrollViewer");
@@ -335,7 +337,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         Log.Comment($"VerifyVisualStates: isEnabled:False, scrollBarVisibility:{scrollBarVisibility}, autoHideScrollControllers:{autoHideScrollControllers}");
 
                         VerifyVisualStates(
-                            scrollViewer: scrollViewer,
                             expectedMouseIndicatorStateCount: autoHideScrollControllers ? 0u : (scrollBarVisibility == ScrollBarVisibility.Auto ? 1u : 3u),
                             expectedTouchIndicatorStateCount: 0,
                             expectedNoIndicatorStateCount: autoHideScrollControllers ? (scrollBarVisibility == ScrollBarVisibility.Auto ? 1u : 3u) : 0u,
@@ -346,7 +347,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                             expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount: 0,
                             expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount: 0);
 
-                        scrollViewer.ResetStateCounts();
+                        m_scrollViewerVisualStateCounts.ResetStateCounts();
                         MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessageForVisualStateChange;
 
                         Log.Comment("Enabling ScrollViewer");
@@ -361,7 +362,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         Log.Comment($"VerifyVisualStates: isEnabled:True, scrollBarVisibility:{scrollBarVisibility}, autoHideScrollControllers:{autoHideScrollControllers}");
 
                         VerifyVisualStates(
-                            scrollViewer: scrollViewer,
                             expectedMouseIndicatorStateCount: autoHideScrollControllers ? 0u : 3u,
                             expectedTouchIndicatorStateCount: 0,
                             expectedNoIndicatorStateCount: autoHideScrollControllers ? 3u : 0u,
@@ -374,6 +374,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                         Log.Comment("Resetting window content");
                         MUXControlsTestApp.App.TestContentRoot = null;
+                        m_scrollViewerVisualStateCounts = null;
                     });
 
                     WaitForEvent("Waiting for Unloaded event", scrollViewerUnloadedEvent);
@@ -385,52 +386,49 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             if (args.IsVerboseLevel)
             {
-                ScrollViewerWithVisualStateCounts scrollViewer = sender as ScrollViewerWithVisualStateCounts;
-
                 if (args.Message.Contains("ScrollViewer::GoToState"))
                 {
                     if (args.Message.Contains("NoIndicator"))
                     {
-                        scrollViewer.NoIndicatorStateCount++;
+                        m_scrollViewerVisualStateCounts.NoIndicatorStateCount++;
                     }
                     else if (args.Message.Contains("TouchIndicator"))
                     {
-                        scrollViewer.TouchIndicatorStateCount++;
+                        m_scrollViewerVisualStateCounts.TouchIndicatorStateCount++;
                     }
                     else if (args.Message.Contains("MouseIndicator"))
                     {
-                        scrollViewer.MouseIndicatorStateCount++;
+                        m_scrollViewerVisualStateCounts.MouseIndicatorStateCount++;
                     }
                     else if (args.Message.Contains("ScrollBarsSeparatorCollapsedDisabled"))
                     {
-                        scrollViewer.ScrollBarsSeparatorCollapsedDisabledStateCount++;
+                        m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedDisabledStateCount++;
                     }
                     else if (args.Message.Contains("ScrollBarsSeparatorCollapsedWithoutAnimation"))
                     {
-                        scrollViewer.ScrollBarsSeparatorCollapsedWithoutAnimationStateCount++;
+                        m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedWithoutAnimationStateCount++;
                     }
                     else if (args.Message.Contains("ScrollBarsSeparatorDisplayedWithoutAnimation"))
                     {
-                        scrollViewer.ScrollBarsSeparatorDisplayedWithoutAnimationStateCount++;
+                        m_scrollViewerVisualStateCounts.ScrollBarsSeparatorDisplayedWithoutAnimationStateCount++;
                     }
                     else if (args.Message.Contains("ScrollBarsSeparatorExpandedWithoutAnimation"))
                     {
-                        scrollViewer.ScrollBarsSeparatorExpandedWithoutAnimationStateCount++;
+                        m_scrollViewerVisualStateCounts.ScrollBarsSeparatorExpandedWithoutAnimationStateCount++;
                     }
                     else if (args.Message.Contains("ScrollBarsSeparatorCollapsed"))
                     {
-                        scrollViewer.ScrollBarsSeparatorCollapsedStateCount++;
+                        m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedStateCount++;
                     }
                     else if (args.Message.Contains("ScrollBarsSeparatorExpanded"))
                     {
-                        scrollViewer.ScrollBarsSeparatorExpandedStateCount++;
+                        m_scrollViewerVisualStateCounts.ScrollBarsSeparatorExpandedStateCount++;
                     }
                 }
             }
         }
 
         private void VerifyVisualStates(
-            ScrollViewerWithVisualStateCounts scrollViewer,
             uint expectedMouseIndicatorStateCount,
             uint expectedTouchIndicatorStateCount,
             uint expectedNoIndicatorStateCount,
@@ -441,21 +439,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             uint expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount,
             uint expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount)
         {
-            Log.Comment($"expectedMouseIndicatorStateCount:{expectedMouseIndicatorStateCount}, mouseIndicatorStateCount:{scrollViewer.MouseIndicatorStateCount}");
-            Log.Comment($"expectedNoIndicatorStateCount:{expectedNoIndicatorStateCount}, noIndicatorStateCount:{scrollViewer.NoIndicatorStateCount}");
-            Log.Comment($"expectedScrollBarsSeparatorCollapsedStateCount:{expectedScrollBarsSeparatorCollapsedStateCount}, scrollBarsSeparatorCollapsedStateCount:{scrollViewer.ScrollBarsSeparatorCollapsedStateCount}");
-            Log.Comment($"expectedScrollBarsSeparatorCollapsedDisabledStateCount:{expectedScrollBarsSeparatorCollapsedDisabledStateCount}, scrollBarsSeparatorCollapsedDisabledStateCount:{scrollViewer.ScrollBarsSeparatorCollapsedDisabledStateCount}");
-            Log.Comment($"expectedScrollBarsSeparatorExpandedStateCount:{expectedScrollBarsSeparatorExpandedStateCount}, scrollBarsSeparatorExpandedStateCount:{scrollViewer.ScrollBarsSeparatorExpandedStateCount}");
+            Log.Comment($"expectedMouseIndicatorStateCount:{expectedMouseIndicatorStateCount}, mouseIndicatorStateCount:{m_scrollViewerVisualStateCounts.MouseIndicatorStateCount}");
+            Log.Comment($"expectedNoIndicatorStateCount:{expectedNoIndicatorStateCount}, noIndicatorStateCount:{m_scrollViewerVisualStateCounts.NoIndicatorStateCount}");
+            Log.Comment($"expectedScrollBarsSeparatorCollapsedStateCount:{expectedScrollBarsSeparatorCollapsedStateCount}, scrollBarsSeparatorCollapsedStateCount:{m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedStateCount}");
+            Log.Comment($"expectedScrollBarsSeparatorCollapsedDisabledStateCount:{expectedScrollBarsSeparatorCollapsedDisabledStateCount}, scrollBarsSeparatorCollapsedDisabledStateCount:{m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedDisabledStateCount}");
+            Log.Comment($"expectedScrollBarsSeparatorExpandedStateCount:{expectedScrollBarsSeparatorExpandedStateCount}, scrollBarsSeparatorExpandedStateCount:{m_scrollViewerVisualStateCounts.ScrollBarsSeparatorExpandedStateCount}");
 
-            Verify.AreEqual(expectedMouseIndicatorStateCount, scrollViewer.MouseIndicatorStateCount);
-            Verify.AreEqual(expectedTouchIndicatorStateCount, scrollViewer.TouchIndicatorStateCount);
-            Verify.AreEqual(expectedNoIndicatorStateCount, scrollViewer.NoIndicatorStateCount);
-            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedStateCount, scrollViewer.ScrollBarsSeparatorCollapsedStateCount);
-            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedDisabledStateCount, scrollViewer.ScrollBarsSeparatorCollapsedDisabledStateCount);
-            Verify.AreEqual(expectedScrollBarsSeparatorExpandedStateCount, scrollViewer.ScrollBarsSeparatorExpandedStateCount);
-            Verify.AreEqual(expectedScrollBarsSeparatorDisplayedWithoutAnimationStateCount, scrollViewer.ScrollBarsSeparatorDisplayedWithoutAnimationStateCount);
-            Verify.AreEqual(expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount, scrollViewer.ScrollBarsSeparatorExpandedWithoutAnimationStateCount);
-            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount, scrollViewer.ScrollBarsSeparatorCollapsedWithoutAnimationStateCount);
+            Verify.AreEqual(expectedMouseIndicatorStateCount, m_scrollViewerVisualStateCounts.MouseIndicatorStateCount);
+            Verify.AreEqual(expectedTouchIndicatorStateCount, m_scrollViewerVisualStateCounts.TouchIndicatorStateCount);
+            Verify.AreEqual(expectedNoIndicatorStateCount, m_scrollViewerVisualStateCounts.NoIndicatorStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedStateCount, m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedDisabledStateCount, m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedDisabledStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorExpandedStateCount, m_scrollViewerVisualStateCounts.ScrollBarsSeparatorExpandedStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorDisplayedWithoutAnimationStateCount, m_scrollViewerVisualStateCounts.ScrollBarsSeparatorDisplayedWithoutAnimationStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorExpandedWithoutAnimationStateCount, m_scrollViewerVisualStateCounts.ScrollBarsSeparatorExpandedWithoutAnimationStateCount);
+            Verify.AreEqual(expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount, m_scrollViewerVisualStateCounts.ScrollBarsSeparatorCollapsedWithoutAnimationStateCount);
         }
 
         [TestMethod]
@@ -594,7 +592,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     }
 
     // Custom ScrollViewer that records its visual state changes.
-    public class ScrollViewerWithVisualStateCounts : ScrollViewer
+    public class ScrollViewerVisualStateCounts
     {
         public uint NoIndicatorStateCount
         {
