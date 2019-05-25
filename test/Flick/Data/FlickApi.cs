@@ -1,24 +1,71 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Windows.Storage;
 
 namespace Flick
 {
     public class FlickApi
     {
+        private static bool loadImagesLocally = false;
+
+        public static bool LoadImagesLocally
+        {
+            get
+            {
+                return loadImagesLocally;
+            }
+            set
+            {
+                loadImagesLocally = value;
+            }
+        }
+
         public static async Task<PhotoReel> GetPhotos(string tag, int count = 100)
         {
             PhotoReel photos =  await LoadFeed(tag, count);
             return photos;
         }
 
+        private static async Task<PhotoReel> LoadFeedLocally(string tag)
+        {
+            string folderPath = "Assets/Tulips";
+            PhotoReel reel = new PhotoReel() { Name = tag };
+
+            var filePaths = await GetAssetFiles(folderPath);
+            foreach (var filePath in filePaths)
+            {
+                reel.Add(new Photo { LocalSourcePath = filePath, UseLocalSourcePath = true });
+            }
+
+            return reel;
+        }
+
+        static async Task<IEnumerable<string>> GetAssetFiles(string rootPath)
+        {
+            string folderPath = System.IO.Path.Combine(
+                Windows.ApplicationModel.Package.Current.InstalledLocation.Path,
+                rootPath.Replace('/', '\\').TrimStart('\\')
+            );
+            var folder = await StorageFolder.GetFolderFromPathAsync(folderPath);
+            var files = await folder.GetFilesAsync();
+            var relativePaths = from file in files select (rootPath + "/" + file.Name);
+            return relativePaths;
+        }
+
         private static async Task<PhotoReel> LoadFeed(string tag, int count)
         {
+            if (LoadImagesLocally)
+            {
+                return await LoadFeedLocally(tag);
+            }
+
             // https://www.flickr.com/services/api/flickr.photos.search.html
-            var url = string.Format("https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=dc318dbb02bf7cd2ab3daca1ae7d93c8&tags={0}&styles=depthoffield&safe_search=1&per_page={1}&page=1", tag, count);
+            var url = string.Format("https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=6c67e040d4f2639b17b2a00fc181f79d&tags={0}&styles=depthoffield&safe_search=1&per_page={1}&page=1", tag, count);
 
 
             Windows.Web.Http.HttpClient httpClient = new Windows.Web.Http.HttpClient();

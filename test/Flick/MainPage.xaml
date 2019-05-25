@@ -62,11 +62,11 @@
                             <StackPanel Orientation="Horizontal">
                                 <AppBarButton Content="Animated" Click="OnAnimatedPageClicked" />
                                 <AppBarButton Content="Store" Click="OnStoreScenarioClicked" />
-                                <AppBarButton Content="Carousal" Click="OnCarousalClicked" />
+                                <AppBarButton Content="Carousel" Click="OnCarouselClicked" />
                                 <AppBarButton Content="2D Grid" Click="On2DGridClicked" />
                                 <AppBarButton Content="Grouped" Click="OnGroupedPageClicked" />
                                 <AppBarButton Content="Flex" Click="OnFlexClicked" />
-                                <AppBarButton Content="AnimatedCarousal" Click="OnAnimatedCarousalClicked" />
+                                <AppBarButton Content="AnimatedCarousel" Click="OnAnimatedCarouselClicked" />
                             </StackPanel>
                             <AppBarButton Content="Animator" Click="OnAnimateClicked" />
                         </StackPanel>

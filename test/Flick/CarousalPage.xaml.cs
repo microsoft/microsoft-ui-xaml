@@ -14,10 +14,10 @@ namespace Flick
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class CarousalPage : Page
+    public sealed partial class CarouselPage : Page
     {
         int m_selectedIndex = 0;
-        public CarousalPage()
+        public CarouselPage()
         {
             this.InitializeComponent();
         }

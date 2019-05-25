@@ -1,19 +1,19 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.Foundation;
 
 namespace Flick
 {
-    public class VirtualizingUniformCarousalStackLayout : VirtualizingLayout
+    public class VirtualizingUniformCarouselStackLayout : VirtualizingLayout
     {
         public double ItemWidth { get; set; }
         public double ItemHeight { get; set; }
         public double Spacing { get; set; }
+
+        // Number of times to repeat the count to give the 
+        // illusion of infinite scrolling.
+        public int RepeatCount { get; private set; } = 500;
 
         protected override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
         {
@@ -31,7 +31,7 @@ namespace Flick
                 element.Measure(new Size(ItemWidth, ItemHeight));
             }
 
-            return new Size(ItemWidth * context.ItemCount * 1000, ItemHeight);
+            return new Size(((ItemWidth + Spacing) * context.ItemCount * 1000) - Spacing, ItemHeight);
         }
 
         protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)

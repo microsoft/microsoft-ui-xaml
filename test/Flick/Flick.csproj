@@ -117,8 +117,8 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AnimatedCarousalPage.xaml.cs">
-      <DependentUpon>AnimatedCarousalPage.xaml</DependentUpon>
+    <Compile Include="AnimatedCarouselPage.xaml.cs">
+      <DependentUpon>AnimatedCarouselPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -145,7 +145,7 @@
     <Compile Include="Layouts\CircleLayout.cs" />
     <Compile Include="Layouts\Flex.cs" />
     <Compile Include="Layouts\UniformGrid2DLayout.cs" />
-    <Compile Include="Layouts\VirtualizingUniformCarousalStackLayout.cs" />
+    <Compile Include="Layouts\VirtualizingUniformCarouselStackLayout.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -167,6 +167,16 @@
     <None Include="Flick_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Tulips\tulips_10_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_1_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_2_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_3_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_4_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_5_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_6_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_7_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_8_1000x1000.jpg" />
+    <Content Include="Assets\Tulips\tulips_9_1000x1000.jpg" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -181,7 +191,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="AnimatedCarousalPage.xaml">
+    <Page Include="AnimatedCarouselPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -25,7 +25,16 @@ namespace Flick
 
         private async void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            Images = await FlickApi.GetPhotos("tulips");
+            try
+            {
+                Images = await FlickApi.GetPhotos("tulips");
+            }
+            catch (Exception)
+            {
+                FlickApi.LoadImagesLocally = true;
+                Images = await FlickApi.GetPhotos("tulips");
+            }
+
             for (int i = 0; i < Images.Count; i++)
             {
                 Images[i].FlexBasis = 300;
@@ -34,7 +43,8 @@ namespace Flick
 
             repeater.ItemsSource = Images;
             repeater.Layout = uniformGridLayout;
-            banner.Source = new BitmapImage(new Uri(Images.Last().LargeUrl));
+
+            banner.Source = FlickApi.LoadImagesLocally ? new BitmapImage(new Uri("ms-appx:///" + Images.Last().LargeUrl)) : new BitmapImage(new Uri(Images.First().LargeUrl));
         }
 
         private void Image_Tapped(object sender, TappedRoutedEventArgs e)
@@ -81,9 +91,9 @@ namespace Flick
             Frame.Navigate(typeof(StoreScenario), new NavigateArgs() { Photos = Images });
         }
 
-        private void OnCarousalClicked(object sender, RoutedEventArgs e)
+        private void OnCarouselClicked(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(CarousalPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
+            Frame.Navigate(typeof(CarouselPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
         }
 
         private void On2DGridClicked(object sender, RoutedEventArgs e)
@@ -95,9 +105,9 @@ namespace Flick
             Frame.Navigate(typeof(FlexDemo), new NavigateArgs() { Photos = Images, Selected = Images[0] });
         }
 
-        private void OnAnimatedCarousalClicked(object sender, RoutedEventArgs e)
+        private void OnAnimatedCarouselClicked(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(AnimatedCarousalPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
+            Frame.Navigate(typeof(AnimatedCarouselPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
         }
 
         private void OnAnimateClicked(object sender, RoutedEventArgs e)
