@@ -91,9 +91,9 @@ namespace Flick
             Frame.Navigate(typeof(StoreScenario), new NavigateArgs() { Photos = Images });
         }
 
-        private void OnCarousalClicked(object sender, RoutedEventArgs e)
+        private void OnCarouselClicked(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(CarousalPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
+            Frame.Navigate(typeof(CarouselPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
         }
 
         private void On2DGridClicked(object sender, RoutedEventArgs e)
@@ -105,9 +105,9 @@ namespace Flick
             Frame.Navigate(typeof(FlexDemo), new NavigateArgs() { Photos = Images, Selected = Images[0] });
         }
 
-        private void OnAnimatedCarousalClicked(object sender, RoutedEventArgs e)
+        private void OnAnimatedCarouselClicked(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(AnimatedCarousalPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
+            Frame.Navigate(typeof(AnimatedCarouselPage), new NavigateArgs() { Photos = Images, Selected = Images[0] });
         }
 
         private void OnAnimateClicked(object sender, RoutedEventArgs e)

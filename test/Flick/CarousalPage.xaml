@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="Flick.CarousalPage"
+    x:Class="Flick.CarouselPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Flick"
@@ -29,7 +29,7 @@
                       Grid.Row="1">
             <mux:ItemsRepeater x:Name="repeater" HorizontalCacheLength="0" VerticalCacheLength="0">
                 <mux:ItemsRepeater.Layout>
-                    <local:VirtualizingUniformCarousalStackLayout x:Name="layout" ItemWidth="300" ItemHeight="200" Spacing="10"/>
+                    <local:VirtualizingUniformCarouselStackLayout x:Name="layout" ItemWidth="300" ItemHeight="200" Spacing="10"/>
                 </mux:ItemsRepeater.Layout>
                 <mux:ItemsRepeater.ItemTemplate>
                     <DataTemplate>
