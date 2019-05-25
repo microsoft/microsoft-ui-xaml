@@ -22,14 +22,14 @@
         </Grid.Resources>
         <Image x:Name="banner" Stretch="UniformToFill" Margin="5" />
         <ScrollViewer x:Name="sv" Height="200"
-                      HorizontalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Hidden"
                       VerticalScrollBarVisibility="Disabled"
                       HorizontalScrollMode="Enabled"
                       VerticalScrollMode="Disabled"
                       Grid.Row="1">
             <mux:ItemsRepeater x:Name="repeater" HorizontalCacheLength="0" VerticalCacheLength="0">
                 <mux:ItemsRepeater.Layout>
-                    <local:VirtualizingUniformCarousalStackLayout ItemWidth="300" ItemHeight="200" Spacing="10"/>
+                    <local:VirtualizingUniformCarousalStackLayout x:Name="layout" ItemWidth="300" ItemHeight="200" Spacing="10"/>
                 </mux:ItemsRepeater.Layout>
                 <mux:ItemsRepeater.ItemTemplate>
                     <DataTemplate>

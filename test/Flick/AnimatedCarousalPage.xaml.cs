@@ -135,7 +135,8 @@ namespace Flick
 
         private void OnElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
         {
-            var item = ElementCompositionPreview.GetElementVisual(args.Element);
+            var item = ElementCompositionPreview.GetElementVisual(((Border)args.Element).Child);
+
             var svVisual = ElementCompositionPreview.GetElementVisual(sv);
             var scrollProperties = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(sv);
             var animationGroup = scrollProperties.Compositor.CreateAnimationGroup();
