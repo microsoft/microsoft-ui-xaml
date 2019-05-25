@@ -763,6 +763,8 @@ void ScrollViewer::OnIndicatorStateStoryboardCompleted(
 // Invoked by ScrollViewerTestHooks
 void ScrollViewer::ScrollControllersAutoHidingChanged()
 {
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
     if (SharedHelpers::IsRS4OrHigher())
     {
         UpdateScrollControllersAutoHiding(true /*forceUpdate*/);
@@ -901,6 +903,8 @@ void ScrollViewer::OnAutoHideScrollBarsChanged(
 
     m_dispatcherHelper.RunAsync([strongThis]()
     {
+        SCROLLVIEWER_TRACE_VERBOSE(*strongThis, TRACE_MSG_METH, METH_NAME, strongThis);
+
         strongThis->m_autoHideScrollControllersValid = false;
         strongThis->UpdateVisualStates(
             true  /*useTransitions*/,
@@ -970,6 +974,8 @@ void ScrollViewer::OnScrollerViewChanged(
     const winrt::IInspectable& /*sender*/,
     const winrt::IInspectable& args)
 {
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
     // Unless the control is still loading, show the scroll controller indicators when the view changes. For example,
     // when using Ctrl+/- to zoom, mouse-wheel to scroll or zoom, or any other input type. Keep the existing indicator type.
     if (SharedHelpers::IsFrameworkElementLoaded(*this))
@@ -1068,6 +1074,8 @@ void ScrollViewer::OnScrollerPropertyChanged(
 
 void ScrollViewer::ResetHideIndicatorsTimer(bool isForDestructor, bool restart)
 {
+    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, nullptr);
+
     auto hideIndicatorsTimer = m_hideIndicatorsTimer.safe_get(isForDestructor /*useSafeGet*/);
 
     if (hideIndicatorsTimer && hideIndicatorsTimer.IsEnabled())
@@ -1082,6 +1090,8 @@ void ScrollViewer::ResetHideIndicatorsTimer(bool isForDestructor, bool restart)
 
 void ScrollViewer::HookUISettingsEvent()
 {
+    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, nullptr);
+
     // Introduced in 19H1, IUISettings5 exposes the AutoHideScrollBars property and AutoHideScrollBarsChanged event.
     if (!m_uiSettings5)
     {
@@ -1578,6 +1588,8 @@ bool ScrollViewer::AreBothScrollControllersVisible() const
 
 bool ScrollViewer::AreScrollControllersAutoHiding()
 {
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
     // Use the cached value unless it was invalidated.
     if (m_autoHideScrollControllersValid)
     {

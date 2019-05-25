@@ -186,7 +186,7 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                      <Grid.RowDefinitions>
+                        <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
