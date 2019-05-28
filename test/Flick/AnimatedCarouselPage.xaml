@@ -17,7 +17,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <ScrollViewer x:Name="sv"
-                      HorizontalScrollBarVisibility="Hidden"
+                      HorizontalScrollBarVisibility="Visible"
                       VerticalScrollBarVisibility="Disabled"
                       HorizontalScrollMode="Enabled"
                       VerticalScrollMode="Disabled"
@@ -28,7 +28,7 @@
                       ViewChanged="OnScrollViewerViewChanged"
                       ViewChanging="OnScrollViewerViewChanging"
                       Tapped="OnScrollViewerTapped">
-            <local:SnappPointForwardingRepeater x:Name="repeater" HorizontalCacheLength="0.5" VerticalCacheLength="0" ElementPrepared="OnElementPrepared">
+            <local:SnappPointForwardingRepeater x:Name="repeater" HorizontalCacheLength="0.5" VerticalCacheLength="0" ElementPrepared="OnElementPrepared" >
                 <mux:ItemsRepeater.Layout>
                     <local:VirtualizingUniformCarouselStackLayout x:Name="layout" ItemWidth="450" ItemHeight="525" Spacing="50"/>
                 </mux:ItemsRepeater.Layout>

@@ -33,7 +33,7 @@ namespace Flick
             if (alignment == SnapPointsAlignment.Center && orientation == Orientation.Horizontal)
             {
                 var l = (Layout as VirtualizingUniformCarouselStackLayout);
-                offset = (float)(Margin.Left + (l.ItemWidth / 2));
+                offset = (float)((l.ItemWidth / 2));
                 return (float)(l.ItemWidth + l.Spacing);
             }
 
@@ -115,7 +115,7 @@ namespace Flick
 
         private void Repeater_Loaded(object sender, RoutedEventArgs e)
         {
-            sv.ChangeView(((layout.ItemWidth + layout.Spacing) * layout.RepeatCount), null, null, true);
+           // sv.ChangeView(((layout.ItemWidth + layout.Spacing) * layout.RepeatCount), null, null, true);
         }
 
         private void OnElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
