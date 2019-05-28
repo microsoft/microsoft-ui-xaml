@@ -14,9 +14,10 @@ namespace Flick
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class CarousalPage : Page
+    public sealed partial class CarouselPage : Page
     {
-        public CarousalPage()
+        int m_selectedIndex = 0;
+        public CarouselPage()
         {
             this.InitializeComponent();
         }
@@ -27,7 +28,7 @@ namespace Flick
             var args = e.Parameter as NavigateArgs;
 
             List<Photo> subsetOf7Photos = new List<Photo>();
-            for(int i=0;i<10;i++)
+            for (int i = 0; i < 10; i++)
             {
                 subsetOf7Photos.Add(args.Photos[i]);
             }
@@ -35,11 +36,13 @@ namespace Flick
             repeater.ItemsSource = subsetOf7Photos;
             int selectedIndex = args.Photos.IndexOf(args.Selected);
             banner.Source = new BitmapImage(new Uri(args.Selected.LargeUrl));
+            m_selectedIndex = 0; // Can set initial item here. The one in args might not exist because we filted the list.
+            repeater.Loaded += Repeater_Loaded;
+        }
 
-            var anchor = repeater.GetOrCreateElement(selectedIndex);
-            (anchor as UserControl).Focus(FocusState.Keyboard);
-            UpdateLayout();
-            ScrollToCenterOfViewport(anchor);
+        private void Repeater_Loaded(object sender, RoutedEventArgs e)
+        {
+            sv.ChangeView((layout.ItemWidth + layout.Spacing) * 500 + m_selectedIndex*layout.ItemWidth, null, null, true);
         }
 
         private void SetBanner(object sender)

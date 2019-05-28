@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="Flick.AnimatedCarousalPage"
+    x:Class="Flick.AnimatedCarouselPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Flick"
@@ -65,10 +65,10 @@
                       VerticalAlignment="Center"
                       ViewChanged="OnScrollViewerViewChanged"
                       ViewChanging="OnScrollViewerViewChanging"
-                      Tapped="Sv_Tapped">
-                <local:SnappPointForwardingRepeater x:Name="repeater" HorizontalCacheLength="0.409090909" VerticalCacheLength="0" ElementPrepared="OnElementPrepared">
+                      Tapped="OnScrollViewerTapped">
+                <local:SnappPointForwardingRepeater x:Name="repeater" HorizontalCacheLength="0.5" VerticalCacheLength="0" ElementPrepared="OnElementPrepared">
                     <mux:ItemsRepeater.Layout>
-                        <local:VirtualizingUniformCarousalStackLayout x:Name="layout" ItemWidth="450" ItemHeight="525" Spacing="50"/>
+                        <local:VirtualizingUniformCarouselStackLayout x:Name="layout" ItemWidth="450" ItemHeight="525" Spacing="50"/>
                     </mux:ItemsRepeater.Layout>
                     <mux:ItemsRepeater.ItemTemplate>
                         <DataTemplate>
