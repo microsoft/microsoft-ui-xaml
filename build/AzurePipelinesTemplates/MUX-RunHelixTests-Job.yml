@@ -74,7 +74,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\PrepareHelixPayload.ps1
-      arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
+      arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)' -ArtifactName '${{ parameters.artifactName }}'
       
   - task: CmdLine@1
     displayName: 'Display Helix payload contents'
@@ -132,30 +132,3 @@ jobs:
     inputs:
       PathtoPublish: $(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog
       artifactName: ${{ parameters.artifactName }}
-      
-- job: Process${{ parameters.name }}TestResults
-  condition: succeededOrFailed()
-  dependsOn: ${{ parameters.name }}
-  pool:
-    vmImage: 'VS2017-Win2016'
-  timeoutInMinutes: 120
-
-  steps:
-  - task: powershell@2
-    displayName: 'UpdateUnreliableTests.ps1'
-    condition: succeededOrFailed()
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    inputs:
-      targetType: filePath
-      filePath: build\Helix\UpdateUnreliableTests.ps1
-      arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}'
-      
-  - task: powershell@2
-    displayName: 'OutputTestResults.ps1'
-    condition: succeededOrFailed()
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    inputs:
-      targetType: filePath
-      filePath: build\Helix\OutputTestResults.ps1
