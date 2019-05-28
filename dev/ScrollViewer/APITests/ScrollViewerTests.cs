@@ -319,6 +319,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     });
 
                     WaitForEvent("Waiting for Loaded event", scrollViewerLoadedEvent);
+                    CompositionPropertySpy.SynchronouslyTickUIThread(20);
 
                     RunOnUIThread.Execute(() =>
                     {
@@ -344,6 +345,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     });
 
                     IdleSynchronizer.Wait();
+                    CompositionPropertySpy.SynchronouslyTickUIThread(20);
 
                     RunOnUIThread.Execute(() =>
                     {
@@ -369,6 +371,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     });
 
                     IdleSynchronizer.Wait();
+                    CompositionPropertySpy.SynchronouslyTickUIThread(20);
 
                     RunOnUIThread.Execute(() =>
                     {
