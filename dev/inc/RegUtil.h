@@ -5,7 +5,7 @@
 
 #include <windows.h>
 
-// RegGetValueW, implemented in linked AdvApi32.lib, is declared here because winreg.h's declaration is
+// RegGetValueW, implemented in linked MinCore.lib, is declared here because winreg.h's declaration is
 // skipped for Windows Store code. Its declaration condition would need to change to
 // #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_APP)
 // from the current #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM).

@@ -31,12 +31,13 @@ NuGet package version:
 <!-- Which Windows versions did you see the issue on? Leave blank if you didn't try that version. -->
 | Windows 10 version                  | Saw the problem? |
 | :--------------------------------- | :-------------------- |
-| Insider Build (xxxxx)                   | <!-- Yes/No? -->   |
-| October 2018 Update (17763)   | <!-- Yes/No? -->   |
-| April 2018 Update (17134)        | <!-- Yes/No? -->   |
-| Fall Creators Update (16299)     | <!-- Yes/No? -->   |
-| Creators Update (15063)           | <!-- Yes/No? -->   |
-| Anniversary Update (14393)      | <!-- Yes/No? -->   |
+| Insider Build (xxxxx)              | <!-- Yes/No? -->   |
+| May 2019 Update (18362)            | <!-- Yes/No? -->   |
+| October 2018 Update (17763)        | <!-- Yes/No? -->   |
+| April 2018 Update (17134)          | <!-- Yes/No? -->   |
+| Fall Creators Update (16299)       | <!-- Yes/No? -->   |
+| Creators Update (15063)            | <!-- Yes/No? -->   |
+| Anniversary Update (14393)         | <!-- Yes/No? -->   |
 
 <!-- Which device form factors did you see the issue on? Leave blank if you didn't try that device. -->
 | Device form factor | Saw the problem? |

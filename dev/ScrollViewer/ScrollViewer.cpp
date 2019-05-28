@@ -899,9 +899,7 @@ void ScrollViewer::OnAutoHideScrollBarsChanged(
     MUX_ASSERT(SharedHelpers::Is19H1OrHigher());
 
     // OnAutoHideScrollBarsChanged is called on a non-UI thread, process notification on the UI thread using a dispatcher.
-    auto strongThis = get_strong();
-
-    m_dispatcherHelper.RunAsync([strongThis]()
+    m_dispatcherHelper.RunAsync([strongThis = get_strong()]()
     {
         SCROLLVIEWER_TRACE_VERBOSE(*strongThis, TRACE_MSG_METH, METH_NAME, strongThis);
 
