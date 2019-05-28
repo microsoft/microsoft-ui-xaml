@@ -104,6 +104,7 @@ private:
         int countInLine,
         float spaceAtLineStart,
         float spaceAtLineEnd,
+        float lineSize,
         FlowLayoutAlgorithm::LineAlignment lineAlignment,
         const wstring_view& layoutId);
 #pragma endregion

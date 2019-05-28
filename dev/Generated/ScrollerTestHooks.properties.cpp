@@ -13,6 +13,7 @@ ScrollerTestHooksProperties::ScrollerTestHooksProperties()
     : m_anchorEvaluatedEventSource{static_cast<ScrollerTestHooks*>(this)}
     , m_contentLayoutOffsetXChangedEventSource{static_cast<ScrollerTestHooks*>(this)}
     , m_contentLayoutOffsetYChangedEventSource{static_cast<ScrollerTestHooks*>(this)}
+    , m_expressionAnimationStatusChangedEventSource{static_cast<ScrollerTestHooks*>(this)}
     , m_interactionSourcesChangedEventSource{static_cast<ScrollerTestHooks*>(this)}
 {
 }
@@ -53,6 +54,16 @@ winrt::event_token ScrollerTestHooksProperties::ContentLayoutOffsetYChanged(winr
 void ScrollerTestHooksProperties::ContentLayoutOffsetYChanged(winrt::event_token const& token)
 {
     m_contentLayoutOffsetYChangedEventSource.remove(token);
+}
+
+winrt::event_token ScrollerTestHooksProperties::ExpressionAnimationStatusChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksExpressionAnimationStatusChangedEventArgs> const& value)
+{
+    return m_expressionAnimationStatusChangedEventSource.add(value);
+}
+
+void ScrollerTestHooksProperties::ExpressionAnimationStatusChanged(winrt::event_token const& token)
+{
+    m_expressionAnimationStatusChangedEventSource.remove(token);
 }
 
 winrt::event_token ScrollerTestHooksProperties::InteractionSourcesChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksInteractionSourcesChangedEventArgs> const& value)

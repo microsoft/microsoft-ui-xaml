@@ -6,13 +6,13 @@ Param(
 
 Push-Location $PSScriptRoot
 
-[xml]$customProps = (Get-Content ..\..\custom.props)
-$versionMajor = $customProps.GetElementsByTagName("VersionMajor").'#text'
-$versionMinor = $customProps.GetElementsByTagName("VersionMinor").'#text'
+[xml]$customProps = (Get-Content ..\..\version.props)
+$versionMajor = $customProps.GetElementsByTagName("MUXVersionMajor").'#text'
+$versionMinor = $customProps.GetElementsByTagName("MUXVersionMinor").'#text'
 
 if ((!$versionMajor) -or (!$versionMinor))
 {
-    Write-Error "Expected VersionMajor and VersionMinor tags to be in custom.props file"
+    Write-Error "Expected MUXVersionMajor and MUXVersionMinor tags to be in version.props file"
     Exit 1
 }
 

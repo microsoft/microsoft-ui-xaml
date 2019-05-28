@@ -27,13 +27,22 @@ runtimeclass ScrollerTestHooksInteractionSourcesChangedEventArgs
 }
 
 [WUXC_VERSION_INTERNAL]
+[webhosthidden]
+runtimeclass ScrollerTestHooksExpressionAnimationStatusChangedEventArgs
+{
+    Boolean IsExpressionAnimationStarted { get; };
+    String PropertyName{ get; };
+}
+
+[WUXC_VERSION_INTERNAL]
 [default_interface]
 [webhosthidden]
 runtimeclass ScrollerTestHooks
 {
     static Boolean AreAnchorNotificationsRaised { get; set; };
     static Boolean AreInteractionSourcesNotificationsRaised { get; set; };
-    static Boolean IsInteractionTrackerPointerWheelRedirectionEnabled{ get; set; };
+    static Boolean AreExpressionAnimationStatusNotificationsRaised { get; set; };
+    static Boolean IsInteractionTrackerPointerWheelRedirectionEnabled { get; set; };
     static Int32 MouseWheelDeltaForVelocityUnit { get; set; };
     static Single MouseWheelInertiaDecayRate { get; set; };
     static void GetOffsetsChangeVelocityParameters(out Int32 millisecondsPerUnit, out Int32 minMilliseconds, out Int32 maxMilliseconds);
@@ -59,6 +68,7 @@ runtimeclass ScrollerTestHooks
     static void SetSnapPointVisualizationColor(MU_XCP_NAMESPACE.SnapPointBase snapPoint, Windows.UI.Color color);
     static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, ScrollerTestHooksAnchorEvaluatedEventArgs> AnchorEvaluated;
     static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, ScrollerTestHooksInteractionSourcesChangedEventArgs> InteractionSourcesChanged;
+    static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, ScrollerTestHooksExpressionAnimationStatusChangedEventArgs> ExpressionAnimationStatusChanged;
     static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, Object> ContentLayoutOffsetXChanged;
     static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, Object> ContentLayoutOffsetYChanged;
 }
