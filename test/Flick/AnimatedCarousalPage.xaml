@@ -10,13 +10,52 @@
     RequestedTheme="Dark"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
+    <Page.Resources>
+        <Style x:Name="CarouselNextPrevButtonStyle" TargetType="Button">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="25,25" />
+            <!--<Setter Property="Height" Value="262.5" />-->
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Ellipse/>
+                            <ContentPresenter Margin="{TemplateBinding Padding}" Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Name="CarouselNextPrevButtonFontIconStyle" TargetType="FontIcon">
+            <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}"/>
+            <Setter Property="FontSize" Value="32"/>
+            <Setter Property="FontWeight" Value="ExtraBold"/>
+        </Style>
+    </Page.Resources>
+
     <Grid Margin="10" KeyDown="Grid_KeyDown">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition Height="9*"/>
             <RowDefinition />
         </Grid.RowDefinitions>
-        <ScrollViewer x:Name="sv"
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="carouselPrevButton"
+                    Grid.Column="0"
+                    Style="{StaticResource CarouselNextPrevButtonStyle}"
+                    Click="CarouselPrevButton_Click">
+                <FontIcon Style="{StaticResource CarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76B;"/><!--ChevronLeft-->
+            </Button>
+            <ScrollViewer x:Name="sv"
+                      Grid.Column="1"
                       HorizontalScrollBarVisibility="Hidden"
                       VerticalScrollBarVisibility="Disabled"
                       HorizontalScrollMode="Enabled"
@@ -24,28 +63,34 @@
                       HorizontalSnapPointsAlignment="Center"
                       HorizontalSnapPointsType="Mandatory"
                       VerticalAlignment="Center"
-                      Grid.Row="1"
                       ViewChanged="OnScrollViewerViewChanged"
                       ViewChanging="OnScrollViewerViewChanging"
                       Tapped="Sv_Tapped">
-            <local:SnappPointForwardingRepeater x:Name="repeater" HorizontalCacheLength="0.5" VerticalCacheLength="0" ElementPrepared="OnElementPrepared">
-                <mux:ItemsRepeater.Layout>
-                    <local:VirtualizingUniformCarousalStackLayout x:Name="layout" ItemWidth="450" ItemHeight="525" Spacing="50"/>
-                </mux:ItemsRepeater.Layout>
-                <mux:ItemsRepeater.ItemTemplate>
-                    <DataTemplate>
-                        <!--<Border>-->
-                        <UserControl IsTabStop="True" UseSystemFocusVisuals="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                            <StackPanel>
-                                <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Height="375"  />
-                                <TextBlock Text="{Binding Description}"  HorizontalAlignment="Center" FontSize="32" Foreground="Gray"/>
-                            </StackPanel>
-                        </UserControl>
-                        <!--</Border>-->
-                    </DataTemplate>
-                </mux:ItemsRepeater.ItemTemplate>
-            </local:SnappPointForwardingRepeater>
-        </ScrollViewer>
+                <local:SnappPointForwardingRepeater x:Name="repeater" HorizontalCacheLength="0.409090909" VerticalCacheLength="0" ElementPrepared="OnElementPrepared">
+                    <mux:ItemsRepeater.Layout>
+                        <local:VirtualizingUniformCarousalStackLayout x:Name="layout" ItemWidth="450" ItemHeight="525" Spacing="50"/>
+                    </mux:ItemsRepeater.Layout>
+                    <mux:ItemsRepeater.ItemTemplate>
+                        <DataTemplate>
+                            <!--<Border>-->
+                            <UserControl IsTabStop="True" UseSystemFocusVisuals="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                                <StackPanel>
+                                    <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Height="375"  />
+                                    <TextBlock Text="{Binding Description}"  HorizontalAlignment="Center" FontSize="32" Foreground="Gray"/>
+                                </StackPanel>
+                            </UserControl>
+                            <!--</Border>-->
+                        </DataTemplate>
+                    </mux:ItemsRepeater.ItemTemplate>
+                </local:SnappPointForwardingRepeater>
+            </ScrollViewer>
+            <Button x:Name="carouselNextButton"
+                    Grid.Column="2"
+                    Style="{StaticResource CarouselNextPrevButtonStyle}"
+                    Click="CarouselNextButton_Click">
+                <FontIcon Style="{StaticResource CarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76C;"/><!--ChevronRight-->
+            </Button>
+        </Grid>
         <TextBlock x:Name="textBlock" Grid.Row="2">Dummy text</TextBlock>
     </Grid>
 </Page>

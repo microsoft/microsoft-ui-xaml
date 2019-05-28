@@ -140,7 +140,7 @@ namespace Flick
             var scrollProperties = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(sv);
             var animationGroup = scrollProperties.Compositor.CreateAnimationGroup();
 
-            // Animate each item's centerpoint based on the item's distance from the center of the viewport
+            //Animate each item's centerpoint based on the item's distance from the center of the viewport
             // translate the position of each item horizontally closer to the center of the viewport as much as is necessary
             // in order to ensure that the Spacing property of the ItemsRepeater is still respected after the items have been scaled.
             var centerPointExpressionString = "Vector3(((item.Size.X/2) + ((((item.Offset.X + (item.Size.X/2)) < ((svVisual.Size.X/2) - scrollProperties.Translation.X)) ? 1 : -1) * (((item.Size.X/2) * clamp((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing)), 0, 1)) + ((item.Size.X) * max((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing)) - 1, 0))) )), item.Size.Y/2, 0)";
@@ -228,11 +228,67 @@ namespace Flick
                     {
                         await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                         {
-                            var Succes = sv.ChangeView(offsetToScrollTo, null, null, false);
+                            var Success = sv.ChangeView(offsetToScrollTo, null, null, false);
                         });
                     }, period);
                 }
             }
+        }
+
+        private void SelectNextItem()
+        {
+            // In the nominal case, centerOfViewportOffsetInScrollViewer will be the offset of the current centerpoint in the scrollviewer's viewport;
+            // however, if the "center" item is not perfectly centered (i.e. where the centerpoint falls on the item's size.x/2)
+            // then set centerOfViewportOffsetInScrollViewer equal to the offset where the "centered" item would be perfectly centered.
+            // This makes later calculations much simpler with respect to item animations.
+            var centerOfViewportOffsetInScrollViewer = sv.HorizontalOffset + sv.ViewportWidth / 2;
+            centerOfViewportOffsetInScrollViewer -= (centerOfViewportOffsetInScrollViewer + layout.Spacing / 2) % (layout.Spacing + layout.ItemWidth);
+            centerOfViewportOffsetInScrollViewer += layout.Spacing / 2 + layout.ItemWidth / 2;
+            var newSelectedItemDistanceFromCenterPoint = layout.ItemWidth / 2 + layout.Spacing + (layout.ItemWidth * ItemScaleRatio);
+            var offsetToScrollTo = sv.HorizontalOffset + newSelectedItemDistanceFromCenterPoint;
+            // This odd delay is required in order to ensure that the scrollviewer animates the scroll
+            // on every call to ChangeView.
+            var period = TimeSpan.FromMilliseconds(100);
+            Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
+            {
+                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                {
+                    var Success = sv.ChangeView(offsetToScrollTo, null, null, false);
+                });
+            }, period);
+        }
+
+        private void SelectPreviousItem()
+        {
+            // In the nominal case, centerOfViewportOffsetInScrollViewer will be the offset of the current centerpoint in the scrollviewer's viewport;
+            // however, if the "center" item is not perfectly centered (i.e. where the centerpoint falls on the item's size.x/2)
+            // then set centerOfViewportOffsetInScrollViewer equal to the offset where the "centered" item would be perfectly centered.
+            // This makes later calculations much simpler with respect to item animations.
+            var centerOfViewportOffsetInScrollViewer = sv.HorizontalOffset + sv.ViewportWidth / 2;
+            centerOfViewportOffsetInScrollViewer -= (centerOfViewportOffsetInScrollViewer + layout.Spacing / 2) % (layout.Spacing + layout.ItemWidth);
+            centerOfViewportOffsetInScrollViewer += layout.Spacing / 2 + layout.ItemWidth / 2;
+            var newSelectedItemDistanceFromCenterPoint = layout.ItemWidth / 2 + layout.Spacing + (layout.ItemWidth * ItemScaleRatio);
+            var offsetToScrollTo = sv.HorizontalOffset - newSelectedItemDistanceFromCenterPoint;
+            // This odd delay is required in order to ensure that the scrollviewer animates the scroll
+            // on every call to ChangeView.
+            var period = TimeSpan.FromMilliseconds(100);
+            Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
+            {
+                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                {
+                    var Success = sv.ChangeView(offsetToScrollTo, null, null, false);
+                });
+            }, period);
+        }
+
+        private void CarouselNextButton_Click(object sender, RoutedEventArgs e)
+        {
+            SelectNextItem();
+        }
+
+        private void CarouselPrevButton_Click(object sender, RoutedEventArgs e)
+        {
+            SelectPreviousItem();
         }
     }
 }
