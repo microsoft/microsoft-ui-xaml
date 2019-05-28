@@ -7,6 +7,7 @@ using MUXControlsTestApp.Utilities;
 using System;
 using System.Threading;
 using Windows.Foundation;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Shapes;
 using Windows.UI.Xaml.Media;
@@ -265,6 +266,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies the ScrollViewer visual state changes based on the AutoHideScrollBars, IsEnabled and ScrollBarVisibility settings.")]
         public void VerifyVisualStates()
         {
+            UISettings settings = new UISettings();
+            if (!settings.AnimationsEnabled)
+            {
+                Log.Warning("Test is disabled when animations are turned off.");
+                return;
+            }
+
             VerifyVisualStates(ScrollBarVisibility.Auto, autoHideScrollControllers: true);
             VerifyVisualStates(ScrollBarVisibility.Visible, autoHideScrollControllers: true);
 
@@ -301,7 +309,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         scrollViewer.HorizontalScrollBarVisibility = scrollBarVisibility;
                         scrollViewer.VerticalScrollBarVisibility = scrollBarVisibility;
 
-                        SetupDefaultUI(scrollViewer, rectangleScrollViewerContent, scrollViewerLoadedEvent, scrollViewerUnloadedEvent);
+                        SetupDefaultUI(
+                            scrollViewer: scrollViewer,
+                            rectangleScrollViewerContent: rectangleScrollViewerContent,
+                            scrollViewerLoadedEvent: scrollViewerLoadedEvent,
+                            scrollViewerUnloadedEvent: scrollViewerUnloadedEvent,
+                            setAsContentRoot: true,
+                            useParentGrid: true);
                     });
 
                     WaitForEvent("Waiting for Loaded event", scrollViewerLoadedEvent);
@@ -528,7 +542,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             Rectangle rectangleScrollViewerContent = null,
             AutoResetEvent scrollViewerLoadedEvent = null,
             AutoResetEvent scrollViewerUnloadedEvent = null,
-            bool setAsContentRoot = true)
+            bool setAsContentRoot = true,
+            bool useParentGrid = false)
         {
             Log.Comment("Setting up default UI with ScrollViewer" + (rectangleScrollViewerContent == null ? "" : " and Rectangle"));
 
@@ -574,10 +589,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 };
             }
 
+            Grid parentGrid = null;
+
+            if (useParentGrid)
+            {
+                parentGrid = new Grid();
+                parentGrid.Width = c_defaultUIScrollViewerWidth * 3;
+                parentGrid.Height = c_defaultUIScrollViewerHeight * 3;
+
+                scrollViewer.HorizontalAlignment = HorizontalAlignment.Left;
+                scrollViewer.VerticalAlignment = VerticalAlignment.Top;
+
+                parentGrid.Children.Add(scrollViewer);
+            }
+
             if (setAsContentRoot)
             {
                 Log.Comment("Setting window content");
-                MUXControlsTestApp.App.TestContentRoot = scrollViewer;
+                if (useParentGrid)
+                {
+                    MUXControlsTestApp.App.TestContentRoot = parentGrid;
+                }
+                else
+                {
+                    MUXControlsTestApp.App.TestContentRoot = scrollViewer;
+                }
             }
         }
 
