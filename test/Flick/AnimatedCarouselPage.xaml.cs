@@ -33,7 +33,7 @@ namespace Flick
             if (alignment == SnapPointsAlignment.Center && orientation == Orientation.Horizontal)
             {
                 var l = (Layout as VirtualizingUniformCarouselStackLayout);
-                offset = (float)(Margin.Left + (l.ItemWidth / 2));
+                offset = (float)((l.ItemWidth / 2));
                 return (float)(l.ItemWidth + l.Spacing);
             }
 
@@ -124,7 +124,6 @@ namespace Flick
             var svVisual = ElementCompositionPreview.GetElementVisual(sv);
             var scrollProperties = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(sv);
             
-
             //Animate each item's centerpoint based on the item's distance from the center of the viewport
             // translate the position of each item horizontally closer to the center of the viewport as much as is necessary
             // in order to ensure that the Spacing property of the ItemsRepeater is still respected after the items have been scaled.
