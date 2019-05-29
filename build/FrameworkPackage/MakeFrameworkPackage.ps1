@@ -65,14 +65,14 @@ Copy-IntoNewDirectory -IfExists $inputBasePath\Themes $fullOutputPath\PackageCon
 function Get-SDK-References-Path
 {
     [xml]$sdkPropsContent = Get-Content $PSScriptRoot\..\..\sdkversion.props
-    $sdkVersions = $sdkPropsContent.SelectNodes("//*[contains(local-name(), 'SDKVersion')]")
-    for ($i=$sdkVersions.Count-1; $i -ge 0; $i--)
+    $sdkVersions = $sdkPropsContent.SelectNodes("//*[contains(local-name(), 'SDKVersion')]") | Sort-Object -Property '#text' -Descending 
+    foreach ($version in $sdkVersions)
     {
-        $sdkReferencesPath=$kitsRoot10 + "References\" + $sdkVersions[$i].'#text'
-        Write-Host Checking $sdkReferencesPath ...
+        $sdkReferencesPath=$kitsRoot10 + "References\" + $version.'#text'
+        Write-Verbose "Checking $sdkReferencesPath ..."
         if (Test-Path $sdkReferencesPath)
         {
-            Write-Host Found $sdkReferencesPath
+            Write-Verbose "Found $sdkReferencesPath"
             return $sdkReferencesPath
         }
     }
