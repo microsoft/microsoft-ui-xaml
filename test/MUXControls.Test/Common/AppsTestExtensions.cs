@@ -96,6 +96,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             Wait.ForIdle();
         }
 
+        public static void InvokeAndWait(this MenuItem menuItem, TimeSpan? timeout = null)
+        {
+            if (menuItem == null)
+            {
+                Log.Error("Attempted to invoke a null MenuItem! Dumping context...");
+                DumpHelper.DumpFullContext();
+                throw new ArgumentNullException("menuItem");
+            }
+
+            using (var waiter = menuItem.GetInvokedWaiter())
+            {
+                menuItem.Invoke();
+                if (timeout == null)
+                {
+                    waiter.Wait();
+                }
+                else
+                {
+                    waiter.Wait(timeout.Value);
+                }
+            }
+
+            Wait.ForIdle();
+        }
+
         public static void ToggleAndWait(this ToggleButton toggleButton)
         {
             if (toggleButton == null)

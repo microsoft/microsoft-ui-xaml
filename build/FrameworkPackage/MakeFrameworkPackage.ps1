@@ -61,9 +61,25 @@ Copy-IntoNewDirectory "$inputBasePath\sdk\$inputBaseFileName.winmd" $fullOutputP
 Write-Verbose "Copying $inputBasePath\Themes"
 Copy-IntoNewDirectory -IfExists $inputBasePath\Themes $fullOutputPath\PackageContents\Microsoft.UI.Xaml
 
-[xml]$sdkPropsContent = Get-Content $PSScriptRoot\..\..\sdkversion.props
-$highestSdkVersion = ($sdkPropsContent.SelectNodes("//*[contains(local-name(), 'SDKVersion')]") | Where-Object { -not $_.ToString().Contains("Insider")} | Select-Object -Last 1).'#text'
-$sdkReferencesPath=$kitsRoot10 + "References\" + $highestSdkVersion;    
+#Find the latest available sdk
+function Get-SDK-References-Path
+{
+    [xml]$sdkPropsContent = Get-Content $PSScriptRoot\..\..\sdkversion.props
+    $sdkVersions = $sdkPropsContent.SelectNodes("//*[contains(local-name(), 'SDKVersion')]") | Sort-Object -Property '#text' -Descending 
+    foreach ($version in $sdkVersions)
+    {
+        $sdkReferencesPath=$kitsRoot10 + "References\" + $version.'#text'
+        Write-Verbose "Checking $sdkReferencesPath ..."
+        if (Test-Path $sdkReferencesPath)
+        {
+            Write-Verbose "Found $sdkReferencesPath"
+            return $sdkReferencesPath
+        }
+    }
+    return ''
+}
+
+$sdkReferencesPath = Get-SDK-References-Path
 $foundationWinmdPath = Get-ChildItem -Recurse $sdkReferencesPath"\Windows.Foundation.FoundationContract" -Filter "Windows.Foundation.FoundationContract.winmd" | Select-Object -ExpandProperty FullName
 $universalWinmdPath = Get-ChildItem -Recurse $sdkReferencesPath"\Windows.Foundation.UniversalApiContract" -Filter "Windows.Foundation.UniversalApiContract.winmd" | Select-Object -ExpandProperty FullName
 $refrenceWinmds = $foundationWinmdPath + ";" + $universalWinmdPath
@@ -96,7 +112,7 @@ $ActivatableTypes += @"
 
 Copy-IntoNewDirectory ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png $fullOutputPath\Assets
 
-$customPropsFile = "$PSScriptRoot\..\..\custom.props"
+$customPropsFile = "$PSScriptRoot\..\..\version.props"
 Write-Verbose "Looking in $customPropsFile"
 
 if (-not (Test-Path $customPropsFile))
@@ -105,14 +121,14 @@ if (-not (Test-Path $customPropsFile))
     Exit 1
 }
 [xml]$customProps = (Get-Content $customPropsFile)
-$versionMajor = $customProps.GetElementsByTagName("VersionMajor").'#text'
-$versionMinor = $customProps.GetElementsByTagName("VersionMinor").'#text'
+$versionMajor = $customProps.GetElementsByTagName("MUXVersionMajor").'#text'
+$versionMinor = $customProps.GetElementsByTagName("MUXVersionMinor").'#text'
 
 Write-Verbose "CustomProps = $customProps, VersionMajor = '$versionMajor', VersionMinor = '$versionMinor'"
 
 if ((!$versionMajor) -or (!$versionMinor))
 {
-    Write-Error "Expected VersionMajor and VersionMinor tags to be in custom.props file"
+    Write-Error "Expected MUXVersionMajor and MUXVersionMinor tags to be in version.props file"
     Exit 1
 }
 

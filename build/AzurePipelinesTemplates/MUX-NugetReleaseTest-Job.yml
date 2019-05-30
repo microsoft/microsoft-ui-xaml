@@ -1,5 +1,6 @@
 parameters:
   buildJobName: 'BuildNugetPkgTests'
+  buildArtifactName: 'NugetPkgTestsDrop'
   runTestJobName: 'RunNugetPkgTestsInHelix'
   dependsOn: ''
   runTests: 'true'
@@ -104,8 +105,11 @@ jobs:
     parameters:
       solutionPath: $(solutionPath)
       nugetConfigPath: $(nugetConfigPath)
+      artifactName: ${{ parameters.buildArtifactName }}
 
   - template: MUX-PublishProjectOutput-Steps.yml
+    parameters:
+      artifactName: ${{ parameters.buildArtifactName }}
 
 - ${{if eq(parameters.runTests, 'true')}}:
   - template: MUX-RunHelixTests-Job.yml
@@ -113,4 +117,6 @@ jobs:
       name: ${{ parameters.runTestJobName }}
       dependsOn: ${{ parameters.buildJobName }}
       testSuite: 'NugetTestSuite'
+      artifactName: ${{ parameters.buildArtifactName }}
+      rerunPassesRequiredToAvoidFailure: 5
   

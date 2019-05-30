@@ -123,9 +123,9 @@ jobs:
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop'
     matrix: 
-      Debug_x86:
+      Release_x86:
         buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
+        buildConfiguration: 'Release'
       Debug_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'Debug'

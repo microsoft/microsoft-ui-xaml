@@ -572,7 +572,7 @@ void FlowLayoutAlgorithm::ArrangeVirtualizingLayout(
             if (currentBounds.*MajorStart() != currentLineOffset)
             {
                 spaceAtLineEnd = finalSize.*Minor() - previousElementBounds.*MinorStart() - previousElementBounds.*MinorSize();
-                PerformLineAlignment(i - countInLine, countInLine, spaceAtLineStart, spaceAtLineEnd, lineAlignment, layoutId);
+                PerformLineAlignment(i - countInLine, countInLine, spaceAtLineStart, spaceAtLineEnd, currentLineSize, lineAlignment, layoutId);
                 spaceAtLineStart = currentBounds.*MinorStart();
                 countInLine = 0;
                 currentLineOffset = currentBounds.*MajorStart();
@@ -589,7 +589,7 @@ void FlowLayoutAlgorithm::ArrangeVirtualizingLayout(
         if (countInLine > 0)
         {
             float spaceAtEnd = finalSize.*Minor() - previousElementBounds.*MinorStart() - previousElementBounds.*MinorSize();
-            PerformLineAlignment(realizedElementCount - countInLine, countInLine, spaceAtLineStart, spaceAtEnd, lineAlignment, layoutId);
+            PerformLineAlignment(realizedElementCount - countInLine, countInLine, spaceAtLineStart, spaceAtEnd, currentLineSize, lineAlignment, layoutId);
         }
     }
 }
@@ -601,12 +601,14 @@ void FlowLayoutAlgorithm::PerformLineAlignment(
     int countInLine,
     float spaceAtLineStart,
     float spaceAtLineEnd,
+    float lineSize,
     FlowLayoutAlgorithm::LineAlignment lineAlignment,
     const wstring_view& layoutId)
 {
     for (int rangeIndex = lineStartIndex; rangeIndex < lineStartIndex + countInLine; ++rangeIndex)
     {
         auto bounds = m_elementManager.GetLayoutBoundsForRealizedIndex(rangeIndex);
+        bounds.*MajorSize() = lineSize;
 
         if (!m_scrollOrientationSameAsFlow)
         {

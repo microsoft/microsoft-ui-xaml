@@ -42,25 +42,43 @@ public:
     bool operator== (SnapPointBase* snapPoint);
 
     virtual winrt::ExpressionAnimation CreateRestingPointExpression(
-        winrt::Compositor const& compositor,
+        double ignoredValue,
+        std::tuple<double, double> actualImpulseApplicableZone,
+        winrt::InteractionTracker const& interactionTracker,
         winrt::hstring const& target,
-        winrt::hstring const& scale) = 0;
+        winrt::hstring const& scale,
+        bool isInertiaFromImpulse) = 0;
     virtual winrt::ExpressionAnimation CreateConditionalExpression(
         std::tuple<double, double> actualApplicableZone,
-        winrt::Compositor const& compositor,
+        std::tuple<double, double> actualImpulseApplicableZone,
+        winrt::InteractionTracker const& interactionTracker,
         winrt::hstring const& target,
-        winrt::hstring const& scale) = 0;
+        winrt::hstring const& scale,
+        bool isInertiaFromImpulse) = 0;
+    virtual void UpdateConditionalExpressionAnimationForImpulse(
+        winrt::ExpressionAnimation const& conditionExpressionAnimation,
+        std::tuple<double, double> actualImpulseApplicableZone) const = 0;
+    virtual void UpdateRestingPointExpressionAnimationForImpulse(
+        winrt::ExpressionAnimation const& restingValueExpressionAnimation,
+        double ignoredValue,
+        std::tuple<double, double> actualImpulseApplicableZone) const = 0;
     virtual ScrollerSnapPointSortPredicate SortPredicate() = 0;
     virtual std::tuple<double, double> DetermineActualApplicableZone(
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint) = 0;
+    virtual std::tuple<double, double> DetermineActualImpulseApplicableZone(
+        SnapPointBase* previousSnapPoint,
+        SnapPointBase* nextSnapPoint,
+        double currentIgnoredValue,
+        double previousIgnoredValue,
+        double nextIgnoredValue) = 0;
     virtual double Influence(double edgeOfMidpoint) const = 0;
+    virtual double ImpulseInfluence(double edgeOfMidpoint, double ignoredValue) const = 0;
     virtual void Combine(
         int& combinationCount,
         winrt::SnapPointBase const& snapPoint) const = 0;
-    virtual double Evaluate(
-        std::tuple<double, double> actualApplicableZone,
-        double value) const = 0;
+    virtual int SnapCount() const = 0;
+    virtual double Evaluate(std::tuple<double, double> actualApplicableZone, double value) const = 0;
 
     // Returns True when this snap point is sensitive to the viewport size and is interested in future updates.
     virtual bool OnUpdateViewport(double newViewport) = 0;
@@ -70,11 +88,27 @@ public:
     void VisualizationColor(winrt::Color color);
 #endif // _DEBUG
 
+    bool SnapsAt(
+        std::tuple<double, double> actualApplicableZone,
+        double value) const;
+    void UpdateExpressionAnimationForImpulse(
+        winrt::ExpressionAnimation const& expressionAnimation,
+        bool isInertiaFromImpulse) const;
+    void SetBooleanParameter(
+        winrt::ExpressionAnimation const& expressionAnimation,
+        wstring_view const& booleanName,
+        bool booleanValue) const;
+    void SetScalarParameter(
+        winrt::ExpressionAnimation const& expressionAnimation,
+        wstring_view const& scalarName,
+        float scalarValue) const;
+
 protected:
     // Needed as work around for Modern Idl inheritance bug
     SnapPointBase();
 
     winrt::hstring GetTargetExpression(winrt::hstring const& target) const;
+    winrt::hstring GetIsInertiaFromImpulseExpression(winrt::hstring const& target) const;
 
     double m_specifiedApplicableRange{ INFINITY };
 #ifdef ApplicableRangeType
@@ -87,6 +121,23 @@ protected:
 
     // Maximum difference for snap points to be considered equal
     static constexpr double s_equalityEpsilon{ 0.00001 };
+
+    // Constants used in composition expressions
+    static constexpr wstring_view s_snapPointValue{ L"snapPointValue"sv };
+    static constexpr wstring_view s_isInertiaFromImpulse{ L"iIFI"sv };
+    static constexpr wstring_view s_minApplicableValue{ L"minAppValue"sv };
+    static constexpr wstring_view s_maxApplicableValue{ L"maxAppValue"sv };
+    static constexpr wstring_view s_minImpulseApplicableValue{ L"minImpAppValue"sv };
+    static constexpr wstring_view s_maxImpulseApplicableValue{ L"maxImpAppValue"sv };
+    static constexpr wstring_view s_interval{ L"itv"sv };
+    static constexpr wstring_view s_start{ L"stt"sv };
+    static constexpr wstring_view s_end{ L"end"sv };
+    static constexpr wstring_view s_first{ L"fst"sv };
+    static constexpr wstring_view s_applicableRange{ L"aRg"sv };
+    static constexpr wstring_view s_impulseStart{ L"iStt"sv };
+    static constexpr wstring_view s_impulseEnd{ L"iEnd"sv };
+    static constexpr wstring_view s_impulseIgnoredValue{ L"iIgn"sv };
+    static constexpr wstring_view s_interactionTracker{ L"it"sv };
 };
 
 class ScrollSnapPointBase :
@@ -124,22 +175,45 @@ public:
 
     //Internal
     winrt::ExpressionAnimation CreateRestingPointExpression(
-        winrt::Compositor const& compositor,
+        double ignoredValue,
+        std::tuple<double, double> actualImpulseApplicableZone,
+        winrt::InteractionTracker const& interactionTracker,
         winrt::hstring const& target,
-        winrt::hstring const& scale);
+        winrt::hstring const& scale,
+        bool isInertiaFromImpulse);
     winrt::ExpressionAnimation CreateConditionalExpression(
         std::tuple<double, double> actualApplicableZone,
-        winrt::Compositor const& compositor,
+        std::tuple<double, double> actualImpulseApplicableZone,
+        winrt::InteractionTracker const& interactionTracker,
         winrt::hstring const& target,
-        winrt::hstring const& scale);
+        winrt::hstring const& scale,
+        bool isInertiaFromImpulse);
+    void UpdateConditionalExpressionAnimationForImpulse(
+        winrt::ExpressionAnimation const& conditionExpressionAnimation,
+        std::tuple<double, double> actualImpulseApplicableZone) const;
+    void UpdateRestingPointExpressionAnimationForImpulse(
+        winrt::ExpressionAnimation const& restingValueExpressionAnimation,
+        double ignoredValue,
+        std::tuple<double, double> actualImpulseApplicableZone) const;
     ScrollerSnapPointSortPredicate SortPredicate();
     std::tuple<double, double> DetermineActualApplicableZone(
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint);
-    double Influence(double edgeOfMidpoint) const;
+    std::tuple<double, double> DetermineActualImpulseApplicableZone(
+        SnapPointBase* previousSnapPoint,
+        SnapPointBase* nextSnapPoint,
+        double currentIgnoredValue,
+        double previousIgnoredValue,
+        double nextIgnoredValue);
+    double Influence(
+        double edgeOfMidpoint) const;
+    double ImpulseInfluence(
+        double edgeOfMidpoint,
+        double ignoredValue) const;
     void Combine(
         int& combinationCount,
         winrt::SnapPointBase const& snapPoint) const;
+    int SnapCount() const;
     double Evaluate(
         std::tuple<double, double> actualApplicableZone,
         double value) const;
@@ -148,8 +222,16 @@ private:
     double ActualValue() const;
     double DetermineMinActualApplicableZone(
         SnapPointBase* previousSnapPoint) const;
+    double DetermineMinActualImpulseApplicableZone(
+        SnapPointBase* previousSnapPoint,
+        double currentIgnoredValue,
+        double previousIgnoredValue) const;
     double DetermineMaxActualApplicableZone(
         SnapPointBase* nextSnapPoint) const;
+    double DetermineMaxActualImpulseApplicableZone(
+        SnapPointBase* nextSnapPoint,
+        double currentIgnoredValue,
+        double nextIgnoredValue) const;
 
     double m_value{ 0.0 };
 };
@@ -182,22 +264,45 @@ public:
 
     //Internal
     winrt::ExpressionAnimation CreateRestingPointExpression(
-        winrt::Compositor const& compositor,
+        double ignoredValue,
+        std::tuple<double, double> actualImpulseApplicableZone,
+        winrt::InteractionTracker const& interactionTracker,
         winrt::hstring const& target,
-        winrt::hstring const& scale);
+        winrt::hstring const& scale,
+        bool isInertiaFromImpulse);
     winrt::ExpressionAnimation CreateConditionalExpression(
         std::tuple<double, double> actualApplicableZone,
-        winrt::Compositor const& compositor,
+        std::tuple<double, double> actualImpulseApplicableZone,
+        winrt::InteractionTracker const& interactionTracker,
         winrt::hstring const& target,
-        winrt::hstring const& scale);
+        winrt::hstring const& scale,
+        bool isInertiaFromImpulse);
+    void UpdateConditionalExpressionAnimationForImpulse(
+        winrt::ExpressionAnimation const& conditionExpressionAnimation,
+        std::tuple<double, double> actualImpulseApplicableZone) const;
+    void UpdateRestingPointExpressionAnimationForImpulse(
+        winrt::ExpressionAnimation const& restingValueExpressionAnimation,
+        double ignoredValue,
+        std::tuple<double, double> actualImpulseApplicableZone) const;
     ScrollerSnapPointSortPredicate SortPredicate();
     std::tuple<double, double> DetermineActualApplicableZone(
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint);
-    double Influence(double edgeOfMidpoint) const;
+    std::tuple<double, double> DetermineActualImpulseApplicableZone(
+        SnapPointBase* previousSnapPoint,
+        SnapPointBase* nextSnapPoint,
+        double currentIgnoredValue,
+        double previousIgnoredValue,
+        double nextIgnoredValue);
+    double Influence(
+        double edgeOfMidpoint) const;
+    double ImpulseInfluence(
+        double edgeOfMidpoint,
+        double ignoredValue) const;
     void Combine(
         int& combinationCount,
         winrt::SnapPointBase const& snapPoint) const;
+    int SnapCount() const;
     double Evaluate(
         std::tuple<double, double> actualApplicableZone,
         double value) const;
@@ -207,10 +312,19 @@ private:
     double ActualStart() const;
     double ActualEnd() const;
     double DetermineFirstRepeatedSnapPointValue() const;
+    double DetermineLastRepeatedSnapPointValue() const;
     double DetermineMinActualApplicableZone(
         SnapPointBase* previousSnapPoint) const;
+    double DetermineMinActualImpulseApplicableZone(
+        SnapPointBase* previousSnapPoint,
+        double currentIgnoredValue,
+        double previousIgnoredValue) const;
     double DetermineMaxActualApplicableZone(
         SnapPointBase* nextSnapPoint) const;
+    double DetermineMaxActualImpulseApplicableZone(
+        SnapPointBase* nextSnapPoint,
+        double currentIgnoredValue,
+        double nextIgnoredValue) const;
     void ValidateConstructorParameters(
 #ifdef ApplicableRangeType
         bool applicableRangeToo,
@@ -254,22 +368,45 @@ public:
 
     //Internal
     winrt::ExpressionAnimation CreateRestingPointExpression(
-        winrt::Compositor const& compositor,
+        double ignoredValue,
+        std::tuple<double, double> actualImpulseApplicableZone,
+        winrt::InteractionTracker const& interactionTracker,
         winrt::hstring const& target,
-        winrt::hstring const& scale);
+        winrt::hstring const& scale,
+        bool isInertiaFromImpulse);
     winrt::ExpressionAnimation CreateConditionalExpression(
         std::tuple<double, double> actualApplicableZone,
-        winrt::Compositor const& compositor,
+        std::tuple<double, double> actualImpulseApplicableZone,
+        winrt::InteractionTracker const& interactionTracker,
         winrt::hstring const& target,
-        winrt::hstring const& scale);
+        winrt::hstring const& scale,
+        bool isInertiaFromImpulse);
+    void UpdateConditionalExpressionAnimationForImpulse(
+        winrt::ExpressionAnimation const& conditionExpressionAnimation,
+        std::tuple<double, double> actualImpulseApplicableZone) const;
+    void UpdateRestingPointExpressionAnimationForImpulse(
+        winrt::ExpressionAnimation const& restingValueExpressionAnimation,
+        double ignoredValue,
+        std::tuple<double, double> actualImpulseApplicableZone) const;
     ScrollerSnapPointSortPredicate SortPredicate();
     std::tuple<double, double> DetermineActualApplicableZone(
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint);
-    double Influence(double edgeOfMidpoint) const;
+    std::tuple<double, double> DetermineActualImpulseApplicableZone(
+        SnapPointBase* previousSnapPoint,
+        SnapPointBase* nextSnapPoint,
+        double currentIgnoredValue,
+        double previousIgnoredValue,
+        double nextIgnoredValue);
+    double Influence(
+        double edgeOfMidpoint) const;
+    double ImpulseInfluence(
+        double edgeOfMidpoint,
+        double ignoredValue) const;
     void Combine(
         int& combinationCount,
         winrt::SnapPointBase const& snapPoint) const;
+    int SnapCount() const;
     double Evaluate(
         std::tuple<double, double> actualApplicableZone,
         double value) const;
@@ -277,8 +414,16 @@ public:
 private:
     double DetermineMinActualApplicableZone(
         SnapPointBase* previousSnapPoint) const;
+    double DetermineMinActualImpulseApplicableZone(
+        SnapPointBase* previousSnapPoint,
+        double currentIgnoredValue,
+        double previousIgnoredValue) const;
     double DetermineMaxActualApplicableZone(
         SnapPointBase* nextSnapPoint) const;
+    double DetermineMaxActualImpulseApplicableZone(
+        SnapPointBase* nextSnapPoint,
+        double currentIgnoredValue,
+        double nextIgnoredValue) const;
 
     double m_value{ 0.0 };
 };
@@ -309,32 +454,64 @@ public:
 
     //Internal
     winrt::ExpressionAnimation CreateRestingPointExpression(
-        winrt::Compositor const& compositor,
+        double ignoredValue,
+        std::tuple<double, double> actualImpulseApplicableZone,
+        winrt::InteractionTracker const& interactionTracker,
         winrt::hstring const& target,
-        winrt::hstring const& scale);
+        winrt::hstring const& scale,
+        bool isInertiaFromImpulse);
     winrt::ExpressionAnimation CreateConditionalExpression(
         std::tuple<double, double> actualApplicableZone,
-        winrt::Compositor const& compositor,
+        std::tuple<double, double> actualImpulseApplicableZone,
+        winrt::InteractionTracker const& interactionTracker,
         winrt::hstring const& target,
-        winrt::hstring const& scale);
+        winrt::hstring const& scale,
+        bool isInertiaFromImpulse);
+    void UpdateConditionalExpressionAnimationForImpulse(
+        winrt::ExpressionAnimation const& conditionExpressionAnimation,
+        std::tuple<double, double> actualImpulseApplicableZone) const;
+    void UpdateRestingPointExpressionAnimationForImpulse(
+        winrt::ExpressionAnimation const& restingValueExpressionAnimation,
+        double ignoredValue,
+        std::tuple<double, double> actualImpulseApplicableZone) const;
     ScrollerSnapPointSortPredicate SortPredicate();
     std::tuple<double, double> DetermineActualApplicableZone(
         SnapPointBase* previousSnapPoint,
         SnapPointBase* nextSnapPoint);
-    double Influence(double edgeOfMidpoint) const;
+    std::tuple<double, double> DetermineActualImpulseApplicableZone(
+        SnapPointBase* previousSnapPoint,
+        SnapPointBase* nextSnapPoint,
+        double currentIgnoredValue,
+        double previousIgnoredValue,
+        double nextIgnoredValue);
+    double Influence(
+        double edgeOfMidpoint) const;
+    double ImpulseInfluence(
+        double edgeOfMidpoint,
+        double ignoredValue) const;
     void Combine(
         int& combinationCount,
         winrt::SnapPointBase const& snapPoint) const;
+    int SnapCount() const;
     double Evaluate(
         std::tuple<double, double> actualApplicableZone,
         double value) const;
 
 private:
     double DetermineFirstRepeatedSnapPointValue() const;
+    double DetermineLastRepeatedSnapPointValue() const;
     double DetermineMinActualApplicableZone(
         SnapPointBase* previousSnapPoint) const;
+    double DetermineMinActualImpulseApplicableZone(
+        SnapPointBase* previousSnapPoint,
+        double currentIgnoredValue,
+        double previousIgnoredValue) const;
     double DetermineMaxActualApplicableZone(
         SnapPointBase* nextSnapPoint) const;
+    double DetermineMaxActualImpulseApplicableZone(
+        SnapPointBase* nextSnapPoint,
+        double currentIgnoredValue,
+        double nextIgnoredValue) const;
     void ValidateConstructorParameters(
 #ifdef ApplicableRangeType
         bool applicableRangeToo,

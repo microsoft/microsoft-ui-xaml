@@ -1145,17 +1145,22 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
 
     if (auto const teachingTipPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TeachingTipAutomationPeer>())
     {
-        auto const appName = []()
+        auto const notificationString = [this]()
         {
-            if (auto&& package = winrt::ApplicationModel::Package::Current())
+            auto const appName = []()
             {
-                return package.DisplayName();
-            }
-            return winrt::hstring{};
-        }();
+                try
+                {
+                    if (auto&& package = winrt::ApplicationModel::Package::Current())
+                    {
+                        return package.DisplayName();
+                    }
+                }
+                catch (...) {}
 
-        auto const notificationString = [this, appName]()
-        {
+                return winrt::hstring{};
+            }();
+
             if (!appName.empty())
             {
                 return StringUtil::FormatString(

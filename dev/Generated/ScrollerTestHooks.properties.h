@@ -17,12 +17,15 @@ public:
     void ContentLayoutOffsetXChanged(winrt::event_token const& token);
     winrt::event_token ContentLayoutOffsetYChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
     void ContentLayoutOffsetYChanged(winrt::event_token const& token);
+    winrt::event_token ExpressionAnimationStatusChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksExpressionAnimationStatusChangedEventArgs> const& value);
+    void ExpressionAnimationStatusChanged(winrt::event_token const& token);
     winrt::event_token InteractionSourcesChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksInteractionSourcesChangedEventArgs> const& value);
     void InteractionSourcesChanged(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksAnchorEvaluatedEventArgs>> m_anchorEvaluatedEventSource;
     event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_contentLayoutOffsetXChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_contentLayoutOffsetYChangedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksExpressionAnimationStatusChangedEventArgs>> m_expressionAnimationStatusChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksInteractionSourcesChangedEventArgs>> m_interactionSourcesChangedEventSource;
 
     static void EnsureProperties();
