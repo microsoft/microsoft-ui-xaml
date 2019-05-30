@@ -1121,18 +1121,13 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
         if (auto xamlRoot = uiElement10.XamlRoot())
         {
             m_currentXamlRootSize = xamlRoot.Size();
-            if (m_xamlRootChangedToken)
-            {
-                xamlRoot.Changed(m_xamlRootChangedToken);
-            }
-            m_xamlRootChangedToken = xamlRoot.Changed({ this, &TeachingTip::XamlRootChanged });
+            m_xamlRootChangedRevoker = { xamlRoot, xamlRoot.Changed({ this, &TeachingTip::XamlRootChanged }) };
         }
     }
     else
     {
         if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
         {
-            m_windowSizeChangedRevoker.revoke();
             m_windowSizeChangedRevoker = coreWindow.SizeChanged(winrt::auto_revoke, { this, &TeachingTip::WindowSizeChanged });
         }
     }
@@ -1183,13 +1178,7 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
 void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     m_windowSizeChangedRevoker.revoke();
-    if (winrt::IUIElement10 uiElement10 = *this)
-    {
-        if (auto xamlRoot = uiElement10.XamlRoot())
-        {
-            xamlRoot.Changed(m_xamlRootChangedToken);
-        }
-    }
+    m_xamlRootChangedRevoker.revoke();
     if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
     {
         lightDismissIndicatorPopup.IsOpen(false);
@@ -1363,19 +1352,13 @@ void TeachingTip::WindowSizeChanged(const winrt::CoreWindow&, const winrt::Windo
     RepositionPopup();
 }
 
-void TeachingTip::XamlRootChanged(const winrt::XamlRoot&, const winrt::XamlRootChangedEventArgs&)
+void TeachingTip::XamlRootChanged(const winrt::XamlRoot& xamlRoot, const winrt::XamlRootChangedEventArgs&)
 {
-    if (winrt::IUIElement10 uiElement10 = *this)
+    auto xamlRootSize = xamlRoot.Size();
+    if (xamlRootSize != m_currentXamlRootSize)
     {
-        if (auto xamlRoot = uiElement10.XamlRoot())
-        {
-            auto xamlRootSize = xamlRoot.Size();
-            if (xamlRootSize != m_currentXamlRootSize)
-            {
-                m_currentXamlRootSize = xamlRootSize;
-                RepositionPopup();
-            }
-        }
+        m_currentXamlRootSize = xamlRootSize;
+        RepositionPopup();
     }
 }
 

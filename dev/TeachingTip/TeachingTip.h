@@ -8,6 +8,10 @@
 #include "TeachingTip.g.h"
 #include "TeachingTip.properties.h"
 
+// Aliasing some types because getting the member function selection to work with overloaded methods in template parameters is hard
+using XamlRootChanged_Revoke_Type = void(winrt::XamlRoot::*)(winrt::event_token const&) const;
+using XamlRootChanged_strong_revoker = strong_event_revoker<winrt::XamlRoot, static_cast<XamlRootChanged_Revoke_Type>(&winrt::XamlRoot::Changed)>;
+
 class TeachingTip :
     public ReferenceTracker<TeachingTip, winrt::implementation::TeachingTipT>,
     public TeachingTipProperties
@@ -72,7 +76,7 @@ private:
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
     // The XamlRoot::Changed_revoker doesn't work for unattaching the event.
     // Tracked by internal bug #21302432.
-    winrt::event_token m_xamlRootChangedToken{ 0 };
+    XamlRootChanged_strong_revoker m_xamlRootChangedRevoker{};
     winrt::FrameworkElement::ActualThemeChanged_revoker m_actualThemeChangedRevoker{};
     
     void SetPopupAutomationProperties();
