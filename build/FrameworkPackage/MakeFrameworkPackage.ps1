@@ -61,9 +61,25 @@ Copy-IntoNewDirectory "$inputBasePath\sdk\$inputBaseFileName.winmd" $fullOutputP
 Write-Verbose "Copying $inputBasePath\Themes"
 Copy-IntoNewDirectory -IfExists $inputBasePath\Themes $fullOutputPath\PackageContents\Microsoft.UI.Xaml
 
-[xml]$sdkPropsContent = Get-Content $PSScriptRoot\..\..\sdkversion.props
-$highestSdkVersion = $sdkPropsContent.GetElementsByTagName("*").'#text' -match "10." | Sort-Object | Select-Object -Last 1
-$sdkReferencesPath=$kitsRoot10 + "References\" + $highestSdkVersion;    
+#Find the latest available sdk
+function Get-SDK-References-Path
+{
+    [xml]$sdkPropsContent = Get-Content $PSScriptRoot\..\..\sdkversion.props
+    $sdkVersions = $sdkPropsContent.SelectNodes("//*[contains(local-name(), 'SDKVersion')]") | Sort-Object -Property '#text' -Descending 
+    foreach ($version in $sdkVersions)
+    {
+        $sdkReferencesPath=$kitsRoot10 + "References\" + $version.'#text'
+        Write-Verbose "Checking $sdkReferencesPath ..."
+        if (Test-Path $sdkReferencesPath)
+        {
+            Write-Verbose "Found $sdkReferencesPath"
+            return $sdkReferencesPath
+        }
+    }
+    return ''
+}
+
+$sdkReferencesPath = Get-SDK-References-Path
 $foundationWinmdPath = Get-ChildItem -Recurse $sdkReferencesPath"\Windows.Foundation.FoundationContract" -Filter "Windows.Foundation.FoundationContract.winmd" | Select-Object -ExpandProperty FullName
 $universalWinmdPath = Get-ChildItem -Recurse $sdkReferencesPath"\Windows.Foundation.UniversalApiContract" -Filter "Windows.Foundation.UniversalApiContract.winmd" | Select-Object -ExpandProperty FullName
 $refrenceWinmds = $foundationWinmdPath + ";" + $universalWinmdPath
