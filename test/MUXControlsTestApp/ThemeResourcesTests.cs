@@ -136,7 +136,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         //[TestMethod] TODO: Re-enable after fixing bug 17186090.
         public void VerifyRS1DefaultStyleDictionariesWereMergedCorrectly()
         {
-            VerifyDictionariesWereMergedCorrectly(GetRS1DefaultStyleDictionaries(), "Microsoft.UI.Xaml/Themes/Generic.xaml");
+            VerifyDictionariesWereMergedCorrectly(new List<string>(GetRS1DefaultStyleDictionaries().Where(s => !s.Equals("TabView_themeresources.xaml"))), "Microsoft.UI.Xaml/Themes/Generic.xaml");
         }
 
         [TestMethod]
