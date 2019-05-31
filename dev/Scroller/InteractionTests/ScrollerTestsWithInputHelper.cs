@@ -737,6 +737,156 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Reduce the Content size while it is far-anchored and overpanned.")]
+        public void OverpanWithAnchoredSkrinkingContent()
+        {
+            OverpanWithAnchoredSkrinkingContent(isForHorizontalDirection: true);
+            OverpanWithAnchoredSkrinkingContent(isForHorizontalDirection: false);
+        }
+
+        private void OverpanWithAnchoredSkrinkingContent(bool isForHorizontalDirection)
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            {
+                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
+                return;
+            }
+
+            Log.Comment("Selecting Scroller tests");
+
+            using (var setup = new TestSetupHelper("Scroller Tests"))
+            {
+                SetOutputDebugStringLevel("Verbose");
+
+                GoToSimpleContentsPage();
+
+                SetLoggingLevel(isPrivateLoggingEnabled: true);
+
+                Log.Comment("Retrieving cmbShowScroller");
+                ComboBox cmbShowScroller = new ComboBox(FindElement.ByName("cmbShowScroller"));
+
+                Log.Comment("Changing Scroller selection to scroller51");
+                cmbShowScroller.SelectItemByName("scroller51");
+                Log.Comment("Selection is now {0}", cmbShowScroller.Selection[0].Name);
+
+                Log.Comment("Retrieving Scroller");
+                UIObject scroller51UIObject = FindElement.ByName("Scroller51");
+                Verify.IsNotNull(scroller51UIObject, "Verifying that Scroller was found");
+
+                WaitForScrollerFinalSize(scroller51UIObject, expectedWidth: 300.0, expectedHeight: 400.0);
+
+                // Tapping button before attempting pan operation to guarantee effective touch input
+                TapResetViewsButton();
+
+                Log.Comment("Panning Scroller close to the Content's end");
+                PrepareForScrollerManipulationStart("scroller51");
+
+                Point startPoint = isForHorizontalDirection ? 
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 105, scroller51UIObject.BoundingRectangle.Top + 100) :
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 100, scroller51UIObject.BoundingRectangle.Top + 100);
+                Point endPoint = isForHorizontalDirection ? 
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 50, scroller51UIObject.BoundingRectangle.Top + 100) :
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 100, scroller51UIObject.BoundingRectangle.Top + 50);
+
+                InputHelper.Pan(obj: scroller51UIObject, start: startPoint, end: endPoint);
+
+                Log.Comment("Waiting for scroller51 pan completion");
+                bool success = WaitForManipulationEnd("scroller51", "txtScrollerState");
+
+                Scroller scroller51 = new Scroller(scroller51UIObject);
+
+                Log.Comment("scroller51.HorizontalScrollPercent={0}", scroller51.HorizontalScrollPercent);
+                Log.Comment("scroller51.VerticalScrollPercent={0}", scroller51.VerticalScrollPercent);
+
+                // No layout offset is expected
+                double contentLayoutOffsetX = 0.0;
+                double contentLayoutOffsetY = 0.0;
+
+                GetScrollerContentLayoutOffset(out contentLayoutOffsetX, out contentLayoutOffsetY);
+
+                if (!success ||
+                    (isForHorizontalDirection && (scroller51.HorizontalScrollPercent == 0.0 || scroller51.HorizontalScrollPercent == 100.0)) ||
+                    (isForHorizontalDirection && scroller51.VerticalScrollPercent != 0.0) ||
+                    (!isForHorizontalDirection && scroller51.HorizontalScrollPercent != 0.0) ||
+                    (!isForHorizontalDirection && (scroller51.VerticalScrollPercent == 0.0 || scroller51.VerticalScrollPercent == 100.0)) ||
+                    contentLayoutOffsetX != 0.0 ||
+                    contentLayoutOffsetY != 0.0)
+                {
+                    LogAndClearTraces(recordWarning: false);
+                }
+
+                Log.Comment("Overpan Scroller to trigger content shrinkage");
+                PrepareForScrollerManipulationStart("scroller51");
+
+                startPoint = isForHorizontalDirection ?
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 240, scroller51UIObject.BoundingRectangle.Top + 100) :
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 100, scroller51UIObject.BoundingRectangle.Top + 240);
+                endPoint = isForHorizontalDirection ?
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 10, scroller51UIObject.BoundingRectangle.Top + 100) :
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 100, scroller51UIObject.BoundingRectangle.Top + 10);
+
+                InputHelper.Pan(obj: scroller51UIObject, start: startPoint, end: endPoint);
+
+                Log.Comment("Waiting for scroller51 pan completion");
+                success = WaitForManipulationEnd("scroller51", "txtScrollerState");
+
+                Log.Comment("scroller51.HorizontalScrollPercent={0}", scroller51.HorizontalScrollPercent);
+                Log.Comment("scroller51.VerticalScrollPercent={0}", scroller51.VerticalScrollPercent);
+
+                // Layout offset is expected
+                GetScrollerContentLayoutOffset(out contentLayoutOffsetX, out contentLayoutOffsetY);
+
+                if (!success ||
+                    (isForHorizontalDirection && scroller51.HorizontalScrollPercent != 100.0) ||
+                    (isForHorizontalDirection && scroller51.VerticalScrollPercent != 0.0) ||
+                    (!isForHorizontalDirection && scroller51.HorizontalScrollPercent != 0.0) ||
+                    (!isForHorizontalDirection && scroller51.VerticalScrollPercent != 100.0) ||
+                    (isForHorizontalDirection && contentLayoutOffsetX != 30.0) ||
+                    (isForHorizontalDirection && contentLayoutOffsetY != 0.0) ||
+                    (!isForHorizontalDirection && contentLayoutOffsetX != 0.0) ||
+                    (!isForHorizontalDirection && contentLayoutOffsetY != 40.0))
+                {
+                    LogAndClearTraces(recordWarning: false);
+                }
+
+                SetLoggingLevel(isPrivateLoggingEnabled: false);
+
+                Verify.AreEqual(scroller51.HorizontalScrollPercent, isForHorizontalDirection ? 100.0 : 0.0, "Verifying scroller51 HorizontalScrollPercent");
+                Verify.AreEqual(scroller51.VerticalScrollPercent, isForHorizontalDirection ? 0.0 : 100.0, "Verifying scroller51 VerticalScrollPercent");
+
+                double horizontalOffset;
+                double verticalOffset;
+                float zoomFactor;
+
+                GetScrollerView(out horizontalOffset, out verticalOffset, out zoomFactor);
+                Log.Comment("horizontalOffset={0}", horizontalOffset);
+                Log.Comment("verticalOffset={0}", verticalOffset);
+                Log.Comment("zoomFactor={0}", zoomFactor);
+
+                if (isForHorizontalDirection)
+                {
+                    Verify.AreEqual(contentLayoutOffsetX, 30.0, "Verifying contentLayoutOffsetX is 30.0");
+                    Verify.AreEqual(contentLayoutOffsetY, 0.0, "Verifying contentLayoutOffsetY is 0.0");
+                    Verify.AreEqual(horizontalOffset, 470.0, "Verifying horizontalOffset is 470.0");
+                    Verify.AreEqual(verticalOffset, 0.0, "Verifying verticalOffset is 0.0");
+                }
+                else
+                {
+                    Verify.AreEqual(contentLayoutOffsetX, 0.0, "Verifying contentLayoutOffsetX is 0.0");
+                    Verify.AreEqual(contentLayoutOffsetY, 40.0, "Verifying contentLayoutOffsetY is 40.0");
+                    Verify.AreEqual(horizontalOffset, 0.0, "Verifying horizontalOffset is 0.0");
+                    Verify.AreEqual(verticalOffset, 360.0, "Verifying verticalOffset is 360.0");
+                }
+
+                Verify.AreEqual(zoomFactor, 1.0f, "Verifying zoomFactor is 1.0f");
+
+                Log.Comment("Returning to the main Scroller test page");
+                TestSetupHelper.GoBack();
+                // Output-debug-string-level "None" is automatically restored when landing back on the Scroller test page.
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Pans an inner ScrollViewer and chains to an outer Scroller.")]
         public void PanWithChainingFromScrollViewerToScroller()
         {
@@ -2978,6 +3128,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(resetViewsButton);
                 WaitForEditValue(editName: "txtResetStatus", editValue: "Views reset");
             }
+        }
+
+        private void GetScrollerContentLayoutOffset(out double contentLayoutOffsetX, out double contentLayoutOffsetY)
+        {
+            contentLayoutOffsetX = 0.0;
+            contentLayoutOffsetY = 0.0;
+
+            UIObject viewUIObject = FindElement.ById("txtScrollerContentLayoutOffsetX");
+            Edit viewTextBox = new Edit(viewUIObject);
+            Log.Comment($"Current ContentLayoutOffsetX: {viewTextBox.Value}");
+            contentLayoutOffsetX = String.IsNullOrWhiteSpace(viewTextBox.Value) ? double.NaN : Convert.ToDouble(viewTextBox.Value);
+
+            viewUIObject = FindElement.ById("txtScrollerContentLayoutOffsetY");
+            viewTextBox = new Edit(viewUIObject);
+            Log.Comment($"Current ContentLayoutOffsetY: {viewTextBox.Value}");
+            contentLayoutOffsetY = String.IsNullOrWhiteSpace(viewTextBox.Value) ? double.NaN : Convert.ToDouble(viewTextBox.Value);
         }
 
         private void GetScrollerView(out double horizontalOffset, out double verticalOffset, out float zoomFactor)
