@@ -16,7 +16,6 @@
             <StaticResource x:Key="TabViewItemHeaderForegroundSelected"      ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundPointerOver"   ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundDisabled"      ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="TabViewItemHeaderRevealBorderBrush"       ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Dark">
@@ -30,7 +29,6 @@
             <StaticResource x:Key="TabViewItemHeaderForegroundSelected"      ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundPointerOver"   ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundDisabled"      ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="TabViewItemHeaderRevealBorderBrush"       ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -44,7 +42,6 @@
             <StaticResource x:Key="TabViewItemHeaderForegroundSelected"      ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundPointerOver"   ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderForegroundDisabled"      ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="TabViewItemHeaderRevealBorderBrush"       ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
