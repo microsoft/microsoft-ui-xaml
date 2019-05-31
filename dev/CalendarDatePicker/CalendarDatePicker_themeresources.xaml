@@ -119,30 +119,30 @@
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="FlyoutPresenter">
                                                     <ContentPresenter Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    Content="{TemplateBinding Content}"
-                                    ContentTemplate="{TemplateBinding ContentTemplate}"
-                                    ContentTransitions="{TemplateBinding ContentTransitions}"
-                                    Margin="{TemplateBinding Padding}"
-                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        Content="{TemplateBinding Content}"
+                                                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                        ContentTransitions="{TemplateBinding ContentTransitions}"
+                                                        Margin="{TemplateBinding Padding}"
+                                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                                                 </ControlTemplate>
                                             </Setter.Value>
                                         </Setter>
                                     </Style>
                                 </Flyout.FlyoutPresenterStyle>
                                 <CalendarView x:Name="CalendarView"
-                    Style="{TemplateBinding CalendarViewStyle}"
-                    MinDate="{TemplateBinding MinDate}"
-                    MaxDate="{TemplateBinding MaxDate}"
-                    IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"
-                    DisplayMode="{TemplateBinding DisplayMode}"
-                    FirstDayOfWeek="{TemplateBinding FirstDayOfWeek}"
-                    DayOfWeekFormat="{TemplateBinding DayOfWeekFormat}"
-                    CalendarIdentifier="{TemplateBinding CalendarIdentifier}"
-                    IsOutOfScopeEnabled="{TemplateBinding IsOutOfScopeEnabled}"
-                    IsGroupLabelVisible="{TemplateBinding IsGroupLabelVisible}" />
+                                    Style="{TemplateBinding CalendarViewStyle}"
+                                    MinDate="{TemplateBinding MinDate}"
+                                    MaxDate="{TemplateBinding MaxDate}"
+                                    IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"
+                                    DisplayMode="{TemplateBinding DisplayMode}"
+                                    FirstDayOfWeek="{TemplateBinding FirstDayOfWeek}"
+                                    DayOfWeekFormat="{TemplateBinding DayOfWeekFormat}"
+                                    CalendarIdentifier="{TemplateBinding CalendarIdentifier}"
+                                    IsOutOfScopeEnabled="{TemplateBinding IsOutOfScopeEnabled}"
+                                    IsGroupLabelVisible="{TemplateBinding IsGroupLabelVisible}" />
                             </Flyout>
                         </FlyoutBase.AttachedFlyout>
 
@@ -158,51 +158,51 @@
                             <ColumnDefinition Width="32" />
                         </Grid.ColumnDefinitions>
                         <ContentPresenter x:Name="HeaderContentPresenter"
-                x:DeferLoadStrategy="Lazy"
-                Grid.Row="0"
-                Grid.Column="1"
-                Grid.ColumnSpan="2"
-                Content="{TemplateBinding Header}"
-                ContentTemplate="{TemplateBinding HeaderTemplate}"
-                Margin="{StaticResource CalendarDatePickerTopHeaderMargin}"
-                TextWrapping="Wrap"
-                VerticalAlignment="Top"
-                Visibility="Collapsed" />
+                            x:DeferLoadStrategy="Lazy"
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="2"
+                            Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}"
+                            Margin="{StaticResource CalendarDatePickerTopHeaderMargin}"
+                            TextWrapping="Wrap"
+                            VerticalAlignment="Top"
+                            Visibility="Collapsed" />
                         <Border x:Name="Background"
-                Grid.Row="1"
-                Grid.Column="1"
-                Grid.ColumnSpan="2"
-                BorderThickness="{TemplateBinding BorderThickness}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                Background="{TemplateBinding Background}"
-                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                Control.IsTemplateFocusTarget="True"
-                MinHeight="32"/>
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="2"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            Background="{TemplateBinding Background}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            Control.IsTemplateFocusTarget="True"
+                            MinHeight="32"/>
                         <TextBlock x:Name="DateText"
-                Grid.Row="1"
-                Grid.Column="1"
-                HorizontalAlignment="Left"
-                Foreground="{ThemeResource CalendarDatePickerTextForeground}"
-                Text="{TemplateBinding PlaceholderText}"
-                Padding="12, 0, 0, 2"
-                VerticalAlignment="Center" />
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            HorizontalAlignment="Left"
+                            Foreground="{ThemeResource CalendarDatePickerTextForeground}"
+                            Text="{TemplateBinding PlaceholderText}"
+                            Padding="12, 0, 0, 2"
+                            VerticalAlignment="Center" />
                         <FontIcon x:Name="CalendarGlyph"
-                Grid.Row="1"
-                Grid.Column="2"
-                Glyph="&#xE787;"
-                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                Foreground="{ThemeResource CalendarDatePickerCalendarGlyphForeground}"
-                FontSize="12"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center" />
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            Glyph="&#xE787;"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            Foreground="{ThemeResource CalendarDatePickerCalendarGlyphForeground}"
+                            FontSize="12"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" />
                         <contract7Present:ContentPresenter x:Name="DescriptionPresenter"
-                Grid.Row="2"
-                Grid.Column="1"
-                Grid.ColumnSpan="2"
-                Content="{TemplateBinding Description}"
-                x:Load="False"
-                Foreground="{ThemeResource SystemControlDescriptionTextForegroundBrush}"
-                AutomationProperties.AccessibilityView="Raw" />
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="2"
+                            Content="{TemplateBinding Description}"
+                            x:Load="False"
+                            Foreground="{ThemeResource SystemControlDescriptionTextForegroundBrush}"
+                            AutomationProperties.AccessibilityView="Raw" />
 
                     </Grid>
 
