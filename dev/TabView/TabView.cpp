@@ -215,7 +215,8 @@ void TabView::UpdateTabWidths()
         if (auto scrollViewer = m_scrollViewer.get())
         {
             // Calculate the proportional width of each tab given the width of the ScrollViewer.
-            double tabWidthForScroller = (scrollViewer.ActualWidth() - (Padding().Left + Padding().Right)) / (double)(Items().Size());
+            auto padding = Padding();
+            double tabWidthForScroller = (scrollViewer.ActualWidth() - (padding.Left + padding.Right)) / (double)(Items().Size());
             tabWidth = std::clamp(tabWidthForScroller, minTabWidth, maxTabWidth);
 
             // If the min tab width causes the ScrollViewer to scroll, show the increase/decrease buttons.

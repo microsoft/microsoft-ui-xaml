@@ -39,11 +39,11 @@
                 </StackPanel>
             </StackPanel>
 
-            <controls:TabView x:Name="Tabs" TabWidthMode="Fixed" CanReorderItems="True" CanDragItems="True" AllowDrop="True" SelectedIndex="0" Grid.Column="1" SelectionChanged="TabViewSelectionChanged" TabClosing="TabViewTabClosing">
+            <controls:TabView x:Name="Tabs" TabWidthMode="Fixed" CanReorderItems="True" CanDragItems="True" AllowDrop="True" Grid.Column="1" SelectionChanged="TabViewSelectionChanged" TabClosing="TabViewTabClosing">
 
                 <controls:TabView.Items>
 
-                    <controls:TabViewItem x:Name="FirstTab" AutomationProperties.Name="FirstTab" Icon="Home" Header="Home">
+                    <controls:TabViewItem x:Name="FirstTab" AutomationProperties.Name="FirstTab" Icon="Home" Header="Home" IsSelected="True">
                         <Button x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent" Padding="16">Home text</Button>
                     </controls:TabViewItem>
 
