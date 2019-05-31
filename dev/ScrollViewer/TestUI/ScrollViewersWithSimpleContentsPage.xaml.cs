@@ -35,6 +35,7 @@ namespace MUXControlsTestApp
             this.scrollViewer51.XYFocusKeyboardNavigation = XYFocusKeyboardNavigationMode.Enabled;
 
             Loaded += ScrollViewersWithSimpleContentsPage_Loaded;
+            KeyDown += ScrollViewersWithSimpleContentsPage_KeyDown;
         }
 
         private void ScrollViewersWithSimpleContentsPage_Loaded(object sender, RoutedEventArgs e)
@@ -82,6 +83,18 @@ namespace MUXControlsTestApp
             ScrollViewerTestHooks.GetScrollerPart(this.scrollViewer52).ZoomCompleted += Scroller_ZoomCompleted;
         }
 
+        private void ScrollViewersWithSimpleContentsPage_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.G)
+            {
+                GetFullLog();
+            }
+            else if (e.Key == Windows.System.VirtualKey.C)
+            {
+                ClearFullLog();
+            }
+        }
+
         private void Scroller_StateChanged(Scroller sender, object args)
         {
             string senderId = "." + sender.Name;
@@ -97,6 +110,7 @@ namespace MUXControlsTestApp
             }
             this.txtScrollerState.Text = senderId + " " + sender.State.ToString();
             this.fullLogs.Add(senderId + " StateChanged S=" + sender.State.ToString());
+            chkLogUpdated.IsChecked = false;
         }
 
         private void Scroller_ViewChanged(Scroller sender, object args)
@@ -111,6 +125,7 @@ namespace MUXControlsTestApp
             this.txtScrollerVerticalOffset.Text = sender.VerticalOffset.ToString();
             this.txtScrollerZoomFactor.Text = sender.ZoomFactor.ToString();
             this.fullLogs.Add(senderId + " ViewChanged H=" + this.txtScrollerHorizontalOffset.Text + ", V=" + this.txtScrollerVerticalOffset.Text + ", ZF=" + this.txtScrollerZoomFactor.Text);
+            chkLogUpdated.IsChecked = false;
         }
 
         private void Scroller_ScrollCompleted(Scroller sender, ScrollCompletedEventArgs args)
@@ -125,6 +140,7 @@ namespace MUXControlsTestApp
             ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
 
             this.fullLogs.Add(senderId + " ScrollCompleted. OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+            chkLogUpdated.IsChecked = false;
         }
 
         private void Scroller_ZoomCompleted(Scroller sender, ZoomCompletedEventArgs args)
@@ -139,6 +155,7 @@ namespace MUXControlsTestApp
             ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
 
             this.fullLogs.Add(senderId + " ZoomCompleted. ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+            chkLogUpdated.IsChecked = false;
 
             if (args.ZoomInfo.ZoomFactorChangeId == scrollViewer52ZoomFactorChangeId)
             {
@@ -293,16 +310,12 @@ namespace MUXControlsTestApp
 
         private void btnGetFullLog_Click(object sender, RoutedEventArgs e)
         {
-            foreach (string log in this.fullLogs)
-            {
-                this.cmbFullLog.Items.Add(log);
-            }
+            GetFullLog();
         }
 
         private void btnClearFullLog_Click(object sender, RoutedEventArgs e)
         {
-            this.fullLogs.Clear();
-            this.cmbFullLog.Items.Clear();
+            ClearFullLog();
         }
 
         private void btnResetViews_Click(object sender, RoutedEventArgs e)
@@ -320,6 +333,24 @@ namespace MUXControlsTestApp
             ResetView(this.scrollViewer52);
         }
 
+        private void GetFullLog()
+        {
+            chkLogCleared.IsChecked = false;
+            foreach (string log in this.fullLogs)
+            {
+                this.cmbFullLog.Items.Add(log);
+            }
+            chkLogUpdated.IsChecked = true;
+        }
+
+        private void ClearFullLog()
+        {
+            chkLogUpdated.IsChecked = false;
+            this.fullLogs.Clear();
+            this.cmbFullLog.Items.Clear();
+            chkLogCleared.IsChecked = true;
+        }
+
         private void ResetView(ScrollViewer scrollViewer)
         {
             Scroller scroller = ScrollViewerTestHooks.GetScrollerPart(scrollViewer);
@@ -330,6 +361,8 @@ namespace MUXControlsTestApp
 
             viewChangeId = scroller.ZoomTo(1.0f, System.Numerics.Vector2.Zero, new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
             this.fullLogs.Add(scrollerId + " ZoomTo requested. Id=" + viewChangeId);
+
+            chkLogUpdated.IsChecked = false;
 
             if (scrollViewer == this.scrollViewer52)
                 scrollViewer52ZoomFactorChangeId = viewChangeId;

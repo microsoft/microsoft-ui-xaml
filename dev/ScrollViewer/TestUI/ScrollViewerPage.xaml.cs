@@ -35,6 +35,7 @@ namespace MUXControlsTestApp
             navigateToDynamic.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewerDynamicPage), 0); };
             navigateToScrollControllers.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewerWithScrollControllersPage), 0); };
             navigateToRTL.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewerWithRTLFlowDirectionPage), 0); };
+            navigateToKeyboardAndGamepadNavigation.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewerKeyboardAndGamepadNavigationPage), 0); };
 
             chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
         }
