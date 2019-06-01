@@ -14,7 +14,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)CheckBox_rs1_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)CheckBox_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
