@@ -117,21 +117,32 @@ jobs:
     signConfig: '$(Build.SourcesDirectory)\build\NuGetSignConfig.xml'
     useReleaseTag: '$(MUXFinalRelease)'
  
-# Build solution that depends on nuget package
+# Build NuGet package tests
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
+    buildJobName: 'BuildNugetPkgTests'
+    buildArtifactName: 'NugetPkgTestsDrop'
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop'
-    matrix: 
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
-      Debug_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Debug'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-      Release_arm:
-        buildPlatform: 'arm'
-        buildConfiguration: 'Release'
+
+# Build framework package tests
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildFrameworkPkgTests'
+    buildArtifactName: 'FrameworkPkgTestsDrop'
+    dependsOn: CreateNugetPackage
+    pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
+
+# NuGet package WACK tests 
+- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+  parameters:
+    name: 'NugetPkgWACKTests'
+    dependsOn: BuildNugetPkgTests
+    artifactName: 'NugetPkgTestsDrop'
+
+# Framework package WACK tests
+- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+  parameters:
+    name: 'FrameworkPkgWACKTests'
+    dependsOn: BuildFrameworkPkgTests
+    artifactName: 'FrameworkPkgTestsDrop'
