@@ -1794,23 +1794,27 @@ void ScrollViewer::HandleKeyDownForXYNavigation(winrt::KeyRoutedEventArgs args)
         if (shouldMoveFocus)
         {
             auto focusAsyncOperation = winrt::FocusManager::TryFocusAsync(nextElement, winrt::FocusState::Keyboard);
-            auto targetElement = nextElement.try_as<winrt::UIElement>();
 
-            focusAsyncOperation.Completed(winrt::AsyncOperationCompletedHandler<winrt::FocusMovementResult>(
-                [strongThis = get_strong(), targetElement](winrt::IAsyncOperation<winrt::FocusMovementResult> asyncOperation, winrt::AsyncStatus asyncStatus)
-                {
-                    if (asyncStatus == winrt::AsyncStatus::Completed && asyncOperation.GetResults())
+            if (SharedHelpers::IsAnimationsEnabled()) // When system animations are turned off, the bring-into-view operations are not turned into animations.
+            {
+                auto targetElement = nextElement.try_as<winrt::UIElement>();
+
+                focusAsyncOperation.Completed(winrt::AsyncOperationCompletedHandler<winrt::FocusMovementResult>(
+                    [strongThis = get_strong(), targetElement](winrt::IAsyncOperation<winrt::FocusMovementResult> asyncOperation, winrt::AsyncStatus asyncStatus)
                     {
-                        // The focus change request was successful. One or a few Scroller::BringingIntoView notifications are likely to be raised in the coming ticks.
-                        // For those, the BringIntoViewRequestedEventArgs::AnimationDesired property will be set to True in order to animate to the target element rather than jumping.
-                        SCROLLVIEWER_TRACE_VERBOSE(*strongThis, TRACE_MSG_METH_PTR, METH_NAME, strongThis, targetElement);
+                        if (asyncStatus == winrt::AsyncStatus::Completed && asyncOperation.GetResults())
+                        {
+                            // The focus change request was successful. One or a few Scroller::BringingIntoView notifications are likely to be raised in the coming ticks.
+                            // For those, the BringIntoViewRequestedEventArgs::AnimationDesired property will be set to True in order to animate to the target element rather than jumping.
+                            SCROLLVIEWER_TRACE_VERBOSE(*strongThis, TRACE_MSG_METH_PTR, METH_NAME, strongThis, targetElement);
 
-                        auto bringIntoViewOperation(std::make_shared<ScrollViewerBringIntoViewOperation>(targetElement));
+                            auto bringIntoViewOperation(std::make_shared<ScrollViewerBringIntoViewOperation>(targetElement));
 
-                        strongThis->m_bringIntoViewOperations.push_back(bringIntoViewOperation);
-                        strongThis->HookCompositionTargetRendering();
-                    }
-                }));
+                            strongThis->m_bringIntoViewOperations.push_back(bringIntoViewOperation);
+                            strongThis->HookCompositionTargetRendering();
+                        }
+                    }));
+            }
 
             isHandled = true;
         }
