@@ -1,16 +1,13 @@
 ﻿
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Numerics;
 using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
-using System.Diagnostics;
 using Windows.System.Threading;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
@@ -87,7 +84,7 @@ namespace Flick
 
         private ThreadPoolTimer NextButtonContinuousScrollingPeriodicTimer { get; set; } = null;
 
-        private static TimeSpan PrevNextButtonHoldPeriod { get; } = TimeSpan.FromMilliseconds(500);
+        private static TimeSpan PrevNextButtonHoldPeriod { get; } = TimeSpan.FromMilliseconds(300);
 
         private ThreadPoolTimer PrevButtonHoldTimer { get; set; } = null;
 
