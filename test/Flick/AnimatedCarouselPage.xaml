@@ -50,8 +50,7 @@
             </Grid.ColumnDefinitions>
             <Button x:Name="carouselPrevButton"
                     Grid.Column="0"
-                    Style="{StaticResource CarouselNextPrevButtonStyle}"
-                    Click="CarouselPrevButton_Click">
+                    Style="{StaticResource CarouselNextPrevButtonStyle}">
                 <FontIcon Style="{StaticResource CarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76B;"/><!--ChevronLeft-->
             </Button>
             <ScrollViewer x:Name="sv"
@@ -86,8 +85,7 @@
             </ScrollViewer>
             <Button x:Name="carouselNextButton"
                     Grid.Column="2"
-                    Style="{StaticResource CarouselNextPrevButtonStyle}"
-                    Click="CarouselNextButton_Click">
+                    Style="{StaticResource CarouselNextPrevButtonStyle}">
                 <FontIcon Style="{StaticResource CarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76C;"/><!--ChevronRight-->
             </Button>
         </Grid>

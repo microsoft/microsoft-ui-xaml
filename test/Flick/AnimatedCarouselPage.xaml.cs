@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using System.Diagnostics;
+using Windows.System.Threading;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -54,12 +55,22 @@ namespace Flick
     /// </summary>
     public sealed partial class AnimatedCarouselPage : Page
     {
+        public enum ScrollDirection
+        {
+            Previous,
+            Next
+        }
+
         public AnimatedCarouselPage()
         {
             this.InitializeComponent();
 
             // Workaround for known numerical limitation on inset clips where scrollviewer fails to clip content on right side of viewport
             ElementCompositionPreview.GetElementVisual(sv).Clip = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(sv).Compositor.CreateInsetClip();
+
+            carouselPrevButton.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(OnCarouselPrevButtonPointerPressed), true);
+            carouselPrevButton.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(OnCarouselPrevButtonPointerCanceled), true);
+            carouselPrevButton.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(OnCarouselPrevButtonPointerReleased), true);
         }
 
         public object SelectedItem { get; set; } = null;
@@ -67,6 +78,20 @@ namespace Flick
         private bool IsScrolling { get; set; }
 
         public double ItemScaleRatio { get; set; } = 0.5;
+
+        private ThreadPoolTimer PrevButtonContinuousScrollingPeriodicTimer { get; set; } = null;
+
+        private ThreadPoolTimer NextButtonContinuousScrollingPeriodicTimer { get; set; } = null;
+
+        private static TimeSpan PrevNextButtonHoldPeriod { get; } = TimeSpan.FromMilliseconds(500);
+
+        private ThreadPoolTimer PrevButtonHoldTimer { get; set; } = null;
+
+        private ThreadPoolTimer NextButtonHoldTimer { get; set; } = null;
+
+        private static int ContinousScrollingItemSkipCount { get; } = 2;
+
+        private static TimeSpan PrevNextButtonContinousSelectionPeriod = TimeSpan.FromMilliseconds(100);
 
         protected void OnScrollViewerViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
@@ -235,7 +260,7 @@ namespace Flick
             var offsetToScrollTo = sv.HorizontalOffset + newSelectedItemDistanceFromCenterPoint;
             // This odd delay is required in order to ensure that the scrollviewer animates the scroll
             // on every call to ChangeView.
-            var period = TimeSpan.FromMilliseconds(100);
+            var period = TimeSpan.FromMilliseconds(10);
             Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
             {
                 await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
@@ -247,6 +272,11 @@ namespace Flick
 
         private void SelectPreviousItem()
         {
+            SelectPreviousItem(0 /*numberOfItemsToSkip*/);
+        }
+
+        private void SelectPreviousItem(int numberOfItemsToSkip)
+        {
             // In the nominal case, centerOfViewportOffsetInScrollViewer will be the offset of the current centerpoint in the scrollviewer's viewport;
             // however, if the "center" item is not perfectly centered (i.e. where the centerpoint falls on the item's size.x/2)
             // then set centerOfViewportOffsetInScrollViewer equal to the offset where the "centered" item would be perfectly centered.
@@ -255,27 +285,17 @@ namespace Flick
             centerOfViewportOffsetInScrollViewer -= (centerOfViewportOffsetInScrollViewer + layout.Spacing / 2) % (layout.Spacing + layout.ItemWidth);
             centerOfViewportOffsetInScrollViewer += layout.Spacing / 2 + layout.ItemWidth / 2;
             var newSelectedItemDistanceFromCenterPoint = layout.ItemWidth / 2 + layout.Spacing + (layout.ItemWidth * ItemScaleRatio);
-            var offsetToScrollTo = sv.HorizontalOffset - newSelectedItemDistanceFromCenterPoint;
+            var offsetToScrollTo = sv.HorizontalOffset - newSelectedItemDistanceFromCenterPoint - (numberOfItemsToSkip * (layout.ItemWidth + layout.Spacing));
             // This odd delay is required in order to ensure that the scrollviewer animates the scroll
             // on every call to ChangeView.
-            var period = TimeSpan.FromMilliseconds(100);
-            Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
+            var period = TimeSpan.FromMilliseconds(10);
+            ThreadPoolTimer.CreateTimer(async (source) =>
             {
                 await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                 {
                     var Success = sv.ChangeView(offsetToScrollTo, null, null, false);
                 });
             }, period);
-        }
-
-        private void CarouselNextButton_Click(object sender, RoutedEventArgs e)
-        {
-            SelectNextItem();
-        }
-
-        private void CarouselPrevButton_Click(object sender, RoutedEventArgs e)
-        {
-            SelectPreviousItem();
         }
 
         private double CenterPointOfViewportInExtent()
@@ -297,6 +317,130 @@ namespace Flick
             var selectedElement = repeater.TryGetElement(selectedIndex) as FrameworkElement;
             var selectedItem = (selectedElement == null ? null : ((FrameworkElement)selectedElement).DataContext);
             return selectedItem;
+        }
+
+#pragma warning disable CS0628 // New protected member declared in sealed class
+        protected void OnCarouselPrevButtonPointerPressed(object sender, PointerRoutedEventArgs e)
+#pragma warning restore CS0628 // New protected member declared in sealed class
+        {
+            ((UIElement)sender).CapturePointer(e.Pointer);
+
+            if (NextButtonHoldTimer != null)
+            {
+                NextButtonHoldTimer.Cancel();
+                NextButtonHoldTimer = null;
+            }
+
+            if (PrevButtonContinuousScrollingPeriodicTimer != null)
+            {
+                PrevButtonContinuousScrollingPeriodicTimer.Cancel();
+                PrevButtonContinuousScrollingPeriodicTimer = null;
+            }
+
+            if (NextButtonContinuousScrollingPeriodicTimer != null)
+            {
+                NextButtonContinuousScrollingPeriodicTimer.Cancel();
+                NextButtonContinuousScrollingPeriodicTimer = null;
+            }
+
+            if (PrevButtonHoldTimer != null)
+            {
+                return;
+            }
+
+            SelectPreviousItem();
+
+            PrevButtonHoldTimer = ThreadPoolTimer.CreateTimer(async (source) =>
+            {
+                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                {
+                    startContinuousScrolling(ScrollDirection.Previous);
+                });
+            },
+            PrevNextButtonHoldPeriod);            
+        }
+
+        private void OnCarouselPrevButtonPointerPressEnded()
+        {
+            if (PrevButtonHoldTimer != null)
+            {
+                PrevButtonHoldTimer.Cancel();
+                PrevButtonHoldTimer = null;
+            }
+
+            if (PrevButtonContinuousScrollingPeriodicTimer != null)
+            {
+                PrevButtonContinuousScrollingPeriodicTimer.Cancel();
+                PrevButtonContinuousScrollingPeriodicTimer = null;
+            }
+        }
+
+        protected void OnCarouselPrevButtonPointerCanceled(object sender, PointerRoutedEventArgs e)
+        {
+            ((UIElement)sender).CapturePointer(e.Pointer);
+            OnCarouselPrevButtonPointerPressEnded();
+        }
+
+        protected void OnCarouselPrevButtonPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            ((UIElement)sender).CapturePointer(e.Pointer);
+            OnCarouselPrevButtonPointerPressEnded();
+        }
+
+        private void startContinuousScrolling(ScrollDirection scrollDirection)
+        {
+            if ((scrollDirection == ScrollDirection.Previous && PrevButtonContinuousScrollingPeriodicTimer != null)
+                || (scrollDirection == ScrollDirection.Next && NextButtonContinuousScrollingPeriodicTimer != null)
+                || (scrollDirection == ScrollDirection.Previous && NextButtonContinuousScrollingPeriodicTimer != null)
+                || (scrollDirection == ScrollDirection.Next && PrevButtonContinuousScrollingPeriodicTimer != null))
+            {
+                return;
+            }
+
+            if (scrollDirection == ScrollDirection.Previous)
+            {
+                PrevButtonContinuousScrollingPeriodicTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
+                {
+                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                        () =>
+                        {
+                            SelectPreviousItem(ContinousScrollingItemSkipCount);
+                        });
+                },
+                PrevNextButtonContinousSelectionPeriod,
+                async (source) =>
+                {
+                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                        () =>
+                        {
+                            if (PrevButtonContinuousScrollingPeriodicTimer != null)
+                            {
+                                PrevButtonContinuousScrollingPeriodicTimer.Cancel();
+                                PrevButtonContinuousScrollingPeriodicTimer = null;
+                            }
+                        });
+                });
+            }
+            else
+            {
+                NextButtonContinuousScrollingPeriodicTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
+                {
+                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                        () =>
+                        {
+                            SelectNextItem();
+                        });
+                },
+                PrevNextButtonContinousSelectionPeriod,
+                async (source) =>
+                {
+                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                        () =>
+                        {
+                            NextButtonContinuousScrollingPeriodicTimer = null;
+                        });
+                });
+            }
         }
     }
 }
