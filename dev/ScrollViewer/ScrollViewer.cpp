@@ -1786,7 +1786,12 @@ void ScrollViewer::UpdateScrollControllersSeparatorVisualState(
 {
     SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, useTransitions, scrollControllersAutoHidingChanged);
 
-    if (!IsScrollControllersSeparatorVisible())
+    bool isScrollControllersSeparatorVisible = IsScrollControllersSeparatorVisible();
+    bool isAnimationsEnabled = SharedHelpers::IsAnimationsEnabled();
+
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, isScrollControllersSeparatorVisible, isAnimationsEnabled);
+
+    if (!isScrollControllersSeparatorVisible)
     {
         return;
     }
@@ -1794,6 +1799,8 @@ void ScrollViewer::UpdateScrollControllersSeparatorVisualState(
     bool isEnabled = IsEnabled();
     bool areScrollControllersAutoHiding = AreScrollControllersAutoHiding();
     bool showScrollControllersSeparator = !areScrollControllersAutoHiding;
+
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, isEnabled, showScrollControllersSeparator);
 
     if (!showScrollControllersSeparator &&
         AreBothScrollControllersVisible() &&
@@ -1804,7 +1811,7 @@ void ScrollViewer::UpdateScrollControllersSeparatorVisualState(
     }
 
     // Select the proper state for the scroll controllers separator within the ScrollBarsSeparatorStates group:
-    if (SharedHelpers::IsAnimationsEnabled())
+    if (isAnimationsEnabled)
     {
         // When OS animations are turned on, show the separator when a scroll controller is shown unless the ScrollViewer is disabled, using an animation.
         if (showScrollControllersSeparator && isEnabled)
