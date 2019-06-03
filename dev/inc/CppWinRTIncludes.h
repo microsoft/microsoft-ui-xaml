@@ -337,6 +337,7 @@ namespace winrt
     using Popup = winrt::Windows::UI::Xaml::Controls::Primitives::Popup;
     using IPopup3 = winrt::Windows::UI::Xaml::Controls::Primitives::IPopup3;
     using RangeBaseValueChangedEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs;
+    using RepeatButton = winrt::Windows::UI::Xaml::Controls::Primitives::RepeatButton;
     using ScrollBar = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollBar;
     using ScrollEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollEventArgs;
     using ScrollEventType = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollEventType;
