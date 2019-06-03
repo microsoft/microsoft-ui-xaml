@@ -3,6 +3,7 @@ using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using System;
 using System.Numerics;
 using Common;
+using System.Threading.Tasks;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -53,7 +54,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void CloseReasonIsAccurate()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -121,7 +122,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void TipCanFollowTarget()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -180,6 +181,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void TipFollowsTargetOnWindowResize()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("The ");
+                return;
+            }
+
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
             {
                 elements = new TeachingTipTestPageElements();
@@ -234,7 +241,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void SpecifiedPlacement()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -405,7 +412,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void NoIconDoesNotCrash()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -429,7 +436,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void CanSwitchShouldConstrainToRootBounds()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -463,7 +470,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void TipsWhichDoNotFitDoNotOpen()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -478,7 +485,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     ScrollBy(10);
                     UseTestWindowBounds(10, 10, 10, 10);
 
-                    elements.GetShowButton().Invoke();
+                    elements.GetShowButton().InvokeAndWait();
 
                     var message1 = GetTeachingTipDebugMessage(1);
                     Verify.IsTrue(message1.ToString().Contains("Closed"));
@@ -496,7 +503,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void VerifyTheming()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -588,7 +595,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             CloseTeachingTipProgrammatically();
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void AutomationNameIsForwardedToPopup()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -610,7 +617,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void F6PutsFocusOnCloseButton()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -660,7 +667,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if(elements.GetIsOpenCheckBox().ToggleState != ToggleState.On)
             {
-                elements.GetShowButton().Invoke();
+                elements.GetShowButton().InvokeAndWait();
                 WaitForChecked(elements.GetIsOpenCheckBox());
                 WaitForChecked(elements.GetIsIdleCheckBox());
             }
@@ -1006,6 +1013,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // the expected order.
         private ListBoxItem GetTeachingTipDebugMessage(int index)
         {
+            var count = elements.GetLstTeachingTipEvents().Items.Count;
+            if (count <= index)
+            {
+                Log.Comment($"TeachingTipEvents list only has {count} items, waiting a little bit longer to see if they show up");
+                Task.Delay(TimeSpan.FromMilliseconds(250)).Wait();
+            }
             return elements.GetLstTeachingTipEvents().Items[index];
         }
 

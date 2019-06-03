@@ -785,11 +785,7 @@ void TeachingTip::IsOpenChangedToOpen()
     }
 
     // We are about to begin the process of trying to open the teaching tip, so notify that we are no longer idle.
-    if (m_isIdle)
-    {
-        m_isIdle = false;
-        TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
-    }
+    SetIsIdle(false);
 
     //If the developer defines their TeachingTip in a resource dictionary it is possible that it's template will have never been applied
     if (!m_isTemplateApplied)
@@ -832,10 +828,9 @@ void TeachingTip::IsOpenChangedToOpen()
             else
             {
                 // We have become Open but our popup was already open. This can happen when a close is canceled by the closing event, so make sure the idle status is correct.
-                if (!m_isIdle && !m_isExpandAnimationPlaying && !m_isContractAnimationPlaying)
+                if (!m_isExpandAnimationPlaying && !m_isContractAnimationPlaying)
                 {
-                    m_isIdle = true;
-                    TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
+                    SetIsIdle(true);
                 }
             }
         }
@@ -851,20 +846,15 @@ void TeachingTip::IsOpenChangedToClose()
         if (popup.IsOpen())
         {
             // We are about to begin the process of trying to close the teaching tip, so notify that we are no longer idle.
-            if (m_isIdle)
-            {
-                m_isIdle = false;
-                TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
-            }
+            SetIsIdle(false);
             RaiseClosingEvent(true);
         }
         else
         {
             // We have become not Open but our popup was already not open. Lets make sure the idle status is correct.
-            if (!m_isIdle && !m_isExpandAnimationPlaying && !m_isContractAnimationPlaying)
+            if (!m_isExpandAnimationPlaying && !m_isContractAnimationPlaying)
             {
-                m_isIdle = true;
-                TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
+                SetIsIdle(true);
             }
         }
     }
@@ -1137,6 +1127,11 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
     {
         StartExpandToOpen();
     }
+    else
+    {
+        // We won't be playing an animation so we're immediately idle.
+        SetIsIdle(true);
+    }
 
     if (auto const teachingTipPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TeachingTipAutomationPeer>())
     {
@@ -1254,7 +1249,8 @@ void TeachingTip::ClosePopupWithAnimationIfAvailable()
 {
     if (m_popup && m_popup.get().IsOpen())
     {
-        if (SharedHelpers::IsRS5OrHigher())
+        // Contract animation requires IUIElement9
+        if (this->try_as<winrt::IUIElement9>())
         {
             StartContractToClose();
         }
@@ -1265,10 +1261,9 @@ void TeachingTip::ClosePopupWithAnimationIfAvailable()
 
         // Under normal circumstances we would have launched an animation just now, if we did not then we should make sure
         // that the idle state is correct.
-        if (!m_isContractAnimationPlaying && !m_isIdle && !m_isExpandAnimationPlaying)
+        if (!m_isContractAnimationPlaying && !m_isExpandAnimationPlaying)
         {
-            m_isIdle = true;
-            TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
+            SetIsIdle(true);
         }
     }
 }
@@ -1539,18 +1534,16 @@ void TeachingTip::StartExpandToOpen()
     scopedBatch.Completed([strongThis = get_strong()](auto, auto)
     {
         strongThis->m_isExpandAnimationPlaying = false;
-        if (!strongThis->m_isContractAnimationPlaying && !strongThis->m_isIdle)
+        if (!strongThis->m_isContractAnimationPlaying)
         {
-            strongThis->m_isIdle = true;
-            TeachingTipTestHooks::NotifyIdleStatusChanged(*strongThis);
+            strongThis->SetIsIdle(true);
         }
     });
 
     // Under normal circumstances we would have launched an animation just now, if we did not then we should make sure that the idle state is correct
-    if (!m_isExpandAnimationPlaying && !m_isIdle && !m_isContractAnimationPlaying)
+    if (!m_isExpandAnimationPlaying && !m_isContractAnimationPlaying)
     {
-        m_isIdle = true;
-        TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
+        SetIsIdle(true);
     }
 }
 
@@ -1594,10 +1587,9 @@ void TeachingTip::StartContractToClose()
     {
         strongThis->m_isContractAnimationPlaying = false;
         strongThis->ClosePopup();
-        if (!strongThis->m_isExpandAnimationPlaying && !strongThis->m_isIdle)
+        if (!strongThis->m_isExpandAnimationPlaying)
         {
-            strongThis->m_isIdle = true;
-            TeachingTipTestHooks::NotifyIdleStatusChanged(*strongThis);
+            strongThis->SetIsIdle(true);
         }
     });
 }
@@ -2261,6 +2253,15 @@ void TeachingTip::SetContractAnimationDuration(const winrt::TimeSpan& contractAn
 bool TeachingTip::GetIsIdle()
 {
     return m_isIdle;
+}
+
+void TeachingTip::SetIsIdle(bool isIdle)
+{
+    if (m_isIdle != isIdle)
+    {
+        m_isIdle = isIdle;
+        TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
+    }
 }
 
 winrt::TeachingTipPlacementMode TeachingTip::GetEffectivePlacement()

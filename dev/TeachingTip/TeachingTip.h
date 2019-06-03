@@ -40,6 +40,7 @@ public:
     void SetContentElevation(float elevation);
     void SetTailElevation(float elevation);
     bool GetIsIdle();
+    void SetIsIdle(bool isIdle);
     winrt::TeachingTipPlacementMode GetEffectivePlacement();
     winrt::TeachingTipHeroContentPlacementMode GetEffectiveHeroContentPlacement();
     double GetHorizontalOffset();
