@@ -44,12 +44,6 @@ void TabView::OnApplyTemplate()
         }
         return scrollViewer;
     }());
-
-    m_scrollViewer.set(GetTemplateChildT<winrt::FxScrollViewer>(L"ScrollViewer", controlProtected));
-    if (auto scrollViewer = m_scrollViewer.get())
-    {
-        m_scrollViewerLoadedRevoker = scrollViewer.Loaded(winrt::auto_revoke, { this, &TabView::OnScrollViewerLoaded });
-    }
 }
 
 void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
@@ -155,6 +149,7 @@ void TabView::UpdateTabContent()
         {
             tabContentPresenter.Content(nullptr);
             tabContentPresenter.ContentTemplate(nullptr);
+            tabContentPresenter.ContentTemplateSelector(nullptr);
         }
         else
         {
@@ -162,6 +157,7 @@ void TabView::UpdateTabContent()
             {
                 tabContentPresenter.Content(container.Content());
                 tabContentPresenter.ContentTemplate(container.ContentTemplate());
+                tabContentPresenter.ContentTemplateSelector(container.ContentTemplateSelector());
             }
         }
     }
@@ -204,7 +200,7 @@ void TabView::OnScrollIncreaseClick(const winrt::IInspectable&, const winrt::Rou
 
 void TabView::UpdateTabWidths()
 {
-    double tabWidth = DoubleUtil::NaN;
+    double tabWidth = std::numeric_limits<double>::quiet_NaN();
 
     if (TabWidthMode() == winrt::TabViewWidthMode::Fixed)
     {
