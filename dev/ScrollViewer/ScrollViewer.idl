@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_PREVIEW]
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
 [webhosthidden]
 enum ScrollBarVisibility
 {
@@ -11,6 +14,7 @@ enum ScrollBarVisibility
 [webhosthidden]
 [contentproperty("Content")]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
 {
     ScrollViewer();
@@ -34,7 +38,7 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultVerticalScrollBarVisibility")]
     ScrollBarVisibility VerticalScrollBarVisibility { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultContentOrientation")]
-    MU_XC_NAMESPACE.ContentOrientation ContentOrientation { get; set; };
+    ContentOrientation ContentOrientation { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultHorizontalScrollChainingMode")]
     ChainingMode HorizontalScrollChainingMode { get; set; };
     [MUX_DEFAULT_VALUE("ScrollViewer::s_defaultVerticalScrollChainingMode")]
@@ -77,16 +81,57 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     Double VerticalAnchorRatio { get; set; };
     void RegisterAnchorCandidate(Windows.UI.Xaml.UIElement element);
     void UnregisterAnchorCandidate(Windows.UI.Xaml.UIElement element);
-    Int32 ChangeOffsets(ScrollerChangeOffsetsOptions options);
-    Int32 ChangeOffsetsWithAdditionalVelocity(ScrollerChangeOffsetsWithAdditionalVelocityOptions options);
-    Int32 ChangeZoomFactor(ScrollerChangeZoomFactorOptions options);
-    Int32 ChangeZoomFactorWithAdditionalVelocity(ScrollerChangeZoomFactorWithAdditionalVelocityOptions options);
+    [method_name("ScrollTo")]
+    ScrollInfo ScrollTo(
+        Double horizontalOffset,
+        Double verticalOffset);
+    [method_name("ScrollToWithOptions")]
+    ScrollInfo ScrollTo(
+        Double horizontalOffset,
+        Double verticalOffset,
+        ScrollOptions options);
+    [method_name("ScrollBy")]
+    ScrollInfo ScrollBy(
+        Double horizontalOffsetDelta,
+        Double verticalOffsetDelta);
+    [method_name("ScrollByWithOptions")]
+    ScrollInfo ScrollBy(
+        Double horizontalOffsetDelta,
+        Double verticalOffsetDelta,
+        ScrollOptions options);
+    ScrollInfo ScrollFrom(
+        Windows.Foundation.Numerics.Vector2 offsetsVelocity,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
+    [method_name("ZoomTo")]
+    ZoomInfo ZoomTo(
+        Single zoomFactor,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint);
+    [method_name("ZoomToWithOptions")]
+    ZoomInfo ZoomTo(
+        Single zoomFactor,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
+        ZoomOptions options);
+    [method_name("ZoomBy")]
+    ZoomInfo ZoomBy(
+        Single zoomFactorDelta,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint);
+    [method_name("ZoomByWithOptions")]
+    ZoomInfo ZoomBy(
+        Single zoomFactorDelta,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
+        ZoomOptions options);
+    ZoomInfo ZoomFrom(
+        Single zoomFactorVelocity,
+        Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
+        Windows.Foundation.IReference<Single> inertiaDecayRate);
+
     event Windows.Foundation.TypedEventHandler<ScrollViewer, Object> ExtentChanged;
     event Windows.Foundation.TypedEventHandler<ScrollViewer, Object> StateChanged;
     event Windows.Foundation.TypedEventHandler<ScrollViewer, Object> ViewChanged;
-    event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollerChangingOffsetsEventArgs> ChangingOffsets;
-    event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollerChangingZoomFactorEventArgs> ChangingZoomFactor;
-    event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollerViewChangeCompletedEventArgs> ViewChangeCompleted;
+    event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollAnimationStartingEventArgs> ScrollAnimationStarting;
+    event Windows.Foundation.TypedEventHandler<ScrollViewer, ZoomAnimationStartingEventArgs> ZoomAnimationStarting;
+    event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollCompletedEventArgs> ScrollCompleted;
+    event Windows.Foundation.TypedEventHandler<ScrollViewer, ZoomCompletedEventArgs> ZoomCompleted;
     event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollerBringingIntoViewEventArgs> BringingIntoView;
     event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollerAnchorRequestedEventArgs> AnchorRequested;
 
@@ -117,4 +162,6 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty MaxZoomFactorProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalAnchorRatioProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalAnchorRatioProperty { get; };
+}
+
 }

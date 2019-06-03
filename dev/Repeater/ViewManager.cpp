@@ -49,13 +49,13 @@ winrt::UIElement ViewManager::GetElement(int index, bool forceCreate, bool suppr
     if (suppressAutoRecycle)
     {
         virtInfo->AutoRecycleCandidate(false);
-        REPEATER_TRACE_INFO(L"GetElement: %d Not AutoRecycleCandidate: \n", virtInfo->Index());
+        REPEATER_TRACE_INFO(L"%* GetElement: %d Not AutoRecycleCandidate: \n", m_owner->Indent(), virtInfo->Index());
     }
     else
     {
         virtInfo->AutoRecycleCandidate(true);
         virtInfo->KeepAlive(true);
-        REPEATER_TRACE_INFO(L"GetElement: %d AutoRecycleCandidate: \n", virtInfo->Index());
+        REPEATER_TRACE_INFO(L"%* GetElement: %d AutoRecycleCandidate: \n", m_owner->Indent(), virtInfo->Index());
     }
 
     return element;
@@ -305,7 +305,7 @@ void ViewManager::UpdatePin(const winrt::UIElement& element, bool addPin)
     }
 }
 
-void ViewManager::OnDataSourceChanged(const winrt::IInspectable&, const winrt::NotifyCollectionChangedEventArgs& args)
+void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::NotifyCollectionChangedEventArgs& args)
 {
     // Note: For items that have been removed, the index will not be touched. It will hold
     // the old index before it was removed. It is not valid anymore.
@@ -809,11 +809,11 @@ void ViewManager::OnFocusChanged(const winrt::IInspectable&, const winrt::Routed
 
 void ViewManager::EnsureEventSubscriptions()
 {
-    if (!m_gotFocus.value)
+    if (!m_gotFocus)
     {
-        MUX_ASSERT(!m_lostFocus.value);
-        m_gotFocus = m_owner->GotFocus({ this, &ViewManager::OnFocusChanged });
-        m_lostFocus = m_owner->LostFocus({ this, &ViewManager::OnFocusChanged });
+        MUX_ASSERT(!m_lostFocus);
+        m_gotFocus = m_owner->GotFocus(winrt::auto_revoke, { this, &ViewManager::OnFocusChanged });
+        m_lostFocus = m_owner->LostFocus(winrt::auto_revoke, { this, &ViewManager::OnFocusChanged });
     }
 }
 

@@ -356,8 +356,12 @@
     <x:Int32 x:Key="ComboBoxPopupMaxNumberOfItems">15</x:Int32>
     <x:Int32 x:Key="ComboBoxPopupMaxNumberOfItemsThatCanBeShownOnOneSide">7</x:Int32>
 
+    <Thickness x:Key="ComboBoxPadding">12,5,0,7</Thickness>
+    <Thickness x:Key="ComboBoxEditableTextPadding">10,3,30,5</Thickness>
+    <Thickness x:Key="ComboBoxMinHeight">32</Thickness>
+
     <Style TargetType="ComboBox">
-        <Setter Property="Padding" Value="12,5,0,7" />
+        <Setter Property="Padding" Value="{ThemeResource ComboBoxPadding}" />
         <Setter Property="MaxDropDownHeight" Value="504" />
         <Setter Property="Foreground" Value="{ThemeResource ComboBoxForeground}" />
         <Setter Property="Background" Value="{ThemeResource ComboBoxBackground}" />
@@ -614,7 +618,7 @@
                             Grid.ColumnSpan="2"
                             Style="{StaticResource ComboBoxTextBoxStyle}"
                             Margin="0,0,0,0"
-                            Padding="10,3,30,5"
+                            Padding="{ThemeResource ComboBoxEditableTextPadding}"
                             BorderBrush="Transparent"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -635,10 +639,11 @@
                             HorizontalAlignment="Right"
                             x:Load="False"/>
                         <FontIcon x:Name="DropDownGlyph"
+                            MinHeight="{ThemeResource ComboBoxMinHeight}"
                             Grid.Row="1"
                             Grid.Column="1"
                             IsHitTestVisible="False"
-                            Margin="0,10,10,10"
+                            Margin="0,0,10,0"
                             Foreground="{ThemeResource ComboBoxDropDownGlyphForeground}"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="12"

@@ -102,6 +102,12 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -274,17 +280,51 @@
                 </Border>
                 <Button x:Name="btnGetExtentHeight" Content="G" Margin="1" Grid.Row="22" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetExtentHeight_Click"/>
 
-                <TextBlock Text="Width:" Grid.Row="23" Grid.Column="0" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtWidth" Grid.Row="23" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                <Button x:Name="btnGetWidth" Content="G" Margin="1" Grid.Row="23" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetWidth_Click"/>
-                <Button x:Name="btnSetWidth" Content="S" Margin="1" Grid.Row="23" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetWidth_Click"/>
-                <Button x:Name="btnQueueWidth" Content="Q" Margin="1" Grid.Row="23" Grid.Column="4" VerticalAlignment="Center" Click="BtnQueueWidth_Click"/>
+                <TextBlock Text="ViewportWidth:" Grid.Row="23" Grid.Column="0" VerticalAlignment="Center"/>
+                <Border BorderThickness="1" BorderBrush="DarkGray" Grid.Row="23" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock x:Name="tblViewportWidth" VerticalAlignment="Center" Margin="2"/>
+                </Border>
+                <Button x:Name="btnGetViewportWidth" Content="G" Margin="1" Grid.Row="23" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetViewportWidth_Click"/>
 
-                <TextBlock Text="Height:" Grid.Row="24" Grid.Column="0" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtHeight" Grid.Row="24" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                <Button x:Name="btnGetHeight" Content="G" Margin="1" Grid.Row="24" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetHeight_Click"/>
-                <Button x:Name="btnSetHeight" Content="S" Margin="1" Grid.Row="24" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetHeight_Click"/>
-                <Button x:Name="btnQueueHeight" Content="Q" Margin="1" Grid.Row="24" Grid.Column="4" VerticalAlignment="Center" Click="BtnQueueHeight_Click"/>
+                <TextBlock Text="ViewportHeight:" Grid.Row="24" Grid.Column="0" VerticalAlignment="Center"/>
+                <Border BorderThickness="1" BorderBrush="DarkGray" Grid.Row="24" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock x:Name="tblViewportHeight" VerticalAlignment="Center" Margin="2"/>
+                </Border>
+                <Button x:Name="btnGetViewportHeight" Content="G" Margin="1" Grid.Row="24" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetViewportHeight_Click"/>
+
+                <TextBlock Text="Width:" Grid.Row="25" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtWidth" Grid.Row="25" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetWidth" Content="G" Margin="1" Grid.Row="25" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetWidth_Click"/>
+                <Button x:Name="btnSetWidth" Content="S" Margin="1" Grid.Row="25" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetWidth_Click"/>
+                <Button x:Name="btnQueueWidth" Content="Q" Margin="1" Grid.Row="25" Grid.Column="4" VerticalAlignment="Center" Click="BtnQueueWidth_Click"/>
+
+                <TextBlock Text="Height:" Grid.Row="26" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtHeight" Grid.Row="26" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetHeight" Content="G" Margin="1" Grid.Row="26" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetHeight_Click"/>
+                <Button x:Name="btnSetHeight" Content="S" Margin="1" Grid.Row="26" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetHeight_Click"/>
+                <Button x:Name="btnQueueHeight" Content="Q" Margin="1" Grid.Row="26" Grid.Column="4" VerticalAlignment="Center" Click="BtnQueueHeight_Click"/>
+
+                <TextBlock Text="MaxWidth:" Grid.Row="27" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtMaxWidth" Grid.Row="27" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetMaxWidth" Content="G" Margin="1" Grid.Row="27" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetMaxWidth_Click"/>
+                <Button x:Name="btnSetMaxWidth" Content="S" Margin="1" Grid.Row="27" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetMaxWidth_Click"/>
+
+                <TextBlock Text="MaxHeight:" Grid.Row="28" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtMaxHeight" Grid.Row="28" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetMaxHeight" Content="G" Margin="1" Grid.Row="28" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetMaxHeight_Click"/>
+                <Button x:Name="btnSetMaxHeight" Content="S" Margin="1" Grid.Row="28" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetMaxHeight_Click"/>
+
+                <TextBlock Text="ActualWidth:" Grid.Row="29" Grid.Column="0" VerticalAlignment="Center"/>
+                <Border BorderThickness="1" BorderBrush="DarkGray" Grid.Row="29" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock x:Name="tblActualWidth" VerticalAlignment="Center" Margin="2"/>
+                </Border>
+                <Button x:Name="btnGetActualWidth" Content="G" Margin="1" Grid.Row="29" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetActualWidth_Click"/>
+
+                <TextBlock Text="ActualHeight:" Grid.Row="30" Grid.Column="0" VerticalAlignment="Center"/>
+                <Border BorderThickness="1" BorderBrush="DarkGray" Grid.Row="30" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock x:Name="tblActualHeight" VerticalAlignment="Center" Margin="2"/>
+                </Border>
+                <Button x:Name="btnGetActualHeight" Content="G" Margin="1" Grid.Row="30" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetActualHeight_Click"/>
             </Grid>
         </ScrollViewer>
 
@@ -461,127 +501,146 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="ScrollerChangeOffsetsOptions" Margin="2" Grid.ColumnSpan="2"/>
+                    <TextBlock Text="ScrollTo/By Options" Margin="2" Grid.ColumnSpan="2"/>
                     <TextBlock Text="Horizontal Offset:" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center"/>
                     <TextBox x:Name="txtCOAHO" Text="0" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center"/>
                     <TextBlock Text="Vertical Offset:" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center"/>
                     <TextBox x:Name="txtCOAVO" Text="0" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center"/>
-                    <TextBlock Text="OffsetsKind:" Grid.Column="0" Grid.Row="3" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbOffsetsKind" Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" SelectedIndex="0">
-                        <ComboBoxItem>Absolute</ComboBoxItem>
-                        <ComboBoxItem>RelativeToCurrentView</ComboBoxItem>
-                        <ComboBoxItem>RelativeToEndOfInertiaView</ComboBoxItem>
+                    <TextBlock Text="AnimationMode:" Grid.Column="0" Grid.Row="3" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="cmbScrollAnimationMode" Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" SelectedIndex="1">
+                        <ComboBoxItem>Disabled</ComboBoxItem>
+                        <ComboBoxItem>Enabled</ComboBoxItem>
                     </ComboBox>
-                    <TextBlock Text="ViewChangeKind:" Grid.Column="0" Grid.Row="4" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbOffsetsViewChangeKind" Grid.Column="1" Grid.Row="4" VerticalAlignment="Center" SelectedIndex="1">
-                        <ComboBoxItem>DisableAnimation</ComboBoxItem>
-                        <ComboBoxItem>AllowAnimation</ComboBoxItem>
+                    <TextBlock Text="SnapPointsMode:" Grid.Column="0" Grid.Row="4" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="cmbScrollSnapPointsMode" Grid.Column="1" Grid.Row="4" VerticalAlignment="Center" SelectedIndex="0">
+                        <ComboBoxItem>Default</ComboBoxItem>
+                        <ComboBoxItem>Ignore</ComboBoxItem>
                     </ComboBox>
-                    <TextBlock Text="SnapPointRespect:" Grid.Column="0" Grid.Row="5" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbOffsetSnapPointRespect" Grid.Column="1" Grid.Row="5" VerticalAlignment="Center" SelectedIndex="1">
-                        <ComboBoxItem>IgnoreSnapPoints</ComboBoxItem>
-                        <ComboBoxItem>RespectSnapPoints</ComboBoxItem>
-                    </ComboBox>
-                    <TextBlock Text="Animation override:" Grid.Column="0" Grid.Row="6" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbOverriddenOffsetsChangeAnimation" Grid.Column="1" Grid.Row="6" VerticalAlignment="Center" SelectedIndex="0">
+                    <TextBlock Text="Animation override:" Grid.Column="0" Grid.Row="5" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="cmbOverriddenOffsetsChangeAnimation" Grid.Column="1" Grid.Row="5" VerticalAlignment="Center" SelectedIndex="0">
                         <ComboBoxItem>None</ComboBoxItem>
                         <ComboBoxItem>Accordion</ComboBoxItem>
                         <ComboBoxItem>Teleportation</ComboBoxItem>
                     </ComboBox>
-                    <TextBlock Text="Duration override (msec):" Grid.Column="0" Grid.Row="7" VerticalAlignment="Center"/>
-                    <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="7" VerticalAlignment="Center">
+                    <TextBlock Text="Duration override (msec):" Grid.Column="0" Grid.Row="6" VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="6" VerticalAlignment="Center">
                         <TextBox x:Name="txtStockOffsetsChangeDuration" IsReadOnly="True"/>
                         <TextBox x:Name="txtOverriddenOffsetsChangeDuration"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="8">
-                        <Button x:Name="btnChangeOffsets" Content="ChangeOffsets" Margin="2" Click="BtnChangeOffsets_Click"/>
-                        <Button x:Name="btnCancelChangeOffsets" Content="Cancel" Margin="2" Click="BtnCancelChangeOffsets_Click"/>
+                    <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="7">
+                        <Button x:Name="btnScrollTo" Content="ScrollTo" Margin="2" Click="BtnScrollTo_Click"/>
+                        <Button x:Name="btnScrollBy" Content="ScrollBy" Margin="2" Click="BtnScrollBy_Click"/>
+                        <Button x:Name="btnCancelScroll" Content="Cancel" Margin="2" Click="BtnCancelScroll_Click"/>
                     </StackPanel>
 
-                    <TextBlock Text="ScrollerChangeOffsetsWithAdditionalVelocityOptions" Grid.Row="9" Margin="2" Grid.ColumnSpan="2"/>
-                    <TextBlock Text="Horizontal Velocity:" Grid.Column="0" Grid.Row="10" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCOWAVAHV" Text="0" Grid.Column="1" Grid.Row="10" VerticalAlignment="Center"/>
-                    <TextBlock Text="Vertical Velocity:" Grid.Column="0" Grid.Row="11" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCOWAVAVV" Text="0" Grid.Column="1" Grid.Row="11" VerticalAlignment="Center"/>
-                    <TextBlock Text="Horiz. InertiaDecayRate:" Grid.Column="0" Grid.Row="12" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCOWAVAHIDR" Text="null" Grid.Column="1" Grid.Row="12" VerticalAlignment="Center"/>
-                    <TextBlock Text="Verti. InertiaDecayRate:" Grid.Column="0" Grid.Row="13" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCOWAVAVIDR" Text="null" Grid.Column="1" Grid.Row="13" VerticalAlignment="Center"/>
-                    <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="14">
-                        <Button x:Name="btnChangeOffsetsWithAdditionalVelocity" Content="ChangeOffsets" Margin="2" Click="BtnChangeOffsetsWithAdditionalVelocity_Click"/>
-                        <Button x:Name="btnCancelChangeOffsetsWithAdditionalVelocity" Content="Cancel" Margin="2" Click="BtnCancelChangeOffsetsWithAdditionalVelocity_Click"/>
+                    <TextBlock Text="ScrollFrom Options" Grid.Row="8" Margin="2" Grid.ColumnSpan="2"/>
+                    <TextBlock Text="Horizontal Velocity:" Grid.Column="0" Grid.Row="9" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtCOWAVAHV" Text="0" Grid.Column="1" Grid.Row="9" VerticalAlignment="Center"/>
+                    <TextBlock Text="Vertical Velocity:" Grid.Column="0" Grid.Row="10" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtCOWAVAVV" Text="0" Grid.Column="1" Grid.Row="10" VerticalAlignment="Center"/>
+                    <TextBlock Text="Horiz. InertiaDecayRate:" Grid.Column="0" Grid.Row="11" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtCOWAVAHIDR" Text="null" Grid.Column="1" Grid.Row="11" VerticalAlignment="Center"/>
+                    <TextBlock Text="Verti. InertiaDecayRate:" Grid.Column="0" Grid.Row="12" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtCOWAVAVIDR" Text="null" Grid.Column="1" Grid.Row="12" VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="13">
+                        <Button x:Name="btnScrollFrom" Content="ScrollFrom" Margin="2" Click="BtnScrollFrom_Click"/>
+                        <Button x:Name="btnCancelScrollFrom" Content="Cancel" Margin="2" Click="BtnCancelScrollFrom_Click"/>
                     </StackPanel>
 
-                    <TextBlock Text="ScrollerChangeZoomFactorOptions" Margin="2,4,2,2" Grid.Row="15" Grid.ColumnSpan="2"/>
-                    <TextBlock Text="ZoomFactor:" Grid.Column="0" Grid.Row="16" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCZFAZF" Text="1" Grid.Column="1" Grid.Row="16" VerticalAlignment="Center"/>
-                    <TextBlock Text="ZoomFactorKind:" Grid.Column="0" Grid.Row="17" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbZoomFactorKind" Grid.Column="1" Grid.Row="17" VerticalAlignment="Center" SelectedIndex="0">
-                        <ComboBoxItem>Absolute</ComboBoxItem>
-                        <ComboBoxItem>RelativeToCurrentView</ComboBoxItem>
-                        <ComboBoxItem>RelativeToEndOfInertiaView</ComboBoxItem>
+                    <TextBlock Text="ZoomTo/By Options" Margin="2,4,2,2" Grid.Row="14" Grid.ColumnSpan="2"/>
+                    <TextBlock Text="ZoomFactor:" Grid.Column="0" Grid.Row="15" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtCZFAZF" Text="1" Grid.Column="1" Grid.Row="15" VerticalAlignment="Center"/>
+                    <TextBlock Text="CenterPoint:" Grid.Column="0" Grid.Row="16" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtCZFACP" Text="0, 0"  Grid.Column="1" Grid.Row="16" VerticalAlignment="Center"/>
+                    <TextBlock Text="AnimationMode:" Grid.Column="0" Grid.Row="17" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="cmbZoomAnimationMode" Grid.Column="1" Grid.Row="17" VerticalAlignment="Center" SelectedIndex="1">
+                        <ComboBoxItem>Disabled</ComboBoxItem>
+                        <ComboBoxItem>Enabled</ComboBoxItem>
                     </ComboBox>
-                    <TextBlock Text="CenterPoint:" Grid.Column="0" Grid.Row="18" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCZFACP" Text="0, 0"  Grid.Column="1" Grid.Row="18" VerticalAlignment="Center"/>
-                    <TextBlock Text="ViewChangeKind:" Grid.Column="0" Grid.Row="19" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbZoomFactorViewChangeKind" Grid.Column="1" Grid.Row="19" VerticalAlignment="Center" SelectedIndex="1">
-                        <ComboBoxItem>DisableAnimation</ComboBoxItem>
-                        <ComboBoxItem>AllowAnimation</ComboBoxItem>
+                    <TextBlock Text="SnapPointsMode:" Grid.Column="0" Grid.Row="18" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="cmbZoomSnapPointsMode" Grid.Column="1" Grid.Row="18" VerticalAlignment="Center" SelectedIndex="0">
+                        <ComboBoxItem>Default</ComboBoxItem>
+                        <ComboBoxItem>Ignore</ComboBoxItem>
                     </ComboBox>
-                    <TextBlock Text="SnapPointRespect:" Grid.Column="0" Grid.Row="20" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbZoomSnapPointRespect" Grid.Column="1" Grid.Row="20" VerticalAlignment="Center" SelectedIndex="1">
-                        <ComboBoxItem>IgnoreSnapPoints</ComboBoxItem>
-                        <ComboBoxItem>RespectSnapPoints</ComboBoxItem>
-                    </ComboBox>
-                    <TextBlock Text="Animation override:" Grid.Column="0" Grid.Row="21" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbOverriddenZoomFactorChangeAnimation" Grid.Column="1" Grid.Row="21" VerticalAlignment="Center" SelectedIndex="0">
+                    <TextBlock Text="Animation override:" Grid.Column="0" Grid.Row="19" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="cmbOverriddenZoomFactorChangeAnimation" Grid.Column="1" Grid.Row="19" VerticalAlignment="Center" SelectedIndex="0">
                         <ComboBoxItem>None</ComboBoxItem>
                         <ComboBoxItem>Accordion</ComboBoxItem>
                         <ComboBoxItem>Teleportation</ComboBoxItem>
                     </ComboBox>
-                    <TextBlock Text="Duration override (msec):" Grid.Column="0" Grid.Row="22" VerticalAlignment="Center"/>
-                    <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="22" VerticalAlignment="Center">
+                    <TextBlock Text="Duration override (msec):" Grid.Column="0" Grid.Row="20" VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="20" VerticalAlignment="Center">
                         <TextBox x:Name="txtStockZoomFactorChangeDuration" IsReadOnly="True"/>
                         <TextBox x:Name="txtOverriddenZoomFactorChangeDuration"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="23">
-                        <Button x:Name="btnChangeZoomFactor" Content="ChangeZoomFactor" Margin="2" Click="BtnChangeZoomFactor_Click"/>
-                        <Button x:Name="btnCancelChangeZoomFactor" Content="Cancel" Margin="2" Click="BtnCancelChangeZoomFactor_Click"/>
+                    <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="21">
+                        <Button x:Name="btnZoomTo" Content="ZoomTo" Margin="2" Click="BtnZoomTo_Click"/>
+                        <Button x:Name="btnZoomBy" Content="ZoomBy" Margin="2" Click="BtnZoomBy_Click"/>
+                        <Button x:Name="btnCancelZoom" Content="Cancel" Margin="2" Click="BtnCancelZoom_Click"/>
                     </StackPanel>
 
-                    <TextBlock Text="ScrollerChangeZoomFactorWithAdditionalVelocityOptions" Margin="2,4,2,2" Grid.Row="24" Grid.ColumnSpan="2"/>
-                    <TextBlock Text="AdditionalVelocity:" Grid.Column="0" Grid.Row="25" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCZFWAVAAV" Text="1" Grid.Column="1" Grid.Row="25" VerticalAlignment="Center"/>
-                    <TextBlock Text="InertiaDecayRate:" Grid.Column="0" Grid.Row="26" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCZFWAVAIDR" Text="null" Grid.Column="1" Grid.Row="26" VerticalAlignment="Center"/>
-                    <TextBlock Text="CenterPoint:" Grid.Column="0" Grid.Row="27" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCZFWAVACP" Text="0, 0"  Grid.Column="1" Grid.Row="27" VerticalAlignment="Center"/>
-                    <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="28">
-                        <Button x:Name="btnChangeZoomFactorWithAdditionalVelocity" Content="ChangeZoomFactor" Margin="2" Click="BtnChangeZoomFactorWithAdditionalVelocity_Click"/>
-                        <Button x:Name="btnCancelChangeZoomFactorWithAdditionalVelocity" Content="Cancel" Margin="2" Click="BtnCancelChangeZoomFactorWithAdditionalVelocity_Click"/>
+                    <TextBlock Text="ZoomFrom Options" Margin="2,4,2,2" Grid.Row="22" Grid.ColumnSpan="2"/>
+                    <TextBlock Text="ZoomFactor Velocity:" Grid.Column="0" Grid.Row="23" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtCZFWAVAAV" Text="1" Grid.Column="1" Grid.Row="23" VerticalAlignment="Center"/>
+                    <TextBlock Text="InertiaDecayRate:" Grid.Column="0" Grid.Row="24" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtCZFWAVAIDR" Text="null" Grid.Column="1" Grid.Row="24" VerticalAlignment="Center"/>
+                    <TextBlock Text="CenterPoint:" Grid.Column="0" Grid.Row="25" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtCZFWAVACP" Text="0, 0"  Grid.Column="1" Grid.Row="25" VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="26">
+                        <Button x:Name="btnZoomFrom" Content="ZoomFrom" Margin="2" Click="BtnZoomFrom_Click"/>
+                        <Button x:Name="btnCancelZoomFrom" Content="Cancel" Margin="2" Click="BtnCancelZoomFrom_Click"/>
                     </StackPanel>
 
-                    <TextBlock Text="ScrollerAddSnapPoint" Margin="2,4,2,2" Grid.Row="29" Grid.ColumnSpan="2"/>
-                    <TextBlock Text="Value:" Grid.Column="0" Grid.Row="30" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtSnapPointValue" Grid.Column="1" Grid.Row="30" VerticalAlignment="Center"/>
-                    <TextBlock Text="ApplicableValueRange:" Grid.Column="0" Grid.Row="31" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtSnapPointValueRange" Text="0, 100000" Grid.Column="1" Grid.Row="31" VerticalAlignment="Center"/>
-                    <TextBlock Text="SnapPointKind:" Grid.Column="0" Grid.Row="32" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbSnapPointKind" Grid.Column="1" Grid.Row="32" VerticalAlignment="Center" SelectedIndex="0">
+                    <TextBlock Text="Snaps Points" Margin="2,4,2,2" Grid.Row="27" Grid.ColumnSpan="2"/>
+
+                    <TextBlock Text="SnapPointKind:" Grid.Column="0" Grid.Row="28" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="cmbSnapPointKind" Grid.Column="1" Grid.Row="28" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0"
+                        SelectionChanged="CmbSnapPointKind_SelectionChanged">
                         <ComboBoxItem>Vertical</ComboBoxItem>
                         <ComboBoxItem>Horizontal</ComboBoxItem>
                         <ComboBoxItem>Zoom</ComboBoxItem>
                     </ComboBox>
-                    <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="33">
-                        <Button x:Name="btnAddSnapPoint" Content="AddSnapPoint" Margin="2" Click="BtnAddSnapPoint_Click"/>
-                        <Button x:Name="btnClearSnapPoints" Content="ClearSnapPoints" Margin="2" Click="BtnClearSnapPoints_Click"/>
-                    </StackPanel>
+
+                    <Button x:Name="btnClearSnapPoints" Content="Clear Snap Points" HorizontalAlignment="Stretch"
+                        Grid.Row="29" Grid.ColumnSpan="2" Margin="2" Click="BtnClearSnapPoints_Click"/>
+
+                    <TextBlock Text="Alignment:" Grid.Column="0" Grid.Row="30" VerticalAlignment="Center" Margin="0,2,0,0"/>
+                    <ComboBox x:Name="cmbSnapPointAlignment" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0"
+                        Grid.Column="1" Grid.Row="30" >
+                        <ComboBoxItem>Near</ComboBoxItem>
+                        <ComboBoxItem>Center</ComboBoxItem>
+                        <ComboBoxItem>Far</ComboBoxItem>
+                    </ComboBox>
+
+                    <TextBlock Text="Value:" Grid.Column="0" Grid.Row="31" VerticalAlignment="Center" Margin="0,2,0,0"/>
+                    <TextBox x:Name="txtIrregularSnapPointValue" Grid.Column="1" Grid.Row="31" VerticalAlignment="Center" Margin="0,2,0,0"/>
+                    <!--
+                    <TextBlock Text="ApplicableValueRange:" Grid.Column="0" Grid.Row="" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtSnapPointValueRange" Text="0, 100000" Grid.Column="1" Grid.Row="" VerticalAlignment="Center"/>
+                    -->
+                    <Button x:Name="btnAddIrregularSnapPoint" Content="Add Irregular Snap Point" HorizontalAlignment="Stretch"
+                            Grid.Row="32" Grid.ColumnSpan="2" Margin="2" Click="BtnAddIrregularSnapPoint_Click"/>
+
+                    <TextBlock Text="Offset:" Grid.Column="0" Grid.Row="33" VerticalAlignment="Center" Margin="0,2,0,0"/>
+                    <TextBox x:Name="txtRepeatedSnapPointOffset" Grid.Column="1" Grid.Row="33" VerticalAlignment="Center"/>
+                    <TextBlock Text="Interval:" Grid.Column="0" Grid.Row="34" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtRepeatedSnapPointInterval" Grid.Column="1" Grid.Row="34" VerticalAlignment="Center"/>
+                    <TextBlock Text="Start:" Grid.Column="0" Grid.Row="35" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtRepeatedSnapPointStart" Grid.Column="1" Grid.Row="35" VerticalAlignment="Center"/>
+                    <TextBlock Text="End:" Grid.Column="0" Grid.Row="36" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtRepeatedSnapPointEnd" Grid.Column="1" Grid.Row="36" VerticalAlignment="Center"/>
+                    <Button x:Name="btnAddRepeatedSnapPoint" Content="Add Repeated Snap Point" HorizontalAlignment="Stretch"
+                            Grid.Row="37" Grid.ColumnSpan="2" Margin="2" Click="BtnAddRepeatedSnapPoint_Click"/>
                 </Grid>
             </Grid>
         </ScrollViewer>

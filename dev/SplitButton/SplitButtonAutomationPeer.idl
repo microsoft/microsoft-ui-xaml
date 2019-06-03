@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_RS5]
+﻿namespace MU_XAP_NAMESPACE
+{
+
+[WUXC_VERSION_RS5]
 [webhosthidden]
 unsealed runtimeclass SplitButtonAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
 Windows.UI.Xaml.Automation.Provider.IExpandCollapseProvider,
@@ -14,4 +17,6 @@ Windows.UI.Xaml.Automation.Provider.IExpandCollapseProvider,
 Windows.UI.Xaml.Automation.Provider.IToggleProvider
 {
     ToggleSplitButtonAutomationPeer(MU_XC_NAMESPACE.ToggleSplitButton owner);
+}
+
 }

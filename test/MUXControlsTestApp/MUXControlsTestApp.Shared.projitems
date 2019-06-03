@@ -156,6 +156,7 @@
     <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)VisualTreeTestHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
       <DependentUpon>LeakTestPage.xaml</DependentUpon>
     </Compile>
@@ -165,24 +166,17 @@
     <Compile Include="$(MSBuildThisFileDirectory)\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)\SampleTestUIPage.xaml.cs">
-      <DependentUpon>SampleTestUIPage.xaml</DependentUpon>
-    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)\Properties\AssemblyInfo.cs" Condition="$(BuildingWithBuildExe) != 'true'" />
     <Compile Include="$(MSBuildThisFileDirectory)\TestInventory.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\BiDirectionalScrollController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\CompositionPropertyLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\CompositionPropertySpy.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\CompositionScrollController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\ControlStateViewer\ControlStateViewer.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\IdleSynchronizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\MaterialHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\PrivateLoggingHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\ScrollerTestHooksHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\RunOnUIThread.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\SemanticZoomTemplateItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\SemanticZoomTemplateSelector.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TabControl\TabControl.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TilePanel\TilePanel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\ViewHelper.cs" />
@@ -200,6 +194,65 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\TypeConverters.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Assets\AcrylicBrush.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Animations.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Button.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ColorPicker.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\CommandBarFlyout.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\CompactSizing.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\DropdownButton.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ListView.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\MenuBar.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\MenuFlyout.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\NavigationView.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ParallaxView.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\PersonPicture.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\PullToRefresh.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\RadioButton.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\RatingControl.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Reveal.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ScrollViewer.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Slider.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\SplitButton.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Swipe.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\TeachingTip.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\LargeTile.scale-100.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\LargeTile.scale-125.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\LargeTile.scale-150.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\LargeTile.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\SmallTile.scale-100.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\SmallTile.scale-125.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\SmallTile.scale-150.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\SmallTile.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\SplashScreen.scale-100.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\SplashScreen.scale-125.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\SplashScreen.scale-150.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\SplashScreen.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square150x150Logo.scale-100.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square150x150Logo.scale-125.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square150x150Logo.scale-150.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square150x150Logo.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square44x44Logo.altform-unplated_targetsize-16.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square44x44Logo.altform-unplated_targetsize-24.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square44x44Logo.altform-unplated_targetsize-32.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square44x44Logo.altform-unplated_targetsize-48.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square44x44Logo.scale-100.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square44x44Logo.scale-125.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square44x44Logo.scale-150.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square44x44Logo.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square44x44Logo.targetsize-16.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square44x44Logo.targetsize-24.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square44x44Logo.targetsize-32.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\Square44x44Logo.targetsize-48.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\StoreLogo.scale-100.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\StoreLogo.scale-125.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\StoreLogo.scale-150.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\StoreLogo.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\WideTile.scale-100.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\WideTile.scale-125.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\WideTile.scale-150.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\WideTile.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\TreeView.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\AutoSave.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\file.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\folder.png" />
@@ -220,13 +273,8 @@
     <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_unset.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\SMPTE_WallpaperHD.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Properties\App.rd.xml" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\SplashScreen.scale-200.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\StoreLogo.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)\master\*.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)\..\..\dev\dll\DensityStyles\Compact.xaml" />
   </ItemGroup>
   <ItemGroup>
     <AppContent Include="@(Content)" />
@@ -244,23 +292,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)\SampleTestUIPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)\Themes\AdditionalStyles.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStylesOutsideStore_rs2.xaml" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)\Utilities\TabControl\TabControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

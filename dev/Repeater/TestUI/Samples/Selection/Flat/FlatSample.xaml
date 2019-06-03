@@ -68,7 +68,7 @@
             </StackPanel>
         </StackPanel>
 
-        <controls:ScrollAnchorProvider Grid.Row="2" >
+        <controls:ItemsRepeaterScrollHost Grid.Row="2" >
             <ScrollViewer>
                 <local:SelectionContainer SelectionModel="{StaticResource selectionModel}">
                     <controls:ItemsRepeater x:Name="repeater"  >
@@ -78,7 +78,7 @@
                     </controls:ItemsRepeater>
                 </local:SelectionContainer>
             </ScrollViewer>
-        </controls:ScrollAnchorProvider>
+        </controls:ItemsRepeaterScrollHost>
 
     </Grid>
 </Page>

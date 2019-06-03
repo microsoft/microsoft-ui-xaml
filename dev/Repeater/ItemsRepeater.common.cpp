@@ -34,35 +34,6 @@ winrt::DependencyObject CachedVisualTreeHelpers::GetParent(winrt::DependencyObje
     return instance->m_visualTreeHelper.GetParent(child);
 }
 
-/* static */ 
-void CachedVisualTreeHelpers::SetPoolInstance(winrt::DataTemplate const& dataTemplate, winrt::RecyclePool const& recyclePool)
-{
-    auto instance = LifetimeHandler::GetCachedVisualTreeHelpersInstance();
-    MUX_ASSERT(instance);
-
-    if (!instance->m_recyclePoolStatics)
-    {
-        instance->m_recyclePoolStatics = winrt::get_activation_factory<winrt::RecyclePool, winrt::IRecyclePoolStatics>();
-    }
-
-    instance->m_recyclePoolStatics.SetPoolInstance(dataTemplate, recyclePool);
-}
-
-/* static */
-winrt::RecyclePool CachedVisualTreeHelpers::GetPoolInstance(winrt::DataTemplate const& dataTemplate)
-{
-    auto instance = LifetimeHandler::GetCachedVisualTreeHelpersInstance();
-    MUX_ASSERT(instance);
-
-    if (!instance->m_recyclePoolStatics)
-    {
-        instance->m_recyclePoolStatics = winrt::get_activation_factory<winrt::RecyclePool, winrt::IRecyclePoolStatics>();
-    }
-
-    return instance->m_recyclePoolStatics.GetPoolInstance(dataTemplate);
-}
-
-/* static */
 winrt::IDataTemplateComponent CachedVisualTreeHelpers::GetDataTemplateComponent(winrt::UIElement const& element)
 {
     auto instance = LifetimeHandler::GetCachedVisualTreeHelpersInstance();

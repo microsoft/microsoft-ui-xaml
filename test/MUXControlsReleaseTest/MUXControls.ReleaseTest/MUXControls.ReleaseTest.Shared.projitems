@@ -17,8 +17,8 @@
     <ProjectGuid>{0133B2CB-960C-4BA5-ABFA-570F18CDB47A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MuxControls.ReleaseTest</RootNamespace>
-    <AssemblyName>MuxControls.ReleaseTest</AssemblyName>
+    <RootNamespace>MUXControls.ReleaseTest</RootNamespace>
+    <AssemblyName>MUXControls.ReleaseTest</AssemblyName>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">$(ReleaseTestSdkVersion)</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>

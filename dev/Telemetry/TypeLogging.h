@@ -3,45 +3,16 @@
 
 #pragma once
 
-#include "InteractionTrackerAsyncOperation.h"
-
-class TypeLogging
+namespace TypeLogging
 {
-public:
-#pragma region Common section
-    static winrt::hstring PointerPointToString(const winrt::PointerPoint& pointerPoint, bool verbose = false);
-    static winrt::hstring RectToString(const winrt::Rect& rect);
-    static winrt::hstring Float2ToString(const winrt::float2& v2);
-    static winrt::hstring OrientationToString(const winrt::Orientation& orientation);
-    static winrt::hstring ScrollEventTypeToString(const winrt::ScrollEventType& scrollEventType);
-    static winrt::hstring ScrollingIndicatorModeToString(const winrt::ScrollingIndicatorMode& indicatorMode);
-#pragma endregion
-
-#pragma region ScrollViewer-specific section
-#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
-#ifndef BUILD_WINDOWS
-static winrt::hstring ScrollBarVisibilityToString(const winrt::ScrollBarVisibility& scrollBarVisibility);
-#endif
-#endif
-#pragma endregion
-
-#pragma region Scroller-specific section
-    static winrt::hstring ChainingModeToString(const winrt::ChainingMode& chainingMode);
-    static winrt::hstring RailingModeToString(const winrt::RailingMode& railingMode);
-    static winrt::hstring ScrollModeToString(const winrt::ScrollMode& scrollMode);
-    static winrt::hstring ZoomModeToString(const winrt::ZoomMode& zoomMode);
-    static winrt::hstring InputKindToString(const winrt::InputKind& inputKind);
-    static winrt::hstring ScrollerViewKindToString(const winrt::ScrollerViewKind& offsetKind);
-    static winrt::hstring ScrollerViewChangeKindToString(const winrt::ScrollerViewChangeKind& viewChangeKind);
-    static winrt::hstring ScrollerViewChangeSnapPointRespectToString(const winrt::ScrollerViewChangeSnapPointRespect& snapPointRespect);
-    static winrt::hstring ScrollerViewChangeResultToString(const winrt::ScrollerViewChangeResult& result);
-    static winrt::hstring ScrollAmountToString(const winrt::ScrollAmount& scrollAmount);
-    static winrt::hstring ScrollerChangeOffsetsOptionsToString(const winrt::ScrollerChangeOffsetsOptions& options);
-    static winrt::hstring ScrollerChangeOffsetsWithAdditionalVelocityOptionsToString(const winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions& options);
-    static winrt::hstring ScrollerChangeZoomFactorOptionsToString(const winrt::ScrollerChangeZoomFactorOptions& options);
-    static winrt::hstring ScrollerChangeZoomFactorWithAdditionalVelocityOptionsToString(const winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions& options);
-    static winrt::hstring InteractionTrackerAsyncOperationTypeToString(InteractionTrackerAsyncOperationType operationType);
-    static winrt::hstring InteractionTrackerAsyncOperationTriggerToString(InteractionTrackerAsyncOperationTrigger operationTrigger);
-#pragma endregion
-};
+    winrt::hstring KeyRoutedEventArgsToString(const winrt::KeyRoutedEventArgs& eventArgs);
+    winrt::hstring PointerPointToString(const winrt::PointerPoint& pointerPoint, bool verbose = false);
+    winrt::hstring RectToString(const winrt::Rect& rect);
+    winrt::hstring Float2ToString(const winrt::float2& v2);
+    winrt::hstring NullableFloatToString(const winrt::IReference<float>& nf);
+    winrt::hstring NullableFloat2ToString(const winrt::IReference<winrt::float2>& nv2);
+    winrt::hstring OrientationToString(const winrt::Orientation& orientation);
+    winrt::hstring ScrollEventTypeToString(const winrt::ScrollEventType& scrollEventType);
+    winrt::hstring ScrollingIndicatorModeToString(const winrt::ScrollingIndicatorMode& indicatorMode);
+}
 

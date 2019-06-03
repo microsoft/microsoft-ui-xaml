@@ -15,7 +15,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-namespace MuxControls.ReleaseTest
+namespace MUXControls.ReleaseTest
 {
     [TestClass]
     public class NugetTests
@@ -43,6 +43,16 @@ namespace MuxControls.ReleaseTest
                 var textBlock = new TextBlock(FindElement.ByName("TestTextBlock"));
                 Verify.IsNotNull(textBlock);
                 Verify.AreEqual(textBlock.DocumentText, "Loaded");
+            }
+        }
+
+        [TestMethod]
+        public void CompactDictionaryNoCrashTest()
+        {
+            using (var setup = new TestSetupHelper("CompactDictionary Tests"))
+            {
+                var textBlock = new TextBlock(FindElement.ByName("CompactTextBox"));
+                Verify.IsNotNull(textBlock);
             }
         }
     }

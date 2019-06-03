@@ -9,10 +9,12 @@ jobs:
     displayName: 'Component Detection'
 
 - job: Build
+  # Skip the build job if we are reusing the output of a previous build.
+  # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
+  condition:
+    eq(variables['useBuildOutputFromBuildId'],'') 
   pool:
-    name: Package ES Custom Demands Lab A
-    demands:
-      - ClientAlias -equals depcontrols2
+    vmImage: 'VS2017-Win2016'
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
@@ -31,61 +33,116 @@ jobs:
         buildConfiguration: 'Release'
 
   variables:
-  - name: appxPackageDir
-    value: $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
-  - name: buildOutputDir
-    value: $(Build.BinariesDirectory)
-  - name: publishDir
-    value: $(Build.ArtifactStagingDirectory)
+    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+    publishDir : $(Build.ArtifactStagingDirectory)
+
+  steps:
+  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+
+  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+
+- job: SignBinariesAndPublishSymbols
+  dependsOn: Build
+  condition:
+    in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+  pool:
+    name: Package ES Lab E
 
   steps:
   - task: PkgESSetupBuild@10
     displayName: 'XESSetupBuild'
     inputs:
       productName: dep.controls
-      branchVersion: true
+      branchVersion: false
       nugetVer: true
 
-  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+  - task: DownloadBuildArtifacts@0 
+    condition:
+      eq(variables['useBuildOutputFromBuildId'],'')
+    inputs: 
+      artifactName: drop 
+      downloadPath: '$(Build.ArtifactStagingDirectory)'
+
+  - task: DownloadBuildArtifacts@0 
+    condition:
+      ne(variables['useBuildOutputFromBuildId'],'')
+    inputs: 
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: $(useBuildOutputFromBuildId)
+      artifactName: drop 
+      downloadPath: '$(Build.ArtifactStagingDirectory)'
+
+  - task: CmdLine@1
+    displayName: 'Display build machine environment variables'
+    inputs:
+      filename: 'set'
+
+  - script: cmd /c dir /s /b $(Build.ArtifactStagingDirectory)
+    displayName: Dump artifact staging directory
+
+  - template: AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml
+
+  - task: powershell@2
+    inputs:
+      targetType: filePath
+      filePath: $(Build.SourcesDirectory)\tools\PublishSymbols\PublishSymbols.ps1
+      arguments: -localDirectory "$(Build.ArtifactStagingDirectory)\drop" -Verbose
+    displayName: 'Publish Symbols'
 
   - task: PkgESCodeSign@10
     displayName: CodeSign
+    env:
+      SYSTEM_ACCESSTOKEN: $(system.accesstoken)
     inputs:
       signConfigXml: '$(Build.SourcesDirectory)\build\SignConfig.xml'
-      inPathRoot: '$(buildOutputDir)\$(buildConfiguration)\$(buildPlatform)'
-      outPathRoot: '$(buildOutputDir)\$(buildConfiguration)\$(buildPlatform)\signed'
+      inPathRoot: '$(Build.ArtifactStagingDirectory)\drop'
+      outPathRoot: '$(Build.ArtifactStagingDirectory)\drop'
 
-  - task: CmdLine@1
-    displayName: 'Publish Symbol'
+  # Re-publish signed artifacts to the drop.
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artifact: drop'
     inputs:
-      filename: '$(Build.SourcesDirectory)\tools\PublishSymbols\PublishSymbols.cmd'      
-
-  - template: AzurePipelinesTemplates\MUX-PublishDevProject-Steps.yml
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)\drop'
+      artifactName: 'drop'
 
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
   parameters:
     jobName: CreateNugetPackage
-    dependsOn: Build
-    # This is the magic GUID from the pipeline visual designer for this feed: https://dev.azure.com/ms/microsoft-ui-xaml/_packaging?_a=feed&feed=MUX-CI
-    # publishVstsFeed: 'd62f8eac-f05c-4c25-bccb-21f98b95c95f'
+    dependsOn: SignBinariesAndPublishSymbols
     signConfig: '$(Build.SourcesDirectory)\build\NuGetSignConfig.xml'
+    useReleaseTag: '$(MUXFinalRelease)'
  
-# Build solution that depends on nuget package
+# Build NuGet package tests
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
+    buildJobName: 'BuildNugetPkgTests'
+    buildArtifactName: 'NugetPkgTestsDrop'
     dependsOn: CreateNugetPackage
-    useNupkgFromArtifacts: true
-    matrix: 
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
-      Debug_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Debug'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-      Release_arm:
-        buildPlatform: 'arm'
-        buildConfiguration: 'Release'
+    pkgArtifactPath: '$(artifactDownloadPath)\drop'
+
+# Build framework package tests
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildFrameworkPkgTests'
+    buildArtifactName: 'FrameworkPkgTestsDrop'
+    dependsOn: CreateNugetPackage
+    pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
+
+# NuGet package WACK tests 
+- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+  parameters:
+    name: 'NugetPkgWACKTests'
+    dependsOn: BuildNugetPkgTests
+    artifactName: 'NugetPkgTestsDrop'
+
+# Framework package WACK tests
+- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+  parameters:
+    name: 'FrameworkPkgWACKTests'
+    dependsOn: BuildFrameworkPkgTests
+    artifactName: 'FrameworkPkgTestsDrop'

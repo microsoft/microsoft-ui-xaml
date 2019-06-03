@@ -152,7 +152,7 @@ namespace MUXControlsTestApp.Samples
 
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            OnDataSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            OnItemsSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
     }
 

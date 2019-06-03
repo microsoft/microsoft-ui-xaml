@@ -23,10 +23,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 #if !BUILD_WINDOWS
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
-using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
@@ -73,13 +72,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             // Try to jump beyond maximum offsets
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 c_defaultUIScrollerContentWidth + 2 * c_Margin - c_defaultUIScrollerWidth + 10.0,
                 c_defaultUIScrollerContentHeight + 2 * c_Margin - c_defaultUIScrollerHeight + 10.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 true /*hookViewChanged*/,
                 c_defaultUIScrollerContentWidth + 2 * c_Margin - c_defaultUIScrollerWidth,
                 c_defaultUIScrollerContentHeight + 2 * c_Margin - c_defaultUIScrollerHeight);
@@ -93,13 +91,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             // Try to jump beyond maximum offsets
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 c_defaultUIScrollerContentWidth - 2 * c_Margin - c_defaultUIScrollerWidth + 10.0,
                 c_defaultUIScrollerContentHeight - 2 * c_Margin - c_defaultUIScrollerHeight + 10.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 false /*hookViewChanged*/,
                 c_defaultUIScrollerContentWidth - 2 * c_Margin - c_defaultUIScrollerWidth,
                 c_defaultUIScrollerContentHeight - 2 * c_Margin - c_defaultUIScrollerHeight);
@@ -144,13 +141,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             // Try to jump beyond maximum offsets
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth + 10.0,
                 c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight + 10.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 true /*hookViewChanged*/,
                 c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth,
                 c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight);
@@ -193,7 +189,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ChangeZoomFactor(scroller, c_smallZoomFactor, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+            ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
@@ -246,6 +242,153 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(Math.Abs(horizontalOffset - (float)(c_defaultUIScrollerWidth - c_defaultUIScrollerContentWidth * c_smallZoomFactor) / 2.0f) < c_defaultOffsetResultTolerance);
             Verify.IsTrue(Math.Abs(verticalOffset - (float)(c_defaultUIScrollerHeight - c_defaultUIScrollerContentHeight * c_smallZoomFactor) / 2.0f) < c_defaultOffsetResultTolerance);
             Verify.AreEqual(zoomFactor, c_smallZoomFactor);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Validates Scroller.ViewportHeight for various layouts.")]
+        public void ViewportHeight()
+        {
+            for (double scrollerContentHeight = 50.0; scrollerContentHeight <= 350.0; scrollerContentHeight += 300.0)
+            {
+                ViewportHeight(
+                    isScrollerParentSizeSet: false,
+                    isScrollerParentMaxSizeSet: false,
+                    scrollerVerticalAlignment: VerticalAlignment.Top,
+                    scrollerContentHeight);
+                ViewportHeight(
+                    isScrollerParentSizeSet: true,
+                    isScrollerParentMaxSizeSet: false,
+                    scrollerVerticalAlignment: VerticalAlignment.Top,
+                    scrollerContentHeight);
+                ViewportHeight(
+                    isScrollerParentSizeSet: false,
+                    isScrollerParentMaxSizeSet: true,
+                    scrollerVerticalAlignment: VerticalAlignment.Top,
+                    scrollerContentHeight);
+
+                ViewportHeight(
+                    isScrollerParentSizeSet: false,
+                    isScrollerParentMaxSizeSet: false,
+                    scrollerVerticalAlignment: VerticalAlignment.Center,
+                    scrollerContentHeight);
+                ViewportHeight(
+                    isScrollerParentSizeSet: true,
+                    isScrollerParentMaxSizeSet: false,
+                    scrollerVerticalAlignment: VerticalAlignment.Center,
+                    scrollerContentHeight);
+                ViewportHeight(
+                    isScrollerParentSizeSet: false,
+                    isScrollerParentMaxSizeSet: true,
+                    scrollerVerticalAlignment: VerticalAlignment.Center,
+                    scrollerContentHeight);
+
+                ViewportHeight(
+                    isScrollerParentSizeSet: false,
+                    isScrollerParentMaxSizeSet: false,
+                    scrollerVerticalAlignment: VerticalAlignment.Stretch,
+                    scrollerContentHeight);
+                ViewportHeight(
+                    isScrollerParentSizeSet: true,
+                    isScrollerParentMaxSizeSet: false,
+                    scrollerVerticalAlignment: VerticalAlignment.Stretch,
+                    scrollerContentHeight);
+                ViewportHeight(
+                    isScrollerParentSizeSet: false,
+                    isScrollerParentMaxSizeSet: true,
+                    scrollerVerticalAlignment: VerticalAlignment.Stretch,
+                    scrollerContentHeight);
+            }
+        }
+
+        private void ViewportHeight(
+            bool isScrollerParentSizeSet,
+            bool isScrollerParentMaxSizeSet,
+            VerticalAlignment scrollerVerticalAlignment,
+            double scrollerContentHeight)
+        {
+            Log.Comment($"ViewportHeight test case - isScrollerParentSizeSet: {isScrollerParentSizeSet}, isScrollerParentMaxSizeSet: {isScrollerParentMaxSizeSet}, scrollerVerticalAlignment: {scrollerVerticalAlignment}, scrollerContentHeight: {scrollerContentHeight}");
+
+            Border border = null;
+            Scroller scroller = null;
+            StackPanel stackPanel = null;
+            Rectangle rectangle = null;
+            AutoResetEvent borderLoadedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                rectangle = new Rectangle()
+                {
+                    Width = 30,
+                    Height = scrollerContentHeight
+                };
+
+                stackPanel = new StackPanel()
+                {
+                    BorderThickness = new Thickness(5),
+                    Margin = new Thickness(7),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                stackPanel.Children.Add(rectangle);
+
+                scroller = new Scroller()
+                {
+                    Content = stackPanel,
+                    ContentOrientation = ContentOrientation.Vertical,
+                    VerticalAlignment = scrollerVerticalAlignment
+                };
+
+                border = new Border()
+                {
+                    BorderThickness = new Thickness(2),
+                    Margin = new Thickness(3),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Child = scroller
+                };
+                if (isScrollerParentSizeSet)
+                {
+                    border.Width = 300.0;
+                    border.Height = 200.0;
+                }
+                if (isScrollerParentMaxSizeSet)
+                {
+                    border.MaxWidth = 300.0;
+                    border.MaxHeight = 200.0;
+                }
+
+                border.Loaded += (object sender, RoutedEventArgs e) =>
+                {
+                    Log.Comment("Border.Loaded event handler");
+                    borderLoadedEvent.Set();
+                };
+
+                Log.Comment("Setting window content");
+                MUXControlsTestApp.App.TestContentRoot = border;
+            });
+
+            WaitForEvent("Waiting for Border.Loaded event", borderLoadedEvent);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                double expectedViewportHeight = 
+                    rectangle.Height + stackPanel.BorderThickness.Top + stackPanel.BorderThickness.Bottom +
+                    stackPanel.Margin.Top + stackPanel.Margin.Bottom;
+
+                double borderChildAvailableHeight = border.ActualHeight - border.BorderThickness.Top - border.BorderThickness.Bottom;
+
+                if (expectedViewportHeight > borderChildAvailableHeight || scrollerVerticalAlignment == VerticalAlignment.Stretch)
+                {
+                    expectedViewportHeight = borderChildAvailableHeight;
+                }
+
+                Log.Comment($"border.ActualWidth: {border.ActualWidth}, border.ActualHeight: {border.ActualHeight}");
+                Log.Comment($"Checking ViewportWidth - scroller.ViewportWidth: {scroller.ViewportWidth}, scroller.ActualWidth: {scroller.ActualWidth}");
+                Verify.AreEqual(scroller.ViewportWidth, scroller.ActualWidth);
+
+                Log.Comment($"Checking ViewportHeight - expectedViewportHeight: {expectedViewportHeight}, scroller.ViewportHeight: {scroller.ViewportHeight}, scroller.ActualHeight: {scroller.ActualHeight}");
+                Verify.AreEqual(scroller.ViewportHeight, expectedViewportHeight);
+                Verify.AreEqual(scroller.ViewportHeight, scroller.ActualHeight);
+            });
         }
 
         [TestMethod]
@@ -333,7 +476,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ChangeZoomFactor(scroller, c_smallZoomFactor, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+            ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
@@ -423,13 +566,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
             // Try to jump beyond maximum offsets
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 c_UnnaturalImageWidth - c_defaultUIScrollerWidth + 10.0,
                 c_UnnaturalImageHeight - c_defaultUIScrollerHeight + 10.0,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore,
                 true /*hookViewChanged*/,
                 c_UnnaturalImageWidth - c_defaultUIScrollerWidth,
                 c_UnnaturalImageHeight - c_defaultUIScrollerHeight);
@@ -487,7 +629,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ChangeZoomFactor(scroller, c_smallZoomFactor, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+            ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             ValidateContentWithConstrainedWidth(
                 compositor,
@@ -526,7 +668,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: c_smallZoomFactor);
 
             // Jump to absolute large zoomFactor to make the content larger than the viewport.
-            ChangeZoomFactor(scroller, c_largeZoomFactor, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+            ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             ValidateContentWithConstrainedWidth(
                 compositor,
@@ -615,7 +757,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ChangeZoomFactor(scroller, c_smallZoomFactor, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+            ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             ValidateContentWithConstrainedHeight(
                 compositor,
@@ -654,7 +796,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: c_smallZoomFactor);
 
             // Jump to absolute large zoomFactor to make the content larger than the viewport.
-            ChangeZoomFactor(scroller, c_largeZoomFactor, 0.0f, 0.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+            ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             ValidateContentWithConstrainedHeight(
                 compositor,

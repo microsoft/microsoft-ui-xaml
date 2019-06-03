@@ -54,7 +54,31 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnPropertyChanged(
+    static void OnBackgroundPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnBehaviorOnInvokedPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnCommandPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnCommandParameterPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnForegroundPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIconSourcePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnTextPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

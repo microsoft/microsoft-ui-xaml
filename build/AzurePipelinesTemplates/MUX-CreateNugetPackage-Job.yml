@@ -7,8 +7,8 @@ parameters:
 # The "primary" build arch is the one that the nuspec gets its winmd, pri, and other neutral files from
   primaryBuildArch: x86
   buildFlavor: Release
-  publishVstsFeed: ''
   signConfig: ''
+  useReleaseTag: 'false'
 
 jobs:
 - job: ${{ parameters.jobName }}
@@ -18,10 +18,7 @@ jobs:
   # XES tasks need to be on PackageES machines.
   ${{if parameters.signConfig }}:
     pool:
-      name: Package ES Custom Demands Lab A
-      demands:
-        - ClientAlias -equals depcontrols2
-
+      name: Package ES Lab E
 
   steps:
   - ${{if parameters.signConfig }}:
@@ -29,11 +26,11 @@ jobs:
       displayName: 'XESSetupBuild'
       inputs:
         productName: dep.controls
-        branchVersion: true
+        branchVersion: false
         nugetVer: true
 
   - template: MUX-PopulateBuildDateAndRevision-Steps.yml
-  
+
   - script: |
       echo parameters.jobName '${{ parameters.jobName }}'
       echo parameters.buildOutputDir '${{ parameters.buildOutputDir }}'
@@ -41,6 +38,7 @@ jobs:
       echo parameters.publishPath '${{ parameters.publishPath }}'
       echo buildrevision=$(buildrevision)
       echo builddate=$(builddate)
+      echo useReleaseTag=${{ parameters.useReleaseTag }}
     displayName: 'CreateNugetPackage: Display parameters'
 
   - task: DownloadBuildArtifacts@0 
@@ -50,22 +48,36 @@ jobs:
 
   - template: MUX-InstallNuget-Steps.yml
 
-  - task: powershell@2
-    displayName: 'build-nupkg.ps1'
-    inputs:
-      targetType: filePath
-      filePath: build\NuSpecs\build-nupkg.ps1
-      arguments: > 
-        -BuildOutput '$(Build.SourcesDirectory)\Artifacts\drop' 
-        -OutputDir '${{ parameters.nupkgdir }}' 
-        -prereleaseversion prerelease 
-        -DateOverride '$(builddate)'
-        -Subversion '$(buildrevision)' 
-        -BuildArch ${{ parameters.primaryBuildArch }}
+  - ${{if parameters.signConfig }}:
+    # Re-create framework packages because we made them in the build step against unsigned binaries.
+    - template: MUX-MakeFrameworkPackages-Steps.yml
+
+    # Copy the re-made framework packages into the same location in the artifact drop to be republished at the end of the job.
+    - task: CopyFiles@2
+      inputs:
+        targetFolder: '${{ parameters.nupkgdir }}'
+        sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop'
+        Contents: '**\Microsoft.UI.Xaml*.appx'
+
+  - powershell: |
+      $prereleaseTag = "prerelease"
+      if ("${{ parameters.useReleaseTag}}" -eq [bool]::TrueString) { $prereleaseTag = "" }
+
+      & "$env:Build_SourcesDirectory\build\NuSpecs\build-nupkg.ps1" `
+        -BuildOutput '$(Build.SourcesDirectory)\Artifacts\drop' `
+        -OutputDir '${{ parameters.nupkgdir }}' `
+        -prereleaseversion "$prereleaseTag" `
+        -DateOverride '$(builddate)' `
+        -Subversion '$(buildrevision)' `
+        -BuildArch ${{ parameters.primaryBuildArch }} `
         -BuildFlavor ${{ parameters.buildFlavor }}
+
+    displayName: 'build-nupkg.ps1'
 
   - ${{if parameters.signConfig }}:
     - task: PkgESCodeSign@10
+      env:
+        SYSTEM_ACCESSTOKEN: $(system.accesstoken)
       displayName: CodeSign
       inputs:
         signConfigXml: ${{ parameters.signConfig }}
@@ -78,10 +90,12 @@ jobs:
       PathtoPublish: '${{ parameters.nupkgdir }}'
       artifactName: 'drop'
 
-  - ${{if parameters.publishVstsFeed }}:
-    - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-      displayName: 'NuGet push to ${{ parameters.publishVstsFeed }}'
-      inputs:
-        command: push
-        publishVstsFeed: ${{ parameters.publishVstsFeed }}
-        packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg
+# To publish the package to vsts feed, set queue time variable NuGetFeed = d62f8eac-f05c-4c25-bccb-21f98b95c95f
+# This is the magic GUID from the pipeline visual designer for this feed: https://dev.azure.com/ms/microsoft-ui-xaml/_packaging?_a=feed&feed=MUX-CI
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    condition: ne(variables['NuGetFeed'], '')
+    displayName: 'NuGet push to $(NuGetFeed)'
+    inputs:
+      command: push
+      publishVstsFeed: $(NuGetFeed)
+      packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg

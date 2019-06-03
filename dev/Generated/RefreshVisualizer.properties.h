@@ -39,7 +39,19 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnPropertyChanged(
+    static void OnContentPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnInfoProviderPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnOrientationPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnStatePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

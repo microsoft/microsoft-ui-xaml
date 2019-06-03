@@ -9,13 +9,14 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);TWOPANEVIEW_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)TwoPaneView.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)TwoPaneView.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)DisplayRegionHelper.h" />
@@ -41,6 +42,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)DisplayRegionHelperTestApi.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)DisplayRegionHelperTestApi.idl" />
   </ItemGroup>
 </Project>

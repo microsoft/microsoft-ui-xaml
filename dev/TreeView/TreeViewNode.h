@@ -106,22 +106,15 @@ public:
     TreeViewNodeVector();
     TreeViewNodeVector(unsigned int capacity);
 
+    TreeViewNode* Parent();
     void SetParent(winrt::TreeViewNode value);
-    void AppendCore(winrt::TreeViewNode const& item);
-    void InsertAtCore(unsigned int index, winrt::TreeViewNode const& item);
-    void SetAtCore(unsigned int index, winrt::TreeViewNode const& item);   
-    void RemoveAtCore(unsigned int index);
-    void RemoveAtEndCore();
-    void ReplaceAllCore(winrt::array_view<winrt::TreeViewNode const> values);
-    void ClearCore(); 
+    winrt::IBindableVector GetWritableParentItemsSource();
 
-    void Append(winrt::TreeViewNode const& item);   
-    void InsertAt(unsigned int index, winrt::TreeViewNode const& item);
-    void SetAt(unsigned int index, winrt::TreeViewNode const& item);   
-    void RemoveAt(unsigned int index);    
-    void RemoveAtEnd();
-    void ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values);    
-    void Clear();
+    void Append(winrt::TreeViewNode const& item, bool updateItemsSource = true);   
+    void InsertAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource = true);
+    void SetAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource = true);   
+    void RemoveAt(unsigned int index, bool updateItemsSource = true);
+    void RemoveAtEnd(bool updateItemsSource = true);
+    void ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values, bool updateItemsSource = true);    
+    void Clear(bool updateItemsSource = true);
 };
-
-void throwIllegalMethodCallException();

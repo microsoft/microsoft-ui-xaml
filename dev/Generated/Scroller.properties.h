@@ -95,40 +95,95 @@ public:
     void AnchorRequested(winrt::event_token const& token);
     winrt::event_token BringingIntoView(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerBringingIntoViewEventArgs> const& value);
     void BringingIntoView(winrt::event_token const& token);
-    winrt::event_token ChangingOffsets(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerChangingOffsetsEventArgs> const& value);
-    void ChangingOffsets(winrt::event_token const& token);
-    winrt::event_token ChangingZoomFactor(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerChangingZoomFactorEventArgs> const& value);
-    void ChangingZoomFactor(winrt::event_token const& token);
     winrt::event_token ExtentChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
     void ExtentChanged(winrt::event_token const& token);
+    winrt::event_token ScrollAnimationStarting(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollAnimationStartingEventArgs> const& value);
+    void ScrollAnimationStarting(winrt::event_token const& token);
+    winrt::event_token ScrollCompleted(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollCompletedEventArgs> const& value);
+    void ScrollCompleted(winrt::event_token const& token);
     winrt::event_token StateChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
     void StateChanged(winrt::event_token const& token);
-    winrt::event_token ViewChangeCompleted(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerViewChangeCompletedEventArgs> const& value);
-    void ViewChangeCompleted(winrt::event_token const& token);
     winrt::event_token ViewChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable> const& value);
     void ViewChanged(winrt::event_token const& token);
+    winrt::event_token ZoomAnimationStarting(winrt::TypedEventHandler<winrt::Scroller, winrt::ZoomAnimationStartingEventArgs> const& value);
+    void ZoomAnimationStarting(winrt::event_token const& token);
+    winrt::event_token ZoomCompleted(winrt::TypedEventHandler<winrt::Scroller, winrt::ZoomCompletedEventArgs> const& value);
+    void ZoomCompleted(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerAnchorRequestedEventArgs>> m_anchorRequestedEventSource;
     event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerBringingIntoViewEventArgs>> m_bringingIntoViewEventSource;
-    event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerChangingOffsetsEventArgs>> m_changingOffsetsEventSource;
-    event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerChangingZoomFactorEventArgs>> m_changingZoomFactorEventSource;
     event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_extentChangedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollAnimationStartingEventArgs>> m_scrollAnimationStartingEventSource;
+    event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollCompletedEventArgs>> m_scrollCompletedEventSource;
     event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_stateChangedEventSource;
-    event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerViewChangeCompletedEventArgs>> m_viewChangeCompletedEventSource;
     event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::IInspectable>> m_viewChangedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::ZoomAnimationStartingEventArgs>> m_zoomAnimationStartingEventSource;
+    event_source<winrt::TypedEventHandler<winrt::Scroller, winrt::ZoomCompletedEventArgs>> m_zoomCompletedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnPropertyChanged(
+    static void OnBackgroundPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnPropertyChanged_ValidateAnchorRatio(
+    static void OnContentPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnPropertyChanged_ValidateZoomFactoryBoundary(
+    static void OnContentOrientationPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnHorizontalAnchorRatioPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnHorizontalScrollChainingModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnHorizontalScrollModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnHorizontalScrollRailingModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIgnoredInputKindPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMaxZoomFactorPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMinZoomFactorPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnVerticalAnchorRatioPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnVerticalScrollChainingModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnVerticalScrollModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnVerticalScrollRailingModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnZoomChainingModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnZoomModePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

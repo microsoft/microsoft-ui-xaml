@@ -1,13 +1,16 @@
-﻿[WUXC_VERSION_PREVIEW]
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
-enum TeachingTipCloseButtonKind
+enum TeachingTipTailVisibility
 {
     Auto,
-    Header,
-    Footer,
+    Visible,
+    Collapsed,
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum TeachingTipCloseReason
 {
@@ -16,7 +19,7 @@ enum TeachingTipCloseReason
     Programmatic,
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum TeachingTipPlacementMode
 {
@@ -25,33 +28,34 @@ enum TeachingTipPlacementMode
     Bottom,
     Left,
     Right,
-    TopEdgeAlignedRight,
-    TopEdgeAlignedLeft,
-    BottomEdgeAlignedRight,
-    BottomEdgeAlignedLeft,
-    LeftEdgeAlignedTop,
-    LeftEdgeAlignedBottom,
-    RightEdgeAlignedTop,
-    RightEdgeAlignedBottom,
+    TopRight,
+    TopLeft,
+    BottomRight,
+    BottomLeft,
+    LeftTop,
+    LeftBottom,
+    RightTop,
+    RightBottom,
+    Center
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
-enum TeachingTipBleedingImagePlacementMode
+enum TeachingTipHeroContentPlacementMode
 {
+    Auto,
     Top,
     Bottom,
-    Auto,
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass TeachingTipClosedEventArgs
 {
     TeachingTipCloseReason Reason{ get; };
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass TeachingTipClosingEventArgs
 {
@@ -60,7 +64,7 @@ runtimeclass TeachingTipClosingEventArgs
     Windows.Foundation.Deferral GetDeferral();
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 unsealed runtimeclass TeachingTipTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
@@ -69,44 +73,53 @@ unsealed runtimeclass TeachingTipTemplateSettings : Windows.UI.Xaml.DependencyOb
     Windows.UI.Xaml.Thickness TopRightHighlightMargin;
     Windows.UI.Xaml.Thickness TopLeftHighlightMargin;
 
+    Windows.UI.Xaml.Controls.IconElement IconElement;
+
     static Windows.UI.Xaml.DependencyProperty TopRightHighlightMarginProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TopLeftHighlightMarginProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IconElementProperty{ get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
 {
     TeachingTip();
 
     String Title;
-    String Subtext;
+    String Subtitle;
 
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsOpen;
 
-    String ActionButtonText;
+    Windows.UI.Xaml.FrameworkElement Target;
+
+    [MUX_DEFAULT_VALUE("winrt::TeachingTipTailVisibility::Auto")]
+    TeachingTipTailVisibility TailVisibility;
+
+    Object ActionButtonContent;
     Windows.UI.Xaml.Style ActionButtonStyle;
     Windows.UI.Xaml.Input.ICommand ActionButtonCommand;
     Object ActionButtonCommandParameter;
 
-    [MUX_DEFAULT_VALUE("winrt::TeachingTipCloseButtonKind::Auto")]
-    TeachingTipCloseButtonKind CloseButtonKind;
-    String CloseButtonText;
+    Object CloseButtonContent;
     Windows.UI.Xaml.Style CloseButtonStyle;
     Windows.UI.Xaml.Input.ICommand CloseButtonCommand;
     Object CloseButtonCommandParameter;
 
-    Windows.UI.Xaml.Thickness TargetOffset;
+    Windows.UI.Xaml.Thickness PlacementMargin;
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean ShouldConstrainToRootBounds;
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsLightDismissEnabled;
     [MUX_DEFAULT_VALUE("winrt::TeachingTipPlacementMode::Auto")]
-    TeachingTipPlacementMode Placement;
-    [MUX_DEFAULT_VALUE("winrt::TeachingTipBleedingImagePlacementMode::Auto")]
-    TeachingTipBleedingImagePlacementMode BleedingImagePlacement;
+    TeachingTipPlacementMode PreferredPlacement;
+    [MUX_DEFAULT_VALUE("winrt::TeachingTipHeroContentPlacementMode::Auto")]
+    TeachingTipHeroContentPlacementMode HeroContentPlacement;
 
-    Windows.UI.Xaml.UIElement BleedingImageContent;
+    Windows.UI.Xaml.UIElement HeroContent;
     IconSource IconSource;
 
     TeachingTipTemplateSettings TemplateSettings{ get; };
@@ -118,31 +131,33 @@ unsealed runtimeclass TeachingTip : Windows.UI.Xaml.Controls.ContentControl
 
     static Windows.UI.Xaml.DependencyProperty IsOpenProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty AttachProperty{ get; };
-    static void SetAttach(Windows.UI.Xaml.UIElement element, TeachingTip teachingTip);
-    static TeachingTip GetAttach(Windows.UI.Xaml.UIElement element);
+    static Windows.UI.Xaml.DependencyProperty TargetProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty TailVisibilityProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TitleProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty SubtextProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SubtitleProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty ActionButtonTextProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ActionButtonContentProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ActionButtonStyleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ActionButtonCommandProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ActionButtonCommandParameterProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty CloseButtonKindProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty CloseButtonTextProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty CloseButtonContentProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonStyleProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CloseButtonCommandParameterProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty TargetOffsetProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PlacementMarginProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ShouldConstrainToRootBoundsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsLightDismissEnabledProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty PlacementProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty BleedingImagePlacementProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PreferredPlacementProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HeroContentPlacementProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty BleedingImageContentProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HeroContentProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
+}
+
 }

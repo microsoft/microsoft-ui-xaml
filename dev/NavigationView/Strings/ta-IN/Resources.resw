@@ -138,7 +138,7 @@
     <comment>Name for the compact view search button</comment>
   </data>
   <data name="NavigationBackButtonName" xml:space="preserve">
-    <value>பின்செல் பொத்தான்</value>
+    <value>பின்பக்கம்</value>
     <comment>Automation name for the nav view provided back button</comment>
   </data>
   <data name="NavigationBackButtonToolTip" xml:space="preserve">

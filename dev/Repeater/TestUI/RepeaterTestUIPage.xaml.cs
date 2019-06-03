@@ -76,6 +76,11 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(PinterestLayoutSamplePage));
             };
 
+            flowLayoutDemo.Click += delegate 
+            {
+                Frame.NavigateWithoutAnimation(typeof(FlowLayoutDemoPage));
+            };
+
             activityFeedLayoutDemo.Click += delegate
             {
                 Frame.NavigateWithoutAnimation(typeof(ActivityFeedSamplePage));
@@ -99,6 +104,10 @@ namespace MUXControlsTestApp
             treeSelectionDemo.Click += delegate
             {
                 Frame.NavigateWithoutAnimation(typeof(MUXControlsTestApp.Samples.Selection.TreeViewSample));
+            };
+
+            animatedScrollDemo.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(MUXControlsTestApp.Samples.ScaleAnimatedVerticalListDemo));
             };
 
             noGroupingList.Click += delegate

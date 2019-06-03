@@ -28,10 +28,10 @@
 
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightListLowBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource NavigationViewButtonBackgroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource NavigationViewButtonForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -40,10 +40,10 @@
 
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightListMediumBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource NavigationViewButtonBackgroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource NavigationViewButtonForegroundPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -52,7 +52,7 @@
 
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlDisabledBaseMediumLowBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource NavigationViewButtonForegroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>

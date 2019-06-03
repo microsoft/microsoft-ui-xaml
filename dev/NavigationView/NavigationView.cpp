@@ -55,10 +55,10 @@ static constexpr auto c_paneHeaderOnTopPane = L"PaneHeaderOnTopPane"sv;
 static constexpr auto c_paneCustomContentOnTopPane = L"PaneCustomContentOnTopPane"sv;
 static constexpr auto c_paneFooterOnTopPane = L"PaneFooterOnTopPane"sv;
 
-static constexpr int c_backButtonHeight = 44;
-static constexpr int c_backButtonWidth = 48;
+static constexpr int c_backButtonHeight = 40;
+static constexpr int c_backButtonWidth = 40;
 static constexpr int c_backButtonPaneButtonMargin = 8;
-static constexpr int c_paneToggleButtonWidth = 48;
+static constexpr int c_paneToggleButtonWidth = 40;
 static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior = 56;
 static constexpr int c_backButtonRowDefinition = 1;
 static constexpr float c_paneElevationTranslationZ = 32;
@@ -280,12 +280,10 @@ void NavigationView::OnApplyTemplate()
         auto visual = winrt::ElementCompositionPreview::GetElementVisual(topNavOverflowButton);
         CreateAndAttachHeaderAnimation(visual);
 
-#ifdef USE_INSIDER_SDK
         if (winrt::IFlyoutBase6 topNavOverflowButtonAsFlyoutBase6 = topNavOverflowButton.Flyout())
         {
             topNavOverflowButtonAsFlyoutBase6.ShouldConstrainToRootBounds(false);
         }
-#endif
     }
 
     if (auto topNavGrid = GetTemplateChildT<winrt::Grid>(c_topNavGrid, controlProtected))
@@ -580,16 +578,22 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
         MUX_FAIL_FAST();
     }
 
-
+    auto previousMode = DisplayMode();
     SetDisplayMode(displayMode, forceSetDisplayMode);
 
-    if (displayMode == winrt::NavigationViewDisplayMode::Expanded)
+    if (displayMode == winrt::NavigationViewDisplayMode::Expanded && IsPaneVisible())
     {
         if (!m_wasForceClosed)
         {
             OpenPane();
         }
-    }     
+    }
+
+    if (previousMode == winrt::NavigationViewDisplayMode::Expanded
+        && displayMode == winrt::NavigationViewDisplayMode::Compact)
+    {
+        ClosePane();
+    }
 }
 
 void NavigationView::OnPaneToggleButtonClick(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
@@ -1318,10 +1322,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
 
             AnimateSelectionChanged(prevItem, nextActualItem);
 
-            if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded)
-            {
-                ClosePane();
-            }
+            ClosePaneIfNeccessaryAfterItemIsClicked();
         }
     }
 }
@@ -1342,6 +1343,8 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
     if (!m_shouldIgnoreNextSelectionChange && DoesSelectedItemContainContent(clickedItem, itemContainer) && !IsSelectionSuppressed(selectedItem))
     {
         RaiseItemInvoked(selectedItem, false /*isSettings*/, itemContainer);
+
+        ClosePaneIfNeccessaryAfterItemIsClicked();
     }
 }
 
@@ -2581,6 +2584,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     if (property == s_IsPaneOpenProperty)
     {
         OnIsPaneOpenChanged();
+        UpdateVisualStateForDisplayModeGroup(DisplayMode());
     }
     else if (property == s_CompactModeThresholdWidthProperty ||
         property == s_ExpandedModeThresholdWidthProperty)
@@ -2640,6 +2644,18 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         UpdatePaneVisibility();
         UpdateVisualStateForDisplayModeGroup(DisplayMode());
+
+        // When NavView is in expaneded mode with fixed window size, setting IsPaneVisible to false doesn't closes the pane
+        // We manually close/open it for this case
+        if (!IsPaneVisible() && IsPaneOpen())
+        {
+            ClosePane();
+        }
+
+        if (IsPaneVisible() && DisplayMode() == winrt::NavigationViewDisplayMode::Expanded && !IsPaneOpen())
+        {
+            OpenPane();
+        }
     }
     else if (property == s_OverflowLabelModeProperty)
     {
@@ -2741,7 +2757,6 @@ void NavigationView::OnIsPaneOpenChanged()
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-#ifdef USE_INSIDER_SDK
         if (auto splitView = m_rootSplitView.get())
         {
             auto displayMode = splitView.DisplayMode();
@@ -2753,7 +2768,6 @@ void NavigationView::OnIsPaneOpenChanged()
                 paneRoot.Translation(translation);
             }
         }
-#endif
     }
 }
 
@@ -3210,6 +3224,14 @@ void NavigationView::OnTitleBarIsVisibleChanged(const winrt::CoreApplicationView
     UpdateTitleBarPadding();
 }
 
+void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked()
+{
+    if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded)
+    {
+        ClosePane();
+    }
+}
+
 bool NavigationView::ShouldIgnoreMeasureOverride()
 {
     return m_shouldIgnoreNextMeasureOverride || m_shouldIgnoreOverflowItemSelectionChange || m_shouldIgnoreNextSelectionChange;
@@ -3379,7 +3401,6 @@ void NavigationView::UpdatePaneShadow()
 {
     if (SharedHelpers::IsThemeShadowAvailable())
     {
-#ifdef USE_INSIDER_SDK
         winrt::Canvas shadowReceiver = GetTemplateChildT<winrt::Canvas>(c_paneShadowReceiverCanvas, *this);
         if (!shadowReceiver)
         {
@@ -3410,6 +3431,5 @@ void NavigationView::UpdatePaneShadow()
         // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
         winrt::Thickness shadowReceiverMargin = { -CompactPaneLength(), -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
         shadowReceiver.Margin(shadowReceiverMargin);
-#endif
     }
 }

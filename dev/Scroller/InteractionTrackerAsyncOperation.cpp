@@ -4,20 +4,22 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
+#include "ScrollerTypeLogging.h"
 #include "InteractionTrackerAsyncOperation.h"
 
 InteractionTrackerAsyncOperation::InteractionTrackerAsyncOperation(
-    InteractionTrackerAsyncOperationType operationType, 
+    InteractionTrackerAsyncOperationType operationType,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
-    bool isDelayed, 
-    const winrt::IInspectable& options)
+    bool isDelayed,
+    std::shared_ptr<ViewChangeBase> viewChangeBase)
     : m_operationType(operationType)
     , m_operationTrigger(operationTrigger)
     , m_isDelayed(isDelayed)
-    , m_options(options)
+    , m_viewChangeBase(viewChangeBase)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, L"%s[0x%p](operationType: %s, operationTrigger: %s, isDelayed: %d, options: 0x%p)\n",
-        METH_NAME, this, TypeLogging::InteractionTrackerAsyncOperationTypeToString(operationType).c_str(), TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str(), isDelayed, options);
+    SCROLLER_TRACE_VERBOSE(nullptr, L"%s[0x%p](operationType: %s, operationTrigger: %s, isDelayed: %d, viewChange: 0x%p)\n",
+        METH_NAME, this, TypeLogging::InteractionTrackerAsyncOperationTypeToString(operationType).c_str(),
+        TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str(), isDelayed, viewChangeBase);
 
     if (!IsAnimated())
     {

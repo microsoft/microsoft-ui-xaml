@@ -77,7 +77,7 @@ private:
     
     tracker_ref<winrt::IInspectable> m_source;
     tracker_ref<winrt::ItemsSourceView> m_dataSource;
-    winrt::event_token m_dataSourceChanged{};
+    winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceViewChanged{};
 
     int m_selectedCount{ 0 };
     std::vector<int> m_selectedIndicesCached;

@@ -37,13 +37,13 @@
             <Button x:Name="goBackButton">Back</Button>
         </StackPanel>
 
-        <controls:ScrollAnchorProvider x:Name="tracker" Grid.Row="1">
+        <controls:ItemsRepeaterScrollHost x:Name="tracker" Grid.Row="1">
             <ScrollViewer x:Name="scrollViewer">
                 <controls:ItemsRepeater x:Name="repeater" VerticalCacheLength="0" Background="LightBlue"/>
             </ScrollViewer>
-        </controls:ScrollAnchorProvider>
+        </controls:ItemsRepeaterScrollHost>
 
-        <!-- No ScrollAnchorProvider for RS5+. ScrollViewer can do the anchoring itself-->
+        <!-- No ItemsRepeaterScrollHost for RS5+. ScrollViewer can do the anchoring itself-->
         <!--controls:ScrollViewer x:Name="scrollViewer" Height="500">
             <controls:ItemsRepeater x:Name="repeater" VerticalCacheLength="0" />
                 <controls:ItemsRepeater.Layout>
@@ -52,7 +52,7 @@
             </controls:ItemsRepeater>
         </-->
 
-        <!-- No ScrollAnchorProvider for RS5+. ScrollViewer can do the anchoring itself -->
+        <!-- No ItemsRepeaterScrollHost for RS5+. ScrollViewer can do the anchoring itself -->
         <!-- ScrollViewer x:Name="scrollViewer" Grid.Row="1">
             <controls:ItemsRepeater x:Name="repeater" VerticalCacheLength="0">
                 <controls:ItemsRepeater.Layout>

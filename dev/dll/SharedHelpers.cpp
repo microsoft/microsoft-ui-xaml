@@ -126,17 +126,6 @@ bool SharedHelpers::IsFlyoutShowOptionsAvailable()
     return s_isFlyoutShowOptionsAvailable;
 }
 
-bool SharedHelpers::AreInteractionTrackerPointerWheelRedirectionModesAvailable()
-{
-    // VisualInteractionSourceRedirectionMode::PointerWheelOnly and VisualInteractionSourceRedirectionMode::CapableTouchpadAndPointerWheel
-    // were introduced late in RS4.
-    static bool s_areInteractionTrackerPointerWheelRedirectionModesAvailable =
-        IsSystemDll() ||
-        IsRS5OrHigher() ||
-        (IsRS4OrHigher() && winrt::ApiInformation::IsEnumNamedValuePresent(L"Windows.UI.Composition.Interactions.VisualInteractionSourceRedirectionMode", L"PointerWheelOnly"));
-    return s_areInteractionTrackerPointerWheelRedirectionModesAvailable;
-}
-
 bool SharedHelpers::IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable()
 {
     static bool s_isScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable =

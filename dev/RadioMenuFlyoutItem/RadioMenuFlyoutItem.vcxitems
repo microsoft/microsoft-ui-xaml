@@ -43,6 +43,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem.idl" />
   </ItemGroup>
 </Project>

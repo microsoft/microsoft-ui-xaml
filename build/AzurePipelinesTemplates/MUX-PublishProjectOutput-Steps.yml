@@ -1,0 +1,16 @@
+parameters:
+  artifactName: 'drop'
+
+steps:
+  - task: powershell@2
+    displayName: 'Copy files to staging dir'
+    inputs:
+      targetType: filePath
+      filePath: build\CopyFilesToStagingDir.ps1
+      arguments: -BuildOutputDir '$(buildOutputDir)' -PublishDir '$(Build.ArtifactStagingDirectory)' -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artifact: ${{ parameters.artifactName }}'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: ${{ parameters.artifactName }}

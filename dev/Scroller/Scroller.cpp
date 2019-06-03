@@ -4,17 +4,15 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
+#include "ScrollerTypeLogging.h"
 #include "ResourceAccessor.h"
 #include "RuntimeProfiler.h"
 #include "InteractionTrackerOwner.h"
 #include "Scroller.h"
-#include "ScrollerChangeOffsetsOptions.h"
-#include "ScrollerChangeOffsetsWithAdditionalVelocityOptions.h"
-#include "ScrollerChangeZoomFactorOptions.h"
-#include "ScrollerChangeZoomFactorWithAdditionalVelocityOptions.h"
+#include "ScrollOptions.h"
+#include "ZoomOptions.h"
 #include "ScrollerAutomationPeer.h"
 #include "ScrollerTestHooks.h"
-#include "ScrollerSnapPoint.h"
 #include "Vector.h"
 
 // Change to 'true' to turn on debugging outputs in Output window
@@ -28,20 +26,15 @@ const double c_scrollerLineDelta = 16.0;
 // an offset change with additional velocity.
 const float c_scrollerDefaultInertiaDecayRate = 0.95f;
 
+const winrt::ScrollInfo Scroller::s_noOpScrollInfo{ -1 };
+const winrt::ZoomInfo Scroller::s_noOpZoomInfo{ -1 };
+
 Scroller::~Scroller()
 {
     SCROLLER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
-    if (SharedHelpers::IsRS4OrHigher() &&
-        !Scroller::IsInteractionTrackerMouseWheelZoomingEnabled() &&
-        m_isListeningToKeystrokes)
-    {
-        ResetKeyEvents();
-    }
-
     UnhookCompositionTargetRendering();
     UnhookScrollerEvents();
-    UnhookSnapPointsVectorChangedEvents();
 }
 
 Scroller::Scroller()
@@ -58,6 +51,11 @@ Scroller::Scroller()
     if (!SharedHelpers::IsTH2OrLower())
     {
         HookScrollerEvents();
+
+        if (!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled())
+        {
+            HookDpiChangedEvent();
+        }
     }
 
     // Set the default Transparent background so that hit-testing allows to start a touch manipulation
@@ -156,17 +154,22 @@ void Scroller::ScrollToOffsets(
 
     if (m_interactionTracker)
     {
-        auto options = winrt::make<ScrollerChangeOffsetsOptions>(
-            horizontalOffset,
-            verticalOffset,
-            winrt::ScrollerViewKind::Absolute,
-            winrt::ScrollerViewChangeKind::DisableAnimation,
-            winrt::ScrollerViewChangeSnapPointRespect::IgnoreSnapPoints);
+        com_ptr<ScrollOptions> options =
+            winrt::make_self<ScrollOptions>(
+                winrt::AnimationMode::Disabled,
+                winrt::SnapPointsMode::Ignore);
+
+        std::shared_ptr<OffsetsChange> offsetsChange =
+            std::make_shared<OffsetsChange>(
+                horizontalOffset,
+                verticalOffset,
+                ScrollerViewKind::Absolute,                
+                winrt::IInspectable{ *options }); // NOTE: Using explicit cast to winrt::IInspectable to work around 17532876
 
         ProcessOffsetsChange(
             InteractionTrackerAsyncOperationTrigger::DirectViewChange,
-            options.as<winrt::ScrollerChangeOffsetsOptions>(),
-            -1 /*viewChangeId*/,
+            offsetsChange,
+            -1 /*offsetsChangeId*/,
             false /*isForAsyncOperation*/);
     }
 }
@@ -380,59 +383,68 @@ winrt::InteractionState Scroller::State()
     return m_state;
 }
 
-winrt::IVector<winrt::ScrollerSnapPointBase> Scroller::HorizontalSnapPoints()
+winrt::IVector<winrt::ScrollSnapPointBase> Scroller::HorizontalSnapPoints()
 {
     if (!m_horizontalSnapPoints)
     {
-        m_horizontalSnapPoints = winrt::make<Vector<winrt::ScrollerSnapPointBase>>();
+        m_horizontalSnapPoints = winrt::make<Vector<winrt::ScrollSnapPointBase>>();
 
         if (!SharedHelpers::IsTH2OrLower())
         {
-            auto horizontalSnapPointsObservableVector = m_horizontalSnapPoints.try_as<winrt::IObservableVector<winrt::ScrollerSnapPointBase>>();
-            m_horizontalSnapPointsVectorChangedToken = horizontalSnapPointsObservableVector.VectorChanged({ this, &Scroller::OnHorizontalSnapPointsVectorChanged });
+            auto horizontalSnapPointsObservableVector = m_horizontalSnapPoints.try_as<winrt::IObservableVector<winrt::ScrollSnapPointBase>>();
+            m_horizontalSnapPointsVectorChangedRevoker = horizontalSnapPointsObservableVector.VectorChanged(
+                winrt::auto_revoke,
+                { this, &Scroller::OnHorizontalSnapPointsVectorChanged });
         }
     }
     return m_horizontalSnapPoints;
 }
 
-winrt::IVector<winrt::ScrollerSnapPointBase> Scroller::VerticalSnapPoints()
+winrt::IVector<winrt::ScrollSnapPointBase> Scroller::VerticalSnapPoints()
 {
     if (!m_verticalSnapPoints)
     {
-        m_verticalSnapPoints = winrt::make<Vector<winrt::ScrollerSnapPointBase>>();
+        m_verticalSnapPoints = winrt::make<Vector<winrt::ScrollSnapPointBase>>();
 
         if (!SharedHelpers::IsTH2OrLower())
         {
-            auto verticalSnapPointsObservableVector = m_verticalSnapPoints.try_as<winrt::IObservableVector<winrt::ScrollerSnapPointBase>>();
-            m_verticalSnapPointsVectorChangedToken = verticalSnapPointsObservableVector.VectorChanged({ this, &Scroller::OnVerticalSnapPointsVectorChanged });
+            auto verticalSnapPointsObservableVector = m_verticalSnapPoints.try_as<winrt::IObservableVector<winrt::ScrollSnapPointBase>>();
+            m_verticalSnapPointsVectorChangedRevoker = verticalSnapPointsObservableVector.VectorChanged(
+                winrt::auto_revoke,
+                { this, &Scroller::OnVerticalSnapPointsVectorChanged });
         }
     }
     return m_verticalSnapPoints;
 }
 
-winrt::IVector<winrt::ScrollerSnapPointBase> Scroller::ZoomSnapPoints()
+winrt::IVector<winrt::ZoomSnapPointBase> Scroller::ZoomSnapPoints()
 {
     if (!m_zoomSnapPoints)
     {
-        m_zoomSnapPoints = winrt::make<Vector<winrt::ScrollerSnapPointBase>>();
+        m_zoomSnapPoints = winrt::make<Vector<winrt::ZoomSnapPointBase>>();
 
         if (!SharedHelpers::IsTH2OrLower())
         {
-            auto zoomSnapPointsObservableVector = m_zoomSnapPoints.try_as<winrt::IObservableVector<winrt::ScrollerSnapPointBase>>();
-            m_zoomSnapPointsVectorChangedToken = zoomSnapPointsObservableVector.VectorChanged({ this, &Scroller::OnZoomSnapPointsVectorChanged });
+            auto zoomSnapPointsObservableVector = m_zoomSnapPoints.try_as<winrt::IObservableVector<winrt::ZoomSnapPointBase>>();
+            m_zoomSnapPointsVectorChangedRevoker = zoomSnapPointsObservableVector.VectorChanged(
+                winrt::auto_revoke,
+                { this, &Scroller::OnZoomSnapPointsVectorChanged });
         }
     }
     return m_zoomSnapPoints;
 }
 
-// Allows to change the HorizontalOffset/VerticalOffset properties in an asynchronous manner, either through an animation or jump.
-// Returns a unique integer representing the asynchronous operation and exposed in the ViewChangeCompleted event.
-// An InteractionTrackerAsyncOperation instance gets stored in a std::list<std::shared_ptr<InteractionTrackerAsyncOperation>>, m_interactionTrackerAsyncOperations,
-// during the lifetime of the async action.
-int32_t Scroller::ChangeOffsets(
-    winrt::ScrollerChangeOffsetsOptions const& options)
+winrt::ScrollInfo Scroller::ScrollTo(double horizontalOffset, double verticalOffset)
 {
-    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::ScrollerChangeOffsetsOptionsToString(options).c_str());
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalOffset, verticalOffset);
+
+    return ScrollTo(horizontalOffset, verticalOffset, nullptr /*options*/);
+}
+
+winrt::ScrollInfo Scroller::ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
+        horizontalOffset, verticalOffset, TypeLogging::ScrollOptionsToString(options).c_str());
 
     if (SharedHelpers::IsTH2OrLower())
     {
@@ -441,17 +453,51 @@ int32_t Scroller::ChangeOffsets(
 
     int32_t viewChangeId;
     ChangeOffsetsPrivate(
-        InteractionTrackerAsyncOperationTrigger::DirectViewChange,
+        horizontalOffset /*zoomedHorizontalOffset*/,
+        verticalOffset /*zoomedVerticalOffset*/,
+        ScrollerViewKind::Absolute,
         options,
+        InteractionTrackerAsyncOperationTrigger::DirectViewChange,
         -1 /*existingViewChangeId*/,
         &viewChangeId);
-    return viewChangeId;
+
+    return winrt::ScrollInfo{ viewChangeId };
 }
 
-int32_t Scroller::ChangeOffsetsWithAdditionalVelocity(
-    winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions const& options)
+winrt::ScrollInfo Scroller::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta)
 {
-    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::ScrollerChangeOffsetsWithAdditionalVelocityOptionsToString(options).c_str());
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalOffsetDelta, verticalOffsetDelta);
+
+    return ScrollBy(horizontalOffsetDelta, verticalOffsetDelta, nullptr /*options*/);
+}
+
+winrt::ScrollInfo Scroller::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollOptions const& options)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
+        horizontalOffsetDelta, verticalOffsetDelta, TypeLogging::ScrollOptionsToString(options).c_str());
+
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        throw winrt::hresult_error(E_NOTIMPL);
+    }
+
+    int32_t viewChangeId;
+    ChangeOffsetsPrivate(
+        horizontalOffsetDelta /*zoomedHorizontalOffset*/,
+        verticalOffsetDelta /*zoomedVerticalOffset*/,
+        ScrollerViewKind::RelativeToCurrentView,
+        options,
+        InteractionTrackerAsyncOperationTrigger::DirectViewChange,
+        -1 /*existingViewChangeId*/,
+        &viewChangeId);
+
+    return winrt::ScrollInfo{ viewChangeId };
+}
+
+winrt::ScrollInfo Scroller::ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
+        TypeLogging::Float2ToString(offsetsVelocity).c_str(), TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
 
     if (SharedHelpers::IsTH2OrLower())
     {
@@ -460,21 +506,29 @@ int32_t Scroller::ChangeOffsetsWithAdditionalVelocity(
 
     int32_t viewChangeId;
     ChangeOffsetsWithAdditionalVelocityPrivate(
+        offsetsVelocity,
+        winrt::float2::zero() /*anticipatedOffsetsChange*/,
+        inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger::DirectViewChange,
-        options,
         &viewChangeId);
-    return viewChangeId;
+
+    return winrt::ScrollInfo{ viewChangeId };
 }
 
-// Allows to change the ZoomFactor properties in an asynchronous manner, either through an animation or jump. The HorizontalOffset/VerticalOffset
-// properties can be affected too by the zoomFactor change.
-// Returns a unique integer representing the asynchronous operation and exposed in the ViewChangeCompleted event.
-// An InteractionTrackerAsyncOperation instance gets stored in a std::list<std::shared_ptr<InteractionTrackerAsyncOperation>>, m_interactionTrackerAsyncOperations,
-// during the lifetime of the async action.
-int32_t Scroller::ChangeZoomFactor(
-    winrt::ScrollerChangeZoomFactorOptions const& options)
+winrt::ZoomInfo Scroller::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint)
 {
-    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::ScrollerChangeZoomFactorOptionsToString(options).c_str());
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(), zoomFactor);
+
+    return ZoomTo(zoomFactor, centerPoint, nullptr /*options*/);
+}
+
+winrt::ZoomInfo Scroller::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        TypeLogging::ZoomOptionsToString(options).c_str(),
+        zoomFactor);
 
     if (SharedHelpers::IsTH2OrLower())
     {
@@ -482,14 +536,54 @@ int32_t Scroller::ChangeZoomFactor(
     }
 
     int32_t viewChangeId;
-    ChangeZoomFactorPrivate(options, &viewChangeId);
-    return viewChangeId;
+    ChangeZoomFactorPrivate(
+        zoomFactor,
+        centerPoint,
+        ScrollerViewKind::Absolute,
+        options,
+        &viewChangeId);
+
+    return winrt::ZoomInfo{ viewChangeId };
 }
 
-int32_t Scroller::ChangeZoomFactorWithAdditionalVelocity(
-    winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions const& options)
+winrt::ZoomInfo Scroller::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint)
 {
-    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::ScrollerChangeZoomFactorWithAdditionalVelocityOptionsToString(options).c_str());
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        zoomFactorDelta);
+
+    return ZoomBy(zoomFactorDelta, centerPoint, nullptr /*options*/);
+}
+
+winrt::ZoomInfo Scroller::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        TypeLogging::ZoomOptionsToString(options).c_str(),
+        zoomFactorDelta);
+
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        throw winrt::hresult_error(E_NOTIMPL);
+    }
+
+    int32_t viewChangeId;
+    ChangeZoomFactorPrivate(
+        zoomFactorDelta,
+        centerPoint,
+        ScrollerViewKind::RelativeToCurrentView,
+        options,
+        &viewChangeId);
+
+    return winrt::ZoomInfo{ viewChangeId };
+}
+
+winrt::ZoomInfo Scroller::ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate)
+{
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        TypeLogging::NullableFloatToString(inertiaDecayRate).c_str(),
+        zoomFactorVelocity);
 
     if (SharedHelpers::IsTH2OrLower())
     {
@@ -498,11 +592,14 @@ int32_t Scroller::ChangeZoomFactorWithAdditionalVelocity(
 
     int32_t viewChangeId;
     ChangeZoomFactorWithAdditionalVelocityPrivate(
+        zoomFactorVelocity,
+        0.0f /*anticipatedZoomFactorChange*/,
+        centerPoint,
+        inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger::DirectViewChange,
-        options,
         &viewChangeId);
 
-    return viewChangeId;
+    return winrt::ZoomInfo{ viewChangeId };
 }
 
 #pragma endregion
@@ -567,11 +664,20 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
 
     const winrt::UIElement content = Content();
     winrt::Rect finalContentRect{};
+
+    // Possible cases:
+    // 1. m_availableSize is infinite, the Scroller is not constrained and takes its Content DesiredSize.
+    //    viewport thus is finalSize.
+    // 2. m_availableSize > finalSize, the Scroller is constrained and its Content is smaller than the available size.
+    //    No matter the Scroller's alignment, it does not grow larger than finalSize. viewport is finalSize again.
+    // 3. m_availableSize <= finalSize, the Scroller is constrained and its Content is larger than or equal to
+    //    the available size. viewport is the smaller & constrained m_availableSize.
     winrt::Size viewport =
     {
-        isinf(m_availableSize.Width) ? finalSize.Width : m_availableSize.Width,
-        isinf(m_availableSize.Height) ? finalSize.Height : m_availableSize.Height,
+        std::min(finalSize.Width, m_availableSize.Width),
+        std::min(finalSize.Height, m_availableSize.Height)
     };
+
     double newUnzoomedExtentWidth = 0.0;
     double newUnzoomedExtentHeight = 0.0;
 
@@ -720,9 +826,10 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         {
             float unzoomedDelta = 0.0f;
 
-            if (newUnzoomedExtentWidth > m_unzoomedExtentWidth)
+            if (newUnzoomedExtentWidth > m_unzoomedExtentWidth ||                                  // ExtentWidth grew
+                m_zoomedHorizontalOffset + m_viewportWidth > m_zoomFactor * m_unzoomedExtentWidth) // ExtentWidth shrank while overpanning
             {
-                // ExtentWidth grew: Perform horizontal offset adjustment due to edge anchoring
+                // Perform horizontal offset adjustment due to edge anchoring
                 unzoomedDelta = static_cast<float>(newUnzoomedExtentWidth - m_unzoomedExtentWidth);
             }
 
@@ -743,9 +850,10 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         {
             float unzoomedDelta = 0.0f;
 
-            if (newUnzoomedExtentHeight > m_unzoomedExtentHeight)
+            if (newUnzoomedExtentHeight > m_unzoomedExtentHeight ||                                // ExtentHeight grew
+                m_zoomedVerticalOffset + m_viewportHeight > m_zoomFactor * m_unzoomedExtentHeight) // ExtentHeight shrank while overpanning
             {
-                // ExtentHeight grew: Perform vertical offset adjustment due to edge anchoring
+                // Perform vertical offset adjustment due to edge anchoring
                 unzoomedDelta = static_cast<float>(newUnzoomedExtentHeight - m_unzoomedExtentHeight);
             }
 
@@ -854,32 +962,96 @@ void Scroller::IdleStateEntered(
     {
         int32_t requestId = args.RequestId();
 
-        // Complete all operations recorded through ChangeOffsets and ChangeZoomFactor calls.
+        // Complete all operations recorded through ChangeOffsetsPrivate/ChangeOffsetsWithAdditionalVelocityPrivate
+        // and ChangeZoomFactorPrivate/ChangeZoomFactorWithAdditionalVelocityPrivate calls.
         if (requestId != 0)
         {
             CompleteInteractionTrackerOperations(
                 requestId,
-                winrt::ScrollerViewChangeResult::Completed   /*operationResult*/,
-                winrt::ScrollerViewChangeResult::Completed   /*priorNonAnimatedOperationsResult*/,
-                winrt::ScrollerViewChangeResult::Interrupted /*priorAnimatedOperationsResult*/,
-                true  /*completeOperation*/,
+                ScrollerViewChangeResult::Completed   /*operationResult*/,
+                ScrollerViewChangeResult::Completed   /*priorNonAnimatedOperationsResult*/,
+                ScrollerViewChangeResult::Interrupted /*priorAnimatedOperationsResult*/,
+                true  /*completeNonAnimatedOperation*/,
+                true  /*completeAnimatedOperation*/,
                 true  /*completePriorNonAnimatedOperations*/,
                 true  /*completePriorAnimatedOperations*/);
         }
+    }
+
+    // Check if resting position corresponds to a non-unique mandatory snap point, for the three dimensions
+    UpdateSnapPointsIgnoredValue(&m_sortedConsolidatedHorizontalSnapPoints, ScrollerDimension::HorizontalScroll);
+    UpdateSnapPointsIgnoredValue(&m_sortedConsolidatedVerticalSnapPoints, ScrollerDimension::VerticalScroll);
+    UpdateSnapPointsIgnoredValue(&m_sortedConsolidatedZoomSnapPoints, ScrollerDimension::ZoomFactor);
+
+    // Stop Scale animation if needed, to trigger rasterization of Content & avoid fuzzy text rendering for instance.
+    StopZoomFactorExpressionAnimation();
+}
+
+// On pre-RS5 releases, updates the SnapPointBase::s_isInertiaFromImpulse boolean parameters of the snap points' composition expressions.
+void Scroller::UpdateIsInertiaFromImpulse(
+    bool isInertiaFromImpulse)
+{
+    if (!SharedHelpers::IsRS5OrHigher() && m_isInertiaFromImpulse != isInertiaFromImpulse)
+    {
+        m_isInertiaFromImpulse = isInertiaFromImpulse;
+
+        UpdateSnapPointsInertiaFromImpulse(&m_sortedConsolidatedHorizontalSnapPoints, ScrollerDimension::HorizontalScroll, isInertiaFromImpulse);
+        UpdateSnapPointsInertiaFromImpulse(&m_sortedConsolidatedVerticalSnapPoints, ScrollerDimension::VerticalScroll, isInertiaFromImpulse);
+        UpdateSnapPointsInertiaFromImpulse(&m_sortedConsolidatedZoomSnapPoints, ScrollerDimension::ZoomFactor, isInertiaFromImpulse);
     }
 }
 
 void Scroller::InertiaStateEntered(
     const winrt::InteractionTrackerInertiaStateEnteredArgs& args)
 {
-    // Record the end-of-inertia view for this inertial phase. It may be needed for
-    // ChangeOffsets and ChangeZoomFactor calls with RelativeToEndOfInertiaView.
-
+    winrt::IReference<winrt::float3> modifiedRestingPosition = args.ModifiedRestingPosition();
     winrt::float3 naturalRestingPosition = args.NaturalRestingPosition();
+    winrt::IReference<float> modifiedRestingScale = args.ModifiedRestingScale();
     float naturalRestingScale = args.NaturalRestingScale();
+    bool isTracingEnabled = IsScrollerTracingEnabled() || ScrollerTrace::s_IsDebugOutputEnabled || ScrollerTrace::s_IsVerboseDebugOutputEnabled;
+    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationFromRequestId(args.RequestId());
 
-    winrt::IReference<winrt::float3> modifiedRestingPosition = args.NaturalRestingPosition();
-    winrt::IReference<float> modifiedRestingScale = args.NaturalRestingScale();
+    if (isTracingEnabled)
+    {
+        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_PTR_INT, METH_NAME, this, interactionTrackerAsyncOperation.get(), args.RequestId());
+
+        winrt::float3 positionVelocity = args.PositionVelocityInPixelsPerSecond();
+        float scaleVelocity = args.ScaleVelocityInPercentPerSecond();
+
+        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+            TypeLogging::Float2ToString(winrt::float2{ positionVelocity.x, positionVelocity.y }).c_str(),
+            scaleVelocity);
+
+        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+            TypeLogging::Float2ToString(winrt::float2{ naturalRestingPosition.x, naturalRestingPosition.y }).c_str(),
+            naturalRestingScale);
+
+        if (modifiedRestingPosition)
+        {
+            winrt::float3 endOfInertiaPosition = modifiedRestingPosition.Value();
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this,
+                TypeLogging::Float2ToString(winrt::float2{ endOfInertiaPosition.x, endOfInertiaPosition.y }).c_str());
+        }
+
+        if (modifiedRestingScale)
+        {
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_FLT, METH_NAME, this,
+                modifiedRestingScale.Value());
+        }
+
+        if (SharedHelpers::IsRS5OrHigher())
+        {
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, args.IsInertiaFromImpulse());
+        }
+
+        if (SharedHelpers::Is19H1OrHigher())
+        {
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, args.IsFromBinding());
+        }
+    }
+
+    // Record the end-of-inertia view for this inertial phase. It may be needed for
+    // custom pointer wheel processing.
 
     if (modifiedRestingPosition)
     {
@@ -900,10 +1072,27 @@ void Scroller::InertiaStateEntered(
         m_endOfInertiaZoomFactor = naturalRestingScale;
     }
 
-    SCROLLER_TRACE_INFO(*this, L"%s[0x%p](%d, %s, %f)\n", METH_NAME, this,
-        args.RequestId(),
-        TypeLogging::Float2ToString(m_endOfInertiaPosition).c_str(),
-        m_endOfInertiaZoomFactor);
+    if (isTracingEnabled)
+    {
+        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+            TypeLogging::Float2ToString(m_endOfInertiaPosition).c_str(),
+            m_endOfInertiaZoomFactor);
+    }
+
+    if (interactionTrackerAsyncOperation)
+    {
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+
+        if (viewChangeBase && interactionTrackerAsyncOperation->GetOperationType() == InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity)
+        {
+            std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<OffsetsChangeWithAdditionalVelocity>(viewChangeBase);
+
+            if (offsetsChangeWithAdditionalVelocity)
+            {
+                offsetsChangeWithAdditionalVelocity->AnticipatedOffsetsChange(winrt::float2::zero());
+            }
+        }
+    }
 
     UpdateState(winrt::InteractionState::Inertia);
 }
@@ -913,17 +1102,22 @@ void Scroller::InteractingStateEntered(
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, args.RequestId());
 
+    // On pre-RS5 versions, turn off the SnapPointBase::s_isInertiaFromImpulse boolean parameters on the snap points' composition expressions.
+    UpdateIsInertiaFromImpulse(false /*isInertiaFromImpulse*/);
+
     UpdateState(winrt::InteractionState::Interaction);
 
     if (!m_interactionTrackerAsyncOperations.empty())
     {
-        // Complete all operations recorded through ChangeOffsets and ChangeZoomFactor calls.
+        // Complete all operations recorded through ChangeOffsetsPrivate/ChangeOffsetsWithAdditionalVelocityPrivate
+        // and ChangeZoomFactorPrivate/ChangeZoomFactorWithAdditionalVelocityPrivate calls.
         CompleteInteractionTrackerOperations(
             -1 /*requestId*/,
-            winrt::ScrollerViewChangeResult::Interrupted /*operationResult*/,
-            winrt::ScrollerViewChangeResult::Completed   /*priorNonAnimatedOperationsResult*/,
-            winrt::ScrollerViewChangeResult::Interrupted /*priorAnimatedOperationsResult*/,
-            true  /*completeOperation*/,
+            ScrollerViewChangeResult::Interrupted /*operationResult*/,
+            ScrollerViewChangeResult::Completed   /*priorNonAnimatedOperationsResult*/,
+            ScrollerViewChangeResult::Interrupted /*priorAnimatedOperationsResult*/,
+            true  /*completeNonAnimatedOperation*/,
+            true  /*completeAnimatedOperation*/,
             true  /*completePriorNonAnimatedOperations*/,
             true  /*completePriorAnimatedOperations*/);
     }
@@ -939,10 +1133,11 @@ void Scroller::RequestIgnored(
         // Complete this request alone.
         CompleteInteractionTrackerOperations(
             args.RequestId(),
-            winrt::ScrollerViewChangeResult::Ignored /*operationResult*/,
-            winrt::ScrollerViewChangeResult::Ignored /*unused priorNonAnimatedOperationsResult*/,
-            winrt::ScrollerViewChangeResult::Ignored /*unused priorAnimatedOperationsResult*/,
-            true  /*completeOperation*/,
+            ScrollerViewChangeResult::Ignored /*operationResult*/,
+            ScrollerViewChangeResult::Ignored /*unused priorNonAnimatedOperationsResult*/,
+            ScrollerViewChangeResult::Ignored /*unused priorAnimatedOperationsResult*/,
+            true  /*completeNonAnimatedOperation*/,
+            true  /*completeAnimatedOperation*/,
             false /*completePriorNonAnimatedOperations*/,
             false /*completePriorAnimatedOperations*/);
     }
@@ -985,10 +1180,11 @@ void Scroller::ValuesChanged(
     {
         CompleteInteractionTrackerOperations(
             requestId,
-            winrt::ScrollerViewChangeResult::Ignored     /*unused operationResult*/,
-            winrt::ScrollerViewChangeResult::Completed   /*priorNonAnimatedOperationsResult*/,
-            winrt::ScrollerViewChangeResult::Interrupted /*priorAnimatedOperationsResult*/,
-            false /*completeOperation*/,
+            ScrollerViewChangeResult::Completed   /*operationResult*/,
+            ScrollerViewChangeResult::Completed   /*priorNonAnimatedOperationsResult*/,
+            ScrollerViewChangeResult::Interrupted /*priorAnimatedOperationsResult*/,
+            true  /*completeNonAnimatedOperation*/,
+            false /*completeAnimatedOperation*/,
             true  /*completePriorNonAnimatedOperations*/,
             true  /*completePriorAnimatedOperations*/);
     }
@@ -1032,12 +1228,7 @@ float Scroller::ComputeEndOfInertiaZoomFactor() const
 {
     if (m_state == winrt::InteractionState::Inertia)
     {
-        float endOfInertiaZoomFactor = m_endOfInertiaZoomFactor;
-
-        endOfInertiaZoomFactor = std::max(endOfInertiaZoomFactor, m_interactionTracker.MinScale());
-        endOfInertiaZoomFactor = std::min(endOfInertiaZoomFactor, m_interactionTracker.MaxScale());
-
-        return endOfInertiaZoomFactor;
+        return std::clamp(m_endOfInertiaZoomFactor, m_interactionTracker.MinScale(), m_interactionTracker.MaxScale());
     }
     else
     {
@@ -1180,14 +1371,14 @@ void Scroller::ComputeMinMaxPositions(float zoomFactor, _Out_opt_ winrt::float2*
 
         if (minPosition)
         {
-            // When the zoomed content is smaller than the viewport, scrollableHeight < 0, minPosY is scrollableHeight so it is right-aligned at idle.
+            // When the zoomed content is smaller than the viewport, scrollableHeight < 0, minPosY is scrollableHeight so it is bottom-aligned at idle.
             // When the zoomed content is larger than the viewport, scrollableHeight > 0, minPosY is 0.
             minPosY = std::min(0.0f, scrollableHeight);
         }
 
         if (maxPosition)
         {
-            // When the zoomed content is smaller than the viewport, scrollableHeight < 0, maxPosY is -scrollableHeight so it is right-aligned at idle.
+            // When the zoomed content is smaller than the viewport, scrollableHeight < 0, maxPosY is -scrollableHeight so it is bottom-aligned at idle.
             // When the zoomed content is larger than the viewport, scrollableHeight > 0, maxPosY is scrollableHeight.
             maxPosY = scrollableHeight;
             if (maxPosY < 0.0f)
@@ -1219,15 +1410,17 @@ winrt::float2 Scroller::ComputePositionFromOffsets(double zoomedHorizontalOffset
 }
 
 // Evaluate what the value will be once the snap points have been applied.
-double Scroller::ComputeValueAfterSnapPoints(double value, const std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator>& snapPoints)
+template <typename T>
+double Scroller::ComputeValueAfterSnapPoints(
+    double value,
+    std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>> const& snapPointsSet)
 {
-    for (winrt::ScrollerSnapPointBase winrtSnapPoint : snapPoints)
+    for (std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper : snapPointsSet)
     {
-        auto snapPoint = winrt::get_self<ScrollerSnapPointBase>(winrtSnapPoint);
-        if (std::get<0>(snapPoint->ActualApplicableZone()) <= value &&
-            std::get<1>(snapPoint->ActualApplicableZone()) >= value)
+        if (std::get<0>(snapPointWrapper->ActualApplicableZone()) <= value &&
+            std::get<1>(snapPointWrapper->ActualApplicableZone()) >= value)
         {
-            return ((double)snapPoint->Evaluate((float)value));
+            return snapPointWrapper->Evaluate(static_cast<float>(value));
         }
     }
     return value;
@@ -1236,7 +1429,7 @@ double Scroller::ComputeValueAfterSnapPoints(double value, const std::set<winrt:
 // Returns the zooming center point for mouse-wheel-triggered zooming
 winrt::float2 Scroller::ComputeCenterPointerForMouseWheelZooming(const winrt::UIElement& content, const winrt::Point& pointerPosition) const
 {
-    MUX_ASSERT(!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
+    MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
 
     float centerPointX = pointerPosition.X;
     float centerPointY = pointerPosition.Y;
@@ -1301,12 +1494,13 @@ winrt::float2 Scroller::ComputeCenterPointerForMouseWheelZooming(const winrt::UI
 
 void Scroller::ComputeBringIntoViewTargetOffsets(
     const winrt::UIElement& content,
+    const winrt::SnapPointsMode& snapPointsMode,
     const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
     _Out_ double* targetZoomedHorizontalOffset,
     _Out_ double* targetZoomedVerticalOffset,
     _Out_ double* appliedOffsetX,
     _Out_ double* appliedOffsetY,
-    _Out_ winrt::Rect* targetRect) const
+    _Out_ winrt::Rect* targetRect)
 {
     *targetZoomedHorizontalOffset = 0.0;
     *targetZoomedVerticalOffset = 0.0;
@@ -1357,13 +1551,11 @@ void Scroller::ComputeBringIntoViewTargetOffsets(
         targetY * m_zoomFactor,
         (targetY + targetHeight) * m_zoomFactor);
 
-    const double scrollableWidth = std::max(0.0, m_unzoomedExtentWidth * m_zoomFactor - m_viewportWidth);
-    const double scrollableHeight = std::max(0.0, m_unzoomedExtentHeight * m_zoomFactor - m_viewportHeight);
+    const double scrollableWidth = ScrollableWidth();
+    const double scrollableHeight = ScrollableHeight();
 
-    targetZoomedHorizontalOffsetTmp = std::max(0.0, targetZoomedHorizontalOffsetTmp);
-    targetZoomedVerticalOffsetTmp = std::max(0.0, targetZoomedVerticalOffsetTmp);
-    targetZoomedHorizontalOffsetTmp = std::min(scrollableWidth, targetZoomedHorizontalOffsetTmp);
-    targetZoomedVerticalOffsetTmp = std::min(scrollableHeight, targetZoomedVerticalOffsetTmp);
+    targetZoomedHorizontalOffsetTmp = std::clamp(targetZoomedHorizontalOffsetTmp, 0.0, scrollableWidth);
+    targetZoomedVerticalOffsetTmp = std::clamp(targetZoomedVerticalOffsetTmp, 0.0, scrollableHeight);
 
     const double offsetX = requestEventArgs.HorizontalOffset();
     const double offsetY = requestEventArgs.VerticalOffset();
@@ -1407,6 +1599,24 @@ void Scroller::ComputeBringIntoViewTargetOffsets(
     MUX_ASSERT(targetZoomedVerticalOffsetTmp >= 0.0);
     MUX_ASSERT(targetZoomedHorizontalOffsetTmp <= scrollableWidth);
     MUX_ASSERT(targetZoomedVerticalOffsetTmp <= scrollableHeight);
+
+    if (snapPointsMode == winrt::SnapPointsMode::Default)
+    {
+        // Finally adjust the target offsets based on snap points
+        targetZoomedHorizontalOffsetTmp = ComputeValueAfterSnapPoints<winrt::ScrollSnapPointBase>(
+            targetZoomedHorizontalOffsetTmp, m_sortedConsolidatedHorizontalSnapPoints);
+        targetZoomedVerticalOffsetTmp = ComputeValueAfterSnapPoints<winrt::ScrollSnapPointBase>(
+            targetZoomedVerticalOffsetTmp, m_sortedConsolidatedVerticalSnapPoints);
+
+        // Make sure the target offsets are within the scrollable boundaries
+        targetZoomedHorizontalOffsetTmp = std::clamp(targetZoomedHorizontalOffsetTmp, 0.0, scrollableWidth);
+        targetZoomedVerticalOffsetTmp = std::clamp(targetZoomedVerticalOffsetTmp, 0.0, scrollableHeight);
+
+        MUX_ASSERT(targetZoomedHorizontalOffsetTmp >= 0.0);
+        MUX_ASSERT(targetZoomedVerticalOffsetTmp >= 0.0);
+        MUX_ASSERT(targetZoomedHorizontalOffsetTmp <= scrollableWidth);
+        MUX_ASSERT(targetZoomedVerticalOffsetTmp <= scrollableHeight);
+    }
 
     *targetZoomedHorizontalOffset = targetZoomedHorizontalOffsetTmp;
     *targetZoomedVerticalOffset = targetZoomedVerticalOffsetTmp;
@@ -1648,15 +1858,45 @@ void Scroller::EnsureTransformExpressionAnimations()
     }
 }
 
-void Scroller::SetupSnapPoints(std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator>* snapPoints, ScrollerDimension dimension)
+template <typename T>
+void Scroller::SetupSnapPoints(
+    std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
+    ScrollerDimension dimension)
 {
     MUX_ASSERT(!SharedHelpers::IsTH2OrLower());
+    MUX_ASSERT(snapPointsSet);
 
-    FixSnapPointRanges(snapPoints);
     if (!m_interactionTracker)
     {
         EnsureInteractionTracker();
     }
+
+    if (m_state == winrt::InteractionState::Idle)
+    {
+        const double ignoredValue = [this, dimension]()
+        {
+            switch (dimension)
+            {
+            case ScrollerDimension::VerticalScroll:
+                return m_zoomedVerticalOffset / m_zoomFactor;
+            case ScrollerDimension::HorizontalScroll:
+                return m_zoomedHorizontalOffset / m_zoomFactor;
+            case ScrollerDimension::ZoomFactor:
+                return static_cast<double>(m_zoomFactor);
+            default:
+                MUX_ASSERT(false);
+                return 0.0;
+            }
+        }();
+
+        // When snap points are changed while in the Idle State, update
+        // ignored snapping values for any potential start of an impulse inertia.
+        UpdateSnapPointsIgnoredValue(snapPointsSet, ignoredValue);
+    }
+
+    // Update the regular and impulse actual applicable ranges.
+    UpdateSnapPointsRanges(snapPointsSet, false /*forImpulseOnly*/);
+
     winrt::Compositor compositor = m_interactionTracker.Compositor();
     winrt::IVector<winrt::InteractionTrackerInertiaModifier> modifiers = winrt::make<Vector<winrt::InteractionTrackerInertiaModifier>>();
 
@@ -1665,30 +1905,30 @@ void Scroller::SetupSnapPoints(std::set<winrt::ScrollerSnapPointBase, winrtProje
 
     switch (dimension)
     {
-        case ScrollerDimension::HorizontalZoomFactor:
-        case ScrollerDimension::VerticalZoomFactor:
-        case ScrollerDimension::Scroll:
-            //these ScrollerDimensions are not expected
-            assert(false);
-            break;
-        case ScrollerDimension::HorizontalScroll:
-            target = L"NaturalRestingPosition.x";
-            scale = L"this.Target.Scale";
-            break;
-        case ScrollerDimension::VerticalScroll:
-            target = L"NaturalRestingPosition.y";
-            scale = L"this.Target.Scale";
-            break;
-        case ScrollerDimension::ZoomFactor:
-            target = L"Scale";
-            scale = L"1.0";
-            break;
-        default:
-            assert(false);
+    case ScrollerDimension::HorizontalZoomFactor:
+    case ScrollerDimension::VerticalZoomFactor:
+    case ScrollerDimension::Scroll:
+        //these ScrollerDimensions are not expected
+        MUX_ASSERT(false);
+        break;
+    case ScrollerDimension::HorizontalScroll:
+        target = s_naturalRestingPositionXPropertyName;
+        scale = s_targetScalePropertyName;
+        break;
+    case ScrollerDimension::VerticalScroll:
+        target = s_naturalRestingPositionYPropertyName;
+        scale = s_targetScalePropertyName;
+        break;
+    case ScrollerDimension::ZoomFactor:
+        target = s_naturalRestingScalePropertyName;
+        scale = L"1.0";
+        break;
+    default:
+        MUX_ASSERT(false);
     }
 
-    //For older versions of windows the interaction tracker cannot accept empty collections of inertia modifiers
-    if (snapPoints->size() == 0)
+    // For older versions of windows the interaction tracker cannot accept empty collections of inertia modifiers
+    if (snapPointsSet->size() == 0)
     {
         winrt::InteractionTrackerInertiaRestingValue modifier = winrt::InteractionTrackerInertiaRestingValue::Create(compositor);
         winrt::ExpressionAnimation conditionExpressionAnimation = compositor.CreateExpressionAnimation(L"false");
@@ -1701,16 +1941,13 @@ void Scroller::SetupSnapPoints(std::set<winrt::ScrollerSnapPointBase, winrtProje
     }
     else
     {
-        for (winrt::ScrollerSnapPointBase snapPoint : *snapPoints)
+        for (auto snapPointWrapper : *snapPointsSet)
         {
-            ScrollerSnapPointBase* sp = winrt::get_self<ScrollerSnapPointBase>(snapPoint);
-            winrt::InteractionTrackerInertiaRestingValue modifier = winrt::InteractionTrackerInertiaRestingValue::Create(compositor);
-
-            winrt::ExpressionAnimation conditionExpressionAnimation = sp->CreateConditionalExpression(compositor, target, scale);
-            winrt::ExpressionAnimation restingPointExpressionAnimation = sp->CreateRestingPointExpression(compositor, target, scale);
-
-            modifier.Condition(conditionExpressionAnimation);
-            modifier.RestingValue(restingPointExpressionAnimation);
+            winrt::InteractionTrackerInertiaRestingValue modifier = GetInertiaRestingValue(
+                snapPointWrapper,
+                compositor,
+                target,
+                scale);
 
             modifiers.Append(modifier);
         }
@@ -1718,50 +1955,207 @@ void Scroller::SetupSnapPoints(std::set<winrt::ScrollerSnapPointBase, winrtProje
 
     switch (dimension)
     {
-        case ScrollerDimension::HorizontalZoomFactor:
-        case ScrollerDimension::VerticalZoomFactor:
-        case ScrollerDimension::Scroll:
-            //these ScrollerDimensions are not expected
-            assert(false);
+    case ScrollerDimension::HorizontalZoomFactor:
+    case ScrollerDimension::VerticalZoomFactor:
+    case ScrollerDimension::Scroll:
+        //these ScrollerDimensions are not expected
+        MUX_ASSERT(false);
+        break;
+    case ScrollerDimension::HorizontalScroll:
+        m_interactionTracker.ConfigurePositionXInertiaModifiers(modifiers);
+        break;
+    case ScrollerDimension::VerticalScroll:
+        m_interactionTracker.ConfigurePositionYInertiaModifiers(modifiers);
+        break;
+    case ScrollerDimension::ZoomFactor:
+        m_interactionTracker.ConfigureScaleInertiaModifiers(modifiers);
+        break;
+    default:
+        MUX_ASSERT(false);
+    }
+}
+
+//Snap points which have ApplicableRangeType = Optional are optional snap points, and their ActualApplicableRange should never be expanded beyond their ApplicableRange
+//and will only shrink to accommodate other snap points which are positioned such that the midpoint between them is within the specified ApplicableRange.
+//Snap points which have ApplicableRangeType = Mandatory are mandatory snap points and their ActualApplicableRange will expand or shrink to ensure that there is no
+//space between it and its neighbors. If the neighbors are also mandatory, this point will be the midpoint between them. If the neighbors are optional then this
+//point will fall on the midpoint or on the Optional neighbor's edge of ApplicableRange, whichever is furthest. 
+template <typename T>
+void Scroller::UpdateSnapPointsRanges(
+    std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
+    bool forImpulseOnly)
+{
+    MUX_ASSERT(snapPointsSet);
+
+    std::shared_ptr<SnapPointWrapper<T>> currentSnapPointWrapper = nullptr;
+    std::shared_ptr<SnapPointWrapper<T>> previousSnapPointWrapper = nullptr;
+    std::shared_ptr<SnapPointWrapper<T>> nextSnapPointWrapper = nullptr;
+
+    for (auto snapPointWrapper : *snapPointsSet)
+    {
+        previousSnapPointWrapper = currentSnapPointWrapper;
+        currentSnapPointWrapper = nextSnapPointWrapper;
+        nextSnapPointWrapper = snapPointWrapper;
+
+        if (currentSnapPointWrapper)
+        {
+            currentSnapPointWrapper->DetermineActualApplicableZone(
+                previousSnapPointWrapper ? previousSnapPointWrapper.get() : nullptr,
+                nextSnapPointWrapper ? nextSnapPointWrapper.get() : nullptr,
+                forImpulseOnly);
+        }
+    }
+
+    if (nextSnapPointWrapper)
+    {
+        nextSnapPointWrapper->DetermineActualApplicableZone(
+            currentSnapPointWrapper ? currentSnapPointWrapper.get() : nullptr,
+            nullptr,
+            forImpulseOnly);
+    }
+}
+
+template <typename T>
+void Scroller::UpdateSnapPointsIgnoredValue(
+    std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
+    ScrollerDimension dimension)
+{
+    const double newIgnoredValue = [this, dimension]()
+    {
+        switch (dimension)
+        {
+        case ScrollerDimension::VerticalScroll:
+            return m_zoomedVerticalOffset / m_zoomFactor;
+        case ScrollerDimension::HorizontalScroll:
+            return m_zoomedHorizontalOffset / m_zoomFactor;
+        case ScrollerDimension::ZoomFactor:
+            return static_cast<double>(m_zoomFactor);
+        default:
+            MUX_ASSERT(false);
+            return 0.0;
+        }
+    }();
+
+    if (UpdateSnapPointsIgnoredValue(snapPointsSet, newIgnoredValue))
+    {
+        // The ignored snap point value has changed.
+        UpdateSnapPointsRanges(snapPointsSet, true /*forImpulseOnly*/);
+
+        winrt::Compositor compositor = m_interactionTracker.Compositor();
+        winrt::IVector<winrt::InteractionTrackerInertiaModifier> modifiers = winrt::make<Vector<winrt::InteractionTrackerInertiaModifier>>();
+
+        for (auto snapPointWrapper : *snapPointsSet)
+        {
+            auto modifier = winrt::InteractionTrackerInertiaRestingValue::Create(compositor);
+            auto const [conditionExpressionAnimation, restingValueExpressionAnimation] = snapPointWrapper->GetUpdatedExpressionAnimationsForImpulse();
+
+            modifier.Condition(conditionExpressionAnimation);
+            modifier.RestingValue(restingValueExpressionAnimation);
+
+            modifiers.Append(modifier);
+        }
+
+        switch (dimension)
+        {
+        case ScrollerDimension::VerticalScroll:
+            m_interactionTracker.ConfigurePositionYInertiaModifiers(modifiers);
             break;
         case ScrollerDimension::HorizontalScroll:
             m_interactionTracker.ConfigurePositionXInertiaModifiers(modifiers);
             break;
+        case ScrollerDimension::ZoomFactor:
+            m_interactionTracker.ConfigureScaleInertiaModifiers(modifiers);
+            break;
+        }
+    }
+}
+
+// Updates the ignored snapping value of the provided snap points set when inertia is caused by an impulse.
+// Returns True when an old ignored value was reset or a new ignored value was set.
+template <typename T>
+bool Scroller::UpdateSnapPointsIgnoredValue(
+    std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
+    double newIgnoredValue)
+{
+    bool ignoredValueUpdated = false;
+
+    for (auto snapPointWrapper : *snapPointsSet)
+    {
+        if (snapPointWrapper->ResetIgnoredValue())
+        {
+            ignoredValueUpdated = true;
+            break;
+        }
+    }
+
+    int snapCount = 0;
+
+    for (auto snapPointWrapper : *snapPointsSet)
+    {
+        SnapPointBase* snapPoint = SnapPointWrapper<T>::GetSnapPointFromWrapper(snapPointWrapper);
+
+        snapCount += snapPoint->SnapCount();
+
+        if (snapCount > 1)
+        {
+            break;
+        }
+    }
+
+    if (snapCount > 1)
+    {
+        for (auto snapPointWrapper : *snapPointsSet)
+        {
+            if (snapPointWrapper->SnapsAt(newIgnoredValue))
+            {
+                snapPointWrapper->SetIgnoredValue(newIgnoredValue);
+                ignoredValueUpdated = true;
+                break;
+            }
+        }
+    }
+
+    return ignoredValueUpdated;
+}
+
+template <typename T>
+void Scroller::UpdateSnapPointsInertiaFromImpulse(
+    std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
+    ScrollerDimension dimension,
+    bool isInertiaFromImpulse)
+{
+    MUX_ASSERT(!SharedHelpers::IsRS5OrHigher());
+
+    if (snapPointsSet->size() > 0)
+    {
+        winrt::Compositor compositor = m_interactionTracker.Compositor();
+        winrt::IVector<winrt::InteractionTrackerInertiaModifier> modifiers = winrt::make<Vector<winrt::InteractionTrackerInertiaModifier>>();
+
+        for (auto snapPointWrapper : *snapPointsSet)
+        {
+            auto modifier = winrt::InteractionTrackerInertiaRestingValue::Create(compositor);
+            auto const [conditionExpressionAnimation, restingValueExpressionAnimation] = snapPointWrapper->GetUpdatedExpressionAnimationsForImpulse(isInertiaFromImpulse);
+
+            modifier.Condition(conditionExpressionAnimation);
+            modifier.RestingValue(restingValueExpressionAnimation);
+
+            modifiers.Append(modifier);
+        }
+
+        switch (dimension)
+        {
         case ScrollerDimension::VerticalScroll:
             m_interactionTracker.ConfigurePositionYInertiaModifiers(modifiers);
+            break;
+        case ScrollerDimension::HorizontalScroll:
+            m_interactionTracker.ConfigurePositionXInertiaModifiers(modifiers);
             break;
         case ScrollerDimension::ZoomFactor:
             m_interactionTracker.ConfigureScaleInertiaModifiers(modifiers);
             break;
         default:
-            assert(false);
-    }
-}
-
-//Snap points which have ApplicableRangeType = Optional are optional snap points, and their ActualApplicableRange should never be expanded beyond their ApplicableRange
-//and will only shrink to accommodate other snap points which are positioned such that the midpoint between them is within the specifiedApplicableRange.
-//Snap points which have ApplicableRangeType = Mandatory are mandatory snap points and their ActualApplicableRange will expand or shrink to ensure that there is no
-//space between it and its neighbors. If the neighbors are also mandatory, this point will be the midpoint between them. If the neighbors are optional then this
-//point will fall on the midpoint or on the Optional neighbor's edge of ApplicableRange, whichever is furthest. 
-void Scroller::FixSnapPointRanges(std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator>* snapPoints)
-{
-    ScrollerSnapPointBase* currentSnapPoint = nullptr;
-    ScrollerSnapPointBase* previousSnapPoint = nullptr;
-    ScrollerSnapPointBase* nextSnapPoint = nullptr;
-    for (auto iterator = snapPoints->begin(); iterator != snapPoints->end(); ++iterator)
-    {
-        previousSnapPoint = currentSnapPoint;
-        currentSnapPoint = nextSnapPoint;
-        nextSnapPoint = winrt::get_self<ScrollerSnapPointBase>(*iterator);
-
-        if (currentSnapPoint)
-        {
-            currentSnapPoint->DetermineActualApplicableZone(previousSnapPoint, nextSnapPoint);
+            MUX_ASSERT(false);
         }
-    }
-    if (nextSnapPoint)
-    {
-        nextSnapPoint->DetermineActualApplicableZone(currentSnapPoint, nullptr);
     }
 }
 
@@ -1848,14 +2242,12 @@ void Scroller::SetupScrollerVisualInteractionSource()
     UpdateVisualInteractionSourceMode(
         ScrollerDimension::VerticalScroll);
 
-    UpdateKeyEvents();
-
     SetupVisualInteractionSourceMode(
         m_scrollerVisualInteractionSource,
         ZoomMode());
 
 #ifdef IsMouseWheelZoomDisabled
-    if (Scroller::IsInteractionTrackerMouseWheelZoomingEnabled())
+    if (Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled())
     {
         SetupVisualInteractionSourcePointerWheelConfig(
             m_scrollerVisualInteractionSource,
@@ -2266,7 +2658,7 @@ void Scroller::SetupVisualInteractionSourcePointerWheelConfig(
     const winrt::ZoomMode& zoomMode)
 {
     MUX_ASSERT(visualInteractionSource);
-    MUX_ASSERT(Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
+    MUX_ASSERT(Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
 
     visualInteractionSource.PointerWheelConfig().ScaleSourceMode(InteractionSourceRedirectionModeFromZoomMode(zoomMode));
 }
@@ -2276,9 +2668,11 @@ void Scroller::SetupVisualInteractionSourceRedirectionMode(
     const winrt::VisualInteractionSource& visualInteractionSource,
     const winrt::InputKind& ignoredInputKind)
 {
+    MUX_ASSERT(visualInteractionSource);
+
     winrt::VisualInteractionSourceRedirectionMode redirectionMode = winrt::VisualInteractionSourceRedirectionMode::CapableTouchpadOnly;
 
-    if (SharedHelpers::AreInteractionTrackerPointerWheelRedirectionModesAvailable() &&
+    if (Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled() &&
         !IsInputKindIgnored(winrt::InputKind::MouseWheel))
     {
         redirectionMode = winrt::VisualInteractionSourceRedirectionMode::CapableTouchpadAndPointerWheel;
@@ -2417,7 +2811,7 @@ winrt::ScrollMode Scroller::GetComputedMouseWheelScrollMode(ScrollerDimension di
 #ifdef IsMouseWheelZoomDisabled
 winrt::ZoomMode Scroller::GetMouseWheelZoomMode()
 {
-    MUX_ASSERT(Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
+    MUX_ASSERT(Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
 
     // TODO: c.f. Task 18569498 - Consider public IsMouseWheelZoomDisabled properties
     return ZoomMode();
@@ -2677,7 +3071,7 @@ winrt::CompositionAnimation Scroller::GetPositionAnimation(
     double zoomedHorizontalOffset,
     double zoomedVerticalOffset,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
-    int32_t viewChangeId)
+    int32_t offsetsChangeId)
 {
     MUX_ASSERT(m_interactionTracker);
 
@@ -2718,27 +3112,27 @@ winrt::CompositionAnimation Scroller::GetPositionAnimation(
         if (isHorizontalScrollControllerRequest && m_horizontalScrollController)
         {
             customAnimation = m_horizontalScrollController.get().GetScrollAnimation(
-                viewChangeId,
+                winrt::ScrollInfo{ offsetsChangeId },
                 currentPosition,
                 positionAnimation);
         }
         if (isVerticalScrollControllerRequest && m_verticalScrollController)
         {
             customAnimation = m_verticalScrollController.get().GetScrollAnimation(
-                viewChangeId,
+                winrt::ScrollInfo{ offsetsChangeId },
                 currentPosition,
                 customAnimation ? customAnimation : positionAnimation);
         }
         return customAnimation ? customAnimation : positionAnimation;
     }
 
-    return RaiseChangingOffsets(positionAnimation, currentPosition, endPosition, viewChangeId);
+    return RaiseScrollAnimationStarting(positionAnimation, currentPosition, endPosition, offsetsChangeId);
 }
 
 winrt::CompositionAnimation Scroller::GetZoomFactorAnimation(
     float zoomFactor,
     const winrt::float2& centerPoint,
-    int32_t viewChangeId)
+    int32_t zoomFactorChangeId)
 {
     int64_t minDuration = s_zoomFactorChangeMinMs;
     int64_t maxDuration = s_zoomFactorChangeMaxMs;
@@ -2764,7 +3158,7 @@ winrt::CompositionAnimation Scroller::GetZoomFactorAnimation(
     zoomFactorAnimation.InsertKeyFrame(1.0f, zoomFactor);
     zoomFactorAnimation.Duration(winrt::TimeSpan::duration(std::clamp(distance * unitDuration, minDuration, maxDuration) * 10000));
 
-    return RaiseChangingZoomFactor(zoomFactorAnimation, zoomFactor, centerPoint, viewChangeId);
+    return RaiseZoomAnimationStarting(zoomFactorAnimation, zoomFactor, centerPoint, zoomFactorChangeId);
 }
 
 int Scroller::GetNextViewChangeId()
@@ -2849,66 +3243,187 @@ void Scroller::SetupTransformExpressionAnimations(
         m_transformMatrixZoomFactorExpressionAnimation.SetReferenceParameter(L"it", m_interactionTracker);
     }
 
-    StartTransformExpressionAnimations(content);
+    StartTransformExpressionAnimations(content, false /*forZoomFactorAnimationInterruption*/);
 }
 
 void Scroller::StartTransformExpressionAnimations(
-    const winrt::UIElement& content)
+    const winrt::UIElement& content,
+    bool forZoomFactorAnimationInterruption)
 {
     if (content)
     {
         if (SharedHelpers::IsTranslationFacadeAvailable(content))
         {
-            m_translationExpressionAnimation.Target(GetVisualTargetedPropertyName(ScrollerDimension::Scroll));
-            m_zoomFactorExpressionAnimation.Target(GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor));
-            content.StartAnimation(m_translationExpressionAnimation);
+            auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+
+            if (!forZoomFactorAnimationInterruption)
+            {
+                auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+
+                m_translationExpressionAnimation.Target(scrollPropertyName);
+                m_zoomFactorExpressionAnimation.Target(zoomFactorPropertyName);
+
+                content.StartAnimation(m_translationExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
+            }
+
             content.StartAnimation(m_zoomFactorExpressionAnimation);
+            RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
         }
-        else
+        else if (!forZoomFactorAnimationInterruption) // The zoom factor animation interruption is only effective with facades.
         {
             const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(content);
+
             if (IsVisualTranslationPropertyAvailable())
             {
+                auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+                auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+
                 winrt::ElementCompositionPreview::SetIsTranslationEnabled(content, true);
-                contentVisual.StartAnimation(GetVisualTargetedPropertyName(ScrollerDimension::Scroll), m_translationExpressionAnimation);
-                contentVisual.StartAnimation(GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor), m_zoomFactorExpressionAnimation);
+
+                contentVisual.StartAnimation(scrollPropertyName, m_translationExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
+
+                contentVisual.StartAnimation(zoomFactorPropertyName, m_zoomFactorExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
             }
             else
             {
-                contentVisual.StartAnimation(GetVisualTargetedPropertyName(ScrollerDimension::HorizontalScroll), m_transformMatrixTranslateXExpressionAnimation);
-                contentVisual.StartAnimation(GetVisualTargetedPropertyName(ScrollerDimension::VerticalScroll), m_transformMatrixTranslateYExpressionAnimation);
-                contentVisual.StartAnimation(GetVisualTargetedPropertyName(ScrollerDimension::HorizontalZoomFactor), m_transformMatrixZoomFactorExpressionAnimation);
-                contentVisual.StartAnimation(GetVisualTargetedPropertyName(ScrollerDimension::VerticalZoomFactor), m_transformMatrixZoomFactorExpressionAnimation);
+                auto const horizontalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalScroll);
+                auto const verticalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalScroll);
+                auto const horizontalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalZoomFactor);
+                auto const verticalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalZoomFactor);
+
+                contentVisual.StartAnimation(horizontalScrollPropertyName, m_transformMatrixTranslateXExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, horizontalScrollPropertyName /*propertyName*/);
+
+                contentVisual.StartAnimation(verticalScrollPropertyName, m_transformMatrixTranslateYExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, verticalScrollPropertyName /*propertyName*/);
+
+                contentVisual.StartAnimation(horizontalZoomFactorPropertyName, m_transformMatrixZoomFactorExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, horizontalZoomFactorPropertyName /*propertyName*/);
+
+                contentVisual.StartAnimation(verticalZoomFactorPropertyName, m_transformMatrixZoomFactorExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, verticalZoomFactorPropertyName /*propertyName*/);
             }
         }
     }
 }
 
 void Scroller::StopTransformExpressionAnimations(
-    const winrt::UIElement& content)
+    const winrt::UIElement& content,
+    bool forZoomFactorAnimationInterruption)
 {
     if (content)
     {
         if (SharedHelpers::IsTranslationFacadeAvailable(content))
         {
-            content.StopAnimation(m_translationExpressionAnimation);
+            if (!forZoomFactorAnimationInterruption)
+            {
+                auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+
+                content.StopAnimation(m_translationExpressionAnimation);
+                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
+            }
+
+            auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+
             content.StopAnimation(m_zoomFactorExpressionAnimation);
+            RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
         }
-        else
+        else if (!forZoomFactorAnimationInterruption) // The zoom factor animation interruption is only effective with facades.
         {
             const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(content);
+
             if (IsVisualTranslationPropertyAvailable())
             {
-                contentVisual.StopAnimation(GetVisualTargetedPropertyName(ScrollerDimension::Scroll));
-                contentVisual.StopAnimation(GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor));
+                auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+                auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+
+                contentVisual.StopAnimation(scrollPropertyName);
+                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
+
+                contentVisual.StopAnimation(zoomFactorPropertyName);
+                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
             }
             else
             {
-                contentVisual.StopAnimation(GetVisualTargetedPropertyName(ScrollerDimension::HorizontalScroll));
-                contentVisual.StopAnimation(GetVisualTargetedPropertyName(ScrollerDimension::VerticalScroll));
-                contentVisual.StopAnimation(GetVisualTargetedPropertyName(ScrollerDimension::HorizontalZoomFactor));
-                contentVisual.StopAnimation(GetVisualTargetedPropertyName(ScrollerDimension::VerticalZoomFactor));
+                auto const horizontalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalScroll);
+                auto const verticalScrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalScroll);
+                auto const horizontalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::HorizontalZoomFactor);
+                auto const verticalZoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::VerticalZoomFactor);
+
+                contentVisual.StopAnimation(horizontalScrollPropertyName);
+                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, horizontalScrollPropertyName /*propertyName*/);
+
+                contentVisual.StopAnimation(verticalScrollPropertyName);
+                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, verticalScrollPropertyName /*propertyName*/);
+
+                contentVisual.StopAnimation(horizontalZoomFactorPropertyName);
+                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, horizontalZoomFactorPropertyName /*propertyName*/);
+
+                contentVisual.StopAnimation(verticalZoomFactorPropertyName);
+                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, verticalZoomFactorPropertyName /*propertyName*/);
             }
+        }
+    }
+}
+
+// Returns True when Scroller::OnCompositionTargetRendering calls are not needed for restarting the Scale animation.
+bool Scroller::StartZoomFactorExpressionAnimation()
+{
+    if (m_zoomFactorAnimationRestartTicksCountdown > 0)
+    {
+        MUX_ASSERT(IsVisualTranslationPropertyAvailable());
+
+        // A Scale animation restart is pending after the Idle State was reached or a zoom factor change operation completed.
+        m_zoomFactorAnimationRestartTicksCountdown--;
+
+        if (m_zoomFactorAnimationRestartTicksCountdown == 0)
+        {
+            // Countdown is over, restart the Scale animation.
+            MUX_ASSERT(m_interactionTracker);
+
+            SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, m_animationRestartZoomFactor, m_zoomFactor);
+
+            StartTransformExpressionAnimations(Content(), true /*forZoomFactorAnimationInterruption*/);
+        }
+        else
+        {
+            // Countdown needs to continue.
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void Scroller::StopZoomFactorExpressionAnimation()
+{
+    if (m_zoomFactorExpressionAnimation && m_animationRestartZoomFactor != m_zoomFactor)
+    {
+        // The zoom factor has changed since the last restart of the Scale animation.
+        MUX_ASSERT(IsVisualTranslationPropertyAvailable());
+
+        const winrt::UIElement content = Content();
+
+        // The zoom factor animation interruption is only effective with facades.
+        if (SharedHelpers::IsTranslationFacadeAvailable(content))
+        {
+            if (m_zoomFactorAnimationRestartTicksCountdown == 0)
+            {
+                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, m_animationRestartZoomFactor, m_zoomFactor);
+
+                // Stop Scale animation to trigger rasterization of Content, to avoid fuzzy text rendering for instance.
+                StopTransformExpressionAnimations(content, true /*forZoomFactorAnimationInterruption*/);
+
+                // Trigger Scroller::OnCompositionTargetRendering calls in order to re-establish the Scale animation
+                // after the Content rasterization was triggered within a few ticks.
+                HookCompositionTargetRendering();
+            }
+
+            m_animationRestartZoomFactor = m_zoomFactor;
+            m_zoomFactorAnimationRestartTicksCountdown = s_zoomFactorAnimationRestartTicks;
         }
     }
 }
@@ -2923,25 +3438,16 @@ void Scroller::StartExpressionAnimationSourcesAnimations()
     MUX_ASSERT(m_zoomFactorSourceExpressionAnimation);
 
     m_expressionAnimationSources.StartAnimation(s_positionSourcePropertyName, m_positionSourceExpressionAnimation);
+    RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_positionSourcePropertyName /*propertyName*/);
+
     m_expressionAnimationSources.StartAnimation(s_minPositionSourcePropertyName, m_minPositionSourceExpressionAnimation);
+    RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_minPositionSourcePropertyName /*propertyName*/);
+
     m_expressionAnimationSources.StartAnimation(s_maxPositionSourcePropertyName, m_maxPositionSourceExpressionAnimation);
+    RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_maxPositionSourcePropertyName /*propertyName*/);
+
     m_expressionAnimationSources.StartAnimation(s_zoomFactorSourcePropertyName, m_zoomFactorSourceExpressionAnimation);
-}
-
-void Scroller::StopExpressionAnimationSourcesAnimations()
-{
-    MUX_ASSERT(m_interactionTracker);
-    MUX_ASSERT(m_expressionAnimationSources);
-    MUX_ASSERT(m_positionSourceExpressionAnimation);
-    MUX_ASSERT(m_minPositionSourceExpressionAnimation);
-    MUX_ASSERT(m_maxPositionSourceExpressionAnimation);
-    MUX_ASSERT(m_zoomFactorSourceExpressionAnimation);
-
-    //m_expressionAnimationSources.StopAnimation(s_offsetSourcePropertyName);
-    m_expressionAnimationSources.StopAnimation(s_positionSourcePropertyName);
-    m_expressionAnimationSources.StopAnimation(s_minPositionSourcePropertyName);
-    m_expressionAnimationSources.StopAnimation(s_maxPositionSourcePropertyName);
-    m_expressionAnimationSources.StopAnimation(s_zoomFactorSourcePropertyName);
+    RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_zoomFactorSourcePropertyName /*propertyName*/);
 }
 
 void Scroller::StartScrollControllerExpressionAnimationSourcesAnimations(
@@ -2957,7 +3463,10 @@ void Scroller::StartScrollControllerExpressionAnimationSourcesAnimations(
         MUX_ASSERT(m_horizontalScrollControllerMaxOffsetExpressionAnimation);
 
         m_horizontalScrollControllerExpressionAnimationSources.StartAnimation(s_offsetPropertyName, m_horizontalScrollControllerOffsetExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_offsetPropertyName /*propertyName*/);
+
         m_horizontalScrollControllerExpressionAnimationSources.StartAnimation(s_maxOffsetPropertyName, m_horizontalScrollControllerMaxOffsetExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_maxOffsetPropertyName /*propertyName*/);
     }
     else
     {
@@ -2966,7 +3475,10 @@ void Scroller::StartScrollControllerExpressionAnimationSourcesAnimations(
         MUX_ASSERT(m_verticalScrollControllerMaxOffsetExpressionAnimation);
 
         m_verticalScrollControllerExpressionAnimationSources.StartAnimation(s_offsetPropertyName, m_verticalScrollControllerOffsetExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_offsetPropertyName /*propertyName*/);
+
         m_verticalScrollControllerExpressionAnimationSources.StartAnimation(s_maxOffsetPropertyName, m_verticalScrollControllerMaxOffsetExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_maxOffsetPropertyName /*propertyName*/);
     }
 }
 
@@ -2981,14 +3493,20 @@ void Scroller::StopScrollControllerExpressionAnimationSourcesAnimations(
         MUX_ASSERT(m_horizontalScrollControllerExpressionAnimationSources);
 
         m_horizontalScrollControllerExpressionAnimationSources.StopAnimation(s_offsetPropertyName);
+        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_offsetPropertyName /*propertyName*/);
+
         m_horizontalScrollControllerExpressionAnimationSources.StopAnimation(s_maxOffsetPropertyName);
+        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_maxOffsetPropertyName /*propertyName*/);
     }
     else
     {
         MUX_ASSERT(m_verticalScrollControllerExpressionAnimationSources);
 
         m_verticalScrollControllerExpressionAnimationSources.StopAnimation(s_offsetPropertyName);
+        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_offsetPropertyName /*propertyName*/);
+
         m_verticalScrollControllerExpressionAnimationSources.StopAnimation(s_maxOffsetPropertyName);
+        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_maxOffsetPropertyName /*propertyName*/);
     }
 }
 
@@ -3021,7 +3539,7 @@ winrt::InteractionSourceRedirectionMode Scroller::InteractionSourceRedirectionMo
 winrt::InteractionSourceRedirectionMode Scroller::InteractionSourceRedirectionModeFromZoomMode(
     const winrt::ZoomMode& zoomMode)
 {
-    MUX_ASSERT(Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
+    MUX_ASSERT(Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
 
     return zoomMode == winrt::ZoomMode::Enabled ? winrt::InteractionSourceRedirectionMode::Enabled : winrt::InteractionSourceRedirectionMode::Disabled;
 }
@@ -3108,20 +3626,20 @@ void Scroller::ValidateZoomFactoryBoundary(double value)
     }
 }
 
-// Returns False prior to RS5 where the InteractionTracker does not support off-thread mouse-wheel-based zooming.
+// Returns False prior to RS5 where the InteractionTracker does not support effective off-thread mouse-wheel-based scrolling and zooming.
 // Starting with RS5, returns True unless a test hook is set to disable the use of the InteractionTracker's built-in feature.
-bool Scroller::IsInteractionTrackerMouseWheelZoomingEnabled()
+bool Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled()
 {
-    bool isInteractionTrackerMouseWheelZoomingEnabled = SharedHelpers::IsRS5OrHigher();
+    bool isInteractionTrackerPointerWheelRedirectionEnabled = SharedHelpers::IsRS5OrHigher();
 
-    if (isInteractionTrackerMouseWheelZoomingEnabled)
+    if (isInteractionTrackerPointerWheelRedirectionEnabled)
     {
         com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
 
-        isInteractionTrackerMouseWheelZoomingEnabled = !globalTestHooks || globalTestHooks->IsInteractionTrackerMouseWheelZoomingEnabled();
+        isInteractionTrackerPointerWheelRedirectionEnabled = !globalTestHooks || globalTestHooks->IsInteractionTrackerPointerWheelRedirectionEnabled();
     }
 
-    return isInteractionTrackerMouseWheelZoomingEnabled;
+    return isInteractionTrackerPointerWheelRedirectionEnabled;
 }
 
 // Returns True on RedStone 2 and later versions, where the ElementCompositionPreview::SetIsTranslationEnabled method is available.
@@ -3208,30 +3726,83 @@ void Scroller::SetContentLayoutOffsetY(float contentLayoutOffsetY)
     }
 }
 
-winrt::IVector<winrt::ScrollerSnapPointBase> Scroller::GetConsolidatedSnapPoints(winrt::ScrollerSnapPointDimension dimension)
+winrt::IVector<winrt::ScrollSnapPointBase> Scroller::GetConsolidatedScrollSnapPoints(ScrollerDimension dimension)
 {
-    winrt::IVector<winrt::ScrollerSnapPointBase> snapPoints = winrt::make<Vector<winrt::ScrollerSnapPointBase>>();
-    std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator> snapPointSet;
+    winrt::IVector<winrt::ScrollSnapPointBase> snapPoints = winrt::make<Vector<winrt::ScrollSnapPointBase>>();
+    std::set<std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>>, SnapPointWrapperComparator<winrt::ScrollSnapPointBase>> snapPointsSet;
+
     switch (dimension)
     {
-        case winrt::ScrollerSnapPointDimension::Vertical:
-            snapPointSet = m_sortedConsolidatedVerticalSnapPoints;
-            break;
-        case winrt::ScrollerSnapPointDimension::Horizontal:
-            snapPointSet = m_sortedConsolidatedHorizontalSnapPoints;
-            break;
-        case winrt::ScrollerSnapPointDimension::Zoom:
-            snapPointSet = m_sortedConsolidatedZoomSnapPoints;
-            break;
-        default:
-            assert(false);
+    case ScrollerDimension::VerticalScroll :
+        snapPointsSet = m_sortedConsolidatedVerticalSnapPoints;
+        break;
+    case ScrollerDimension::HorizontalScroll:
+        snapPointsSet = m_sortedConsolidatedHorizontalSnapPoints;
+        break;
+    default:
+        MUX_ASSERT(false);
     }
 
-    for (winrt::ScrollerSnapPointBase snapPoint : snapPointSet)
+    for (std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>> snapPointWrapper : snapPointsSet)
     {
-        snapPoints.Append(snapPoint);
+        snapPoints.Append(snapPointWrapper->SnapPoint());
     }
     return snapPoints;
+}
+
+winrt::IVector<winrt::ZoomSnapPointBase> Scroller::GetConsolidatedZoomSnapPoints()
+{
+    winrt::IVector<winrt::ZoomSnapPointBase> snapPoints = winrt::make<Vector<winrt::ZoomSnapPointBase>>();
+
+    for (std::shared_ptr<SnapPointWrapper<winrt::ZoomSnapPointBase>> snapPointWrapper : m_sortedConsolidatedZoomSnapPoints)
+    {
+        snapPoints.Append(snapPointWrapper->SnapPoint());
+    }
+    return snapPoints;
+}
+
+SnapPointWrapper<winrt::ScrollSnapPointBase>* Scroller::GetScrollSnapPointWrapper(ScrollerDimension dimension, winrt::ScrollSnapPointBase const& scrollSnapPoint)
+{
+    std::set<std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>>, SnapPointWrapperComparator<winrt::ScrollSnapPointBase>> snapPointsSet;
+
+    switch (dimension)
+    {
+    case ScrollerDimension::VerticalScroll:
+        snapPointsSet = m_sortedConsolidatedVerticalSnapPoints;
+        break;
+    case ScrollerDimension::HorizontalScroll:
+        snapPointsSet = m_sortedConsolidatedHorizontalSnapPoints;
+        break;
+    default:
+        MUX_ASSERT(false);
+    }
+
+    for (std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>> snapPointWrapper : snapPointsSet)
+    {
+        winrt::ScrollSnapPointBase winrtScrollSnapPoint = safe_cast<winrt::ScrollSnapPointBase>(snapPointWrapper->SnapPoint());
+
+        if (winrtScrollSnapPoint == scrollSnapPoint)
+        {
+            return snapPointWrapper.get();
+        }
+    }
+
+    return nullptr;
+}
+
+SnapPointWrapper<winrt::ZoomSnapPointBase>* Scroller::GetZoomSnapPointWrapper(winrt::ZoomSnapPointBase const& zoomSnapPoint)
+{
+    for (std::shared_ptr<SnapPointWrapper<winrt::ZoomSnapPointBase>> snapPointWrapper : m_sortedConsolidatedZoomSnapPoints)
+    {
+        winrt::ZoomSnapPointBase winrtZoomSnapPoint = safe_cast<winrt::ZoomSnapPointBase>(snapPointWrapper->SnapPoint());
+
+        if (winrtZoomSnapPoint == zoomSnapPoint)
+        {
+            return snapPointWrapper.get();
+        }
+    }
+
+    return nullptr;
 }
 
 // Invoked when a dependency property of this Scroller has changed.
@@ -3349,7 +3920,7 @@ void Scroller::OnPropertyChanged(
                 ZoomMode());
 
 #ifdef IsMouseWheelZoomDisabled
-            if (Scroller::IsInteractionTrackerMouseWheelZoomingEnabled())
+            if (Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled())
             {
                 SetupVisualInteractionSourcePointerWheelConfig(
                     m_scrollerVisualInteractionSource,
@@ -3359,7 +3930,6 @@ void Scroller::OnPropertyChanged(
         }
         else if (dependencyProperty == s_IgnoredInputKindProperty)
         {
-            UpdateKeyEvents();
             UpdateManipulationRedirectionMode();
         }
     }
@@ -3398,11 +3968,16 @@ void Scroller::OnContentPropertyChanged(const winrt::DependencyObject& /*sender*
     }
 }
 
+void Scroller::OnDpiChanged(const winrt::IInspectable& sender, const winrt::IInspectable& /*args*/)
+{
+    UpdateDisplayInformation(sender.as<winrt::DisplayInformation>());
+}
+
 void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    bool unhookCompositionTargetRendering = true;
+    bool unhookCompositionTargetRendering = StartZoomFactorExpressionAnimation();
 
     if (!m_interactionTrackerAsyncOperations.empty() && IsLoaded())
     {
@@ -3445,7 +4020,12 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
                 if (needsCompletion)
                 {
                     // The non-animated view change request did not result in a status change or ValuesChanged notification. Consider it completed.
-                    CompleteViewChange(interactionTrackerAsyncOperation, winrt::ScrollerViewChangeResult::Completed);
+                    CompleteViewChange(interactionTrackerAsyncOperation, ScrollerViewChangeResult::Completed);
+                    if (m_zoomFactorAnimationRestartTicksCountdown > 0)
+                    {
+                        // Do not unhook the Rendering event when there is a pending restart of the Scale animation. 
+                        unhookCompositionTargetRendering = false;
+                    }
                     m_interactionTrackerAsyncOperations.remove(interactionTrackerAsyncOperation);
                 }
                 else
@@ -3532,10 +4112,11 @@ void Scroller::OnUnloaded(
         // All potential pending operations are interrupted when the Scroller unloads.
         CompleteInteractionTrackerOperations(
             -1 /*requestId*/,
-            winrt::ScrollerViewChangeResult::Interrupted /*operationResult*/,
-            winrt::ScrollerViewChangeResult::Ignored     /*unused priorNonAnimatedOperationsResult*/,
-            winrt::ScrollerViewChangeResult::Ignored     /*unused priorAnimatedOperationsResult*/,
-            true  /*completeOperation*/,
+            ScrollerViewChangeResult::Interrupted /*operationResult*/,
+            ScrollerViewChangeResult::Ignored     /*unused priorNonAnimatedOperationsResult*/,
+            ScrollerViewChangeResult::Ignored     /*unused priorAnimatedOperationsResult*/,
+            true  /*completeNonAnimatedOperation*/,
+            true  /*completeAnimatedOperation*/,
             false /*completePriorNonAnimatedOperations*/,
             false /*completePriorAnimatedOperations*/);
 
@@ -3551,25 +4132,23 @@ void Scroller::OnUnloaded(
     }
 }
 
-// UIElement.PointerWheelChanged event handler for support of mouse-wheel-triggered zooming.
+// UIElement.PointerWheelChanged event handler for support of mouse-wheel-triggered scrolling and zooming.
 void Scroller::OnPointerWheelChangedHandler(
     const winrt::IInspectable& /*sender*/,
     const winrt::PointerRoutedEventArgs& args)
 {
-    MUX_ASSERT(!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
+    MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
 
     if (!m_interactionTracker || !m_scrollerVisualInteractionSource)
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"No InteractionTracker");
-
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 0);
         // No InteractionTracker has been set up.
         return;
     }
 
     if (IsInputKindIgnored(winrt::InputKind::MouseWheel))
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"InputKind::MouseWheel ignored");
-
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 1);
         // MouseWheel input is ignored.
         return;
     }
@@ -3579,123 +4158,110 @@ void Scroller::OnPointerWheelChangedHandler(
     winrt::PointerPointProperties pointerPointProperties = pointerPoint.Properties();
     bool isHorizontalMouseWheel = pointerPointProperties.IsHorizontalMouseWheel();
     bool isControlPressed = (ctrlState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    bool isForScroll = false;
 
     if (!isControlPressed || isHorizontalMouseWheel)
     {
         // Mouse-wheel-triggered zooming is only attempted when Control key is down and event is not for a horizontal scroll.
-        return;
+        isForScroll = true;
     }
 
-    if (ZoomMode() == winrt::ZoomMode::Disabled)
+    if (isForScroll)
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"ZoomMode off");
+#ifdef USE_SCROLLMODE_AUTO
+        const winrt::ScrollMode horizontalScrollMode = GetComputedScrollMode(ScrollerDimension::HorizontalScroll);
+        const winrt::ScrollMode verticalScrollMode = GetComputedScrollMode(ScrollerDimension::VerticalScroll);
+#else
+        const winrt::ScrollMode horizontalScrollMode = HorizontalScrollMode();
+        const winrt::ScrollMode verticalScrollMode = VerticalScrollMode();
+#endif
 
+        if (isHorizontalMouseWheel)
+        {
+            if (horizontalScrollMode == winrt::ScrollMode::Disabled)
+            {
+                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 2);
+                // HorizontalScrollMode disabled.
+                return;
+            }
+        }
+        else
+        {
+            if (verticalScrollMode == winrt::ScrollMode::Disabled)
+            {
+                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 3);
+                // VerticalScrollMode disabled.
+                return;
+            }
+        }
+    }
+    else if (ZoomMode() == winrt::ZoomMode::Disabled)
+    {
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, 4);
+        // ZoomMode disabled.
         return;
     }
 
     int32_t mouseWheelDelta = pointerPointProperties.MouseWheelDelta();
-    float endOfInertiaZoomFactor = ComputeEndOfInertiaZoomFactor();
-    float minZoomFactor = m_interactionTracker.MinScale();
-    float maxZoomFactor = m_interactionTracker.MaxScale();
 
-    if ((endOfInertiaZoomFactor == minZoomFactor && mouseWheelDelta < 0) ||
-        (endOfInertiaZoomFactor == maxZoomFactor && mouseWheelDelta > 0))
+    if (isForScroll)
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Cannot zoom beyond boundary");
+        winrt::float2 anticipatedEndOfInertiaPosition = ComputeEndOfInertiaPosition() + GetMouseWheelAnticipatedOffsetsChange();
+        winrt::float2 minPosition{};
+        winrt::float2 maxPosition{};
 
-        return;
-    }
+        ComputeMinMaxPositions(ComputeEndOfInertiaZoomFactor(), &minPosition, &maxPosition);
 
-    // Attempt to find a zoom factor change with velocity request for mouse wheel input within the same tick.
-    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationWithAdditionalVelocity(
-        false /*isOperationTypeForOffsetsChange*/,
-        InteractionTrackerAsyncOperationTrigger::MouseWheel);
+        anticipatedEndOfInertiaPosition.x = std::clamp(anticipatedEndOfInertiaPosition.x, minPosition.x, maxPosition.x);
+        anticipatedEndOfInertiaPosition.y = std::clamp(anticipatedEndOfInertiaPosition.y, minPosition.y, maxPosition.y);
 
-    // Mouse wheel delta amount required per initial velocity unit
-    int32_t mouseWheelDeltaForVelocityUnit = s_mouseWheelDeltaForVelocityUnit;
-    com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
-
-    if (globalTestHooks)
-    {
-        mouseWheelDeltaForVelocityUnit = globalTestHooks->MouseWheelDeltaForVelocityUnit();
-    }
-
-    // Maximum absolute velocity. Any additional velocity has no effect
-    const float c_maxVelocityUnits = 5.0f;
-    // Incremental zoom factor change per velocity unit
-    const float c_zoomFactorChangePerVelocityUnit = 0.1f;
-
-    winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions optionsClone = nullptr;
-    float additionalVelocity = static_cast<float>(mouseWheelDelta) / mouseWheelDeltaForVelocityUnit;
-
-    if (interactionTrackerAsyncOperation)
-    {
-        winrt::IInspectable options = interactionTrackerAsyncOperation->GetOptions();
-        optionsClone = options.as<winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions>();
-        additionalVelocity += optionsClone.AdditionalVelocity();
-    }
-
-    if (additionalVelocity > 0.0f)
-    {
-        MUX_ASSERT(endOfInertiaZoomFactor < maxZoomFactor);
-
-        // No point in exceeding the maximum effective velocity
-        additionalVelocity = std::min(c_maxVelocityUnits, additionalVelocity);
-
-        // Do not attempt to zoom factor beyond the MaxZoomFactor value
-        additionalVelocity = std::min((maxZoomFactor - endOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, additionalVelocity);
-    }
-    else
-    {
-        MUX_ASSERT(endOfInertiaZoomFactor > minZoomFactor);
-
-        // No point in exceeding the minimum effective velocity
-        additionalVelocity = std::max(-c_maxVelocityUnits, additionalVelocity);
-
-        // Do not attempt to zoom factor beyond the MinZoomFactor value
-        additionalVelocity = std::max((minZoomFactor - endOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, additionalVelocity);
-    }
-
-    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this,
-        interactionTrackerAsyncOperation ? L"Coalesced MouseWheelDelta for zooming" : L"New MouseWheelDelta for zooming",
-        mouseWheelDelta);
-
-    if (!interactionTrackerAsyncOperation)
-    {
-        // Minimum absolute velocity. Any lower velocity has no effect
-        const float c_minVelocityUnits = 0.05f;
-
-        // Inertia decay rate to achieve the c_zoomFactorChangePerVelocityUnit change per velocity unit
-        float mouseWheelInertiaDecayRate = SharedHelpers::IsRS2OrHigher() ? s_mouseWheelInertiaDecayRate : s_mouseWheelInertiaDecayRateRS1;
-
-        if (globalTestHooks)
+        if (isHorizontalMouseWheel)
         {
-            mouseWheelInertiaDecayRate = globalTestHooks->MouseWheelInertiaDecayRate();
+            if ((abs(anticipatedEndOfInertiaPosition.x - minPosition.x) <= s_offsetEqualityEpsilon && mouseWheelDelta < 0) ||
+                (abs(anticipatedEndOfInertiaPosition.x - maxPosition.x) <= s_offsetEqualityEpsilon && mouseWheelDelta > 0))
+            {
+                // Cannot scroll horizontally beyond boundary
+                return;
+            }
+        }
+        else
+        {
+            if ((abs(anticipatedEndOfInertiaPosition.y - minPosition.y) <= s_offsetEqualityEpsilon && mouseWheelDelta > 0) ||
+                (abs(anticipatedEndOfInertiaPosition.y - maxPosition.y) <= s_offsetEqualityEpsilon && mouseWheelDelta < 0))
+            {
+                // Cannot scroll vertically beyond boundary
+                return;
+            }
         }
 
-        // Make sure the initial velocity is larger than the minimum effective velocity
-        additionalVelocity += (additionalVelocity > 0.0f) ? c_minVelocityUnits : -c_minVelocityUnits;
-
-        winrt::IInspectable inertiaDecayRateAsInsp = box_value(mouseWheelInertiaDecayRate);
-        winrt::IReference<float> inertiaDecayRate = inertiaDecayRateAsInsp.as<winrt::IReference<float>>();
-        winrt::float2 centerPoint = ComputeCenterPointerForMouseWheelZooming(Content(), pointerPoint.Position());
-
-        auto options = winrt::make_self<ScrollerChangeZoomFactorWithAdditionalVelocityOptions>(
-            additionalVelocity,
-            inertiaDecayRate,
-            centerPoint);
-
-        int32_t viewChangeId = -1;
-
-        // Queue up a zooming with additional velocity operation
-        ChangeZoomFactorWithAdditionalVelocityPrivate(
-            InteractionTrackerAsyncOperationTrigger::MouseWheel,
-            *options,
-            &viewChangeId);
+        ProcessPointerWheelScroll(
+            isHorizontalMouseWheel,
+            mouseWheelDelta,
+            isHorizontalMouseWheel ? anticipatedEndOfInertiaPosition.x : anticipatedEndOfInertiaPosition.y,
+            isHorizontalMouseWheel ? minPosition.x : minPosition.y,
+            isHorizontalMouseWheel ? maxPosition.x : maxPosition.y);
     }
     else
     {
-        optionsClone.AdditionalVelocity(additionalVelocity);
+        float anticipatedEndOfInertiaZoomFactor = ComputeEndOfInertiaZoomFactor() + GetMouseWheelAnticipatedZoomFactorChange();
+        float minZoomFactor = m_interactionTracker.MinScale();
+        float maxZoomFactor = m_interactionTracker.MaxScale();
+
+        anticipatedEndOfInertiaZoomFactor = std::clamp(anticipatedEndOfInertiaZoomFactor, minZoomFactor, maxZoomFactor);
+
+        if ((abs(anticipatedEndOfInertiaZoomFactor - minZoomFactor) <= s_zoomFactorEqualityEpsilon && mouseWheelDelta < 0) ||
+            (abs(anticipatedEndOfInertiaZoomFactor - maxZoomFactor) <= s_zoomFactorEqualityEpsilon && mouseWheelDelta > 0))
+        {
+            // Cannot zoom beyond boundary
+            return;
+        }
+
+        ProcessPointerWheelZoom(
+            pointerPoint,
+            mouseWheelDelta,
+            anticipatedEndOfInertiaZoomFactor,
+            minZoomFactor,
+            maxZoomFactor);
     }
 
     args.Handled(true);
@@ -3730,15 +4296,17 @@ void Scroller::OnBringIntoViewRequestedHandler(
     }
 
     winrt::Rect targetRect{};
-    int32_t viewChangeId = -1;
+    int32_t offsetsChangeId = -1;
     double targetZoomedHorizontalOffset = 0.0;
     double targetZoomedVerticalOffset = 0.0;
     double appliedOffsetX = 0.0;
     double appliedOffsetY = 0.0;
+    winrt::SnapPointsMode snapPointsMode = winrt::SnapPointsMode::Ignore;
 
     // Compute the target offsets based on the provided BringIntoViewRequestedEventArgs.
     ComputeBringIntoViewTargetOffsets(
         content,
+        snapPointsMode,
         args,
         &targetZoomedHorizontalOffset,
         &targetZoomedVerticalOffset,
@@ -3750,16 +4318,17 @@ void Scroller::OnBringIntoViewRequestedHandler(
     {
         // Raise the Scroller.BringingIntoView event to give the listeners a chance to adjust the operation.
 
-        viewChangeId = m_latestViewChangeId = GetNextViewChangeId();
+        offsetsChangeId = m_latestViewChangeId = GetNextViewChangeId();
 
         if (!RaiseBringingIntoView(
             targetZoomedHorizontalOffset,
             targetZoomedVerticalOffset,
             args,
-            viewChangeId))
+            offsetsChangeId,
+            &snapPointsMode))
         {
             // A listener canceled the operation in the Scroller.BringingIntoView event handler before any scrolling was attempted.
-            RaiseViewChangeCompleted(winrt::ScrollerViewChangeResult::Completed, viewChangeId);
+            RaiseViewChangeCompleted(true /*isForScroll*/, ScrollerViewChangeResult::Completed, offsetsChangeId);
             return;
         }
 
@@ -3780,8 +4349,10 @@ void Scroller::OnBringIntoViewRequestedHandler(
         }
 
         // Re-evaluate the target offsets based on the potentially modified BringIntoViewRequestedEventArgs.
+        // Take into account potential SnapPointsMode == Default so that parents contribute accordingly.
         ComputeBringIntoViewTargetOffsets(
             content,
+            snapPointsMode,
             args,
             &targetZoomedHorizontalOffset,
             &targetZoomedVerticalOffset,
@@ -3808,23 +4379,24 @@ void Scroller::OnBringIntoViewRequestedHandler(
     if (targetZoomedHorizontalOffset != m_zoomedHorizontalOffset ||
         targetZoomedVerticalOffset != m_zoomedVerticalOffset)
     {
-        auto options = winrt::make_self<ScrollerChangeOffsetsOptions>(
-            targetZoomedHorizontalOffset,
-            targetZoomedVerticalOffset,
-            winrt::ScrollerViewKind::Absolute,
-            args.AnimationDesired() ? winrt::ScrollerViewChangeKind::AllowAnimation : winrt::ScrollerViewChangeKind::DisableAnimation,
-            winrt::ScrollerViewChangeSnapPointRespect::IgnoreSnapPoints);
+        com_ptr<ScrollOptions> options =
+            winrt::make_self<ScrollOptions>(
+                args.AnimationDesired() ? winrt::AnimationMode::Enabled : winrt::AnimationMode::Disabled,
+                snapPointsMode);
 
         ChangeOffsetsPrivate(
-            InteractionTrackerAsyncOperationTrigger::DirectViewChange,
+            targetZoomedHorizontalOffset /*zoomedHorizontalOffset*/,
+            targetZoomedVerticalOffset /*zoomedVerticalOffset*/,
+            ScrollerViewKind::Absolute,
             *options,
-            viewChangeId /*existingViewChangeId*/,
+            InteractionTrackerAsyncOperationTrigger::DirectViewChange,
+            offsetsChangeId /*existingViewChangeId*/,
             nullptr /*viewChangeId*/);
     }
     else
     {
         // No offset change was triggered because the target offsets are the same as the current ones. Mark the operation as completed immediately.
-        RaiseViewChangeCompleted(winrt::ScrollerViewChangeResult::Completed, viewChangeId);
+        RaiseViewChangeCompleted(true /*isForScroll*/, ScrollerViewChangeResult::Completed, offsetsChangeId);
     }
 
     if (SharedHelpers::DoRectsIntersect(nextTargetRect, viewportRect))
@@ -3864,16 +4436,16 @@ void Scroller::OnPointerPressed(
 
     const winrt::UIElement content = Content();
 #ifdef USE_SCROLLMODE_AUTO
-    const winrt::ScrollMode horizontalScrollMore = GetComputedScrollMode(ScrollerDimension::HorizontalScroll);
-    const winrt::ScrollMode verticalScrollMore = GetComputedScrollMode(ScrollerDimension::VerticalScroll);
+    const winrt::ScrollMode horizontalScrollMode = GetComputedScrollMode(ScrollerDimension::HorizontalScroll);
+    const winrt::ScrollMode verticalScrollMode = GetComputedScrollMode(ScrollerDimension::VerticalScroll);
 #else
-    const winrt::ScrollMode horizontalScrollMore = HorizontalScrollMode();
-    const winrt::ScrollMode verticalScrollMore = VerticalScrollMode();
+    const winrt::ScrollMode horizontalScrollMode = HorizontalScrollMode();
+    const winrt::ScrollMode verticalScrollMode = VerticalScrollMode();
 #endif
 
     if (!content ||
-        (horizontalScrollMore == winrt::ScrollMode::Disabled &&
-         verticalScrollMore == winrt::ScrollMode::Disabled &&
+        (horizontalScrollMode == winrt::ScrollMode::Disabled &&
+         verticalScrollMode == winrt::ScrollMode::Disabled &&
          ZoomMode() == winrt::ZoomMode::Disabled))
     {
         return;
@@ -4070,11 +4642,11 @@ void Scroller::OnScrollControllerInteractionInfoChanged(
     }
 }
 
-// Invoked when a IScrollController::OffsetChangeRequested event is raised in order to perform the
-// equivalent of a Scroller::ChangeOffsets operation.
-void Scroller::OnScrollControllerOffsetChangeRequested(
+// Invoked when a IScrollController::ScrollToRequested event is raised in order to perform the
+// equivalent of a Scroller::ScrollTo operation.
+void Scroller::OnScrollControllerScrollToRequested(
     const winrt::IScrollController& sender,
-    const winrt::ScrollControllerOffsetChangeRequestedEventArgs& args)
+    const winrt::ScrollControllerScrollToRequestedEventArgs& args)
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, sender);
 
@@ -4089,25 +4661,21 @@ void Scroller::OnScrollControllerOffsetChangeRequested(
     int32_t viewChangeId = -1;
 
     // Attempt to find an offset change request from an IScrollController with the same ScrollerViewKind,
-    // the same ScrollerViewChangeKind and same tick.
+    // the same ScrollOptions settings and same tick.
     std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationFromKinds(
         true /*isOperationTypeForOffsetsChange*/,
         static_cast<InteractionTrackerAsyncOperationTrigger>(static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest) + static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest)),
-        args.OffsetKind(),
-        args.OffsetChangeKind());
+        ScrollerViewKind::Absolute,
+        args.Options());
 
     if (!interactionTrackerAsyncOperation)
     {
-        auto options = winrt::make_self<ScrollerChangeOffsetsOptions>(
+        ChangeOffsetsPrivate(
             isFromHorizontalScrollController ? args.Offset() : m_zoomedHorizontalOffset,
             isFromHorizontalScrollController ? m_zoomedVerticalOffset : args.Offset(),
-            args.OffsetKind(),
-            args.OffsetChangeKind(),
-            winrt::ScrollerViewChangeSnapPointRespect::RespectSnapPoints);
-
-        ChangeOffsetsPrivate(
+            ScrollerViewKind::Absolute,
+            args.Options(),
             isFromHorizontalScrollController ? InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest : InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest,
-            *options,
             -1 /*existingViewChangeId*/,
             &viewChangeId);
     }
@@ -4115,18 +4683,18 @@ void Scroller::OnScrollControllerOffsetChangeRequested(
     {
         // Coalesce requests
         int32_t existingViewChangeId = interactionTrackerAsyncOperation->GetViewChangeId();
-        winrt::IInspectable options = interactionTrackerAsyncOperation->GetOptions();
-        winrt::ScrollerChangeOffsetsOptions optionsClone = options.as<winrt::ScrollerChangeOffsetsOptions>();
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+        std::shared_ptr<OffsetsChange> offsetsChange = std::reinterpret_pointer_cast<OffsetsChange>(viewChangeBase);
 
         interactionTrackerAsyncOperation->SetIsScrollControllerRequest(isFromHorizontalScrollController);
 
         if (isFromHorizontalScrollController)
         {
-            optionsClone.HorizontalOffset(args.Offset());
+            offsetsChange->ZoomedHorizontalOffset(args.Offset());
         }
         else
         {
-            optionsClone.VerticalOffset(args.Offset());
+            offsetsChange->ZoomedVerticalOffset(args.Offset());
         }
 
         viewChangeId = existingViewChangeId;
@@ -4134,15 +4702,79 @@ void Scroller::OnScrollControllerOffsetChangeRequested(
 
     if (viewChangeId != -1)
     {
-        args.ViewChangeId(viewChangeId);
+        args.Info(winrt::ScrollInfo{ viewChangeId });
     }
 }
 
-// Invoked when a IScrollController::OffsetChangeWithAdditionalVelocityRequested event is raised in order to perform the
-// equivalent of a Scroller::ChangeOffsetsWithAdditionalVelocityAsync operation.
-void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
+// Invoked when a IScrollController::ScrollByRequested event is raised in order to perform the
+// equivalent of a Scroller::ScrollBy operation.
+void Scroller::OnScrollControllerScrollByRequested(
     const winrt::IScrollController& sender,
-    const winrt::ScrollControllerOffsetChangeWithAdditionalVelocityRequestedEventArgs& args)
+    const winrt::ScrollControllerScrollByRequestedEventArgs& args)
+{
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, sender);
+
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        throw winrt::hresult_error(E_NOTIMPL);
+    }
+
+    MUX_ASSERT(sender == m_horizontalScrollController.get() || sender == m_verticalScrollController.get());
+
+    bool isFromHorizontalScrollController = sender == m_horizontalScrollController.get();
+    int32_t viewChangeId = -1;
+
+    // Attempt to find an offset change request from an IScrollController with the same ScrollerViewKind,
+    // the same ScrollOptions settings and same tick.
+    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationFromKinds(
+        true /*isOperationTypeForOffsetsChange*/,
+        static_cast<InteractionTrackerAsyncOperationTrigger>(static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest) + static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest)),
+        ScrollerViewKind::RelativeToCurrentView,
+        args.Options());
+
+    if (!interactionTrackerAsyncOperation)
+    {
+        ChangeOffsetsPrivate(
+            isFromHorizontalScrollController ? args.OffsetDelta() : 0.0 /*zoomedHorizontalOffset*/,
+            isFromHorizontalScrollController ? 0.0 : args.OffsetDelta() /*zoomedVerticalOffset*/,
+            ScrollerViewKind::RelativeToCurrentView,
+            args.Options(),
+            isFromHorizontalScrollController ? InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest : InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest,
+            -1 /*existingViewChangeId*/,
+            &viewChangeId);
+    }
+    else
+    {
+        // Coalesce requests
+        int32_t existingViewChangeId = interactionTrackerAsyncOperation->GetViewChangeId();
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+        std::shared_ptr<OffsetsChange> offsetsChange = std::reinterpret_pointer_cast<OffsetsChange>(viewChangeBase);
+
+        interactionTrackerAsyncOperation->SetIsScrollControllerRequest(isFromHorizontalScrollController);
+
+        if (isFromHorizontalScrollController)
+        {
+            offsetsChange->ZoomedHorizontalOffset(offsetsChange->ZoomedHorizontalOffset() + args.OffsetDelta());
+        }
+        else
+        {
+            offsetsChange->ZoomedVerticalOffset(offsetsChange->ZoomedVerticalOffset() + args.OffsetDelta());
+        }
+
+        viewChangeId = existingViewChangeId;
+    }
+
+    if (viewChangeId != -1)
+    {
+        args.Info(winrt::ScrollInfo{ viewChangeId });
+    }
+}
+
+// Invoked when a IScrollController::ScrollFromRequested event is raised in order to perform the
+// equivalent of a Scroller::ScrollFrom operation.
+void Scroller::OnScrollControllerScrollFromRequested(
+    const winrt::IScrollController& sender,
+    const winrt::ScrollControllerScrollFromRequestedEventArgs& args)
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, sender);
 
@@ -4166,16 +4798,16 @@ void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
     if (!interactionTrackerAsyncOperation)
     {
         winrt::IReference<winrt::float2> inertiaDecayRate = nullptr;
-        winrt::float2 additionalVelocity{};
+        winrt::float2 offsetsVelocity{};
 
         if (isFromHorizontalScrollController)
         {
-            additionalVelocity.x = args.AdditionalVelocity();
+            offsetsVelocity.x = args.OffsetVelocity();
             horizontalInertiaDecayRate = args.InertiaDecayRate();
         }
         else
         {
-            additionalVelocity.y = args.AdditionalVelocity();
+            offsetsVelocity.y = args.OffsetVelocity();
             verticalInertiaDecayRate = args.InertiaDecayRate();
         }
 
@@ -4195,29 +4827,28 @@ void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
             inertiaDecayRate = inertiaDecayRateAsInsp.as<winrt::IReference<winrt::float2>>();
         }
 
-        auto options = winrt::make_self<ScrollerChangeOffsetsWithAdditionalVelocityOptions>(
-            additionalVelocity,
-            inertiaDecayRate);
-
         ChangeOffsetsWithAdditionalVelocityPrivate(
+            offsetsVelocity,
+            winrt::float2::zero() /*anticipatedOffsetsChange*/,
+            inertiaDecayRate,
             isFromHorizontalScrollController ? InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest : InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest,
-            *options,
             &viewChangeId);
     }
     else
     {
         // Coalesce requests
         int32_t existingViewChangeId = interactionTrackerAsyncOperation->GetViewChangeId();
-        winrt::IInspectable options = interactionTrackerAsyncOperation->GetOptions();
-        winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions optionsClone = options.as<winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions>();
-        winrt::float2 additionalVelocity = optionsClone.AdditionalVelocity();
-        winrt::IReference<winrt::float2> inertiaDecayRate = optionsClone.InertiaDecayRate();
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+        std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<OffsetsChangeWithAdditionalVelocity>(viewChangeBase);
+
+        winrt::float2 offsetsVelocity = offsetsChangeWithAdditionalVelocity->OffsetsVelocity();
+        winrt::IReference<winrt::float2> inertiaDecayRate = offsetsChangeWithAdditionalVelocity->InertiaDecayRate();
 
         interactionTrackerAsyncOperation->SetIsScrollControllerRequest(isFromHorizontalScrollController);
 
         if (isFromHorizontalScrollController)
         {
-            additionalVelocity.x = args.AdditionalVelocity();
+            offsetsVelocity.x = args.OffsetVelocity();
             horizontalInertiaDecayRate = args.InertiaDecayRate();
 
             if (!horizontalInertiaDecayRate)
@@ -4226,7 +4857,7 @@ void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
                 {
                     if (inertiaDecayRate.Value().y == c_scrollerDefaultInertiaDecayRate)
                     {
-                        optionsClone.InertiaDecayRate(nullptr);
+                        offsetsChangeWithAdditionalVelocity->InertiaDecayRate(nullptr);
                     }
                     else
                     {
@@ -4235,7 +4866,7 @@ void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
                         winrt::IReference<winrt::float2> newInertiaDecayRate =
                             newInertiaDecayRateAsInsp.as<winrt::IReference<winrt::float2>>();
 
-                        optionsClone.InertiaDecayRate(newInertiaDecayRate);
+                        offsetsChangeWithAdditionalVelocity->InertiaDecayRate(newInertiaDecayRate);
                     }
                 }
             }
@@ -4256,12 +4887,12 @@ void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
 
                 winrt::IReference<winrt::float2> newInertiaDecayRate = newInertiaDecayRateAsInsp.as<winrt::IReference<winrt::float2>>();
 
-                optionsClone.InertiaDecayRate(newInertiaDecayRate);
+                offsetsChangeWithAdditionalVelocity->InertiaDecayRate(newInertiaDecayRate);
             }
         }
         else
         {
-            additionalVelocity.y = args.AdditionalVelocity();
+            offsetsVelocity.y = args.OffsetVelocity();
             verticalInertiaDecayRate = args.InertiaDecayRate();
 
             if (!verticalInertiaDecayRate)
@@ -4270,7 +4901,7 @@ void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
                 {
                     if (inertiaDecayRate.Value().x == c_scrollerDefaultInertiaDecayRate)
                     {
-                        optionsClone.InertiaDecayRate(nullptr);
+                        offsetsChangeWithAdditionalVelocity->InertiaDecayRate(nullptr);
                     }
                     else
                     {
@@ -4279,7 +4910,7 @@ void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
                         winrt::IReference<winrt::float2> newInertiaDecayRate =
                             newInertiaDecayRateAsInsp.as<winrt::IReference<winrt::float2>>();
 
-                        optionsClone.InertiaDecayRate(newInertiaDecayRate);
+                        offsetsChangeWithAdditionalVelocity->InertiaDecayRate(newInertiaDecayRate);
                     }
                 }
             }
@@ -4300,94 +4931,194 @@ void Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested(
 
                 winrt::IReference<winrt::float2> newInertiaDecayRate = newInertiaDecayRateAsInsp.as<winrt::IReference<winrt::float2>>();
 
-                optionsClone.InertiaDecayRate(newInertiaDecayRate);
+                offsetsChangeWithAdditionalVelocity->InertiaDecayRate(newInertiaDecayRate);
             }
         }
 
-        optionsClone.AdditionalVelocity(additionalVelocity);
+        offsetsChangeWithAdditionalVelocity->OffsetsVelocity(offsetsVelocity);
 
         viewChangeId = existingViewChangeId;
     }
 
     if (viewChangeId != -1)
     {
-        args.ViewChangeId(viewChangeId);
+        args.Info(winrt::ScrollInfo{ viewChangeId });
     }
 }
 
-void Scroller::OnHorizontalSnapPointsVectorChanged(const winrt::IObservableVector<winrt::ScrollerSnapPointBase>& sender, const winrt::IVectorChangedEventArgs args)
+void Scroller::OnHorizontalSnapPointsVectorChanged(const winrt::IObservableVector<winrt::ScrollSnapPointBase>& sender, const winrt::IVectorChangedEventArgs args)
 {
     SnapPointsVectorChangedHelper(sender, args, &m_sortedConsolidatedHorizontalSnapPoints, ScrollerDimension::HorizontalScroll);
 }
 
-void Scroller::OnVerticalSnapPointsVectorChanged(const winrt::IObservableVector<winrt::ScrollerSnapPointBase>& sender, const winrt::IVectorChangedEventArgs args)
+void Scroller::OnVerticalSnapPointsVectorChanged(const winrt::IObservableVector<winrt::ScrollSnapPointBase>& sender, const winrt::IVectorChangedEventArgs args)
 {
     SnapPointsVectorChangedHelper(sender, args, &m_sortedConsolidatedVerticalSnapPoints, ScrollerDimension::VerticalScroll);
 }
 
-void Scroller::OnZoomSnapPointsVectorChanged(const winrt::IObservableVector<winrt::ScrollerSnapPointBase>& sender, const winrt::IVectorChangedEventArgs args)
+void Scroller::OnZoomSnapPointsVectorChanged(const winrt::IObservableVector<winrt::ZoomSnapPointBase>& sender, const winrt::IVectorChangedEventArgs args)
 {
     SnapPointsVectorChangedHelper(sender, args, &m_sortedConsolidatedZoomSnapPoints, ScrollerDimension::ZoomFactor);
 }
 
-void Scroller::SnapPointsVectorChangedHelper(const winrt::IObservableVector<winrt::ScrollerSnapPointBase>& sender, const winrt::IVectorChangedEventArgs args, std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator>* set, const ScrollerDimension& dimension)
+template <typename T>
+bool Scroller::SnapPointsViewportChangedHelper(
+    winrt::IObservableVector<T> const& snapPoints,
+    double viewport)
 {
-    MUX_ASSERT(!SharedHelpers::IsTH2OrLower());
+    bool snapPointsNeedViewportUpdates = false;
 
-    switch (args.CollectionChange())
+    for (T snapPoint : snapPoints)
     {
-        case winrt::CollectionChange::Reset:
-            set->clear();
-            break;
-        case winrt::CollectionChange::ItemInserted:
-            SnapPointsVectorItemInsertedHelper(sender.GetAt(args.Index()), set);
-            break;
-        case winrt::CollectionChange::ItemRemoved:
-        case winrt::CollectionChange::ItemChanged:
-            RegenerateSnapPointsSet(sender, set);
-            break;
-        default:
-            assert(false);
+        winrt::SnapPointBase winrtSnapPointBase = safe_cast<winrt::SnapPointBase>(snapPoint);
+        SnapPointBase* snapPointBase = winrt::get_self<SnapPointBase>(winrtSnapPointBase);
+
+        snapPointsNeedViewportUpdates |= snapPointBase->OnUpdateViewport(viewport);
     }
-    SetupSnapPoints(set, dimension);
+
+    return snapPointsNeedViewportUpdates;
 }
 
-void Scroller::SnapPointsVectorItemInsertedHelper(winrt::ScrollerSnapPointBase changedItem, std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator>* set)
+template <typename T>
+void Scroller::SnapPointsVectorChangedHelper(
+    winrt::IObservableVector<T> const& snapPoints,
+    winrt::IVectorChangedEventArgs const& args,
+    std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
+    ScrollerDimension dimension)
 {
-    if (set->empty())
+    MUX_ASSERT(!SharedHelpers::IsTH2OrLower());
+    MUX_ASSERT(snapPoints);
+    MUX_ASSERT(snapPointsSet);
+
+    T insertedItem = nullptr;
+    winrt::CollectionChange collectionChange = args.CollectionChange();
+
+    if (dimension != ScrollerDimension::ZoomFactor)
     {
-        set->insert(changedItem);
+        double viewportSize = dimension == ScrollerDimension::HorizontalScroll ? m_viewportWidth : m_viewportHeight;
+
+        if (collectionChange == winrt::CollectionChange::ItemInserted)
+        {
+            insertedItem = snapPoints.GetAt(args.Index());
+
+            winrt::SnapPointBase winrtSnapPointBase = safe_cast<winrt::SnapPointBase>(insertedItem);
+            SnapPointBase* snapPointBase = winrt::get_self<SnapPointBase>(winrtSnapPointBase);
+
+            // Newly inserted scroll snap point is provided the viewport size, for the case it's not near-aligned.
+            bool snapPointNeedsViewportUpdates = snapPointBase->OnUpdateViewport(viewportSize);
+
+            // When snapPointNeedsViewportUpdates is True, this newly inserted scroll snap point may be the first one
+            // that requires viewport updates.
+            if (dimension == ScrollerDimension::HorizontalScroll)
+            {
+                m_horizontalSnapPointsNeedViewportUpdates |= snapPointNeedsViewportUpdates;
+            }
+            else
+            {
+                m_verticalSnapPointsNeedViewportUpdates |= snapPointNeedsViewportUpdates;
+            }
+        }
+        else if (collectionChange == winrt::CollectionChange::Reset ||
+                 collectionChange == winrt::CollectionChange::ItemChanged)
+        {
+            // Globally reevaluate the need for viewport updates even for CollectionChange::ItemChanged since
+            // the old item may or may not have been the sole snap point requiring viewport updates.
+            bool snapPointsNeedViewportUpdates = SnapPointsViewportChangedHelper(snapPoints, viewportSize);
+
+            if (dimension == ScrollerDimension::HorizontalScroll)
+            {
+                m_horizontalSnapPointsNeedViewportUpdates = snapPointsNeedViewportUpdates;
+            }
+            else
+            {
+                m_verticalSnapPointsNeedViewportUpdates = snapPointsNeedViewportUpdates;
+            }
+        }
+    }
+
+    switch (collectionChange)
+    {
+        case winrt::CollectionChange::ItemInserted:
+        {
+            if (!insertedItem)
+            {
+                insertedItem = snapPoints.GetAt(args.Index());
+            }
+
+            std::shared_ptr<SnapPointWrapper<T>> insertedSnapPointWrapper =
+                std::make_shared<SnapPointWrapper<T>>(insertedItem);
+            
+            SnapPointsVectorItemInsertedHelper(insertedSnapPointWrapper, snapPointsSet);
+            break;
+        }
+        case winrt::CollectionChange::Reset:
+        case winrt::CollectionChange::ItemRemoved:
+        case winrt::CollectionChange::ItemChanged:
+        {
+            RegenerateSnapPointsSet(snapPoints, snapPointsSet);
+            break;
+        }
+        default:
+            MUX_ASSERT(false);
+    }
+
+    SetupSnapPoints(snapPointsSet, dimension);
+}
+
+template <typename T>
+void Scroller::SnapPointsVectorItemInsertedHelper(
+    std::shared_ptr<SnapPointWrapper<T>> insertedItem,
+    std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet)
+{
+    if (snapPointsSet->empty())
+    {
+        snapPointsSet->insert(insertedItem);
         return;
     }
-    auto lowerBound = set->lower_bound(changedItem);
-    if (lowerBound != set->end())
+
+    winrt::SnapPointBase winrtInsertedItem = safe_cast<winrt::SnapPointBase>(insertedItem->SnapPoint());
+    auto lowerBound = snapPointsSet->lower_bound(insertedItem);
+
+    if (lowerBound != snapPointsSet->end())
     {
-        ScrollerSnapPointBase* lowerSnapPoint = winrt::get_self<ScrollerSnapPointBase>(*lowerBound);
-        if (*lowerSnapPoint == winrt::get_self<ScrollerSnapPointBase>(changedItem))
+        winrt::SnapPointBase winrtSnapPointBase = safe_cast<winrt::SnapPointBase>((*lowerBound)->SnapPoint());
+        SnapPointBase* lowerSnapPoint = winrt::get_self<SnapPointBase>(winrtSnapPointBase);
+
+        if (*lowerSnapPoint == winrt::get_self<SnapPointBase>(winrtInsertedItem))
         {
-            lowerSnapPoint->Combine(changedItem);
+            (*lowerBound)->Combine(insertedItem.get());
             return;
         }
         lowerBound++;
     }
-    if (lowerBound != set->end())
+    if (lowerBound != snapPointsSet->end())
     {
-        ScrollerSnapPointBase* upperSnapPoint = winrt::get_self<ScrollerSnapPointBase>(*lowerBound);
-        if (*upperSnapPoint == winrt::get_self<ScrollerSnapPointBase>(changedItem))
+        winrt::SnapPointBase winrtSnapPointBase = safe_cast<winrt::SnapPointBase>((*lowerBound)->SnapPoint());
+        SnapPointBase* upperSnapPoint = winrt::get_self<SnapPointBase>(winrtSnapPointBase);
+
+        if (*upperSnapPoint == winrt::get_self<SnapPointBase>(winrtInsertedItem))
         {
-            upperSnapPoint->Combine(changedItem);
+            (*lowerBound)->Combine(insertedItem.get());
             return;
         }
     }
-    set->insert(changedItem);
+    snapPointsSet->insert(insertedItem);
 }
 
-void Scroller::RegenerateSnapPointsSet(winrt::IVector<winrt::ScrollerSnapPointBase> userVector, std::set<winrt::ScrollerSnapPointBase, winrtProjectionComparator>* internalSet)
+template <typename T>
+void Scroller::RegenerateSnapPointsSet(
+    winrt::IObservableVector<T> const& userVector,
+    std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* internalSet)
 {
+    MUX_ASSERT(internalSet);
+
     internalSet->clear();
-    for (winrt::ScrollerSnapPointBase snapPoint : userVector)
+    for (T snapPoint : userVector)
     {
-        SnapPointsVectorItemInsertedHelper(snapPoint, internalSet);
+        std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper =
+            std::make_shared<SnapPointWrapper<T>>(snapPoint);
+
+        SnapPointsVectorItemInsertedHelper(snapPointWrapper, internalSet);
     }
 }
 
@@ -4452,10 +5183,11 @@ void Scroller::UpdateContent(
             // was already at offsets (0,0). The ScrollToOffsets request below will result in their completion otherwise.
             CompleteInteractionTrackerOperations(
                 -1 /*requestId*/,
-                winrt::ScrollerViewChangeResult::Interrupted /*operationResult*/,
-                winrt::ScrollerViewChangeResult::Ignored     /*unused priorNonAnimatedOperationsResult*/,
-                winrt::ScrollerViewChangeResult::Ignored     /*unused priorAnimatedOperationsResult*/,
-                true  /*completeOperation*/,
+                ScrollerViewChangeResult::Interrupted /*operationResult*/,
+                ScrollerViewChangeResult::Ignored     /*unused priorNonAnimatedOperationsResult*/,
+                ScrollerViewChangeResult::Ignored     /*unused priorAnimatedOperationsResult*/,
+                true  /*completeNonAnimatedOperation*/,
+                true  /*completeAnimatedOperation*/,
                 false /*completePriorNonAnimatedOperations*/,
                 false /*completePriorAnimatedOperations*/);
         }
@@ -4469,7 +5201,7 @@ void Scroller::UpdateContent(
             if ((m_transformMatrixTranslateXExpressionAnimation && m_transformMatrixTranslateYExpressionAnimation && m_transformMatrixZoomFactorExpressionAnimation && !useTranslationProperty) ||
                 (m_translationExpressionAnimation && m_zoomFactorExpressionAnimation && useTranslationProperty))
             {
-                StopTransformExpressionAnimations(oldContent);
+                StopTransformExpressionAnimations(oldContent, false /*forZoomFactorAnimationInterruption*/);
             }
             ScrollToOffsets(0.0 /*zoomedHorizontalOffset*/, 0.0 /*zoomedVerticalOffset*/);
         }
@@ -4507,8 +5239,11 @@ void Scroller::UpdatePositionBoundaries(
         m_minPositionExpressionAnimation.SetScalarParameter(L"contentLayoutOffsetY", m_contentLayoutOffsetY);
         m_maxPositionExpressionAnimation.SetScalarParameter(L"contentLayoutOffsetY", m_contentLayoutOffsetY);
 
-        m_interactionTracker.StartAnimation(L"MinPosition", m_minPositionExpressionAnimation);
-        m_interactionTracker.StartAnimation(L"MaxPosition", m_maxPositionExpressionAnimation);
+        m_interactionTracker.StartAnimation(s_minPositionSourcePropertyName, m_minPositionExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_minPositionSourcePropertyName /*propertyName*/);
+
+        m_interactionTracker.StartAnimation(s_maxPositionSourcePropertyName, m_maxPositionExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_maxPositionSourcePropertyName /*propertyName*/);
     }
 
 #ifdef _DEBUG
@@ -4524,8 +5259,8 @@ void Scroller::UpdateTransformSource(
         (m_translationExpressionAnimation && m_zoomFactorExpressionAnimation && IsVisualTranslationPropertyAvailable()));
     MUX_ASSERT(m_interactionTracker);
 
-    StopTransformExpressionAnimations(oldContent);
-    StartTransformExpressionAnimations(newContent);
+    StopTransformExpressionAnimations(oldContent, false /*forZoomFactorAnimationInterruption*/);
+    StartTransformExpressionAnimations(newContent, false /*forZoomFactorAnimationInterruption*/);
 }
 
 void Scroller::UpdateState(
@@ -4623,6 +5358,34 @@ void Scroller::UpdateUnzoomedExtentAndViewport(
         UpdateVisualInteractionSourceMode(ScrollerDimension::VerticalScroll);
 #endif
         UpdateScrollControllerValues(ScrollerDimension::VerticalScroll);
+    }
+
+    if (horizontalViewportChanged && m_horizontalSnapPoints && m_horizontalSnapPointsNeedViewportUpdates)
+    {
+        // At least one horizontal scroll snap point is not near-aligned and is thus sensitive to the
+        // viewport width. Regenerate and set up all horizontal scroll snap points.
+        auto horizontalSnapPoints = m_horizontalSnapPoints.try_as<winrt::IObservableVector<winrt::ScrollSnapPointBase>>();
+        bool horizontalSnapPointsNeedViewportUpdates = SnapPointsViewportChangedHelper(
+            horizontalSnapPoints,
+            m_viewportWidth);
+        MUX_ASSERT(horizontalSnapPointsNeedViewportUpdates);
+
+        RegenerateSnapPointsSet(horizontalSnapPoints, &m_sortedConsolidatedHorizontalSnapPoints);
+        SetupSnapPoints(&m_sortedConsolidatedHorizontalSnapPoints, ScrollerDimension::HorizontalScroll);
+    }
+
+    if (verticalViewportChanged && m_verticalSnapPoints && m_verticalSnapPointsNeedViewportUpdates)
+    {
+        // At least one vertical scroll snap point is not near-aligned and is thus sensitive to the
+        // viewport height. Regenerate and set up all vertical scroll snap points.
+        auto verticalSnapPoints = m_verticalSnapPoints.try_as<winrt::IObservableVector<winrt::ScrollSnapPointBase>>();
+        bool verticalSnapPointsNeedViewportUpdates = SnapPointsViewportChangedHelper(
+            verticalSnapPoints,
+            m_viewportHeight);
+        MUX_ASSERT(verticalSnapPointsNeedViewportUpdates);
+
+        RegenerateSnapPointsSet(verticalSnapPoints, &m_sortedConsolidatedVerticalSnapPoints);
+        SetupSnapPoints(&m_sortedConsolidatedVerticalSnapPoints, ScrollerDimension::VerticalScroll);
     }
 
     if (extentChanged)
@@ -4729,7 +5492,7 @@ void Scroller::UpdateVisualInteractionSourceMode(ScrollerDimension dimension)
             scrollMode);
 
 #ifdef IsMouseWheelScrollDisabled
-        if (SharedHelpers::IsRS5OrHigher())
+        if (Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled())
         {
             SetupVisualInteractionSourcePointerWheelConfig(
                 m_scrollerVisualInteractionSource,
@@ -4746,55 +5509,29 @@ void Scroller::UpdateManipulationRedirectionMode()
 {
     if (m_scrollerVisualInteractionSource)
     {
-        winrt::InputKind ignoredInputKind = IgnoredInputKind();
-
-        if (!IsInputKindIgnored(winrt::InputKind::MouseWheel))
-        {
-            bool suppressMouseWheel = true;
-
-            if (SharedHelpers::IsRS4OrHigher())
-            {
-                // Suppressing InteractionTracker's mouse wheel support when a Control key is down so the Scroller
-                // can receive mouse wheel messages to zoom in and out.
-                // Starting with RS5, the InteractionTracker supports built-in zoom in and out with the Control key and mouse wheel, 
-                // so no suppression is required anymore.
-                if (Scroller::IsInteractionTrackerMouseWheelZoomingEnabled())
-                {
-                    suppressMouseWheel = false;
-                }
-                else
-                {
-                    winrt::CoreVirtualKeyStates ctrlState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Control);
-                    suppressMouseWheel = (ctrlState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-                }
-            }
-
-            if (suppressMouseWheel)
-            {
-                ignoredInputKind |= winrt::InputKind::MouseWheel;
-            }
-        }
-
         SetupVisualInteractionSourceRedirectionMode(
             m_scrollerVisualInteractionSource,
-            ignoredInputKind);
+            IgnoredInputKind());
     }
 }
 
-void Scroller::UpdateKeyEvents()
+void Scroller::UpdateDisplayInformation(winrt::DisplayInformation const& displayInformation)
 {
-    MUX_ASSERT(m_scrollerVisualInteractionSource);
+    MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
 
-    if (SharedHelpers::IsRS4OrHigher() && !Scroller::IsInteractionTrackerMouseWheelZoomingEnabled())
+    try
     {
-        if (!IsInputKindIgnored(winrt::InputKind::MouseWheel))
-        {
-            SetKeyEvents();
-        }
-        else
-        {
-            ResetKeyEvents();
-        }
+        m_rawPixelsPerViewPixel = displayInformation.RawPixelsPerViewPixel();
+        m_screenWidthInRawPixels = displayInformation.ScreenWidthInRawPixels();
+        m_screenHeightInRawPixels = displayInformation.ScreenHeightInRawPixels();
+    }
+    catch (winrt::hresult_error)
+    {
+        // Calling GetForCurrentView on threads without a CoreWindow throws an error. This comes up in places like LogonUI.
+        // In this circumstance, default values are used, resulting in good mouse-wheel scrolling increments:
+        m_rawPixelsPerViewPixel = 1.0;
+        m_screenWidthInRawPixels = 1024;
+        m_screenHeightInRawPixels = 738;
     }
 }
 
@@ -4888,63 +5625,69 @@ void Scroller::OnContentLayoutOffsetChanged(ScrollerDimension dimension)
 }
 
 void Scroller::ChangeOffsetsPrivate(
+    double zoomedHorizontalOffset,
+    double zoomedVerticalOffset,
+    ScrollerViewKind offsetsKind,
+    winrt::ScrollOptions const& options,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
-    const winrt::ScrollerChangeOffsetsOptions& options,
     int32_t existingViewChangeId,
     _Out_opt_ int32_t* viewChangeId)
 {
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
+        zoomedHorizontalOffset,
+        zoomedVerticalOffset,
+        TypeLogging::ScrollOptionsToString(options).c_str());
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
         TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str(),
-        TypeLogging::ScrollerChangeOffsetsOptionsToString(options).c_str());
+        TypeLogging::ScrollerViewKindToString(offsetsKind).c_str());
 
     if (viewChangeId)
     {
         *viewChangeId = -1;
     }
 
-    winrt::ScrollerViewKind offsetsKind;
-    winrt::ScrollerViewChangeKind viewChangeKind;
-    winrt::ScrollerViewChangeSnapPointRespect snapPointRespect;
+    winrt::AnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
+    winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
     InteractionTrackerAsyncOperationType operationType;
 
-    offsetsKind = options.OffsetsKind();
-    viewChangeKind = options.ViewChangeKind();
-    snapPointRespect = options.SnapPointRespect();
-
-    switch (viewChangeKind)
+    switch (animationMode)
     {
-        case winrt::ScrollerViewChangeKind::DisableAnimation:
+    case winrt::AnimationMode::Disabled:
+    {
+        switch (offsetsKind)
         {
-            switch (offsetsKind)
-            {
-                case winrt::ScrollerViewKind::Absolute:
-                case winrt::ScrollerViewKind::RelativeToEndOfInertiaView:
-                {
-                    operationType = InteractionTrackerAsyncOperationType::TryUpdatePosition;
-                    break;
-                }
-                case winrt::ScrollerViewKind::RelativeToCurrentView:
-                {
-                    operationType = InteractionTrackerAsyncOperationType::TryUpdatePositionBy;
-                    break;
-                }
-            }
+        case ScrollerViewKind::Absolute:
+#ifdef ScrollerViewKind_RelativeToEndOfInertiaView
+        case ScrollerViewKind::RelativeToEndOfInertiaView:
+#endif
+        {
+            operationType = InteractionTrackerAsyncOperationType::TryUpdatePosition;
             break;
         }
-        case winrt::ScrollerViewChangeKind::AllowAnimation:
+        case ScrollerViewKind::RelativeToCurrentView:
         {
-            switch (offsetsKind)
-            {
-                case winrt::ScrollerViewKind::Absolute:
-                case winrt::ScrollerViewKind::RelativeToCurrentView:
-                case winrt::ScrollerViewKind::RelativeToEndOfInertiaView:
-                {
-                    operationType = InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation;
-                    break;
-                }
-            }
+            operationType = InteractionTrackerAsyncOperationType::TryUpdatePositionBy;
             break;
         }
+        }
+        break;
+    }
+    case winrt::AnimationMode::Enabled:
+    {
+        switch (offsetsKind)
+        {
+        case ScrollerViewKind::Absolute:
+        case ScrollerViewKind::RelativeToCurrentView:
+#ifdef ScrollerViewKind_RelativeToEndOfInertiaView
+        case ScrollerViewKind::RelativeToEndOfInertiaView:
+#endif
+        {
+            operationType = InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation;
+            break;
+        }
+        }
+        break;
+    }
     }
 
     if (!Content())
@@ -4961,25 +5704,20 @@ void Scroller::ChangeOffsetsPrivate(
     // is interrupted with TryUpdatePositionBy operation).
     bool offsetsChangeWithAnimationInterrupted = false;
 
-    double zoomedHorizontalOffset = options.HorizontalOffset();
-    double zoomedVerticalOffset = options.VerticalOffset();
+    com_ptr<ScrollOptions> optionsClone{ nullptr };
 
-    // Clone the options for this request. The clone will be used if the operation ever gets processed.
-    com_ptr<ScrollerChangeOffsetsOptions> optionsClone{ nullptr };
+    // Clone the options for this request if needed. The clone or original options will be used if the operation ever gets processed.
     const bool isScrollControllerRequest =
         static_cast<char>(operationTrigger) &
         (static_cast<char>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest) |
             static_cast<char>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest));
 
-    if (!isScrollControllerRequest)
+    if (options && !isScrollControllerRequest)
     {
-        // Options are cloned so that they can be modified by the caller after this ChangeOffsets call without affecting the outcome of the operation.
-        optionsClone = winrt::make_self<ScrollerChangeOffsetsOptions>(
-            zoomedHorizontalOffset,
-            zoomedVerticalOffset,
-            offsetsKind,
-            viewChangeKind,
-            snapPointRespect);
+        // Options are cloned so that they can be modified by the caller after this offsets change call without affecting the outcome of the operation.
+        optionsClone = winrt::make_self<ScrollOptions>(
+            animationMode,
+            snapPointsMode);
     }
 
     if (!delayOperation)
@@ -4992,7 +5730,7 @@ void Scroller::ChangeOffsetsPrivate(
 
         HookCompositionTargetRendering();
 
-        if (viewChangeKind == winrt::ScrollerViewChangeKind::AllowAnimation)
+        if (animationMode == winrt::AnimationMode::Enabled)
         {
             // Workaround for RS5 InteractionTracker bug 18827625: Interrupt on-going TryUpdatePositionWithAnimation
             // operation before launching new one.
@@ -5000,12 +5738,19 @@ void Scroller::ChangeOffsetsPrivate(
         }
     }
 
+    std::shared_ptr<ViewChange> offsetsChange = 
+        std::make_shared<OffsetsChange>(
+            zoomedHorizontalOffset,
+            zoomedVerticalOffset,
+            offsetsKind,
+            optionsClone ? winrt::IInspectable{ *optionsClone } : options); // NOTE: Using explicit cast to winrt::IInspectable to work around 17532876
+
     std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation(
         std::make_shared<InteractionTrackerAsyncOperation>(
             operationType,
             operationTrigger,
             delayOperation,
-            optionsClone ? winrt::IInspectable{ *optionsClone } : options)); // NOTE: Using explicit cast to winrt::IInspectable to work around 17532876
+            offsetsChange));
 
     if (offsetsChangeWithAnimationInterrupted)
     {
@@ -5044,13 +5789,16 @@ void Scroller::ChangeOffsetsPrivate(
 }
 
 void Scroller::ChangeOffsetsWithAdditionalVelocityPrivate(
+    winrt::float2 offsetsVelocity,
+    winrt::float2 anticipatedOffsetsChange,
+    winrt::IReference<winrt::float2> inertiaDecayRate,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
-    const winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions& options,
     _Out_opt_ int32_t* viewChangeId)
 {
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
-        TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str(),
-        TypeLogging::ScrollerChangeOffsetsWithAdditionalVelocityOptionsToString(options).c_str());
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_STR, METH_NAME, this,
+        TypeLogging::Float2ToString(offsetsVelocity).c_str(),
+        TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str(),
+        TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str());
 
     if (viewChangeId)
     {
@@ -5067,13 +5815,9 @@ void Scroller::ChangeOffsetsWithAdditionalVelocityPrivate(
     // OnCompositionTargetRendering will launch the delayed changes at that point.
     bool delayOperation = !IsLoadedAndSetUp();
 
-    winrt::float2 additionalVelocity = options.AdditionalVelocity();
-    winrt::IReference<winrt::float2> inertiaDecayRate = options.InertiaDecayRate();
-
-    // Clone the options for this request. The clone will be used if the operation ever gets processed.
-    // Options are cloned so that they can be modified by the caller after this ChangeOffsetsWithAdditionalVelocityAsync call without affecting the outcome of the operation.
-    auto optionsClone = winrt::make_self<ScrollerChangeOffsetsWithAdditionalVelocityOptions>(
-        additionalVelocity, inertiaDecayRate);
+    std::shared_ptr<ViewChangeBase> offsetsChangeWithAdditionalVelocity =
+        std::make_shared<OffsetsChangeWithAdditionalVelocity>(
+            offsetsVelocity, anticipatedOffsetsChange, inertiaDecayRate);
 
     if (!delayOperation)
     {
@@ -5091,7 +5835,7 @@ void Scroller::ChangeOffsetsWithAdditionalVelocityPrivate(
             InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity,
             operationTrigger,
             delayOperation,
-            winrt::IInspectable{ *optionsClone })); // NOTE: Using explicit cast to winrt::IInspectable to work around 17532876
+            offsetsChangeWithAdditionalVelocity));
 
     if (operationTrigger != InteractionTrackerAsyncOperationTrigger::DirectViewChange)
     {
@@ -5112,10 +5856,18 @@ void Scroller::ChangeOffsetsWithAdditionalVelocityPrivate(
 }
 
 void Scroller::ChangeZoomFactorPrivate(
-    const winrt::ScrollerChangeZoomFactorOptions& options,
+    float zoomFactor,
+    winrt::IReference<winrt::float2> centerPoint,
+    ScrollerViewKind zoomFactorKind,
+    winrt::ZoomOptions const& options,
     _Out_opt_ int32_t* viewChangeId)
 {
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::ScrollerChangeZoomFactorOptionsToString(options).c_str());
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        zoomFactor);
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,        
+        TypeLogging::ScrollerViewKindToString(zoomFactorKind).c_str(),
+        TypeLogging::ZoomOptionsToString(options).c_str());
 
     if (viewChangeId)
     {
@@ -5128,20 +5880,21 @@ void Scroller::ChangeZoomFactorPrivate(
         return;
     }
 
-    winrt::ScrollerViewKind zoomFactorViewKind = options.ZoomFactorKind();
-    winrt::ScrollerViewChangeKind viewChangeKind = options.ViewChangeKind();
-    winrt::ScrollerViewChangeSnapPointRespect snapPointRespect = options.SnapPointRespect();
+    winrt::AnimationMode animationMode = options ? options.AnimationMode() : ZoomOptions::s_defaultAnimationMode;
+    winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ZoomOptions::s_defaultSnapPointsMode;
     InteractionTrackerAsyncOperationType operationType;
 
-    switch (viewChangeKind)
+    switch (animationMode)
     {
-        case winrt::ScrollerViewChangeKind::DisableAnimation:
+        case winrt::AnimationMode::Disabled:
         {
-            switch (zoomFactorViewKind)
+            switch (zoomFactorKind)
             {
-                case winrt::ScrollerViewKind::Absolute:
-                case winrt::ScrollerViewKind::RelativeToEndOfInertiaView:
-                case winrt::ScrollerViewKind::RelativeToCurrentView:
+                case ScrollerViewKind::Absolute:
+#ifdef ScrollerViewKind_RelativeToEndOfInertiaView
+                case ScrollerViewKind::RelativeToEndOfInertiaView:
+#endif
+                case ScrollerViewKind::RelativeToCurrentView:
                 {
                     operationType = InteractionTrackerAsyncOperationType::TryUpdateScale;
                     break;
@@ -5149,13 +5902,15 @@ void Scroller::ChangeZoomFactorPrivate(
             }
             break;
         }
-        case winrt::ScrollerViewChangeKind::AllowAnimation:
+        case winrt::AnimationMode::Enabled:
         {
-            switch (zoomFactorViewKind)
+            switch (zoomFactorKind)
             {
-                case winrt::ScrollerViewKind::Absolute:
-                case winrt::ScrollerViewKind::RelativeToEndOfInertiaView:
-                case winrt::ScrollerViewKind::RelativeToCurrentView:
+                case ScrollerViewKind::Absolute:
+#ifdef ScrollerViewKind_RelativeToEndOfInertiaView
+                case ScrollerViewKind::RelativeToEndOfInertiaView:
+#endif
+                case ScrollerViewKind::RelativeToCurrentView:
                 {
                     operationType = InteractionTrackerAsyncOperationType::TryUpdateScaleWithAnimation;
                     break;
@@ -5173,17 +5928,16 @@ void Scroller::ChangeZoomFactorPrivate(
     // is interrupted with TryUpdateScale operation).
     bool scaleChangeWithAnimationInterrupted = false;
 
-    float zoomFactor = options.ZoomFactor();
-    winrt::float2 centerPoint = options.CenterPoint();
+    com_ptr<ZoomOptions> optionsClone{ nullptr };
 
-    // Clone the options for this request. The clone will be used if the operation ever gets processed.
-    // Options are cloned so that they can be modified by the caller after this ChangeZoomFactor call without affecting the outcome of the operation.
-    auto optionsClone = winrt::make_self<ScrollerChangeZoomFactorOptions>(
-        zoomFactor,
-        zoomFactorViewKind,
-        centerPoint,
-        viewChangeKind,
-        snapPointRespect);
+    // Clone the original options if any. The clone will be used if the operation ever gets processed.
+    if (options)
+    {
+        // Options are cloned so that they can be modified by the caller after this zoom factor change call without affecting the outcome of the operation.
+        optionsClone = winrt::make_self<ZoomOptions>(
+            animationMode,
+            snapPointsMode);
+    }
 
     if (!delayOperation)
     {
@@ -5195,7 +5949,7 @@ void Scroller::ChangeZoomFactorPrivate(
 
         HookCompositionTargetRendering();
 
-        if (viewChangeKind == winrt::ScrollerViewChangeKind::AllowAnimation)
+        if (animationMode == winrt::AnimationMode::Enabled)
         {
             // Workaround for RS5 InteractionTracker bug 18827625: Interrupt on-going TryUpdateScaleWithAnimation
             // operation before launching new one.
@@ -5203,12 +5957,19 @@ void Scroller::ChangeZoomFactorPrivate(
         }
     }
 
+    std::shared_ptr<ViewChange> zoomFactorChange =
+        std::make_shared<ZoomFactorChange>(
+            zoomFactor,
+            centerPoint,
+            zoomFactorKind, 
+            optionsClone ? winrt::IInspectable{ *optionsClone } : options); // NOTE: Using explicit cast to winrt::IInspectable to work around 17532876
+
     std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation(
         std::make_shared<InteractionTrackerAsyncOperation>(
             operationType,
             InteractionTrackerAsyncOperationTrigger::DirectViewChange,
             delayOperation,
-            winrt::IInspectable{ *optionsClone })); // NOTE: Using explicit cast to winrt::IInspectable to work around 17532876
+            zoomFactorChange));
 
     if (scaleChangeWithAnimationInterrupted)
     {
@@ -5228,13 +5989,20 @@ void Scroller::ChangeZoomFactorPrivate(
 }
 
 void Scroller::ChangeZoomFactorWithAdditionalVelocityPrivate(
+    float zoomFactorVelocity,
+    float anticipatedZoomFactorChange,
+    winrt::IReference<winrt::float2> centerPoint,
+    winrt::IReference<float> inertiaDecayRate,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
-    const winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions& options,
     _Out_opt_ int32_t* viewChangeId)
 {
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
-        TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str(),
-        TypeLogging::ScrollerChangeZoomFactorWithAdditionalVelocityOptionsToString(options).c_str());
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this,
+        zoomFactorVelocity,
+        anticipatedZoomFactorChange);
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR_STR, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
+        TypeLogging::NullableFloatToString(inertiaDecayRate).c_str(),
+        TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str());
 
     if (viewChangeId)
     {
@@ -5251,12 +6019,9 @@ void Scroller::ChangeZoomFactorWithAdditionalVelocityPrivate(
     // OnCompositionTargetRendering will launch the delayed changes at that point.
     bool delayOperation = !IsLoadedAndSetUp();
 
-    // Clone the options for this request. The clone will be used if the operation ever gets processed. Options are cloned so that they can be modified
-    // by the caller after this ChangeZoomFactorWithAdditionalVelocityAsync call without affecting the outcome of the operation.
-    auto optionsClone = winrt::make_self<ScrollerChangeZoomFactorWithAdditionalVelocityOptions>(
-        options.AdditionalVelocity(),
-        options.InertiaDecayRate(),
-        options.CenterPoint());
+    std::shared_ptr<ViewChangeBase> zoomFactorChangeWithAdditionalVelocity =
+        std::make_shared<ZoomFactorChangeWithAdditionalVelocity>(
+            zoomFactorVelocity, anticipatedZoomFactorChange, centerPoint, inertiaDecayRate);
 
     if (!delayOperation)
     {
@@ -5274,7 +6039,7 @@ void Scroller::ChangeZoomFactorWithAdditionalVelocityPrivate(
             InteractionTrackerAsyncOperationType::TryUpdateScaleWithAdditionalVelocity,
             operationTrigger,
             delayOperation,
-            winrt::IInspectable{ *optionsClone })); // NOTE: Using explicit cast to winrt::IInspectable to work around 17532876
+            zoomFactorChangeWithAdditionalVelocity));
 
     if (operationTrigger != InteractionTrackerAsyncOperationTrigger::DirectViewChange)
     {
@@ -5294,6 +6059,302 @@ void Scroller::ChangeZoomFactorWithAdditionalVelocityPrivate(
     }
 }
 
+void Scroller::ProcessPointerWheelScroll(
+    bool isHorizontalMouseWheel,
+    int32_t mouseWheelDelta,
+    float anticipatedEndOfInertiaPosition,
+    float minPosition,
+    float maxPosition)
+{
+    MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
+
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, isHorizontalMouseWheel, mouseWheelDelta);
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT_FLT, METH_NAME, this, anticipatedEndOfInertiaPosition, minPosition, maxPosition);
+
+    // Attempt to find an offsets change with velocity request for mouse wheel input within the same tick.
+    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationWithAdditionalVelocity(
+        true /*isOperationTypeForOffsetsChange*/,
+        InteractionTrackerAsyncOperationTrigger::MouseWheel);
+
+    // Mouse wheel delta amount required per initial velocity unit.
+    int32_t mouseWheelDeltaForVelocityUnit = s_mouseWheelDeltaForVelocityUnit;
+    com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
+
+    if (globalTestHooks)
+    {
+        mouseWheelDeltaForVelocityUnit = globalTestHooks->MouseWheelDeltaForVelocityUnit();
+    }
+
+    const float c_displayAdjustment = static_cast<float>((isHorizontalMouseWheel ? m_screenWidthInRawPixels : m_screenHeightInRawPixels) / m_rawPixelsPerViewPixel);
+    // Maximum absolute velocity. Any additional velocity has no effect.
+    const float c_maxVelocity = 4000.0f;
+    // Velocity per unit (which is a mouse wheel delta of 120 by default). That is the velocity required to achieve a change of c_offsetChangePerVelocityUnit pixels.
+    const float c_unitVelocity = 1.572420572916667f * c_displayAdjustment;
+    // Effect of unit velocity on offset, to match the built-in RS5 behavior.
+    const float c_offsetChangePerVelocityUnit = 0.15f * c_displayAdjustment;
+
+    std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = nullptr;
+    float offsetVelocity = static_cast<float>(mouseWheelDelta) / mouseWheelDeltaForVelocityUnit * c_unitVelocity;
+
+    if (!isHorizontalMouseWheel)
+    {
+        offsetVelocity *= -1.0f;
+    }
+
+    winrt::float2 offsetsVelocity{
+        isHorizontalMouseWheel ? offsetVelocity : 0.0f,
+        isHorizontalMouseWheel ? 0.0f : offsetVelocity };
+    winrt::float2 anticipatedOffsetsChange{};
+
+    if (interactionTrackerAsyncOperation)
+    {
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+        offsetsChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<OffsetsChangeWithAdditionalVelocity>(viewChangeBase);
+
+        if (offsetsChangeWithAdditionalVelocity)
+        {
+            winrt::float2 queuedOffsetsVelocity = offsetsChangeWithAdditionalVelocity->OffsetsVelocity();
+            anticipatedOffsetsChange = offsetsChangeWithAdditionalVelocity->AnticipatedOffsetsChange();
+            float queuedOffsetVelocity = isHorizontalMouseWheel ? queuedOffsetsVelocity.x : queuedOffsetsVelocity.y;
+
+            SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, queuedOffsetVelocity, offsetVelocity);
+
+            if (offsetVelocity * queuedOffsetVelocity > 0.0f)
+            {
+                // The wheel rotation direction is unchanged. Add the queued up velocity to the new velocity request.
+                if (isHorizontalMouseWheel)
+                {
+                    offsetsVelocity.x += queuedOffsetVelocity;
+                }
+                else
+                {
+                    offsetsVelocity.y += queuedOffsetVelocity;
+                }
+            }
+            // else the wheel rotation direction is changed. The old velocity request is ignored.
+        }
+    }
+
+    if (offsetVelocity > 0.0f)
+    {
+        MUX_ASSERT(anticipatedEndOfInertiaPosition < maxPosition);
+
+        if (isHorizontalMouseWheel)
+        {
+            // No point in exceeding the maximum effective velocity.
+            offsetsVelocity.x = std::min(c_maxVelocity, offsetsVelocity.x);
+
+            // Do not attempt to scroll beyond the MaxPosition value.
+            offsetsVelocity.x = std::min((maxPosition - anticipatedEndOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.x);
+        }
+        else
+        {
+            // No point in exceeding the maximum effective velocity.
+            offsetsVelocity.y = std::min(c_maxVelocity, offsetsVelocity.y);
+
+            // Do not attempt to scroll beyond the MaxPosition value.
+            offsetsVelocity.y = std::min((maxPosition - anticipatedEndOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.y);
+        }
+    }
+    else
+    {
+        MUX_ASSERT(anticipatedEndOfInertiaPosition > minPosition);
+
+        if (isHorizontalMouseWheel)
+        {
+            // No point in exceeding the minimum effective velocity.
+            offsetsVelocity.x = std::max(-c_maxVelocity, offsetsVelocity.x);
+
+            // Do not attempt to scroll beyond the MinPosition value.
+            offsetsVelocity.x = std::max((minPosition - anticipatedEndOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.x);
+        }
+        else
+        {
+            // No point in exceeding the minimum effective velocity.
+            offsetsVelocity.y = std::max(-c_maxVelocity, offsetsVelocity.y);
+
+            // Do not attempt to scroll beyond the MinPosition value.
+            offsetsVelocity.y = std::max((minPosition - anticipatedEndOfInertiaPosition) * c_unitVelocity / c_offsetChangePerVelocityUnit, offsetsVelocity.y);
+        }
+    }
+
+    // Evaluate the anticipated offsets to prevent scrolling beyond the Min/MaxPosition in subsequent requests.
+    if (isHorizontalMouseWheel)
+    {
+        anticipatedOffsetsChange.x = offsetsVelocity.x / c_unitVelocity * c_offsetChangePerVelocityUnit;
+    }
+    else
+    {
+        anticipatedOffsetsChange.y = offsetsVelocity.y / c_unitVelocity * c_offsetChangePerVelocityUnit;
+    }
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+        interactionTrackerAsyncOperation ? L"Coalesced MouseWheelDelta for scrolling" : L"New MouseWheelDelta for scrolling",
+        TypeLogging::Float2ToString(anticipatedOffsetsChange).c_str(),
+        isHorizontalMouseWheel ? offsetsVelocity.x : offsetsVelocity.y);
+
+    if (!interactionTrackerAsyncOperation)
+    {
+        // Inertia decay rate to achieve the c_offsetChangePerVelocityUnit change per velocity unit.
+        float mouseWheelInertiaDecayRate = SharedHelpers::IsRS2OrHigher() ? s_mouseWheelInertiaDecayRate : s_mouseWheelInertiaDecayRateRS1;
+
+        if (globalTestHooks)
+        {
+            mouseWheelInertiaDecayRate = globalTestHooks->MouseWheelInertiaDecayRate();
+        }
+
+        winrt::IReference<winrt::float3> currentInertiaDecayRate = m_interactionTracker.PositionInertiaDecayRate();
+        winrt::IInspectable inertiaDecayRateAsInsp = nullptr;
+
+        if (isHorizontalMouseWheel)
+        {
+            inertiaDecayRateAsInsp = box_value(winrt::float2({
+                mouseWheelInertiaDecayRate,
+                currentInertiaDecayRate ? currentInertiaDecayRate.Value().y : c_scrollerDefaultInertiaDecayRate }));
+        }
+        else
+        {
+            inertiaDecayRateAsInsp = box_value(winrt::float2({
+                currentInertiaDecayRate ? currentInertiaDecayRate.Value().x : c_scrollerDefaultInertiaDecayRate,
+                mouseWheelInertiaDecayRate }));
+        }
+
+        winrt::IReference<winrt::float2> inertiaDecayRate = inertiaDecayRateAsInsp.as<winrt::IReference<winrt::float2>>();
+        int32_t viewChangeId = -1;
+
+        // Queue up a zooming with additional velocity operation.
+        ChangeOffsetsWithAdditionalVelocityPrivate(
+            offsetsVelocity,
+            anticipatedOffsetsChange,
+            inertiaDecayRate,
+            InteractionTrackerAsyncOperationTrigger::MouseWheel,
+            &viewChangeId);
+    }
+    else if (offsetsChangeWithAdditionalVelocity)
+    {
+        // Update the queued up request with the new velocity and anticipated offsets change.
+        offsetsChangeWithAdditionalVelocity->OffsetsVelocity(offsetsVelocity);
+        offsetsChangeWithAdditionalVelocity->AnticipatedOffsetsChange(anticipatedOffsetsChange);
+    }
+}
+
+void Scroller::ProcessPointerWheelZoom(
+    winrt::PointerPoint const& pointerPoint,
+    int32_t mouseWheelDelta,
+    float anticipatedEndOfInertiaZoomFactor,
+    float minZoomFactor,
+    float maxZoomFactor)
+{
+    MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
+
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, mouseWheelDelta);
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT_FLT, METH_NAME, this, anticipatedEndOfInertiaZoomFactor, minZoomFactor, maxZoomFactor);
+
+    // Attempt to find a zoom factor change with velocity request for mouse wheel input within the same tick.
+    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationWithAdditionalVelocity(
+        false /*isOperationTypeForOffsetsChange*/,
+        InteractionTrackerAsyncOperationTrigger::MouseWheel);
+
+    // Mouse wheel delta amount required per initial velocity unit
+    int32_t mouseWheelDeltaForVelocityUnit = s_mouseWheelDeltaForVelocityUnit;
+    com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
+
+    if (globalTestHooks)
+    {
+        mouseWheelDeltaForVelocityUnit = globalTestHooks->MouseWheelDeltaForVelocityUnit();
+    }
+
+    // Maximum absolute velocity. Any additional velocity has no effect
+    const float c_maxVelocityUnits = 5.0f;
+    // Incremental zoom factor change per velocity unit
+    const float c_zoomFactorChangePerVelocityUnit = 0.1f;
+
+    std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity = nullptr;
+    float zoomFactorVelocity = static_cast<float>(mouseWheelDelta) / mouseWheelDeltaForVelocityUnit;
+    float anticipatedZoomFactorChange{};
+
+    if (interactionTrackerAsyncOperation)
+    {
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+        zoomFactorChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<ZoomFactorChangeWithAdditionalVelocity>(viewChangeBase);
+
+        if (zoomFactorChangeWithAdditionalVelocity)
+        {
+            float queuedZoomFactorVelocity = zoomFactorChangeWithAdditionalVelocity->ZoomFactorVelocity();
+            anticipatedZoomFactorChange = zoomFactorChangeWithAdditionalVelocity->AnticipatedZoomFactorChange();
+
+            SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, queuedZoomFactorVelocity, zoomFactorVelocity);
+
+            if (zoomFactorVelocity * queuedZoomFactorVelocity > 0.0f)
+            {
+                // The wheel rotation direction is unchanged. Add the queued up velocity to the new velocity request.
+                zoomFactorVelocity += queuedZoomFactorVelocity;
+            }
+            // else the wheel rotation direction is changed. The old velocity request is ignored.
+        }
+    }
+
+    if (zoomFactorVelocity > 0.0f)
+    {
+        MUX_ASSERT(anticipatedEndOfInertiaZoomFactor < maxZoomFactor);
+
+        // No point in exceeding the maximum effective velocity
+        zoomFactorVelocity = std::min(c_maxVelocityUnits, zoomFactorVelocity);
+
+        // Do not attempt to zoom beyond the MaxZoomFactor value
+        zoomFactorVelocity = std::min((maxZoomFactor - anticipatedEndOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, zoomFactorVelocity);
+    }
+    else
+    {
+        MUX_ASSERT(anticipatedEndOfInertiaZoomFactor > minZoomFactor);
+
+        // No point in exceeding the minimum effective velocity
+        zoomFactorVelocity = std::max(-c_maxVelocityUnits, zoomFactorVelocity);
+
+        // Do not attempt to zoom beyond the MinZoomFactor value
+        zoomFactorVelocity = std::max((minZoomFactor - anticipatedEndOfInertiaZoomFactor) / c_zoomFactorChangePerVelocityUnit, zoomFactorVelocity);
+    }
+
+    // Evaluate the anticipated offsets to prevent scrolling beyond the Min/MaxZoomFactor in subsequent requests.
+    anticipatedZoomFactorChange = zoomFactorVelocity * c_zoomFactorChangePerVelocityUnit;
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this,
+        interactionTrackerAsyncOperation ? L"Coalesced MouseWheelDelta for zooming" : L"New MouseWheelDelta for zooming",
+        anticipatedZoomFactorChange,
+        zoomFactorVelocity);
+
+    if (!interactionTrackerAsyncOperation)
+    {
+        // Inertia decay rate to achieve the c_zoomFactorChangePerVelocityUnit change per velocity unit
+        float mouseWheelInertiaDecayRate = SharedHelpers::IsRS2OrHigher() ? s_mouseWheelInertiaDecayRate : s_mouseWheelInertiaDecayRateRS1;
+
+        if (globalTestHooks)
+        {
+            mouseWheelInertiaDecayRate = globalTestHooks->MouseWheelInertiaDecayRate();
+        }
+
+        winrt::IInspectable inertiaDecayRateAsInsp = box_value(mouseWheelInertiaDecayRate);
+        winrt::IReference<float> inertiaDecayRate = inertiaDecayRateAsInsp.as<winrt::IReference<float>>();
+        winrt::float2 centerPoint = ComputeCenterPointerForMouseWheelZooming(Content(), pointerPoint.Position());
+        int32_t viewChangeId = -1;
+
+        // Queue up a zooming with additional velocity operation
+        ChangeZoomFactorWithAdditionalVelocityPrivate(
+            zoomFactorVelocity,
+            anticipatedZoomFactorChange,
+            centerPoint,
+            inertiaDecayRate,
+            InteractionTrackerAsyncOperationTrigger::MouseWheel,
+            &viewChangeId);
+    }
+    else if (zoomFactorChangeWithAdditionalVelocity)
+    {
+        // Update the queued up request with the new velocity and anticipated zoom factor change.
+        zoomFactorChangeWithAdditionalVelocity->ZoomFactorVelocity(zoomFactorVelocity);
+        zoomFactorChangeWithAdditionalVelocity->AnticipatedZoomFactorChange(anticipatedZoomFactorChange);
+    }
+}
+
 void Scroller::ProcessDequeuedViewChange(std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation)
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, interactionTrackerAsyncOperation);
@@ -5301,9 +6362,9 @@ void Scroller::ProcessDequeuedViewChange(std::shared_ptr<InteractionTrackerAsync
     MUX_ASSERT(IsLoadedAndSetUp());
     MUX_ASSERT(!interactionTrackerAsyncOperation->IsQueued());
 
-    winrt::IInspectable options = interactionTrackerAsyncOperation->GetOptions();
+    std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
 
-    MUX_ASSERT(options);
+    MUX_ASSERT(viewChangeBase);
 
     switch (interactionTrackerAsyncOperation->GetOperationType())
     {
@@ -5311,37 +6372,41 @@ void Scroller::ProcessDequeuedViewChange(std::shared_ptr<InteractionTrackerAsync
         case InteractionTrackerAsyncOperationType::TryUpdatePositionBy:
         case InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation:
         {
-            winrt::ScrollerChangeOffsetsOptions optionsClone = options.as<winrt::ScrollerChangeOffsetsOptions>();
+            std::shared_ptr<OffsetsChange> offsetsChange = std::reinterpret_pointer_cast<OffsetsChange>(viewChangeBase);
 
             ProcessOffsetsChange(
                 interactionTrackerAsyncOperation->GetOperationTrigger() /*operationTrigger*/,
-                optionsClone,
-                interactionTrackerAsyncOperation->GetViewChangeId() /*viewChangeId*/,
+                offsetsChange,
+                interactionTrackerAsyncOperation->GetViewChangeId() /*offsetsChangeId*/,
                 true /*isForAsyncOperation*/);
             break;
         }
         case InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity:
         {
-            winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions optionsClone = options.as<winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions>();
+            std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<OffsetsChangeWithAdditionalVelocity>(viewChangeBase);
 
-            ProcessOffsetsChange(optionsClone);
+            ProcessOffsetsChange(
+                interactionTrackerAsyncOperation->GetOperationTrigger() /*operationTrigger*/,
+                offsetsChangeWithAdditionalVelocity);
             break;
         }
         case InteractionTrackerAsyncOperationType::TryUpdateScale:
         case InteractionTrackerAsyncOperationType::TryUpdateScaleWithAnimation:
         {
-            winrt::ScrollerChangeZoomFactorOptions optionsClone = options.as<winrt::ScrollerChangeZoomFactorOptions>();
+            std::shared_ptr<ZoomFactorChange> zoomFactorChange = std::reinterpret_pointer_cast<ZoomFactorChange>(viewChangeBase);
 
             ProcessZoomFactorChange(
-                optionsClone,
-                interactionTrackerAsyncOperation->GetViewChangeId() /*viewChangeId*/);
+                zoomFactorChange,
+                interactionTrackerAsyncOperation->GetViewChangeId() /*zoomFactorChangeId*/);
             break;
         }
         case InteractionTrackerAsyncOperationType::TryUpdateScaleWithAdditionalVelocity:
         {
-            winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions optionsClone = options.as<winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions>();
+            std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<ZoomFactorChangeWithAdditionalVelocity>(viewChangeBase);
 
-            ProcessZoomFactorChange(optionsClone);
+            ProcessZoomFactorChange(
+                interactionTrackerAsyncOperation->GetOperationTrigger() /*operationTrigger*/,
+                zoomFactorChangeWithAdditionalVelocity);
             break;
         }
         default:
@@ -5355,36 +6420,45 @@ void Scroller::ProcessDequeuedViewChange(std::shared_ptr<InteractionTrackerAsync
 // Launches an InteractionTracker request to change the offsets.
 void Scroller::ProcessOffsetsChange(
     InteractionTrackerAsyncOperationTrigger operationTrigger,
-    const winrt::ScrollerChangeOffsetsOptions& options,
-    int32_t viewChangeId,
+    std::shared_ptr<OffsetsChange> offsetsChange,
+    int32_t offsetsChangeId,
     bool isForAsyncOperation)
 {
+    MUX_ASSERT(m_interactionTracker);
+    MUX_ASSERT(offsetsChange);
+
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR_INT_INT, METH_NAME, this,
         TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str(),
-        TypeLogging::ScrollerChangeOffsetsOptionsToString(options).c_str(),
-        viewChangeId,
+        TypeLogging::ScrollerViewKindToString(offsetsChange->ViewKind()).c_str(),
+        offsetsChangeId,
         isForAsyncOperation);
 
-    MUX_ASSERT(m_interactionTracker);
+    double zoomedHorizontalOffset = offsetsChange->ZoomedHorizontalOffset();
+    double zoomedVerticalOffset = offsetsChange->ZoomedVerticalOffset();
+    winrt::ScrollOptions options = offsetsChange->Options().try_as<winrt::ScrollOptions>();
 
-    double zoomedHorizontalOffset = options.HorizontalOffset();
-    double zoomedVerticalOffset = options.VerticalOffset();
-    bool respectSnapPoints = options.SnapPointRespect() == winrt::ScrollerViewChangeSnapPointRespect::RespectSnapPoints;
-    winrt::ScrollerViewChangeKind viewChangeKind = options.ViewChangeKind();
-    winrt::ScrollerViewKind offsetsKind = options.OffsetsKind();
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
+        zoomedHorizontalOffset,
+        zoomedVerticalOffset,
+        TypeLogging::ScrollOptionsToString(options).c_str());
 
-    switch (offsetsKind)
+    winrt::AnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
+    winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+
+    switch (offsetsChange->ViewKind())
     {
-        case winrt::ScrollerViewKind::RelativeToEndOfInertiaView:
+#ifdef ScrollerViewKind_RelativeToEndOfInertiaView
+        case ScrollerViewKind::RelativeToEndOfInertiaView:
         {
             const winrt::float2 endOfInertiaPosition = ComputeEndOfInertiaPosition();
             zoomedHorizontalOffset += endOfInertiaPosition.x;
             zoomedVerticalOffset += endOfInertiaPosition.y;
             break;
         }
-        case winrt::ScrollerViewKind::RelativeToCurrentView:
+#endif
+        case ScrollerViewKind::RelativeToCurrentView:
         {
-            if (respectSnapPoints || viewChangeKind == winrt::ScrollerViewChangeKind::AllowAnimation)
+            if (snapPointsMode == winrt::SnapPointsMode::Default || animationMode == winrt::AnimationMode::Enabled)
             {
                 zoomedHorizontalOffset += m_zoomedHorizontalOffset;
                 zoomedVerticalOffset += m_zoomedVerticalOffset;
@@ -5393,17 +6467,20 @@ void Scroller::ProcessOffsetsChange(
         }
     }
 
-    if (respectSnapPoints)
+    if (snapPointsMode == winrt::SnapPointsMode::Default)
     {
-        zoomedHorizontalOffset = ComputeValueAfterSnapPoints(zoomedHorizontalOffset, m_sortedConsolidatedHorizontalSnapPoints);
-        zoomedVerticalOffset = ComputeValueAfterSnapPoints(zoomedVerticalOffset, m_sortedConsolidatedVerticalSnapPoints);
+        zoomedHorizontalOffset = ComputeValueAfterSnapPoints<winrt::ScrollSnapPointBase>(zoomedHorizontalOffset, m_sortedConsolidatedHorizontalSnapPoints);
+        zoomedVerticalOffset = ComputeValueAfterSnapPoints<winrt::ScrollSnapPointBase>(zoomedVerticalOffset, m_sortedConsolidatedVerticalSnapPoints);
     }
 
-    switch (viewChangeKind)
+    // On pre-RS5 versions, turn off the SnapPointBase::s_isInertiaFromImpulse boolean parameters on the snap points' composition expressions.
+    UpdateIsInertiaFromImpulse(false /*isInertiaFromImpulse*/);
+
+    switch (animationMode)
     {
-        case winrt::ScrollerViewChangeKind::DisableAnimation:
+        case winrt::AnimationMode::Disabled:
         {
-            if (offsetsKind == winrt::ScrollerViewKind::RelativeToCurrentView && !respectSnapPoints)
+            if (offsetsChange->ViewKind() == ScrollerViewKind::RelativeToCurrentView && snapPointsMode == winrt::SnapPointsMode::Ignore)
             {
                 SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_STR, METH_NAME,
                     this,
@@ -5432,7 +6509,7 @@ void Scroller::ProcessOffsetsChange(
             }
             break;
         }
-        case winrt::ScrollerViewChangeKind::AllowAnimation:
+        case winrt::AnimationMode::Enabled:
         {
             SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH, METH_NAME, this, L"TryUpdatePositionWithAnimation");
 
@@ -5441,7 +6518,7 @@ void Scroller::ProcessOffsetsChange(
                     zoomedHorizontalOffset,
                     zoomedVerticalOffset,
                     operationTrigger,
-                    viewChangeId));
+                    offsetsChangeId));
             m_lastInteractionTrackerAsyncOperationType = InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation;
             break;
         }
@@ -5450,14 +6527,16 @@ void Scroller::ProcessOffsetsChange(
 
 // Launches an InteractionTracker request to change the offsets with an additional velocity and optional scroll inertia decay rate.
 void Scroller::ProcessOffsetsChange(
-    const winrt::ScrollerChangeOffsetsWithAdditionalVelocityOptions& options)
+    InteractionTrackerAsyncOperationTrigger operationTrigger,
+    std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity)
 {
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::ScrollerChangeOffsetsWithAdditionalVelocityOptionsToString(options).c_str());
-
     MUX_ASSERT(m_interactionTracker);
+    MUX_ASSERT(offsetsChangeWithAdditionalVelocity);
 
-    winrt::float2 additionalVelocity = options.AdditionalVelocity();
-    winrt::IReference<winrt::float2> inertiaDecayRate = options.InertiaDecayRate();
+    winrt::float2 offsetsVelocity = offsetsChangeWithAdditionalVelocity->OffsetsVelocity();
+    winrt::IReference<winrt::float2> inertiaDecayRate = offsetsChangeWithAdditionalVelocity->InertiaDecayRate();
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
 
     if (inertiaDecayRate)
     {
@@ -5468,11 +6547,42 @@ void Scroller::ProcessOffsetsChange(
             winrt::float3(horizontalInertiaDecayRate, verticalInertiaDecayRate, 0.0f));
     }
 
+    // For mouse-wheel scrolling, make sure the initial velocity is larger than the minimum effective velocity.
+    if (operationTrigger == InteractionTrackerAsyncOperationTrigger::MouseWheel && m_state == winrt::InteractionState::Idle)
+    {
+        // Minimum absolute velocity. Any lower velocity has no effect.
+        const float c_minVelocity = 30.0f;
+        // Maximum absolute velocity. Any additional velocity has no effect.
+        const float c_maxVelocity = 4000.0f;
+
+        if (offsetsVelocity.x > 0.0f && offsetsVelocity.x < c_maxVelocity)
+        {
+            offsetsVelocity.x = std::min(offsetsVelocity.x + c_minVelocity, c_maxVelocity);
+        }
+        else if (offsetsVelocity.x < 0.0f && offsetsVelocity.x > -c_maxVelocity)
+        {
+            offsetsVelocity.x = std::max(offsetsVelocity.x - c_minVelocity, -c_maxVelocity);
+        }
+
+        if (offsetsVelocity.y > 0.0f && offsetsVelocity.y < c_maxVelocity)
+        {
+            offsetsVelocity.y = std::min(offsetsVelocity.y + c_minVelocity, c_maxVelocity);
+        }
+        else if (offsetsVelocity.y < 0.0f && offsetsVelocity.y > -c_maxVelocity)
+        {
+            offsetsVelocity.y = std::max(offsetsVelocity.y - c_minVelocity, -c_maxVelocity);
+        }
+    }
+
+    // On pre-RS5 versions, the SnapPointBase::s_isInertiaFromImpulse boolean parameters of the snap points' composition expressions
+    // depend on whether the request was triggere by the mouse wheel or not.
+    UpdateIsInertiaFromImpulse(operationTrigger == InteractionTrackerAsyncOperationTrigger::MouseWheel /*isInertiaFromImpulse*/);
+
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_STR, METH_NAME, this,
-        L"TryUpdatePositionWithAdditionalVelocity", TypeLogging::Float2ToString(winrt::float2(additionalVelocity)).c_str());
+        L"TryUpdatePositionWithAdditionalVelocity", TypeLogging::Float2ToString(winrt::float2(offsetsVelocity)).c_str());
 
     m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdatePositionWithAdditionalVelocity(
-        winrt::float3(additionalVelocity, 0.0f));
+        winrt::float3(offsetsVelocity, 0.0f));
     m_lastInteractionTrackerAsyncOperationType = InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity;
 }
 
@@ -5501,41 +6611,59 @@ void Scroller::PostProcessOffsetsChange(
 
 // Launches an InteractionTracker request to change the zoomFactor.
 void Scroller::ProcessZoomFactorChange(
-    const winrt::ScrollerChangeZoomFactorOptions& options,
-    int32_t viewChangeId)
+    std::shared_ptr<ZoomFactorChange> zoomFactorChange,
+    int32_t zoomFactorChangeId)
 {
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this,
-        TypeLogging::ScrollerChangeZoomFactorOptionsToString(options).c_str(),
-        viewChangeId);
-
     MUX_ASSERT(m_interactionTracker);
+    MUX_ASSERT(zoomFactorChange);
 
-    float zoomFactor = options.ZoomFactor();
-    winrt::float2 centerPoint2D = options.CenterPoint();
+    float zoomFactor = zoomFactorChange->ZoomFactor();
+    winrt::IReference<winrt::float2> nullableCenterPoint = zoomFactorChange->CenterPoint();
+    ScrollerViewKind viewKind = zoomFactorChange->ViewKind();
+    winrt::ZoomOptions options = zoomFactorChange->Options().try_as<winrt::ZoomOptions>();
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this,
+        TypeLogging::ScrollerViewKindToString(viewKind).c_str(),
+        zoomFactorChangeId);
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(nullableCenterPoint).c_str(),
+        TypeLogging::ZoomOptionsToString(options).c_str(),
+        zoomFactor);
+
+    winrt::float2 centerPoint2D = nullableCenterPoint == nullptr ?
+        winrt::float2(static_cast<float>(m_viewportWidth / 2.0), static_cast<float>(m_viewportHeight / 2.0)) : nullableCenterPoint.Value();
     winrt::float3 centerPoint(centerPoint2D.x - m_contentLayoutOffsetX, centerPoint2D.y - m_contentLayoutOffsetY, 0.0f);
 
-    switch (options.ZoomFactorKind())
+    switch (viewKind)
     {
-        case winrt::ScrollerViewKind::RelativeToEndOfInertiaView:
+#ifdef ScrollerViewKind_RelativeToEndOfInertiaView
+    case ScrollerViewKind::RelativeToEndOfInertiaView:
         {
             zoomFactor += ComputeEndOfInertiaZoomFactor();
             break;
         }
-        case winrt::ScrollerViewKind::RelativeToCurrentView:
+#endif
+        case ScrollerViewKind::RelativeToCurrentView:
         {
             zoomFactor += m_zoomFactor;
             break;
         }
     }
 
-    if (options.SnapPointRespect() == winrt::ScrollerViewChangeSnapPointRespect::RespectSnapPoints)
+    winrt::AnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
+    winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+
+    if (snapPointsMode == winrt::SnapPointsMode::Default)
     {
-        zoomFactor = (float)ComputeValueAfterSnapPoints(zoomFactor, m_sortedConsolidatedZoomSnapPoints);
+        zoomFactor = static_cast<float>(ComputeValueAfterSnapPoints<winrt::ZoomSnapPointBase>(zoomFactor, m_sortedConsolidatedZoomSnapPoints));
     }
 
-    switch (options.ViewChangeKind())
+    // On pre-RS5 versions, turn off the SnapPointBase::s_isInertiaFromImpulse boolean parameters on the snap points' composition expressions.
+    UpdateIsInertiaFromImpulse(false /*isInertiaFromImpulse*/);
+
+    switch (animationMode)
     {
-        case winrt::ScrollerViewChangeKind::DisableAnimation:
+        case winrt::AnimationMode::Disabled:
         {
             SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_FLT_STR, METH_NAME, this, 
                 L"TryUpdateScale", zoomFactor, TypeLogging::Float2ToString(winrt::float2(centerPoint.x, centerPoint.y)).c_str());
@@ -5546,12 +6674,12 @@ void Scroller::ProcessZoomFactorChange(
             HookCompositionTargetRendering();
             break;
         }
-        case winrt::ScrollerViewChangeKind::AllowAnimation:
+        case winrt::AnimationMode::Enabled:
         {
             SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH, METH_NAME, this, L"TryUpdateScaleWithAnimation");
 
             m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdateScaleWithAnimation(
-                GetZoomFactorAnimation(zoomFactor, centerPoint2D, viewChangeId),
+                GetZoomFactorAnimation(zoomFactor, centerPoint2D, zoomFactorChangeId),
                 centerPoint);
             m_lastInteractionTrackerAsyncOperationType = InteractionTrackerAsyncOperationType::TryUpdateScaleWithAnimation;
             break;
@@ -5561,16 +6689,22 @@ void Scroller::ProcessZoomFactorChange(
 
 // Launches an InteractionTracker request to change the zoomFactor with an additional velocity and an optional zoomFactor inertia decay rate.
 void Scroller::ProcessZoomFactorChange(
-    const winrt::ScrollerChangeZoomFactorWithAdditionalVelocityOptions& options)
+    InteractionTrackerAsyncOperationTrigger operationTrigger,
+    std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity)
 {
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::ScrollerChangeZoomFactorWithAdditionalVelocityOptionsToString(options).c_str());
-
     MUX_ASSERT(m_interactionTracker);
+    MUX_ASSERT(zoomFactorChangeWithAdditionalVelocity);
 
-    float additionalVelocity = options.AdditionalVelocity();
-    winrt::IReference<float> inertiaDecayRate = options.InertiaDecayRate();
-    winrt::float2 centerPoint2D = options.CenterPoint();
-    winrt::float3 centerPoint(centerPoint2D.x - m_contentLayoutOffsetX, centerPoint2D.y - m_contentLayoutOffsetY, 0.0f);
+    float zoomFactorVelocity = zoomFactorChangeWithAdditionalVelocity->ZoomFactorVelocity();
+    winrt::IReference<float> inertiaDecayRate = zoomFactorChangeWithAdditionalVelocity->InertiaDecayRate();
+    winrt::IReference<winrt::float2> nullableCenterPoint = zoomFactorChangeWithAdditionalVelocity->CenterPoint();
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this,
+        TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str());
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
+        TypeLogging::NullableFloat2ToString(nullableCenterPoint).c_str(),
+        TypeLogging::NullableFloatToString(inertiaDecayRate).c_str(),
+        zoomFactorVelocity);
 
     if (inertiaDecayRate)
     {
@@ -5579,11 +6713,37 @@ void Scroller::ProcessZoomFactorChange(
         m_interactionTracker.ScaleInertiaDecayRate(scaleInertiaDecayRate);
     }
 
+    winrt::float2 centerPoint2D = nullableCenterPoint == nullptr ?
+        winrt::float2(static_cast<float>(m_viewportWidth / 2.0), static_cast<float>(m_viewportHeight / 2.0)) : nullableCenterPoint.Value();
+    winrt::float3 centerPoint(centerPoint2D.x - m_contentLayoutOffsetX, centerPoint2D.y - m_contentLayoutOffsetY, 0.0f);
+
+    // For mouse-wheel zooming, make sure the initial velocity is larger than the minimum effective velocity.
+    if (operationTrigger == InteractionTrackerAsyncOperationTrigger::MouseWheel && m_state == winrt::InteractionState::Idle)
+    {
+        // Minimum absolute velocity. Any lower velocity has no effect.
+        const float c_minVelocity = 0.05f;
+        // Maximum absolute velocity. Any additional velocity has no effect.
+        const float c_maxVelocity = 5.0f;
+
+        if (zoomFactorVelocity > 0.0f && zoomFactorVelocity < c_maxVelocity)
+        {
+            zoomFactorVelocity = std::min(zoomFactorVelocity + c_minVelocity, c_maxVelocity);
+        }
+        else if (zoomFactorVelocity < 0.0f && zoomFactorVelocity > -c_maxVelocity)
+        {
+            zoomFactorVelocity = std::max(zoomFactorVelocity - c_minVelocity, -c_maxVelocity);
+        }
+    }
+
+    // On pre-RS5 versions, the SnapPointBase::s_isInertiaFromImpulse boolean parameters of the snap points' composition expressions
+    // depend on whether the request was triggere by the mouse wheel or not.
+    UpdateIsInertiaFromImpulse(operationTrigger == InteractionTrackerAsyncOperationTrigger::MouseWheel /*isInertiaFromImpulse*/);
+
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_FLT_STR, METH_NAME, this,
-        L"TryUpdateScaleWithAdditionalVelocity", additionalVelocity, TypeLogging::Float2ToString(winrt::float2(centerPoint.x, centerPoint.y)).c_str());
+        L"TryUpdateScaleWithAdditionalVelocity", zoomFactorVelocity, TypeLogging::Float2ToString(winrt::float2(centerPoint.x, centerPoint.y)).c_str());
 
     m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdateScaleWithAdditionalVelocity(
-        additionalVelocity,
+        zoomFactorVelocity,
         centerPoint);
     m_lastInteractionTrackerAsyncOperationType = InteractionTrackerAsyncOperationType::TryUpdateScaleWithAdditionalVelocity;
 }
@@ -5645,7 +6805,7 @@ bool Scroller::InterruptViewChangeWithAnimation(InteractionTrackerAsyncOperation
 
 void Scroller::CompleteViewChange(
     std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation,
-    const winrt::ScrollerViewChangeResult& result)
+    ScrollerViewChangeResult result)
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this,
         interactionTrackerAsyncOperation.get(), TypeLogging::ScrollerViewChangeResultToString(result).c_str());
@@ -5656,7 +6816,21 @@ void Scroller::CompleteViewChange(
     switch (static_cast<int>(interactionTrackerAsyncOperation->GetOperationTrigger()))
     {
         case static_cast<int>(InteractionTrackerAsyncOperationTrigger::DirectViewChange):
-            RaiseViewChangeCompleted(result, interactionTrackerAsyncOperation->GetViewChangeId());
+            switch (interactionTrackerAsyncOperation->GetOperationType())
+            {
+            case InteractionTrackerAsyncOperationType::TryUpdatePosition:
+            case InteractionTrackerAsyncOperationType::TryUpdatePositionBy:
+            case InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation:
+            case InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity:
+                RaiseViewChangeCompleted(true /*isForScroll*/, result, interactionTrackerAsyncOperation->GetViewChangeId());
+                break;
+            default:
+                // Stop Scale animation if needed, to trigger rasterization of Content & avoid fuzzy text rendering for instance.
+                StopZoomFactorExpressionAnimation();
+
+                RaiseViewChangeCompleted(false /*isForScroll*/, result, interactionTrackerAsyncOperation->GetViewChangeId());
+                break;
+            }
             break;
         case static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest):
             onHorizontalOffsetChangeCompleted = true;
@@ -5676,29 +6850,28 @@ void Scroller::CompleteViewChange(
     if (onHorizontalOffsetChangeCompleted && m_horizontalScrollController)
     {
         m_horizontalScrollController.get().OnScrollCompleted(
-            interactionTrackerAsyncOperation->GetViewChangeId(),
-            result);
+            winrt::ScrollInfo{ interactionTrackerAsyncOperation->GetViewChangeId() });
     }
 
     if (onVerticalOffsetChangeCompleted && m_verticalScrollController)
     {
         m_verticalScrollController.get().OnScrollCompleted(
-            interactionTrackerAsyncOperation->GetViewChangeId(),
-            result);
+            winrt::ScrollInfo{ interactionTrackerAsyncOperation->GetViewChangeId() });
     }
 }
 
 void Scroller::CompleteInteractionTrackerOperations(
     int requestId,
-    const winrt::ScrollerViewChangeResult& operationResult,
-    const winrt::ScrollerViewChangeResult& priorNonAnimatedOperationsResult,
-    const winrt::ScrollerViewChangeResult& priorAnimatedOperationsResult,
-    bool completeOperation,
+    ScrollerViewChangeResult operationResult,
+    ScrollerViewChangeResult priorNonAnimatedOperationsResult,
+    ScrollerViewChangeResult priorAnimatedOperationsResult,
+    bool completeNonAnimatedOperation,
+    bool completeAnimatedOperation,
     bool completePriorNonAnimatedOperations,
     bool completePriorAnimatedOperations)
 {
     MUX_ASSERT(requestId != 0);
-    MUX_ASSERT(completeOperation || completePriorNonAnimatedOperations || completePriorAnimatedOperations);
+    MUX_ASSERT(completeNonAnimatedOperation || completeAnimatedOperation || completePriorNonAnimatedOperations || completePriorAnimatedOperations);
 
     if (m_interactionTrackerAsyncOperations.empty())
     {
@@ -5715,10 +6888,12 @@ void Scroller::CompleteInteractionTrackerOperations(
         bool isPriorMatch = requestId > interactionTrackerAsyncOperation->GetRequestId() && -1 != interactionTrackerAsyncOperation->GetRequestId();
 
         if ((isPriorMatch && (completePriorNonAnimatedOperations || completePriorAnimatedOperations)) ||
-            (isMatch && completeOperation))
+            (isMatch && (completeNonAnimatedOperation || completeAnimatedOperation)))
         {
             bool isOperationAnimated = interactionTrackerAsyncOperation->IsAnimated();
-            bool complete = (isMatch && completeOperation) ||
+            bool complete =
+                (isMatch && completeNonAnimatedOperation && !isOperationAnimated) ||
+                (isMatch && completeAnimatedOperation && isOperationAnimated) ||
                 (isPriorMatch && completePriorNonAnimatedOperations && !isOperationAnimated) ||
                 (isPriorMatch && completePriorAnimatedOperations && isOperationAnimated);
 
@@ -5763,10 +6938,58 @@ void Scroller::CompleteDelayedOperations()
 
         if (interactionTrackerAsyncOperation->IsDelayed())
         {
-            CompleteViewChange(interactionTrackerAsyncOperation, winrt::ScrollerViewChangeResult::Interrupted);
+            CompleteViewChange(interactionTrackerAsyncOperation, ScrollerViewChangeResult::Interrupted);
             m_interactionTrackerAsyncOperations.remove(interactionTrackerAsyncOperation);
         }
     }
+}
+
+winrt::float2 Scroller::GetMouseWheelAnticipatedOffsetsChange() const
+{
+    winrt::float2 anticipatedOffsetsChange{};
+
+    for (auto& interactionTrackerAsyncOperation : m_interactionTrackerAsyncOperations)
+    {
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+
+        if (interactionTrackerAsyncOperation->GetOperationTrigger() != InteractionTrackerAsyncOperationTrigger::MouseWheel ||
+            interactionTrackerAsyncOperation->GetOperationType() != InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity ||
+            interactionTrackerAsyncOperation->IsCanceled() ||
+            !viewChangeBase)
+        {
+            continue;
+        }
+
+        std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<OffsetsChangeWithAdditionalVelocity>(viewChangeBase);
+
+        anticipatedOffsetsChange += offsetsChangeWithAdditionalVelocity->AnticipatedOffsetsChange();
+    }
+
+    return anticipatedOffsetsChange;
+}
+
+float Scroller::GetMouseWheelAnticipatedZoomFactorChange() const
+{
+    float anticipatedZoomFactorChange{};
+
+    for (auto& interactionTrackerAsyncOperation : m_interactionTrackerAsyncOperations)
+    {
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
+
+        if (interactionTrackerAsyncOperation->GetOperationTrigger() != InteractionTrackerAsyncOperationTrigger::MouseWheel ||
+            interactionTrackerAsyncOperation->GetOperationType() != InteractionTrackerAsyncOperationType::TryUpdateScaleWithAdditionalVelocity ||
+            interactionTrackerAsyncOperation->IsCanceled() ||
+            !viewChangeBase)
+        {
+            continue;
+        }
+
+        std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<ZoomFactorChangeWithAdditionalVelocity>(viewChangeBase);
+
+        anticipatedZoomFactorChange += zoomFactorChangeWithAdditionalVelocity->AnticipatedZoomFactorChange();
+    }
+
+    return anticipatedZoomFactorChange;
 }
 
 int Scroller::GetInteractionTrackerOperationsTicksCountdownForTrigger(InteractionTrackerAsyncOperationTrigger operationTrigger) const
@@ -5822,53 +7045,91 @@ std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTracke
 std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTrackerOperationFromKinds(
     bool isOperationTypeForOffsetsChange,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
-    const winrt::ScrollerViewKind& viewKind,
-    const winrt::ScrollerViewChangeKind& viewChangeKind) const
+    ScrollerViewKind const& viewKind,
+    winrt::ScrollOptions const& options) const
 {
     for (auto& interactionTrackerAsyncOperation : m_interactionTrackerAsyncOperations)
     {
-        winrt::IInspectable options = interactionTrackerAsyncOperation->GetOptions();
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
 
         if ((static_cast<int>(interactionTrackerAsyncOperation->GetOperationTrigger()) & static_cast<int>(operationTrigger)) == 0x00 ||
             !interactionTrackerAsyncOperation->IsQueued() ||
             interactionTrackerAsyncOperation->IsUnqueueing() ||
             interactionTrackerAsyncOperation->IsCanceled() ||
-            !options)
+            !viewChangeBase)
         {
             continue;
         }
 
         switch (interactionTrackerAsyncOperation->GetOperationType())
         {
-            case InteractionTrackerAsyncOperationType::TryUpdatePosition:
-            case InteractionTrackerAsyncOperationType::TryUpdatePositionBy:
-            case InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation:
+        case InteractionTrackerAsyncOperationType::TryUpdatePosition:
+        case InteractionTrackerAsyncOperationType::TryUpdatePositionBy:
+        case InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation:
+        {
+            if (!isOperationTypeForOffsetsChange)
             {
-                if (!isOperationTypeForOffsetsChange)
-                {
-                    continue;
-                }
-                winrt::ScrollerChangeOffsetsOptions optionsClone = options.as<winrt::ScrollerChangeOffsetsOptions>();
-                if (optionsClone.OffsetsKind() != viewKind || optionsClone.ViewChangeKind() != viewChangeKind)
-                {
-                    continue;
-                }
-                break;
+                continue;
             }
-            case InteractionTrackerAsyncOperationType::TryUpdateScale:
-            case InteractionTrackerAsyncOperationType::TryUpdateScaleWithAnimation:
+
+            std::shared_ptr<ViewChange> viewChange = std::reinterpret_pointer_cast<ViewChange>(viewChangeBase);
+
+            if (viewChange->ViewKind() != viewKind)
             {
-                if (isOperationTypeForOffsetsChange)
-                {
-                    continue;
-                }
-                winrt::ScrollerChangeZoomFactorOptions optionsClone = options.as<winrt::ScrollerChangeZoomFactorOptions>();
-                if (optionsClone.ZoomFactorKind() != viewKind || optionsClone.ViewChangeKind() != viewChangeKind)
-                {
-                    continue;
-                }
-                break;
+                continue;
             }
+
+            winrt::ScrollOptions optionsClone = viewChange->Options().try_as<winrt::ScrollOptions>();
+            winrt::AnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
+            winrt::AnimationMode animationModeClone = optionsClone ? optionsClone.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
+
+            if (animationModeClone != animationMode)
+            {
+                continue;
+            }
+
+            winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+            winrt::SnapPointsMode snapPointsModeClone = optionsClone ? optionsClone.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+
+            if (snapPointsModeClone != snapPointsMode)
+            {
+                continue;
+            }
+            break;
+        }
+        case InteractionTrackerAsyncOperationType::TryUpdateScale:
+        case InteractionTrackerAsyncOperationType::TryUpdateScaleWithAnimation:
+        {
+            if (isOperationTypeForOffsetsChange)
+            {
+                continue;
+            }
+
+            std::shared_ptr<ViewChange> viewChange = std::reinterpret_pointer_cast<ViewChange>(viewChangeBase);
+
+            if (viewChange->ViewKind() != viewKind)
+            {
+                continue;
+            }
+
+            winrt::ZoomOptions optionsClone = viewChange->Options().try_as<winrt::ZoomOptions>();
+            winrt::AnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
+            winrt::AnimationMode animationModeClone = optionsClone ? optionsClone.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
+
+            if (animationModeClone != animationMode)
+            {
+                continue;
+            }
+
+            winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+            winrt::SnapPointsMode snapPointsModeClone = optionsClone ? optionsClone.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+
+            if (snapPointsModeClone != snapPointsMode)
+            {
+                continue;
+            }
+            break;
+        }
         }
 
         return interactionTrackerAsyncOperation;
@@ -5883,13 +7144,13 @@ std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTracke
 {
     for (auto& interactionTrackerAsyncOperation : m_interactionTrackerAsyncOperations)
     {
-        winrt::IInspectable options = interactionTrackerAsyncOperation->GetOptions();
+        std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
 
         if ((static_cast<int>(interactionTrackerAsyncOperation->GetOperationTrigger()) & static_cast<int>(operationTrigger)) == 0x00 ||
             !interactionTrackerAsyncOperation->IsQueued() ||
             interactionTrackerAsyncOperation->IsUnqueueing() ||
             interactionTrackerAsyncOperation->IsCanceled() ||
-            !options)
+            !viewChangeBase)
         {
             continue;
         }
@@ -5918,12 +7179,44 @@ std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTracke
     return nullptr;
 }
 
-bool Scroller::IsLoaded()
+template <typename T>
+winrt::InteractionTrackerInertiaRestingValue Scroller::GetInertiaRestingValue(
+    std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper,
+    winrt::Compositor const& compositor,
+    winrt::hstring const& target,
+    winrt::hstring const& scale) const
+{
+    bool isInertiaFromImpulse = IsInertiaFromImpulse();
+    winrt::InteractionTrackerInertiaRestingValue modifier = winrt::InteractionTrackerInertiaRestingValue::Create(compositor);
+    winrt::ExpressionAnimation conditionExpressionAnimation = snapPointWrapper->CreateConditionalExpression(m_interactionTracker, target, scale, isInertiaFromImpulse);
+    winrt::ExpressionAnimation restingPointExpressionAnimation = snapPointWrapper->CreateRestingPointExpression(m_interactionTracker, target, scale, isInertiaFromImpulse);
+
+    modifier.Condition(conditionExpressionAnimation);
+    modifier.RestingValue(restingPointExpressionAnimation);
+
+    return modifier;
+}
+
+// Relies on InteractionTracker.IsInertiaFromImpulse starting with RS5,
+// returns the replacement field m_isInertiaFromImpulse otherwise.
+bool Scroller::IsInertiaFromImpulse() const
+{
+    if (winrt::IInteractionTracker4 interactionTracker4 = m_interactionTracker)
+    {
+        return interactionTracker4.IsInertiaFromImpulse();
+    }
+    else
+    {
+        return m_isInertiaFromImpulse;
+    }
+}
+
+bool Scroller::IsLoaded() const
 {
     return winrt::VisualTreeHelper::GetParent(*this) != nullptr;
 }
 
-bool Scroller::IsLoadedAndSetUp()
+bool Scroller::IsLoadedAndSetUp() const
 {
     return IsLoaded() && m_interactionTracker;
 }
@@ -5935,45 +7228,60 @@ bool Scroller::IsInputKindIgnored(winrt::InputKind const& inputKind)
 
 void Scroller::HookCompositionTargetRendering()
 {
-    if (m_renderingToken.value == 0)
+    if (!m_renderingToken)
     {
         winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{ nullptr };
-
-        m_renderingToken = compositionTarget.Rendering({ this, &Scroller::OnCompositionTargetRendering });
+        m_renderingToken = compositionTarget.Rendering(winrt::auto_revoke, { this, &Scroller::OnCompositionTargetRendering });
     }
 }
 
 void Scroller::UnhookCompositionTargetRendering()
 {
-    if (m_renderingToken.value != 0)
-    {
-        winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{ nullptr };
+    m_renderingToken.revoke();    
+}
 
-        compositionTarget.Rendering(m_renderingToken);
-        m_renderingToken.value = 0;
+void Scroller::HookDpiChangedEvent()
+{
+    MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
+
+    try
+    {
+        winrt::DisplayInformation displayInformation = winrt::DisplayInformation::GetForCurrentView();
+
+        m_dpiChangedRevoker = displayInformation.DpiChanged(winrt::auto_revoke, { this, &Scroller::OnDpiChanged });
+
+        UpdateDisplayInformation(displayInformation);
+    }
+    catch (winrt::hresult_error)
+    {
+        // Calling GetForCurrentView on threads without a CoreWindow throws an error. This comes up in places like LogonUI.
+        // In this circumstance, default values are used, resulting in good mouse-wheel scrolling increments:
+        m_rawPixelsPerViewPixel = 1.0;
+        m_screenWidthInRawPixels = 1024;
+        m_screenHeightInRawPixels = 738;
     }
 }
 
 void Scroller::HookScrollerEvents()
 {
-    if (m_loadedToken.value == 0)
+    if (!m_loadedToken)
     {
-        m_loadedToken = Loaded({ this, &Scroller::OnLoaded });
+        m_loadedToken = Loaded(winrt::auto_revoke, { this, &Scroller::OnLoaded });
     }
 
-    if (m_unloadedToken.value == 0)
+    if (!m_unloadedToken)
     {
-        m_unloadedToken = Unloaded({ this, &Scroller::OnUnloaded });
+        m_unloadedToken = Unloaded(winrt::auto_revoke, { this, &Scroller::OnUnloaded });
     }
 
-    if (SharedHelpers::IsRS4OrHigher() && m_bringIntoViewRequested.value == 0)
+    if (SharedHelpers::IsRS4OrHigher() && !m_bringIntoViewRequested)
     {
-        m_bringIntoViewRequested = BringIntoViewRequested({ this, &Scroller::OnBringIntoViewRequestedHandler });
+        m_bringIntoViewRequested = BringIntoViewRequested(winrt::auto_revoke, { this, &Scroller::OnBringIntoViewRequestedHandler });
     }
 
-    if (!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled() && m_pointerWheelChangedToken.value == 0)
+    if (!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled() && !m_pointerWheelChangedToken)
     {
-        m_pointerWheelChangedToken = PointerWheelChanged({ this, &Scroller::OnPointerWheelChangedHandler });
+        m_pointerWheelChangedToken = PointerWheelChanged(winrt::auto_revoke, { this, &Scroller::OnPointerWheelChangedHandler });
     }
 
     if (!m_pointerPressedEventHandler)
@@ -5986,29 +7294,14 @@ void Scroller::HookScrollerEvents()
 
 void Scroller::UnhookScrollerEvents()
 {
-    if (m_loadedToken.value != 0)
+    m_loadedToken.revoke();
+    m_unloadedToken.revoke();
+    m_bringIntoViewRequested.revoke();
+    
+    if (m_pointerWheelChangedToken)
     {
-        Loaded(m_loadedToken);
-        m_loadedToken.value = 0;
-    }
-
-    if (m_unloadedToken.value != 0)
-    {
-        Unloaded(m_unloadedToken);
-        m_unloadedToken.value = 0;
-    }
-
-    if (m_bringIntoViewRequested.value != 0)
-    {
-        BringIntoViewRequested(m_bringIntoViewRequested);
-        m_bringIntoViewRequested.value = 0;
-    }
-
-    if (m_pointerWheelChangedToken.value != 0)
-    {
-        MUX_ASSERT(!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
-        PointerWheelChanged(m_pointerWheelChangedToken);
-        m_pointerWheelChangedToken.value = 0;
+        MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
+        m_pointerWheelChangedToken.revoke();
     }
 
     if (m_pointerPressedEventHandler)
@@ -6018,49 +7311,18 @@ void Scroller::UnhookScrollerEvents()
     }
 }
 
-void Scroller::UnhookSnapPointsVectorChangedEvents()
-{
-    if (m_horizontalSnapPointsVectorChangedToken.value != 0)
-    {
-        auto observableVector = HorizontalSnapPoints().try_as<winrt::IObservableVector<winrt::ScrollerSnapPointBase>>();
-        observableVector.VectorChanged(m_horizontalSnapPointsVectorChangedToken);
-        m_horizontalSnapPointsVectorChangedToken.value = 0;
-    }
-
-    if (m_verticalSnapPointsVectorChangedToken.value != 0)
-    {
-        auto observableVector = HorizontalSnapPoints().try_as<winrt::IObservableVector<winrt::ScrollerSnapPointBase>>();
-        observableVector.VectorChanged(m_verticalSnapPointsVectorChangedToken);
-        m_verticalSnapPointsVectorChangedToken.value = 0;
-    }
-
-    if (m_zoomSnapPointsVectorChangedToken.value != 0)
-    {
-        auto observableVector = HorizontalSnapPoints().try_as<winrt::IObservableVector<winrt::ScrollerSnapPointBase>>();
-        observableVector.VectorChanged(m_zoomSnapPointsVectorChangedToken);
-        m_zoomSnapPointsVectorChangedToken.value = 0;
-    }
-}
-
 void Scroller::HookContentPropertyChanged(
     const winrt::UIElement& content)
 {
     if (content)
     {
-        const winrt::FrameworkElement contentAsFE = content.try_as<winrt::FrameworkElement>();
-
-        if (contentAsFE)
+        if (!m_contentHorizontalAlignmentChangedToken)
         {
-            if (m_contentHorizontalAlignmentChangedToken.value == 0)
-            {
-                m_contentHorizontalAlignmentChangedToken.value = contentAsFE.RegisterPropertyChangedCallback(
-                    winrt::FrameworkElement::HorizontalAlignmentProperty(), { this, &Scroller::OnContentPropertyChanged });
-            }
-            if (m_contentVerticalAlignmentChangedToken.value == 0)
-            {
-                m_contentVerticalAlignmentChangedToken.value = contentAsFE.RegisterPropertyChangedCallback(
-                    winrt::FrameworkElement::VerticalAlignmentProperty(), { this, &Scroller::OnContentPropertyChanged });
-            }
+            m_contentHorizontalAlignmentChangedToken = RegisterPropertyChanged(content, winrt::FrameworkElement::HorizontalAlignmentProperty(), { this, &Scroller::OnContentPropertyChanged });
+        }
+        if (!m_contentVerticalAlignmentChangedToken)
+        {
+            m_contentVerticalAlignmentChangedToken = RegisterPropertyChanged(content, winrt::FrameworkElement::VerticalAlignmentProperty(), { this, &Scroller::OnContentPropertyChanged });
         }
     }
 }
@@ -6074,16 +7336,8 @@ void Scroller::UnhookContentPropertyChanged(
 
         if (contentAsFE)
         {
-            if (m_contentHorizontalAlignmentChangedToken.value != 0)
-            {
-                contentAsFE.UnregisterPropertyChangedCallback(winrt::FrameworkElement::HorizontalAlignmentProperty(), m_contentHorizontalAlignmentChangedToken.value);
-                m_contentHorizontalAlignmentChangedToken.value = 0;
-            }
-            if (m_contentVerticalAlignmentChangedToken.value != 0)
-            {
-                contentAsFE.UnregisterPropertyChangedCallback(winrt::FrameworkElement::VerticalAlignmentProperty(), m_contentVerticalAlignmentChangedToken.value);
-                m_contentVerticalAlignmentChangedToken.value = 0;
-            }
+            m_contentHorizontalAlignmentChangedToken.revoke();
+            m_contentVerticalAlignmentChangedToken.revoke();
         }
     }
 }
@@ -6094,24 +7348,29 @@ void Scroller::HookHorizontalScrollControllerEvents(
 {
     MUX_ASSERT(horizontalScrollController);
 
-    if (hasInteractionSource && m_horizontalScrollControllerInteractionRequestedToken.value == 0)
+    if (hasInteractionSource && !m_horizontalScrollControllerInteractionRequestedToken)
     {
-        m_horizontalScrollControllerInteractionRequestedToken = horizontalScrollController.InteractionRequested({ this, &Scroller::OnScrollControllerInteractionRequested });
+        m_horizontalScrollControllerInteractionRequestedToken = horizontalScrollController.InteractionRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionRequested });
     }
 
-    if (m_horizontalScrollControllerInteractionInfoChangedToken.value == 0)
+    if (!m_horizontalScrollControllerInteractionInfoChangedToken)
     {
-        m_horizontalScrollControllerInteractionInfoChangedToken = horizontalScrollController.InteractionInfoChanged({ this, &Scroller::OnScrollControllerInteractionInfoChanged });
+        m_horizontalScrollControllerInteractionInfoChangedToken = horizontalScrollController.InteractionInfoChanged(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionInfoChanged });
     }
 
-    if (m_horizontalScrollControllerOffsetChangeRequestedToken.value == 0)
+    if (!m_horizontalScrollControllerScrollToRequestedToken)
     {
-        m_horizontalScrollControllerOffsetChangeRequestedToken = horizontalScrollController.OffsetChangeRequested({ this, &Scroller::OnScrollControllerOffsetChangeRequested });
+        m_horizontalScrollControllerScrollToRequestedToken = horizontalScrollController.ScrollToRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollToRequested });
     }
 
-    if (m_horizontalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken.value == 0)
+    if (!m_horizontalScrollControllerScrollByRequestedToken)
     {
-        m_horizontalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken = horizontalScrollController.OffsetChangeWithAdditionalVelocityRequested({ this, &Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested });
+        m_horizontalScrollControllerScrollByRequestedToken = horizontalScrollController.ScrollByRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollByRequested });
+    }
+
+    if (!m_horizontalScrollControllerScrollFromRequestedToken)
+    {
+        m_horizontalScrollControllerScrollFromRequestedToken = horizontalScrollController.ScrollFromRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollFromRequested });
     }
 }
 
@@ -6121,24 +7380,29 @@ void Scroller::HookVerticalScrollControllerEvents(
 {
     MUX_ASSERT(verticalScrollController);
 
-    if (hasInteractionSource && m_verticalScrollControllerInteractionRequestedToken.value == 0)
+    if (hasInteractionSource && !m_verticalScrollControllerInteractionRequestedToken)
     {
-        m_verticalScrollControllerInteractionRequestedToken = verticalScrollController.InteractionRequested({ this, &Scroller::OnScrollControllerInteractionRequested });
+        m_verticalScrollControllerInteractionRequestedToken = verticalScrollController.InteractionRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionRequested });
     }
 
-    if (m_verticalScrollControllerInteractionInfoChangedToken.value == 0)
+    if (!m_verticalScrollControllerInteractionInfoChangedToken)
     {
-        m_verticalScrollControllerInteractionInfoChangedToken = verticalScrollController.InteractionInfoChanged({ this, &Scroller::OnScrollControllerInteractionInfoChanged });
+        m_verticalScrollControllerInteractionInfoChangedToken = verticalScrollController.InteractionInfoChanged(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionInfoChanged });
     }
 
-    if (m_verticalScrollControllerOffsetChangeRequestedToken.value == 0)
+    if (!m_verticalScrollControllerScrollToRequestedToken)
     {
-        m_verticalScrollControllerOffsetChangeRequestedToken = verticalScrollController.OffsetChangeRequested({ this, &Scroller::OnScrollControllerOffsetChangeRequested });
+        m_verticalScrollControllerScrollToRequestedToken = verticalScrollController.ScrollToRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollToRequested });
     }
 
-    if (m_verticalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken.value == 0)
+    if (!m_verticalScrollControllerScrollByRequestedToken)
     {
-        m_verticalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken = verticalScrollController.OffsetChangeWithAdditionalVelocityRequested({ this, &Scroller::OnScrollControllerOffsetChangeWithAdditionalVelocityRequested });
+        m_verticalScrollControllerScrollByRequestedToken = verticalScrollController.ScrollByRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollByRequested });
+    }
+
+    if (!m_verticalScrollControllerScrollFromRequestedToken)
+    {
+        m_verticalScrollControllerScrollFromRequestedToken = verticalScrollController.ScrollFromRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollFromRequested });
     }
 }
 
@@ -6146,137 +7410,22 @@ void Scroller::UnhookHorizontalScrollControllerEvents(
     const winrt::IScrollController& horizontalScrollController)
 {
     MUX_ASSERT(horizontalScrollController);
-
-    if (m_horizontalScrollControllerInteractionRequestedToken.value != 0)
-    {
-        horizontalScrollController.InteractionRequested(m_horizontalScrollControllerInteractionRequestedToken);
-        m_horizontalScrollControllerInteractionRequestedToken.value = 0;
-    }
-
-    if (m_horizontalScrollControllerInteractionInfoChangedToken.value != 0)
-    {
-        horizontalScrollController.InteractionInfoChanged(m_horizontalScrollControllerInteractionInfoChangedToken);
-        m_horizontalScrollControllerInteractionInfoChangedToken.value = 0;
-    }
-
-    if (m_horizontalScrollControllerOffsetChangeRequestedToken.value != 0)
-    {
-        horizontalScrollController.OffsetChangeRequested(m_horizontalScrollControllerOffsetChangeRequestedToken);
-        m_horizontalScrollControllerOffsetChangeRequestedToken.value = 0;
-    }
-
-    if (m_horizontalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken.value != 0)
-    {
-        horizontalScrollController.OffsetChangeWithAdditionalVelocityRequested(m_horizontalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken);
-        m_horizontalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken.value = 0;
-    }
+    m_horizontalScrollControllerInteractionRequestedToken.revoke();
+    m_horizontalScrollControllerInteractionInfoChangedToken.revoke();
+    m_verticalScrollControllerScrollToRequestedToken.revoke();
+    m_verticalScrollControllerScrollByRequestedToken.revoke();
+    m_horizontalScrollControllerScrollFromRequestedToken.revoke();
 }
 
 void Scroller::UnhookVerticalScrollControllerEvents(
     const winrt::IScrollController& verticalScrollController)
 {
     MUX_ASSERT(verticalScrollController);
-
-    if (m_verticalScrollControllerInteractionRequestedToken.value != 0)
-    {
-        verticalScrollController.InteractionRequested(m_verticalScrollControllerInteractionRequestedToken);
-        m_verticalScrollControllerInteractionRequestedToken.value = 0;
-    }
-
-    if (m_verticalScrollControllerInteractionInfoChangedToken.value != 0)
-    {
-        verticalScrollController.InteractionInfoChanged(m_verticalScrollControllerInteractionInfoChangedToken);
-        m_verticalScrollControllerInteractionInfoChangedToken.value = 0;
-    }
-
-    if (m_verticalScrollControllerOffsetChangeRequestedToken.value != 0)
-    {
-        verticalScrollController.OffsetChangeRequested(m_verticalScrollControllerOffsetChangeRequestedToken);
-        m_verticalScrollControllerOffsetChangeRequestedToken.value = 0;
-    }
-
-    if (m_verticalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken.value != 0)
-    {
-        verticalScrollController.OffsetChangeWithAdditionalVelocityRequested(m_verticalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken);
-        m_verticalScrollControllerOffsetChangeWithAdditionalVelocityRequestedToken.value = 0;
-    }
-}
-
-void Scroller::SetKeyEvents()
-{
-    MUX_ASSERT(SharedHelpers::IsRS4OrHigher());
-    MUX_ASSERT(!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
-
-    if (!m_isListeningToKeystrokes)
-    {
-#ifdef USE_INSIDER_SDK
-        if (winrt::IUIElement10 uiElement10 = *this)
-        {
-            if (auto xamlRoot = uiElement10.XamlRoot())
-            {
-                auto xamlRootContent = xamlRoot.Content();
-
-                m_onXamlRootKeyDownEventHandler.set(winrt::box_value<winrt::KeyEventHandler>({ this, &Scroller::OnXamlRootKeyDownOrUp }));
-                xamlRootContent.AddHandler(winrt::UIElement::KeyDownEvent(), m_onXamlRootKeyDownEventHandler.get(), true);
-
-                m_onXamlRootKeyUpEventHandler.set(winrt::box_value<winrt::KeyEventHandler>({ this, &Scroller::OnXamlRootKeyDownOrUp }));
-                xamlRootContent.AddHandler(winrt::UIElement::KeyUpEvent(), m_onXamlRootKeyUpEventHandler.get(), true);
-            }
-        }
-        else
-#endif
-        {
-            auto coreWindow = winrt::Window::Current().CoreWindow();
-
-            m_coreWindowKeyDownRevoker = coreWindow.KeyDown(
-                winrt::auto_revoke,
-                { this, &Scroller::OnCoreWindowKeyDownOrUp });
-
-            m_coreWindowKeyUpRevoker = coreWindow.KeyUp(
-                winrt::auto_revoke,
-                { this, &Scroller::OnCoreWindowKeyDownOrUp });
-        }
-
-        m_isListeningToKeystrokes = true;
-    }
-}
-
-void Scroller::ResetKeyEvents()
-{
-    MUX_ASSERT(SharedHelpers::IsRS4OrHigher());
-    MUX_ASSERT(!Scroller::IsInteractionTrackerMouseWheelZoomingEnabled());
-
-    if (m_isListeningToKeystrokes)
-    {
-#ifdef USE_INSIDER_SDK
-        if (winrt::IUIElement10 uiElement10 = *this)
-        {
-            if (auto xamlRoot = uiElement10.XamlRoot())
-            {
-                auto xamlRootContent = xamlRoot.Content();
-
-                if (m_onXamlRootKeyDownEventHandler)
-                {
-                    xamlRootContent.RemoveHandler(winrt::UIElement::KeyDownEvent(), m_onXamlRootKeyDownEventHandler.get());
-                    m_onXamlRootKeyDownEventHandler.set(nullptr);
-                }
-
-                if (m_onXamlRootKeyUpEventHandler)
-                {
-                    xamlRootContent.RemoveHandler(winrt::UIElement::KeyUpEvent(), m_onXamlRootKeyUpEventHandler.get());
-                    m_onXamlRootKeyUpEventHandler.set(nullptr);
-                }
-            }
-        }
-        else
-#endif
-        {
-            m_coreWindowKeyDownRevoker = {};
-            m_coreWindowKeyUpRevoker = {};
-        }
-
-        m_isListeningToKeystrokes = false;
-    }
+    m_verticalScrollControllerInteractionRequestedToken.revoke();
+    m_verticalScrollControllerInteractionInfoChangedToken.revoke();
+    m_verticalScrollControllerScrollToRequestedToken.revoke();
+    m_verticalScrollControllerScrollByRequestedToken.revoke();
+    m_verticalScrollControllerScrollFromRequestedToken.revoke();
 }
 
 void Scroller::RaiseInteractionSourcesChanged()
@@ -6286,6 +7435,18 @@ void Scroller::RaiseInteractionSourcesChanged()
     if (globalTestHooks && globalTestHooks->AreInteractionSourcesNotificationsRaised())
     {
         globalTestHooks->NotifyInteractionSourcesChanged(*this, m_interactionTracker.InteractionSources());
+    }
+}
+
+void Scroller::RaiseExpressionAnimationStatusChanged(
+    bool isExpressionAnimationStarted,
+    wstring_view const& propertyName)
+{
+    com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
+
+    if (globalTestHooks && globalTestHooks->AreExpressionAnimationStatusNotificationsRaised())
+    {
+        globalTestHooks->NotifyExpressionAnimationStatusChanged(*this, isExpressionAnimationStarted, propertyName);
     }
 }
 
@@ -6329,31 +7490,31 @@ void Scroller::RaiseViewChanged()
     }
 }
 
-winrt::CompositionAnimation Scroller::RaiseChangingOffsets(
+winrt::CompositionAnimation Scroller::RaiseScrollAnimationStarting(
     const winrt::Vector3KeyFrameAnimation& positionAnimation,
     const winrt::float2& currentPosition,
     const winrt::float2& endPosition,
-    int32_t viewChangeId)
+    int32_t offsetsChangeId)
 {
-    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, viewChangeId);
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, offsetsChangeId);
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_FLT_FLT_FLT_FLT, METH_NAME, this,
         currentPosition.x, currentPosition.y,
         endPosition.x, endPosition.y);
 
-    if (m_changingOffsetsEventSource)
+    if (m_scrollAnimationStartingEventSource)
     {
-        auto changingOffsetsEventArgs = winrt::make_self<ScrollerChangingOffsetsEventArgs>();
+        auto scrollAnimationStartingEventArgs = winrt::make_self<ScrollAnimationStartingEventArgs>();
 
-        if (viewChangeId != -1)
+        if (offsetsChangeId != -1)
         {
-            changingOffsetsEventArgs->SetViewChangeId(viewChangeId);
+            scrollAnimationStartingEventArgs->SetOffsetsChangeId(offsetsChangeId);
         }
 
-        changingOffsetsEventArgs->SetAnimation(positionAnimation);
-        changingOffsetsEventArgs->SetStartPosition(currentPosition);
-        changingOffsetsEventArgs->SetEndPosition(endPosition);
-        m_changingOffsetsEventSource(*this, *changingOffsetsEventArgs);
-        return changingOffsetsEventArgs->GetAnimation();
+        scrollAnimationStartingEventArgs->SetAnimation(positionAnimation);
+        scrollAnimationStartingEventArgs->SetStartPosition(currentPosition);
+        scrollAnimationStartingEventArgs->SetEndPosition(endPosition);
+        m_scrollAnimationStartingEventSource(*this, *scrollAnimationStartingEventArgs);
+        return scrollAnimationStartingEventArgs->GetAnimation();
     }
     else
     {
@@ -6361,33 +7522,33 @@ winrt::CompositionAnimation Scroller::RaiseChangingOffsets(
     }
 }
 
-winrt::CompositionAnimation Scroller::RaiseChangingZoomFactor(
+winrt::CompositionAnimation Scroller::RaiseZoomAnimationStarting(
     const winrt::ScalarKeyFrameAnimation& zoomFactorAnimation,
     const float endZoomFactor,
     const winrt::float2& centerPoint,
-    int32_t viewChangeId)
+    int32_t zoomFactorChangeId)
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_FLT_FLT_STR_INT, METH_NAME, this,
         m_zoomFactor,
         endZoomFactor,
         TypeLogging::Float2ToString(centerPoint).c_str(),
-        viewChangeId);
+        zoomFactorChangeId);
 
-    if (m_changingZoomFactorEventSource)
+    if (m_zoomAnimationStartingEventSource)
     {
-        auto changingZoomFactorEventArgs = winrt::make_self<ScrollerChangingZoomFactorEventArgs>();
+        auto zoomAnimationStartingEventArgs = winrt::make_self<ZoomAnimationStartingEventArgs>();
 
-        if (viewChangeId != -1)
+        if (zoomFactorChangeId != -1)
         {
-            changingZoomFactorEventArgs->SetViewChangeId(viewChangeId);
+            zoomAnimationStartingEventArgs->SetZoomFactorChangeId(zoomFactorChangeId);
         }
 
-        changingZoomFactorEventArgs->SetAnimation(zoomFactorAnimation);
-        changingZoomFactorEventArgs->SetCenterPoint(centerPoint);
-        changingZoomFactorEventArgs->SetStartZoomFactor(m_zoomFactor);
-        changingZoomFactorEventArgs->SetEndZoomFactor(endZoomFactor);
-        m_changingZoomFactorEventSource(*this, *changingZoomFactorEventArgs);
-        return changingZoomFactorEventArgs->GetAnimation();
+        zoomAnimationStartingEventArgs->SetAnimation(zoomFactorAnimation);
+        zoomAnimationStartingEventArgs->SetCenterPoint(centerPoint);
+        zoomAnimationStartingEventArgs->SetStartZoomFactor(m_zoomFactor);
+        zoomAnimationStartingEventArgs->SetEndZoomFactor(endZoomFactor);
+        m_zoomAnimationStartingEventSource(*this, *zoomAnimationStartingEventArgs);
+        return zoomAnimationStartingEventArgs->GetAnimation();
     }
     else
     {
@@ -6396,25 +7557,41 @@ winrt::CompositionAnimation Scroller::RaiseChangingZoomFactor(
 }
 
 void Scroller::RaiseViewChangeCompleted(
-    const winrt::ScrollerViewChangeResult& result,
+    bool isForScroll,
+    ScrollerViewChangeResult result,
     int32_t viewChangeId)
 {
-    if (viewChangeId > 0 && m_viewChangeCompletedEventSource)
+    if (viewChangeId)
     {
-        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this,
-            TypeLogging::ScrollerViewChangeResultToString(result).c_str(),
-            viewChangeId);
+        if (isForScroll && m_scrollCompletedEventSource)
+        {
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this,
+                TypeLogging::ScrollerViewChangeResultToString(result).c_str(),
+                viewChangeId);
 
-        auto viewChangeCompletedEventArgs = winrt::make_self<ScrollerViewChangeCompletedEventArgs>();
+            auto scrollCompletedEventArgs = winrt::make_self<ScrollCompletedEventArgs>();
 
-        viewChangeCompletedEventArgs->Result(result);
-        viewChangeCompletedEventArgs->ViewChangeId(viewChangeId);
-        m_viewChangeCompletedEventSource(*this, *viewChangeCompletedEventArgs);
+            scrollCompletedEventArgs->Result(result);
+            scrollCompletedEventArgs->OffsetsChangeId(viewChangeId);
+            m_scrollCompletedEventSource(*this, *scrollCompletedEventArgs);
+        }
+        else if (!isForScroll && m_zoomCompletedEventSource)
+        {
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this,
+                TypeLogging::ScrollerViewChangeResultToString(result).c_str(),
+                viewChangeId);
+
+            auto zoomCompletedEventArgs = winrt::make_self<ZoomCompletedEventArgs>();
+
+            zoomCompletedEventArgs->Result(result);
+            zoomCompletedEventArgs->ZoomFactorChangeId(viewChangeId);
+            m_zoomCompletedEventSource(*this, *zoomCompletedEventArgs);
+        }
     }
 
     // Raise viewport changed only when effective viewport
     // support is not available.
-    if (SharedHelpers::IsRS5OrHigher())
+    if (!SharedHelpers::IsRS5OrHigher())
     {
         RaiseViewportChanged(true /* isFinal */);
     }
@@ -6430,7 +7607,8 @@ bool Scroller::RaiseBringingIntoView(
     double targetZoomedHorizontalOffset,
     double targetZoomedVerticalOffset,
     const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
-    int32_t viewChangeId)
+    int32_t offsetsChangeId,
+    _Inout_ winrt::SnapPointsMode* snapPointsMode)
 {
     if (m_bringingIntoViewEventSource)
     {
@@ -6438,11 +7616,13 @@ bool Scroller::RaiseBringingIntoView(
 
         auto bringingIntoViewEventArgs = winrt::make_self<ScrollerBringingIntoViewEventArgs>();
 
-        bringingIntoViewEventArgs->ViewChangeId(viewChangeId);
+        bringingIntoViewEventArgs->SnapPointsMode(*snapPointsMode);
+        bringingIntoViewEventArgs->OffsetsChangeId(offsetsChangeId);
         bringingIntoViewEventArgs->RequestEventArgs(requestEventArgs);
         bringingIntoViewEventArgs->TargetOffsets(targetZoomedHorizontalOffset, targetZoomedVerticalOffset);
 
         m_bringingIntoViewEventSource(*this, *bringingIntoViewEventArgs);
+        *snapPointsMode = bringingIntoViewEventArgs->SnapPointsMode();
         return !bringingIntoViewEventArgs->Cancel();
     }
     return true;

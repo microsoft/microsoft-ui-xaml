@@ -9,12 +9,15 @@
 #include "ResourceAccessor.h"
 #include "Utils.h"
 #include "RuntimeProfiler.h"
+#include "PersonPictureTemplateSettings.h"
 
 PersonPicture::PersonPicture()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_PersonPicture);
 
     SetDefaultStyleKey(this);
+
+    TemplateSettings(winrt::make<PersonPictureTemplateSettings>());
 
     Unloaded({ this, &PersonPicture::OnUnloaded });
     SizeChanged({ this, &PersonPicture::OnSizeChanged });
@@ -93,12 +96,6 @@ void PersonPicture::OnApplyTemplate()
 
     m_initialsTextBlock.set(GetTemplateChildT<winrt::TextBlock>(L"InitialsTextBlock", thisAsControlProtected));
 
-    if (auto initialsTextBlock = m_initialsTextBlock.get())
-    {
-        // Save the original font family setting of textblock
-        m_personTextFontFamily.set(initialsTextBlock.FontFamily());
-    }
-
     m_badgeNumberTextBlock.set(GetTemplateChildT<winrt::TextBlock>(L"BadgeNumberTextBlock", thisAsControlProtected));
     m_badgeGlyphIcon.set(GetTemplateChildT<winrt::FontIcon>(L"BadgeGlyphIcon", thisAsControlProtected));
     m_badgingEllipse.set(GetTemplateChildT<winrt::Ellipse>(L"BadgingEllipse", thisAsControlProtected));
@@ -141,64 +138,44 @@ void PersonPicture::UpdateIfReady()
     winrt::hstring initials = GetInitials();
     winrt::ImageSource imageSrc = GetImageSource();
 
-    if (auto initialsTextBlock = m_initialsTextBlock.get())
+    auto templateSettings = winrt::get_self<PersonPictureTemplateSettings>(TemplateSettings());
+    templateSettings->ActualInitials(initials);
+    if (imageSrc)
     {
-        if ((initials.empty() && !imageSrc) || IsGroup())
+        auto imageBrush = templateSettings->ActualImageBrush();
+        if (!imageBrush)
         {
-            // Setting to the Person or Group asset, ensure the correct FontFamily.
-            initialsTextBlock.FontFamily(winrt::FontFamily(L"Segoe MDL2 Assets"));
-
-            // If true, change the symbol block to show the Group asset. Otherwise show the Person asset.
-            winrt::hstring content = (IsGroup()) ? L"\uE716" : L"\uE77B";
-            initialsTextBlock.Text(content);
+            imageBrush = winrt::ImageBrush{};
+            imageBrush.Stretch(winrt::Stretch::UniformToFill);
+            templateSettings->ActualImageBrush(imageBrush);
         }
-        else
-        {
-            // Change the FontFamily of text block to original setting
-            initialsTextBlock.FontFamily(m_personTextFontFamily.get());
 
-            // Assign the initials of contact to text block 
-            winrt::hstring content = (!ProfilePicture()) ? initials : L"";
-            initialsTextBlock.Text(content);
-        }
+        imageBrush.ImageSource(imageSrc);
+    }
+    else
+    {
+        templateSettings->ActualImageBrush(nullptr);
     }
 
     // If the control is converted to 'Group-mode', we'll clear individual-specific information.
     // When IsGroup evaluates to false, we will restore state.
     if (IsGroup())
     {
-        if (auto personPictureEllipse = m_personPictureEllipse.get())
-        {
-            // change the ellipse brush to original setting
-            personPictureEllipse.Fill(nullptr);
-        }
+        winrt::VisualStateManager::GoToState(*this, L"Group", false);
     }
     else
     {
-        if (!m_personPictureEllipse && imageSrc)
+        if (imageSrc)
         {
-            m_personPictureEllipse.set(GetTemplateChildT<winrt::Ellipse>(L"PersonPictureEllipse", *this));
+            winrt::VisualStateManager::GoToState(*this, L"Photo", false);
         }
-
-        if (auto personPictureEllipse = m_personPictureEllipse.get())
+        else if (!initials.empty())
         {
-            if (imageSrc)
-            {
-                // Clear the initials for showing the photo
-                m_initialsTextBlock.get().Text(L"");
-
-                winrt::ImageBrush imageBrush;
-                imageBrush.Stretch(winrt::Stretch::UniformToFill);
-                imageBrush.ImageSource(imageSrc);
-
-                personPictureEllipse.Fill(imageBrush);
-                winrt::VisualStateManager::GoToState(*this, L"Photo", false);
-            }
-            else
-            {
-                personPictureEllipse.Fill(nullptr);
-                winrt::VisualStateManager::GoToState(*this, L"Initials", false);
-            }
+            winrt::VisualStateManager::GoToState(*this, L"Initials", false);
+        }
+        else
+        {
+            winrt::VisualStateManager::GoToState(*this, L"NoPhotoOrInitials", false);
         }
     }
 

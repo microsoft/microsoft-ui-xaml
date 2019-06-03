@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_PREVIEW]
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
 [webhosthidden]
 enum ButtonInteractionInvokeMode
 {
@@ -30,4 +33,6 @@ Windows.UI.Xaml.Data.INotifyPropertyChanged
     Boolean IsHovering { get; };
     Boolean IsPressing { get; };
     event Windows.Foundation.TypedEventHandler<ButtonInteraction, ButtonInteractionInvokedEventArgs> Invoked;
+}
+
 }

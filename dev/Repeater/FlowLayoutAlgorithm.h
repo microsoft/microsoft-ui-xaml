@@ -46,7 +46,7 @@ public:
         const winrt::VirtualizingLayoutContext& context,
         FlowLayoutAlgorithm::LineAlignment lineAlignment,
         const wstring_view& layoutId);
-    void OnDataSourceChanged(
+    void OnItemsSourceChanged(
         const winrt::IInspectable& source,
         winrt::NotifyCollectionChangedEventArgs const& args,
         const winrt::IVirtualizingLayoutContext& context);
@@ -90,7 +90,7 @@ private:
     bool ShouldContinueFillingUpSpace(
         int index,
         GenerateDirection direction);
-    winrt::Rect EstimateExtent(const winrt::Size& availableSize);
+    winrt::Rect EstimateExtent(const winrt::Size& availableSize, const wstring_view& layoutId);
     void RaiseLineArranged();
 #pragma endregion
 
@@ -104,6 +104,7 @@ private:
         int countInLine,
         float spaceAtLineStart,
         float spaceAtLineEnd,
+        float lineSize,
         FlowLayoutAlgorithm::LineAlignment lineAlignment,
         const wstring_view& layoutId);
 #pragma endregion
@@ -126,4 +127,12 @@ private:
     winrt::Rect m_lastExtent{};
     int m_firstRealizedDataIndexInsideRealizationWindow{ -1 };
     int m_lastRealizedDataIndexInsideRealizationWindow{ -1 };
+
+    // If the scroll orientation is the same as the folow orientation
+    // we will only have one line since we will never wrap. In that case
+    // we do not want to align the line. We could potentially switch the
+    // meaning of line alignment in this case, but I'll hold off on that
+    // feature until someone asks for it - This is not a common scenario
+    // anyway. 
+    bool m_scrollOrientationSameAsFlow{ false };
 };

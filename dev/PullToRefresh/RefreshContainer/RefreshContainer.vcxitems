@@ -22,7 +22,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)RefreshContainer.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)RefreshContainer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RefreshContainer.idl" />
   </ItemGroup>
   <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
     <Page Include="$(MSBuildThisFileDirectory)RefreshContainer.xaml">
@@ -35,6 +35,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)RefreshContainerPrivate.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RefreshContainerPrivate.idl" />
   </ItemGroup>
 </Project>

@@ -39,6 +39,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
     [TestClass]
     public class ScrollerTestsWithInputHelper : ScrollerTestsBase
     {
+        private enum ScrollSnapPointsAlignment
+        {
+            Near = 0,
+            Center = 1,
+            Far = 2
+        }
+
         // Mouse wheel delta amount required per initial velocity unit
         // 120 matches the built-in InteractionTracker zooming behavior introduced in RS5.
         const int mouseWheelDeltaForVelocityUnit = 120;
@@ -50,7 +57,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Platform", "Any")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
@@ -279,16 +286,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Scrolls a Rectangle in a Scroller, with the mouse wheel.")]
         public void ScrollWithMouseWheel()
         {
-            // This test relies on VisualInteractionSourceRedirectionMode::CapableTouchpadAndPointerWheel which was introduced late in RS4.
-            // Skip it if that enum value is not defined.
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4) ||
-                (PlatformConfiguration.IsOsVersion(OSVersion.Redstone4) &&
-                 !Windows.Foundation.Metadata.ApiInformation.IsEnumNamedValuePresent("Windows.UI.Composition.Interactions.VisualInteractionSourceRedirectionMode", "CapableTouchpadAndPointerWheel")))
-            {
-                Log.Warning("Skipping test on this OS build that does not include VisualInteractionSourceRedirectionMode::CapableTouchpadAndPointerWheel.");
-                return;
-            }
-
             const double minVerticalScrollPercent = 5.0;
 
             Log.Comment("Selecting Scroller tests");
@@ -740,6 +737,156 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Reduce the Content size while it is far-anchored and overpanned.")]
+        public void OverpanWithAnchoredSkrinkingContent()
+        {
+            OverpanWithAnchoredSkrinkingContent(isForHorizontalDirection: true);
+            OverpanWithAnchoredSkrinkingContent(isForHorizontalDirection: false);
+        }
+
+        private void OverpanWithAnchoredSkrinkingContent(bool isForHorizontalDirection)
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            {
+                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
+                return;
+            }
+
+            Log.Comment("Selecting Scroller tests");
+
+            using (var setup = new TestSetupHelper("Scroller Tests"))
+            {
+                SetOutputDebugStringLevel("Verbose");
+
+                GoToSimpleContentsPage();
+
+                SetLoggingLevel(isPrivateLoggingEnabled: true);
+
+                Log.Comment("Retrieving cmbShowScroller");
+                ComboBox cmbShowScroller = new ComboBox(FindElement.ByName("cmbShowScroller"));
+
+                Log.Comment("Changing Scroller selection to scroller51");
+                cmbShowScroller.SelectItemByName("scroller51");
+                Log.Comment("Selection is now {0}", cmbShowScroller.Selection[0].Name);
+
+                Log.Comment("Retrieving Scroller");
+                UIObject scroller51UIObject = FindElement.ByName("Scroller51");
+                Verify.IsNotNull(scroller51UIObject, "Verifying that Scroller was found");
+
+                WaitForScrollerFinalSize(scroller51UIObject, expectedWidth: 300.0, expectedHeight: 400.0);
+
+                // Tapping button before attempting pan operation to guarantee effective touch input
+                TapResetViewsButton();
+
+                Log.Comment("Panning Scroller close to the Content's end");
+                PrepareForScrollerManipulationStart("scroller51");
+
+                Point startPoint = isForHorizontalDirection ? 
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 105, scroller51UIObject.BoundingRectangle.Top + 100) :
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 100, scroller51UIObject.BoundingRectangle.Top + 100);
+                Point endPoint = isForHorizontalDirection ? 
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 50, scroller51UIObject.BoundingRectangle.Top + 100) :
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 100, scroller51UIObject.BoundingRectangle.Top + 50);
+
+                InputHelper.Pan(obj: scroller51UIObject, start: startPoint, end: endPoint);
+
+                Log.Comment("Waiting for scroller51 pan completion");
+                bool success = WaitForManipulationEnd("scroller51", "txtScrollerState");
+
+                Scroller scroller51 = new Scroller(scroller51UIObject);
+
+                Log.Comment("scroller51.HorizontalScrollPercent={0}", scroller51.HorizontalScrollPercent);
+                Log.Comment("scroller51.VerticalScrollPercent={0}", scroller51.VerticalScrollPercent);
+
+                // No layout offset is expected
+                double contentLayoutOffsetX = 0.0;
+                double contentLayoutOffsetY = 0.0;
+
+                GetScrollerContentLayoutOffset(out contentLayoutOffsetX, out contentLayoutOffsetY);
+
+                if (!success ||
+                    (isForHorizontalDirection && (scroller51.HorizontalScrollPercent == 0.0 || scroller51.HorizontalScrollPercent == 100.0)) ||
+                    (isForHorizontalDirection && scroller51.VerticalScrollPercent != 0.0) ||
+                    (!isForHorizontalDirection && scroller51.HorizontalScrollPercent != 0.0) ||
+                    (!isForHorizontalDirection && (scroller51.VerticalScrollPercent == 0.0 || scroller51.VerticalScrollPercent == 100.0)) ||
+                    contentLayoutOffsetX != 0.0 ||
+                    contentLayoutOffsetY != 0.0)
+                {
+                    LogAndClearTraces(recordWarning: false);
+                }
+
+                Log.Comment("Overpan Scroller to trigger content shrinkage");
+                PrepareForScrollerManipulationStart("scroller51");
+
+                startPoint = isForHorizontalDirection ?
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 240, scroller51UIObject.BoundingRectangle.Top + 100) :
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 100, scroller51UIObject.BoundingRectangle.Top + 240);
+                endPoint = isForHorizontalDirection ?
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 10, scroller51UIObject.BoundingRectangle.Top + 100) :
+                        new Point(scroller51UIObject.BoundingRectangle.Left + 100, scroller51UIObject.BoundingRectangle.Top + 10);
+
+                InputHelper.Pan(obj: scroller51UIObject, start: startPoint, end: endPoint);
+
+                Log.Comment("Waiting for scroller51 pan completion");
+                success = WaitForManipulationEnd("scroller51", "txtScrollerState");
+
+                Log.Comment("scroller51.HorizontalScrollPercent={0}", scroller51.HorizontalScrollPercent);
+                Log.Comment("scroller51.VerticalScrollPercent={0}", scroller51.VerticalScrollPercent);
+
+                // Layout offset is expected
+                GetScrollerContentLayoutOffset(out contentLayoutOffsetX, out contentLayoutOffsetY);
+
+                if (!success ||
+                    (isForHorizontalDirection && scroller51.HorizontalScrollPercent != 100.0) ||
+                    (isForHorizontalDirection && scroller51.VerticalScrollPercent != 0.0) ||
+                    (!isForHorizontalDirection && scroller51.HorizontalScrollPercent != 0.0) ||
+                    (!isForHorizontalDirection && scroller51.VerticalScrollPercent != 100.0) ||
+                    (isForHorizontalDirection && contentLayoutOffsetX != 30.0) ||
+                    (isForHorizontalDirection && contentLayoutOffsetY != 0.0) ||
+                    (!isForHorizontalDirection && contentLayoutOffsetX != 0.0) ||
+                    (!isForHorizontalDirection && contentLayoutOffsetY != 40.0))
+                {
+                    LogAndClearTraces(recordWarning: false);
+                }
+
+                SetLoggingLevel(isPrivateLoggingEnabled: false);
+
+                Verify.AreEqual(scroller51.HorizontalScrollPercent, isForHorizontalDirection ? 100.0 : 0.0, "Verifying scroller51 HorizontalScrollPercent");
+                Verify.AreEqual(scroller51.VerticalScrollPercent, isForHorizontalDirection ? 0.0 : 100.0, "Verifying scroller51 VerticalScrollPercent");
+
+                double horizontalOffset;
+                double verticalOffset;
+                float zoomFactor;
+
+                GetScrollerView(out horizontalOffset, out verticalOffset, out zoomFactor);
+                Log.Comment("horizontalOffset={0}", horizontalOffset);
+                Log.Comment("verticalOffset={0}", verticalOffset);
+                Log.Comment("zoomFactor={0}", zoomFactor);
+
+                if (isForHorizontalDirection)
+                {
+                    Verify.AreEqual(contentLayoutOffsetX, 30.0, "Verifying contentLayoutOffsetX is 30.0");
+                    Verify.AreEqual(contentLayoutOffsetY, 0.0, "Verifying contentLayoutOffsetY is 0.0");
+                    Verify.AreEqual(horizontalOffset, 470.0, "Verifying horizontalOffset is 470.0");
+                    Verify.AreEqual(verticalOffset, 0.0, "Verifying verticalOffset is 0.0");
+                }
+                else
+                {
+                    Verify.AreEqual(contentLayoutOffsetX, 0.0, "Verifying contentLayoutOffsetX is 0.0");
+                    Verify.AreEqual(contentLayoutOffsetY, 40.0, "Verifying contentLayoutOffsetY is 40.0");
+                    Verify.AreEqual(horizontalOffset, 0.0, "Verifying horizontalOffset is 0.0");
+                    Verify.AreEqual(verticalOffset, 360.0, "Verifying verticalOffset is 360.0");
+                }
+
+                Verify.AreEqual(zoomFactor, 1.0f, "Verifying zoomFactor is 1.0f");
+
+                Log.Comment("Returning to the main Scroller test page");
+                TestSetupHelper.GoBack();
+                // Output-debug-string-level "None" is automatically restored when landing back on the Scroller test page.
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Pans an inner ScrollViewer and chains to an outer Scroller.")]
         public void PanWithChainingFromScrollViewerToScroller()
         {
@@ -1131,7 +1278,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Apply two mandatory regular snap points to the scroller and pan to the 4 interesting zones around them.")]
+        [TestProperty("Description", "Apply two mandatory irregular snap points to the scroller and pan to the 4 interesting zones around them.")]
         public void PanTowardsTwoManditoryIrregularSnapPoint()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
@@ -1140,6 +1287,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
+            MoveTowardsTwoManditoryIrregularSnapPoint(alignment: ScrollSnapPointsAlignment.Near, withTouch: true);
+            MoveTowardsTwoManditoryIrregularSnapPoint(alignment: ScrollSnapPointsAlignment.Center, withTouch: true);
+            MoveTowardsTwoManditoryIrregularSnapPoint(alignment: ScrollSnapPointsAlignment.Far, withTouch: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Apply two mandatory irregular snap points to the scroller and snap to them using mouse-wheel input.")]
+        public void ScrollTowardsTwoManditoryIrregularSnapPoint()
+        {
+            MoveTowardsTwoManditoryIrregularSnapPoint(alignment: ScrollSnapPointsAlignment.Near, withTouch: false);
+            MoveTowardsTwoManditoryIrregularSnapPoint(alignment: ScrollSnapPointsAlignment.Center, withTouch: false);
+            MoveTowardsTwoManditoryIrregularSnapPoint(alignment: ScrollSnapPointsAlignment.Far, withTouch: false);
+        }
+
+        // withTouch==True, InputHelper.Pan is used to simulate touch input.
+        // withTouch==False, InputHelper.RotateWheel is used to simulate mouse-wheel input.
+        private void MoveTowardsTwoManditoryIrregularSnapPoint(ScrollSnapPointsAlignment alignment, bool withTouch)
+        {
             Log.Comment("Selecting Scroller tests");
 
             using (var setup = new TestSetupHelper("Scroller Tests"))
@@ -1147,35 +1312,82 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetOutputDebugStringLevel("Verbose");
 
                 var elements = GoToSnapPointsPage();
-                
+
                 int warningCount = 0;
+                const double viewportHeight = 500.0;
+                const double firstSnapPointOffset = 0.0;
+                double secondSnapPointOffset = withTouch ? 600.0 : 150.0;
+                double thirdSnapPointOffset = withTouch ? 1200.0 : 300.0;
+                double firstSnapPointValue = firstSnapPointOffset;
+                double secondSnapPointValue = secondSnapPointOffset;
+                double thirdSnapPointValue = thirdSnapPointOffset;
 
-                Verify.IsTrue(PanUntilInputWorks(elements.scrollerOffset, elements.scrollerUIObject), "Pan inputs are moving the scroller!");
+                if (withTouch)
+                {
+                    Verify.IsTrue(PanUntilInputWorks(elements.scrollerOffset, elements.scrollerUIObject), "Pan inputs are moving the scroller!");
+                }
 
-                elements.txtMISnapPointValueUIObject.SetValue("600");
+                if (alignment == ScrollSnapPointsAlignment.Center)
+                {
+                    // Center alignment
+                    firstSnapPointValue += viewportHeight / 2.0;
+                    secondSnapPointValue += viewportHeight / 2.0;
+                    thirdSnapPointValue += viewportHeight / 2.0;
+
+                    Log.Comment("Changing alignment to Center");
+                    elements.cmbMISnapPointAlignment.SelectItemByName("Center");
+                    Log.Comment("Selection is now {0}", elements.cmbMISnapPointAlignment.Selection[0].Name);
+                }
+                else if (alignment == ScrollSnapPointsAlignment.Far)
+                {
+                    // Far alignment
+                    firstSnapPointValue += viewportHeight;
+                    secondSnapPointValue += viewportHeight;
+                    thirdSnapPointValue += viewportHeight;
+
+                    Log.Comment("Changing alignment to Far");
+                    elements.cmbMISnapPointAlignment.SelectItemByName("Far");
+                    Log.Comment("Selection is now {0}", elements.cmbMISnapPointAlignment.Selection[0].Name);
+                }
+
+                Log.Comment("Adding irregular snap point at value " + firstSnapPointValue.ToString());
+                elements.txtMISnapPointValueUIObject.SetValue(firstSnapPointValue.ToString());
                 elements.btnAddMISnapPointUIObject.Invoke();
-                elements.txtMISnapPointValueUIObject.SetValue("1200");
+
+                Log.Comment("Adding irregular snap point at value " + secondSnapPointValue.ToString());
+                elements.txtMISnapPointValueUIObject.SetValue(secondSnapPointValue.ToString());
                 elements.btnAddMISnapPointUIObject.Invoke();
-                elements.txtOISnapPointValueUIObject.SetValue("0");
-                elements.txtOISnapPointRangeUIObject.SetValue("1");
-                elements.btnAddOISnapPointUIObject.Invoke();
 
-                InputHelper.Tap(elements.scrollerUIObject);
+                Log.Comment("Adding irregular snap point at value " + thirdSnapPointValue.ToString());
+                elements.txtMISnapPointValueUIObject.SetValue(thirdSnapPointValue.ToString());
+                elements.btnAddMISnapPointUIObject.Invoke();
 
-                warningCount = 0;
-                InputHelper.Pan(elements.scrollerUIObject, 25, Direction.North);
-                warningCount += WaitForOffsetUpdated(elements.scrollerOffset, 600.0, double.PositiveInfinity, 1200.0, 1200.0);
-                PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
+                if (withTouch)
+                {
+                    InputHelper.Tap(elements.scrollerUIObject);
 
-                InputHelper.Pan(elements.scrollerUIObject, 75, Direction.North);
-                warningCount += WaitForOffsetUpdated(elements.scrollerOffset, 600.0, double.PositiveInfinity, 1200.0, 1200.0);
-                PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
+                    InputHelper.Pan(elements.scrollerUIObject, 75, Direction.North);
+                    warningCount += WaitForOffsetUpdated(elements.scrollerOffset, secondSnapPointOffset, double.PositiveInfinity, thirdSnapPointOffset, thirdSnapPointOffset);
+                    PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
+                    InputHelper.Pan(elements.scrollerUIObject, 95, Direction.North);
+                    warningCount += WaitForOffsetUpdated(elements.scrollerOffset, secondSnapPointOffset, double.PositiveInfinity, thirdSnapPointOffset, thirdSnapPointOffset);
+                    PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
-                InputHelper.Pan(elements.scrollerUIObject, 150, Direction.North);
-                warningCount += WaitForOffsetUpdated(elements.scrollerOffset, 1200.0, double.PositiveInfinity, 600.0, 600.0);
-                PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
-                InputHelper.Pan(elements.scrollerUIObject, 200, Direction.North);
-                warningCount += WaitForOffsetUpdated(elements.scrollerOffset, 1200.0, double.PositiveInfinity, 600.0, 600.0);
+                    InputHelper.Pan(elements.scrollerUIObject, 150, Direction.North);
+                    warningCount += WaitForOffsetUpdated(elements.scrollerOffset, thirdSnapPointOffset, double.PositiveInfinity, secondSnapPointOffset, secondSnapPointOffset);
+                    PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
+                    InputHelper.Pan(elements.scrollerUIObject, 200, Direction.North);
+                    warningCount += WaitForOffsetUpdated(elements.scrollerOffset, thirdSnapPointOffset, double.PositiveInfinity, secondSnapPointOffset, secondSnapPointOffset);
+                }
+                else
+                {
+                    InputHelper.RotateWheel(elements.scrollerUIObject, -mouseWheelDeltaForVelocityUnit);
+                    warningCount += WaitForOffsetUpdated(elements.scrollerOffset, secondSnapPointOffset);
+                    SnapPointsPageChangeOffset(elements, "-" + secondSnapPointOffset, 0);
+
+                    InputHelper.RotateWheel(elements.scrollerUIObject, -15 * mouseWheelDeltaForVelocityUnit);
+                    warningCount += WaitForOffsetUpdated(elements.scrollerOffset, thirdSnapPointOffset);
+                }
 
                 Verify.IsLessThan(warningCount, 4);
 
@@ -1185,20 +1397,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Apply a single mandatory Regular snap point across the extent, with Offset equal to Start, and pan within it.")]
-        public void PanWithinARegularMandatorySnapPoint()
-        {
-            PanWithinARegularMandatorySnapPoint(withOffsetEqualToStart: true);
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Apply a single mandatory Regular snap point across the extent, with Offset different from Start, and pan within it.")]
-        public void PanWithinARegularMandatorySnapPointWithDifferentOffset()
-        {
-            PanWithinARegularMandatorySnapPoint(withOffsetEqualToStart: false);
-        }
-
-        private void PanWithinARegularMandatorySnapPoint(bool withOffsetEqualToStart)
+        [TestProperty("Description", "Apply a single mandatory repeated snap point across the extent, with Offset equal to Start, and pan within it.")]
+        public void PanWithinARepeatedMandatorySnapPoint()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
             {
@@ -1206,6 +1406,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
+            MoveWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: true, alignment: ScrollSnapPointsAlignment.Near, withTouch: true);
+            MoveWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: true, alignment: ScrollSnapPointsAlignment.Center, withTouch: true);
+            MoveWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: true, alignment: ScrollSnapPointsAlignment.Far, withTouch: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Apply a single mandatory repeated snap point across the extent, with Offset different from Start, and pan within it.")]
+        public void PanWithinARepeatedMandatorySnapPointWithDifferentOffset()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            {
+                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
+                return;
+            }
+
+            MoveWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignment: ScrollSnapPointsAlignment.Near, withTouch: true);
+            MoveWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignment: ScrollSnapPointsAlignment.Center, withTouch: true);
+            MoveWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignment: ScrollSnapPointsAlignment.Far, withTouch: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Apply a single mandatory repeated snap point across the scroller extent and snap to it using mouse-wheel input.")]
+        public void ScrollWithinARepeatedMandatorySnapPoint()
+        {
+            MoveWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignment: ScrollSnapPointsAlignment.Near, withTouch: false);
+            MoveWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignment: ScrollSnapPointsAlignment.Center, withTouch: false);
+            MoveWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignment: ScrollSnapPointsAlignment.Far, withTouch: false);
+        }
+
+        // withTouch==True, InputHelper.Pan is used to simulate touch input.
+        // withTouch==False, InputHelper.RotateWheel is used to simulate mouse-wheel input.
+        private void MoveWithinARepeatedMandatorySnapPoint(bool withOffsetEqualToStart, ScrollSnapPointsAlignment alignment, bool withTouch)
+        {
             Log.Comment("Selecting Scroller tests");
 
             using (var setup = new TestSetupHelper("Scroller Tests"))
@@ -1214,36 +1447,87 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 var elements = GoToSnapPointsPage();
 
-                Verify.IsTrue(PanUntilInputWorks(elements.scrollerOffset, elements.scrollerUIObject), "Pan inputs aren't moving the scroller...");
+                if (withTouch)
+                {
+                    Verify.IsTrue(PanUntilInputWorks(elements.scrollerOffset, elements.scrollerUIObject), "Pan inputs aren't moving the scroller...");
+                }
 
-                elements.txtMRSnapPointOffsetUIObject.SetValue(withOffsetEqualToStart ? "0" : "25");
-                elements.txtMRSnapPointIntervalUIObject.SetValue("50");
-                elements.txtMRSnapPointStartUIObject.SetValue("0");
-                elements.txtMRSnapPointEndUIObject.SetValue("9000");
+                const double viewportHeight = 500.0;
+                const double start = 0.0;
+                const double end = 9000.0;
+                double interval = withTouch ? 50.0 : 400.0;
+                double offset = withOffsetEqualToStart ? 0.0 : (withTouch ? 25.0 : 100.0);
+                double adjustedStart = start;
+                double adjustedEnd = end;
+                double adjustedOffset = offset;
+
+                if (alignment == ScrollSnapPointsAlignment.Center)
+                {
+                    // Center alignment
+                    adjustedStart += viewportHeight / 2.0;
+                    adjustedEnd += viewportHeight / 2.0;
+                    adjustedOffset += viewportHeight / 2.0;
+
+                    Log.Comment("Changing alignment to Center");
+                    elements.cmbMRSnapPointAlignment.SelectItemByName("Center");
+                    Log.Comment("Selection is now {0}", elements.cmbMRSnapPointAlignment.Selection[0].Name);
+                }
+                else if (alignment == ScrollSnapPointsAlignment.Far)
+                {
+                    // Far alignment
+                    adjustedStart += viewportHeight;
+                    adjustedEnd += viewportHeight;
+                    adjustedOffset += viewportHeight;
+
+                    Log.Comment("Changing alignment to Far");
+                    elements.cmbMRSnapPointAlignment.SelectItemByName("Far");
+                    Log.Comment("Selection is now {0}", elements.cmbMRSnapPointAlignment.Selection[0].Name);
+                }
+
+                Log.Comment($"Adding repeated snap point with start={adjustedStart.ToString()}, end={adjustedEnd.ToString()}, offset={adjustedOffset.ToString()}, interval={interval.ToString()}.");
+                elements.txtMRSnapPointOffsetUIObject.SetValue(adjustedOffset.ToString());
+                elements.txtMRSnapPointIntervalUIObject.SetValue(interval.ToString());
+                elements.txtMRSnapPointStartUIObject.SetValue(adjustedStart.ToString());
+                elements.txtMRSnapPointEndUIObject.SetValue(adjustedEnd.ToString());
                 elements.btnAddMRSnapPointUIObject.Invoke();
 
-                InputHelper.Tap(elements.scrollerUIObject);
+                if (withTouch)
+                {
+                    InputHelper.Tap(elements.scrollerUIObject);
 
-                InputHelper.Pan(elements.scrollerUIObject, withOffsetEqualToStart ? 25 : 60, Direction.North);
-                WaitForOffsetUpdated(elements.scrollerOffset, withOffsetEqualToStart ? 0.0 : 25.0, 50.0);
-                PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
+                    InputHelper.Pan(elements.scrollerUIObject, withOffsetEqualToStart ? 25 : 60, Direction.North);
+                    WaitForOffsetUpdated(elements.scrollerOffset, offset, 50.0);
+                    PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
-                InputHelper.Pan(elements.scrollerUIObject, withOffsetEqualToStart ? 75 : 90, Direction.North);
-                WaitForOffsetUpdated(elements.scrollerOffset, withOffsetEqualToStart ? 0.0 : 25.0, 50.0);
-                PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
+                    InputHelper.Pan(elements.scrollerUIObject, 50, Direction.North);
+                    WaitForOffsetUpdated(elements.scrollerOffset, offset, 50.0);
+                    PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
-                InputHelper.Pan(elements.scrollerUIObject, 150, Direction.North);
-                WaitForOffsetUpdated(elements.scrollerOffset, withOffsetEqualToStart ? 0.0 : 25.0, 50.0);
-                PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
+                    InputHelper.Pan(elements.scrollerUIObject, 150, Direction.North);
+                    WaitForOffsetUpdated(elements.scrollerOffset, offset, 50.0);
+                    PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
-                InputHelper.Pan(elements.scrollerUIObject, 200, Direction.North);
-                WaitForOffsetUpdated(elements.scrollerOffset, withOffsetEqualToStart ? 0.0 : 25.0, 50.0);
+                    InputHelper.Pan(elements.scrollerUIObject, 200, Direction.North);
+                    WaitForOffsetUpdated(elements.scrollerOffset, offset, 50.0);
+                }
+                else
+                {
+                    InputHelper.RotateWheel(elements.scrollerUIObject, -mouseWheelDeltaForVelocityUnit);
+                    WaitForOffsetUpdated(elements.scrollerOffset, offset);
+
+                    InputHelper.RotateWheel(elements.scrollerUIObject, -mouseWheelDeltaForVelocityUnit);
+                    WaitForOffsetUpdated(elements.scrollerOffset, offset + interval);
+
+                    InputHelper.RotateWheel(elements.scrollerUIObject, mouseWheelDeltaForVelocityUnit);
+                    WaitForOffsetUpdated(elements.scrollerOffset, offset);
+                }
 
                 Log.Comment("Returning to the main Scroller test page");
                 TestSetupHelper.GoBack();
             }
         }
 
+#if ApplicableRangeType
         [TestMethod]
         [TestProperty("Description", "Apply a single optional irregular snap point to the scroller and pan the scroller towards and away from the snap point.")]
         public void PanOverAnOptionalIrregularSnapPoint()
@@ -2265,7 +2549,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Apply a mix of mandatory and optional snap points which are defined to have the same value and scroll precisely between them.")]
-        public void ChangeOffsetBetweenRegularSnapPointsStackedOnTopOfEachOther1()
+        public void ChangeOffsetBetweenRepeatedSnapPointsStackedOnTopOfEachOther1()
         {
             Log.Comment("Selecting Scroller tests");
 
@@ -2323,7 +2607,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Apply a mix of mandatory and optional snap points which are defined to have the same value and scroll precisely between them.")]
-        public void ChangeOffsetBetweenRegularSnapPointsStackedOnTopOfEachOther2()
+        public void ChangeOffsetBetweenRepeatedSnapPointsStackedOnTopOfEachOther2()
         {
             Log.Comment("Selecting Scroller tests");
 
@@ -2383,7 +2667,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Apply a mix of mandatory and optional snap points which are defined to have the same value and scroll precisely between them.")]
-        public void ChangeOffsetBetweenRegularSnapPointsStackedOnTopOfEachOther3()
+        public void ChangeOffsetBetweenRepeatedSnapPointsStackedOnTopOfEachOther3()
         {
             Log.Comment("Selecting Scroller tests");
 
@@ -2502,8 +2786,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Apply a single optional regular snap point across the extent and pan within it.")]
-        public void PanWithinARegularOptionalSnapPoint()
+        [TestProperty("Description", "Apply a single optional repeated snap point across the extent and pan within it.")]
+        public void PanWithinARepeatedOptionalSnapPoint()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
             {
@@ -2531,19 +2815,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(elements.scrollerUIObject);
 
                 InputHelper.Pan(elements.scrollerUIObject, 25, Direction.North);
-                WaitForOptionalRegularOffsetUpdated(elements.scrollerOffset, 25, 100);
+                WaitForOptionalRepeatedOffsetUpdated(elements.scrollerOffset, 25, 100);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
                 InputHelper.Pan(elements.scrollerUIObject, 75, Direction.North);
-                WaitForOptionalRegularOffsetUpdated(elements.scrollerOffset, 25, 100);
+                WaitForOptionalRepeatedOffsetUpdated(elements.scrollerOffset, 25, 100);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
                 InputHelper.Pan(elements.scrollerUIObject, 150, Direction.North);
-                WaitForOptionalRegularOffsetUpdated(elements.scrollerOffset, 25, 100);
+                WaitForOptionalRepeatedOffsetUpdated(elements.scrollerOffset, 25, 100);
                 PanToZero(elements.scrollerUIObject, elements.scrollerOffset);
 
                 InputHelper.Pan(elements.scrollerUIObject, 200, Direction.North);
-                WaitForOptionalRegularOffsetUpdated(elements.scrollerOffset, 25, 100);
+                WaitForOptionalRepeatedOffsetUpdated(elements.scrollerOffset, 25, 100);
 
                 Log.Comment("Returning to the main Scroller test page");
                 TestSetupHelper.GoBack();
@@ -2615,6 +2899,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        private void SnapPointsPageChangeOffset(SnapPointsTestPageElements elements, String amount, double minValue, double maxValue)
+        {
+            Log.Comment("SnapPointsPageChangeOffset with amount: " + amount + ", minValue: " + minValue + ", maxValue: " + maxValue);
+
+            elements.scrollerOffsetChangeAmount.SetValue(amount);
+            elements.changeScrollerOffset.Invoke();
+            WaitForOffsetUpdated(minValue, maxValue, elements.scrollerOffset);
+        }
+#endif
+
+        private void SnapPointsPageChangeOffset(SnapPointsTestPageElements elements, String amount, double value)
+        {
+            Log.Comment("SnapPointsPageChangeOffset with amount: " + amount + ", value: " + value);
+
+            elements.scrollerOffsetChangeAmount.SetValue(amount);
+            elements.changeScrollerOffset.Invoke();
+            WaitForOffsetUpdated(elements.scrollerOffset, value);
+        }
+
         private void GoToSimpleContentsPage()
         {
             Log.Comment("Navigating to ScrollersWithSimpleContentsPage");
@@ -2659,24 +2962,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
 
             return GatherSnapPointsTestPageElements();
-        }
-
-        private void SnapPointsPageChangeOffset(SnapPointsTestPageElements elements, String amount, double value)
-        {
-            Log.Comment("SnapPointsPageChangeOffset with amount: " + amount + ", value: " + value);
-
-            elements.scrollerOffsetChangeAmount.SetValue(amount);
-            elements.changeScrollerOffset.Invoke();
-            WaitForOffsetUpdated(elements.scrollerOffset, value);
-        }
-
-        private void SnapPointsPageChangeOffset(SnapPointsTestPageElements elements, String amount, double minValue, double maxValue)
-        {
-            Log.Comment("SnapPointsPageChangeOffset with amount: " + amount + ", minValue: " + minValue + ", maxValue: " + maxValue);
-
-            elements.scrollerOffsetChangeAmount.SetValue(amount);
-            elements.changeScrollerOffset.Invoke();
-            WaitForOffsetUpdated(minValue, maxValue, elements.scrollerOffset);
         }
 
         private int WaitForOffsetUpdated(
@@ -2729,7 +3014,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return warningCount;
         }
 
-        private void WaitForOptionalRegularOffsetUpdated(
+#if ApplicableRangeType
+        private void WaitForOptionalRepeatedOffsetUpdated(
             Edit text,
             double range,
             double interval,
@@ -2742,6 +3028,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Log.Comment("Final Offset value modulo interval " + interval + ": " + valueModuloInterval);
             Verify.IsTrue((valueModuloInterval > range && valueModuloInterval < interval - range) || valueModuloInterval == 0.0);
         }
+#endif
 
         private bool WaitForOffsetToSettle(Edit text, double millisecondsTimeout, bool failOnError)
         {
@@ -2841,6 +3128,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(resetViewsButton);
                 WaitForEditValue(editName: "txtResetStatus", editValue: "Views reset");
             }
+        }
+
+        private void GetScrollerContentLayoutOffset(out double contentLayoutOffsetX, out double contentLayoutOffsetY)
+        {
+            contentLayoutOffsetX = 0.0;
+            contentLayoutOffsetY = 0.0;
+
+            UIObject viewUIObject = FindElement.ById("txtScrollerContentLayoutOffsetX");
+            Edit viewTextBox = new Edit(viewUIObject);
+            Log.Comment($"Current ContentLayoutOffsetX: {viewTextBox.Value}");
+            contentLayoutOffsetX = String.IsNullOrWhiteSpace(viewTextBox.Value) ? double.NaN : Convert.ToDouble(viewTextBox.Value);
+
+            viewUIObject = FindElement.ById("txtScrollerContentLayoutOffsetY");
+            viewTextBox = new Edit(viewUIObject);
+            Log.Comment($"Current ContentLayoutOffsetY: {viewTextBox.Value}");
+            contentLayoutOffsetY = String.IsNullOrWhiteSpace(viewTextBox.Value) ? double.NaN : Convert.ToDouble(viewTextBox.Value);
         }
 
         private void GetScrollerView(out double horizontalOffset, out double verticalOffset, out float zoomFactor)
@@ -2996,27 +3299,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private SnapPointsTestPageElements GatherSnapPointsTestPageElements()
         {
+            Log.Comment("GatherSnapPointsTestPageElements - entry");
             var elements = new SnapPointsTestPageElements();
             
             elements.btnAddMISnapPointUIObject = new Button(FindElement.ByName("btnMIAddSnapPoint"));
             elements.txtMISnapPointValueUIObject = new Edit(FindElement.ByName("txtMISnapPointValue"));
+            elements.cmbMISnapPointAlignment = new ComboBox(FindElement.ByName("cmbMISnapPointAlignment"));
 
+#if ApplicableRangeType
             elements.btnAddOISnapPointUIObject = new Button(FindElement.ByName("btnOIAddSnapPoint"));
             elements.txtOISnapPointValueUIObject = new Edit(FindElement.ByName("txtOISnapPointValue"));
             elements.txtOISnapPointRangeUIObject = new Edit(FindElement.ByName("txtOIApplicableRange"));
+#endif
 
             elements.btnAddMRSnapPointUIObject = new Button(FindElement.ByName("btnMRAddSnapPoint"));
             elements.txtMRSnapPointOffsetUIObject = new Edit(FindElement.ByName("txtMRSnapPointOffset"));
             elements.txtMRSnapPointIntervalUIObject = new Edit(FindElement.ByName("txtMRSnapPointInterval"));
             elements.txtMRSnapPointStartUIObject = new Edit(FindElement.ByName("txtMRSnapPointStart"));
             elements.txtMRSnapPointEndUIObject = new Edit(FindElement.ByName("txtMRSnapPointEnd"));
+            elements.cmbMRSnapPointAlignment = new ComboBox(FindElement.ByName("cmbMRSnapPointAlignment"));
 
+#if ApplicableRangeType
             elements.btnAddORSnapPointUIObject = new Button(FindElement.ByName("btnORAddSnapPoint"));
             elements.txtORSnapPointOffsetUIObject = new Edit(FindElement.ByName("txtORSnapPointOffset"));
             elements.txtORSnapPointIntervalUIObject = new Edit(FindElement.ByName("txtORSnapPointInterval"));
             elements.txtORSnapPointStartUIObject = new Edit(FindElement.ByName("txtORSnapPointStart"));
             elements.txtORSnapPointEndUIObject = new Edit(FindElement.ByName("txtORSnapPointEnd"));
             elements.txtORSnapPointRangeUIObject = new Edit(FindElement.ByName("txtORApplicableRange"));
+#endif
 
             elements.scrollerUIObject = FindElement.ByName("markupScroller");
             Verify.IsNotNull(elements.scrollerUIObject, "Verifying that markupScroller was found");
@@ -3027,6 +3337,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             elements.scrollerOffset.SetValue("0");
 
+            Log.Comment("GatherSnapPointsTestPageElements - exit");
             return elements;
         }
 
@@ -3034,23 +3345,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             public Button btnAddMISnapPointUIObject;
             public Edit txtMISnapPointValueUIObject;
+            public ComboBox cmbMISnapPointAlignment;
 
+#if ApplicableRangeType
             public Button btnAddOISnapPointUIObject;
             public Edit txtOISnapPointValueUIObject;
             public Edit txtOISnapPointRangeUIObject;
+#endif
 
             public Button btnAddMRSnapPointUIObject;
             public Edit txtMRSnapPointOffsetUIObject;
             public Edit txtMRSnapPointIntervalUIObject;
             public Edit txtMRSnapPointStartUIObject;
             public Edit txtMRSnapPointEndUIObject;
+            public ComboBox cmbMRSnapPointAlignment;
 
+#if ApplicableRangeType
             public Button btnAddORSnapPointUIObject;
             public Edit txtORSnapPointOffsetUIObject;
             public Edit txtORSnapPointIntervalUIObject;
             public Edit txtORSnapPointStartUIObject;
             public Edit txtORSnapPointEndUIObject;
             public Edit txtORSnapPointRangeUIObject;
+#endif
 
             public UIObject scrollerUIObject;
 

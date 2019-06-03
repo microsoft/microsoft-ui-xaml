@@ -217,6 +217,43 @@ inline PropertyChanged_revoker RegisterPropertyChanged(winrt::DependencyObject c
 }
 
 
+inline bool SetFocus(winrt::DependencyObject const& object, winrt::FocusState focusState)
+{
+    if (object)
+    {
+        // Use TryFocusAsync if it's available.
+        if (auto focusManager5 = winrt::get_activation_factory<winrt::FocusManager, winrt::IFocusManagerStatics>().try_as<winrt::IFocusManagerStatics5>())
+        {
+            auto result = focusManager5.TryFocusAsync(object, focusState);
+            if (result.Status() == winrt::AsyncStatus::Completed)
+            {
+                return result.GetResults().Succeeded();
+            }
+            // Operation was async, let's assume it worked.
+            return true;
+        }
+
+        if (auto control = object.try_as<winrt::Control>())
+        {
+            return control.Focus(focusState);
+        }
+        else if (auto hyperlink = object.try_as<winrt::Hyperlink>())
+        {
+            return hyperlink.Focus(focusState);
+        }
+        else if (auto contentlink = object.try_as<winrt::ContentLink>())
+        {
+            return contentlink.Focus(focusState);
+        }
+        else if (auto webview = object.try_as<winrt::WebView>())
+        {
+            return webview.Focus(focusState);
+        }
+    }
+
+    return false;
+}
+
 // This type exists for types that in metadata derive from FrameworkElement but internally want to derive from Panel
 // to get "protected" Children.
 // Using it is just like any other winrt::implementation::FooT type *except* that you must pass an additional parameter

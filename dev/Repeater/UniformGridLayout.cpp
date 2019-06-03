@@ -7,84 +7,15 @@
 #include "FlowLayoutAlgorithm.h"
 #include "UniformGridLayoutState.h"
 #include "UniformGridLayout.h"
-#include "UniformGridLayoutFactory.h"
 #include "RuntimeProfiler.h"
+#include "VirtualizingLayoutContext.h"
 
 #pragma region IGridLayout
 
 UniformGridLayout::UniformGridLayout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_UniformGridLayout);
-}
-
-winrt::Orientation UniformGridLayout::Orientation()
-{
-    return auto_unbox(GetValue(s_orientationProperty));
-}
-
-void UniformGridLayout::Orientation(winrt::Orientation const& value)
-{
-    SetValue(s_orientationProperty, box_value(value));
-}
-
-double UniformGridLayout::MinItemWidth()
-{
-    return m_minItemWidth;
-}
-
-void UniformGridLayout::MinItemWidth(double value)
-{
-    SetValue(s_minItemWidthProperty, box_value(value));
-}
-
-double UniformGridLayout::MinItemHeight()
-{
-    return m_minItemHeight;
-}
-
-void UniformGridLayout::MinItemHeight(double value)
-{
-    SetValue(s_minItemHeightProperty, box_value(value));
-}
-
-double UniformGridLayout::MinRowSpacing()
-{
-    return m_minRowSpacing;
-}
-
-void UniformGridLayout::MinRowSpacing(double value)
-{
-    SetValue(s_minRowSpacingProperty, box_value(value));
-}
-
-double UniformGridLayout::MinColumnSpacing()
-{
-    return m_minColumnSpacing;
-}
-
-void UniformGridLayout::MinColumnSpacing(double value)
-{
-    SetValue(s_minColumnSpacingProperty, box_value(value));
-}
-
-winrt::UniformGridLayoutItemsJustification UniformGridLayout::ItemsJustification()
-{
-    return m_itemsJustification;
-}
-
-void UniformGridLayout::ItemsJustification(winrt::UniformGridLayoutItemsJustification const& value)
-{
-    SetValue(s_itemsJustificationProperty, box_value(value));
-}
-
-winrt::UniformGridLayoutItemsStretch UniformGridLayout::ItemsStretch()
-{
-    return m_itemsStretch;
-}
-
-void UniformGridLayout::ItemsStretch(winrt::UniformGridLayoutItemsStretch const& value)
-{
-    SetValue(s_itemsStretchProperty, box_value(value));
+    LayoutId(L"UniformGridLayout");
 }
 
 #pragma endregion
@@ -163,7 +94,7 @@ void UniformGridLayout::OnItemsChangedCore(
     winrt::IInspectable const& source,
     winrt::NotifyCollectionChangedEventArgs const& args)
 {
-    GetFlowAlgorithm(context).OnDataSourceChanged(source, args, context);
+    GetFlowAlgorithm(context).OnItemsSourceChanged(source, args, context);
     // Always invalidate layout to keep the view accurate.
     InvalidateLayout();
 
@@ -176,17 +107,8 @@ void UniformGridLayout::OnItemsChangedCore(
 
 winrt::Size UniformGridLayout::Algorithm_GetMeasureSize(int index, const winrt::Size & availableSize, const winrt::VirtualizingLayoutContext& context)
 {
-    // The first element should always take as much space it wants, all the others should be limited to the size of the first one.
-    // We pass along all the available size so that it has the option to grow/shrink everytime it's resized rather than having a static size from the first time.
-    if (index == 0)
-    {
-        return availableSize;
-    }
-    else
-    {
-        const auto gridState = GetAsGridState(context.LayoutState());
-        return winrt::Size{ static_cast<float>(gridState->EffectiveItemWidth()),static_cast<float>(gridState->EffectiveItemHeight()) };
-    }
+    const auto gridState = GetAsGridState(context.LayoutState());
+    return winrt::Size{ static_cast<float>(gridState->EffectiveItemWidth()),static_cast<float>(gridState->EffectiveItemHeight()) };
 }
 
 winrt::Size UniformGridLayout::Algorithm_GetProvisionalArrangeSize(int /*index*/, const winrt::Size & /*measureSize*/, winrt::Size const& /*desiredSize*/, const winrt::VirtualizingLayoutContext& context)
@@ -258,14 +180,14 @@ winrt::FlowLayoutAnchorInfo UniformGridLayout::Algorithm_GetAnchorForTargetEleme
 }
 
 winrt::Rect UniformGridLayout::Algorithm_GetExtent(
-    const winrt::Size & availableSize,
-    const winrt::VirtualizingLayoutContext & context,
-    const winrt::UIElement & firstRealized,
+    const winrt::Size& availableSize,
+    const winrt::VirtualizingLayoutContext& context,
+    const winrt::UIElement& firstRealized,
     int firstRealizedItemIndex,
-    const winrt::Rect & firstRealizedLayoutBounds,
-    const winrt::UIElement & lastRealized,
+    const winrt::Rect& firstRealizedLayoutBounds,
+    const winrt::UIElement& lastRealized,
     int lastRealizedItemIndex,
-    const winrt::Rect & lastRealizedLayoutBounds)
+    const winrt::Rect& lastRealizedLayoutBounds)
 {
     UNREFERENCED_PARAMETER(lastRealized);
 
@@ -279,14 +201,14 @@ winrt::Rect UniformGridLayout::Algorithm_GetExtent(
         static_cast<int>(availableSizeMinor / GetMinorSizeWithSpacing(context)) : itemsCount);
     const float lineSize = GetMajorSizeWithSpacing(context);
 
-    extent.*MinorSize() =
-        std::isfinite(availableSizeMinor) ?
-        availableSizeMinor :
-        std::max(0.0f, itemsCount * GetMinorSizeWithSpacing(context) - static_cast<float>(MinItemSpacing()));
-    extent.*MajorSize() = std::max(0.0f, (itemsCount / itemsPerLine) * lineSize - static_cast<float>(LineSpacing()));
-
     if (itemsCount > 0)
     {
+        extent.*MinorSize() =
+            std::isfinite(availableSizeMinor) ?
+            availableSizeMinor :
+            std::max(0.0f, itemsCount * GetMinorSizeWithSpacing(context) - static_cast<float>(MinItemSpacing()));
+        extent.*MajorSize() = std::max(0.0f, (itemsCount / itemsPerLine) * lineSize - static_cast<float>(LineSpacing()));
+
         if (firstRealized)
         {
             MUX_ASSERT(lastRealized);
@@ -316,7 +238,7 @@ winrt::Rect UniformGridLayout::Algorithm_GetExtent(
 void UniformGridLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     auto property = args.Property();
-    if (property == s_orientationProperty)
+    if (property == s_OrientationProperty)
     {
         auto orientation = unbox_value<winrt::Orientation>(args.NewValue());
 
@@ -325,27 +247,27 @@ void UniformGridLayout::OnPropertyChanged(const winrt::DependencyPropertyChanged
         ScrollOrientation scrollOrientation = (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Vertical : ScrollOrientation::Horizontal;
         OrientationBasedMeasures::SetScrollOrientation(scrollOrientation);
     }
-    else if (property == s_minColumnSpacingProperty)
+    else if (property == s_MinColumnSpacingProperty)
     {
         m_minColumnSpacing = unbox_value<double>(args.NewValue());
     }
-    else if (property == s_minRowSpacingProperty)
+    else if (property == s_MinRowSpacingProperty)
     {
         m_minRowSpacing = unbox_value<double>(args.NewValue());
     }
-    else if (property == s_itemsJustificationProperty)
+    else if (property == s_ItemsJustificationProperty)
     {
         m_itemsJustification = unbox_value<winrt::UniformGridLayoutItemsJustification>(args.NewValue());
     }
-    else if (property == s_itemsStretchProperty)
+    else if (property == s_ItemsStretchProperty)
     {
         m_itemsStretch = unbox_value<winrt::UniformGridLayoutItemsStretch>(args.NewValue());
     }
-    else if (property == s_minItemWidthProperty)
+    else if (property == s_MinItemWidthProperty)
     {
         m_minItemWidth = unbox_value<double>(args.NewValue());
     }
-    else if (property = s_minItemHeightProperty)
+    else if (property = s_MinItemHeightProperty)
     {
         m_minItemHeight = unbox_value<double>(args.NewValue());
     }

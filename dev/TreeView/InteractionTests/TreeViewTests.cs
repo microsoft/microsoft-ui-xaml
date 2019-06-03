@@ -37,8 +37,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Platform", "Any")]
-        [TestProperty("TreeViewTestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        [TestProperty("TestSuite", "A")]
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
@@ -123,8 +123,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // [TestMethod]
-        // [TestProperty("TreeViewTestSuite", "A")]
-        // [TestProperty("Platform", "Desktop")]
+        // [TestProperty("TestSuite", "A")]
+        // [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         // BUG: Multiple unreliable TreeView tests #131
         public void ExpandCollapseTest_NodeMode()
         {
@@ -132,8 +132,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void ExpandCollapseTest_ContentMode()
         {
            ExpandCollapseTest(isContentMode:true);
@@ -197,16 +197,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void ExpandCollapseViaAutomationTest_NodeMode()
         {
             ExpandCollapseViaAutomationTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void ExpandCollapseViaAutomationTest_ContentMode()
         {
             ExpandCollapseViaAutomationTest(isContentMode:true);
@@ -237,24 +237,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewItemClickTest_NodeMode()
         {
             TreeViewItemClickTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewItemClickTest_ContentMode()
         {
             TreeViewItemClickTest(isContentMode:true);
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void FlyoutTreeViewItemClickTest()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
@@ -288,8 +288,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         // Regression test for bug 15801893
         public void FlyoutTreeViewItemTabTest()
         {
@@ -413,8 +413,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         //[TestMethod]
-        //[TestProperty("TreeViewTestSuite", "A")]
-        //[TestProperty("Platform", "Desktop")]
+        //[TestProperty("TestSuite", "A")]
+        //[TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         // BUG: Multiple unreliable TreeView tests #131
         public void TreeViewKeyDownLeftToRightTest_NodeMode()
         {
@@ -422,8 +422,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // [TestMethod]
-        // [TestProperty("TreeViewTestSuite", "A")]
-        // [TestProperty("Platform", "Desktop")]
+        // [TestProperty("TestSuite", "A")]
+        // [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         // BUG: Multiple unreliable TreeView tests #131
         public void TreeViewKeyDownLeftToRightTest_ContentMode()
         {
@@ -510,7 +510,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         //Multiple unreliable TreeView tests #131
         //[TestMethod]
-        //[TestProperty("TreeViewTestSuite", "A")]
+        //[TestProperty("TestSuite", "A")]
         public void TreeViewKeyDownRightToLeftTest_NodeMode()
         {
             TreeViewKeyDownRightToLeftTest();
@@ -518,13 +518,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         //Test failures with keyboard/gamepad/mousewheel input #269
         //[TestMethod]
-        //[TestProperty("TreeViewTestSuite", "A")]
+        //[TestProperty("TestSuite", "A")]
         public void TreeViewKeyDownRightToLeftTest_ContentMode()
         {
             TreeViewKeyDownRightToLeftTest(isContentMode:true);
         }
-
-    
 
         private void TreeViewSwappingNodesTest(bool isContentMode = false)
         {
@@ -557,16 +555,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewSwappingNodesTest_NodeMode()
         {
             TreeViewSwappingNodesTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewSwappingNodesTest_ContentMode()
         {
             TreeViewSwappingNodesTest(isContentMode:true);
@@ -613,16 +611,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewExpandingEventTest_NodeMode()
         {
             TreeViewExpandingEventTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewExpandingEventTest_ContentMode()
         {
             TreeViewExpandingEventTest(isContentMode:true);
@@ -668,7 +666,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Down, ModifierKey.Alt | ModifierKey.Shift);
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0", ReadResult());
 
                 InputHelper.Tap(ItemRoot);
 
@@ -676,7 +674,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Up, ModifierKey.Alt | ModifierKey.Shift);
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0", ReadResult());
 
                 InputHelper.Tap(ItemRoot);
 
@@ -686,7 +684,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Down, ModifierKey.Alt | ModifierKey.Shift);
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0", ReadResult());
 
                 InputHelper.Tap(ItemRoot);
 
@@ -696,21 +694,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("4", ReadResult());
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.2 | Root.0", ReadResult());
             }
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewKeyboardReorderTest_NodeMode()
         {
             TreeViewKeyboardReorderTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewKeyboardReorderTest_ContentMode()
         {
             TreeViewKeyboardReorderTest(isContentMode:true);
@@ -759,12 +757,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("3", ReadResult());
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2", ReadResult());
             }
         }
 
         //[TestMethod]
-        //[TestProperty("TreeViewTestSuite", "A")]
+        //[TestProperty("TestSuite", "A")]
         // BUG: Multiple unreliable TreeView tests #131
         public void TreeViewDragAndDropOnNode_NodeMode()
         {
@@ -772,7 +770,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // [TestMethod]
-        // [TestProperty("TreeViewTestSuite", "A")]
+        // [TestProperty("TestSuite", "A")]
         // BUG: Multiple unreliable TreeView tests #131
         public void TreeViewDragAndDropOnNode_ContentMode()
         {
@@ -816,29 +814,49 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // 5% from the edge of the next item 
                 var distance = (int)(height * 1.45);
 
+                Log.Comment("Click on the item to help make the drag more reliable");
+                dragUIObject.Click();
+
                 Log.Comment("Starting Drag...distance:" + distance);
                 InputHelper.DragDistance(dragUIObject, distance, Direction.South);
 
-                ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2 | ", ReadResult());
+                TestEnvironment.VerifyAreEqualWithRetry(
+                    5,
+                    () => "Root | Root.1 | Root.0 | Root.2",
+                    () => {
+                        ClickButton("GetChildrenOrder");
+                        return ReadResult();
+                    });
 
                 ClickButton("GetItemCount");
                 Verify.AreEqual("4", ReadResult());
 
                 ClickButton("GetItemCommonStates");
-                Verify.AreEqual("Selected Selected Selected Selected", ReadResult().Trim());
+                Verify.AreEqual("Normal Normal Normal Normal", ReadResult().Trim());
             }
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewDragAndDropBetweenNodes_NodeMode()
         {
             TreeViewDragAndDropBetweenNodes();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
+        public void TreeViewDensityChange()
+        {
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                UIObject root = LabelFirstItem();
+                int height = root.BoundingRectangle.Height;
+                Verify.AreEqual(height, 32);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewDragAndDropBetweenNodes_ContentMode()
         {
             TreeViewDragAndDropBetweenNodes(isContentMode:true);
@@ -897,16 +915,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewCollectionChangesEffectSelectedNodesTest_NodeMode()
         {
             TreeViewCollectionChangesEffectSelectedNodesTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewCollectionChangesEffectSelectedNodesTest_ContentMode()
         {
             TreeViewCollectionChangesEffectSelectedNodesTest(isContentMode:true);
@@ -966,19 +984,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("2", ReadResult());
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.2 | Root.0 | Root.1 | ", ReadResult());
+                Verify.AreEqual("Root | Root.2 | Root.0 | Root.1", ReadResult());
             }
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewMultiSelectDragAndDropOnNode_NodeMode()
         {
             TreeViewMultiSelectDragAndDropOnNode();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewMultiSelectDragAndDropOnNode_ContentMode()
         {
             TreeViewMultiSelectDragAndDropOnNode(isContentMode:true);
@@ -1035,7 +1053,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.DragDistance(dragUIObject, distance, Direction.South);
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.2 | Root.0 | Root.1 | ", ReadResult());
+                Verify.AreEqual("Root | Root.2 | Root.0 | Root.1", ReadResult());
 
                 ClickButton("GetItemCount");
                 Verify.AreEqual("4", ReadResult());
@@ -1046,14 +1064,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewMultiSelectDragAndDropBetweenNodes_NodeMode()
         {
             TreeViewMultiSelectDragAndDropBetweenNodes();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewMultiSelectDragAndDropBetweenNodes_ContentMode()
         {
             TreeViewMultiSelectDragAndDropBetweenNodes(isContentMode:true);
@@ -1100,7 +1118,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.DragDistance(dragUIObject, distance, Direction.South);
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2", ReadResult());
 
                 ClickButton("GetItemCount");
                 Verify.AreEqual("4", ReadResult());
@@ -1111,14 +1129,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void ValidateCannotDragWithinSelectedSubtree_NodeMode()
         {
             ValidateCannotDragWithinSelectedSubtree();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void ValidateCannotDragWithinSelectedSubtree_ContentMode()
         {
             ValidateCannotDragWithinSelectedSubtree(isContentMode:true);
@@ -1182,7 +1200,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.DragDistance(dragUIObject, distance, Direction.South);
 
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.1.1 | Root.0 | Root.0.0 | Root.1.0 | Root.1.2 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.1.1 | Root.0 | Root.0.0 | Root.1.0 | Root.1.2 | Root.2", ReadResult());
                 Wait.ForIdle();
 
                 ClickButton("GetItemCount");
@@ -1194,14 +1212,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void ValidateMultiSelectDragDropRootsAndNonRoots_NodeMode()
         {
             ValidateMultiSelectDragDropRootsAndNonRoots();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void ValidateMultiSelectDragDropRootsAndNonRoots_ContentMode()
         {
             ValidateMultiSelectDragDropRootsAndNonRoots(isContentMode:true);
@@ -1255,14 +1273,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewDragCrash_NodeMode()
         {
             TreeViewDragCrash();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewDragCrash_ContentMode()
         {
             TreeViewDragCrash(isContentMode:true);
@@ -1306,22 +1324,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject dropTarget = FindElement.ByName("DropTarget");
                 Verify.IsNotNull(dropTarget);
 
+                Log.Comment($"Dragging from {dragUIObject} to {dropTarget}");
                 InputHelper.DragToTarget(dragUIObject, dropTarget);
 
-                var droppedItem = new TextBlock(FindElement.ByName("DropTargetTextBlock")).DocumentText;
-                Verify.AreEqual("Root.2", droppedItem);
+                TestEnvironment.VerifyAreEqualWithRetry(
+                    5,
+                    () => "Root.2",
+                    () => new TextBlock(FindElement.ByName("DropTargetTextBlock")).DocumentText,
+                    () => {
+                        // The drag&drop operation may not have worked because the input is unreliable, just try again.
+                        InputHelper.DragToTarget(dragUIObject, dropTarget);
+                    });
             }
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "A")]
+        [TestProperty("TestSuite", "A")]
         public void DragItemOutOfTreeView_NodeMode()
         {
             DragItemOutOfTreeView();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void DragItemOutOfTreeView_ContentMode()
         {
             DragItemOutOfTreeView(isContentMode:true);
@@ -1373,14 +1398,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void DragItemOntoTreeView_NodeMode()
         {
             DragItemOntoTreeView();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void DragItemOntoTreeView_ContentMode()
         {
             DragItemOntoTreeView(isContentMode:true);
@@ -1431,21 +1456,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewNoReorderIntoChildren_NodeMode()
         {
             TreeViewNoReorderIntoChildren();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewNoReorderIntoChildren_ContentMode()
         {
             TreeViewNoReorderIntoChildren(isContentMode:true);
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void FlyoutTreeViewSelectionChangedCrash()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
@@ -1546,16 +1571,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "B")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewMultiSelectKeyboardingTest_NodeMode()
         {
             TreeViewMultiSelectKeyboardingTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "B")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewMultiSelectKeyboardingTest_ContentMode()
         {
             TreeViewMultiSelectKeyboardingTest(isContentMode:true);
@@ -1611,16 +1636,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "B")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewMultiSelectItemTest_NodeMode()
         {
             TreeViewMultiSelectItemTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "B")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewMultiSelectItemTest_ContentMode()
         {
             TreeViewMultiSelectItemTest(isContentMode:true);
@@ -1670,7 +1695,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // Multiple unreliable TreeView tests #131
         //[TestMethod]
-        //[TestProperty("TreeViewTestSuite", "B")]
+        //[TestProperty("TestSuite", "B")]
         public void TreeViewMultiSelectGamepadTest_NodeMode()
         {
             TreeViewMultiSelectGamepadTest();
@@ -1678,7 +1703,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         //Test failures with keyboard/gamepad/mousewheel input #269
         //[TestMethod]
-        //[TestProperty("TreeViewTestSuite", "B")]
+        //[TestProperty("TestSuite", "B")]
         public void TreeViewMultiSelectGamepadTest_ContentMode()
         {
             TreeViewMultiSelectGamepadTest(isContentMode:true);
@@ -1773,7 +1798,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewListMultipleSelectionUIATest()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
@@ -1808,16 +1833,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "B")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewItemUIATest_NodeMode()
         {
             TreeViewItemUIATest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "B")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewItemUIATest_ContentMode()
         {
             TreeViewItemUIATest(isContentMode:true);
@@ -1859,16 +1884,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "B")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void ValidateExpandingRaisedOnItemHavingUnrealizedChildren_NodeMode()
         {
             ValidateExpandingRaisedOnItemHavingUnrealizedChildren();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "B")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void ValidateExpandingRaisedOnItemHavingUnrealizedChildren_ContentMode()
         {
             ValidateExpandingRaisedOnItemHavingUnrealizedChildren(isContentMode:true);
@@ -1894,14 +1919,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewDragItemTest_NodeMode()
         {
             TreeViewDragItemTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewDragItemTest_ContentMode()
         {
             TreeViewDragItemTest(isContentMode:true);
@@ -1948,14 +1973,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewDragMultipleItemsTest_NodeMode()
         {
             TreeViewDragMultipleItemsTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewDragMultipleItemsTest_ContentMode()
         {
             TreeViewDragMultipleItemsTest(isContentMode:true);
@@ -1996,14 +2021,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewDragEnterOverLeaveTest_NodeMode()
         {
             TreeViewDragEnterOverLeaveTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewDragEnterOverLeaveTest_ContentMode()
         {
             TreeViewDragEnterOverLeaveTest(isContentMode:true);
@@ -2043,14 +2068,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewDragEnterOverDropTest_NodeMode()
         {
             TreeViewDragEnterOverDropTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewDragEnterOverDropTest_ContentMode()
         {
             TreeViewDragEnterOverDropTest(isContentMode:true);
@@ -2090,14 +2115,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewDisableItemDragTest_NodeMode()
         {
             TreeViewDisableItemDragTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewDisableItemDragTest_ContentMode()
         {
             TreeViewDisableItemDragTest(isContentMode:true);
@@ -2124,7 +2149,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ClickButton("LabelItems");
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2", ReadResult());
 
                 ClickButton("DisableItemReorder");
 
@@ -2142,7 +2167,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ClickButton("GetChildrenOrder");
                 // Verify nodes are still in the same order
-                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2", ReadResult());
 
                 Log.Comment("Verify cannot drag onto a node");
                 // Drag Root.0 onto Root.1
@@ -2151,26 +2176,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ClickButton("GetChildrenOrder");
                 // Verify nodes are still in the same order
-                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2", ReadResult());
             }
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewDisableItemReorderTest_NodeMode()
         {
             TreeViewDisableItemReorderTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewDisableItemReorderTest_ContentMode()
         {
             TreeViewDisableItemReorderTest(isContentMode:true);
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewDisableItemReorderKeyboardTest()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
@@ -2180,7 +2205,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ClickButton("LabelItems");
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.0 | Root.1 | Root.2", ReadResult());
 
                 ClickButton("DisableClickToExpand");
 
@@ -2191,7 +2216,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(root0);
                 KeyboardHelper.PressKey(Key.Down, ModifierKey.Alt | ModifierKey.Shift);
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2", ReadResult());
 
                 ClickButton("DisableItemReorder");
 
@@ -2199,12 +2224,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(root0);
                 KeyboardHelper.PressKey(Key.Down, ModifierKey.Alt | ModifierKey.Shift);
                 ClickButton("GetChildrenOrder");
-                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2 | ", ReadResult());
+                Verify.AreEqual("Root | Root.1 | Root.0 | Root.2", ReadResult());
             }
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewItemTemplateSelectorTest()
         {
             using (var setup = new TestSetupHelper(new[] { "TreeView Tests", "ItemTemplateSelectorTestPage" }))
@@ -2223,7 +2248,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         //Bug 16396926
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewExpandNodeWithUnrealizedChildrenCrash()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
@@ -2310,14 +2335,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewPartialSelectionTest_NodeMode()
         {
             TreeViewPartialSelectionTest();
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewPartialSelectionTest_ContentMode()
         {
             TreeViewPartialSelectionTest(isContentMode:true);
@@ -2467,7 +2492,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // Regression test for bug 16833853
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewNonexistNodeAutomationPeerTest()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
@@ -2504,7 +2529,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // Regression test for bug 17644036
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewItemAutomationPeerSelectionItemPatternTest()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
@@ -2528,7 +2553,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewSelectionChangeUIAEventsTest()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
@@ -2568,7 +2593,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewNodeInheritenceTest()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
@@ -2585,7 +2610,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewFastReorderTest()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
@@ -2609,7 +2634,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewDataLateInitTest()
         {
             using (var setup = new TestSetupHelper(new[] { "TreeView Tests", "TreeViewLateDataInitTestPage" }))
@@ -2622,8 +2647,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TreeViewTestSuite", "B")]
-        [TestProperty("Platform", "Desktop")]
+        [TestProperty("TestSuite", "B")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewNodeInMarkupTest()
         {
             using (var setup = new TestSetupHelper(new[] { "TreeView Tests", "TreeViewNodeInMarkupTestPage" }))
@@ -2636,7 +2661,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private void ClickButton(string buttonName)
         {
             var button = new Button(FindElement.ByName(buttonName));
-            button.Invoke();
+            button.InvokeAndWait();
             Wait.ForIdle();
         }
 
@@ -2659,7 +2684,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void TapOnFlyoutTreeViewRootItemChevron()
         {
-            TapOnTreeViewAt(40, 20, "GetFlyoutItemCount");
+            // Chevron has 12px left padding, and it's 12px wide. 
+            // 18 is the center point of chevron.
+            TapOnTreeViewAt(18, 20, "GetFlyoutItemCount");
         }
 
         private UIObject LabelFirstItem()

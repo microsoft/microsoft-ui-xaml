@@ -5,6 +5,7 @@
 #include <common.h>
 #include <ItemsRepeater.common.h>
 #include "FlowLayoutAlgorithm.h"
+#include "VirtualizingLayoutContext.h"
 
 void FlowLayoutAlgorithm::InitializeForContext(
     const winrt::VirtualizingLayoutContext& context,
@@ -28,7 +29,7 @@ void FlowLayoutAlgorithm::UninitializeForContext(const winrt::VirtualizingLayout
 
 winrt::Size FlowLayoutAlgorithm::Measure(
     const winrt::Size& availableSize,
-    const winrt::VirtualizingLayoutContext& /*context*/,
+    const winrt::VirtualizingLayoutContext& context,
     bool isWrapping,
     double minItemSpacing,
     double lineSpacing,
@@ -36,8 +37,12 @@ winrt::Size FlowLayoutAlgorithm::Measure(
     const wstring_view& layoutId)
 {
     SetScrollOrientation(orientation);
+
+    // If minor size is infinity, there is only one line and no need to align that line.
+    m_scrollOrientationSameAsFlow = availableSize.*Minor() == std::numeric_limits<float>::infinity();
     const auto realizationRect = RealizationRect();
-    REPEATER_TRACE_INFO(L"%ls: \tMeasureLayout Realization(%.0f,%.0f,%.0f,%.0f)\n",
+    REPEATER_TRACE_INFO(L"%*s: \tMeasureLayout Realization(%.0f,%.0f,%.0f,%.0f)\n",
+        winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),
         layoutId.data(),
         realizationRect.X, realizationRect.Y, realizationRect.Width, realizationRect.Height);
 
@@ -58,7 +63,7 @@ winrt::Size FlowLayoutAlgorithm::Measure(
     Generate(GenerateDirection::Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, layoutId);
     if (isWrapping && IsReflowRequired())
     {
-        REPEATER_TRACE_INFO(L"%ls: \tReflow Pass \n", layoutId.data());
+        REPEATER_TRACE_INFO(L"%*s: \tReflow Pass \n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data());
         auto firstElementBounds = m_elementManager.GetLayoutBoundsForRealizedIndex(0);
         firstElementBounds.*MinorStart() = 0;
         m_elementManager.SetLayoutBoundsForRealizedIndex(0, firstElementBounds);
@@ -67,7 +72,7 @@ winrt::Size FlowLayoutAlgorithm::Measure(
 
     RaiseLineArranged();
     m_collectionChangePending = false;
-    m_lastExtent = EstimateExtent(availableSize);
+    m_lastExtent = EstimateExtent(availableSize, layoutId);
     SetLayoutOrigin();
 
     return winrt::Size{ m_lastExtent.Width, m_lastExtent.Height };
@@ -75,11 +80,11 @@ winrt::Size FlowLayoutAlgorithm::Measure(
 
 winrt::Size FlowLayoutAlgorithm::Arrange(
     const winrt::Size& finalSize,
-    const winrt::VirtualizingLayoutContext& /*context*/,
+    const winrt::VirtualizingLayoutContext& context,
     FlowLayoutAlgorithm::LineAlignment lineAlignment,
     const wstring_view& layoutId)
 {
-    REPEATER_TRACE_INFO(L"%ls: \tArrangeLayout \n", layoutId.data());
+    REPEATER_TRACE_INFO(L"%*s: \tArrangeLayout \n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data());
     ArrangeVirtualizingLayout(finalSize, lineAlignment, layoutId);
 
     return winrt::Size
@@ -110,7 +115,7 @@ void FlowLayoutAlgorithm::MakeAnchor(
     }
 }
 
-void FlowLayoutAlgorithm::OnDataSourceChanged(
+void FlowLayoutAlgorithm::OnItemsSourceChanged(
     const winrt::IInspectable& source,
     winrt::NotifyCollectionChangedEventArgs const& args,
     const winrt::IVirtualizingLayoutContext& /*context*/)
@@ -143,16 +148,16 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
 {
     int anchorIndex = -1;
     winrt::Point anchorPosition{};
+    auto context = m_context.get();
 
     if (!IsVirtualizingContext())
     {
         // Non virtualizing host, start generating from the element 0
-        anchorIndex = m_context.get().ItemCountCore() > 0 ? 0 : -1;
-        //anchorPosition = default(Point);
+        anchorIndex = context.ItemCountCore() > 0 ? 0 : -1;
     }
     else
-    {
-        bool isRealizationWindowConnected = m_elementManager.IsWindowConnected(RealizationRect(), GetScrollOrientation());
+    {       
+        bool isRealizationWindowConnected = m_elementManager.IsWindowConnected(RealizationRect(), GetScrollOrientation(), m_scrollOrientationSameAsFlow);
         // Item spacing and size in non-virtualizing direction change can cause elements to reflow
         // and get a new column position. In that case we need the anchor to be positioned in the 
         // correct column.
@@ -168,16 +173,26 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
 
         if (isAnchorSuggestionValid)
         {
-            REPEATER_TRACE_INFO(L"%ls: \tUsing suggested anchor %d\n", layoutId.data(), suggestedAnchorIndex);
+            REPEATER_TRACE_INFO(L"%*s: \tUsing suggested anchor %d\n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),layoutId.data(), suggestedAnchorIndex);
             anchorIndex = m_algorithmCallbacks->Algorithm_GetAnchorForTargetElement(
                 suggestedAnchorIndex,
                 availableSize,
-                m_context.get()).Index;
+                context).Index;
 
             if (m_elementManager.IsDataIndexRealized(anchorIndex))
             {
                 auto anchorBounds = m_elementManager.GetLayoutBoundsForDataIndex(anchorIndex);
-                anchorPosition = winrt::Point(anchorBounds.X, anchorBounds.Y);
+                if (needAnchorColumnRevaluation)
+                {
+                    // We were provided a valid anchor, but its position might be incorrect because for example it is in
+                    // the wrong column. We do know that the anchor is the first element in the row, so we can force the minor position
+                    // to start at 0.
+                    anchorPosition = MinorMajorPoint(0, anchorBounds.*MajorStart());
+                }
+                else
+                {
+                    anchorPosition = winrt::Point(anchorBounds.X, anchorBounds.Y);
+                }
             }
             else
             {
@@ -198,18 +213,18 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
         }
         else if (needAnchorColumnRevaluation || !isRealizationWindowConnected)
         {
-            if (needAnchorColumnRevaluation) { REPEATER_TRACE_INFO(L"%ls: \tNeedAnchorColumnReevaluation \n", layoutId.data()); }
-            if (!isRealizationWindowConnected) { REPEATER_TRACE_INFO(L"%ls: \tDisconnected Window \n", layoutId.data()); }
+            if (needAnchorColumnRevaluation) { REPEATER_TRACE_INFO(L"%*s: \tNeedAnchorColumnReevaluation \n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data()); }
+            if (!isRealizationWindowConnected) { REPEATER_TRACE_INFO(L"%*s: \tDisconnected Window \n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data()); }
 
             // The anchor is based on the realization window because a connected ItemsRepeater might intersect the realization window
             // but not the visible window. In that situation, we still need to produce a valid anchor.
-            auto anchorInfo = m_algorithmCallbacks->Algorithm_GetAnchorForRealizationRect(availableSize, m_context.get());
+            auto anchorInfo = m_algorithmCallbacks->Algorithm_GetAnchorForRealizationRect(availableSize, context);
             anchorIndex = anchorInfo.Index;
             anchorPosition = MinorMajorPoint(0, static_cast<float>(anchorInfo.Offset));
         }
         else
         {
-            REPEATER_TRACE_INFO(L"%ls: \tConnected Window - picking first realized element as anchor \n", layoutId.data());
+            REPEATER_TRACE_INFO(L"%*s: \tConnected Window - picking first realized element as anchor \n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data());
             // No suggestion - just pick first in realized range
             anchorIndex = m_elementManager.GetDataIndexFromRealizedRangeIndex(0);
             auto firstElementBounds = m_elementManager.GetLayoutBoundsForRealizedIndex(0);
@@ -217,7 +232,7 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
         }
     }
 
-    REPEATER_TRACE_INFO(L"%ls: \tPicked anchor:%d \n", layoutId.data(), anchorIndex);
+    REPEATER_TRACE_INFO(L"%*s: \tPicked anchor:%d \n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data(), anchorIndex);
     MUX_ASSERT(anchorIndex == -1 || m_elementManager.IsIndexValidInData(anchorIndex));
     m_firstRealizedDataIndexInsideRealizationWindow = m_lastRealizedDataIndexInsideRealizationWindow = anchorIndex;
     if (m_elementManager.IsIndexValidInData(anchorIndex))
@@ -225,7 +240,7 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
         if (!m_elementManager.IsDataIndexRealized(anchorIndex))
         {
             // Disconnected, throw everything and create new anchor
-            REPEATER_TRACE_INFO(L"Disconnected Window - throwing away all realized elements \n");
+            REPEATER_TRACE_INFO(L"%*s Disconnected Window - throwing away all realized elements \n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data());
             m_elementManager.ClearRealizedRange();
 
             auto anchor = m_context.get().GetOrCreateElementAt(anchorIndex, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
@@ -237,7 +252,8 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
         auto layoutBounds = winrt::Rect{ anchorPosition.X, anchorPosition.Y, desiredSize.Width, desiredSize.Height };
         m_elementManager.SetLayoutBoundsForDataIndex(anchorIndex, layoutBounds);
 
-        REPEATER_TRACE_INFO(L"%ls: \tLayout bounds of anchor %d are (%.0f,%.0f,%.0f,%.0f). \n",
+        REPEATER_TRACE_INFO(L"%*s: \tLayout bounds of anchor %d are (%.0f,%.0f,%.0f,%.0f). \n",
+            winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),
             layoutId.data(),
             anchorIndex,
             layoutBounds.X, layoutBounds.Y, layoutBounds.Width, layoutBounds.Height);
@@ -245,7 +261,9 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
     else
     {
         // Throw everything away
-        REPEATER_TRACE_INFO(L"%ls \tAnchor index is not valid - throwing away all realized elements \n", layoutId.data());
+        REPEATER_TRACE_INFO(L"%*s \tAnchor index is not valid - throwing away all realized elements \n",
+            winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),
+            layoutId.data());
         m_elementManager.ClearRealizedRange();
     }
 
@@ -269,13 +287,19 @@ void FlowLayoutAlgorithm::Generate(
     {
         int step = (direction == GenerateDirection::Forward) ? 1 : -1;
 
-        REPEATER_TRACE_INFO(L"%ls: \tGenerating %ls from anchor %d. \n",
+        REPEATER_TRACE_INFO(L"%*s: \tGenerating %ls from anchor %d. \n",
+            winrt::get_self<VirtualizingLayoutContext>(m_context.get())->Indent(),
             layoutId.data(),
             direction == GenerateDirection::Forward ? L"forward" : L"backward",
             anchorIndex);
 
         int previousIndex = anchorIndex;
         int currentIndex = anchorIndex + step;
+        auto anchorBounds = m_elementManager.GetLayoutBoundsForDataIndex(anchorIndex);
+        float lineOffset = anchorBounds.*MajorStart();
+        float lineMajorSize = anchorBounds.*MajorSize();
+        int countInLine = 1;
+        bool lineNeedsReposition = false;
 
         while (m_elementManager.IsIndexValidInData(currentIndex) &&
             ShouldContinueFillingUpSpace(previousIndex, direction))
@@ -288,10 +312,7 @@ void FlowLayoutAlgorithm::Generate(
             // Lay it out.
             auto previousElement = m_elementManager.GetRealizedElement(previousIndex);
             winrt::Rect currentBounds = winrt::Rect{ 0, 0, desiredSize.Width, desiredSize.Height };
-
-            // TODO: Support varying MajorSize items
             auto previousElementBounds = m_elementManager.GetLayoutBoundsForDataIndex(previousIndex);
-            auto previousLineMajorSize = previousElementBounds.*MajorSize();
 
             if (direction == GenerateDirection::Forward)
             {
@@ -300,13 +321,34 @@ void FlowLayoutAlgorithm::Generate(
                 {
                     // No more space in this row. wrap to next row.
                     currentBounds.*MinorStart() = 0;
-                    currentBounds.*MajorStart() = previousElementBounds.*MajorStart() + previousLineMajorSize + static_cast<float>(lineSpacing);
+                    currentBounds.*MajorStart() = previousElementBounds.*MajorStart() + lineMajorSize + static_cast<float>(lineSpacing);
+
+                    if (lineNeedsReposition)
+                    {
+                        // reposition the previous line (countInLine items)
+                        for (int i = 0; i < countInLine; i++)
+                        {
+                            auto dataIndex = currentIndex - 1 - i;
+                            auto bounds = m_elementManager.GetLayoutBoundsForDataIndex(dataIndex);
+                            bounds.*MajorSize() = lineMajorSize;
+                            m_elementManager.SetLayoutBoundsForDataIndex(dataIndex, bounds);
+                        }
+                    }
+
+                    // Setup for next line.
+                    lineMajorSize = currentBounds.*MajorSize();
+                    lineOffset = currentBounds.*MajorStart();
+                    lineNeedsReposition = false;
+                    countInLine = 1;
                 }
                 else
                 {
                     // More space is available in this row.
                     currentBounds.*MinorStart() = previousElementBounds.*MinorStart() + previousElementBounds.*MinorSize() + static_cast<float>(minItemSpacing);
-                    currentBounds.*MajorStart() = previousElementBounds.*MajorStart();
+                    currentBounds.*MajorStart() = lineOffset;
+                    lineMajorSize = std::max(lineMajorSize, currentBounds.*MajorSize());
+                    lineNeedsReposition = previousElementBounds.*MajorSize() != currentBounds.*MajorSize();
+                    countInLine++;
                 }
             }
             else
@@ -317,23 +359,52 @@ void FlowLayoutAlgorithm::Generate(
                 {
                     // Does not fit, wrap to the previous row
                     const auto availableSizeMinor = availableSize.*Minor();
-                    currentBounds.*MinorStart() =
-                        std::isfinite(availableSizeMinor) ?
-                        availableSizeMinor - desiredSize.*Minor() :
-                        0.0f;
-                    currentBounds.*MajorStart() = previousElementBounds.*MajorStart() - desiredSize.*Major() - static_cast<float>(lineSpacing);
+                    currentBounds.*MinorStart() = std::isfinite(availableSizeMinor) ? availableSizeMinor - desiredSize.*Minor() : 0.0f;
+                    currentBounds.*MajorStart() = lineOffset - desiredSize.*Major() - static_cast<float>(lineSpacing);
+
+                    if (lineNeedsReposition)
+                    {
+                        auto previousLineOffset = m_elementManager.GetLayoutBoundsForDataIndex(currentIndex + countInLine + 1).*MajorStart();
+                        // reposition the previous line (countInLine items)
+                        for (int i = 0; i < countInLine; i++)
+                        {
+                            auto dataIndex = currentIndex + 1 + i;
+                            if (dataIndex != anchorIndex)
+                            {
+                                auto bounds = m_elementManager.GetLayoutBoundsForDataIndex(dataIndex);
+                                bounds.*MajorStart() = previousLineOffset - lineMajorSize - static_cast<float>(lineSpacing);
+                                bounds.*MajorSize() = lineMajorSize;
+                                m_elementManager.SetLayoutBoundsForDataIndex(dataIndex, bounds);
+                                REPEATER_TRACE_INFO(L"%*s: \t Corrected Layout bounds of element %d are (%.0f,%.0f,%.0f,%.0f). \n",
+                                    winrt::get_self<VirtualizingLayoutContext>(m_context.get())->Indent(),
+                                    layoutId.data(),
+                                    dataIndex,
+                                    bounds.X, bounds.Y, bounds.Width, bounds.Height);
+                            }
+                        }
+                    }
+
+                    // Setup for next line.
+                    lineMajorSize = currentBounds.*MajorSize();
+                    lineOffset = currentBounds.*MajorStart();
+                    lineNeedsReposition = false;
+                    countInLine = 1;
                 }
                 else
                 {
                     // Fits in this row. put it in the previous position
                     currentBounds.*MinorStart() = previousElementBounds.*MinorStart() - desiredSize.*Minor() - static_cast<float>(minItemSpacing);
-                    currentBounds.*MajorStart() = previousElementBounds.*MajorStart();
+                    currentBounds.*MajorStart() = lineOffset;
+                    lineMajorSize = std::max(lineMajorSize, currentBounds.*MajorSize());
+                    lineNeedsReposition = previousElementBounds.*MajorSize() != currentBounds.*MajorSize();
+                    countInLine++;
                 }
             }
 
             m_elementManager.SetLayoutBoundsForDataIndex(currentIndex, currentBounds);
 
-            REPEATER_TRACE_INFO(L"%ls: \tLayout bounds of element %d are (%.0f,%.0f,%.0f,%.0f). \n",
+            REPEATER_TRACE_INFO(L"%*s: \tLayout bounds of element %d are (%.0f,%.0f,%.0f,%.0f). \n",
+                winrt::get_self<VirtualizingLayoutContext>(m_context.get())->Indent(),
                 layoutId.data(),
                 currentIndex,
                 currentBounds.X, currentBounds.Y, currentBounds.Width, currentBounds.Height);
@@ -383,15 +454,28 @@ bool FlowLayoutAlgorithm::ShouldContinueFillingUpSpace(
     {
         auto realizationRect = m_context.get().RealizationRect();
         auto elementBounds = m_elementManager.GetLayoutBoundsForDataIndex(index);
+
+        auto elementMajorStart = elementBounds.*MajorStart();
+        auto elementMajorEnd = MajorEnd(elementBounds);
+        auto rectMajorStart = realizationRect.*MajorStart();
+        auto rectMajorEnd = MajorEnd(realizationRect);
+
+        auto elementMinorStart = elementBounds.*MinorStart();
+        auto elementMinorEnd = MinorEnd(elementBounds);
+        auto rectMinorStart = realizationRect.*MinorStart();
+        auto rectMinorEnd = MinorEnd(realizationRect);
+
+        // Ensure that both minor and major directions are taken into consideration so that if the scrolling direction
+        // is the same as the flow direction we still stop at the end of the viewport rectangle.
         shouldContinue =
-            (direction == GenerateDirection::Forward && elementBounds.*MajorStart() < MajorEnd(realizationRect)) ||
-            (direction == GenerateDirection::Backward && MajorEnd(elementBounds) > realizationRect.*MajorStart());
+            (direction == GenerateDirection::Forward && elementMajorStart < rectMajorEnd && elementMinorStart < rectMinorEnd) ||
+            (direction == GenerateDirection::Backward && elementMajorEnd > rectMajorStart && elementMinorEnd > rectMinorStart);
     }
 
     return shouldContinue;
 }
 
-winrt::Rect FlowLayoutAlgorithm::EstimateExtent(const winrt::Size& availableSize)
+winrt::Rect FlowLayoutAlgorithm::EstimateExtent(const winrt::Size& availableSize, const wstring_view& layoutId)
 {
     winrt::UIElement firstRealizedElement = nullptr;
     winrt::Rect firstBounds{};
@@ -422,7 +506,7 @@ winrt::Rect FlowLayoutAlgorithm::EstimateExtent(const winrt::Size& availableSize
         lastDataIndex,
         lastBounds);
 
-    REPEATER_TRACE_INFO(L"Extent: (%.0f,%.0f,%.0f,%.0f). \n", extent.X, extent.Y, extent.Width, extent.Height);
+    REPEATER_TRACE_INFO(L"%*s Extent: (%.0f,%.0f,%.0f,%.0f). \n", winrt::get_self<VirtualizingLayoutContext>(m_context.get())->Indent(), layoutId.data(), extent.X, extent.Y, extent.Width, extent.Height);
     return extent;
 }
 
@@ -488,7 +572,7 @@ void FlowLayoutAlgorithm::ArrangeVirtualizingLayout(
             if (currentBounds.*MajorStart() != currentLineOffset)
             {
                 spaceAtLineEnd = finalSize.*Minor() - previousElementBounds.*MinorStart() - previousElementBounds.*MinorSize();
-                PerformLineAlignment(i - countInLine, countInLine, spaceAtLineStart, spaceAtLineEnd, lineAlignment, layoutId);
+                PerformLineAlignment(i - countInLine, countInLine, spaceAtLineStart, spaceAtLineEnd, currentLineSize, lineAlignment, layoutId);
                 spaceAtLineStart = currentBounds.*MinorStart();
                 countInLine = 0;
                 currentLineOffset = currentBounds.*MajorStart();
@@ -505,7 +589,7 @@ void FlowLayoutAlgorithm::ArrangeVirtualizingLayout(
         if (countInLine > 0)
         {
             float spaceAtEnd = finalSize.*Minor() - previousElementBounds.*MinorStart() - previousElementBounds.*MinorSize();
-            PerformLineAlignment(realizedElementCount - countInLine, countInLine, spaceAtLineStart, spaceAtEnd, lineAlignment, layoutId);
+            PerformLineAlignment(realizedElementCount - countInLine, countInLine, spaceAtLineStart, spaceAtEnd, currentLineSize, lineAlignment, layoutId);
         }
     }
 }
@@ -517,47 +601,51 @@ void FlowLayoutAlgorithm::PerformLineAlignment(
     int countInLine,
     float spaceAtLineStart,
     float spaceAtLineEnd,
+    float lineSize,
     FlowLayoutAlgorithm::LineAlignment lineAlignment,
     const wstring_view& layoutId)
 {
     for (int rangeIndex = lineStartIndex; rangeIndex < lineStartIndex + countInLine; ++rangeIndex)
     {
         auto bounds = m_elementManager.GetLayoutBoundsForRealizedIndex(rangeIndex);
+        bounds.*MajorSize() = lineSize;
 
-        // Note: Space at start could potentially be negative
-        if (spaceAtLineStart != 0 || spaceAtLineEnd != 0)
+        if (!m_scrollOrientationSameAsFlow)
         {
-            float totalSpace = spaceAtLineStart + spaceAtLineEnd;
-            switch (lineAlignment)
+            // Note: Space at start could potentially be negative
+            if (spaceAtLineStart != 0 || spaceAtLineEnd != 0)
             {
-            case FlowLayoutAlgorithm::LineAlignment::Start:
+                float totalSpace = spaceAtLineStart + spaceAtLineEnd;
+                switch (lineAlignment)
+                {
+                case FlowLayoutAlgorithm::LineAlignment::Start:
                 {
                     bounds.*MinorStart() -= spaceAtLineStart;
                     break;
                 }
 
-            case FlowLayoutAlgorithm::LineAlignment::End:
+                case FlowLayoutAlgorithm::LineAlignment::End:
                 {
                     bounds.*MinorStart() += spaceAtLineEnd;
                     break;
                 }
 
-            case FlowLayoutAlgorithm::LineAlignment::Center:
+                case FlowLayoutAlgorithm::LineAlignment::Center:
                 {
                     bounds.*MinorStart() -= spaceAtLineStart;
                     bounds.*MinorStart() += totalSpace / 2;
                     break;
                 }
-            
-            case FlowLayoutAlgorithm::LineAlignment::SpaceAround:
+
+                case FlowLayoutAlgorithm::LineAlignment::SpaceAround:
                 {
                     float interItemSpace = countInLine >= 1 ? totalSpace / (countInLine * 2) : 0;
                     bounds.*MinorStart() -= spaceAtLineStart;
-                    bounds.*MinorStart() += interItemSpace * ((rangeIndex - lineStartIndex + 1)*2 - 1);
+                    bounds.*MinorStart() += interItemSpace * ((rangeIndex - lineStartIndex + 1) * 2 - 1);
                     break;
                 }
 
-            case FlowLayoutAlgorithm::LineAlignment::SpaceBetween:
+                case FlowLayoutAlgorithm::LineAlignment::SpaceBetween:
                 {
                     float interItemSpace = countInLine > 1 ? totalSpace / (countInLine - 1) : 0;
                     bounds.*MinorStart() -= spaceAtLineStart;
@@ -565,12 +653,13 @@ void FlowLayoutAlgorithm::PerformLineAlignment(
                     break;
                 }
 
-            case FlowLayoutAlgorithm::LineAlignment::SpaceEvenly:
+                case FlowLayoutAlgorithm::LineAlignment::SpaceEvenly:
                 {
                     float interItemSpace = countInLine >= 1 ? totalSpace / (countInLine + 1) : 0;
                     bounds.*MinorStart() -= spaceAtLineStart;
                     bounds.*MinorStart() += interItemSpace * (rangeIndex - lineStartIndex + 1);
                     break;
+                }
                 }
             }
         }
@@ -579,7 +668,8 @@ void FlowLayoutAlgorithm::PerformLineAlignment(
         bounds.Y -= m_lastExtent.Y;
         auto element = m_elementManager.GetAt(rangeIndex);
 
-        REPEATER_TRACE_INFO(L"%ls: \tArranging element %d at (%.0f,%.0f,%.0f,%.0f). \n",
+        REPEATER_TRACE_INFO(L"%*s: \tArranging element %d at (%.0f,%.0f,%.0f,%.0f). \n",
+            winrt::get_self<VirtualizingLayoutContext>(m_context.get())->Indent(),
             layoutId.data(),
             m_elementManager.GetDataIndexFromRealizedRangeIndex(rangeIndex),
             bounds.X, bounds.Y, bounds.Width, bounds.Height);

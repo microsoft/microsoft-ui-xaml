@@ -47,9 +47,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)SplitButton.idl" />
-    <None Include="$(MSBuildThisFileDirectory)SplitButtonAutomationPeer.idl" />
-    <None Include="$(MSBuildThisFileDirectory)SplitButtonTestApi.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)SplitButton.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)SplitButtonAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)SplitButtonTestApi.idl" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />

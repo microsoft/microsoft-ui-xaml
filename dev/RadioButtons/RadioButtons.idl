@@ -1,7 +1,11 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [contentproperty("Items")]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass RadioButtons : Windows.UI.Xaml.Controls.Control
 {
     RadioButtons();
@@ -31,3 +35,4 @@ unsealed runtimeclass RadioButtons : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
 }
 
+}

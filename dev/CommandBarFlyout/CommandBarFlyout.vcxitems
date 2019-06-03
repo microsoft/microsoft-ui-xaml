@@ -8,6 +8,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);COMMANDBARFLYOUT_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -23,6 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandBarFlyout.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)CommandBarFlyoutTrace.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBar.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBarTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TextCommandBarFlyout.h" />
@@ -38,12 +40,12 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)CommandBarFlyout.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)CommandBarFlyout.idl" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBar.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBar.idl" />
   </ItemGroup>
 </Project>

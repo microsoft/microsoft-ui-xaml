@@ -34,7 +34,15 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnPropertyChanged(
+    static void OnAlwaysUseFallbackPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnColorPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnTargetThemePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

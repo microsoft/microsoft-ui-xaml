@@ -84,9 +84,20 @@ if "%1" == "/UseInternalSDK" (
     shift
     goto :MoreArguments
 )
+if "%1" == "/EmitTelemetryEvents" (
+    REM echo EmitTelemetryEvents
+    set EMITTELEMETRYEVENTS=1
+    shift
+    goto :MoreArguments
+)
 if "%1" == "/project" (
     set PROJECTPATH=%~2
     shift
+    shift
+    goto :MoreArguments
+)
+if "%1" == "/usevsprerelease" (
+    set VSWHEREPARAMS=%VSWHEREPARAMS% -prerelease
     shift
     goto :MoreArguments
 )
@@ -98,13 +109,20 @@ goto :DoBuild
 
 :DoBuild
 
+for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest %VSWHEREPARAMS% -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe`) do (
+  set MSBUILDPATH=%%i
+  set MSBUILDDIRPATH=%%~dpi
+  IF !MSBUILDDIRPATH:~-1!==\ SET MSBUILDDIRPATH=!MSBUILDDIRPATH:~0,-1!
+  echo Using MSBuild from !MSBUILDPATH! in !MSBUILDDIRPATH!
+)
+
 REM
 REM     NUGET Restore
 REM
 if "%PROJECTPATH%" NEQ "" (
-    call .\Tools\NugetWrapper.cmd restore -NonInteractive %PROJECTPATH%
+	call .\Tools\NugetWrapper.cmd restore -MSBuildPath "%MSBUILDDIRPATH%" -NonInteractive %PROJECTPATH%
 ) else (
-    call .\Tools\NugetWrapper.cmd restore -NonInteractive .\MUXControls.sln
+	call .\Tools\NugetWrapper.cmd restore -MSBuildPath "%MSBUILDDIRPATH%" -NonInteractive .\MUXControls.sln 
 )
 
 REM
@@ -117,23 +135,21 @@ if "%BUILDLEANMUXFORTHESTOREAPP%" == "1" ( set EXTRAMSBUILDPARAMS=/p:BuildLeanMu
 if "%MUXFINAL%" == "1" ( set EXTRAMSBUILDPARAMS=/p:MUXFinalRelease=true )
 if "%USEINSIDERSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInsiderSDK=true )
 if "%USEINTERNALSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInternalSDK=true )
-
-REM Need an explicit full path to MSBuild.exe or it will fall back to 14.0 for some reason
-set MSBUILDPATH=%VSINSTALLDIR%\MSBuild\15.0\Bin\MSBuild.exe
+if "%EMITTELEMETRYEVENTS%" == "1" ( set EXTRAMSBUILDPARAMS=/p:EmitTelemetryEvents=true )
 
 if "%PROJECTPATH%" NEQ "" (
-    set MSBuildCommand="%MSBUILDPATH%" %PROJECTPATH% /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /p:VisualStudioVersion="15.0" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
+    set MSBuildCommand="%MSBUILDPATH%" %PROJECTPATH% /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
     echo !MSBuildCommand!
     !MSBuildCommand!
 ) else (
     if "%BUILDALL%" == "" (
         set XES_OUTDIR=%BUILD_BINARIESDIRECTORY%\%BUILDCONFIGURATION%\%BUILDPLATFORM%\
 
-        "%MSBUILDPATH%" .\MUXControls.sln /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /p:VisualStudioVersion="15.0" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
+        "%MSBUILDPATH%" .\MUXControls.sln /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
 
         if "%ERRORLEVEL%" == "0" call .\tools\MakeAppxHelper.cmd %BUILDPLATFORM% %BUILDCONFIGURATION%
     ) else (
-        "%MSBUILDPATH%" .\build\BuildAll.proj /maxcpucount:12 /p:VisualStudioVersion="15.0" /flp:Verbosity=Diagnostic /fl /bl /verbosity:Minimal
+        "%MSBUILDPATH%" .\build\BuildAll.proj /maxcpucount:12 /flp:Verbosity=Diagnostic /fl /bl /verbosity:Minimal
 
         if "%ERRORLEVEL%" == "0" (
             call .\tools\MakeAppxHelper.cmd x86 release
@@ -173,7 +189,9 @@ echo        /leanmux - build lean mux for the store
 echo        /muxfinal - build "final" bits which have the winmd stripped of experimental types
 echo        /UseInsiderSDK - build using insider SDK
 echo        /UseInternalSDK - build using internal SDK
+echo        /EmitTelemetryEvents - build with telemetry events turned on
 echo        /project ^<path^> - builds a specific project
+echo        /usevsprerelease - use the prerelease VS on the machine instead of latest stable
 echo.
 
 :end

@@ -32,7 +32,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class TeachingTipTests
     {
-        [TestMethod]
+        //[TestMethod] TODO: Re-enable once issue #643 is fixed.
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // TeachingTip doesn't appear to show up correctly in OneCore.
         public void TeachingTipBackgroundTest()
         {
             var loadedEvent = new AutoResetEvent(false);
@@ -85,7 +86,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void TeachingTipWithContentAndWithoutBleedingContentDoesNotCrash()
+        public void TeachingTipWithContentAndWithoutHeroContentDoesNotCrash()
         {
             var loadedEvent = new AutoResetEvent(false);
             RunOnUIThread.Execute(() =>
@@ -111,10 +112,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Grid contentGrid = new Grid();
-                Grid bleedingGrid = new Grid();
+                Grid heroGrid = new Grid();
                 TeachingTip teachingTip = new TeachingTip();
                 teachingTip.Content = contentGrid;
-                teachingTip.BleedingImageContent = bleedingGrid;
+                teachingTip.HeroContent = heroGrid;
                 teachingTip.Loaded += (object sender, RoutedEventArgs args) => { loadedEvent.Set(); };
                 MUXControlsTestApp.App.TestContentRoot = teachingTip;
             });

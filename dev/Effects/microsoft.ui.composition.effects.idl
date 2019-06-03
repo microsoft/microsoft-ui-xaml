@@ -1,18 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
-// TODO: Remove !defined(DEBUG) after this is fixed: BUG 17488419: MIDL "import winmd" behavior doesn't carry through parameter names of methods on implemented interfaces
-// Because of it in RELEASE builds we use the old IDL includes, but in debug we still use importwinmd behavior to get faster VS builds
-#if defined(BUILD_WINDOWS) || !defined(DEBUG)
-import "oaidl.idl";
-import "Inspectable.idl";
-
-import "Windows.Foundation.idl";
-import "Windows.Foundation.Numerics.idl";
-import "Windows.Graphics.Effects.idl";
-import "Windows.UI.idl";
-import "Windows.UI.Composition.idl";
-#endif
-
 #ifndef BUILD_WINDOWS
 #define MUXCONTROLS_VERSION_PARAM 1.0
 #define MUXCONTROLS_VERSION_ATTRIBUTE version(MUXCONTROLS_VERSION_PARAM)

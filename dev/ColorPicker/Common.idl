@@ -1,3 +1,6 @@
+namespace MU_XC_NAMESPACE
+{
+
 [WUXC_VERSION_RS3]
 [webhosthidden]
 enum ColorSpectrumShape
@@ -35,4 +38,6 @@ runtimeclass ColorChangedEventArgs
 {
     Windows.UI.Color OldColor { get; };
     Windows.UI.Color NewColor { get; };
+}
+
 }

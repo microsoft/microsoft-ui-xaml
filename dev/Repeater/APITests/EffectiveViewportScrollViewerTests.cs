@@ -35,13 +35,6 @@ using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutC
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
-using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
-using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
-using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
-using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
 using IRepeaterScrollingSurface = Microsoft.UI.Private.Controls.IRepeaterScrollingSurface;
 using ConfigurationChangedEventHandler = Microsoft.UI.Private.Controls.ConfigurationChangedEventHandler;
 using PostArrangeEventHandler = Microsoft.UI.Private.Controls.PostArrangeEventHandler;
@@ -528,7 +521,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             IdleSynchronizer.Wait();
             Verify.IsLessThanOrEqual(1, viewChangedOffsets.Count);
             viewChangedOffsets.Clear();
-            ValidateRealizedRange(repeater, 99, 106);
+            ValidateRealizedRange(repeater, 101, 109);
 
             RunOnUIThread.Execute(() =>
             {

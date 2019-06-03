@@ -35,7 +35,7 @@ using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutC
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
-using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
+using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
@@ -346,8 +346,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater.UpdateLayout();
                 Verify.AreEqual(1, clearedIndices.Count);
                 Verify.AreEqual(0, clearedIndices[0]);
-                Verify.AreEqual(1, preparedIndices.Count);
-                Verify.AreEqual(2, preparedIndices[0]);
+
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                {
+                    Verify.AreEqual(0, preparedIndices.Count);
+                }
+                else
+                {
+                    Verify.AreEqual(1, preparedIndices.Count);
+                    Verify.AreEqual(2, preparedIndices[0]);
+                }
+
                 Verify.AreEqual(2, changedIndices.Count);
                 Verify.IsTrue(changedIndices.Contains(new KeyValuePair<int, int>(1, 0)));
                 Verify.IsTrue(changedIndices.Contains(new KeyValuePair<int, int>(2, 1)));
@@ -704,7 +713,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 #if BUILD_WINDOWS
                 ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory
 #else
-                ItemTemplate = (Microsoft.UI.Xaml.Controls.IElementFactoryShim)elementFactory
+                ItemTemplate = elementFactory
 #endif
             };
             repeater.Layout = CreateLayout(repeater);
@@ -777,11 +786,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Content = repeater
                 };
 
-                Content = new ScrollAnchorProvider()
+                Content = new ItemsRepeaterScrollHost()
                 {
                     Width = 200,
                     Height = 200,
-                    Content = sv
+                    ScrollViewer = sv
                 };
             });
 

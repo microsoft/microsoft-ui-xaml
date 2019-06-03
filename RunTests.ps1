@@ -57,7 +57,8 @@ function Build-AppXIfNeeded
         [string]$Flavor
     )
 
-    $testAppxFile = Get-Item "$PSScriptRoot\BuildOutput\$Flavor\$Platform\$AppXPath" -ErrorAction Ignore
+    $appxFullPath = "$PSScriptRoot\BuildOutput\$Flavor\$Platform\$AppXPath"
+    $testAppxFile = Get-Item $appxFullPath -ErrorAction Ignore
     $testExeFile = Get-Item "$PSScriptRoot\BuildOutput\$Flavor\$Platform\$ExePath" -ErrorAction Ignore
 
     if ((!$testAppxFile) -or (!$testExeFile) -or ($testExeFile.LastWriteTime -gt $testAppxFile.LastWriteTime) -or ($muxDllFile.LastWriteTime -gt $testAppxFile.LastWriteTime))
@@ -65,6 +66,10 @@ function Build-AppXIfNeeded
         if ($testAppxFile)
         {
             Write-Verbose "$testAppxFile LastWriteTime = $($testAppxFile.LastWriteTime)"
+        }
+        else
+        {
+            Write-Verbose "No appx at $appxFullPath"
         }
         if ($testExeFile)
         {

@@ -31,12 +31,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using ParallaxSourceOffsetKind = Microsoft.UI.Xaml.Controls.ParallaxSourceOffsetKind;
 using ParallaxView = Microsoft.UI.Xaml.Controls.ParallaxView;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
-using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
-using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
+using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
 using InteractionState = Microsoft.UI.Xaml.Controls.InteractionState;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
-using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
 using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
@@ -1956,24 +1955,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Changing Scroller view to ({0}, {1}, {2}) with disableAnimation={3}", horizontalOffset, verticalOffset, zoomFactor, disableAnimation);
                 if (zoomFactor != null && (float)zoomFactor != scroller.ZoomFactor)
                 {
-                    int viewChangeId = scroller.ChangeZoomFactor(new ScrollerChangeZoomFactorOptions(
+                    int viewChangeId = scroller.ZoomTo(
                         (float)zoomFactor,
-                        ScrollerViewKind.Absolute,
                         Vector2.Zero,
-                        disableAnimation ? ScrollerViewChangeKind.DisableAnimation : ScrollerViewChangeKind.AllowAnimation,
-                        ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
+                        new ZoomOptions(
+                            disableAnimation ? AnimationMode.Disabled : AnimationMode.Enabled,
+                            SnapPointsMode.Ignore)).ZoomFactorChangeId;
                     Verify.IsGreaterThan(viewChangeId, 0);
                 }
 
                 if ((horizontalOffset != null && (double)horizontalOffset != scroller.HorizontalOffset) || (verticalOffset != null && (double)verticalOffset != scroller.VerticalOffset))
                 {
                     Log.Comment("Invoking Scroller.ChangeOffsets");
-                    int viewChangeId = scroller.ChangeOffsets(new ScrollerChangeOffsetsOptions(
+                    int viewChangeId = scroller.ScrollTo(
                         horizontalOffset == null ? scroller.HorizontalOffset : (double)horizontalOffset,
                         verticalOffset == null ? scroller.VerticalOffset : (double)verticalOffset,
-                        ScrollerViewKind.Absolute,
-                        disableAnimation ? ScrollerViewChangeKind.DisableAnimation : ScrollerViewChangeKind.AllowAnimation,
-                        ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
+                        new ScrollOptions(
+                            disableAnimation ? AnimationMode.Disabled : AnimationMode.Enabled, 
+                            SnapPointsMode.Ignore)).OffsetsChangeId;
                     Verify.IsGreaterThan(viewChangeId, 0);
                 }
             });

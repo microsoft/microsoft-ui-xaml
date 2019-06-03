@@ -15,19 +15,19 @@ using Windows.UI.Xaml.Navigation;
 
 #if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
-using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
-using ScrollerChangeOffsetsWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
-using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ScrollerAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs;
-using ScrollerChangingOffsetsEventArgs = Microsoft.UI.Xaml.Controls.ScrollerChangingOffsetsEventArgs;
-using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
+using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
+using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
+
+using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
+using ScrollerTestHooksAnchorEvaluatedEventArgs = Microsoft.UI.Private.Controls.ScrollerTestHooksAnchorEvaluatedEventArgs;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
-using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
-using ScrollerTestHooksAnchorEvaluatedEventArgs = Microsoft.UI.Private.Controls.ScrollerTestHooksAnchorEvaluatedEventArgs;
 #endif
 
 namespace MUXControlsTestApp
@@ -93,8 +93,8 @@ namespace MUXControlsTestApp
                 }
                 scroller.AnchorRequested += Scroller_AnchorRequested;
                 scroller.ViewChanged += Scroller_ViewChanged;
-                scroller.ViewChangeCompleted += Scroller_ViewChangeCompleted;
-                scroller.ChangingOffsets += Scroller_ChangingOffsets;
+                scroller.ScrollCompleted += Scroller_ScrollCompleted;
+                scroller.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
             }
             catch (Exception ex)
             {
@@ -559,11 +559,13 @@ namespace MUXControlsTestApp
             lastScrollerOffset = newScrollerOffset;
         }
 
-        private void Scroller_ViewChangeCompleted(Scroller sender, ScrollerViewChangeCompletedEventArgs args)
+        private void Scroller_ScrollCompleted(Scroller sender, ScrollCompletedEventArgs args)
         {
             if (chkLogScrollerEvents.IsChecked == true)
             {
-                AppendAsyncEventMessage("ViewChangeCompleted ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
+                ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+
+                AppendAsyncEventMessage("ScrollCompleted OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
             }
         }
 
@@ -765,21 +767,17 @@ namespace MUXControlsTestApp
             scroller.InvalidateArrange();
         }
 
-        private void BtnChangeOffsets_Click(object sender, RoutedEventArgs e)
+        private void BtnScrollTo_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                ScrollerChangeOffsetsOptions options = new ScrollerChangeOffsetsOptions(
-                    chkHorizontalOrientation.IsChecked == true ? Convert.ToDouble(txtCOAO.Text) : 0,
-                    chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToDouble(txtCOAO.Text),
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.AllowAnimation,
-                    ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints);
-
                 txtStockOffsetsChangeDuration.Text = string.Empty;
 
-                int viewChangeId = scroller.ChangeOffsets(options);
-                AppendAsyncEventMessage("Invoked ChangeOffsets Id=" + viewChangeId);
+                int viewChangeId = scroller.ScrollTo(
+                    chkHorizontalOrientation.IsChecked == true ? Convert.ToDouble(txtCOAO.Text) : 0,
+                    chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToDouble(txtCOAO.Text),
+                    new ScrollOptions(AnimationMode.Enabled, SnapPointsMode.Ignore)).OffsetsChangeId;
+                AppendAsyncEventMessage("Invoked ScrollTo Id=" + viewChangeId);
             }
             catch (Exception ex)
             {
@@ -788,11 +786,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void Scroller_ChangingOffsets(Scroller sender, ScrollerChangingOffsetsEventArgs args)
+        private void Scroller_ScrollAnimationStarting(Scroller sender, ScrollAnimationStartingEventArgs args)
         {
             try
             {
-                AppendAsyncEventMessage("ChangingOffsets ViewChangeId=" + args.ViewChangeId);
+                AppendAsyncEventMessage("ScrollAnimationStarting OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId);
 
                 Vector3KeyFrameAnimation stockKeyFrameAnimation = args.Animation as Vector3KeyFrameAnimation;
 
@@ -810,7 +808,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnChangeOffsetsWithAdditionalVelocity_Click(object sender, RoutedEventArgs e)
+        private void BtnScrollFrom_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -823,16 +821,14 @@ namespace MUXControlsTestApp
                         chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToSingle(txtCOWAVAIDR.Text));
                 }
 
-                ScrollerChangeOffsetsWithAdditionalVelocityOptions options = new ScrollerChangeOffsetsWithAdditionalVelocityOptions(
+                txtStockOffsetsChangeDuration.Text = string.Empty;
+
+                int viewChangeId = scroller.ScrollFrom(
                     new Vector2(
                         chkHorizontalOrientation.IsChecked == true ? Convert.ToSingle(txtCOWAVAV.Text) : 0,
                         chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToSingle(txtCOWAVAV.Text)),
-                    inertiaDecayRate);
-
-                txtStockOffsetsChangeDuration.Text = string.Empty;
-
-                int viewChangeId = scroller.ChangeOffsetsWithAdditionalVelocity(options);
-                AppendAsyncEventMessage("Invoked ChangeOffsetsWithAdditionalVelocity Id=" + viewChangeId);
+                    inertiaDecayRate).OffsetsChangeId;
+                AppendAsyncEventMessage("Invoked ScrollFrom Id=" + viewChangeId);
             }
             catch (Exception ex)
             {

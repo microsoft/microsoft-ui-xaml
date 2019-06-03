@@ -61,6 +61,7 @@ private:
     unsigned int IndexInParent(const winrt::TreeViewNode& node);
     winrt::TreeViewNode NodeAtFlatIndex(int index) const;
     winrt::TreeViewNode GetRootOfSelection(const winrt::TreeViewNode& node) const;
+    void MoveNodeInto(winrt::TreeViewNode const& node, winrt::TreeViewNode const& insertAtNode);
 
     tracker_ref<winrt::TreeViewItem> m_draggedOverItem{ this };
     winrt::hstring m_dropTargetDropEffectString;

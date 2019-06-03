@@ -18,6 +18,7 @@ GlobalDependencyProperty PersonPictureProperties::s_InitialsProperty{ nullptr };
 GlobalDependencyProperty PersonPictureProperties::s_IsGroupProperty{ nullptr };
 GlobalDependencyProperty PersonPictureProperties::s_PreferSmallImageProperty{ nullptr };
 GlobalDependencyProperty PersonPictureProperties::s_ProfilePictureProperty{ nullptr };
+GlobalDependencyProperty PersonPictureProperties::s_TemplateSettingsProperty{ nullptr };
 
 PersonPictureProperties::PersonPictureProperties()
 {
@@ -35,7 +36,7 @@ void PersonPictureProperties::EnsureProperties()
                 winrt::name_of<winrt::PersonPicture>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnBadgeGlyphPropertyChanged));
     }
     if (!s_BadgeImageSourceProperty)
     {
@@ -46,7 +47,7 @@ void PersonPictureProperties::EnsureProperties()
                 winrt::name_of<winrt::PersonPicture>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ImageSource>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnBadgeImageSourcePropertyChanged));
     }
     if (!s_BadgeNumberProperty)
     {
@@ -57,7 +58,7 @@ void PersonPictureProperties::EnsureProperties()
                 winrt::name_of<winrt::PersonPicture>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnBadgeNumberPropertyChanged));
     }
     if (!s_BadgeTextProperty)
     {
@@ -68,7 +69,7 @@ void PersonPictureProperties::EnsureProperties()
                 winrt::name_of<winrt::PersonPicture>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnBadgeTextPropertyChanged));
     }
     if (!s_ContactProperty)
     {
@@ -79,7 +80,7 @@ void PersonPictureProperties::EnsureProperties()
                 winrt::name_of<winrt::PersonPicture>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Contact>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnContactPropertyChanged));
     }
     if (!s_DisplayNameProperty)
     {
@@ -90,7 +91,7 @@ void PersonPictureProperties::EnsureProperties()
                 winrt::name_of<winrt::PersonPicture>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnDisplayNamePropertyChanged));
     }
     if (!s_InitialsProperty)
     {
@@ -101,7 +102,7 @@ void PersonPictureProperties::EnsureProperties()
                 winrt::name_of<winrt::PersonPicture>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnInitialsPropertyChanged));
     }
     if (!s_IsGroupProperty)
     {
@@ -112,7 +113,7 @@ void PersonPictureProperties::EnsureProperties()
                 winrt::name_of<winrt::PersonPicture>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnIsGroupPropertyChanged));
     }
     if (!s_PreferSmallImageProperty)
     {
@@ -123,7 +124,7 @@ void PersonPictureProperties::EnsureProperties()
                 winrt::name_of<winrt::PersonPicture>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnPreferSmallImagePropertyChanged));
     }
     if (!s_ProfilePictureProperty)
     {
@@ -134,7 +135,18 @@ void PersonPictureProperties::EnsureProperties()
                 winrt::name_of<winrt::PersonPicture>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ImageSource>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnProfilePicturePropertyChanged));
+    }
+    if (!s_TemplateSettingsProperty)
+    {
+        s_TemplateSettingsProperty =
+            InitializeDependencyProperty(
+                L"TemplateSettings",
+                winrt::name_of<winrt::PersonPictureTemplateSettings>(),
+                winrt::name_of<winrt::PersonPicture>(),
+                false /* isAttached */,
+                ValueHelper<winrt::PersonPictureTemplateSettings>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnTemplateSettingsPropertyChanged));
     }
 }
 
@@ -150,9 +162,90 @@ void PersonPictureProperties::ClearProperties()
     s_IsGroupProperty = nullptr;
     s_PreferSmallImageProperty = nullptr;
     s_ProfilePictureProperty = nullptr;
+    s_TemplateSettingsProperty = nullptr;
 }
 
-void PersonPictureProperties::OnPropertyChanged(
+void PersonPictureProperties::OnBadgeGlyphPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::PersonPicture>();
+    winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
+}
+
+void PersonPictureProperties::OnBadgeImageSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::PersonPicture>();
+    winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
+}
+
+void PersonPictureProperties::OnBadgeNumberPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::PersonPicture>();
+    winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
+}
+
+void PersonPictureProperties::OnBadgeTextPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::PersonPicture>();
+    winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
+}
+
+void PersonPictureProperties::OnContactPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::PersonPicture>();
+    winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
+}
+
+void PersonPictureProperties::OnDisplayNamePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::PersonPicture>();
+    winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
+}
+
+void PersonPictureProperties::OnInitialsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::PersonPicture>();
+    winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
+}
+
+void PersonPictureProperties::OnIsGroupPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::PersonPicture>();
+    winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
+}
+
+void PersonPictureProperties::OnPreferSmallImagePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::PersonPicture>();
+    winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
+}
+
+void PersonPictureProperties::OnProfilePicturePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::PersonPicture>();
+    winrt::get_self<PersonPicture>(owner)->OnPropertyChanged(args);
+}
+
+void PersonPictureProperties::OnTemplateSettingsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -258,4 +351,14 @@ void PersonPictureProperties::ProfilePicture(winrt::ImageSource const& value)
 winrt::ImageSource PersonPictureProperties::ProfilePicture()
 {
     return ValueHelper<winrt::ImageSource>::CastOrUnbox(static_cast<PersonPicture*>(this)->GetValue(s_ProfilePictureProperty));
+}
+
+void PersonPictureProperties::TemplateSettings(winrt::PersonPictureTemplateSettings const& value)
+{
+    static_cast<PersonPicture*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::PersonPictureTemplateSettings>::BoxValueIfNecessary(value));
+}
+
+winrt::PersonPictureTemplateSettings PersonPictureProperties::TemplateSettings()
+{
+    return ValueHelper<winrt::PersonPictureTemplateSettings>::CastOrUnbox(static_cast<PersonPicture*>(this)->GetValue(s_TemplateSettingsProperty));
 }

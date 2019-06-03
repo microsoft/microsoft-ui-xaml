@@ -1,3 +1,6 @@
+namespace MU_XCP_NAMESPACE
+{
+
 [WUXC_VERSION_RS3]
 [webhosthidden]
 [WUXC_INTERFACE_NAME("IColorPickerSlider", 94394d83-e0df-4c5f-bbcd-8155f4020440)]
@@ -11,4 +14,6 @@ unsealed runtimeclass ColorPickerSlider : Windows.UI.Xaml.Controls.Slider
     MU_XC_NAMESPACE.ColorPickerHsvChannel ColorChannel { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty ColorChannelProperty { get; };
+}
+
 }

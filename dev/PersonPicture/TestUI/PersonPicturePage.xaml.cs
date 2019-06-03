@@ -18,7 +18,7 @@ namespace MUXControlsTestApp
 {
     public sealed partial class PersonPicturePage : TestPage
     {
-        private Uri imageUri = new Uri("ms-appx:///Assets/StoreLogo.png");
+        private Uri imageUri = new Uri("ms-appx:///Assets/ingredient2.png");
         private bool primaryEllipseLoaded = false;
 
         public PersonPicturePage()

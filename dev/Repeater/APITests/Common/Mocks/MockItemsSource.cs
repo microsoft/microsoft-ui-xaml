@@ -55,7 +55,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks
                 }
             };
 
-            data.CollectionChanged += (s, e) => mock.OnDataSourceChanged(e);
+            data.CollectionChanged += (s, e) => mock.OnItemsSourceChanged(e);
 
             return mock;
         }
@@ -103,7 +103,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks
 
             }
 
-            data.VectorChanged += (s, e) => mock.OnDataSourceChanged(e.ConvertToDataSourceChangedEventArgs());
+            data.VectorChanged += (s, e) => mock.OnItemsSourceChanged(e.ConvertToDataSourceChangedEventArgs());
 
             return mock;
         }
@@ -139,9 +139,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks
             _recordedKeyFromIndexCalls.Clear();
         }
 
-        public new void OnDataSourceChanged(NotifyCollectionChangedEventArgs args)
+        public new void OnItemsSourceChanged(NotifyCollectionChangedEventArgs args)
         {
-            base.OnDataSourceChanged(args);
+            base.OnItemsSourceChanged(args);
         }
 
         protected override int GetSizeCore()

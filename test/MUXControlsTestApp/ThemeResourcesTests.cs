@@ -42,7 +42,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     {
         [ClassInitialize]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Platform", "Any")]
         public static void Setup(TestContext context) { }
 
         [TestMethod]

@@ -14,6 +14,9 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Automation;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 
 #if !BUILD_WINDOWS
@@ -21,40 +24,84 @@ using TeachingTip = Microsoft.UI.Xaml.Controls.TeachingTip;
 using TeachingTipClosedEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs;
 using TeachingTipClosingEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs;
 using TeachingTipTestHooks = Microsoft.UI.Private.Controls.TeachingTipTestHooks;
-using TeachingTipBleedingImagePlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipBleedingImagePlacementMode;
+using TeachingTipTailVisibility = Microsoft.UI.Xaml.Controls.TeachingTipTailVisibility;
+using TeachingTipHeroContentPlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode;
 using TeachingTipPlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode;
-using TeachingTipCloseButtonKind = Microsoft.UI.Xaml.Controls.TeachingTipCloseButtonKind;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 #endif
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class TeachingTipPage : TestPage
+    enum TipLocation
     {
+        VisualTree = 0,
+        Resources = 1
+    }
+    public sealed partial class TeachingTipPage : TestPage, INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void NotifyPropertyChanged([CallerMemberName]string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         Deferral deferral;
         DispatcherTimer timer;
+        DispatcherTimer showTimer;
         Popup testWindowBounds;
+        Popup testScreenBounds;
+        TipLocation tipLocation = TipLocation.VisualTree;
+        FrameworkElement TeachingTipInResourcesRoot;
+        FrameworkElement TeachingTipInVisualTreeRoot;
+        CheckBox CurrentCancelClosesCheckBox;
+
         public TeachingTipPage()
         {
             this.InitializeComponent();
             TeachingTipTestHooks.IdleStatusChanged += TeachingTipTestHooks_IdleStatusChanged;
             TeachingTipTestHooks.OpenedStatusChanged += TeachingTipTestHooks_OpenedStatusChanged;
             TeachingTipTestHooks.EffectivePlacementChanged += TeachingTipTestHooks_EffectivePlacementChanged;
-            TeachingTipTestHooks.EffectiveBleedingPlacementChanged += TeachingTipTestHooks_EffectiveBleedingPlacementChanged;
+            TeachingTipTestHooks.EffectiveHeroContentPlacementChanged += TeachingTipTestHooks_EffectiveHeroContentPlacementChanged;
             TeachingTipTestHooks.OffsetChanged += TeachingTipTestHooks_OffsetChanged;
-            this.TeachingTip.SizeChanged += TeachingTip_SizeChanged;
+            this.TeachingTipInVisualTree.Closed += TeachingTipInVisualTree_Closed;
+            this.TeachingTipInResources.Closed += TeachingTipInResources_Closed;
             this.ContentScrollViewer.ViewChanged += ContentScrollViewer_ViewChanged;
+            this.TeachingTipInResources.IsOpen = true;
+        }
+
+        private void TeachingTipInResources_Closed(TeachingTip sender, TeachingTipClosedEventArgs args)
+        {
+            if (TeachingTipInResourcesRoot != null)
+            {
+                TeachingTipInResourcesRoot.SizeChanged -= TeachingTip_SizeChanged;
+            }
+        }
+
+        private void TeachingTipInVisualTree_Closed(TeachingTip sender, TeachingTipClosedEventArgs args)
+        {
+            if (TeachingTipInVisualTreeRoot != null)
+            {
+                TeachingTipInVisualTreeRoot.SizeChanged -= TeachingTip_SizeChanged;
+            }
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            if (this.TeachingTip != null && this.TeachingTip.IsOpen)
+            if (this.TeachingTipInResources != null && this.TeachingTipInResources.IsOpen)
             {
-                this.TeachingTip.IsOpen = false;
+                this.TeachingTipInResources.IsOpen = false;
             }
-            if(testWindowBounds != null && testWindowBounds.IsOpen)
+            if (this.TeachingTipInVisualTree != null && this.TeachingTipInVisualTree.IsOpen)
+            {
+                this.TeachingTipInVisualTree.IsOpen = false;
+            }
+            if (testWindowBounds != null && testWindowBounds.IsOpen)
             {
                 testWindowBounds.IsOpen = false;
+            }
+            if(testScreenBounds != null && testScreenBounds.IsOpen)
+            {
+                testScreenBounds.IsOpen = false;
             }
 
             base.OnNavigatedFrom(e);
@@ -62,26 +109,36 @@ namespace MUXControlsTestApp
 
         private void TeachingTip_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            this.TipHeightTextBlock.Text = this.TeachingTip.ActualHeight.ToString();
-            this.TipWidthTextBlock.Text = this.TeachingTip.ActualWidth.ToString();
+            this.TipHeightTextBlock.Text = ((FrameworkElement)sender).ActualHeight.ToString();
+            this.TipWidthTextBlock.Text = ((FrameworkElement)sender).ActualWidth.ToString();
+            NotifyPropertyChanged("ActionButton");
         }
 
         private void TeachingTipTestHooks_OffsetChanged(TeachingTip sender, object args)
         {
-            this.PopupVerticalOffsetTextBlock.Text = TeachingTipTestHooks.GetVerticalOffset(this.TeachingTip).ToString();
-            this.PopupHorizontalOffsetTextBlock.Text = TeachingTipTestHooks.GetHorizontalOffset(this.TeachingTip).ToString();
+            if (sender == getTeachingTip())
+            {
+                this.PopupVerticalOffsetTextBlock.Text = TeachingTipTestHooks.GetVerticalOffset(sender).ToString();
+                this.PopupHorizontalOffsetTextBlock.Text = TeachingTipTestHooks.GetHorizontalOffset(sender).ToString();
+            }
         }
 
-        private void TeachingTipTestHooks_EffectiveBleedingPlacementChanged(TeachingTip sender, object args)
+        private void TeachingTipTestHooks_EffectiveHeroContentPlacementChanged(TeachingTip sender, object args)
         {
-            var placement = TeachingTipTestHooks.GetEffectiveBleedingPlacement(this.TeachingTip);
-            this.EffectiveBleedingPlacementTextBlock.Text = placement.ToString();
+            if (sender == getTeachingTip())
+            {
+                var placement = TeachingTipTestHooks.GetEffectiveHeroContentPlacement(sender);
+                this.EffectiveHeroContentPlacementTextBlock.Text = placement.ToString();
+            }
         }
 
         private void TeachingTipTestHooks_EffectivePlacementChanged(TeachingTip sender, object args)
         {
-            var placement = TeachingTipTestHooks.GetEffectivePlacement(this.TeachingTip);
-            this.EffectivePlacementTextBlock.Text = placement.ToString();
+            if (sender == getTeachingTip())
+            {
+                var placement = TeachingTipTestHooks.GetEffectivePlacement(sender);
+                this.EffectivePlacementTextBlock.Text = placement.ToString();
+            }
         }
 
         private void ContentScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
@@ -100,9 +157,10 @@ namespace MUXControlsTestApp
 
         private void TeachingTipTestHooks_OpenedStatusChanged(TeachingTip sender, object args)
         {
-            if(this.TeachingTip.IsOpen)
+            if (this.TeachingTipInResources.IsOpen ||
+                this.TeachingTipInVisualTree.IsOpen)
             {
-                this.IsOpenCheckBox.IsChecked= true;
+                this.IsOpenCheckBox.IsChecked = true;
             }
             else
             {
@@ -112,7 +170,8 @@ namespace MUXControlsTestApp
 
         private void TeachingTipTestHooks_IdleStatusChanged(TeachingTip sender, object args)
         {
-            if(TeachingTipTestHooks.GetIsIdle(TeachingTip))
+            if (TeachingTipTestHooks.GetIsIdle(this.TeachingTipInResources) &&
+                TeachingTipTestHooks.GetIsIdle(this.TeachingTipInVisualTree))
             {
                 this.IsIdleCheckBox.IsChecked = true;
             }
@@ -128,49 +187,78 @@ namespace MUXControlsTestApp
             {
                 SymbolIconSource symbolIconSource = new SymbolIconSource();
                 symbolIconSource.Symbol = Symbol.People;
-                this.TeachingTip.IconSource = symbolIconSource;
+                getTeachingTip().IconSource = symbolIconSource;
                 
             }
             else
             {
-                this.TeachingTip.IconSource = null;
+                getTeachingTip().IconSource = null;
             }
         }
 
-        public void OnSetBleedingContentButtonClicked(object sender, RoutedEventArgs args)
+        public void OnSetTipLocationButton(object sender, RoutedEventArgs args)
         {
-            if (this.BleedingContentComboBox.SelectedItem == BleedingRedSquare)
+            if (this.TipLocationComboBox.SelectedItem == TipInVisualTree)
+            {
+                if (tipLocation != TipLocation.VisualTree)
+                {
+                    TeachingTipInResources.IsOpen = false;
+                    tipLocation = TipLocation.VisualTree;
+                }
+                tipLocation = TipLocation.VisualTree;
+                AutomationNameComboBox.SelectedItem = AutomationNameVisualTree;
+            }
+            else
+            {
+                if (tipLocation != TipLocation.Resources)
+                {
+                    TeachingTipInVisualTree.IsOpen = false;
+                    tipLocation = TipLocation.Resources;
+                }
+                tipLocation = TipLocation.Resources;
+                AutomationNameComboBox.SelectedItem = AutomationNameResources;
+            }
+            OnSetAutomationNameButtonClicked(null, null);
+        }
+
+        public void OnSetHeroContentButtonClicked(object sender, RoutedEventArgs args)
+        {
+            if (this.HeroContentComboBox.SelectedItem == HeroContentRedSquare)
             {
                 Grid grid = new Grid();
+                grid.MinHeight = 200;
+                grid.MinWidth = 200;
                 grid.Background = new SolidColorBrush(Colors.Red);
-                this.TeachingTip.BleedingImageContent = grid;
+                getTeachingTip().HeroContent = grid;
             }
-            else if (this.BleedingContentComboBox.SelectedItem == BleedingBlueSquare)
+            else if (this.HeroContentComboBox.SelectedItem == HeroContentBlueSquare)
             {
                 Grid grid = new Grid();
+                grid.MinHeight = 200;
+                grid.MinWidth = 200;
                 grid.Background = new SolidColorBrush(Colors.Blue);
-                this.TeachingTip.BleedingImageContent = grid;
+                getTeachingTip().HeroContent = grid;
             }
-            else if (this.BleedingContentComboBox.SelectedItem == BleedingImage)
+            else if (this.HeroContentComboBox.SelectedItem == HeroContentImage)
             {
                 Image image = new Image();
                 BitmapImage bitmapImage = new BitmapImage();
                 image.Width = bitmapImage.DecodePixelWidth = 300;
                 bitmapImage.UriSource = new Uri("ms-appx:///Assets/ingredient1.png");
                 image.Source = bitmapImage;
-                this.TeachingTip.BleedingImageContent = image;
+                getTeachingTip().HeroContent = image;
             }
-            else if (this.BleedingContentComboBox.SelectedItem == BleedingAutoSave)
+            else if (this.HeroContentComboBox.SelectedItem == HeroContentAutoSave)
             {
                 Image image = new Image();
                 BitmapImage bitmapImage = new BitmapImage();
                 bitmapImage.UriSource = new Uri("ms-appx:///Assets/AutoSave.png");
                 image.Source = bitmapImage;
-                this.TeachingTip.BleedingImageContent = image;
+                getTeachingTip().HeroContent = image;
             }
             else
             {
-                this.TeachingTip.BleedingImageContent = null;
+                getTeachingTip().HeroContent = null;
             }
         }
 
@@ -180,13 +268,13 @@ namespace MUXControlsTestApp
             {
                 Grid grid = new Grid();
                 grid.Background = new SolidColorBrush(Colors.Red);
-                this.TeachingTip.Content = grid;
+                getTeachingTip().Content = grid;
             }
             else if (this.ContentComboBox.SelectedItem == ContentBlueSquare)
             {
                 Grid grid = new Grid();
                 grid.Background = new SolidColorBrush(Colors.Blue);
-                this.TeachingTip.Content = grid;
+                getTeachingTip().Content = grid;
             }
             else if (this.ContentComboBox.SelectedItem == ContentImage)
             {
@@ -195,13 +283,13 @@ namespace MUXControlsTestApp
                 image.Width = bitmapImage.DecodePixelWidth = 300;
                 bitmapImage.UriSource = new Uri("ms-appx:///Assets/ingredient1.png");
                 image.Source = bitmapImage;
-                this.TeachingTip.Content = image;
+                getTeachingTip().Content = image;
             }
             else if (this.ContentComboBox.SelectedItem == ContentShort)
             {
                 TextBlock textBlock = new TextBlock();
                 textBlock.Text = "This is shorter content.";
-                this.TeachingTip.Content = textBlock;
+                getTeachingTip().Content = textBlock;
             }
             else if (this.ContentComboBox.SelectedItem == ContentLong)
             {
@@ -216,7 +304,7 @@ namespace MUXControlsTestApp
                     "This is longer content.This is longer content.This is longer content.This is longer content." +
                     "This is longer content.This is longer content.";
                 textBlock.TextWrapping = TextWrapping.WrapWholeWords;
-                this.TeachingTip.Content = textBlock;
+                getTeachingTip().Content = textBlock;
             }
             else if (this.ContentComboBox.SelectedItem == ContentAutoSave)
             {
@@ -224,11 +312,11 @@ namespace MUXControlsTestApp
                 BitmapImage bitmapImage = new BitmapImage();
                 bitmapImage.UriSource = new Uri("ms-appx:///Assets/AutoSave.png");
                 image.Source = bitmapImage;
-                this.TeachingTip.Content = image;
+                getTeachingTip().Content = image;
             }
             else
             {
-                this.TeachingTip.Content = null;
+                getTeachingTip().Content = null;
             }
         }
 
@@ -236,80 +324,93 @@ namespace MUXControlsTestApp
         {
             if (this.TitleComboBox.SelectedItem == TitleNo)
             {
-                this.TeachingTip.Title = "";
+                getTeachingTip().Title = "";
             }
             else if (this.TitleComboBox.SelectedItem == TitleSmall)
             {
-                this.TeachingTip.Title = "Short title.";
+                getTeachingTip().Title = "Short title.";
             }
             else
             {
-                this.TeachingTip.Title = "This is a much longer title that might cause some issues if we don't do the right thing...";
+                getTeachingTip().Title = "This is a much longer title that might cause some issues if we don't do the right thing...";
             }
         }
 
-        public void OnSetSubtextButtonClicked(object sender, RoutedEventArgs args)
+        public void OnSetSubtitleButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.SubtextComboBox.SelectedItem == SubtextNo)
+            if (this.SubtitleComboBox.SelectedItem == SubtitleNo)
             {
-                this.TeachingTip.Subtext = "";
+                getTeachingTip().Subtitle = "";
             }
-            else if (this.SubtextComboBox.SelectedItem == SubtextSmall)
+            else if (this.SubtitleComboBox.SelectedItem == SubtitleSmall)
             {
-                this.TeachingTip.Subtext = "Short Subtext.";
+                getTeachingTip().Subtitle = "Short Subtitle.";
             }
             else
             {
-                this.TeachingTip.Subtext = "This is a much longer subtext that might cause some issues if we don't do the right thing..." +
-                    "This is a much longer subtext that might cause some issues if we don't do the right thing...";
+                getTeachingTip().Subtitle = "This is a much longer subtitle that might cause some issues if we don't do the right thing..." +
+                    "This is a much longer subtitle that might cause some issues if we don't do the right thing...";
             }
         }
 
-        public void OnSetActionButtonTextButtonClicked(object sender, RoutedEventArgs args)
+        public void OnSetActionButtonContentButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.ActionButtonTextComboBox.SelectedItem == ActionButtonTextNo)
+            if (this.ActionButtonContentComboBox.SelectedItem == ActionButtonContentNo)
             {
-                this.TeachingTip.ActionButtonText = "";
+                getTeachingTip().ActionButtonContent = "";
             }
-            else if (this.ActionButtonTextComboBox.SelectedItem == ActionButtonTextSmall)
+            else if (this.ActionButtonContentComboBox.SelectedItem == ActionButtonContentSmall)
             {
-                this.TeachingTip.ActionButtonText = "A:Short Text.";
+                getTeachingTip().ActionButtonContent = "A:Short Text.";
+            }
+            else if (this.ActionButtonContentComboBox.SelectedItem == ActionButtonContentLong)
+            {
+                getTeachingTip().ActionButtonContent = "A:This is a much longer button text that might cause some issues if we don't do the right thing...";
             }
             else
             {
-                this.TeachingTip.ActionButtonText = "A:This is a much longer subtext that might cause some issues if we don't do the right thing...";
+                var button = new Button();
+                button.Content = "A:Button in a Button!";
+                getTeachingTip().ActionButtonContent = button;
             }
+            NotifyPropertyChanged("ActionButton");
         }
 
-        public void OnSetCloseButtonTextButtonClicked(object sender, RoutedEventArgs args)
+        public void OnSetCloseButtonContentButtonClicked(object sender, RoutedEventArgs args)
         {
-            if (this.CloseButtonTextComboBox.SelectedItem == CloseButtonTextNo)
+            if (this.CloseButtonContentComboBox.SelectedItem == CloseButtonContentNo)
             {
-                this.TeachingTip.CloseButtonText = "";
+                getTeachingTip().CloseButtonContent = "";
             }
-            else if (this.CloseButtonTextComboBox.SelectedItem == CloseButtonTextSmall)
+            else if (this.CloseButtonContentComboBox.SelectedItem == CloseButtonContentSmall)
             {
-                this.TeachingTip.CloseButtonText = "C:Short Text.";
+                getTeachingTip().CloseButtonContent = "C:Short Text.";
+            }
+            else if (this.CloseButtonContentComboBox.SelectedItem == CloseButtonContentLong)
+            {
+                getTeachingTip().CloseButtonContent = "C:This is a much longer button text that might cause some issues if we don't do the right thing...";
             }
             else
             {
-                this.TeachingTip.CloseButtonText = "C:This is a much longer subtext that might cause some issues if we don't do the right thing...";
+                var button = new Button();
+                button.Content = "C:Button in a Button!";
+                getTeachingTip().CloseButtonContent = button;
             }
         }
 
         public void OnSetBleeingImagePlacementButtonClicked(object sender, RoutedEventArgs args)
         {
-            if(this.BleedingImagePlacementComboBox.SelectedItem == BleedingPlacementAuto)
+            if(this.HeroContentPlacementComboBox.SelectedItem == HeroContentPlacementAuto)
             {
-                this.TeachingTip.BleedingImagePlacement = TeachingTipBleedingImagePlacementMode.Auto;
+                getTeachingTip().HeroContentPlacement = TeachingTipHeroContentPlacementMode.Auto;
             }
-            else if(this.BleedingImagePlacementComboBox.SelectedItem == BleedingPlacementTop)
+            else if(this.HeroContentPlacementComboBox.SelectedItem == HeroContentPlacementTop)
             {
-                this.TeachingTip.BleedingImagePlacement = TeachingTipBleedingImagePlacementMode.Top;
+                getTeachingTip().HeroContentPlacement = TeachingTipHeroContentPlacementMode.Top;
             }
             else
             {
-                this.TeachingTip.BleedingImagePlacement = TeachingTipBleedingImagePlacementMode.Bottom;
+                getTeachingTip().HeroContentPlacement = TeachingTipHeroContentPlacementMode.Bottom;
             }
         }
         public void OnGetTargetBoundsButtonClicked(object sender, RoutedEventArgs args)
@@ -337,12 +438,13 @@ namespace MUXControlsTestApp
 
         public void OnUseTestWindowBoundsCheckBoxChecked(object sender, RoutedEventArgs args)
         {
+            var tip = getTeachingTip();
             Rect windowRect = new Rect(double.Parse(this.TestWindowBoundsXTextBox.Text),
                                        double.Parse(this.TestWindowBoundsYTextBox.Text),
                                        double.Parse(this.TestWindowBoundsWidthTextBox.Text),
                                        double.Parse(this.TestWindowBoundsHeightTextBox.Text));
-            TeachingTipTestHooks.SetUseTestWindowBounds(this.TeachingTip, true);
-            TeachingTipTestHooks.SetTestWindowBounds(this.TeachingTip, windowRect);
+            TeachingTipTestHooks.SetUseTestWindowBounds(tip, true);
+            TeachingTipTestHooks.SetTestWindowBounds(tip, windowRect);
             if(testWindowBounds == null)
             {
                 testWindowBounds = new Popup();
@@ -360,91 +462,121 @@ namespace MUXControlsTestApp
             testWindowBounds.IsOpen = true;
         }
 
+        public void OnUseTestSreenBoundsCheckBoxChecked(object sender, RoutedEventArgs args)
+        {
+            var tip = getTeachingTip();
+            Rect screenRect = new Rect(double.Parse(this.TestScreenBoundsXTextBox.Text),
+                                       double.Parse(this.TestScreenBoundsYTextBox.Text),
+                                       double.Parse(this.TestScreenBoundsWidthTextBox.Text),
+                                       double.Parse(this.TestScreenBoundsHeightTextBox.Text));
+            TeachingTipTestHooks.SetUseTestScreenBounds(tip, true);
+            TeachingTipTestHooks.SetTestScreenBounds(tip, screenRect);
+            if (testScreenBounds == null)
+            {
+                testScreenBounds = new Popup();
+                testScreenBounds.IsHitTestVisible = false;
+            }
+            Grid windowBounds = new Grid();
+            windowBounds.Width = screenRect.Width;
+            windowBounds.Height = screenRect.Height;
+            windowBounds.Background = new SolidColorBrush(Colors.Transparent);
+            windowBounds.BorderBrush = new SolidColorBrush(Colors.Blue);
+            windowBounds.BorderThickness = new Thickness(1.0);
+            testScreenBounds.Child = windowBounds;
+            testScreenBounds.HorizontalOffset = screenRect.X;
+            testScreenBounds.VerticalOffset = screenRect.Y;
+            testScreenBounds.IsOpen = true;
+        }
+
         public void OnUseTestWindowBoundsCheckBoxUnchecked(object sender, RoutedEventArgs args)
         {
-            TeachingTipTestHooks.SetUseTestWindowBounds(this.TeachingTip, false);
+            TeachingTipTestHooks.SetUseTestWindowBounds(getTeachingTip(), false);
             testWindowBounds.IsOpen = false;
+        }
+
+        public void OnUseTestScreenBoundsCheckBoxUnchecked(object sender, RoutedEventArgs args)
+        {
+            TeachingTipTestHooks.SetUseTestScreenBounds(getTeachingTip(), false);
+            testScreenBounds.IsOpen = false;
         }
 
         public void OnTipFollowsTargetCheckBoxChecked(object sender, RoutedEventArgs args)
         {
-            TeachingTipTestHooks.SetTipFollowsTarget(this.TeachingTip, true);
+            TeachingTipTestHooks.SetTipFollowsTarget(getTeachingTip(), true);
         }
 
         public void OnTipFollowsTargetCheckBoxUnchecked(object sender, RoutedEventArgs args)
         {
-            TeachingTipTestHooks.SetTipFollowsTarget(this.TeachingTip, false);
+            TeachingTipTestHooks.SetTipFollowsTarget(getTeachingTip(), false);
         }
 
-        public void OnSetPlacementButtonClicked(object sender, RoutedEventArgs args)
+        public void OnReturnTopForOutOfWindowPlacementCheckBoxChecked(object sender, RoutedEventArgs args)
         {
-            if (this.PlacementComboBox.SelectedItem == PlacementTop)
+            TeachingTipTestHooks.SetReturnTopForOutOfWindowPlacement(getTeachingTip(), true);
+        }
+
+        public void OnReturnTopForOutOfWindowPlacementCheckBoxUnchecked(object sender, RoutedEventArgs args)
+        {
+            TeachingTipTestHooks.SetReturnTopForOutOfWindowPlacement(getTeachingTip(), false);
+        }
+
+        public void OnSetPreferredPlacementButtonClicked(object sender, RoutedEventArgs args)
+        {
+            if (this.PreferredPlacementComboBox.SelectedItem == PlacementTop)
             {
-                this.TeachingTip.Placement = TeachingTipPlacementMode.Top;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Top;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementBottom)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementBottom)
             {
-                this.TeachingTip.Placement = TeachingTipPlacementMode.Bottom;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Bottom;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementLeft)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementLeft)
             {
-                this.TeachingTip.Placement = TeachingTipPlacementMode.Left;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Left;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementRight)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementRight)
             {
-                this.TeachingTip.Placement = TeachingTipPlacementMode.Right;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Right;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementTopEdgeRight)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementTopRight)
             {
-                this.TeachingTip.Placement = TeachingTipPlacementMode.TopEdgeAlignedRight;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.TopRight;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementTopEdgeLeft)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementTopLeft)
             {
-                this.TeachingTip.Placement = TeachingTipPlacementMode.TopEdgeAlignedLeft;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.TopLeft;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementBottomEdgeRight)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementBottomRight)
             {
-                this.TeachingTip.Placement = TeachingTipPlacementMode.BottomEdgeAlignedRight;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.BottomRight;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementBottomEdgeLeft)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementBottomLeft)
             {
-                this.TeachingTip.Placement = TeachingTipPlacementMode.BottomEdgeAlignedLeft;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.BottomLeft;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementLeftEdgeTop)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementLeftTop)
             {
-                this.TeachingTip.Placement = TeachingTipPlacementMode.LeftEdgeAlignedTop;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.LeftTop;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementLeftEdgeBottom)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementLeftBottom)
             {
-                this.TeachingTip.Placement = TeachingTipPlacementMode.LeftEdgeAlignedBottom;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.LeftBottom;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementRightEdgeTop)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementRightTop)
             {
-                this.TeachingTip.Placement = TeachingTipPlacementMode.RightEdgeAlignedTop;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.RightTop;
             }
-            else if (this.PlacementComboBox.SelectedItem == PlacementRightEdgeBottom)
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementRightBottom)
             {
-                this.TeachingTip.Placement = TeachingTipPlacementMode.RightEdgeAlignedBottom;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.RightBottom;
+            }
+            else if (this.PreferredPlacementComboBox.SelectedItem == PlacementCenter)
+            {
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Center;
             }
             else
             {
-                this.TeachingTip.Placement = TeachingTipPlacementMode.Auto;
-            }
-        }
-
-        public void OnSetCloseButtonKindButtonClicked(object sender, RoutedEventArgs args)
-        {
-            if(this.CloseButtonKindComboBox.SelectedItem == CloseButtonKindAuto)
-            {
-                this.TeachingTip.CloseButtonKind = TeachingTipCloseButtonKind.Auto;
-            }
-            else if (this.CloseButtonKindComboBox.SelectedItem == CloseButtonKindHeader)
-            {
-                this.TeachingTip.CloseButtonKind = TeachingTipCloseButtonKind.Header;
-            }
-            else
-            {
-                this.TeachingTip.CloseButtonKind = TeachingTipCloseButtonKind.Footer;
+                getTeachingTip().PreferredPlacement = TeachingTipPlacementMode.Auto;
             }
         }
 
@@ -452,52 +584,156 @@ namespace MUXControlsTestApp
         {
             if(this.IsLightDismissEnabledComboBox.SelectedItem == IsLightDismissFalse)
             {
-                this.TeachingTip.IsLightDismissEnabled = false;
+                getTeachingTip().IsLightDismissEnabled = false;
             }
             else
             {
-                this.TeachingTip.IsLightDismissEnabled = true;
+                getTeachingTip().IsLightDismissEnabled = true;
             }
         }
 
-        public void OnSetTargetOffsetButtonClicked(object sender, RoutedEventArgs args)
+        public void OnSetShouldConstrainToRootBoundsButtonClicked(object sender, RoutedEventArgs args)
         {
-            this.TeachingTip.TargetOffset = new Thickness(Double.Parse(this.TargetOffsetTextBox.Text));
+            if(this.ShouldConstrainToRootBoundsComboBox.SelectedItem == ShouldConstrainToRootBoundsFalse)
+            {
+                getTeachingTip().ShouldConstrainToRootBounds = false;
+            }
+            else
+            {
+                getTeachingTip().ShouldConstrainToRootBounds = true;
+            }
+        }
+
+        public void OnSetPlacementMarginButtonClicked(object sender, RoutedEventArgs args)
+        {
+            getTeachingTip().PlacementMargin = new Thickness(Double.Parse(this.PlacementMarginTextBox.Text));
+        }
+
+        public void OnSetTailVisibilityButtonClicked(object sender, RoutedEventArgs args)
+        {
+            if (this.TailVisibilityComboBox.SelectedItem == TailVisibilityAuto)
+            {
+                getTeachingTip().TailVisibility = TeachingTipTailVisibility.Auto;
+            }
+            else if (this.TailVisibilityComboBox.SelectedItem == TailVisibilityVisible)
+            {
+                getTeachingTip().TailVisibility = TeachingTipTailVisibility.Visible;
+            }
+            else
+            {
+                getTeachingTip().TailVisibility = TeachingTipTailVisibility.Collapsed;
+            }
         }
 
         public void OnSetTargetButtonClicked(object sender, RoutedEventArgs args)
         {
-            TeachingTip.SetAttach(this.targetButton, this.TeachingTip);
+            getTeachingTip().Target = this.targetButton;
         }
 
         public void OnUntargetButtonClicked(object sender, RoutedEventArgs args)
         {
-            TeachingTip.SetAttach(null, this.TeachingTip);
+            getTeachingTip().Target = null;
         }
 
         public void OnShowButtonClicked(object sender, RoutedEventArgs args)
         {
-            this.TeachingTip.IsOpen = true;
+            getTeachingTip().IsOpen = true;
+            switch (tipLocation)
+            {
+                case TipLocation.VisualTree:
+                    if (TeachingTipInVisualTreeRoot == null)
+                    {
+                        getCancelClosesInTeachingTip().Loaded += TeachingTipInVisualTreeRoot_Loaded; ;
+                    }
+                    else
+                    {
+                        TeachingTipInVisualTreeRoot.SizeChanged += TeachingTip_SizeChanged;
+                        TeachingTip_SizeChanged(TeachingTipInVisualTreeRoot, null);
+                    }
+                    break;
+                default:
+                    if (TeachingTipInResourcesRoot == null)
+                    {
+                        getCancelClosesInTeachingTip().Loaded += TeachingTipInResourcesRoot_Loaded;
+                    }
+                    else
+                    {
+                        TeachingTipInResourcesRoot.SizeChanged += TeachingTip_SizeChanged;
+                        TeachingTip_SizeChanged(TeachingTipInResourcesRoot, null);
+                    }
+                    break;
+            }
+
+            CurrentCancelClosesCheckBox = getCancelClosesInTeachingTip();
+            NotifyPropertyChanged("CurrentCancelClosesCheckBox");
+        }
+
+        public void OnShowAfterDelayButtonClicked(object sender, RoutedEventArgs args)
+        {
+            showTimer = new DispatcherTimer();
+            showTimer.Interval = new TimeSpan(0, 0, 2);
+            showTimer.Tick += ShowTimerTick;
+            showTimer.Start();
+        }
+
+        private void ShowTimerTick(object sender, object e)
+        {
+            showTimer.Tick -= ShowTimerTick;
+            showTimer.Stop();
+            OnShowButtonClicked(null, null);
+        }
+
+        private void TeachingTipInResourcesRoot_Loaded(object sender, RoutedEventArgs e)
+        {
+            ((FrameworkElement)sender).Loaded -= TeachingTipInResourcesRoot_Loaded;
+            TeachingTipInResourcesRoot = getTeachingTipRoot(getCancelClosesInTeachingTip());
+            TeachingTipInResourcesRoot.SizeChanged += TeachingTip_SizeChanged;
+            TeachingTip_SizeChanged(TeachingTipInResourcesRoot, null);
+        }
+
+        private void TeachingTipInVisualTreeRoot_Loaded(object sender, RoutedEventArgs e)
+        {
+            ((FrameworkElement)sender).Loaded -= TeachingTipInVisualTreeRoot_Loaded;
+            TeachingTipInVisualTreeRoot = getTeachingTipRoot(getCancelClosesInTeachingTip());
+            TeachingTipInVisualTreeRoot.SizeChanged += TeachingTip_SizeChanged;
+            TeachingTip_SizeChanged(TeachingTipInVisualTreeRoot, null);
         }
 
         public void OnCloseButtonClicked(object sender, RoutedEventArgs args)
         {
-            this.TeachingTip.IsOpen = false;
+            getTeachingTip().IsOpen = false;
+        }
+
+        public void OnSetAutomationNameButtonClicked(object sender, RoutedEventArgs args)
+        {
+            var tip = getTeachingTip();
+            if(this.AutomationNameComboBox.SelectedItem == AutomationNameVisualTree)
+            {
+                AutomationProperties.SetName(tip, "TeachingTipInVisualTree");
+            }
+            else if(this.AutomationNameComboBox.SelectedItem == AutomationNameResources)
+            {
+                AutomationProperties.SetName(tip, "TeachingTipInResources");
+            }
+            else
+            {
+                AutomationProperties.SetName(tip, "");
+            }
         }
 
         public void OnSetTargetVerticalAlignmentButtonClicked(object sender, RoutedEventArgs args)
         {
             if(TargetVerticalAlignmentComboBox.SelectedItem == TargetVerticalAlignmentTop)
             {
-                this.targetButton.VerticalAlignment = VerticalAlignment.Top;
+                getTeachingTip().VerticalAlignment = VerticalAlignment.Top;
             }
             else if (TargetVerticalAlignmentComboBox.SelectedItem == TargetVerticalAlignmentCenter)
             {
-                this.targetButton.VerticalAlignment = VerticalAlignment.Center;
+                getTeachingTip().VerticalAlignment = VerticalAlignment.Center;
             }
             else
             {
-                this.targetButton.VerticalAlignment = VerticalAlignment.Bottom;
+                getTeachingTip().VerticalAlignment = VerticalAlignment.Bottom;
             }
             OnGetTargetBoundsButtonClicked(null, null);
         }
@@ -505,15 +741,15 @@ namespace MUXControlsTestApp
         {
             if (TargetHorizontalAlignmentComboBox.SelectedItem == TargetHorizontalAlignmentLeft)
             {
-                this.targetButton.HorizontalAlignment = HorizontalAlignment.Left;
+                getTeachingTip().HorizontalAlignment = HorizontalAlignment.Left;
             }
             else if (TargetHorizontalAlignmentComboBox.SelectedItem == TargetHorizontalAlignmentCenter)
             {
-                this.targetButton.HorizontalAlignment = HorizontalAlignment.Center;
+                getTeachingTip().HorizontalAlignment = HorizontalAlignment.Center;
             }
             else
             {
-                this.targetButton.HorizontalAlignment = HorizontalAlignment.Right;
+                getTeachingTip().HorizontalAlignment = HorizontalAlignment.Right;
             }
             OnGetTargetBoundsButtonClicked(null, null);
         }
@@ -528,41 +764,67 @@ namespace MUXControlsTestApp
                 new System.Numerics.Vector2(float.Parse(this.ExpandControlPoint1X.Text), float.Parse(this.ExpandControlPoint1Y.Text)),
                 new System.Numerics.Vector2(float.Parse(this.ExpandControlPoint2X.Text), float.Parse(this.ExpandControlPoint2Y.Text)));
 
-            TeachingTipTestHooks.SetExpandEasingFunction(this.TeachingTip, expandEasing);
-            TeachingTipTestHooks.SetContractEasingFunction(this.TeachingTip, contractEasing);
+            var tip = getTeachingTip();
+            TeachingTipTestHooks.SetExpandEasingFunction(tip, expandEasing);
+            TeachingTipTestHooks.SetContractEasingFunction(tip, contractEasing);
+        }
+
+        public void OnSetAnimationDurationsButtonClicked(object sender, RoutedEventArgs args)
+        {
+            var expandDuration = new TimeSpan(0, 0, 0, 0, int.Parse(ExpandAnimationDuration.Text));
+            var contractDuration = new TimeSpan(0, 0, 0, 0, int.Parse(ContractAnimationDuration.Text));
+            TeachingTipTestHooks.SetExpandAnimationDuration(getTeachingTip(), expandDuration);
+            TeachingTipTestHooks.SetContractAnimationDuration(getTeachingTip(), contractDuration);
         }
 
         public void ContentElevationSliderChanged(object sender, RangeBaseValueChangedEventArgs args)
         {
-            TeachingTipTestHooks.SetContentElevation(this.TeachingTip, (float)args.NewValue);
+            TeachingTipTestHooks.SetContentElevation(getTeachingTip(), (float)args.NewValue);
         }
 
-        public void BeakElevationSliderChanged(object sender, RangeBaseValueChangedEventArgs args)
+        public void TailElevationSliderChanged(object sender, RangeBaseValueChangedEventArgs args)
         {
-            TeachingTipTestHooks.SetBeakElevation(this.TeachingTip, (float)args.NewValue);
+            TeachingTipTestHooks.SetTailElevation(getTeachingTip(), (float)args.NewValue);
         }
 
-        public void OnBeakShadowTargetChecked(object sender, RoutedEventArgs args)
+        public void OnTipShadowChecked(object sender, RoutedEventArgs args)
         {
-            TeachingTipTestHooks.SetBeakShadowTargetsShadowTarget(this.TeachingTip, true);
+            TeachingTipTestHooks.SetTipShouldHaveShadow(getTeachingTip(), true);
         }
 
-        public void OnBeakShadowTargetUnchecked(object sender, RoutedEventArgs args)
+        public void OnTipShadowUnchecked(object sender, RoutedEventArgs args)
         {
-            TeachingTipTestHooks.SetBeakShadowTargetsShadowTarget(this.TeachingTip, false);
+            TeachingTipTestHooks.SetTipShouldHaveShadow(getTeachingTip(), false);
         }
 
         public void OnTeachingTipClosed(object sender, TeachingTipClosedEventArgs args)
         {
-            lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") " + args.ToString() + " Reason: " + args.Reason.ToString());
-            lstTeachingTipEvents.ScrollIntoView(lstTeachingTipEvents.Items.Last<object>());
+            if (lstTeachingTipEvents != null)
+            {
+                lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") " + args.ToString() + " Reason: " + args.Reason.ToString());
+                lstTeachingTipEvents.ScrollIntoView(lstTeachingTipEvents.Items.Last<object>());
+            }
         }
 
-        public void OnTeachingTipClosing(object sender, TeachingTipClosingEventArgs args)
+        public void OnTeachingTipClosing(TeachingTip sender, TeachingTipClosingEventArgs args)
         {
-            lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") " + args.ToString() + " Reason: " + args.Reason.ToString());
-            lstTeachingTipEvents.ScrollIntoView(lstTeachingTipEvents.Items.Last<object>());
-            if (CancelClosesCheckBox.IsChecked == true)
+            if (lstTeachingTipEvents != null)
+            {
+                lstTeachingTipEvents.Items.Add(lstTeachingTipEvents.Items.Count.ToString() + ") " + args.ToString() + " Reason: " + args.Reason.ToString());
+                lstTeachingTipEvents.ScrollIntoView(lstTeachingTipEvents.Items.Last<object>());
+            }
+
+            CheckBox cancelClosesCheckBox = null;
+            if (sender == TeachingTipInResources)
+            {
+                cancelClosesCheckBox = CancelClosesCheckBoxInResources;
+            }
+            else
+            {
+                cancelClosesCheckBox = CancelClosesCheckBoxInVisualTree;
+            }
+
+            if (cancelClosesCheckBox != null && cancelClosesCheckBox.IsChecked == true)
             {
                 deferral = args.GetDeferral();
                 args.Cancel = true;
@@ -594,6 +856,92 @@ namespace MUXControlsTestApp
         private void BtnClearTeachingTipEvents_Click(object sender, RoutedEventArgs e)
         {
             this.lstTeachingTipEvents.Items.Clear();
+        }
+
+        private TeachingTip getTeachingTip()
+        {
+            switch(tipLocation)
+            {
+                case TipLocation.VisualTree:
+                    return this.TeachingTipInVisualTree;
+                default:
+                    return this.TeachingTipInResources;
+            }
+        }
+
+        private CheckBox getCancelClosesInTeachingTip()
+        {
+            switch(tipLocation)
+            {
+                case TipLocation.VisualTree:
+                    return this.CancelClosesCheckBoxInVisualTree;
+                default:
+                    return this.CancelClosesCheckBoxInResources;
+            }
+        }
+
+        private FrameworkElement getTeachingTipRoot(UIElement cancelClosesCheckBox)
+        {
+            DependencyObject current = cancelClosesCheckBox;
+            for(int i = 0; i < 11; i++)
+            {
+                current = VisualTreeHelper.GetParent(current);
+            }
+            return (FrameworkElement)current;
+        }
+
+        public bool IsPageRTL
+        {
+            get => FlowDirection == FlowDirection.RightToLeft;
+            set
+            {
+                FlowDirection newFlowDirection = value ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+                if (FlowDirection != newFlowDirection)
+                {
+                    FlowDirection = newFlowDirection;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        private void OnPageThemeComboBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selectedItem = ((ComboBoxItem)PageThemeComboBox.SelectedItem);
+            if (String.Equals(selectedItem?.Content, "Light"))
+            {
+                RequestedTheme = ElementTheme.Default;
+            }
+            else if (String.Equals(selectedItem?.Content, "Dark"))
+            {
+                RequestedTheme = ElementTheme.Dark;
+            }
+            else
+            {
+                RequestedTheme = ElementTheme.Default;
+            }
+        }
+
+        public Button ActionButton
+        {
+            get
+            {
+                var popupChild = TeachingTipTestHooks.GetPopup(getTeachingTip())?.Child as FrameworkElement;
+                if (popupChild != null)
+                {
+                    return (Button)FindVisualChildByName(popupChild, "ActionButton");
+                }
+                return null;
+            }
+        }
+
+        public string BrushToString(Brush brush)
+        {
+            if (brush is SolidColorBrush solidBrush)
+            {
+                return String.Format("#{0:X2}{1:X2}{2:X2}{3:X2}", solidBrush.Color.A, solidBrush.Color.R, solidBrush.Color.G, solidBrush.Color.B);
+            }
+
+            return "Unknown";
         }
     }
 }

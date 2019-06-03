@@ -119,9 +119,9 @@ void TreeViewList::OnDrop(winrt::DragEventArgs const& e)
     {
         if (m_draggedTreeViewNode && IsIndexValid(m_emptySlotIndex))
         {
-
             // Get the node at which we will insert
             winrt::TreeViewNode insertAtNode = NodeAtFlatIndex(m_emptySlotIndex);
+
             if (IsMutiSelectWithSelectedItems())
             {
                 // Multiselect drag and drop. In the selected items, find all the selected subtrees 
@@ -132,61 +132,12 @@ void TreeViewList::OnDrop(winrt::DragEventArgs const& e)
                 // Loop through in reverse order because we are inserting above the previous item to get the order correct.
                 for (int i = static_cast<int>(selectedRootNodes.size()) - 1; i >= 0; --i)
                 {
-                    auto node = selectedRootNodes[i];
-                    int nodeFlatIndex = FlatIndex(node);
-                    if (IsFlatIndexValid(nodeFlatIndex))
-                    {
-                        RemoveNodeFromParent(node);
-
-                        int insertOffset = (((int)nodeFlatIndex) < m_emptySlotIndex) ? 1 : 0;
-                        int insertNodeIndexInParent = IndexInParent(insertAtNode);
-                        // if the insertAtNode is a parent that is expanded
-                        // insert as the first child
-                        if (insertAtNode.IsExpanded() && insertOffset == 1)
-                        {
-                            winrt::get_self<TreeViewNodeVector>(insertAtNode.Children())->InsertAtCore(0, node);
-                        }
-                        else
-                        {
-                            // Add the item to the new parent (parent of the insertAtNode)
-                            winrt::get_self<TreeViewNodeVector>(insertAtNode.Parent().Children())->InsertAtCore(insertNodeIndexInParent + insertOffset, node);
-                        }
-                    }
+                    MoveNodeInto(selectedRootNodes[i], insertAtNode);
                 }
             }
             else
             {
-                winrt::TreeViewNode draggedNode = m_draggedTreeViewNode.get();
-                if (insertAtNode != draggedNode)
-                {
-                    uint32_t relativeIndex = 0;
-                    unsigned int draggedIndex;
-
-                    winrt::TreeViewNode tvi = m_draggedTreeViewNode.get();
-                    auto returnBool = ListViewModel()->IndexOfNode(tvi, draggedIndex);
-                    const int insertOffset = (((int)draggedIndex) < m_emptySlotIndex) ? 1 : 0;
-
-                    {
-                        // Remove the item from its current parent
-                        auto children = winrt::get_self<TreeViewNodeVector>(draggedNode.Parent().Children());
-                        children->IndexOf(draggedNode, relativeIndex);
-                        children->RemoveAtCore(relativeIndex);
-                    }
-
-                    // if the insertAtNode is a parent that is expanded
-                    // insert as the first child
-                    if (insertAtNode.IsExpanded() && insertOffset == 1)
-                    {
-                        winrt::get_self<TreeViewNodeVector>(insertAtNode.Children())->InsertAtCore(0, draggedNode);
-                    }
-                    else
-                    {
-                        // Add the item to the new parent (parent of the insertAtNode)
-                        auto children = winrt::get_self<TreeViewNodeVector>(insertAtNode.Parent().Children());
-                        children->IndexOf(insertAtNode, relativeIndex);
-                        children->InsertAtCore(relativeIndex + insertOffset, draggedNode);
-                    }
-                }
+                MoveNodeInto(m_draggedTreeViewNode.get(), insertAtNode);
             }
 
             UpdateDropTargetDropEffect(false, false, nullptr);
@@ -195,6 +146,30 @@ void TreeViewList::OnDrop(winrt::DragEventArgs const& e)
     }
 
     __super::OnDrop(e);
+}
+
+void TreeViewList::MoveNodeInto(winrt::TreeViewNode const& node, winrt::TreeViewNode const& insertAtNode)
+{
+    int nodeFlatIndex = FlatIndex(node);
+    if (insertAtNode != node && IsFlatIndexValid(nodeFlatIndex))
+    {
+        RemoveNodeFromParent(node);
+
+        int insertOffset = nodeFlatIndex < m_emptySlotIndex ? 1 : 0;
+        // if the insertAtNode is a parent that is expanded
+        // insert as the first child
+        if (insertAtNode.IsExpanded() && insertOffset == 1)
+        {
+            winrt::get_self<TreeViewNodeVector>(insertAtNode.Children())->InsertAt(0, node);
+        }
+        else
+        {
+            // Add the item to the new parent (parent of the insertAtNode)
+            auto children = winrt::get_self<TreeViewNodeVector>(insertAtNode.Parent().Children());
+            int insertNodeIndexInParent = IndexInParent(insertAtNode);
+            children->InsertAt(insertNodeIndexInParent + insertOffset, node);
+        }
+    }
 }
 
 void TreeViewList::OnDragOver(winrt::DragEventArgs const& args)
@@ -567,7 +542,7 @@ unsigned int TreeViewList::RemoveNodeFromParent(const winrt::TreeViewNode& node)
     auto children = winrt::get_self<TreeViewNodeVector>(node.Parent().Children());
     if (children->IndexOf(node, indexInParent))
     {
-        children->RemoveAtCore(indexInParent);
+        children->RemoveAt(indexInParent);
     }
 
     return indexInParent;

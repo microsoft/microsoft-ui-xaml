@@ -4,13 +4,12 @@
 using Common;
 using MUXControlsTestApp.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Threading;
 using Windows.Foundation;
 using Windows.UI.Composition;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Shapes;
 
 #if USING_TAEF
@@ -24,17 +23,17 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 #if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
-using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
-using ScrollerChangeOffsetsWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsWithAdditionalVelocityOptions;
-using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
-using ScrollerChangeZoomFactorWithAdditionalVelocityOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorWithAdditionalVelocityOptions;
-using ScrollerChangingOffsetsEventArgs = Microsoft.UI.Xaml.Controls.ScrollerChangingOffsetsEventArgs;
-using ScrollerChangingZoomFactorEventArgs = Microsoft.UI.Xaml.Controls.ScrollerChangingZoomFactorEventArgs;
-using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
-using ScrollerViewChangeResult = Microsoft.UI.Xaml.Controls.ScrollerViewChangeResult;
-using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
+using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
+using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
+using ZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs;
+using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
+using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
+
+using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
@@ -63,9 +62,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Changes Scroller offsets using various ScrollerViewKind and ScrollerViewChangeKind enum values.")]
-        // Disabled due to: Multiple unreliable Scroller tests #136
+        [TestMethod]
+        [TestProperty("Description", "Changes Scroller offsets using ScrollTo, ScrollBy, ScrollFrom and AnimationMode/SnapPointsMode enum values.")]
         public void BasicOffsetChanges()
         {
             Scroller scroller = null;
@@ -83,33 +81,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
             // Jump to absolute offsets
-            ChangeOffsets(scroller, 11.0, 22.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints);
+            ScrollTo(scroller, 11.0, 22.0, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             // Jump to relative offsets
-            ChangeOffsets(scroller, -4.0, 15.0, ScrollerViewKind.RelativeToCurrentView, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
+            ScrollBy(scroller, -4.0, 15.0, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
             // Animate to absolute offsets
-            ChangeOffsets(scroller, 55.0, 25.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
+            ScrollTo(scroller, 55.0, 25.0, AnimationMode.Enabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
             // Animate to relative offsets
-            ChangeOffsets(scroller, 700.0, -8.0, ScrollerViewKind.RelativeToCurrentView, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints, false /*hookViewChanged*/);
+            ScrollBy(scroller, 700.0, -8.0, AnimationMode.Enabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
             // Flick with additional offsets velocity
-            ChangeOffsets(scroller, -65.0f, 80.0f, null /*horizontalInertiaDecayRate*/, null /*verticalInertiaDecayRate*/, false /*hookViewChanged*/);
+            ScrollFrom(scroller, -65.0f, 80.0f, null /*horizontalInertiaDecayRate*/, null /*verticalInertiaDecayRate*/, false /*hookViewChanged*/);
 
             // Flick with additional offsets velocity and custom scroll inertia decay rate
-            ChangeOffsets(scroller, 65.0f, -80.0f, 0.7f /*horizontalInertiaDecayRate*/, 0.8f /*verticalInertiaDecayRate*/, false /*hookViewChanged*/);
+            ScrollFrom(scroller, 65.0f, -80.0f, 0.7f /*horizontalInertiaDecayRate*/, 0.8f /*verticalInertiaDecayRate*/, false /*hookViewChanged*/);
 
             // Do it all again while respecting snap points
-            ChangeOffsets(scroller, 11.0, 22.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.RespectSnapPoints, false /*hookViewChanged*/);
-            ChangeOffsets(scroller, -4.0, 15.0, ScrollerViewKind.RelativeToCurrentView, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.RespectSnapPoints, false /*hookViewChanged*/);
-            ChangeOffsets(scroller, 55.0, 25.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.RespectSnapPoints, false /*hookViewChanged*/);
-            ChangeOffsets(scroller, 700.0, -8.0, ScrollerViewKind.RelativeToCurrentView, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.RespectSnapPoints, false /*hookViewChanged*/);
+            ScrollTo(scroller, 11.0, 22.0, AnimationMode.Disabled, SnapPointsMode.Default, false /*hookViewChanged*/);
+            ScrollBy(scroller, -4.0, 15.0, AnimationMode.Disabled, SnapPointsMode.Default, false /*hookViewChanged*/);
+            ScrollTo(scroller, 55.0, 25.0, AnimationMode.Enabled, SnapPointsMode.Default, false /*hookViewChanged*/);
+            ScrollBy(scroller, 700.0, -8.0, AnimationMode.Enabled, SnapPointsMode.Default, false /*hookViewChanged*/);
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Changes Scroller zoomFactor using various ScrollerViewKind and ScrollerViewChangeKind enum values.")]
-        // Disabled due to: Multiple unreliable Scroller tests #136
+        [TestMethod]
+        [TestProperty("Description", "Changes Scroller zoomFactor using ZoomTo, ZoomBy, ZoomFrom and AnimationMode enum values.")]
         public void BasicZoomFactorChanges()
         {
             Scroller scroller = null;
@@ -127,22 +124,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
 
             // Jump to absolute zoomFactor
-            ChangeZoomFactor(scroller, 2.0f, 22.0f, 33.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation);
+            ZoomTo(scroller, 2.0f, 22.0f, 33.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             // Jump to relative zoomFactor
-            ChangeZoomFactor(scroller, 1.0f, 55.0f, 66.0f, ScrollerViewKind.RelativeToCurrentView, ScrollerViewChangeKind.DisableAnimation, false /*hookViewChanged*/);
+            ZoomBy(scroller, 1.0f, 55.0f, 66.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
             // Animate to absolute zoomFactor
-            ChangeZoomFactor(scroller, 4.0f, -40.0f, -25.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation, false /*hookViewChanged*/);
+            ZoomTo(scroller, 4.0f, -40.0f, -25.0f, AnimationMode.Enabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
             // Animate to relative zoomFactor
-            ChangeZoomFactor(scroller, -2.0f, 100.0f, 200.0f, ScrollerViewKind.RelativeToCurrentView, ScrollerViewChangeKind.AllowAnimation, false /*hookViewChanged*/);
+            ZoomBy(scroller, -2.0f, 100.0f, 200.0f, AnimationMode.Enabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
             // Flick with additional zoomFactor velocity
-            ChangeZoomFactor(scroller, 2.0f, null /*inertiaDecayRate*/, -50.0f, 800.0f, false /*hookViewChanged*/);
+            ZoomFrom(scroller, 2.0f, null /*inertiaDecayRate*/, -50.0f, 800.0f, false /*hookViewChanged*/);
 
             // Flick with additional zoomFactor velocity and custom zoomFactor inertia decay rate
-            ChangeZoomFactor(scroller, -2.0f, 0.75f /*inertiaDecayRate*/, -50.0f, 800.0f, false /*hookViewChanged*/);
+            ZoomFrom(scroller, -2.0f, 0.75f /*inertiaDecayRate*/, -50.0f, 800.0f, false /*hookViewChanged*/);
         }
 
         [TestMethod]
@@ -167,13 +164,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                operation = StartChangeOffsets(
+                operation = StartScrollTo(
                     scroller,
                     600.0,
                     400.0,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.AllowAnimation,
-                    ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                    AnimationMode.Enabled,
+                    SnapPointsMode.Ignore,
                     scrollerViewChangeOperationEvent);
 
                 bool operationCanceled = false;
@@ -187,7 +183,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("Canceling view change");
                         operationCanceled = true;
-                        sender.ChangeOffsets(new ScrollerChangeOffsetsOptions(0, 0, ScrollerViewKind.RelativeToCurrentView, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
+                        sender.ScrollBy(0, 0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                     }
                 };
             });
@@ -237,13 +233,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    operation = StartChangeZoomFactor(
+                    operation = StartZoomTo(
                         scroller,
                         8.0f,
                         100.0f,
                         150.0f,
-                        ScrollerViewKind.Absolute,
-                        ScrollerViewChangeKind.AllowAnimation,
+                        AnimationMode.Enabled,
+                        SnapPointsMode.Ignore,
                         scrollerViewChangeOperationEvent);
 
                     bool operationCanceled = false;
@@ -257,7 +253,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         {
                             Log.Comment("Canceling view change");
                             operationCanceled = true;
-                            sender.ChangeZoomFactor(new ScrollerChangeZoomFactorOptions(0, ScrollerViewKind.RelativeToCurrentView, Vector2.Zero, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
+                            sender.ZoomBy(0, Vector2.Zero, new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                         }
                     };
                 });
@@ -277,8 +273,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description", "Checks to make sure the exposed startPosition, endPosition, StartZoomFactor, and EndZoomFactor " +
-            "on ScrollerChangingOffsetsEventArgs and ScrollerChangingZoomFactorEventArgs respectively are accurate.")]
-        public void ValidateChangingOffsetsAndZoomFactorEventArgsHaveValidStartAndEndPositions()
+            "on ScrollAnimationStartingEventArgs and ZoomAnimationStartingEventArgs respectively are accurate.")]
+        public void ValidateScrollAnimationStartingAndZoomFactorEventArgsHaveValidStartAndEndPositions()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
             {
@@ -308,11 +304,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("Attach to ChangingOffsets");
+                Log.Comment("Attach to ScrollAnimationStarting");
 
-                scroller.ChangingZoomFactor += (Scroller sender, ScrollerChangingZoomFactorEventArgs e) =>
+                scroller.ZoomAnimationStarting += (Scroller sender, ZoomAnimationStartingEventArgs e) =>
                 {
-                    Log.Comment("Scroller.ChangingZoomFactor event handler");
+                    Log.Comment("Scroller.ZoomAnimationStarting event handler");
                     if (numZoomFactorChanges == 0)
                     {
                         Verify.AreEqual(2.0f, e.EndZoomFactor);
@@ -326,9 +322,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 };
 
-                scroller.ChangingOffsets += (Scroller sender, ScrollerChangingOffsetsEventArgs e) =>
+                scroller.ScrollAnimationStarting += (Scroller sender, ScrollAnimationStartingEventArgs e) =>
                 {
-                    Log.Comment("Scroller.ChangingOffsets event handler");
+                    Log.Comment("Scroller.ScrollAnimationStarting event handler");
                     if (numOffsetChanges == 0)
                     {
                         Verify.AreEqual(100.0f, e.EndPosition.X);
@@ -351,16 +347,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             Log.Comment("Animating to absolute Offset");
-            ChangeOffsets(scroller, newPosition1.X, newPosition1.Y, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints);
+            ScrollTo(scroller, newPosition1.X, newPosition1.Y, AnimationMode.Enabled, SnapPointsMode.Ignore);
 
             Log.Comment("Animating to absolute Offset");
-            ChangeOffsets(scroller, newPosition2.X, newPosition2.Y, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints);
+            ScrollTo(scroller, newPosition2.X, newPosition2.Y, AnimationMode.Enabled, SnapPointsMode.Ignore);
 
             Log.Comment("Animating to absolute zoomFactor");
-            ChangeZoomFactor(scroller, newZoomFactor1, 100.0f, 200.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation);
+            ZoomTo(scroller, newZoomFactor1, 100.0f, 200.0f, AnimationMode.Enabled, SnapPointsMode.Ignore);
 
             Log.Comment("Animating to absolute zoomFactor");
-            ChangeZoomFactor(scroller, newZoomFactor2, 100.0f, 200.0f, ScrollerViewKind.Absolute, ScrollerViewChangeKind.AllowAnimation);
+            ZoomTo(scroller, newZoomFactor2, 100.0f, 200.0f, AnimationMode.Enabled, SnapPointsMode.Ignore);
 
         }
 
@@ -402,9 +398,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         viewChangedCount++;
                     };
 
-                    scroller.ChangingOffsets += (sender, args) =>
+                    scroller.ScrollAnimationStarting += (sender, args) =>
                     {
-                        Log.Comment("ChangingOffsets - ViewChangeId={0}", args.ViewChangeId);
+                        Log.Comment("ScrollAnimationStarting - OffsetsChangeId={0}", args.ScrollInfo.OffsetsChangeId);
                         Verify.IsNotNull(args.Animation);
                         Vector3KeyFrameAnimation stockKeyFrameAnimation = args.Animation as Vector3KeyFrameAnimation;
                         Verify.IsNotNull(stockKeyFrameAnimation);
@@ -413,13 +409,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         stockKeyFrameAnimation.Duration = TimeSpan.FromMilliseconds(10);
                     };
 
-                    operation = StartChangeOffsets(
+                    operation = StartScrollTo(
                         scroller,
                         600.0,
                         400.0,
-                        ScrollerViewKind.Absolute,
-                        ScrollerViewChangeKind.AllowAnimation,
-                        ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                        AnimationMode.Enabled,
+                        SnapPointsMode.Ignore,
                         scrollerViewChangeOperationEvent);
                 });
 
@@ -480,9 +475,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         viewChangedCount++;
                     };
 
-                    scroller.ChangingZoomFactor += (sender, args) =>
+                    scroller.ZoomAnimationStarting += (sender, args) =>
                     {
-                        Log.Comment("ChangingZoomFactor - ViewChangeId={0}", args.ViewChangeId);
+                        Log.Comment("ZoomAnimationStarting - ZoomFactorChangeId={0}", args.ZoomInfo.ZoomFactorChangeId);
                         Verify.IsNotNull(args.Animation);
                         ScalarKeyFrameAnimation stockKeyFrameAnimation = args.Animation as ScalarKeyFrameAnimation;
                         Verify.IsNotNull(stockKeyFrameAnimation);
@@ -491,13 +486,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         stockKeyFrameAnimation.Duration = TimeSpan.FromMilliseconds(10);
                     };
 
-                    operation = StartChangeZoomFactor(
+                    operation = StartZoomTo(
                         scroller,
                         8.0f,
                         100.0f,
                         150.0f,
-                        ScrollerViewKind.Absolute,
-                        ScrollerViewChangeKind.AllowAnimation,
+                        AnimationMode.Enabled,
+                        SnapPointsMode.Ignore,
                         scrollerViewChangeOperationEvent);
                 });
 
@@ -547,13 +542,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
                 };
 
-                operation = StartChangeOffsets(
+                operation = StartScrollTo(
                     scroller,
                     600.0,
                     400.0,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.DisableAnimation,
-                    ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                    AnimationMode.Disabled,
+                    SnapPointsMode.Ignore,
                     scrollerViewChangeOperationEvent);
 
                 Log.Comment("Resetting window content to unparent Scroller");
@@ -622,13 +616,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                operation = StartChangeOffsets(
+                operation = StartScrollTo(
                     scroller,
                     600.0,
                     400.0,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.AllowAnimation,
-                    ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                    AnimationMode.Enabled,
+                    SnapPointsMode.Ignore,
                     scrollerViewChangeOperationEvent);
             });
 
@@ -666,13 +659,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                operation = StartChangeZoomFactor(
+                operation = StartZoomTo(
                     scroller,
                     8.0f,
                     100.0f,
                     150.0f,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.AllowAnimation,
+                    AnimationMode.Enabled,
+                    SnapPointsMode.Ignore,
                     scrollerViewChangeOperationEvent);
             });
 
@@ -725,22 +718,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
                 };
 
-                operations[0] = StartChangeOffsets(
+                operations[0] = StartScrollTo(
                     scroller,
                     600.0,
                     400.0,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.DisableAnimation,
-                    ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                    AnimationMode.Disabled,
+                    SnapPointsMode.Ignore,
                     scrollerViewChangeOperationEvents[0]);
 
-                operations[1] = StartChangeOffsets(
+                operations[1] = StartScrollTo(
                     scroller,
                     500.0,
                     300.0,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.DisableAnimation,
-                    ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                    AnimationMode.Disabled,
+                    SnapPointsMode.Ignore,
                     scrollerViewChangeOperationEvents[1]);
             });
 
@@ -760,13 +751,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(operations[1].Result, ScrollerViewChangeResult.Completed);
 
                 // Jump to the same offsets.
-                operations[2] = StartChangeOffsets(
+                operations[2] = StartScrollTo(
                     scroller,
                     500.0,
                     300.0,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.DisableAnimation,
-                    ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                    AnimationMode.Disabled,
+                    SnapPointsMode.Ignore,
                     scrollerViewChangeOperationEvents[2]);
             });
 
@@ -825,22 +815,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
                 };
 
-                operations[0] = StartChangeZoomFactor(
+                operations[0] = StartZoomTo(
                     scroller,
                     8.0f,
                     150.0f,
                     120.0f,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.DisableAnimation,
+                    AnimationMode.Disabled,
+                    SnapPointsMode.Ignore,
                     scrollerViewChangeOperationEvents[0]);
 
-                operations[1] = StartChangeZoomFactor(
+                operations[1] = StartZoomTo(
                     scroller,
                     7.0f,
                     10.0f,
                     90.0f,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.DisableAnimation,
+                    AnimationMode.Disabled,
+                    SnapPointsMode.Ignore,
                     scrollerViewChangeOperationEvents[1]);
             });
 
@@ -860,13 +850,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(operations[1].Result, ScrollerViewChangeResult.Completed);
 
                 // Jump to the same zoomFactor
-                operations[2] = StartChangeZoomFactor(
+                operations[2] = StartZoomTo(
                     scroller,
                     7.0f,
                     10.0f,
                     90.0f,
-                    ScrollerViewKind.Absolute,
-                    ScrollerViewChangeKind.DisableAnimation,
+                    AnimationMode.Disabled,
+                    SnapPointsMode.Ignore,
                     scrollerViewChangeOperationEvents[2]);
             });
 
@@ -942,13 +932,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             // Jump to absolute offsets
-            ChangeOffsets(
+            ScrollTo(
                 scroller,
                 c_defaultUIScrollerContentWidth + 200.0 - c_defaultUIScrollerWidth,
                 c_defaultVerticalOffset,
-                ScrollerViewKind.Absolute,
-                ScrollerViewChangeKind.DisableAnimation,
-                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints);
+                AnimationMode.Disabled,
+                SnapPointsMode.Ignore);
         }
 
         private void ChangeOffsetsBeforeLoading(bool animate)
@@ -972,13 +961,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
                 };
 
-                operation = StartChangeOffsets(
+                operation = StartScrollTo(
                     scroller,
                     600.0,
                     400.0,
-                    ScrollerViewKind.Absolute,
-                    animate ? ScrollerViewChangeKind.AllowAnimation : ScrollerViewChangeKind.DisableAnimation,
-                    ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                    animate ? AnimationMode.Enabled : AnimationMode.Disabled,
+                    SnapPointsMode.Ignore,
                     scrollerViewChangeOperationEvent);
 
                 Log.Comment("Setting window content");
@@ -1022,13 +1010,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
                 };
 
-                operation = StartChangeZoomFactor(
+                operation = StartZoomTo(
                     scroller,
                     8.0f,
                     100.0f,
                     150.0f,
-                    ScrollerViewKind.Absolute,
-                    animate ? ScrollerViewChangeKind.AllowAnimation : ScrollerViewChangeKind.DisableAnimation,
+                    animate ? AnimationMode.Enabled : AnimationMode.Disabled,
+                    SnapPointsMode.Ignore,
                     scrollerViewChangeOperationEvent);
 
                 Log.Comment("Setting window content");
@@ -1051,98 +1039,175 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        private void ChangeOffsets(
+        private void ScrollTo(
             Scroller scroller,
             double horizontalOffset,
             double verticalOffset,
-            ScrollerViewKind viewKind,
-            ScrollerViewChangeKind viewChangeKind,
-            ScrollerViewChangeSnapPointRespect snapPointRespect,
+            AnimationMode animationMode,
+            SnapPointsMode snapPointsMode,
             bool hookViewChanged = true,
             double? expectedFinalHorizontalOffset = null,
             double? expectedFinalVerticalOffset = null)
         {
-            double originalHorizontalOffset = 0.0;
-            double originalVerticalOffset = 0.0;
-            float originalZoomFactor = 1.0f;
-            AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-            ScrollerOperation operation = null;
-
-            RunOnUIThread.Execute(() =>
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: false,
+                enableInteractionSourcesNotifications: false,
+                enableExpressionAnimationStatusNotifications: true))
             {
-                if (hookViewChanged)
-                {
-                    scroller.ViewChanged += (sender, args) =>
-                    {
-                        Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                            sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
-                    };
-                }
+                Log.Comment("Waiting for any pending ExpressionAnimation start/stop notifications to occur");
+                CompositionPropertySpy.SynchronouslyTickUIThread(6);
 
-                originalHorizontalOffset = scroller.HorizontalOffset;
-                originalVerticalOffset = scroller.VerticalOffset;
-                originalZoomFactor = scroller.ZoomFactor;
+                float originalZoomFactor = 1.0f;
+                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollerOperation operation = null;
 
-                if (expectedFinalHorizontalOffset == null)
+                RunOnUIThread.Execute(() =>
                 {
-                    switch (viewKind)
+                    scrollerTestHooksHelper.ResetExpressionAnimationStatusChanges(scroller);
+
+                    if (hookViewChanged)
                     {
-                        case ScrollerViewKind.Absolute:
-                            expectedFinalHorizontalOffset = horizontalOffset;
-                            break;
-                        case ScrollerViewKind.RelativeToCurrentView:
-                            expectedFinalHorizontalOffset = horizontalOffset + originalHorizontalOffset;
-                            break;
+                        scroller.ViewChanged += (sender, args) =>
+                        {
+                            Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
+                                sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
+                        };
                     }
-                }
 
-                if (expectedFinalVerticalOffset == null)
-                {
-                    switch (viewKind)
+                    originalZoomFactor = scroller.ZoomFactor;
+
+                    if (expectedFinalHorizontalOffset == null)
                     {
-                        case ScrollerViewKind.Absolute:
-                            expectedFinalVerticalOffset = verticalOffset;
-                            break;
-                        case ScrollerViewKind.RelativeToCurrentView:
-                            expectedFinalVerticalOffset = verticalOffset + originalVerticalOffset;
-                            break;
+                        expectedFinalHorizontalOffset = horizontalOffset;
                     }
-                }
 
-                operation = StartChangeOffsets(
-                    scroller,
-                    horizontalOffset,
-                    verticalOffset,
-                    viewKind,
-                    viewChangeKind,
-                    snapPointRespect,
-                    scrollerViewChangeOperationEvent);
-            });
+                    if (expectedFinalVerticalOffset == null)
+                    {
+                        expectedFinalVerticalOffset = verticalOffset;
+                    }
 
-            WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+                    operation = StartScrollTo(
+                        scroller,
+                        horizontalOffset,
+                        verticalOffset,
+                        animationMode,
+                        snapPointsMode,
+                        scrollerViewChangeOperationEvent);
+                });
 
-            RunOnUIThread.Execute(() =>
-            {
-                Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
 
-                switch (viewKind)
+                RunOnUIThread.Execute(() =>
                 {
-                    case ScrollerViewKind.Absolute:
-                    case ScrollerViewKind.RelativeToCurrentView:
-                        Verify.AreEqual(expectedFinalHorizontalOffset, scroller.HorizontalOffset);
-                        Verify.AreEqual(expectedFinalVerticalOffset, scroller.VerticalOffset);
-                        break;
-                    case ScrollerViewKind.RelativeToEndOfInertiaView:
-                        Verify.Fail("ScrollerViewKind.RelativeToEndOfInertiaView is not supported by ScrollerTests::ChangeOffsets");
-                        break;
-                }
-                Verify.AreEqual(originalZoomFactor, scroller.ZoomFactor);
-                Verify.AreEqual(operation.Result, ScrollerViewChangeResult.Completed);
-            });
+                    Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
+                        scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+
+                    Verify.AreEqual(expectedFinalHorizontalOffset, scroller.HorizontalOffset);
+                    Verify.AreEqual(expectedFinalVerticalOffset, scroller.VerticalOffset);
+                    Verify.AreEqual(originalZoomFactor, scroller.ZoomFactor);
+                    Verify.AreEqual(operation.Result, ScrollerViewChangeResult.Completed);
+                });
+
+                Log.Comment("Waiting for any ExpressionAnimation start/stop notification");
+                CompositionPropertySpy.SynchronouslyTickUIThread(6);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
+                    ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
+                    Verify.IsNull(expressionAnimationStatusChanges);
+                });
+            }
         }
 
-        private void ChangeOffsets(
+        private void ScrollBy(
+            Scroller scroller,
+            double horizontalOffsetDelta,
+            double verticalOffsetDelta,
+            AnimationMode animationMode,
+            SnapPointsMode snapPointsMode,
+            bool hookViewChanged = true,
+            double? expectedFinalHorizontalOffset = null,
+            double? expectedFinalVerticalOffset = null)
+        {
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: false,
+                enableInteractionSourcesNotifications: false,
+                enableExpressionAnimationStatusNotifications: true))
+            {
+                Log.Comment("Waiting for any pending ExpressionAnimation start/stop notifications to occur");
+                CompositionPropertySpy.SynchronouslyTickUIThread(6);
+
+                double originalHorizontalOffset = 0.0;
+                double originalVerticalOffset = 0.0;
+                float originalZoomFactor = 1.0f;
+                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollerOperation operation = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    scrollerTestHooksHelper.ResetExpressionAnimationStatusChanges(scroller);
+
+                    if (hookViewChanged)
+                    {
+                        scroller.ViewChanged += (sender, args) =>
+                        {
+                            Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
+                                sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
+                        };
+                    }
+
+                    originalHorizontalOffset = scroller.HorizontalOffset;
+                    originalVerticalOffset = scroller.VerticalOffset;
+                    originalZoomFactor = scroller.ZoomFactor;
+
+                    Log.Comment($"Original HorizontalOffset={originalHorizontalOffset}, VerticalOffset={originalVerticalOffset}, ZoomFactor={originalZoomFactor}");
+
+                    if (expectedFinalHorizontalOffset == null)
+                    {
+                        expectedFinalHorizontalOffset = horizontalOffsetDelta + originalHorizontalOffset;
+                    }
+
+                    if (expectedFinalVerticalOffset == null)
+                    {
+                        expectedFinalVerticalOffset = verticalOffsetDelta + originalVerticalOffset;
+                    }
+
+                    operation = StartScrollBy(
+                        scroller,
+                        horizontalOffsetDelta,
+                        verticalOffsetDelta,
+                        animationMode,
+                        snapPointsMode,
+                        scrollerViewChangeOperationEvent);
+                });
+
+                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
+                        scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+
+                    Verify.AreEqual(expectedFinalHorizontalOffset, scroller.HorizontalOffset);
+                    Verify.AreEqual(expectedFinalVerticalOffset, scroller.VerticalOffset);
+                    Verify.AreEqual(originalZoomFactor, scroller.ZoomFactor);
+                    Verify.AreEqual(operation.Result, ScrollerViewChangeResult.Completed);
+                });
+
+                Log.Comment("Waiting for any ExpressionAnimation start/stop notification");
+                CompositionPropertySpy.SynchronouslyTickUIThread(6);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
+                    ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
+                    Verify.IsNull(expressionAnimationStatusChanges);
+                });
+            }
+        }
+
+        private void ScrollFrom(
             Scroller scroller,
             float horizontalVelocity,
             float verticalVelocity,
@@ -1150,76 +1215,100 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             float? verticalInertiaDecayRate,
             bool hookViewChanged = true)
         {
-            double originalHorizontalOffset = 0.0;
-            double originalVerticalOffset = 0.0;
-            float originalZoomFactor = 1.0f;
-            AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-            ScrollerOperation operation = null;
-
-            RunOnUIThread.Execute(() =>
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: false,
+                enableInteractionSourcesNotifications: false,
+                enableExpressionAnimationStatusNotifications: true))
             {
-                if (hookViewChanged)
+                Log.Comment("Waiting for any pending ExpressionAnimation start/stop notifications to occur");
+                CompositionPropertySpy.SynchronouslyTickUIThread(6);
+
+                double originalHorizontalOffset = 0.0;
+                double originalVerticalOffset = 0.0;
+                float originalZoomFactor = 1.0f;
+                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollerOperation operation = null;
+
+                RunOnUIThread.Execute(() =>
                 {
-                    scroller.ViewChanged += (sender, args) =>
+                    scrollerTestHooksHelper.ResetExpressionAnimationStatusChanges(scroller);
+
+                    if (hookViewChanged)
                     {
-                        Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                            sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
-                    };
-                }
+                        scroller.ViewChanged += (sender, args) =>
+                        {
+                            Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
+                                sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
+                        };
+                    }
 
-                originalHorizontalOffset = scroller.HorizontalOffset;
-                originalVerticalOffset = scroller.VerticalOffset;
-                originalZoomFactor = scroller.ZoomFactor;
+                    originalHorizontalOffset = scroller.HorizontalOffset;
+                    originalVerticalOffset = scroller.VerticalOffset;
+                    originalZoomFactor = scroller.ZoomFactor;
 
-                operation = StartChangeOffsets(
-                    scroller,
-                    horizontalVelocity,
-                    verticalVelocity,
-                    horizontalInertiaDecayRate,
-                    verticalInertiaDecayRate,
-                    scrollerViewChangeOperationEvent);
-            });
+                    Log.Comment($"Original HorizontalOffset={originalHorizontalOffset}, VerticalOffset={originalVerticalOffset}, ZoomFactor={originalZoomFactor}");
 
-            WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+                    operation = StartScrollFrom(
+                        scroller,
+                        horizontalVelocity,
+                        verticalVelocity,
+                        horizontalInertiaDecayRate,
+                        verticalInertiaDecayRate,
+                        scrollerViewChangeOperationEvent);
+                });
 
-            RunOnUIThread.Execute(() =>
-            {
-                Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
 
-                if (horizontalVelocity > 0)
-                    Verify.IsTrue(originalHorizontalOffset < scroller.HorizontalOffset);
-                else if (horizontalVelocity < 0)
-                    Verify.IsTrue(originalHorizontalOffset > scroller.HorizontalOffset);
-                else
-                    Verify.IsTrue(originalHorizontalOffset == scroller.HorizontalOffset);
-                if (verticalVelocity > 0)
-                    Verify.IsTrue(originalVerticalOffset < scroller.VerticalOffset);
-                else if (verticalVelocity < 0)
-                    Verify.IsTrue(originalVerticalOffset > scroller.VerticalOffset);
-                else
-                    Verify.IsTrue(originalVerticalOffset == scroller.VerticalOffset);
-                Verify.AreEqual(originalZoomFactor, scroller.ZoomFactor);
-                Verify.AreEqual(operation.Result, ScrollerViewChangeResult.Completed);
-            });
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
+                        scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+
+                    if (horizontalVelocity > 0)
+                        Verify.IsTrue(originalHorizontalOffset < scroller.HorizontalOffset);
+                    else if (horizontalVelocity < 0)
+                        Verify.IsTrue(originalHorizontalOffset > scroller.HorizontalOffset);
+                    else
+                        Verify.IsTrue(originalHorizontalOffset == scroller.HorizontalOffset);
+                    if (verticalVelocity > 0)
+                        Verify.IsTrue(originalVerticalOffset < scroller.VerticalOffset);
+                    else if (verticalVelocity < 0)
+                        Verify.IsTrue(originalVerticalOffset > scroller.VerticalOffset);
+                    else
+                        Verify.IsTrue(originalVerticalOffset == scroller.VerticalOffset);
+                    Verify.AreEqual(originalZoomFactor, scroller.ZoomFactor);
+                    Verify.AreEqual(operation.Result, ScrollerViewChangeResult.Completed);
+                });
+
+                Log.Comment("Waiting for any ExpressionAnimation start/stop notification");
+                CompositionPropertySpy.SynchronouslyTickUIThread(6);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
+                    ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
+                    Verify.IsNull(expressionAnimationStatusChanges);
+                });
+            }
         }
 
-        private ScrollerOperation StartChangeOffsets(
+        private ScrollerOperation StartScrollTo(
             Scroller scroller,
             double horizontalOffset,
             double verticalOffset,
-            ScrollerViewKind viewKind,
-            ScrollerViewChangeKind viewChangeKind,
-            ScrollerViewChangeSnapPointRespect snapPointRespect,
+            AnimationMode animationMode,
+            SnapPointsMode snapPointsMode,
             AutoResetEvent scrollerViewChangeOperationEvent)
         {
-            Log.Comment("ChangeOffsets - horizontalOffset={0}, verticalOffset={1}, viewKind={2}, viewChangeKind={3}",
-                horizontalOffset, verticalOffset, viewKind, viewChangeKind);
+            Log.Comment("ScrollTo - horizontalOffset={0}, verticalOffset={1}, animationMode={2}, snapPointsMode={3}",
+                horizontalOffset, verticalOffset, animationMode, snapPointsMode);
 
             ScrollerOperation operation = new ScrollerOperation();
 
-            operation.Id = scroller.ChangeOffsets(
-                new ScrollerChangeOffsetsOptions(horizontalOffset, verticalOffset, viewKind, viewChangeKind, snapPointRespect));
+            operation.Id = scroller.ScrollTo(
+                horizontalOffset,
+                verticalOffset,
+                new ScrollOptions(animationMode, snapPointsMode)).OffsetsChangeId;
 
             if (operation.Id == -1)
             {
@@ -1227,12 +1316,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scroller.ViewChangeCompleted += (Scroller sender, ScrollerViewChangeCompletedEventArgs args) =>
+                scroller.ScrollCompleted += (Scroller sender, ScrollCompletedEventArgs args) =>
                 {
-                    if (args.ViewChangeId == operation.Id)
+                    if (args.ScrollInfo.OffsetsChangeId == operation.Id)
                     {
-                        Log.Comment("ViewChangeCompleted: ChangeOffsets ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
-                        operation.Result = args.Result;
+                        ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+
+                        Log.Comment("ScrollCompleted: ScrollTo OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+                        operation.Result = result;
 
                         Log.Comment("Setting completion event");
                         scrollerViewChangeOperationEvent.Set();
@@ -1243,7 +1334,49 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return operation;
         }
 
-        private ScrollerOperation StartChangeOffsets(
+        private ScrollerOperation StartScrollBy(
+            Scroller scroller,
+            double horizontalOffsetDelta,
+            double verticalOffsetDelta,
+            AnimationMode animationMode,
+            SnapPointsMode snapPointsMode,
+            AutoResetEvent scrollerViewChangeOperationEvent)
+        {
+            Log.Comment("ScrollBy - horizontalOffsetDelta={0}, verticalOffsetDelta={1}, animationMode={2}, snapPointsMode={3}",
+                horizontalOffsetDelta, verticalOffsetDelta, animationMode, snapPointsMode);
+
+            ScrollerOperation operation = new ScrollerOperation();
+
+            operation.Id = scroller.ScrollBy(
+                horizontalOffsetDelta,
+                verticalOffsetDelta,
+                new ScrollOptions(animationMode, snapPointsMode)).OffsetsChangeId;
+
+            if (operation.Id == -1)
+            {
+                scrollerViewChangeOperationEvent.Set();
+            }
+            else
+            {
+                scroller.ScrollCompleted += (Scroller sender, ScrollCompletedEventArgs args) =>
+                {
+                    if (args.ScrollInfo.OffsetsChangeId == operation.Id)
+                    {
+                        ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+
+                        Log.Comment("ScrollCompleted: ScrollBy OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+                        operation.Result = result;
+
+                        Log.Comment("Setting completion event");
+                        scrollerViewChangeOperationEvent.Set();
+                    }
+                };
+            }
+
+            return operation;
+        }
+
+        private ScrollerOperation StartScrollFrom(
             Scroller scroller,
             float horizontalVelocity,
             float verticalVelocity,
@@ -1251,7 +1384,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             float? verticalInertiaDecayRate,
             AutoResetEvent scrollerViewChangeOperationEvent)
         {
-            Log.Comment("ChangeOffsets - horizontalVelocity={0}, verticalVelocity={1}, horizontalInertiaDecayRate={2}, verticalInertiaDecayRate={3}",
+            Log.Comment("ScrollFrom - horizontalVelocity={0}, verticalVelocity={1}, horizontalInertiaDecayRate={2}, verticalInertiaDecayRate={3}",
                 horizontalVelocity, verticalVelocity, horizontalInertiaDecayRate, verticalInertiaDecayRate);
 
             Vector2? inertiaDecayRate = null;
@@ -1263,10 +1396,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             ScrollerOperation operation = new ScrollerOperation();
 
-            operation.Id = scroller.ChangeOffsetsWithAdditionalVelocity(
-                new ScrollerChangeOffsetsWithAdditionalVelocityOptions(
+            operation.Id = scroller.ScrollFrom(
                     new Vector2(horizontalVelocity, verticalVelocity),
-                    inertiaDecayRate));
+                    inertiaDecayRate).OffsetsChangeId;
 
             if (operation.Id == -1)
             {
@@ -1274,12 +1406,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scroller.ViewChangeCompleted += (Scroller sender, ScrollerViewChangeCompletedEventArgs args) =>
+                scroller.ScrollCompleted += (Scroller sender, ScrollCompletedEventArgs args) =>
                 {
-                    if (args.ViewChangeId == operation.Id)
+                    if (args.ScrollInfo.OffsetsChangeId == operation.Id)
                     {
-                        Log.Comment("ViewChangeCompleted: ChangeOffsets ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
-                        operation.Result = args.Result;
+                        ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+
+                        Log.Comment("ScrollCompleted: ScrollFrom OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+                        operation.Result = result;
 
                         Log.Comment("Setting completion event");
                         scrollerViewChangeOperationEvent.Set();
@@ -1290,132 +1424,220 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return operation;
         }
 
-        private void ChangeZoomFactor(
+        private void ZoomTo(
             Scroller scroller,
             float zoomFactor,
             float centerPointX,
             float centerPointY,
-            ScrollerViewKind viewKind,
-            ScrollerViewChangeKind viewChangeKind,
+            AnimationMode animationMode,
+            SnapPointsMode snapPointsMode,
             bool hookViewChanged = true)
         {
-            float originalZoomFactor = 1.0f;
-            AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-            ScrollerOperation operation = null;
-
-            RunOnUIThread.Execute(() =>
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: false,
+                enableInteractionSourcesNotifications: false,
+                enableExpressionAnimationStatusNotifications: true))
             {
-                if (hookViewChanged)
+                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollerOperation operation = null;
+
+                RunOnUIThread.Execute(() =>
                 {
-                    scroller.ViewChanged += (sender, args) =>
+                    if (hookViewChanged)
                     {
-                        Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                            sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
-                    };
-                }
+                        scroller.ViewChanged += (sender, args) =>
+                        {
+                            Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
+                                sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
+                        };
+                    }
 
-                originalZoomFactor = scroller.ZoomFactor;
+                    operation = StartZoomTo(
+                        scroller,
+                        zoomFactor,
+                        centerPointX,
+                        centerPointY,
+                        animationMode,
+                        snapPointsMode,
+                        scrollerViewChangeOperationEvent);
+                });
 
-                operation = StartChangeZoomFactor(
-                    scroller,
-                    zoomFactor,
-                    centerPointX,
-                    centerPointY,
-                    viewKind,
-                    viewChangeKind,
-                    scrollerViewChangeOperationEvent);
-            });
+                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
 
-            WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
-
-                switch (viewKind)
+                RunOnUIThread.Execute(() =>
                 {
-                    case ScrollerViewKind.Absolute:
-                        Verify.AreEqual(zoomFactor, scroller.ZoomFactor);
-                        break;
-                    case ScrollerViewKind.RelativeToCurrentView:
-                        Verify.AreEqual(zoomFactor + originalZoomFactor, scroller.ZoomFactor);
-                        break;
-                    case ScrollerViewKind.RelativeToEndOfInertiaView:
-                        Verify.Fail("ScrollerViewKind.RelativeToEndOfInertiaView is not supported by ScrollerTests::ChangeZoomFactor");
-                        break;
-                }
-                Verify.AreEqual(operation.Result, ScrollerViewChangeResult.Completed);
-            });
+                    Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
+                        scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+
+                    Verify.AreEqual(zoomFactor, scroller.ZoomFactor);
+                    Verify.AreEqual(operation.Result, ScrollerViewChangeResult.Completed);
+                });
+
+                Log.Comment("Waiting for any ExpressionAnimation start/stop notification");
+                CompositionPropertySpy.SynchronouslyTickUIThread(6);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
+                    ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
+                    VerifyExpressionAnimationStatusChangesForZoomFactorSuspension(expressionAnimationStatusChanges);
+                });
+            }
         }
 
-        private void ChangeZoomFactor(
+        private void ZoomBy(
             Scroller scroller,
-            float additionalVelocity,
+            float zoomFactorDelta,
+            float centerPointX,
+            float centerPointY,
+            AnimationMode animationMode,
+            SnapPointsMode snapPointsMode,
+            bool hookViewChanged = true)
+        {
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: false,
+                enableInteractionSourcesNotifications: false,
+                enableExpressionAnimationStatusNotifications: true))
+            {
+                float originalZoomFactor = 1.0f;
+                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollerOperation operation = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    if (hookViewChanged)
+                    {
+                        scroller.ViewChanged += (sender, args) =>
+                        {
+                            Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
+                                sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
+                        };
+                    }
+
+                    originalZoomFactor = scroller.ZoomFactor;
+
+                    Log.Comment($"Original HorizontalOffset={scroller.HorizontalOffset}, VerticalOffset={scroller.VerticalOffset}, ZoomFactor={originalZoomFactor}");
+
+                    operation = StartZoomBy(
+                        scroller,
+                        zoomFactorDelta,
+                        centerPointX,
+                        centerPointY,
+                        animationMode,
+                        snapPointsMode,
+                        scrollerViewChangeOperationEvent);
+                });
+
+                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
+                        scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+
+                    Verify.AreEqual(zoomFactorDelta + originalZoomFactor, scroller.ZoomFactor);
+                    Verify.AreEqual(operation.Result, ScrollerViewChangeResult.Completed);
+                });
+
+                Log.Comment("Waiting for any ExpressionAnimation start/stop notification");
+                CompositionPropertySpy.SynchronouslyTickUIThread(6);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
+                    ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
+                    VerifyExpressionAnimationStatusChangesForZoomFactorSuspension(expressionAnimationStatusChanges);                    
+                });
+            }
+        }
+
+        private void ZoomFrom(
+            Scroller scroller,
+            float zoomFactorVelocity,
             float? inertiaDecayRate,
             float centerPointX,
             float centerPointY,
             bool hookViewChanged = true)
         {
-            float originalZoomFactor = 1.0f;
-            AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
-            ScrollerOperation operation = null;
-
-            RunOnUIThread.Execute(() =>
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: false,
+                enableInteractionSourcesNotifications: false,
+                enableExpressionAnimationStatusNotifications: true))
             {
-                if (hookViewChanged)
+                float originalZoomFactor = 1.0f;
+                AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
+                ScrollerOperation operation = null;
+
+                RunOnUIThread.Execute(() =>
                 {
-                    scroller.ViewChanged += (sender, args) =>
+                    if (hookViewChanged)
                     {
-                        Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                            sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
-                    };
-                }
+                        scroller.ViewChanged += (sender, args) =>
+                        {
+                            Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
+                                sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
+                        };
+                    }
 
-                originalZoomFactor = scroller.ZoomFactor;
+                    originalZoomFactor = scroller.ZoomFactor;
 
-                operation = StartChangeZoomFactor(
-                    scroller,
-                    additionalVelocity,
-                    inertiaDecayRate,
-                    centerPointX,
-                    centerPointY,
-                    scrollerViewChangeOperationEvent);
-            });
+                    Log.Comment($"Original HorizontalOffset={scroller.HorizontalOffset}, VerticalOffset={scroller.VerticalOffset}, ZoomFactor={originalZoomFactor}");
 
-            WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
+                    operation = StartZoomFrom(
+                        scroller,
+                        zoomFactorVelocity,
+                        inertiaDecayRate,
+                        centerPointX,
+                        centerPointY,
+                        scrollerViewChangeOperationEvent);
+                });
 
-            RunOnUIThread.Execute(() =>
-            {
-                Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                WaitForEvent("Waiting for view change completion", scrollerViewChangeOperationEvent);
 
-                if (additionalVelocity > 0)
-                    Verify.IsTrue(originalZoomFactor < scroller.ZoomFactor);
-                else if (additionalVelocity < 0)
-                    Verify.IsTrue(originalZoomFactor > scroller.ZoomFactor);
-                else
-                    Verify.IsTrue(originalZoomFactor == scroller.ZoomFactor);
-                Verify.AreEqual(operation.Result, ScrollerViewChangeResult.Completed);
-            });
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Final HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
+                        scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+
+                    if (zoomFactorVelocity > 0)
+                        Verify.IsTrue(originalZoomFactor < scroller.ZoomFactor);
+                    else if (zoomFactorVelocity < 0)
+                        Verify.IsTrue(originalZoomFactor > scroller.ZoomFactor);
+                    else
+                        Verify.IsTrue(originalZoomFactor == scroller.ZoomFactor);
+                    Verify.AreEqual(operation.Result, ScrollerViewChangeResult.Completed);
+                });
+
+                Log.Comment("Waiting for any ExpressionAnimation start/stop notification");
+                CompositionPropertySpy.SynchronouslyTickUIThread(6);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
+                    ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
+                    VerifyExpressionAnimationStatusChangesForZoomFactorSuspension(expressionAnimationStatusChanges);
+                });
+            }
         }
 
-        private ScrollerOperation StartChangeZoomFactor(
+        private ScrollerOperation StartZoomTo(
             Scroller scroller,
             float zoomFactor,
             float centerPointX,
             float centerPointY,
-            ScrollerViewKind viewKind,
-            ScrollerViewChangeKind viewChangeKind,
+            AnimationMode animationMode,
+            SnapPointsMode snapPointsMode,
             AutoResetEvent scrollerViewChangeOperationEvent)
         {
-            Log.Comment("ChangeZoomFactor - zoomFactor={0}, centerPoint=({1},{2}), viewKind={3}, viewChangeKind={4}",
-                zoomFactor, centerPointX, centerPointY, viewKind, viewChangeKind);
+            Log.Comment("ZoomTo - zoomFactor={0}, centerPoint=({1},{2}), animationMode={3}, snapPointsMode={4}",
+                zoomFactor, centerPointX, centerPointY, animationMode, snapPointsMode);
 
             ScrollerOperation operation = new ScrollerOperation();
 
-            operation.Id = scroller.ChangeZoomFactor(
-                new ScrollerChangeZoomFactorOptions(zoomFactor, viewKind, new Vector2(centerPointX, centerPointY), viewChangeKind, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
+            operation.Id = scroller.ZoomTo(
+                zoomFactor,
+                new Vector2(centerPointX, centerPointY), 
+                new ZoomOptions(animationMode, snapPointsMode)).ZoomFactorChangeId;
 
             if (operation.Id == -1)
             {
@@ -1423,12 +1645,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scroller.ViewChangeCompleted += (Scroller sender, ScrollerViewChangeCompletedEventArgs args) =>
+                scroller.ZoomCompleted += (Scroller sender, ZoomCompletedEventArgs args) =>
                 {
-                    if (args.ViewChangeId == operation.Id)
+                    if (args.ZoomInfo.ZoomFactorChangeId == operation.Id)
                     {
-                        Log.Comment("ViewChangeCompleted: ChangeZoomFactor ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
-                        operation.Result = args.Result;
+                        ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+
+                        Log.Comment("ZoomCompleted: ZoomTo ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+                        operation.Result = result;
 
                         Log.Comment("Setting completion event");
                         scrollerViewChangeOperationEvent.Set();
@@ -1439,21 +1663,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return operation;
         }
 
-        private ScrollerOperation StartChangeZoomFactor(
+        private ScrollerOperation StartZoomBy(
             Scroller scroller,
-            float additionalVelocity,
-            float? inertiaDecayRate,
+            float zoomFactorDelta,
             float centerPointX,
             float centerPointY,
+            AnimationMode animationMode,
+            SnapPointsMode snapPointsMode,
             AutoResetEvent scrollerViewChangeOperationEvent)
         {
-            Log.Comment("ChangeZoomFactor - additionalVelocity={0}, inertiaDecayRate={1}, centerPoint=({2},{3})",
-                additionalVelocity, inertiaDecayRate, centerPointX, centerPointY);
+            Log.Comment("ZoomBy - zoomFactorDelta={0}, centerPoint=({1},{2}), animationMode={3}, snapPointsMode={4}",
+                zoomFactorDelta, centerPointX, centerPointY, animationMode, snapPointsMode);
 
             ScrollerOperation operation = new ScrollerOperation();
 
-            operation.Id = scroller.ChangeZoomFactorWithAdditionalVelocity(
-                new ScrollerChangeZoomFactorWithAdditionalVelocityOptions(additionalVelocity, inertiaDecayRate, new Vector2(centerPointX, centerPointY)));
+            operation.Id = scroller.ZoomBy(
+                zoomFactorDelta,
+                new Vector2(centerPointX, centerPointY),
+                new ZoomOptions(animationMode, snapPointsMode)).ZoomFactorChangeId;
 
             if (operation.Id == -1)
             {
@@ -1461,12 +1688,54 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scroller.ViewChangeCompleted += (Scroller sender, ScrollerViewChangeCompletedEventArgs args) =>
+                scroller.ZoomCompleted += (Scroller sender, ZoomCompletedEventArgs args) =>
                 {
-                    if (args.ViewChangeId == operation.Id)
+                    if (args.ZoomInfo.ZoomFactorChangeId == operation.Id)
                     {
-                        Log.Comment("ViewChangeCompleted: ChangeZoomFactor ViewChangeId=" + args.ViewChangeId + ", Result=" + args.Result);
-                        operation.Result = args.Result;
+                        ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+
+                        Log.Comment("ZoomCompleted: ZoomBy ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+                        operation.Result = result;
+
+                        Log.Comment("Setting completion event");
+                        scrollerViewChangeOperationEvent.Set();
+                    }
+                };
+            }
+
+            return operation;
+        }
+
+        private ScrollerOperation StartZoomFrom(
+            Scroller scroller,
+            float zoomFactorVelocity,
+            float? inertiaDecayRate,
+            float centerPointX,
+            float centerPointY,
+            AutoResetEvent scrollerViewChangeOperationEvent)
+        {
+            Log.Comment("ChangeZoomFactor - zoomFactorVelocity={0}, inertiaDecayRate={1}, centerPoint=({2},{3})",
+                zoomFactorVelocity, inertiaDecayRate, centerPointX, centerPointY);
+
+            ScrollerOperation operation = new ScrollerOperation();
+
+            operation.Id = scroller.ZoomFrom(
+                zoomFactorVelocity, new Vector2(centerPointX, centerPointY), inertiaDecayRate).ZoomFactorChangeId;
+
+            if (operation.Id == -1)
+            {
+                scrollerViewChangeOperationEvent.Set();
+            }
+            else
+            {
+                scroller.ZoomCompleted += (Scroller sender, ZoomCompletedEventArgs args) =>
+                {
+                    if (args.ZoomInfo.ZoomFactorChangeId == operation.Id)
+                    {
+                        ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+
+                        Log.Comment("ZoomCompleted: ZoomFrom ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+                        operation.Result = result;
 
                         Log.Comment("Setting completion event");
                         scrollerViewChangeOperationEvent.Set();
@@ -1521,24 +1790,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         if (changeOffsetsSecond)
                         {
-                            operations[1] = StartChangeOffsets(
+                            operations[1] = StartScrollTo(
                                 scroller,
                                 500.0,
                                 300.0,
-                                ScrollerViewKind.Absolute,
-                                ScrollerViewChangeKind.AllowAnimation,
-                                ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                                AnimationMode.Enabled,
+                                SnapPointsMode.Ignore,
                                 scrollerViewChangeOperationEvents[1]);
                         }
                         else
                         {
-                            operations[1] = StartChangeZoomFactor(
+                            operations[1] = StartZoomTo(
                                 scroller,
                                 7.0f,
                                 70.0f,
                                 50.0f,
-                                ScrollerViewKind.Absolute,
-                                ScrollerViewChangeKind.AllowAnimation,
+                                AnimationMode.Enabled,
+                                SnapPointsMode.Ignore,
                                 scrollerViewChangeOperationEvents[1]);
                         }
                     }
@@ -1546,24 +1814,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 if (changeOffsetsFirst)
                 {
-                    operations[0] = StartChangeOffsets(
+                    operations[0] = StartScrollTo(
                         scroller,
                         600.0,
                         400.0,
-                        ScrollerViewKind.Absolute,
-                        ScrollerViewChangeKind.AllowAnimation,
-                        ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints,
+                        AnimationMode.Enabled,
+                        SnapPointsMode.Ignore,
                         scrollerViewChangeOperationEvents[0]);
                 }
                 else
                 {
-                    operations[0] = StartChangeZoomFactor(
+                    operations[0] = StartZoomTo(
                         scroller,
                         8.0f,
                         100.0f,
                         150.0f,
-                        ScrollerViewKind.Absolute,
-                        ScrollerViewChangeKind.AllowAnimation,
+                        AnimationMode.Enabled,
+                        SnapPointsMode.Ignore,
                         scrollerViewChangeOperationEvents[0]);
                 }
             });
@@ -1618,6 +1885,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     throw new Exception("Timeout expiration in WaitForEvent.");
                 }
+            }
+        }
+
+        private void VerifyExpressionAnimationStatusChangesForZoomFactorSuspension(List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges)
+        {
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                // Facades are enabled. The zoom factor animation is expected to be interrupted momentarily.
+                Verify.IsNotNull(expressionAnimationStatusChanges);
+                Verify.AreEqual(expressionAnimationStatusChanges.Count, 2);
+                Verify.IsFalse(expressionAnimationStatusChanges[0].IsExpressionAnimationStarted);
+                Verify.AreEqual(expressionAnimationStatusChanges[0].PropertyName, "Scale");
+                Verify.IsTrue(expressionAnimationStatusChanges[1].IsExpressionAnimationStarted);
+                Verify.AreEqual(expressionAnimationStatusChanges[1].PropertyName, "Scale");
+            }
+            else
+            {
+                Verify.IsNull(expressionAnimationStatusChanges);
             }
         }
 

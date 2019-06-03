@@ -92,10 +92,11 @@ namespace MUXControlsTestApp
 
                 txtMouseWheelInertiaDecayRate.Text = ScrollerTestHooks.MouseWheelInertiaDecayRate.ToString();
 
-                chkIsInteractionTrackerMouseWheelZoomingEnabled.IsChecked = (bool)ScrollerTestHooks.IsInteractionTrackerMouseWheelZoomingEnabled;
+                chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
             }
-            catch
+            catch (Exception ex)
             {
+                tbException.Text = ex.ToString();
             }
         }
 
@@ -118,8 +119,9 @@ namespace MUXControlsTestApp
             {
                 ScrollerTestHooks.MouseWheelInertiaDecayRate = Convert.ToSingle(txtMouseWheelInertiaDecayRate.Text);
             }
-            catch
+            catch (Exception ex)
             {
+                tbException.Text = ex.ToString();
             }
         }
 
@@ -132,8 +134,9 @@ namespace MUXControlsTestApp
                     Convert.ToInt32(txtOffsetsChangeMinMilliseconds.Text),
                     Convert.ToInt32(txtOffsetsChangeMaxMilliseconds.Text));
             }
-            catch
+            catch (Exception ex)
             {
+                tbException.Text = ex.ToString();
             }
         }
 
@@ -146,19 +149,20 @@ namespace MUXControlsTestApp
                     Convert.ToInt32(txtZoomFactorChangeMinMilliseconds.Text),
                     Convert.ToInt32(txtZoomFactorChangeMaxMilliseconds.Text));
             }
-            catch
+            catch (Exception ex)
             {
+                tbException.Text = ex.ToString();
             }
         }
 
-        private void ChkIsInteractionTrackerMouseWheelZoomingEnabled_Checked(object sender, RoutedEventArgs e)
+        private void ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Checked(object sender, RoutedEventArgs e)
         {
-            ScrollerTestHooks.IsInteractionTrackerMouseWheelZoomingEnabled = true;
+            ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = true;
         }
 
-        private void ChkIsInteractionTrackerMouseWheelZoomingEnabled_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Unchecked(object sender, RoutedEventArgs e)
         {
-            ScrollerTestHooks.IsInteractionTrackerMouseWheelZoomingEnabled = false;
+            ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = false;
         }
     }
 }

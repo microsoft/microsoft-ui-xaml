@@ -21,7 +21,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayerAutomationPeer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayer.idl" />
-    <None Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayerAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayerAutomationPeer.idl" />
   </ItemGroup>
 </Project>

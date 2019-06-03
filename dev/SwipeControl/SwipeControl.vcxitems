@@ -8,6 +8,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);SWIPECONTROL_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -21,6 +22,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeItems.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeItem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeItemInvokedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SwipeTestHooks.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SwipeTestHooksFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeControlTrace.h" />
@@ -28,6 +31,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeItems.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeItem.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeItemInvokedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SwipeTestHooks.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SwipeTestHooksFactory.h" />
   </ItemGroup>
   <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
     <Page Include="$(MSBuildThisFileDirectory)SwipeControl.xaml">
@@ -45,6 +50,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)SwipeControl.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)SwipeControl.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)SwipeTestHooks.idl" />
   </ItemGroup>
 </Project>

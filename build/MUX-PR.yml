@@ -22,7 +22,7 @@ jobs:
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
   
-  - template: AzurePipelinesTemplates\MUX-PublishDevProject-Steps.yml
+  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
@@ -30,12 +30,12 @@ jobs:
     jobName: CreateNugetPackage
     dependsOn: Build
     primaryBuildArch: x64
-  
-# Build solution that depends on nuget package
+
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
     dependsOn: CreateNugetPackage
-    useNupkgFromArtifacts: true
+    pkgArtifactPath: '$(artifactDownloadPath)\drop'
+    runTests: 'false'
     matrix: 
       Debug_x64:
         buildPlatform: 'x64'
