@@ -92,7 +92,7 @@ namespace Flick
 
         private static int ContinousScrollingItemSkipCount { get; } = 2;
 
-        private static TimeSpan PrevNextButtonContinousSelectionPeriod = TimeSpan.FromMilliseconds(100);
+        private static TimeSpan PrevNextButtonContinousSelectionPeriod { get; } = TimeSpan.FromMilliseconds(100);
 
         protected void OnScrollViewerViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
