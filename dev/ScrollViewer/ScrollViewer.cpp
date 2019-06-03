@@ -950,11 +950,11 @@ void ScrollViewer::OnScrollerBringingIntoView(
 {
     if (!m_bringIntoViewOperations.empty())
     {
-        for (auto operationsIter = m_bringIntoViewOperations.begin(); operationsIter != m_bringIntoViewOperations.end();)
+        auto requestEventArgs = args.RequestEventArgs();
+
+        for (auto operationsIter = m_bringIntoViewOperations.begin(); operationsIter != m_bringIntoViewOperations.end(); operationsIter++)
         {
-            auto requestEventArgs = args.RequestEventArgs();
             auto& bringIntoViewOperation = *operationsIter;
-            operationsIter++;
 
             if (requestEventArgs.TargetElement() == bringIntoViewOperation->TargetElement())
             {
@@ -1797,10 +1797,8 @@ void ScrollViewer::HandleKeyDownForXYNavigation(winrt::KeyRoutedEventArgs args)
 
             if (SharedHelpers::IsAnimationsEnabled()) // When system animations are turned off, the bring-into-view operations are not turned into animations.
             {
-                auto targetElement = nextElement.try_as<winrt::UIElement>();
-
                 focusAsyncOperation.Completed(winrt::AsyncOperationCompletedHandler<winrt::FocusMovementResult>(
-                    [strongThis = get_strong(), targetElement](winrt::IAsyncOperation<winrt::FocusMovementResult> asyncOperation, winrt::AsyncStatus asyncStatus)
+                    [strongThis = get_strong(), targetElement = nextElement.try_as<winrt::UIElement>()](winrt::IAsyncOperation<winrt::FocusMovementResult> asyncOperation, winrt::AsyncStatus asyncStatus)
                     {
                         if (asyncStatus == winrt::AsyncStatus::Completed && asyncOperation.GetResults())
                         {
