@@ -71,6 +71,10 @@ namespace Flick
             carouselPrevButton.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(OnCarouselPrevButtonPointerPressed), true);
             carouselPrevButton.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(OnCarouselPrevButtonPointerCanceled), true);
             carouselPrevButton.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(OnCarouselPrevButtonPointerReleased), true);
+
+            carouselNextButton.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(OnCarouselNextButtonPointerPressed), true);
+            carouselNextButton.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(OnCarouselNextButtonPointerCanceled), true);
+            carouselNextButton.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(OnCarouselNextButtonPointerReleased), true);
         }
 
         public object SelectedItem { get; set; } = null;
@@ -246,8 +250,13 @@ namespace Flick
                 }
             }
         }
-        
+
         private void SelectNextItem()
+        {
+            SelectNextItem(0 /*numberOfItemsToSkip*/);
+        }
+        
+        private void SelectNextItem(int numberOfItemsToSkip)
         {
             // In the nominal case, centerOfViewportOffsetInScrollViewer will be the offset of the current centerpoint in the scrollviewer's viewport;
             // however, if the "center" item is not perfectly centered (i.e. where the centerpoint falls on the item's size.x/2)
@@ -257,7 +266,7 @@ namespace Flick
             centerOfViewportOffsetInScrollViewer -= (centerOfViewportOffsetInScrollViewer + layout.Spacing / 2) % (layout.Spacing + layout.ItemWidth);
             centerOfViewportOffsetInScrollViewer += layout.Spacing / 2 + layout.ItemWidth / 2;
             var newSelectedItemDistanceFromCenterPoint = layout.ItemWidth / 2 + layout.Spacing + (layout.ItemWidth * ItemScaleRatio);
-            var offsetToScrollTo = sv.HorizontalOffset + newSelectedItemDistanceFromCenterPoint;
+            var offsetToScrollTo = sv.HorizontalOffset + newSelectedItemDistanceFromCenterPoint + (numberOfItemsToSkip * (layout.ItemWidth + layout.Spacing));
             // This odd delay is required in order to ensure that the scrollviewer animates the scroll
             // on every call to ChangeView.
             var period = TimeSpan.FromMilliseconds(10);
@@ -325,6 +334,12 @@ namespace Flick
         {
             ((UIElement)sender).CapturePointer(e.Pointer);
 
+            if (PrevButtonHoldTimer != null)
+            {
+                PrevButtonHoldTimer.Cancel();
+                PrevButtonHoldTimer = null;
+            }
+
             if (NextButtonHoldTimer != null)
             {
                 NextButtonHoldTimer.Cancel();
@@ -341,11 +356,6 @@ namespace Flick
             {
                 NextButtonContinuousScrollingPeriodicTimer.Cancel();
                 NextButtonContinuousScrollingPeriodicTimer = null;
-            }
-
-            if (PrevButtonHoldTimer != null)
-            {
-                return;
             }
 
             SelectPreviousItem();
@@ -375,16 +385,93 @@ namespace Flick
             }
         }
 
+#pragma warning disable CS0628 // New protected member declared in sealed class
         protected void OnCarouselPrevButtonPointerCanceled(object sender, PointerRoutedEventArgs e)
+#pragma warning restore CS0628 // New protected member declared in sealed class
         {
             ((UIElement)sender).CapturePointer(e.Pointer);
             OnCarouselPrevButtonPointerPressEnded();
         }
 
+#pragma warning disable CS0628 // New protected member declared in sealed class
         protected void OnCarouselPrevButtonPointerReleased(object sender, PointerRoutedEventArgs e)
+#pragma warning restore CS0628 // New protected member declared in sealed class
         {
             ((UIElement)sender).CapturePointer(e.Pointer);
             OnCarouselPrevButtonPointerPressEnded();
+        }
+
+#pragma warning disable CS0628 // New protected member declared in sealed class
+        protected void OnCarouselNextButtonPointerPressed(object sender, PointerRoutedEventArgs e)
+#pragma warning restore CS0628 // New protected member declared in sealed class
+        {
+            ((UIElement)sender).CapturePointer(e.Pointer);
+
+            if (NextButtonHoldTimer != null)
+            {
+                NextButtonHoldTimer.Cancel();
+                NextButtonHoldTimer = null;
+            }
+
+            if (PrevButtonHoldTimer != null)
+            {
+                PrevButtonHoldTimer.Cancel();
+                PrevButtonHoldTimer = null;
+            }
+
+            if (PrevButtonContinuousScrollingPeriodicTimer != null)
+            {
+                PrevButtonContinuousScrollingPeriodicTimer.Cancel();
+                PrevButtonContinuousScrollingPeriodicTimer = null;
+            }
+
+            if (NextButtonContinuousScrollingPeriodicTimer != null)
+            {
+                NextButtonContinuousScrollingPeriodicTimer.Cancel();
+                NextButtonContinuousScrollingPeriodicTimer = null;
+            }
+
+            SelectNextItem();
+
+            PrevButtonHoldTimer = ThreadPoolTimer.CreateTimer(async (source) =>
+            {
+                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                {
+                    startContinuousScrolling(ScrollDirection.Next);
+                });
+            },
+            PrevNextButtonHoldPeriod);
+        }
+
+        private void OnCarouselNextButtonPointerPressEnded()
+        {
+            if (NextButtonHoldTimer != null)
+            {
+                NextButtonHoldTimer.Cancel();
+                NextButtonHoldTimer = null;
+            }
+
+            if (NextButtonContinuousScrollingPeriodicTimer != null)
+            {
+                NextButtonContinuousScrollingPeriodicTimer.Cancel();
+                NextButtonContinuousScrollingPeriodicTimer = null;
+            }
+        }
+
+#pragma warning disable CS0628 // New protected member declared in sealed class
+        protected void OnCarouselNextButtonPointerCanceled(object sender, PointerRoutedEventArgs e)
+#pragma warning restore CS0628 // New protected member declared in sealed class
+        {
+            ((UIElement)sender).CapturePointer(e.Pointer);
+            OnCarouselNextButtonPointerPressEnded();
+        }
+
+#pragma warning disable CS0628 // New protected member declared in sealed class
+        protected void OnCarouselNextButtonPointerReleased(object sender, PointerRoutedEventArgs e)
+#pragma warning restore CS0628 // New protected member declared in sealed class
+        {
+            ((UIElement)sender).CapturePointer(e.Pointer);
+            OnCarouselNextButtonPointerPressEnded();
         }
 
         private void startContinuousScrolling(ScrollDirection scrollDirection)
@@ -428,7 +515,7 @@ namespace Flick
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
                         () =>
                         {
-                            SelectNextItem();
+                            SelectNextItem(ContinousScrollingItemSkipCount);
                         });
                 },
                 PrevNextButtonContinousSelectionPeriod,
@@ -437,7 +524,11 @@ namespace Flick
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
                         () =>
                         {
-                            NextButtonContinuousScrollingPeriodicTimer = null;
+                            if (PrevButtonContinuousScrollingPeriodicTimer != null)
+                            {
+                                PrevButtonContinuousScrollingPeriodicTimer.Cancel();
+                                PrevButtonContinuousScrollingPeriodicTimer = null;
+                            }
                         });
                 });
             }
