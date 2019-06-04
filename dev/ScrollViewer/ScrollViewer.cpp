@@ -1832,7 +1832,7 @@ void ScrollViewer::UpdateScrollControllersSeparatorVisualState(
 
 void ScrollViewer::GoToState(std::wstring_view const& stateName, bool useTransitions)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, stateName, useTransitions);
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, stateName.data(), useTransitions);
 
     winrt::VisualStateManager::GoToState(*this, stateName, useTransitions);
 }
