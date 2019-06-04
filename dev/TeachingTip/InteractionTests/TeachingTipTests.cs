@@ -183,7 +183,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
             {
-                Log.Warning("The ");
+                Log.Warning("This test requires RS3+ functionality");
                 return;
             }
 
