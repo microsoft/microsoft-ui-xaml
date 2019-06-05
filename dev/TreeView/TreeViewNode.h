@@ -66,8 +66,8 @@ private:
     winrt::ItemsSourceView m_itemsDataSource{ nullptr };
     void OnItemsSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
     void SyncChildrenNodesWithItemsSource();
-    void OnItemsAdded(int index, int count);
-    void OnItemsRemoved(int index, int count);
+    void AddItemsToTreeViewNodes(int index, int count);
+    void RemoveItemsFromTreeViewNodes(int index, int count);
     bool m_isContentMode{ false };
     TreeNodeSelectionState m_multiSelectionState{ TreeNodeSelectionState::UnSelected };
     hstring GetContentAsString();

@@ -166,13 +166,29 @@ void TreeViewNode::OnItemsSourceChanged(const winrt::IInspectable& sender, const
     {
         case winrt::NotifyCollectionChangedAction::Add:
         {
-            OnItemsAdded(args.NewStartingIndex(), args.NewItems().Size());
+            // TreeViewNode and ItemsSource will update each other when data changes.
+            // For ItemsSource -> TreeViewNode changes, m_itemsDataSource.Count() > Children().Size()
+            // We'll add the new node to children collection.
+            // For TreeViewNode -> ItemsSource changes, m_itemsDataSource.Count() == Children().Size()
+            // the node is already in children collection, we don't want to update TreeViewNode again here.
+            if (m_itemsDataSource.Count() != static_cast<int>(Children().Size()))
+            {
+                AddItemsToTreeViewNodes(args.NewStartingIndex(), args.NewItems().Size());
+            }
             break;
         }
 
         case winrt::NotifyCollectionChangedAction::Remove:
         {
-            OnItemsRemoved(args.OldStartingIndex(), args.OldItems().Size());
+            // TreeViewNode and ItemsSource will update each other when data changes.
+            // For ItemsSource -> TreeViewNode changes, m_itemsDataSource.Count() < Children().Size()
+            // We'll remove the node from children collection.
+            // For TreeViewNode -> ItemsSource changes, m_itemsDataSource.Count() == Children().Size()
+            // the node is already removed, we don't want to update TreeViewNode again here.
+            if (m_itemsDataSource.Count() != static_cast<int>(Children().Size()))
+            {
+                RemoveItemsFromTreeViewNodes(args.OldStartingIndex(), args.OldItems().Size());
+            }
             break;
         }
 
@@ -184,45 +200,28 @@ void TreeViewNode::OnItemsSourceChanged(const winrt::IInspectable& sender, const
 
         case winrt::NotifyCollectionChangedAction::Replace:
         {
-            OnItemsRemoved(args.OldStartingIndex(), args.OldItems().Size());
-            OnItemsAdded(args.NewStartingIndex(), args.NewItems().Size());
+            RemoveItemsFromTreeViewNodes(args.OldStartingIndex(), args.OldItems().Size());
+            AddItemsToTreeViewNodes(args.NewStartingIndex(), args.NewItems().Size());
             break;
         }
     }
 }
 
-void TreeViewNode::OnItemsAdded(int index, int count)
+void TreeViewNode::AddItemsToTreeViewNodes(int index, int count)
 {
-    // TreeViewNode and ItemsSource will update each other when data changes.
-    // For ItemsSource -> TreeViewNode changes, m_itemsDataSource.Count() > Children().Size()
-    // We'll add the new node to children collection.
-    // For TreeViewNode -> ItemsSource changes, m_itemsDataSource.Count() == Children().Size()
-    // the node is already in children collection, we don't want to update TreeViewNode again here.
-    if (m_itemsDataSource.Count() != static_cast<int>(Children().Size()))
+    for (int i = index + count - 1; i >= index; i--)
     {
-        for (int i = index + count - 1; i >= index; i--)
-        {
-            auto item = m_itemsDataSource.GetAt(i);
-            auto node = winrt::make_self<TreeViewNode>();
-            node->Content(item);
-            winrt::get_self<TreeViewNodeVector>(Children())->InsertAt(index, *node, false /* updateItemsSource */);
-        }
+        auto item = m_itemsDataSource.GetAt(i);
+        auto node = winrt::make_self<TreeViewNode>();
+        node->Content(item);
+        winrt::get_self<TreeViewNodeVector>(Children())->InsertAt(index, *node, false /* updateItemsSource */);
     }
 }
-
-void TreeViewNode::OnItemsRemoved(int index, int count)
+void TreeViewNode::RemoveItemsFromTreeViewNodes(int index, int count)
 {
-    // TreeViewNode and ItemsSource will update each other when data changes.
-    // For ItemsSource -> TreeViewNode changes, m_itemsDataSource.Count() < Children().Size()
-    // We'll remove the node from children collection.
-    // For TreeViewNode -> ItemsSource changes, m_itemsDataSource.Count() == Children().Size()
-    // the node is already removed, we don't want to update TreeViewNode again here.
-    if (m_itemsDataSource.Count() != static_cast<int>(Children().Size()))
+    for (int i = 0; i < count; i++)
     {
-        for (int i = 0; i < count; i++)
-        {
-            winrt::get_self<TreeViewNodeVector>(Children())->RemoveAt(index, false /* updateItemsSource */);
-        }
+        winrt::get_self<TreeViewNodeVector>(Children())->RemoveAt(index, false /* updateItemsSource */);
     }
 }
 

@@ -48,13 +48,7 @@ public:
 
     void Append(winrt::TreeViewNode const& node)
     {
-        if (auto viewModel = m_viewModel.get())
-        {
-            if (!viewModel->IsInSingleSelectionMode())
-            {
-                InsertAt(Size(), node);
-            }
-        }
+        InsertAt(Size(), node);
     }
 
     void InsertAt(unsigned int index, winrt::TreeViewNode const& node)
@@ -714,8 +708,12 @@ void ViewModel::UpdateSelection(winrt::TreeViewNode const& selectNode, TreeNodeS
     if(NodeSelectionState(selectNode) != selectionState)
     {
         UpdateNodeSelection(selectNode, selectionState);
-        UpdateSelectionStateOfDescendants(selectNode, selectionState);
-        UpdateSelectionStateOfAncestors(selectNode);
+
+        if (!IsInSingleSelectionMode())
+        {
+            UpdateSelectionStateOfDescendants(selectNode, selectionState);
+            UpdateSelectionStateOfAncestors(selectNode);
+        }
     }
 }
 

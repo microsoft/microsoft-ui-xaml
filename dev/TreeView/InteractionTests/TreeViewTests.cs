@@ -887,7 +887,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("4", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 0", ReadResult());
+                Verify.AreEqual("Nothing selected", ReadResult());
 
                 InputHelper.Tap(ItemRoot);
                 KeyboardHelper.PressKey(Key.Down);
@@ -897,20 +897,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 2", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.1", ReadResult());
 
                 ClickButton("AddSecondLevelOfNodes");
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 6", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.0.0, Root.1, Root.1.0, Root.1.1, Root.1.2", ReadResult());
 
                 ClickButton("ModifySecondLevelOfNode");
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 6", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.1, Root.1.0, Root.1.1, Root.1.2, THIS IS NEW", ReadResult());
 
                 ClickButton("RemoveSecondLevelOfNode");
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 5", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.1, Root.1.0, Root.1.1, Root.1.2", ReadResult());
             }
         }
 
@@ -970,7 +970,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 2", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.1", ReadResult());
 
                 UIObject dragUIObject = FindElement.ById("Root.0");
                 Verify.IsNotNull(dragUIObject, "Verifying that we found a UIElement called Root.0");
@@ -1041,7 +1041,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 2", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.1", ReadResult());
 
                 UIObject dragUIObject = FindElement.ById("Root.1");
 
@@ -1059,7 +1059,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("4", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 2", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.1", ReadResult());
             }
         }
 
@@ -1106,7 +1106,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 4", ReadResult());
+                Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
 
                 UIObject dragUIObject = FindElement.ById("Root.1");
 
@@ -1124,7 +1124,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("4", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 4", ReadResult());
+                Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
             }
         }
 
@@ -1187,7 +1187,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 3", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.0.0, Root.1.0", ReadResult());
 
                 ClickButton("LabelItems");
                 UIObject dragUIObject = FindElement.ById("Root.1.0");
@@ -1207,7 +1207,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("8", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 3", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.0.0, Root.1.0", ReadResult());
             }
         }
 
@@ -1526,7 +1526,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("1", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 4", ReadResult());
+                Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
 
                 InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .75, ItemRoot.BoundingRectangle.Height * .5);
 
@@ -1538,7 +1538,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("4", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 2", ReadResult());
+                Verify.AreEqual("Selected: Root.1, Root.2", ReadResult());
 
                 InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .75, ItemRoot.BoundingRectangle.Height * .5);
 
@@ -1551,7 +1551,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("4", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 1", ReadResult());
+                Verify.AreEqual("Selected: Root.1", ReadResult());
 
                 InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .75, ItemRoot.BoundingRectangle.Height * .5);
                 KeyboardHelper.PressKey(Key.Left);
@@ -1560,13 +1560,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("1", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 1", ReadResult());
+                Verify.AreEqual("Selected: Root.1", ReadResult());
 
                 InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .75, ItemRoot.BoundingRectangle.Height * .5);
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 4", ReadResult());
+                Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
             }
         }
 
@@ -1614,7 +1614,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .05, ItemRoot.BoundingRectangle.Height * .5);
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 4", ReadResult());
+                Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
 
                 Log.Comment("Retrieve first item as generic UIElement");
                 UIObject Item0 = FindElement.ById("Root.0");
@@ -1622,16 +1622,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 InputHelper.Tap(Item0, Item0.BoundingRectangle.Width * .1, Item0.BoundingRectangle.Height * .5);
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 2", ReadResult());
+                Verify.AreEqual("Selected: Root.1, Root.2", ReadResult());
 
                 // tap on partial selected node will set it to unselected state
                 InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .05, ItemRoot.BoundingRectangle.Height * .5);
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 0", ReadResult());
+                Verify.AreEqual("Nothing selected", ReadResult());
 
                 InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .05, ItemRoot.BoundingRectangle.Height * .5);
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 4", ReadResult());
+                Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
             }
         }
 
@@ -1671,25 +1671,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("1", ReadResult());
 
                 // First A expands the tree
-                VerifyGamepadAPress(treeRoot, "4", "Num. Selected: 0");
+                VerifyGamepadAPress(treeRoot, "4", "Nothing selected");
 
                 // Second A selects root and all children
-                VerifyGamepadAPress(treeRoot, "4", "Num. Selected: 4");
+                VerifyGamepadAPress(treeRoot, "4", "Selected: Root, Root.0, Root.1, Root.2");
 
                 // Third A unselects
-                VerifyGamepadAPress(treeRoot, "4", "Num. Selected: 0");
+                VerifyGamepadAPress(treeRoot, "4", "Nothing selected");
 
                 // Fourth A collapses
-                VerifyGamepadAPress(treeRoot, "1", "Num. Selected: 0");
+                VerifyGamepadAPress(treeRoot, "1", "Nothing selected");
 
                 // Fifth A selects 
-                VerifyGamepadAPress(treeRoot, "1", "Num. Selected: 4");
+                VerifyGamepadAPress(treeRoot, "1", "Selected: Root, Root.0, Root.1, Root.2");
 
                 // Sixth A unselects 
-                VerifyGamepadAPress(treeRoot, "1", "Num. Selected: 0");
+                VerifyGamepadAPress(treeRoot, "1", "Nothing selected");
 
                 // Seventh A expands again
-                VerifyGamepadAPress(treeRoot, "4", "Num. Selected: 0");
+                VerifyGamepadAPress(treeRoot, "4", "Nothing selected");
             }
         }
 
@@ -1963,7 +1963,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 2", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.1", ReadResult());
 
                 UIObject dragUIObject = FindElement.ByName("Root.0");
                 Verify.IsNotNull(dragUIObject, "Verifying Root.0 is found");
@@ -2365,12 +2365,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(root0);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("ItemSelected:Root.0", ReadResult());
+                Verify.AreEqual("Selected: Root.0", ReadResult());
 
                 ClickButton("ToggleRoot0Selection");
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("", ReadResult());
+                Verify.AreEqual("Nothing selected", ReadResult());
             }
         }
 
@@ -2398,7 +2398,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // UI changes should update SelectedNodes vector
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 0", ReadResult());
+                Verify.AreEqual("Nothing selected", ReadResult());
 
                 ClickButton("LabelItems");
                 UIObject root0 = FindElement.ById("Root.0");
@@ -2407,7 +2407,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 1", ReadResult());
+                Verify.AreEqual("Selected: Root.0", ReadResult());
             }
         }
 
@@ -2436,12 +2436,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Tap(root0);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("ItemSelected:Root.0", ReadResult());
+                Verify.AreEqual("Selected: Root.0", ReadResult());
 
                 ClickButton("ToggleRoot0Selection");
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("", ReadResult());
+                Verify.AreEqual("Nothing selected", ReadResult());
             }
         }
 
@@ -2477,7 +2477,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // UI changes should update SelectedItems vector
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 0", ReadResult());
+                Verify.AreEqual("Nothing selected", ReadResult());
 
                 ClickButton("LabelItems");
                 UIObject root0 = FindElement.ById("Root.0");
@@ -2486,7 +2486,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 1", ReadResult());
+                Verify.AreEqual("Selected: Root.0", ReadResult());
             }
         }
 
