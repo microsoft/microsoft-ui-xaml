@@ -280,7 +280,7 @@ void CommandBarFlyoutCommandBar::AttachEventHandlers()
 
                                 loopCount++; // Looping again when focus could not be given to a MoreButton going up or primary command going down.
                             }
-                            while (loopCount < 2 && focusedControl /*&& deltaIndex == 1*/);
+                            while (loopCount < 2 && focusedControl);
                         }
                         args.Handled(true);
                         break;
