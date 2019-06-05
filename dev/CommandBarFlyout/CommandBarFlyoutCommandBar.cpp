@@ -245,9 +245,42 @@ void CommandBarFlyoutCommandBar::AttachEventHandlers()
                                         }
                                     }
                                 }
-                                loopCount++; // Looping again is needed when the last command has focus
+
+                                if (loopCount == 0 && PrimaryCommands().Size() > 0)
+                                {
+                                    auto moreButton = m_moreButton.get();
+
+                                    if (deltaIndex == 1 &&
+                                        FocusCommand(
+                                            PrimaryCommands() /*commands*/,
+                                            moreButton /*moreButton*/,
+                                            winrt::FocusState::Keyboard /*focusState*/,
+                                            true /*firstCommand*/,
+                                            true /*ensureTabStopUniqueness*/))
+                                    {
+                                        // Being on the last secondary command, keyboard focus was given to the first primary command
+                                        args.Handled(true);
+                                        return;
+                                    }
+                                    else if (deltaIndex == -1 &&
+                                        focusedControl &&
+                                        moreButton &&
+                                        IsControlFocusable(moreButton, false /*checkTabStop*/) &&
+                                        FocusControl(
+                                            moreButton /*newFocus*/,
+                                            focusedControl /*oldFocus*/,
+                                            winrt::FocusState::Keyboard /*focusState*/,
+                                            true /*updateTabStop*/))
+                                    {
+                                        // Being on the first secondary command, keyboard focus was given to the MoreButton
+                                        args.Handled(true);
+                                        return;
+                                    }
+                                }
+
+                                loopCount++; // Looping again when focus could not be given to a MoreButton going up or primary command going down.
                             }
-                            while (loopCount < 2 && focusedControl && deltaIndex == 1);
+                            while (loopCount < 2 && focusedControl /*&& deltaIndex == 1*/);
                         }
                         args.Handled(true);
                         break;
@@ -770,6 +803,7 @@ void CommandBarFlyoutCommandBar::OnKeyDown(
         bool isRightToLeft = m_primaryItemsRoot && m_primaryItemsRoot.get().FlowDirection() == winrt::FlowDirection::RightToLeft;
         bool isLeft = (args.Key() == winrt::VirtualKey::Left && !isRightToLeft) || (args.Key() == winrt::VirtualKey::Right && isRightToLeft);
         bool isRight = (args.Key() == winrt::VirtualKey::Right && !isRightToLeft) || (args.Key() == winrt::VirtualKey::Left && isRightToLeft);
+        bool isDown = (args.Key() == winrt::VirtualKey::Down && !isRightToLeft) || (args.Key() == winrt::VirtualKey::Up && isRightToLeft);
         bool isUp = (args.Key() == winrt::VirtualKey::Up && !isRightToLeft) || (args.Key() == winrt::VirtualKey::Down && isRightToLeft);
 
         auto moreButton = m_moreButton.get();
@@ -843,7 +877,7 @@ void CommandBarFlyoutCommandBar::OnKeyDown(
 
             if (!args.Handled())
             {
-                if (isRight &&
+                if ((isRight || isDown) &&
                     focusedControl &&
                     moreButton &&
                     IsControlFocusable(moreButton, false /*checkTabStop*/))
