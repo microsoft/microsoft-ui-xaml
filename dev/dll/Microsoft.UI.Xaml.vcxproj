@@ -33,9 +33,7 @@
     <AppxBundlePlatforms>x86|x64|arm|arm64</AppxBundlePlatforms>
 
     <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
-    <!-- <CppWinRTOptimized>true</CppWinRTOptimized> -->
     <CppWinRTAddXamlMetaDataProviderIdl>false</CppWinRTAddXamlMetaDataProviderIdl>
-    <XamlLocalAssembly>$(OutDir)Microsoft.winmd</XamlLocalAssembly>
   </PropertyGroup>
   <!-- <PropertyGroup Condition="'$(Use64BitLinker)' == 'true' AND '$(BuildingWithBuildExe)' != 'true'">
       <LinkToolPath>$(OSBuildToolsRoot)\vc\HostX64\$(BuildArchName)</LinkToolPath>
@@ -428,6 +426,7 @@
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
     <UnmergedWinmdDirectory>$(OutDir)Unmerged</UnmergedWinmdDirectory>
+    <CppWinRTProjectWinMD>$(OutDir)Microsoft.winmd</CppWinRTProjectWinMD>
   </PropertyGroup>
   <!-- It's costly to include all of our default templates as merged dictionaries.
        Instead of that, we'll compile their contents into a statically merged XAML file.-->
@@ -501,7 +500,7 @@
     <CreateProperty Value="True">
       <Output TaskParameter="ValueSetByTask" PropertyName="CompactThemeResourceFileNeedsCompilation" />
     </CreateProperty>
-  </Target>
+  </Target>  
   <Target Name="RemovePageRequiringCustomCompilation" AfterTargets="BeforeBuildGenerateSources" BeforeTargets="MarkupCompilePass2" Condition="'@(PageRequiringCustomCompilation)' != ''">
     <Message Text="RemovePageRequiringCustomCompilation" />
     <ItemGroup>

@@ -148,79 +148,30 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
         }
         else
         {
-            ULONG refCount = subtract_reference(); // Don't call root_implements_type::NonDelegatingRelease because for the last reference it would delete the object
-
-            if (refCount == 0)
-            {
-                std::atomic_thread_fence(std::memory_order_acquire); // Prevent reordering
-
-                m_inDestroy = true;
-#if _DEBUG
-                MUX_ASSERT_NOASSUME(m_wasEnsureCalled);
-#endif
-
-                // Try to queue the release over to the UI thread.
-                DeleteInstanceOnUIThread(static_cast<ITrackerHandleManager*>(this), m_dispatcherHelper, IsOnThread());
-            }
-
-            return refCount;
+            return impl_type::NonDelegatingRelease();
         }
     }
 
-    // TODO: Remove once CppWinRT always calls shim for NonDelegatingAddRef/Release
-
-    // TEMP-BEGIN
-
-    HRESULT __stdcall QueryInterface(GUID const& id, void** object) noexcept
+    static void final_release(std::unique_ptr<D>&& self)
     {
-        if (this->outer())
-        {
-            return this->outer()->QueryInterface(id, object);
-        }
-
-        return NonDelegatingQueryInterface(id, object);
-    }
-
-    unsigned long __stdcall AddRef() noexcept
-    {
-        if (this->outer())
-        {
-            return this->outer()->AddRef();
-        }
-
-        return NonDelegatingAddRef();
-    }
-
-    unsigned long __stdcall Release() noexcept
-    {
-        if (this->outer())
-        {
-            return this->outer()->Release();
-        }
-
-        return NonDelegatingRelease();
-    }
-
-    // TEMP-END
-
-    static void DeleteInstance(_In_ ITrackerHandleManager* instance)
-    {
-        delete instance;
+        DeleteInstanceOnUIThread(std::move(self));
     }
 
     // Post a call to DeleteInstance() to the UI thread.  If we're already on the UI thread, then just
     // return false.  If we're off the UI thread but can't get to it, then do the DeleteInstance() here (asynchronously).
-    static void DeleteInstanceOnUIThread(_In_ ITrackerHandleManager* instance, const DispatcherHelper& dispatcherHelper, bool isOnThread) try
+    static void DeleteInstanceOnUIThread(std::unique_ptr<D>&& self) try
     {
         bool queued = false;
         
         // See if we're on the UI thread
-        if(!isOnThread)
+        if(!self->IsOnThread())
         {
             // We're not on the UI thread
-
-            dispatcherHelper.RunAsync(
-                [instance]() { DeleteInstance(instance); },
+            static_cast<ReferenceTracker<D, ImplT, I...>*>(self.get())->m_dispatcherHelper.RunAsync(
+                [instance = self.release()]()
+                {
+                    delete instance;
+                },
                 true /*fallbackToThisThread*/);
 
             queued = true;
@@ -229,7 +180,7 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 
         if (!queued)
         {
-            DeleteInstance(instance);
+            self.reset();
         }
     }
     catch (...) {}
