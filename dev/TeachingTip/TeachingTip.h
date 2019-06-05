@@ -8,6 +8,10 @@
 #include "TeachingTip.g.h"
 #include "TeachingTip.properties.h"
 
+// Aliasing some types because getting the member function selection to work with overloaded methods in template parameters is hard
+using XamlRootChanged_Revoke_Type = void(winrt::XamlRoot::*)(winrt::event_token const&) const;
+using XamlRootChanged_strong_revoker = strong_event_revoker<winrt::XamlRoot, static_cast<XamlRootChanged_Revoke_Type>(&winrt::XamlRoot::Changed)>;
+
 class TeachingTip :
     public ReferenceTracker<TeachingTip, winrt::implementation::TeachingTipT>,
     public TeachingTipProperties
@@ -36,6 +40,7 @@ public:
     void SetContentElevation(float elevation);
     void SetTailElevation(float elevation);
     bool GetIsIdle();
+    void SetIsIdle(bool isIdle);
     winrt::TeachingTipPlacementMode GetEffectivePlacement();
     winrt::TeachingTipHeroContentPlacementMode GetEffectiveHeroContentPlacement();
     double GetHorizontalOffset();
@@ -68,8 +73,11 @@ private:
     winrt::Popup::Opened_revoker m_popupOpenedRevoker{};
     winrt::Popup::Closed_revoker m_popupClosedRevoker{};
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
-    winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
+    winrt::CoreWindow::SizeChanged_revoker m_windowSizeChangedRevoker{};
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
+    // The XamlRoot::Changed_revoker doesn't work for unattaching the event.
+    // Tracked by internal bug #21302432.
+    XamlRootChanged_strong_revoker m_xamlRootChangedRevoker{};
     winrt::FrameworkElement::ActualThemeChanged_revoker m_actualThemeChangedRevoker{};
     
     void SetPopupAutomationProperties();
@@ -116,6 +124,8 @@ private:
 
     void SetViewportChangedEvent(const gsl::strict_not_null<winrt::FrameworkElement>& target);
     void RevokeViewportChangedEvent();
+    void WindowSizeChanged(const winrt::CoreWindow&, const winrt::WindowSizeChangedEventArgs&);
+    void XamlRootChanged(const winrt::XamlRoot&, const winrt::XamlRootChangedEventArgs&);
     void OnTargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnTargetLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
     void RepositionPopup();
@@ -180,6 +190,8 @@ private:
 
     winrt::Rect m_currentBoundsInCoreWindowSpace{ 0,0,0,0 };
     winrt::Rect m_currentTargetBoundsInCoreWindowSpace{ 0,0,0,0 };
+
+    winrt::Size m_currentXamlRootSize{ 0,0 };
 
     bool m_isTemplateApplied{ false };
     bool m_createNewPopupOnOpen{ false };
