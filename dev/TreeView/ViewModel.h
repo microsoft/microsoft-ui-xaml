@@ -72,6 +72,8 @@ public:
     winrt::IVector<winrt::IInspectable> GetSelectedItems();
     void NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targetNode, TreeNodeSelectionState const& selectionState);
 
+    winrt::TreeViewNode GetAssociatedNode(winrt::IInspectable item);
+
 private:
     tracker_ref<winrt::IVector<winrt::TreeViewNode>> m_selectedNodes{ this };
     event_source<winrt::TypedEventHandler<winrt::TreeViewNode, winrt::IInspectable>> m_nodeExpandingEventSource{ this };
@@ -84,6 +86,7 @@ private:
     tracker_ref<winrt::TreeViewNode> m_originNode{ this };
     bool m_isContentMode{ false };
     tracker_ref<winrt::IVector<winrt::IInspectable>> m_selectedItems{ this };
+    tracker_ref<winrt::IMap<winrt::IInspectable, winrt::TreeViewNode>> m_itemToNodeMap{ this };
 
     // Methods
     winrt::TreeViewNode GetRemovedChildTreeViewNodeByIndex(winrt::TreeViewNode const& node, unsigned int childIndex);

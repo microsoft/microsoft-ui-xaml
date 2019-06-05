@@ -7,6 +7,7 @@
 #include "TreeViewItem.h"
 #include "VectorChangedEventArgs.h"
 #include "TreeViewList.h"
+#include <HashMap.h>
 
 // Need to update node selection states on UI before vector changes.
 // Listen on vector change events don't solve the problem because the event already happened when the event handler gets called.
@@ -260,6 +261,8 @@ ViewModel::ViewModel()
     auto selectedItems = winrt::make_self<SelectedItemsVector>();
     selectedItems->SetViewModel(*this);
     m_selectedItems.set(*selectedItems);
+
+    m_itemToNodeMap.set(winrt::make<HashMap<winrt::IInspectable, winrt::TreeViewNode>>());
 }
 
 ViewModel::~ViewModel()
@@ -799,6 +802,11 @@ winrt::IVector<winrt::IInspectable> ViewModel::GetSelectedItems()
     return m_selectedItems.get();
 }
 
+winrt::TreeViewNode ViewModel::GetAssociatedNode(winrt::IInspectable item)
+{
+    return m_itemToNodeMap.get().Lookup(item);
+}
+
 bool ViewModel::IndexOfNode(winrt::TreeViewNode const& targetNode, uint32_t& index)
 {
     return GetVectorInnerImpl()->IndexOf(targetNode, index);
@@ -841,6 +849,12 @@ void ViewModel::TreeViewNodeVectorChanged(winrt::TreeViewNode const& sender, win
     case (winrt::CollectionChange::ItemInserted):
     {
         auto targetNode = sender.as<winrt::TreeViewNode>().Children().GetAt(index).as<winrt::TreeViewNode>();
+
+        if (IsContentMode())
+        {
+            m_itemToNodeMap.get().Insert(targetNode.Content(), targetNode);
+        }
+
         auto parentNode = targetNode.Parent();
         unsigned int nextNodeIndex = GetNextIndexInFlatTree(parentNode);
         int allOpenedDescendantsCount = 0;
@@ -875,8 +889,12 @@ void ViewModel::TreeViewNodeVectorChanged(winrt::TreeViewNode const& sender, win
         auto removingNodeParent = sender.as<winrt::TreeViewNode>();
         if (removingNodeParent.IsExpanded())
         {
-            auto childNode = GetRemovedChildTreeViewNodeByIndex(removingNodeParent, index);
-            RemoveNodeAndDescendantsFromView(childNode);
+            auto removedNode = GetRemovedChildTreeViewNodeByIndex(removingNodeParent, index);
+            RemoveNodeAndDescendantsFromView(removedNode);
+            if (IsContentMode())
+            {
+                m_itemToNodeMap.get().Remove(removedNode.Content());
+            }
         }
 
         break;
@@ -890,12 +908,18 @@ void ViewModel::TreeViewNodeVectorChanged(winrt::TreeViewNode const& sender, win
         auto changingNodeParent = sender.as<winrt::TreeViewNode>();
         if (changingNodeParent.IsExpanded())
         {
-            auto childNode = GetRemovedChildTreeViewNodeByIndex(changingNodeParent, index);
-            unsigned int childNodeIndex = 0;
-            MUX_ASSERT(IndexOfNode(childNode, childNodeIndex));
+            auto removedNode = GetRemovedChildTreeViewNodeByIndex(changingNodeParent, index);
+            unsigned int removedNodeIndex = 0;
+            MUX_ASSERT(IndexOfNode(removedNode, removedNodeIndex));
 
-            RemoveNodeAndDescendantsFromView(childNode);
-            InsertAt(childNodeIndex, targetNode.as<winrt::IInspectable>());
+            RemoveNodeAndDescendantsFromView(removedNode);
+            InsertAt(removedNodeIndex, targetNode.as<winrt::IInspectable>());
+
+            if (IsContentMode())
+            {
+                m_itemToNodeMap.get().Remove(removedNode.Content());
+                m_itemToNodeMap.get().Insert(targetNode.Content(), targetNode);
+            }
         }
 
         break;

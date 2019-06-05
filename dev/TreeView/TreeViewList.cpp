@@ -661,18 +661,9 @@ winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode cons
 
 winrt::TreeViewNode TreeViewList::NodeFromItem(winrt::IInspectable const& item)
 {
-    if (!item)
-    {
-        return nullptr;
-    }
-
-    if (IsContentMode())
-    {
-        auto container = ContainerFromItem(item);
-        return NodeFromContainer(container);
-    }
-
-    return safe_try_cast<winrt::TreeViewNode>(item);
+    return IsContentMode() ?
+        ListViewModel().get()->GetAssociatedNode(item) :
+        safe_try_cast<winrt::TreeViewNode>(item);
 }
 
 winrt::IInspectable TreeViewList::ItemFromNode(winrt::TreeViewNode const& node)
