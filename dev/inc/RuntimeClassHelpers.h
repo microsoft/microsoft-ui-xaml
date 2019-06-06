@@ -108,94 +108,14 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
         return S_OK;
     }
 
-    unsigned long __stdcall NonDelegatingAddRef() noexcept
-    {
-        if (m_inDestroy)
-        {
-            // If we've already been destroyed then we don't want to touch our ref count. The primary reason
-            // for this is that the C++/WinRT tear-off storage for the weak reference & ref count (the 
-            // weak_ref<bool> struct) expects that if m_strong != 0 then it's safe to resolve the weak reference.
-            // So we need to help maintain the invariant that if we are deleted (or about to be in this case)
-            // then leave the ref count at 0 so that weak references can't access this object.
-            // 
-            // So why not just failfast here? There are legitimate cases where we can get AddRef called during destruction:
-            // 
-            // 1) In a destructor a control calls into a base method, which invokes a QueryInterface to get an
-            //    interface off of the inner. The inner then does an AddRef on the outer, which is us. In this case
-            //    the addref/release is temporary and so what we do here doesn't matter. The inner doesn't know
-            //    that we've been destroyed so there's no way to know we don't want this AddRef.
-            // 2) In a CLR scenario if we get released off-thread and we have queued the delete then we leave our
-            //    ref count at 0 and we queue the delete to the UI thread. While that's happening, the GC may 
-            //    ask XAML to walk its object graph. During that walk XAML will call AddRef/Release to "query"
-            //    the ref count of the outer to see if it's the same as the "expected" ref count. We've already
-            //    been destroyed so again the return value doesn't matter.
-            // In any event, once we've been destroyed we don't want to do anything so just return a sentinel value.
-            return 1;
-        }
-        else
-        {
-            return impl_type::NonDelegatingAddRef();
-        }
-    }
-
-    unsigned long __stdcall NonDelegatingRelease() noexcept
-    {
-        if (m_inDestroy)
-        {
-            // If we've already been destroyed then we don't want to touch our ref count. See AddRef for a full
-            // explanation. Return a safe sentinel value.
-            return 0;
-        }
-        else
-        {
-            return impl_type::NonDelegatingRelease();
-        }
-    }
-
-    // TODO: Remove once CppWinRT always calls shim for NonDelegatingAddRef/Release
-
-    // TEMP-BEGIN
-
-    HRESULT __stdcall QueryInterface(GUID const& id, void** object) noexcept
-    {
-        if (this->outer())
-        {
-            return this->outer()->QueryInterface(id, object);
-        }
-
-        return NonDelegatingQueryInterface(id, object);
-    }
-
-    unsigned long __stdcall AddRef() noexcept
-    {
-        if (this->outer())
-        {
-            return this->outer()->AddRef();
-        }
-
-        return NonDelegatingAddRef();
-    }
-
-    unsigned long __stdcall Release() noexcept
-    {
-        if (this->outer())
-        {
-            return this->outer()->Release();
-        }
-
-        return NonDelegatingRelease();
-    }
-
-    // TEMP-END    
-
     static void final_release(std::unique_ptr<D>&& self)
     {
         DeleteInstanceOnUIThread(std::move(self));
     }
 
-    // Post a call to DeleteInstance() to the UI thread.  If we're already on the UI thread, then just
-    // return false.  If we're off the UI thread but can't get to it, then do the DeleteInstance() here (asynchronously).
-    static void DeleteInstanceOnUIThread(std::unique_ptr<D>&& self) try
+    // Post a call to delete to the UI thread.  If we're already on the UI thread, then just do it.
+    // If we're off the UI thread but can't get to it, then do the delete here anyway.
+    static void DeleteInstanceOnUIThread(std::unique_ptr<D>&& self) noexcept
     {
         bool queued = false;
         
@@ -212,14 +132,12 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 
             queued = true;
         }
-        
 
         if (!queued)
         {
             self.reset();
         }
     }
-    catch (...) {}
 
     void EnsureReferenceTrackerInterfaces()
     {
@@ -248,7 +166,6 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
     DispatcherHelper m_dispatcherHelper;
 
 private:
-    bool m_inDestroy{};
     DWORD m_owningThreadId{};
 };
 
