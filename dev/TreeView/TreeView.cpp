@@ -103,12 +103,7 @@ void TreeView::SelectedItem(winrt::IInspectable const& item)
 
 winrt::IInspectable TreeView::SelectedItem()
 {
-    if (auto listControl = ListControl())
-    {
-        return listControl->SelectedItem();
-    }
-
-    return nullptr;
+    return ListControl() ? ListControl()->SelectedItem() : nullptr;
 }
 
 winrt::IVector<winrt::IInspectable> TreeView::SelectedItems()

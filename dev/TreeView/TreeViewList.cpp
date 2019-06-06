@@ -668,12 +668,7 @@ winrt::TreeViewNode TreeViewList::NodeFromItem(winrt::IInspectable const& item)
 
 winrt::IInspectable TreeViewList::ItemFromNode(winrt::TreeViewNode const& node)
 {
-    if (!IsContentMode())
-    {
-        return node;
-    }
-
-    return node ? node.Content() : nullptr;
+    return (IsContentMode() && node) ? node.Content() : node;
 }
 
 bool TreeViewList::IsContentMode()
