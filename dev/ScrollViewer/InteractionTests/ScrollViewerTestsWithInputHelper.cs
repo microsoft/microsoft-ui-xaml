@@ -806,6 +806,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
 
             Log.Comment($"Final ScrollViewer offsets. Expected={expectedHorizontalOffset},{expectedVerticalOffset}, Actual={actualHorizontalOffset},{actualVerticalOffset}.");
+            if (!areOffsetsCorrect())
+            {
+                LogAndClearTraces();
+            }
             Verify.IsTrue(areOffsetsCorrect(), String.Format("Verify ScrollViewer offsets. Expected={0},{1}, Actual={2},{3}.",
                     expectedHorizontalOffset, expectedVerticalOffset, actualHorizontalOffset, actualVerticalOffset));
         }
