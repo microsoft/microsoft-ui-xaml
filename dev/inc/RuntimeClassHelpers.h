@@ -108,14 +108,30 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
         return S_OK;
     }
 
+    // TODO: Remove once CppWinRT always calls shim for NonDelegatingAddRef/Release
+
+    // TEMP-BEGIN
+
+    HRESULT __stdcall QueryInterface(GUID const& id, void** object) noexcept
+    {
+        if (this->outer())
+        {
+            return this->outer()->QueryInterface(id, object);
+        }
+
+        return NonDelegatingQueryInterface(id, object);
+    }
+
+    // TEMP-END    
+
     static void final_release(std::unique_ptr<D>&& self)
     {
         DeleteInstanceOnUIThread(std::move(self));
     }
 
-    // Post a call to delete to the UI thread.  If we're already on the UI thread, then just do it.
-    // If we're off the UI thread but can't get to it, then do the delete here anyway.
-    static void DeleteInstanceOnUIThread(std::unique_ptr<D>&& self) noexcept
+    // Post a call to DeleteInstance() to the UI thread.  If we're already on the UI thread, then just
+    // return false.  If we're off the UI thread but can't get to it, then do the DeleteInstance() here (asynchronously).
+    static void DeleteInstanceOnUIThread(std::unique_ptr<D>&& self) try
     {
         bool queued = false;
         
@@ -132,12 +148,14 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 
             queued = true;
         }
+        
 
         if (!queued)
         {
             self.reset();
         }
     }
+    catch (...) {}
 
     void EnsureReferenceTrackerInterfaces()
     {
