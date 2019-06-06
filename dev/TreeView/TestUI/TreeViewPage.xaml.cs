@@ -816,34 +816,39 @@ namespace MUXControlsTestApp
 
         private void ToggleSelectedNodes_Click(object sender, RoutedEventArgs e)
         {
-            ContentModeTestTreeView.SelectionMode = TreeViewSelectionMode.Multiple;
-            var item0 = TestTreeViewItemsSource[0].Children[0];
-            var item2 = TestTreeViewItemsSource[0].Children[2];
-            var selectedItems = ContentModeTestTreeView.SelectedItems;
-            if (selectedItems.Contains(item0))
+            if (IsInContentMode())
             {
-                selectedItems.Remove(item0);
-                selectedItems.Remove(item2);
+                ContentModeTestTreeView.SelectionMode = TreeViewSelectionMode.Multiple;
+                var item0 = TestTreeViewItemsSource[0].Children[0];
+                var item2 = TestTreeViewItemsSource[0].Children[2];
+                var selectedItems = ContentModeTestTreeView.SelectedItems;
+                if (selectedItems.Contains(item0))
+                {
+                    selectedItems.Remove(item0);
+                    selectedItems.Remove(item2);
+                }
+                else
+                {
+                    selectedItems.Add(item0);
+                    selectedItems.Add(item2);
+                }
             }
             else
             {
-                selectedItems.Add(item0);
-                selectedItems.Add(item2);
-            }
-
-            TestTreeView.SelectionMode = TreeViewSelectionMode.Multiple;
-            var node0 = TestTreeView.RootNodes[0].Children[0];
-            var node2 = TestTreeView.RootNodes[0].Children[2];
-            var selectedNodes = TestTreeView.SelectedNodes;
-            if (selectedNodes.Contains(node0))
-            {
-                selectedNodes.Remove(node0);
-                selectedNodes.Remove(node2);
-            }
-            else
-            {
-                selectedNodes.Add(node0);
-                selectedNodes.Add(node2);
+                TestTreeView.SelectionMode = TreeViewSelectionMode.Multiple;
+                var node0 = TestTreeView.RootNodes[0].Children[0];
+                var node2 = TestTreeView.RootNodes[0].Children[2];
+                var selectedNodes = TestTreeView.SelectedNodes;
+                if (selectedNodes.Contains(node0))
+                {
+                    selectedNodes.Remove(node0);
+                    selectedNodes.Remove(node2);
+                }
+                else
+                {
+                    selectedNodes.Add(node0);
+                    selectedNodes.Add(node2);
+                }
             }
         }
 
