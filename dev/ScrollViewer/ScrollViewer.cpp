@@ -1679,6 +1679,8 @@ void ScrollViewer::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
 
 void ScrollViewer::HandleKeyDownForStandardScroll(winrt::KeyRoutedEventArgs args)
 {
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::KeyRoutedEventArgsToString(args).c_str());
+
     // Up/Down/Left/Right will scroll by 15% the size of the viewport.
     static const double smallScrollProportion = 0.15;
 
@@ -1692,6 +1694,8 @@ void ScrollViewer::HandleKeyDownForStandardScroll(winrt::KeyRoutedEventArgs args
 
 void ScrollViewer::HandleKeyDownForXYNavigation(winrt::KeyRoutedEventArgs args)
 {
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::KeyRoutedEventArgsToString(args).c_str());
+
     MUX_ASSERT(!args.Handled());
     MUX_ASSERT(m_scroller != nullptr);
 
@@ -1793,6 +1797,8 @@ void ScrollViewer::HandleKeyDownForXYNavigation(winrt::KeyRoutedEventArgs args)
 
         if (shouldMoveFocus)
         {
+            SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_INT, METH_NAME, this, L"FocusManager::TryFocusAsync", SharedHelpers::IsAnimationsEnabled());
+
             auto focusAsyncOperation = winrt::FocusManager::TryFocusAsync(nextElement, winrt::FocusState::Keyboard);
 
             if (SharedHelpers::IsAnimationsEnabled()) // When system animations are turned off, the bring-into-view operations are not turned into animations.
@@ -1800,6 +1806,8 @@ void ScrollViewer::HandleKeyDownForXYNavigation(winrt::KeyRoutedEventArgs args)
                 focusAsyncOperation.Completed(winrt::AsyncOperationCompletedHandler<winrt::FocusMovementResult>(
                     [strongThis = get_strong(), targetElement = nextElement.try_as<winrt::UIElement>()](winrt::IAsyncOperation<winrt::FocusMovementResult> asyncOperation, winrt::AsyncStatus asyncStatus)
                     {
+                        SCROLLVIEWER_TRACE_VERBOSE(*strongThis, TRACE_MSG_METH_INT, METH_NAME, strongThis, static_cast<int>(asyncStatus));
+
                         if (asyncStatus == winrt::AsyncStatus::Completed && asyncOperation.GetResults())
                         {
                             // The focus change request was successful. One or a few Scroller::BringingIntoView notifications are likely to be raised in the coming ticks.
@@ -1899,6 +1907,8 @@ winrt::DependencyObject ScrollViewer::GetNextFocusCandidate(winrt::FocusNavigati
 
 bool ScrollViewer::DoScrollForKey(winrt::VirtualKey key, double scrollProportion)
 {
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_INT, METH_NAME, this, scrollProportion, static_cast<int>(key));
+
     MUX_ASSERT(m_scroller != nullptr);
 
     bool isScrollTriggered = false;
@@ -1996,6 +2006,8 @@ bool ScrollViewer::DoScrollForKey(winrt::VirtualKey key, double scrollProportion
 
 void ScrollViewer::DoScroll(double offset, winrt::Orientation orientation)
 {
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_INT, METH_NAME, this, offset, static_cast<int>(orientation));
+
     static const winrt::float2 inertiaDecayRate(0.9995f, 0.9995f);
 
     // A velocity less than or equal to this value has no effect.
@@ -2125,6 +2137,8 @@ bool ScrollViewer::CanScrollVerticallyInDirection(bool inPositiveDirection)
         }
     }
 
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, inPositiveDirection, canScrollInDirection);
+
     return canScrollInDirection;
 }
 
@@ -2170,6 +2184,8 @@ bool ScrollViewer::CanScrollHorizontallyInDirection(bool inPositiveDirection)
             }
         }
     }
+
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, inPositiveDirection, canScrollInDirection);
 
     return canScrollInDirection;
 }
