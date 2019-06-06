@@ -803,12 +803,12 @@ void CommandBarFlyoutCommandBar::OnKeyDown(
         bool isRightToLeft = m_primaryItemsRoot && m_primaryItemsRoot.get().FlowDirection() == winrt::FlowDirection::RightToLeft;
         bool isLeft = (args.Key() == winrt::VirtualKey::Left && !isRightToLeft) || (args.Key() == winrt::VirtualKey::Right && isRightToLeft);
         bool isRight = (args.Key() == winrt::VirtualKey::Right && !isRightToLeft) || (args.Key() == winrt::VirtualKey::Left && isRightToLeft);
-        bool isDown = (args.Key() == winrt::VirtualKey::Down && !isRightToLeft) || (args.Key() == winrt::VirtualKey::Up && isRightToLeft);
-        bool isUp = (args.Key() == winrt::VirtualKey::Up && !isRightToLeft) || (args.Key() == winrt::VirtualKey::Down && isRightToLeft);
+        bool isDown = args.Key() == winrt::VirtualKey::Down;
+        bool isUp = args.Key() == winrt::VirtualKey::Up;
 
         auto moreButton = m_moreButton.get();
 
-        if (args.Key() == winrt::VirtualKey::Down &&
+        if (isDown &&
             moreButton &&
             moreButton.FocusState() != winrt::FocusState::Unfocused &&
             SecondaryCommands().Size() > 0)
