@@ -152,6 +152,42 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
         }
     }
 
+    // TODO: Remove once CppWinRT always calls shim for NonDelegatingAddRef/Release
+
+    // TEMP-BEGIN
+
+    HRESULT __stdcall QueryInterface(GUID const& id, void** object) noexcept
+    {
+        if (this->outer())
+        {
+            return this->outer()->QueryInterface(id, object);
+        }
+
+        return NonDelegatingQueryInterface(id, object);
+    }
+
+    unsigned long __stdcall AddRef() noexcept
+    {
+        if (this->outer())
+        {
+            return this->outer()->AddRef();
+        }
+
+        return NonDelegatingAddRef();
+    }
+
+    unsigned long __stdcall Release() noexcept
+    {
+        if (this->outer())
+        {
+            return this->outer()->Release();
+        }
+
+        return NonDelegatingRelease();
+    }
+
+    // TEMP-END    
+
     static void final_release(std::unique_ptr<D>&& self)
     {
         DeleteInstanceOnUIThread(std::move(self));
