@@ -86,6 +86,8 @@
                 <ComboBoxItem>Gamepad</ComboBoxItem>
                 <ComboBoxItem>All</ComboBoxItem>
             </ComboBox>
+            <CheckBox x:Name="chkLogScrollerMessages" AutomationProperties.Name="chkLogScrollerMessages" Content="Log Scroller Messages?" Margin="6,2,2,2" Checked="ChkLogScrollerMessages_Checked" Unchecked="ChkLogScrollerMessages_Unchecked"/>
+            <CheckBox x:Name="chkLogScrollViewerMessages" AutomationProperties.Name="chkLogScrollViewerMessages" Content="Log ScrollViewer Messages?" Margin="6,2,2,2" Checked="ChkLogScrollViewerMessages_Checked" Unchecked="ChkLogScrollViewerMessages_Unchecked"/>
         </StackPanel>
 
         <Border Margin="1" Background="Cyan" Grid.Row="2" Grid.Column="0">
