@@ -20,9 +20,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="D:\microsoft-ui-xaml2\dev\CheckBox\TestUI\CornerRadiusPage.xaml.cs">
-      <DependentUpon>CornerRadiusPage.xaml</DependentUpon>
-    </Compile>
     <Compile Update="D:\microsoft-ui-xaml2\dev\CheckBox\TestUI\HeadersPage.xaml.cs">
       <DependentUpon>HeadersPage.xaml</DependentUpon>
     </Compile>
