@@ -7,6 +7,7 @@
 #include "ScrollViewerTrace.h"
 #include "ScrollViewer.g.h"
 #include "ScrollViewer.properties.h"
+#include "ScrollViewerBringIntoViewOperation.h"
 
 class ScrollViewer :
     public ReferenceTracker<ScrollViewer, winrt::implementation::ScrollViewerT>,
@@ -104,7 +105,7 @@ public:
 
 private:
     void OnScrollViewerGettingFocus(
-        const winrt::IInspectable& /*sender*/,
+        const winrt::IInspectable& sender,
         const winrt::GettingFocusEventArgs& args);
     void OnScrollViewerIsEnabledChanged(
         const winrt::IInspectable& sender,
@@ -189,9 +190,14 @@ private:
     void OnScrollerAnchorRequested(
         const winrt::IInspectable& sender,
         const winrt::ScrollerAnchorRequestedEventArgs& args);
+    void OnCompositionTargetRendering(
+        const winrt::IInspectable& sender,
+        const winrt::IInspectable& args);
 
     void StopHideIndicatorsTimer(bool isForDestructor);
 
+    void HookCompositionTargetRendering();
+    void UnhookCompositionTargetRendering();
     void HookScrollViewerEvents();
     void UnhookScrollViewerEvents();
     void HookScrollerEvents();
@@ -279,6 +285,8 @@ private:
     winrt::event_token m_horizontalScrollControllerInteractionInfoChangedToken{};
     winrt::event_token m_verticalScrollControllerInteractionInfoChangedToken{};
 
+    winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingToken{};
+
     winrt::IInspectable m_onPointerEnteredEventHandler{ nullptr };
     winrt::IInspectable m_onPointerMovedEventHandler{ nullptr };
     winrt::IInspectable m_onPointerExitedEventHandler{ nullptr };
@@ -292,7 +300,7 @@ private:
     winrt::IInspectable m_onVerticalScrollControllerPointerExitedHandler{ nullptr };
 
     winrt::FocusInputDeviceKind m_focusInputDeviceKind{ winrt::FocusInputDeviceKind::None };
-    
+
     bool m_isLeftMouseButtonPressedForFocus{ false };
     
     // Set to True when the mouse scrolling indicators are currently showing.
@@ -311,6 +319,10 @@ private:
     // Set to True when the pointer is over the optional scroll controllers.
     bool m_isPointerOverHorizontalScrollController{ false };
     bool m_isPointerOverVerticalScrollController{ false };
+
+    // List of temporary ScrollViewerBringIntoViewOperation instances used to track expected
+    // Scroller::BringingIntoView occurrences due to navigation.
+    std::list<std::shared_ptr<ScrollViewerBringIntoViewOperation>> m_bringIntoViewOperations;
 
     // Private constants    
     // 2 seconds delay used to hide the indicators for example when OS animations are turned off.
