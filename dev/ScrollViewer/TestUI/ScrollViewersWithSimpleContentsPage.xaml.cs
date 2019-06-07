@@ -20,6 +20,8 @@ using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
 using ScrollViewerTestHooks = Microsoft.UI.Private.Controls.ScrollViewerTestHooks;
+using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
+using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 
 namespace MUXControlsTestApp
 {
@@ -93,6 +95,70 @@ namespace MUXControlsTestApp
             {
                 ClearFullLog();
             }
+        }
+
+        private void ChkLogScrollerMessages_Checked(object sender, RoutedEventArgs e)
+        {
+            MUXControlsTestHooks.SetOutputDebugStringLevelForType(
+                type: "Scroller",
+                isLoggingInfoLevel: true,
+                isLoggingVerboseLevel: true);
+
+            MUXControlsTestHooks.SetLoggingLevelForType(
+                type: "Scroller",
+                isLoggingInfoLevel: true,
+                isLoggingVerboseLevel: true);
+
+            if (chkLogScrollViewerMessages.IsChecked == false)
+                MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
+        }
+
+        private void ChkLogScrollerMessages_Unchecked(object sender, RoutedEventArgs e)
+        {
+            MUXControlsTestHooks.SetOutputDebugStringLevelForType(
+                type: "Scroller",
+                isLoggingInfoLevel: false,
+                isLoggingVerboseLevel: false);
+
+            MUXControlsTestHooks.SetLoggingLevelForType(
+                type: "Scroller",
+                isLoggingInfoLevel: false,
+                isLoggingVerboseLevel: false);
+
+            if (chkLogScrollViewerMessages.IsChecked == false)
+                MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
+        }
+
+        private void ChkLogScrollViewerMessages_Checked(object sender, RoutedEventArgs e)
+        {
+            MUXControlsTestHooks.SetOutputDebugStringLevelForType(
+                type: "ScrollViewer",
+                isLoggingInfoLevel: true,
+                isLoggingVerboseLevel: true);
+
+            MUXControlsTestHooks.SetLoggingLevelForType(
+                type: "ScrollViewer",
+                isLoggingInfoLevel: true,
+                isLoggingVerboseLevel: true);
+
+            if (chkLogScrollerMessages.IsChecked == false)
+                MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
+        }
+
+        private void ChkLogScrollViewerMessages_Unchecked(object sender, RoutedEventArgs e)
+        {
+            MUXControlsTestHooks.SetOutputDebugStringLevelForType(
+                type: "ScrollViewer",
+                isLoggingInfoLevel: false,
+                isLoggingVerboseLevel: false);
+
+            MUXControlsTestHooks.SetLoggingLevelForType(
+                type: "ScrollViewer",
+                isLoggingInfoLevel: false,
+                isLoggingVerboseLevel: false);
+
+            if (chkLogScrollerMessages.IsChecked == false)
+                MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
 
         private void Scroller_StateChanged(Scroller sender, object args)
@@ -349,6 +415,21 @@ namespace MUXControlsTestApp
             this.fullLogs.Clear();
             this.cmbFullLog.Items.Clear();
             chkLogCleared.IsChecked = true;
+        }
+
+        private void MUXControlsTestHooks_LoggingMessage(object sender, MUXControlsTestHooksLoggingMessageEventArgs args)
+        {
+            // Cut off the terminating new line.
+            string msg = args.Message.Substring(0, args.Message.Length - 1);
+            string senderName = string.Empty;
+            FrameworkElement fe = sender as FrameworkElement;
+
+            if (fe != null)
+            {
+                senderName = "s:" + fe.Name + ", ";
+            }
+
+            fullLogs.Add((args.IsVerboseLevel ? "Verbose: " : "Info: ") + senderName + "m:" + msg);
         }
 
         private void ResetView(ScrollViewer scrollViewer)
