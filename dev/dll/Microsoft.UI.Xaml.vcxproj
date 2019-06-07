@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.190603.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190603.8\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props')" />
   <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props')" />
   <Import Project="..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props" Condition="Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props')" />
@@ -30,6 +31,9 @@
     <!-- XBF is no longer embedded to improve F5 times but we need it embedded for the Nuget package PRI file, turn it on for release builds -->
     <DisableEmbeddedXbf Condition="'$(Configuration)'=='Release'">false</DisableEmbeddedXbf>
     <AppxBundlePlatforms>x86|x64|arm|arm64</AppxBundlePlatforms>
+
+    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
+    <CppWinRTAddXamlMetaDataProviderIdl>false</CppWinRTAddXamlMetaDataProviderIdl>
   </PropertyGroup>
   <!-- <PropertyGroup Condition="'$(Use64BitLinker)' == 'true' AND '$(BuildingWithBuildExe)' != 'true'">
       <LinkToolPath>$(OSBuildToolsRoot)\vc\HostX64\$(BuildArchName)</LinkToolPath>
@@ -163,19 +167,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <Midl>
-      <MetadataFileName>$(OutDir)Unmerged\%(Filename)_Unmerged.winmd</MetadataFileName>
-      <AdditionalOptions>/no_stamp /no_settings_comment /nomidl %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions>%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.FoundationContract\3.0.0.0\Windows.Foundation.FoundationContract.winmd"</AdditionalOptions>
-      <AdditionalOptions>%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Networking.Connectivity.WwanContract\2.0.0.0\Windows.Networking.Connectivity.WwanContract.winmd"</AdditionalOptions>
-      <AdditionalOptions Condition="$(UseInsiderSDK) == 'true'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\8.0.0.0\Windows.Foundation.UniversalApiContract.winmd"</AdditionalOptions>
-      <AdditionalOptions Condition="$(UseInsiderSDK) != 'true'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\7.0.0.0\Windows.Foundation.UniversalApiContract.winmd"</AdditionalOptions>
       <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..;$(MSBuildProjectDirectory)\..\..\idl;$(MiniWindowsSDKIncludePath)</AdditionalIncludeDirectories>
-      <AdditionalMetadataDirectories Condition="'$(MiniWindowsSDKWinMDPath)'!=''">$(MiniWindowsSDKWinMDPath)</AdditionalMetadataDirectories>
-      <OutputDirectory>$(OutDir)</OutputDirectory>
-      <HeaderFileName>%(Filename).h</HeaderFileName>
-      <GenerateTypeLibrary>false</GenerateTypeLibrary>
-      <GenerateClientFiles>None</GenerateClientFiles>
-      <GenerateServerFiles>None</GenerateServerFiles>
       <Enumclass>false</Enumclass>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">%(PreprocessorDefinitions);DEBUG;DBG</PreprocessorDefinitions>
     </Midl>
@@ -183,8 +175,8 @@
       <ModuleDefinitionFile>Microsoft.UI.Xaml.def</ModuleDefinitionFile>
       <GenerateDebugInformation Condition="'$(Configuration)'=='Debug'">$(GenerateDebugInformation)</GenerateDebugInformation>
       <AdditionalDependencies>mincore.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <!-- Microsoft.UI.winmd will contain the definition of both public, preview and private types. -->
-      <WindowsMetadataFile>$(OutDir)\Microsoft.UI.winmd</WindowsMetadataFile>
+      <!-- Microsoft.winmd will contain the definition of both public, preview and private types. -->
+      <WindowsMetadataFile>$(OutDir)\Microsoft.winmd</WindowsMetadataFile>
       <GenerateMapFile>true</GenerateMapFile>
       <LinkTimeCodeGeneration Condition="'$(Configuration)'=='Release'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -197,16 +189,15 @@
         $(OutDir);
       </AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>
-        $(IntermediateOutputPath)\CppWinRT\Platform;
-        $(IntermediateOutputPath)\CppWinRT\Component;
-        $(IntermediateOutputPath)\CppWinRT\Component\Automation\Peers;
-        $(IntermediateOutputPath)\CppWinRT\Component\Controls;
-        $(IntermediateOutputPath)\CppWinRT\Component\Controls\Primitives;
-        $(IntermediateOutputPath)\CppWinRT\Component\Media;
-        $(IntermediateOutputPath)\CppWinRT\Component\XamlTypeInfo;
-        $(IntermediateOutputPath)\CppWinRT\Component\Microsoft\UI\Composition\Effects;
-        $(IntermediateOutputPath)\CppWinRT\Component\Microsoft\UI\Private\Controls;
-        $(IntermediateOutputPath)\CppWinRT\Component\Microsoft\UI\Private\Media;
+        $(GeneratedFilesDir)\winrt;
+        $(GeneratedFilesDir)\Automation\Peers;
+        $(GeneratedFilesDir)\Controls;
+        $(GeneratedFilesDir)\Controls\Primitives;
+        $(GeneratedFilesDir)\Media;
+        $(GeneratedFilesDir)\XamlTypeInfo;
+        $(GeneratedFilesDir)\Microsoft\UI\Composition\Effects;
+        $(GeneratedFilesDir)\Microsoft\UI\Private\Controls;
+        $(GeneratedFilesDir)\Microsoft\UI\Private\Media;
         %(AdditionalIncludeDirectories);
         $(MiniWindowsSDKIncludePath);
       </AdditionalIncludeDirectories>
@@ -431,10 +422,12 @@
     <Import Project="..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.targets" Condition="Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.targets')" />
     <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets')" />
     <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" />
+    <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.190603.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190603.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
     <UnmergedWinmdDirectory>$(OutDir)Unmerged</UnmergedWinmdDirectory>
+    <CppWinRTProjectWinMD>$(OutDir)Microsoft.winmd</CppWinRTProjectWinMD>
   </PropertyGroup>
   <!-- It's costly to include all of our default templates as merged dictionaries.
        Instead of that, we'll compile their contents into a statically merged XAML file.-->
@@ -508,7 +501,7 @@
     <CreateProperty Value="True">
       <Output TaskParameter="ValueSetByTask" PropertyName="CompactThemeResourceFileNeedsCompilation" />
     </CreateProperty>
-  </Target>
+  </Target>  
   <Target Name="RemovePageRequiringCustomCompilation" AfterTargets="BeforeBuildGenerateSources" BeforeTargets="MarkupCompilePass2" Condition="'@(PageRequiringCustomCompilation)' != ''">
     <Message Text="RemovePageRequiringCustomCompilation" />
     <ItemGroup>
@@ -597,89 +590,36 @@
     <ProjectMergedIdl>$(IntermediateOutputPath)\Microsoft.UI.Xaml.idl</ProjectMergedIdl>
   </PropertyGroup>
   <!-- Merge all idl files into one -->
-  <Target Name="MergeIDLFiles" Inputs="@(Midl)" Outputs="$(ProjectMergedIdl)" BeforeTargets="Midl">
+  <Target Name="MergeIDLFiles" Inputs="@(Midl)" Outputs="$(ProjectMergedIdl)" BeforeTargets="CppWinRTSetMidlReferences;Midl">
     <PropertyGroup>
-      <MidlLines>@(Midl->'&#x23;include &lt;%(FullPath)&gt;', '&#x0D;&#x0A;')</MidlLines>
+      <MidlLines>@(Midl->'#include &lt;%(FullPath)&gt;', '
+')</MidlLines>
     </PropertyGroup>
     <WriteLinesToFile File="$(ProjectMergedIdl)" Lines="$(MidlLines)" WriteOnlyWhenDifferent="true" Overwrite="true" />
     <ItemGroup>
       <OriginalMidl Include="@(Midl)" />
       <Midl Remove="@(OriginalMidl)" />
-      <Midl Include="$(ProjectMergedIdl)" />
+      <Midl Include="$(ProjectMergedIdl)"/>
     </ItemGroup>
   </Target>
-  <Target Name="mdmerge" AfterTargets="Midl" Inputs="@(Midl -> '%(MetadataFileName)')" Outputs="$(OutDir)Microsoft.UI.winmd;$(OutDir)\sdk\Microsoft.UI.Xaml.winmd;$(IntermediateOutputPath)CppWinRT\Platform\winrt\base.h;$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.Controls.h">
-    <PropertyGroup>
-      <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
-      <!-- using an older version of cpp winrt to avoid compiler issues -->
-      <CppWinRTExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\CppWinRT.exe"</CppWinRTExe>
-    </PropertyGroup>
-    <ItemGroup Condition="'$(MiniWindowsSDKWinMDPath)'==''">
-      <MetaDataDir Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.FoundationContract\3.0.0.0" />
-      <MetaDataDir Condition="$(UseInsiderSDK) != 'true'" Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\7.0.0.0" />
-      <MetaDataDir Condition="$(UseInsiderSDK) == 'true'" Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\8.0.0.0" />
-    </ItemGroup>
-    <ItemGroup Condition="'$(MiniWindowsSDKWinMDPath)'!=''">
-      <MetaDataDir Include="$(MiniWindowsSDKWinMDPath)" />
-    </ItemGroup>
-    <Exec Command="$(MdMergeExe) -v @(MetaDataDir -&gt; '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(UnmergedWinmdDirectory)\..&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:3" />
-    <Exec Command="$(MdMergeExe) -v @(MetaDataDir -&gt; '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(UnmergedWinmdDirectory)\..\sdk&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:3 -createPublicMetadata -transformExperimental:transform" />
-    <Exec Command="$(MdMergeExe) -v @(MetaDataDir -&gt; '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(MergedWinmdDirectory)&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:2" />
-    <!-- UWP projects that reference this project expect the winmd to be in the same directory as the dll. -->
-    <Copy SourceFiles="$(MergedWinmdDirectory)\Microsoft.UI.winmd" DestinationFolder="$(OutDir)" />
-    <!-- <Exec Command="&quot;$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\winmdidl.exe&quot; @(MetaDataDir -> '/metadata_dir:&quot;%(Identity)&quot;', ' ') &quot;$(UnmergedWinmdDirectory)\..\Microsoft.UI.winmd&quot; /outdir:&quot;$(MergedWinmdDirectory)&quot;"/>
-    <Error Text="Stop"/> -->
-    <ItemGroup Condition="'$(MiniWindowsSDKWinMDPath)'==''">
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.ApplicationModel.Calls.CallsVoipContract\*\Windows.ApplicationModel.Calls.CallsVoipContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Devices.DevicesLowLevelContract\3.0.0.0\Windows.Devices.DevicesLowLevelContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Devices.Printers.PrintersContract\1.0.0.0\Windows.Devices.Printers.PrintersContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.FoundationContract\3.0.0.0\Windows.Foundation.FoundationContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\*\Windows.Foundation.UniversalApiContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Graphics.Printing3D.Printing3DContract\4.0.0.0\Windows.Graphics.Printing3D.Printing3DContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Networking.Connectivity.WwanContract\*\Windows.Networking.Connectivity.WwanContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Services.Store.StoreContract\*\Windows.Services.Store.StoreContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.System.Profile.ProfileHardwareTokenContract\1.0.0.0\Windows.System.Profile.ProfileHardwareTokenContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.System.Profile.ProfileSharedModeContract\2.0.0.0\Windows.System.Profile.ProfileSharedModeContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.UI.ViewManagement.ViewManagementViewScalingContract\1.0.0.0\Windows.UI.ViewManagement.ViewManagementViewScalingContract.winmd" />
-    </ItemGroup>
-    <ItemGroup Condition="'$(MiniWindowsSDKWinMDPath)'!=''">
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.ApplicationModel.Calls.CallsVoipContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.Devices.DevicesLowLevelContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.Devices.Printers.PrintersContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.Foundation.FoundationContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.Foundation.UniversalApiContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.Graphics.Printing3D.Printing3DContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.Networking.Connectivity.WwanContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.Services.Store.StoreContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.System.Profile.ProfileHardwareTokenContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.System.Profile.ProfileSharedModeContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.UI.ViewManagement.ViewManagementViewScalingContract.winmd" />
-    </ItemGroup>
-    <ItemGroup>
-      <ComponentWinMD Include="$(OutDir)Microsoft.UI.Xaml.winmd" />
-      <ComponentWinMD Include="$(OutDir)Microsoft.UI.Private.winmd" />
-      <ComponentWinMD Include="$(OutDir)Microsoft.UI.Composition.winmd" />
-    </ItemGroup>
-    <Message Text="Generating Platform C++/WinRT headers ..." />
-    <Exec Command="$(CppWinRTExe) -overwrite @(ProjectionWinMD -&gt; '-in &quot;%(Identity)&quot;', ' ') -out $(IntermediateOutputPath)\CppWinRT\Platform" />
-    <Message Text="Generating Projection C++/WinRT headers ..." />
-    <Exec Command="$(CppWinRTExe) -component $(IntermediateOutputPath)\CppWinRT\Reference -overwrite @(ProjectionWinMD -&gt; '-ref &quot;%(Identity)&quot;', ' ') @(ComponentWinMD -&gt; '-in &quot;%(Identity)&quot;', ' ') -out $(IntermediateOutputPath)\CppWinRT\Component" />
-    <Message Text="Generating C++/WinRT headers complete" />
-    <ItemGroup>
-      <FileWrites Include="$(OutDir)Microsoft.UI.Xaml.winmd" />
-      <FileWrites Include="$(OutDir)Microsoft.UI.winmd" />
-      <FileWrites Include="$(OutDir)Microsoft.UI.Private.winmd" />
-      <FileWrites Include="$(OutDir)Microsoft.UI.Composition.winmd" />
-    </ItemGroup>
-  </Target>
-  <Target Name="CreateReferenceWinmds" AfterTargets="mdmerge" BeforeTargets="XamlMetadataCodeGenMUX">
+  <Target Name="CreateReferenceWinmds" BeforeTargets="XamlMetadataCodeGenMUX">
     <ItemGroup>
       <T4ParameterValues Include="ReferenceWinmds">
-        <Value>@(ProjectionWinMD);@(ComponentWinMD)</Value>
+        <Value>@(CppWinRTPlatformWinMDReferences)</Value>
       </T4ParameterValues>
     </ItemGroup>
   </Target>
-  <Target Name="XamlMetadataCodeGenMUX" AfterTargets="CreateReferenceWinmds" BeforeTargets="ClCompile" Inputs="$(MetadataWinmdPaths);XamlMetadataProviderGenerated.tt;CommonHelpers.tt;WinRtType.tt" Outputs="$(OutDir)XamlMetadataProviderGenerated.cpp">
+  <!-- Need to invoke MDMerge again to produce the "public" metadata using MDMerge's -createPublicMetadata and -transformExperimental flags -->
+  <Target Name="MakeSDKMetadata" AfterTargets="CppWinRTMergeProjectWinMDInputs" BeforeTargets="XamlMetadataCodeGenMUX" Inputs="$(OutDir)Microsoft.winmd" Outputs="$(OutDir)sdk\Microsoft.UI.xaml.winmd">
+    <PropertyGroup>
+      <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
+      <_MdMergeParameters>-v @(_MdMergeRefsDistinct->'-metadata_dir &quot;%(RelativeDir).&quot;', ' ')</_MdMergeParameters>
+      <_MdMergeParameters>$(_MdMergeParameters) -o &quot;$(OutDir)\sdk&quot; -i &quot;$(CppWinRTUnmergedDir)&quot; -partial -n:3 -createPublicMetadata -transformExperimental:transform</_MdMergeParameters>
+    </PropertyGroup>
+    <Exec Command="$(MdMergeExe) $(_MdMergeParameters)" />    
+  </Target>
+  <Target Name="XamlMetadataCodeGenMUX" AfterTargets="CppWinRTMakeComponentProjection" BeforeTargets="ClCompile" 
+  Inputs="$(OutDir)sdk\Microsoft.UI.Xaml.winmd;XamlMetadataProviderGenerated.tt;CommonHelpers.tt;WinRtType.tt" Outputs="$(OutDir)XamlMetadataProviderGenerated.cpp">
     <!-- Run XamlMetadataProviderGenerated.tt t4 template to generate XamlMetadataProviderGenerated.cpp from the winmd file -->
     <CallTarget Targets="TransformAll" />
     <ItemGroup>
@@ -691,14 +631,13 @@
       <Output TaskParameter="Include" ItemName="DependencyPropertyCodeGenOutputs" />
     </CreateItem>
   </Target>
-  <Target Name="RunDependencyPropertyCodeGen" AfterTargets="CreateReferenceWinmds" BeforeTargets="ClCompile" Inputs="$(OutDir)Microsoft.UI.winmd" Outputs="@(DependencyPropertyCodeGenOutputs);$(MSBuildProjectDirectory)\..\Generated\AcrylicBrush.properties.cpp">
-    <DependencyPropertyCodeGen WinMDInput="$(OutDir)Microsoft.UI.winmd" References="@(ProjectionWinMD)" OutputDirectory="$(MSBuildProjectDirectory)\..\Generated" />
+  <Target Name="RunDependencyPropertyCodeGen" AfterTargets="CppWinRTMakeComponentProjection" BeforeTargets="ClCompile" Inputs="$(OutDir)Microsoft.winmd" Outputs="@(DependencyPropertyCodeGenOutputs);$(MSBuildProjectDirectory)\..\Generated\AcrylicBrush.properties.cpp">
+    <DependencyPropertyCodeGen WinMDInput="$(OutDir)Microsoft.winmd" References="@(CppWinRTPlatformWinMDReferences)" OutputDirectory="$(MSBuildProjectDirectory)\..\Generated" />
   </Target>
-  <Target Name="WorkAroundFastUpToDateCheckBug" AfterTargets="_GenerateProjectPriFileCore" Inputs="$(OutDir)$(TargetName).pri" Outputs="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).winmd;$(OutDir)Microsoft.UI.winmd" Condition="Exists('$(OutDir)$(TargetName).dll')">
+  <Target Name="WorkAroundFastUpToDateCheckBug" AfterTargets="_GenerateProjectPriFileCore" Inputs="$(OutDir)$(TargetName).pri" Outputs="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).winmd;$(OutDir)Microsoft.winmd" Condition="Exists('$(OutDir)$(TargetName).dll')">
     <Message Text="Touching '$(OutDir)$(TargetName).dll' because pri file changed to work around DevDiv bug https://devdiv.visualstudio.com/DevDiv/_workitems?id=297204" />
     <Touch Files="$(OutDir)$(TargetName).dll" />
-    <Touch Files="$(OutDir)$(TargetName).winmd" />
-    <Touch Files="$(OutDir)Microsoft.UI.winmd" />
+    <Touch Files="$(OutDir)Microsoft.winmd" />
   </Target>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -712,6 +651,8 @@
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190603.8\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.190603.8\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190603.8\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.190603.8\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
   <Target Name="RunBinSkim" AfterTargets="AfterBuild" Condition="'$(Configuration)'=='Release'">
     <PropertyGroup>

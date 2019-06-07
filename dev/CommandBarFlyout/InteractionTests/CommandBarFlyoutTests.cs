@@ -233,11 +233,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void VerifyLeftAndRightNavigationBetweenPrimaryCommands()
         {
-            VerifyLeftAndRightNavigationBetweenPrimaryCommands(false /*inRTL*/);
-            VerifyLeftAndRightNavigationBetweenPrimaryCommands(true /*inRTL*/);
+            VerifyLeftAndRightNavigationBetweenPrimaryCommands(inRTL: false, useUpDownKeys: false);
+            VerifyLeftAndRightNavigationBetweenPrimaryCommands(inRTL: true,  useUpDownKeys: false);
+            VerifyLeftAndRightNavigationBetweenPrimaryCommands(inRTL: false, useUpDownKeys: true);
+            VerifyLeftAndRightNavigationBetweenPrimaryCommands(inRTL: true,  useUpDownKeys: true);
         }
 
-        private void VerifyLeftAndRightNavigationBetweenPrimaryCommands(bool inRTL)
+        private void VerifyLeftAndRightNavigationBetweenPrimaryCommands(bool inRTL, bool useUpDownKeys)
         { 
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
             {
@@ -258,15 +260,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Wait.ForIdle();
                 }
 
-                string rightStr = inRTL ? "Left" : "Right";
-                string leftStr = inRTL ? "Right" : "Left";
-                Key rightKey = inRTL ? Key.Left : Key.Right;
-                Key leftKey = inRTL ? Key.Right : Key.Left;
+                string rightStr;
+                string leftStr;
+                Key rightKey;
+                Key leftKey;
+
+                if (useUpDownKeys)
+                {
+                    // Down and Up keys are used to move logically within the primary commands: Up to move to the previous command and Down to move to the next command.
+                    rightStr = "Down";
+                    leftStr = "Up";
+                    rightKey = Key.Down;
+                    leftKey = Key.Up;
+                }
+                else
+                {
+                    // Left and Right keys are used to move physically within the primary commands: Left to move to the left command and Right to move to the right command.
+                    rightStr = inRTL ? "Left" : "Right";
+                    leftStr = inRTL ? "Right" : "Left";
+                    rightKey = inRTL ? Key.Left : Key.Right;
+                    leftKey = inRTL ? Key.Right : Key.Left;
+                }
 
                 Log.Comment("Tap on a button to show the CommandBarFlyout.");
                 InputHelper.Tap(showCommandBarFlyoutButton);
 
-                Log.Comment("Press " + rightStr + " key to move focus to second primary command: Copy.");
+                Log.Comment($"Press {rightStr} key to move focus to second primary command: Copy.");
                 KeyboardHelper.PressKey(rightKey);
                 Wait.ForIdle();
 
@@ -274,7 +293,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var copyButtonElement = AutomationElement.FocusedElement;
                 Verify.AreEqual(copyButtonElement.Current.AutomationId, copyButton1.AutomationId);
 
-                Log.Comment("Press " + leftStr + " key to move focus back to first primary command: Cut.");
+                Log.Comment($"Press {leftStr} key to move focus back to first primary command: Cut.");
                 KeyboardHelper.PressKey(leftKey);
                 Wait.ForIdle();
 
@@ -282,15 +301,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var cutButtonElement = AutomationElement.FocusedElement;
                 Verify.AreEqual(cutButtonElement.Current.AutomationId, cutButton1.AutomationId);
 
-                Log.Comment("Press " + leftStr + " key and remain on first primary command: Cut.");
-                KeyboardHelper.PressKey(leftKey);
-                Wait.ForIdle();
+                if (!useUpDownKeys)
+                {
+                    Log.Comment($"Press {leftStr} key and remain on first primary command: Cut.");
+                    KeyboardHelper.PressKey(leftKey);
+                    Wait.ForIdle();
 
-                cutButtonElement = AutomationElement.FocusedElement;
-                Verify.AreEqual(cutButtonElement.Current.AutomationId, cutButton1.AutomationId);
+                    cutButtonElement = AutomationElement.FocusedElement;
+                    Verify.AreEqual(cutButtonElement.Current.AutomationId, cutButton1.AutomationId);
+                }
 
-                Log.Comment("Press " + rightStr + " key to move focus to MoreButton.");
-                for (int i = 0; i <= 6; i++)
+                Log.Comment($"Press {rightStr} key to move focus to MoreButton.");
+                for (int i = 0; i <= 5; i++)
                 {
                     KeyboardHelper.PressKey(rightKey);
                     Wait.ForIdle();
@@ -300,12 +322,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var moreButtonElement = AutomationElement.FocusedElement;
                 Verify.AreEqual(moreButtonElement.Current.AutomationId, moreButton.AutomationId);
 
-                Log.Comment("Press " + rightStr + " key and remain on MoreButton.");
-                KeyboardHelper.PressKey(rightKey);
-                Wait.ForIdle();
+                if (!useUpDownKeys)
+                {
+                    Log.Comment($"Press {rightStr} key and remain on MoreButton.");
+                    KeyboardHelper.PressKey(rightKey);
+                    Wait.ForIdle();
 
-                moreButtonElement = AutomationElement.FocusedElement;
-                Verify.AreEqual(moreButtonElement.Current.AutomationId, moreButton.AutomationId);
+                    moreButtonElement = AutomationElement.FocusedElement;
+                    Verify.AreEqual(moreButtonElement.Current.AutomationId, moreButton.AutomationId);
+                }
             }
         }
 
@@ -352,15 +377,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var underlineButtonElement = AutomationElement.FocusedElement;
                 Verify.AreEqual(underlineButtonElement.Current.AutomationId, underlineButton1.AutomationId);
 
-                Log.Comment("Press Down key and remain on last primary command: Underline.");
+                Log.Comment("Press Down key to move focus to MoreButton.");
                 KeyboardHelper.PressKey(Key.Down);
                 Wait.ForIdle();
 
-                underlineButtonElement = AutomationElement.FocusedElement;
-                Verify.AreEqual(underlineButtonElement.Current.AutomationId, underlineButton1.AutomationId);
+                Button moreButton = FindElement.ById<Button>("MoreButton");
+                var moreButtonElement = AutomationElement.FocusedElement;
+                Verify.AreEqual(moreButtonElement.Current.AutomationId, moreButton.AutomationId);
 
                 Log.Comment("Press Up key to move focus to first primary command: Cut.");
-                for (int i = 0; i <= 4; i++)
+                for (int i = 0; i <= 5; i++)
                 {
                     KeyboardHelper.PressKey(Key.Up);
                     Wait.ForIdle();
@@ -388,12 +414,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var undoButtonElement = AutomationElement.FocusedElement;
                 Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton1.AutomationId);
 
-                Log.Comment("Press Up key and remain on first secondary command: Undo.");
-                KeyboardHelper.PressKey(Key.Up);
-                Wait.ForIdle();
+                if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
+                {
+                    Log.Comment("Press Up key and remain on first secondary command: Undo.");
+                    KeyboardHelper.PressKey(Key.Up);
+                    Wait.ForIdle();
 
-                undoButtonElement = AutomationElement.FocusedElement;
-                Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton1.AutomationId);
+                    undoButtonElement = AutomationElement.FocusedElement;
+                    Verify.AreEqual(undoButtonElement.Current.AutomationId, undoButton1.AutomationId);
+                }
+                else
+                {
+                    Log.Comment("Press Up key to move focus to MoreButton.");
+                    KeyboardHelper.PressKey(Key.Up);
+                    Wait.ForIdle();
+
+                    moreButtonElement = AutomationElement.FocusedElement;
+                    Verify.AreEqual(moreButtonElement.Current.AutomationId, moreButton.AutomationId);
+
+                    Log.Comment("Press Down key to move focus to first primary command through all secondary commands: Cut.");
+                    for (int i = 0; i <= 4; i++)
+                    {
+                        KeyboardHelper.PressKey(Key.Down);
+                        Wait.ForIdle();
+                    }
+
+                    cutButtonElement = AutomationElement.FocusedElement;
+                    Verify.AreEqual(cutButtonElement.Current.AutomationId, cutButton1.AutomationId);
+                }
             }
         }
 
