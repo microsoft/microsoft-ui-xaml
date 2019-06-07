@@ -413,6 +413,8 @@
                         <CheckBox x:Name="chkLogScrollerMessages" Content="Log Scroller Messages?" Margin="1" Checked="ChkLogScrollerMessages_Checked" Unchecked="ChkLogScrollerMessages_Unchecked"/>
                         <CheckBox x:Name="chkLogScrollViewerMessages" Content="Log ScrollViewer Messages?" Margin="1" Checked="ChkLogScrollViewerMessages_Checked" Unchecked="ChkLogScrollViewerMessages_Unchecked"/>
                     </StackPanel>
+                    <CheckBox x:Name="chkAutoHideScrollControllers" Content="AutoHideScrollControllers?" Margin="1" IsThreeState="True" IsChecked="{x:Null}"
+                        Indeterminate="ChkAutoHideScrollControllers_Indeterminate" Checked="ChkAutoHideScrollControllers_Checked" Unchecked="ChkAutoHideScrollControllers_Unchecked"/>
                 </StackPanel>
             </StackPanel>
             <ListBox x:Name="lstLogs" Margin="1" Grid.Row="2"/>

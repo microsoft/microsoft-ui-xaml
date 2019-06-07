@@ -1495,6 +1495,21 @@ namespace MUXControlsTestApp
                 MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
 
+        private void ChkAutoHideScrollControllers_Indeterminate(object sender, RoutedEventArgs e)
+        {
+            ScrollViewerTestHooks.SetAutoHideScrollControllers(scrollViewer, null);
+        }
+
+        private void ChkAutoHideScrollControllers_Checked(object sender, RoutedEventArgs e)
+        {
+            ScrollViewerTestHooks.SetAutoHideScrollControllers(scrollViewer, true);
+        }
+
+        private void ChkAutoHideScrollControllers_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ScrollViewerTestHooks.SetAutoHideScrollControllers(scrollViewer, false);
+        }
+
         private void MUXControlsTestHooks_LoggingMessage(object sender, MUXControlsTestHooksLoggingMessageEventArgs args)
         {
             // Cut off the terminating new line.
