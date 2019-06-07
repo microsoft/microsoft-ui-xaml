@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System;
-
 using Common;
+using System;
+using System.Threading;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
-using System.Threading;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -479,6 +479,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 using (var loggingHelper = new LoggingHelper(this))
                 {
+                    UISettings settings = new UISettings();
+                    bool areAnimationsEnabled = settings.AnimationsEnabled;
+
                     UIObject buttonInScrollViewer11;
                     Scroller scroller11;
                     SetupSimpleSingleScrollViewerTest(out buttonInScrollViewer11, out scroller11);
@@ -500,7 +503,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     //Down. Change focus. Scroll.
                     expectedVerticalOffset = 220;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 3", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 3", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
 
                     //Down. Don't change focus. Scroll.
                     expectedVerticalOffset += scrollAmountForGamepadUpDown;
@@ -508,11 +511,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     //Down. Change focus. Scroll.
                     expectedVerticalOffset = 920;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 4", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 4", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
 
                     //Down. Change focus. Scroll.
                     expectedVerticalOffset = 1020;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 5", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 5", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
 
                     //Up. Change focus. Don't scroll.
                     PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickUp, "Button 4", expectedHorizontalOffset, expectedVerticalOffset, 0);
@@ -523,7 +526,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     //Up. Change focus. Scroll.
                     expectedVerticalOffset = 480;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickUp, "Button 3", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickUp, "Button 3", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
                 }
             }
         }
@@ -580,6 +583,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 using (var loggingHelper = new LoggingHelper(this))
                 {
+                    UISettings settings = new UISettings();
+                    bool areAnimationsEnabled = settings.AnimationsEnabled;
+
                     UIObject buttonInScrollViewer11;
                     Scroller scroller11;
                     SetupSimpleSingleScrollViewerTest(out buttonInScrollViewer11, out scroller11);
@@ -600,7 +606,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     //Right. Change focus. Scroll. 
                     expectedHorizontalOffset = 320;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickRight, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickRight, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
 
                     //Right. Don't Change focus. Scroll. 
                     expectedHorizontalOffset += scrollAmountForGamepadLeftRight;
@@ -616,7 +622,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     //Left. Change focus. Scroll. 
                     expectedHorizontalOffset = 80;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickLeft, "Button 1B", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickLeft, "Button 1B", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
                 }
             }
         }
@@ -635,6 +641,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 using (var loggingHelper = new LoggingHelper(this))
                 {
+                    UISettings settings = new UISettings();
+                    bool areAnimationsEnabled = settings.AnimationsEnabled;
+
                     UIObject buttonInScrollViewer11;
                     Scroller scroller11;
                     SetupSimpleSingleScrollViewerTest(out buttonInScrollViewer11, out scroller11);
@@ -645,8 +654,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     double expectedHorizontalOffset = 0;
 
                     //Down. Change focus. Scroll.
-                    expectedVerticalOffset = scrollAmountForGamepadTrigger;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.RightTrigger, "Button 3", expectedHorizontalOffset, expectedVerticalOffset);
+                    expectedVerticalOffset = areAnimationsEnabled ? scrollAmountForGamepadTrigger : 220.0;
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.RightTrigger, "Button 3", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
 
                     //Down. Don't change focus. Scroll.
                     expectedVerticalOffset += scrollAmountForGamepadTrigger;
@@ -663,7 +672,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     //Up. Change focus. Scroll.
                     expectedVerticalOffset = 0;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftTrigger, actualVerticalOffset < scrollAmountForGamepadTrigger ? "Button 1" : "Button 2", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftTrigger, actualVerticalOffset < scrollAmountForGamepadTrigger ? "Button 1" : "Button 2", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
                 }
             }
         }
@@ -682,6 +691,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 using (var loggingHelper = new LoggingHelper(this))
                 {
+                    UISettings settings = new UISettings();
+                    bool areAnimationsEnabled = settings.AnimationsEnabled;
+
                     UIObject buttonInScrollViewer11;
                     Scroller scroller11;
                     SetupSimpleSingleScrollViewerTest(out buttonInScrollViewer11, out scroller11);
@@ -692,8 +704,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     double expectedHorizontalOffset = 0;
 
                     //Right. Change focus. Scroll.
-                    expectedHorizontalOffset = scrollAmountForBumper;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.RightShoulder, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset);
+                    expectedHorizontalOffset = areAnimationsEnabled ? scrollAmountForBumper : 320.0;
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.RightShoulder, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
 
                     //Right. Don't change focus. Scroll.
                     expectedHorizontalOffset += scrollAmountForBumper;
@@ -709,8 +721,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     GetScrollerView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
 
                     //Left. Change focus. Scroll.
-                    expectedHorizontalOffset = 0;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftShoulder, actualHorizontalOffset > scrollAmountForBumper ? "Button 1B" : "Button 1", expectedHorizontalOffset, expectedVerticalOffset);
+                    expectedHorizontalOffset = areAnimationsEnabled ? 0 : 80.0;
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftShoulder, actualHorizontalOffset > scrollAmountForBumper ? "Button 1B" : "Button 1", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
                 }
             }
         }
@@ -791,7 +803,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             int viewChangeCount = ViewChangeCount();
             if (expectedViewChangeCount == null)
             {
-                Verify.IsGreaterThan(viewChangeCount, 0);
+                Verify.IsGreaterThan(viewChangeCount, 1);
             }
             else
             {
@@ -823,7 +835,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 LogAndClearTraces();
             }
             Verify.IsTrue(areOffsetsCorrect(), String.Format("Verify ScrollViewer offsets. Expected={0},{1}, Actual={2},{3}.",
-                    expectedHorizontalOffset, expectedVerticalOffset, actualHorizontalOffset, actualVerticalOffset));
+                expectedHorizontalOffset, expectedVerticalOffset, actualHorizontalOffset, actualVerticalOffset));
         }
 
         private void VerifyScrollViewerRemainsAtView(double expectedHorizontalOffset, double expectedVerticalOffset, float expectedZoomFactor)
