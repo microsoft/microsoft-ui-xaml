@@ -18,12 +18,14 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ScrollViewer.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollBarController.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewerBringIntoViewOperation.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooks.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooksFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollBarController.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewerBringIntoViewOperation.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewerTrace.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooks.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooksFactory.h" />

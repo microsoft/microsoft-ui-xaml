@@ -7,6 +7,7 @@
 #include "ScrollViewerTrace.h"
 #include "ScrollViewer.g.h"
 #include "ScrollViewer.properties.h"
+#include "ScrollViewerBringIntoViewOperation.h"
 
 class ScrollViewer :
     public ReferenceTracker<ScrollViewer, winrt::implementation::ScrollViewerT>,
@@ -105,7 +106,7 @@ public:
 
 private:
     void OnScrollViewerGettingFocus(
-        const winrt::IInspectable& /*sender*/,
+        const winrt::IInspectable& sender,
         const winrt::GettingFocusEventArgs& args);
     void OnScrollViewerIsEnabledChanged(
         const winrt::IInspectable& sender,
@@ -193,10 +194,15 @@ private:
     void OnScrollerAnchorRequested(
         const winrt::IInspectable& sender,
         const winrt::ScrollerAnchorRequestedEventArgs& args);
+    void OnCompositionTargetRendering(
+        const winrt::IInspectable& sender,
+        const winrt::IInspectable& args);
 
     void ResetHideIndicatorsTimer(bool isForDestructor = false, bool restart = false);
 
-    void HookUISettingsEvent();
+	void HookUISettingsEvent();
+	void HookCompositionTargetRendering();
+    void UnhookCompositionTargetRendering();
     void HookScrollViewerEvents();
     void UnhookScrollViewerEvents();
     void HookScrollerEvents();
@@ -295,6 +301,8 @@ private:
     winrt::event_token m_horizontalScrollControllerInteractionInfoChangedToken{};
     winrt::event_token m_verticalScrollControllerInteractionInfoChangedToken{};
 
+    winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingToken{};
+
     winrt::IInspectable m_onPointerEnteredEventHandler{ nullptr };
     winrt::IInspectable m_onPointerMovedEventHandler{ nullptr };
     winrt::IInspectable m_onPointerExitedEventHandler{ nullptr };
@@ -344,7 +352,11 @@ private:
     int m_horizontalScrollWithKeyboardDirection{ 0 };
     int m_horizontalScrollWithKeyboardOffsetChangeId{ -1 };
 
-    // Private constants
+    // List of temporary ScrollViewerBringIntoViewOperation instances used to track expected
+    // Scroller::BringingIntoView occurrences due to navigation.
+    std::list<std::shared_ptr<ScrollViewerBringIntoViewOperation>> m_bringIntoViewOperations;
+
+    // Private constants    
     // 2 seconds delay used to hide the indicators for example when OS animations are turned off.
     static constexpr int64_t s_noIndicatorCountdown = 2000 * 10000; 
 
