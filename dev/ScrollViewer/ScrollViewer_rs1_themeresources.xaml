@@ -5,39 +5,22 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <SolidColorBrush x:Key="ScrollViewerScrollBarsSeparatorBackground" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorExpandDelay">00:00:00</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorExpandDuration">00:00:00.1</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDelay">00:00:02</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDelayDisabled">00:00:00</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDuration">00:00:00.1</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorDisplayDelayWithoutAnimation">00:00:00.725</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorExpandDelayWithoutAnimation">00:00:00</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDelayWithoutAnimation">00:00:02</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsNoTouchDuration">00:00:00.5</x:String>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="ScrollViewerScrollBarsSeparatorBackground" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorExpandDelay">00:00:00</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorExpandDuration">00:00:00.1</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDelay">00:00:02</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDelayDisabled">00:00:00</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDuration">00:00:00.1</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorDisplayDelayWithoutAnimation">00:00:00.725</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorExpandDelayWithoutAnimation">00:00:00</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDelayWithoutAnimation">00:00:02</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsNoTouchDuration">00:00:00.5</x:String>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="ScrollViewerScrollBarsSeparatorBackground" ResourceKey="SystemControlPageBackgroundChromeLowBrush" />
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorExpandDelay">00:00:00</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorExpandDuration">00:00:00.1</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDelay">00:00:02</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDelayDisabled">00:00:00</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDuration">00:00:00.1</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorDisplayDelayWithoutAnimation">00:00:00.725</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorExpandDelayWithoutAnimation">00:00:00</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDelayWithoutAnimation">00:00:02</x:String>
-            <x:String x:Key="ScrollViewerScrollBarsNoTouchDuration">00:00:00.5</x:String>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
+
+    <x:String x:Key="ScrollViewerScrollBarsSeparatorExpandDelay">00:00:00</x:String>
+    <x:String x:Key="ScrollViewerScrollBarsSeparatorExpandDuration">00:00:00.1</x:String>
+    <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDelay">00:00:02</x:String>
+    <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDelayDisabled">00:00:00</x:String>
+    <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDuration">00:00:00.1</x:String>
+    <x:String x:Key="ScrollViewerScrollBarsSeparatorDisplayDelayWithoutAnimation">00:00:00.725</x:String>
+    <x:String x:Key="ScrollViewerScrollBarsSeparatorExpandDelayWithoutAnimation">00:00:00</x:String>
+    <x:String x:Key="ScrollViewerScrollBarsSeparatorContractDelayWithoutAnimation">00:00:02</x:String>
+    <x:String x:Key="ScrollViewerScrollBarsNoTouchDuration">00:00:00.5</x:String>
 </ResourceDictionary>
