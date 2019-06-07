@@ -49,7 +49,7 @@ WinUI 3 will provide a number of benefits compared to the current UWP Xaml frame
 WinUI is the highly-optimized native UI platform used to create Windows itself, now made more broadly available for all developers to use to reach Windows. It's a thoroughly tested and proven UI platform that powers the operating system environment and essential experiences of 800+ million Windows 10 PC, XBox One, HoloLens, Surface Hub and other devices.
 
 2. **The latest Fluent Design**  
-WinUI is Microsoft's main focus for native, acecssible Windows UI and controls and is the definitive source for the [Fluent Design System](https://www.microsoft.com/design/fluent/) on Windows.  
+WinUI is Microsoft's main focus for native, accessible Windows UI and controls and is the definitive source for the [Fluent Design System](https://www.microsoft.com/design/fluent/) on Windows.  
 It will also have the latest lower-level composition and rendering innovations like vector animations, effects, shadows and lighting.
 
 3. **Easier "a la carte" desktop development**  
@@ -80,7 +80,7 @@ For example, we're planning to base the new high-performance C++ [React Native W
 
 ### New Features in WinUI 3.0
 
-Our primary focus for WinUI 3.0 is to decouple the UWP UI framework (Xaml, composition and input) while maintaining high compatiblity with existing UWP APIs and behaviors to help make the update to WinUI 3.0 easy for existing UWP apps.
+Our primary focus for WinUI 3.0 is to decouple the UWP UI framework (Xaml, composition and input) while maintaining high compatibility with existing UWP APIs and behaviors to help make the update to WinUI 3.0 easy for existing UWP apps.
 
 This means we won't be adding many new features in the first WinUI 3.0 release. 
 
