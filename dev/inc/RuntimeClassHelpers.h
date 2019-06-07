@@ -131,7 +131,7 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 
     // Post a call to DeleteInstance() to the UI thread.  If we're already on the UI thread, then just
     // return false.  If we're off the UI thread but can't get to it, then do the DeleteInstance() here (asynchronously).
-    static void DeleteInstanceOnUIThread(std::unique_ptr<D>&& self) try
+    static void DeleteInstanceOnUIThread(std::unique_ptr<D>&& self) noexcept
     {
         bool queued = false;
         
@@ -155,7 +155,6 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
             self.reset();
         }
     }
-    catch (...) {}
 
     void EnsureReferenceTrackerInterfaces()
     {
