@@ -25,7 +25,7 @@ foreach ($file in (Get-ChildItem -r:$recursive "$SearchDir\*.pdb"))
 {
     Write-Verbose "Found $file"
 
-    $allFiles = & $srctoolExe -r "$file"
+    $allFiles = & $srctoolExe -r "$file" 2>$null
 
     # If the pdb didn't have enough files then skip it (the srctool output has a blank line even when there's no info
     # so check for less than 2 lines)
