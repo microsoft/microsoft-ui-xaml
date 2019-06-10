@@ -53,3 +53,4 @@ steps:
       targetType: filePath
       filePath: build\SourceIndexing\IndexPdbs.ps1
       arguments: -SearchDir '${{ parameters.buildOutputDir }}' -SourceRoot '$(Build.SourcesDirectory)' -recursive -Verbose -CommitId $(Build.SourceVersion)
+      errorActionPreference: silentlyContinue
