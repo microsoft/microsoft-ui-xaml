@@ -11,7 +11,7 @@
     <tags>Windows WinUI UWP XAML Fluent Controls Downlevel Compatibility TreeView ColorPicker NavigationView MenuBar</tags>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <license type="file">license.txt</license>
-    <projectUrl>https://aka.ms/winui</projectUrl>
+    <projectUrl>https://github.com/microsoft/microsoft-ui-xaml</projectUrl>
     <iconUrl>https://aka.ms/winui_icon</iconUrl>
   </metadata>
   <files>

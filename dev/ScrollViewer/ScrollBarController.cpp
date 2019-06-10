@@ -22,9 +22,7 @@ ScrollBarController::~ScrollBarController()
     SCROLLVIEWER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     UnhookScrollBarEvent();
-#ifdef _DEBUG
     UnhookScrollBarPropertyChanged();
-#endif //_DEBUG
 }
 
 void ScrollBarController::SetScrollBar(const winrt::ScrollBar& scrollBar)
@@ -36,9 +34,7 @@ void ScrollBarController::SetScrollBar(const winrt::ScrollBar& scrollBar)
     m_scrollBar = scrollBar;
 
     HookScrollBarEvent();
-#ifdef _DEBUG
     HookScrollBarPropertyChanged();
-#endif //_DEBUG
 }
 
 #pragma region IScrollController
