@@ -3990,7 +3990,7 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
 
     bool unhookCompositionTargetRendering = StartZoomFactorExpressionAnimation();
 
-    if (!m_interactionTrackerAsyncOperations.empty() && IsLoaded())
+    if (!m_interactionTrackerAsyncOperations.empty() && SharedHelpers::IsFrameworkElementLoaded(*this))
     {
         for (auto operationsIter = m_interactionTrackerAsyncOperations.begin(); operationsIter != m_interactionTrackerAsyncOperations.end();)
         {
@@ -4115,7 +4115,7 @@ void Scroller::OnUnloaded(
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    if (!IsLoaded())
+    if (!SharedHelpers::IsFrameworkElementLoaded(*this))
     {
         MUX_ASSERT(RenderSize().Width == 0.0);
         MUX_ASSERT(RenderSize().Height == 0.0);
@@ -7230,14 +7230,9 @@ bool Scroller::IsInertiaFromImpulse() const
     }
 }
 
-bool Scroller::IsLoaded() const
-{
-    return winrt::VisualTreeHelper::GetParent(*this) != nullptr;
-}
-
 bool Scroller::IsLoadedAndSetUp() const
 {
-    return IsLoaded() && m_interactionTracker;
+    return SharedHelpers::IsFrameworkElementLoaded(*this) && m_interactionTracker;
 }
 
 bool Scroller::IsInputKindIgnored(winrt::InputKind const& inputKind)

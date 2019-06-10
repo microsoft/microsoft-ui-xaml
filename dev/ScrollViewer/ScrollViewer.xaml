@@ -33,14 +33,14 @@
                                     <VisualTransition From="MouseIndicator" To="NoIndicator">
                                         <Storyboard>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_HorizontalScrollBar" Storyboard.TargetProperty="IndicatorMode">
-                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollControllersSeparatorContractDelay}">
+                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollBarsSeparatorContractDelay}">
                                                     <DiscreteObjectKeyFrame.Value>
                                                         <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
                                                     </DiscreteObjectKeyFrame.Value>
                                                 </DiscreteObjectKeyFrame>
                                             </ObjectAnimationUsingKeyFrames>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
-                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollControllersSeparatorContractDelay}">
+                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollBarsSeparatorContractDelay}">
                                                     <DiscreteObjectKeyFrame.Value>
                                                         <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
                                                     </DiscreteObjectKeyFrame.Value>
@@ -48,63 +48,18 @@
                                             </ObjectAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualTransition>
-                                    <VisualTransition From="MouseIndicatorFull" To="NoIndicator">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_HorizontalScrollBar" Storyboard.TargetProperty="IndicatorMode">
-                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollControllersSeparatorContractDelay}">
-                                                    <DiscreteObjectKeyFrame.Value>
-                                                        <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
-                                                    </DiscreteObjectKeyFrame.Value>
-                                                </DiscreteObjectKeyFrame>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
-                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollControllersSeparatorContractDelay}">
-                                                    <DiscreteObjectKeyFrame.Value>
-                                                        <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
-                                                    </DiscreteObjectKeyFrame.Value>
-                                                </DiscreteObjectKeyFrame>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_ScrollBarsSeparator" Storyboard.TargetProperty="Opacity">
-                                                <LinearDoubleKeyFrame KeyTime="{ThemeResource ScrollViewerScrollControllersSeparatorContractDuration}" Value="1"/>
-                                                <LinearDoubleKeyFrame KeyTime="{ThemeResource ScrollViewerScrollControllersSeparatorContractDelay}" Value="1"/>
-                                                <LinearDoubleKeyFrame KeyTime="{ThemeResource ScrollViewerScrollControllersSeparatorContractFinalKeyframe}" Value="0"/>
-                                            </DoubleAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualTransition>
-                                    <VisualTransition From="MouseIndicatorFull" To="MouseIndicator">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_HorizontalScrollBar" Storyboard.TargetProperty="IndicatorMode">
-                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollControllersSeparatorContractDelay}">
-                                                    <DiscreteObjectKeyFrame.Value>
-                                                        <ScrollingIndicatorMode>MouseIndicator</ScrollingIndicatorMode>
-                                                    </DiscreteObjectKeyFrame.Value>
-                                                </DiscreteObjectKeyFrame>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
-                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollControllersSeparatorContractDelay}">
-                                                    <DiscreteObjectKeyFrame.Value>
-                                                        <ScrollingIndicatorMode>MouseIndicator</ScrollingIndicatorMode>
-                                                    </DiscreteObjectKeyFrame.Value>
-                                                </DiscreteObjectKeyFrame>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_ScrollBarsSeparator" Storyboard.TargetProperty="Opacity">
-                                                <LinearDoubleKeyFrame KeyTime="{ThemeResource ScrollViewerScrollControllersSeparatorContractDuration}" Value="1"/>
-                                                <LinearDoubleKeyFrame KeyTime="{ThemeResource ScrollViewerScrollControllersSeparatorContractDelay}" Value="1"/>
-                                                <LinearDoubleKeyFrame KeyTime="{ThemeResource ScrollViewerScrollControllersSeparatorContractFinalKeyframe}" Value="0"/>
-                                            </DoubleAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualTransition>
+                                    
                                     <VisualTransition From="TouchIndicator" To="NoIndicator">
                                         <Storyboard>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_HorizontalScrollBar" Storyboard.TargetProperty="IndicatorMode">
-                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollControllersNoTouchDuration}">
+                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollBarsNoTouchDuration}">
                                                     <DiscreteObjectKeyFrame.Value>
                                                         <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
                                                     </DiscreteObjectKeyFrame.Value>
                                                 </DiscreteObjectKeyFrame>
                                             </ObjectAnimationUsingKeyFrames>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
-                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollControllersNoTouchDuration}">
+                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollBarsNoTouchDuration}">
                                                     <DiscreteObjectKeyFrame.Value>
                                                         <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
                                                     </DiscreteObjectKeyFrame.Value>
@@ -113,22 +68,11 @@
                                         </Storyboard>
                                     </VisualTransition>
                                 </VisualStateGroup.Transitions>
-                                
-                                <VisualState x:Name="NoIndicator">
-                                    <Storyboard>
-                                        <DoubleAnimation Duration="{ThemeResource ScrollViewerScrollControllersSeparatorContractDuration}"
-                                            Storyboard.TargetName="PART_ScrollBarsSeparator"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"/>
-                                    </Storyboard>
-                                </VisualState>
-                                
+
+                                <VisualState x:Name="NoIndicator"/>
+
                                 <VisualState x:Name="TouchIndicator">
                                     <Storyboard>
-                                        <DoubleAnimation Duration="{ThemeResource ScrollViewerScrollControllersSeparatorContractDuration}"
-                                            Storyboard.TargetName="PART_ScrollBarsSeparator"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"/>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
                                             <DiscreteObjectKeyFrame KeyTime="0">
                                                 <DiscreteObjectKeyFrame.Value>
@@ -162,37 +106,85 @@
                                                 </DiscreteObjectKeyFrame.Value>
                                             </DiscreteObjectKeyFrame>
                                         </ObjectAnimationUsingKeyFrames>
-                                        <DoubleAnimation Duration="{ThemeResource ScrollViewerScrollControllersSeparatorContractDuration}"
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="ScrollBarsSeparatorStates">
+                                <VisualStateGroup.Transitions>
+                                    <VisualTransition From="ScrollBarsSeparatorExpanded" To="ScrollBarsSeparatorCollapsed">
+                                        <Storyboard>
+                                            <DoubleAnimation Duration="{ThemeResource ScrollViewerScrollBarsSeparatorContractDuration}"
+                                                BeginTime="{ThemeResource ScrollViewerScrollBarsSeparatorContractDelay}"
+                                                Storyboard.TargetName="PART_ScrollBarsSeparator"
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="0"/>
+                                        </Storyboard>
+                                    </VisualTransition>
+                                    <VisualTransition From="ScrollBarsSeparatorExpanded" To="ScrollBarsSeparatorCollapsedDisabled">
+                                        <Storyboard>
+                                            <DoubleAnimation Duration="{ThemeResource ScrollViewerScrollBarsSeparatorContractDuration}"
+                                                BeginTime="{ThemeResource ScrollViewerScrollBarsSeparatorContractDelayDisabled}"
+                                                Storyboard.TargetName="PART_ScrollBarsSeparator"
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="0"/>
+                                        </Storyboard>
+                                    </VisualTransition>
+                                </VisualStateGroup.Transitions>
+
+                                <VisualState x:Name="ScrollBarsSeparatorCollapsed"/>
+
+                                <VisualState x:Name="ScrollBarsSeparatorCollapsedDisabled">
+                                    <Storyboard>
+                                        <DoubleAnimation Duration="{ThemeResource ScrollViewerScrollBarsSeparatorContractDuration}"
+                                            BeginTime="{ThemeResource ScrollViewerScrollBarsSeparatorContractDelayDisabled}"
                                             Storyboard.TargetName="PART_ScrollBarsSeparator"
                                             Storyboard.TargetProperty="Opacity"
                                             To="0"/>
                                     </Storyboard>
                                 </VisualState>
-                                
-                                <VisualState x:Name="MouseIndicatorFull">
+
+                                <VisualState x:Name="ScrollBarsSeparatorExpanded">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_HorizontalScrollBar" Storyboard.TargetProperty="IndicatorMode">
-                                            <DiscreteObjectKeyFrame KeyTime="0">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <ScrollingIndicatorMode>MouseIndicator</ScrollingIndicatorMode>
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
-                                            <DiscreteObjectKeyFrame KeyTime="0">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <ScrollingIndicatorMode>MouseIndicator</ScrollingIndicatorMode>
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <DoubleAnimation Duration="{ThemeResource ScrollViewerScrollControllersSeparatorExpandDuration}"
+                                        <DoubleAnimation Duration="{ThemeResource ScrollViewerScrollBarsSeparatorExpandDuration}"
+                                            BeginTime="{ThemeResource ScrollViewerScrollBarsSeparatorExpandDelay}"
                                             Storyboard.TargetName="PART_ScrollBarsSeparator"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"/>
                                     </Storyboard>
                                 </VisualState>
+
+                                <VisualState x:Name="ScrollBarsSeparatorDisplayedWithoutAnimation">
+                                    <Storyboard>
+                                        <DoubleAnimation Duration="0"
+                                            BeginTime="{ThemeResource ScrollViewerScrollBarsSeparatorDisplayDelayWithoutAnimation}"
+                                            Storyboard.TargetName="PART_ScrollBarsSeparator"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="1"/>
+                                    </Storyboard>
+                                </VisualState>
+
+                                <VisualState x:Name="ScrollBarsSeparatorExpandedWithoutAnimation">
+                                    <Storyboard>
+                                        <DoubleAnimation Duration="0"
+                                            BeginTime="{ThemeResource ScrollViewerScrollBarsSeparatorExpandDelayWithoutAnimation}"
+                                            Storyboard.TargetName="PART_ScrollBarsSeparator"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="1"/>
+                                    </Storyboard>
+                                </VisualState>
+
+                                <VisualState x:Name="ScrollBarsSeparatorCollapsedWithoutAnimation">
+                                    <Storyboard>
+                                        <DoubleAnimation Duration="0"
+                                            BeginTime="{ThemeResource ScrollViewerScrollBarsSeparatorContractDelayWithoutAnimation}"
+                                            Storyboard.TargetName="PART_ScrollBarsSeparator"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="0"/>
+                                    </Storyboard>
+                                </VisualState>
                             </VisualStateGroup>
-                      </VisualStateManager.VisualStateGroups>
+                        </VisualStateManager.VisualStateGroups>
 
                       <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
@@ -235,7 +227,7 @@
                             Grid.Row="1"
                             Grid.Column="1"
                             Opacity="0"
-                            Background="{ThemeResource ScrollViewerScrollControllersSeparatorBackground}"/>
+                            Background="{ThemeResource ScrollViewerScrollBarsSeparatorBackground}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

@@ -189,6 +189,18 @@ public:
         return nullptr;
     }
 
+    static bool IsFrameworkElementLoaded(winrt::FrameworkElement const& frameworkElement)
+    {
+        if (IsRS5OrHigher())
+        {
+            return frameworkElement.IsLoaded();
+        }
+        else
+        {
+            return winrt::VisualTreeHelper::GetParent(frameworkElement) != nullptr;
+        }
+    }
+
     template<typename AncestorType>
     static AncestorType GetAncestorOfType(winrt::DependencyObject const& firstGuess)
     {

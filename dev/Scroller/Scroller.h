@@ -547,7 +547,6 @@ private:
     int GetNextViewChangeId();
 
     bool IsInertiaFromImpulse() const;
-    bool IsLoaded() const;
     bool IsLoadedAndSetUp() const;
     bool IsInputKindIgnored(winrt::InputKind const& inputKind);
     bool HasBringingIntoViewListener() const

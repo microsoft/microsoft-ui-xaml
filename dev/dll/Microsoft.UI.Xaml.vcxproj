@@ -174,7 +174,7 @@
     <Link>
       <ModuleDefinitionFile>Microsoft.UI.Xaml.def</ModuleDefinitionFile>
       <GenerateDebugInformation Condition="'$(Configuration)'=='Debug'">$(GenerateDebugInformation)</GenerateDebugInformation>
-      <AdditionalDependencies>dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mincore.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!-- Microsoft.winmd will contain the definition of both public, preview and private types. -->
       <WindowsMetadataFile>$(OutDir)\Microsoft.winmd</WindowsMetadataFile>
       <GenerateMapFile>true</GenerateMapFile>
@@ -234,6 +234,7 @@
     <ClInclude Include="..\inc\GlobalDependencyProperty.h" />
     <ClInclude Include="..\inc\DownlevelHelper.h" />
     <ClInclude Include="..\inc\ErrorHandling.h" />
+    <ClInclude Include="..\inc\RegUtil.h" />
     <ClInclude Include="..\inc\RuntimeClassHelpers.h" />
     <ClInclude Include="..\inc\SharedHelpers.h" />
     <ClInclude Include="..\inc\tracker_ref.h" />
