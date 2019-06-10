@@ -28,7 +28,7 @@ void NavigationViewItemSeparator::OnApplyTemplate()
 {
     // Stop UpdateVisualState before template is applied. Otherwise the visual may not the same as we expect
     m_appliedTemplate = false;
-    __super::OnApplyTemplate();
+    NavigationViewItemBase::OnApplyTemplate();
 
     m_appliedTemplate = true;
     UpdateVisualState(false /*useTransition*/);
