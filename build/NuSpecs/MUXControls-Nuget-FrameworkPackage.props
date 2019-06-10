@@ -77,6 +77,11 @@
     <SDKReference Include="Microsoft.VCLibs, Version=14.0" />
   </ItemGroup>
 
+  <!-- Add a dependency on VCRT 140 App-Local DLL Forwarders: DLLs that forward to runtime
+       components of Visual C++ libraries which are required to run Visual C++ applications. -->
+  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+    <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.0-rc" />
+  </ItemGroup>
 
   <!-- This section is to work around the fact that this Nuget package contains only a .winmd and no implementation, but the
        VS targets expect that, so convince them it's ok. -->
