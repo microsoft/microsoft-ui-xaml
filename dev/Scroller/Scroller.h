@@ -754,6 +754,9 @@ private:
         const winrt::UIElement& descendant,
         const winrt::Rect& descendantRect);
 
+    static winrt::AnimationMode GetComputedAnimationMode(
+        winrt::AnimationMode const& animationMode);
+
     static bool IsInteractionTrackerPointerWheelRedirectionEnabled();
     static bool IsVisualTranslationPropertyAvailable();
     static wstring_view GetVisualTargetedPropertyName(ScrollerDimension dimension);

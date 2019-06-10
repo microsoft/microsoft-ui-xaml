@@ -13,6 +13,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerDynamicPage.xaml.cs">
       <DependentUpon>ScrollViewerDynamicPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerKeyboardAndGamepadNavigationPage.xaml.cs">
+      <DependentUpon>ScrollViewerKeyboardAndGamepadNavigationPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerPage.xaml.cs">
       <DependentUpon>ScrollViewerPage.xaml</DependentUpon>
     </Compile>
@@ -28,6 +31,11 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ScrollViewerDynamicPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewerKeyboardAndGamepadNavigationPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>

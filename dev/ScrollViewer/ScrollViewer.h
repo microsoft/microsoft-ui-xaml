@@ -321,9 +321,9 @@ private:
     static constexpr std::wstring_view s_mouseIndicatorStateName{ L"MouseIndicator"sv };
     static constexpr std::wstring_view s_mouseIndicatorFullStateName{ L"MouseIndicatorFull"sv };
 
-    int m_verticalScrollWithKeyboardDirection = 0;
-    int m_verticalScrollWithKeyboardOffsetChangeId = -1;
+    int m_verticalScrollFromDirection = 0;
+    int m_verticalScrollFromOffsetChangeId = -1;
 
-    int m_horizontalScrollWithKeyboardDirection = 0;
-    int m_horizontalScrollWithKeyboardOffsetChangeId = -1;
+    int m_horizontalScrollFromDirection = 0;
+    int m_horizontalScrollFromOffsetChangeId = -1;
 };
