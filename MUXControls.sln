@@ -584,6 +584,7 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TabView_InteractionTests", "dev\TabView\InteractionTests\TabView_InteractionTests.shproj", "{D1E297B4-5E5B-4807-8624-4141C817A98A}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TabView_TestUI", "dev\TabView\TestUI\TabView_TestUI.shproj", "{1D87AAC7-1E11-40FC-90A7-B6CE1C4567AE}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutoSuggestBox", "AutoSuggestBox", "{CFAFD6A7-FC7B-4C96-B292-A440C7C65D89}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CheckBox", "CheckBox", "{21EB9176-2228-4917-85B4-06A720F25C53}"
