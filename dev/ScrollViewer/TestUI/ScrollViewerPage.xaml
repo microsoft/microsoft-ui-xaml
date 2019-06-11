@@ -31,5 +31,6 @@
         <Button x:Name="navigateToDynamic" AutomationProperties.Name="navigateToDynamic" Margin="2" HorizontalAlignment="Stretch">Exercise ScrollViewer API</Button>
         <Button x:Name="navigateToScrollControllers" AutomationProperties.Name="navigateToScrollControllers" Margin="2" HorizontalAlignment="Stretch">ScrollViewer with IScrollControllers within template</Button>
         <Button x:Name="navigateToRTL" AutomationProperties.Name="navigateToRTL" Margin="2" HorizontalAlignment="Stretch">ScrollViewer with RightToLeft flow direction</Button>
+        <Button x:Name="navigateToKeyboardAndGamepadNavigation" AutomationProperties.Name="navigateToKeyboardAndGamepadNavigation" Margin="2" HorizontalAlignment="Stretch">ScrollViewer navigation with Keyboard and Gamepad</Button>
     </StackPanel>
 </local:TestPage>

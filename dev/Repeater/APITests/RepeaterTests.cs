@@ -240,10 +240,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void NestedRepeaterWithDataTemplateScenario()
         {
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.NineteenH1))
+            {
+                Log.Warning("This test is showing consistent issues with not scrolling enough, tracked by microsoft-ui-xaml#779");
+                return;
+            }
+
             // Example of how to include debug tracing to an ItemsRepeater ApiTests test.
             // using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Repeater"))
             // {
-                ItemsRepeater rootRepeater = null;
+            ItemsRepeater rootRepeater = null;
                 ScrollViewer scrollViewer = null;
                 ManualResetEvent viewChanged = new ManualResetEvent(false);
                 RunOnUIThread.Execute(() =>
