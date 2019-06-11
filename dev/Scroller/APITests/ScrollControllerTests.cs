@@ -138,7 +138,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
-                true /*hookViewChanged*/,
+                hookViewChanged: true,
+                isAnimationsEnabledOverride: null,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 2.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0);
 
@@ -149,7 +150,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0,
                 AnimationMode.Enabled,
                 SnapPointsMode.Ignore,
-                false /*hookViewChanged*/,
+                hookViewChanged: false,
+                isAnimationsEnabledOverride: null,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 4.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0);
 
@@ -161,7 +163,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 0.0f,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
-                false /*hookViewChanged*/);
+                hookViewChanged: false);
 
             Log.Comment("Animate to zoomFactor 1.5");
             ZoomTo(
@@ -171,7 +173,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 0.0f,
                 AnimationMode.Enabled,
                 SnapPointsMode.Ignore,
-                false /*hookViewChanged*/);
+                hookViewChanged: false);
         }
 
         [TestMethod]
@@ -496,7 +498,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
-                true /*hookViewChanged*/,
+                hookViewChanged: true,
+                isAnimationsEnabledOverride: null,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 2.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0);
 
@@ -507,7 +510,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0,
                 AnimationMode.Enabled,
                 SnapPointsMode.Ignore,
-                false /*hookViewChanged*/,
+                hookViewChanged: false,
+                isAnimationsEnabledOverride: null,
                 (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 4.0,
                 (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0);
 
@@ -519,7 +523,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 0.0f,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
-                false /*hookViewChanged*/);
+                hookViewChanged: false);
 
             Log.Comment("Animate to zoomFactor 1.5");
             ZoomTo(
@@ -529,7 +533,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 0.0f,
                 AnimationMode.Enabled,
                 SnapPointsMode.Ignore,
-                false /*hookViewChanged*/);
+                hookViewChanged: false);
         }
 
         [TestMethod]

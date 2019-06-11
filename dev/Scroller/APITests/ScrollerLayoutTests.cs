@@ -78,7 +78,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 c_defaultUIScrollerContentHeight + 2 * c_Margin - c_defaultUIScrollerHeight + 10.0,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
-                true /*hookViewChanged*/,
+                hookViewChanged: true,
+                isAnimationsEnabledOverride: null,
                 c_defaultUIScrollerContentWidth + 2 * c_Margin - c_defaultUIScrollerWidth,
                 c_defaultUIScrollerContentHeight + 2 * c_Margin - c_defaultUIScrollerHeight);
 
@@ -97,7 +98,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 c_defaultUIScrollerContentHeight - 2 * c_Margin - c_defaultUIScrollerHeight + 10.0,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
-                false /*hookViewChanged*/,
+                hookViewChanged: false,
+                isAnimationsEnabledOverride: null,
                 c_defaultUIScrollerContentWidth - 2 * c_Margin - c_defaultUIScrollerWidth,
                 c_defaultUIScrollerContentHeight - 2 * c_Margin - c_defaultUIScrollerHeight);
         }
@@ -147,7 +149,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight + 10.0,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
-                true /*hookViewChanged*/,
+                hookViewChanged: true,
+                isAnimationsEnabledOverride: null,
                 c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth,
                 c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight);
         }
@@ -572,7 +575,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 c_UnnaturalImageHeight - c_defaultUIScrollerHeight + 10.0,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
-                true /*hookViewChanged*/,
+                hookViewChanged: true,
+                isAnimationsEnabledOverride: null,
                 c_UnnaturalImageWidth - c_defaultUIScrollerWidth,
                 c_UnnaturalImageHeight - c_defaultUIScrollerHeight);
         }

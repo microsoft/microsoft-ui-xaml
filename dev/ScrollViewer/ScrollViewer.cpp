@@ -2286,9 +2286,9 @@ bool ScrollViewer::DoScrollForKey(winrt::VirtualKey key, double scrollProportion
 
 void ScrollViewer::DoScroll(double offset, winrt::Orientation orientation)
 {
-	SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_INT, METH_NAME, this, offset, static_cast<int>(orientation));
-	
-	bool isVertical = orientation == winrt::Orientation::Vertical;
+    SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_INT, METH_NAME, this, offset, static_cast<int>(orientation));
+
+    bool isVertical = orientation == winrt::Orientation::Vertical;
 
     if (auto scroller = m_scroller.get().as<winrt::Scroller>())
     {

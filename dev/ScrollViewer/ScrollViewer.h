@@ -200,8 +200,8 @@ private:
 
     void ResetHideIndicatorsTimer(bool isForDestructor = false, bool restart = false);
 
-	void HookUISettingsEvent();
-	void HookCompositionTargetRendering();
+    void HookUISettingsEvent();
+    void HookCompositionTargetRendering();
     void UnhookCompositionTargetRendering();
     void HookScrollViewerEvents();
     void UnhookScrollViewerEvents();

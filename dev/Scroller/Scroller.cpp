@@ -3617,7 +3617,19 @@ winrt::AnimationMode Scroller::GetComputedAnimationMode(
 {
     if (animationMode == winrt::AnimationMode::Auto)
     {
-        return SharedHelpers::IsAnimationsEnabled() ? winrt::AnimationMode::Enabled : winrt::AnimationMode::Disabled;
+        bool isAnimationsEnabled;
+        auto globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
+
+        if (globalTestHooks && globalTestHooks->IsAnimationsEnabledOverride())
+        {
+            isAnimationsEnabled = globalTestHooks->IsAnimationsEnabledOverride().Value();
+        }
+        else
+        {
+            isAnimationsEnabled = SharedHelpers::IsAnimationsEnabled();
+        }
+
+        return isAnimationsEnabled ? winrt::AnimationMode::Enabled : winrt::AnimationMode::Disabled;
     }
 
     return animationMode;
