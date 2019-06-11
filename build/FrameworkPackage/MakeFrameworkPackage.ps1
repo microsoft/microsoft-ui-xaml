@@ -75,7 +75,7 @@ function Get-SDK-References-Path
     $sdkVersions = $sdkPropsContent.SelectNodes("//*[contains(local-name(), 'SDKVersion')]") | Sort-Object -Property '#text' -Descending 
     foreach ($version in $sdkVersions)
     {
-        $sdkReferencesPath=$kitsRoot10 + "References\" + $version.'#text'
+        $sdkReferencesPath = Join-Path (Join-Path $kitsRoot10 "References\") ($version.'#text')
         Write-Verbose "Checking $sdkReferencesPath ..."
         if (Test-Path $sdkReferencesPath)
         {
