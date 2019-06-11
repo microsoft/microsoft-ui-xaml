@@ -87,7 +87,7 @@ function Get-SDK-References-Path
 }
 
 $sdkReferencesPath = Get-SDK-References-Path
-$WindowsSdkBinDir = $sdkReferencesPath.Replace("References", "bin")
+$WindowsSdkBinDir = Join-Path $sdkReferencesPath.Replace("References", "bin") "x64"
 Write-Verbose "SdkReferencesPath = $sdkReferencesPath"
 $foundationWinmdPath = Get-ChildItem -Recurse $sdkReferencesPath"\Windows.Foundation.FoundationContract" -Filter "Windows.Foundation.FoundationContract.winmd" | Select-Object -ExpandProperty FullName
 $universalWinmdPath = Get-ChildItem -Recurse $sdkReferencesPath"\Windows.Foundation.UniversalApiContract" -Filter "Windows.Foundation.UniversalApiContract.winmd" | Select-Object -ExpandProperty FullName
