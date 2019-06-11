@@ -43,13 +43,14 @@ Copy-IntoNewDirectory FrameworkPackageContents\* $fullOutputPath\PackageContents
 Copy-IntoNewDirectory PriConfig\* $fullOutputPath
 
 $KitsRoot10 = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows Kits\Installed Roots" -Name KitsRoot10).KitsRoot10
-# If this path is not found, construct one using Program Files (x86). VS2019 hosted agents seem to have the wrong path populated in the registry.
-if (-not (Test-Path $KitsRoot10))
-{
-    $KitsRoot10 =  "${env:ProgramFiles(x86)}\Windows Kits\10"
-}
-
 $WindowsSdkBinDir = Join-Path $KitsRoot10 "bin\x86"
+# If this path is not found, construct one using Program Files (x86). VS2019 hosted agents seem to have the wrong path populated in the registry.
+if (-not (Test-Path $WindowsSdkBinDir))
+{
+    Write-Host "Not found: $WindowsSdkBinDir"
+    $KitsRoot10 =  "${env:ProgramFiles(x86)}\Windows Kits\10"
+    $WindowsSdkBinDir = Join-Path $KitsRoot10 "bin\x86"
+}
 
 $ActivatableTypes = ""
 
