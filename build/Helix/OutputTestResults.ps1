@@ -5,7 +5,17 @@ $azureDevOpsRestApiHeaders = @{
 
 Write-Host "Checking test results..."
 
-$testRuns = Invoke-RestMethod -Uri "https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)" -Method Get -Headers $azureDevOpsRestApiHeaders
+$collectionUri = $env:SYSTEM_COLLECTIONURI 
+$teamProject = $env:SYSTEM_TEAMPROJECT
+
+Write-Host "collectionUri = $collectionUri"
+Write-Host "teamProject = $teamProject"
+
+$baseUri = $collectionUri + $teamProject
+$queryUri = "$baseUri/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)"
+Write-Host "queryUri = $queryUri"
+
+$testRuns = Invoke-RestMethod -Uri $queryUri -Method Get -Headers $azureDevOpsRestApiHeaders
 [System.Collections.Generic.List[string]]$failingTests = @()
 [System.Collections.Generic.List[string]]$unreliableTests = @()
 
