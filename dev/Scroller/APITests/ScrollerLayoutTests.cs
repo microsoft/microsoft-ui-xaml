@@ -159,12 +159,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Sets Scroller.Content.HorizontalAlignment/VerticalAlignment and verifies content positioning.")]
         public void BasicAlignment()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277312: MUX Scroller tests fail on RS5_Release
-                return;
-            }
-
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
             {
                 // Skipping this test on pre-RS2 since it uses Visual's Translation property.
@@ -442,12 +436,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Sets Scroller.Content.HorizontalAlignment/VerticalAlignment and Scroller.Content.Margin and verifies content positioning.")]
         public void BasicMarginAndAlignment()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277312: MUX Scroller tests fail on RS5_Release
-                return;
-            }
-
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
             {
                 // Skipping this test on pre-RS2 since it uses Visual's Translation property.
@@ -586,12 +574,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             "Sets Scroller.ContentOrientation to Vertical and verifies Image positioning for various alignments and zoom factors.")]
         public void ImageWithConstrainedWidth()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277312: MUX Scroller tests fail on RS5_Release
-                return;
-            }
-
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
             {
                 // Skipping this test on pre-RS2 since it uses Visual's Translation property.
@@ -672,7 +654,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: c_smallZoomFactor);
 
             // Jump to absolute large zoomFactor to make the content larger than the viewport.
-            ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+            ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
 
             ValidateContentWithConstrainedWidth(
                 compositor,
@@ -716,12 +698,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             "Sets Scroller.IsChildAvailableHeightConstrained to True and verifies Image positioning for various alignments and zoom factors.")]
         public void ImageWithConstrainedHeight()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277312: MUX Scroller tests fail on RS5_Release
-                return;
-            }
-
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
             {
                 // Skipping this test on pre-RS2 since it uses Visual's Translation property.
@@ -800,7 +776,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: c_smallZoomFactor);
 
             // Jump to absolute large zoomFactor to make the content larger than the viewport.
-            ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+            ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
 
             ValidateContentWithConstrainedHeight(
                 compositor,
