@@ -140,19 +140,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         int minColumnSpacing = 0;
                         ValidateGridLayoutChildrenLayoutBounds(om, (i) => panel.Children[i], itemMinorSize, itemMajorSize, minRowSpacing, minColumnSpacing, panel.Children.Count, panel.DesiredSize);
 
+                        var layout = (UniformGridLayout)panel.Layout;
                         minRowSpacing = 5;
                         minColumnSpacing = 10;
-                        ((UniformGridLayout)panel.Layout).MinRowSpacing = minRowSpacing;
-                        ((UniformGridLayout)panel.Layout).MinColumnSpacing = minColumnSpacing;
+                        layout.MinRowSpacing = minRowSpacing;
+                        layout.MinColumnSpacing = minColumnSpacing;
                         Content.UpdateLayout();
                         ValidateGridLayoutChildrenLayoutBounds(om, (i) => panel.Children[i], itemMinorSize, itemMajorSize, minRowSpacing, minColumnSpacing, panel.Children.Count, panel.DesiredSize);
 
+                        // Change the properties and validate that they are reflected in the 
+                        // layout bounds of children once layout has completed.
                         minRowSpacing = 5;
                         minColumnSpacing = 10;
-                        ((UniformGridLayout)panel.Layout).MinRowSpacing = minRowSpacing;
-                        ((UniformGridLayout)panel.Layout).MinColumnSpacing = minColumnSpacing;
-                        ((UniformGridLayout)panel.Layout).MinItemWidth *= 2;
-                        ((UniformGridLayout)panel.Layout).MinItemHeight *= 2;
+                        layout.MinRowSpacing = minRowSpacing;
+                        layout.MinColumnSpacing = minColumnSpacing;
+                        layout.MinItemWidth *= 2;
+                        layout.MinItemHeight *= 2;
                         Content.UpdateLayout();
                         ValidateGridLayoutChildrenLayoutBounds(om, (i) => panel.Children[i], itemMinorSize*2, itemMajorSize*2, minRowSpacing, minColumnSpacing, panel.Children.Count, panel.DesiredSize);
                     }
