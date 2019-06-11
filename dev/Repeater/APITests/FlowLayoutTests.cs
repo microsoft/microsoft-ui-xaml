@@ -146,6 +146,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         ((UniformGridLayout)panel.Layout).MinColumnSpacing = minColumnSpacing;
                         Content.UpdateLayout();
                         ValidateGridLayoutChildrenLayoutBounds(om, (i) => panel.Children[i], itemMinorSize, itemMajorSize, minRowSpacing, minColumnSpacing, panel.Children.Count, panel.DesiredSize);
+
+                        minRowSpacing = 5;
+                        minColumnSpacing = 10;
+                        ((UniformGridLayout)panel.Layout).MinRowSpacing = minRowSpacing;
+                        ((UniformGridLayout)panel.Layout).MinColumnSpacing = minColumnSpacing;
+                        ((UniformGridLayout)panel.Layout).MinItemWidth *= 2;
+                        ((UniformGridLayout)panel.Layout).MinItemHeight *= 2;
+                        Content.UpdateLayout();
+                        ValidateGridLayoutChildrenLayoutBounds(om, (i) => panel.Children[i], itemMinorSize*2, itemMajorSize*2, minRowSpacing, minColumnSpacing, panel.Children.Count, panel.DesiredSize);
                     }
                 }
             });
