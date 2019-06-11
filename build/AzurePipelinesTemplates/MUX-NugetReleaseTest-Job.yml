@@ -41,7 +41,7 @@ jobs:
     nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
     packageSaveDirectory: $(Build.SourcesDirectory)\packages\muxreleasetest
     artifactDownloadPath: $(Build.SourcesDirectory)\Artifacts
-    currentPackageVersion: 2.1.190218001-prerelease
+    currentPackageVersion: 2.1.190606001
     buildOutputDir: $(Build.SourcesDirectory)\BuildOutput
 
   steps:
