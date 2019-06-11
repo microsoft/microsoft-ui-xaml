@@ -240,93 +240,99 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void NestedRepeaterWithDataTemplateScenario()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.NineteenH1))
+            NestedRepeaterWithDataTemplateScenario(disableAnimation: true);
+            NestedRepeaterWithDataTemplateScenario(disableAnimation: false);
+        }
+
+        private void NestedRepeaterWithDataTemplateScenario(bool disableAnimation)
+        { 
+            if (!disableAnimation && PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                Log.Warning("This test is showing consistent issues with not scrolling enough, tracked by microsoft-ui-xaml#779");
+                Log.Warning("This test is showing consistent issues with not scrolling enough on RS5 and 19H1 when animations are enabled, tracked by microsoft-ui-xaml#779");
                 return;
             }
 
-            // Example of how to include debug tracing to an ItemsRepeater ApiTests test.
+            // Example of how to include debug tracing in an ApiTests.ItemsRepeater test's output.
             // using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Repeater"))
             // {
             ItemsRepeater rootRepeater = null;
-                ScrollViewer scrollViewer = null;
-                ManualResetEvent viewChanged = new ManualResetEvent(false);
+            ScrollViewer scrollViewer = null;
+            ManualResetEvent viewChanged = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                var anchorProvider = (ItemsRepeaterScrollHost)XamlReader.Load(
+                    @"<controls:ItemsRepeaterScrollHost Width='400' Height='600'
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                    <controls:ItemsRepeaterScrollHost.Resources>
+                        <DataTemplate x:Key='ItemTemplate' >
+                            <TextBlock Text='{Binding}' />
+                        </DataTemplate>
+                        <DataTemplate x:Key='GroupTemplate'>
+                            <StackPanel>
+                                <TextBlock Text='{Binding}' />
+                                <controls:ItemsRepeater ItemTemplate='{StaticResource ItemTemplate}' ItemsSource='{Binding}' VerticalCacheLength='0'/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </controls:ItemsRepeaterScrollHost.Resources>
+                    <ScrollViewer x:Name='scrollviewer'>
+                        <controls:ItemsRepeater x:Name='rootRepeater' ItemTemplate='{StaticResource GroupTemplate}' VerticalCacheLength='0' />
+                    </ScrollViewer>
+                </controls:ItemsRepeaterScrollHost>");
+
+                rootRepeater = (ItemsRepeater)anchorProvider.FindName("rootRepeater");
+                rootRepeater.SizeChanged += (sender, args) =>
+                {
+                    Log.Comment($"SizeChanged: Size=({rootRepeater.ActualWidth} x {rootRepeater.ActualHeight})");
+                };
+
+                scrollViewer = (ScrollViewer)anchorProvider.FindName("scrollviewer");
+                scrollViewer.ViewChanging += (sender, args) =>
+                {
+                    Log.Comment($"ViewChanging: Next VerticalOffset={args.NextView.VerticalOffset}, Final VerticalOffset={args.FinalView.VerticalOffset}");
+                };
+                scrollViewer.ViewChanged += (sender, args) =>
+                {
+                    Log.Comment($"ViewChanged: VerticalOffset={scrollViewer.VerticalOffset}, IsIntermediate={args.IsIntermediate}");
+
+                    if (!args.IsIntermediate)
+                    {
+                        viewChanged.Set();
+                    }
+                };
+
+                var itemsSource = new ObservableCollection<ObservableCollection<int>>();
+                for (int i = 0; i < 100; i++)
+                {
+                    itemsSource.Add(new ObservableCollection<int>(Enumerable.Range(0, 5)));
+                };
+
+                rootRepeater.ItemsSource = itemsSource;
+                Content = anchorProvider;
+            });
+
+            // scroll down several times to cause recycling of elements
+            for (int i = 1; i < 10; i++)
+            {
+                IdleSynchronizer.Wait();
                 RunOnUIThread.Execute(() =>
                 {
-                    var anchorProvider = (ItemsRepeaterScrollHost)XamlReader.Load(
-                      @"<controls:ItemsRepeaterScrollHost Width='400' Height='600'
-                         xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-                         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-                         xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
-                        <controls:ItemsRepeaterScrollHost.Resources>
-                            <DataTemplate x:Key='ItemTemplate' >
-                                <TextBlock Text='{Binding}' />
-                            </DataTemplate>
-                            <DataTemplate x:Key='GroupTemplate'>
-                                <StackPanel>
-                                    <TextBlock Text='{Binding}' />
-                                    <controls:ItemsRepeater ItemTemplate='{StaticResource ItemTemplate}' ItemsSource='{Binding}' VerticalCacheLength='0'/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </controls:ItemsRepeaterScrollHost.Resources>
-                        <ScrollViewer x:Name='scrollviewer'>
-                            <controls:ItemsRepeater x:Name='rootRepeater' ItemTemplate='{StaticResource GroupTemplate}' VerticalCacheLength='0' />
-                        </ScrollViewer>
-                    </controls:ItemsRepeaterScrollHost>");
-
-                    rootRepeater = (ItemsRepeater)anchorProvider.FindName("rootRepeater");
-                    rootRepeater.SizeChanged += (sender, args) =>
-                    {
-                        Log.Comment($"SizeChanged: S=({rootRepeater.ActualWidth} x {rootRepeater.ActualHeight})");
-                    };
-
-                    scrollViewer = (ScrollViewer)anchorProvider.FindName("scrollviewer");
-                    scrollViewer.ViewChanging += (sender, args) =>
-                    {
-                        Log.Comment($"ViewChanging: NVO={args.NextView.VerticalOffset}, FVO={args.FinalView.VerticalOffset}");
-                    };
-                    scrollViewer.ViewChanged += (sender, args) =>
-                    {
-                        Log.Comment($"ViewChanged: VO={scrollViewer.VerticalOffset}, IsIntermediate={args.IsIntermediate}");
-
-                        if (!args.IsIntermediate)
-                        {
-                            viewChanged.Set();
-                        }
-                    };
-
-                    var itemsSource = new ObservableCollection<ObservableCollection<int>>();
-                    for (int i = 0; i < 100; i++)
-                    {
-                        itemsSource.Add(new ObservableCollection<int>(Enumerable.Range(0, 5)));
-                    };
-
-                    rootRepeater.ItemsSource = itemsSource;
-                    Content = anchorProvider;
+                    Log.Comment($"Size=({rootRepeater.ActualWidth} x {rootRepeater.ActualHeight})");
+                    Log.Comment($"ChangeView(VerticalOffset={i * 200})");
+                    scrollViewer.ChangeView(null, i * 200, null, disableAnimation);
                 });
 
-                // scroll down several times to cause recycling of elements
-                for (int i = 1; i < 10; i++)
+                Log.Comment("Waiting for view change completion...");
+                Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS));
+                viewChanged.Reset();
+                Log.Comment("View change completed");
+
+                RunOnUIThread.Execute(() =>
                 {
-                    IdleSynchronizer.Wait();
-                    RunOnUIThread.Execute(() =>
-                    {
-                        Log.Comment($"Size: S=({rootRepeater.ActualWidth} x {rootRepeater.ActualHeight})");
-                        Log.Comment($"ChangeView(VO={i * 200})");
-                        scrollViewer.ChangeView(null, i * 200, null);
-                    });
-
-                    Log.Comment("Waiting for view change completion...");
-                    Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS));
-                    viewChanged.Reset();
-                    Log.Comment("View change completed");
-
-                    RunOnUIThread.Execute(() =>
-                    {
-                        Verify.AreEqual(i * 200, scrollViewer.VerticalOffset);
-                    });
-                }
+                    Verify.AreEqual(i * 200, scrollViewer.VerticalOffset);
+                });
+            }
             // }
         }
 
