@@ -267,7 +267,7 @@ void UniformGridLayout::OnPropertyChanged(const winrt::DependencyPropertyChanged
     {
         m_minItemWidth = unbox_value<double>(args.NewValue());
     }
-    else if (property = s_MinItemHeightProperty)
+    else if (property == s_MinItemHeightProperty)
     {
         m_minItemHeight = unbox_value<double>(args.NewValue());
     }
