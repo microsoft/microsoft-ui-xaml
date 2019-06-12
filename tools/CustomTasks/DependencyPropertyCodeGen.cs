@@ -399,6 +399,15 @@ namespace CustomTasks
             {
                 if (member == null) continue;
 
+                //var groups = member.CustomAttributes.GroupBy(x => x.AttributeType.Name);
+                //foreach (var group in groups)
+                //{
+                //    var toStrings = group
+                //        .Where(x => !x.AttributeType.Name.Contains("StaticAttribute"))
+                //        .Select(x => x.ToString()).Distinct().ToList();
+                //    int length = toStrings.Count;
+                //}
+
                 foreach (var attribute in member.CustomAttributes)
                 {
                     if (attribute.AttributeType.Name == name)
