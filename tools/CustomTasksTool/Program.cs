@@ -24,6 +24,7 @@ namespace CustomTasksTool
             test.WinMDInput = new string[] { args[0] };
             test.References = args.Skip(1).ToArray();
             test.OutputDirectory = "..\\..\\..\\..\\dev\\Generated";
+            test.LogToConsole = true;
             test.Execute();
         }
     }

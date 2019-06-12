@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading;
@@ -136,18 +137,21 @@ namespace CustomTasks
             // Go through the dependency property properties.
             foreach (var propInfo in propInfos)
             {
+                LogVerbose($"CollectProperties: {propInfo.Name}");
                 if (propInfo.PropertyType.Name == "DependencyProperty")
                 {
                     if (!propInfo.Name.EndsWith("Property"))
                     {
-                        throw new Exception(String.Format("Unexpected: {0}.{1} does not end with 'Property'", type.Name, propInfo.Name));
+                        LogError($"Unexpected: {type.Name}.{propInfo.Name} does not end with 'Property'");
                     }
 
                     string baseName = propInfo.Name.Substring(0, propInfo.Name.Length - "Property".Length);
                     var instanceProperty = propInfos.FirstOrDefault(x => x.Name == baseName);
 
-                    var propDefinition = CollectProperty(type, propInfo, baseName, instanceProperty);
-                    props.Add(propDefinition);
+                    var def = CollectProperty(type, propInfo, baseName, instanceProperty);
+                    LogVerbose($"CollectProperty: NeedsPropChangedCallback = {def.NeedsPropChangedCallback}, PropChangedCallbackMethodName = {def.PropChangedCallbackMethodName}, PropertyValidationCallback = {def.PropertyValidationCallback}, AttachedPropertyTargetType = {def.AttachedPropertyTargetType}");
+
+                    props.Add(def);
                 }
                 else
                 {
@@ -157,9 +161,10 @@ namespace CustomTasks
                     bool needsDependencyPropertyField = NeedsDependencyPropertyField(type, propInfo);
                     if (needsDependencyPropertyField && !props.Any(x => x.Name == baseName))
                     {
-                        PropertyDefinition propDefinition = CollectProperty(type, null, baseName, propInfo);
-                        propDefinition.NeedsDependencyPropertyField = true;
-                        props.Add(propDefinition);
+                        PropertyDefinition def = CollectProperty(type, null, baseName, propInfo);
+                        def.NeedsDependencyPropertyField = true;
+                        LogVerbose($"CollectProperty: NeedsPropChangedCallback = {def.NeedsPropChangedCallback}, PropChangedCallbackMethodName = {def.PropChangedCallbackMethodName}, PropertyValidationCallback = {def.PropertyValidationCallback}, AttachedPropertyTargetType = {def.AttachedPropertyTargetType}");
+                        props.Add(def);
                     }
                 }
             }
@@ -232,12 +237,8 @@ namespace CustomTasks
                     }
                     else
                     {
-#if MSBUILD_TASK
-                        Log.LogError("Type {0} had a DependencyProperty {1} without a matching instance property, Get{1} method, or [MUX_PROPERTY_TYPE(...)] attribute", type.Name, baseName);
+                        LogError($"Type {type.Name} had a DependencyProperty {baseName} without a matching instance property, Get{baseName} method, or [MUX_PROPERTY_TYPE(...)] attribute");
                         return null;
-#else
-                        throw new Exception(String.Format("Type {0} had a DependencyProperty {1} without a matching instance property, Get{1} method, or [MUX_PROPERTY_TYPE(...)] attribute", type.Name, baseName));
-#endif
                     }
                 }
             }
@@ -558,9 +559,49 @@ public:
             return sb.ToString();
         }
 
+        public bool LogToConsole { get; set; }
+
+        private void LogError(string message)
+        {
+            if (!LogToConsole)
+            {
+                Log.LogError(message);
+            }
+            else
+            {
+                throw new Exception(message);
+            }
+        }
+
+        private void LogMessage(string message)
+        {
+            if (!LogToConsole)
+            {
+                Log.LogMessage(message);
+            }
+            else
+            {
+                Console.WriteLine(message);
+            }
+        }
+
+        private void LogVerbose(string message)
+        {
+            if (!LogToConsole)
+            {
+                Log.LogMessage(MessageImportance.Low, message);
+            }
+            else
+            {
+                Console.WriteLine(message);
+            }
+        }
+
 
         private string WriteImplementation(TypeDefinition typeDefinition, List<TypeDefinition> allTypes)
         {
+            LogMessage($"WriteImplementation: {typeDefinition.Type.Name}");
+
             var ownerType = typeDefinition.Type;
             var props = typeDefinition.Properties;
             var events = typeDefinition.Events;
@@ -630,6 +671,7 @@ public:
 
             foreach (var prop in props)
             {
+                LogMessage($"Prop: {prop.Name}");
                 string defaultValue = String.Format("ValueHelper<{0}>::", prop.PropertyCppName);
                 if (prop.DefaultValue == null)
                 {
@@ -653,11 +695,7 @@ public:
                 {
                     if (prop.PropertyValidationCallback != null)
                     {
-#if MSBUILD_TASK
-                        Log.LogError("Custom property changed callback and validation callback are not supported, type {0} property {1}", ownerType.Name, prop.Name);
-#else
-                        throw new Exception("Custom property changed callback and validation callback are not supported, type {0} property {1}", ownerType.Name, prop.Name);
-#endif
+                        LogError($"Custom property changed callback and validation callback are not supported, type {ownerType.Name} property {prop.Name}");
                     }
                     callback = String.Format("&{0}::{1}", ownerType.Name, prop.PropChangedCallbackMethodName);
                 }
