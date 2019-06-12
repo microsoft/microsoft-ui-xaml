@@ -72,6 +72,7 @@ namespace CustomTasks
         public bool Execute()
 #endif
         {
+            _success = true;
             try
             {
                 List<Type> types = WinMDInput.SelectMany(x => GetTypes(x, References)).ToList();
@@ -121,7 +122,7 @@ namespace CustomTasks
 
                 FilesWritten = _pendingFilesWritten.ToArray();
 
-                return true;
+                return _success;
             }
             catch (Exception e)
             {
@@ -132,6 +133,7 @@ namespace CustomTasks
 
         private List<PropertyDefinition> CollectProperties(Type type)
         {
+            var typeName = type.Name;
             var props = new List<PropertyDefinition>();
             var propInfos = type.GetProperties().OrderBy(x => x.Name);
             // Go through the dependency property properties.
@@ -570,11 +572,14 @@ public:
 
         public bool LogToConsole { get; set; }
 
+        private bool _success;
+
         private void LogError(string message)
         {
             if (!LogToConsole)
             {
                 Log.LogError(message);
+                _success = false;
             }
             else
             {
@@ -609,6 +614,7 @@ public:
 
         private string WriteImplementation(TypeDefinition typeDefinition, List<TypeDefinition> allTypes)
         {
+            var typeName = typeDefinition.Type.Name;
             LogMessage($"WriteImplementation: {typeDefinition.Type.Name}");
 
             var ownerType = typeDefinition.Type;
