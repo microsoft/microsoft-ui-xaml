@@ -3,7 +3,9 @@
 #   . generate files like TimePicker_rs1_themeresources.xaml, TimePicker_rs2_themeresources.xaml, TimePicker_rs3_themeresources.xaml...
 #   . remove the duplicated Items. If TimePicker style in rs2 is the same with rs1, rs2 will not include this style
 #   . generate new generic.xaml and the node to be removed would be marked with NodeToBeReplaced
-$controlLists = @("ListViewItem")
+param (
+    [Parameter(Mandatory=$true)][string]$controlLists
+)
 $skippedkeyLists = @()
 
 $themesDir = "D:\os\src\onecoreuap\windows\dxaml\xcp\dxaml\themes"

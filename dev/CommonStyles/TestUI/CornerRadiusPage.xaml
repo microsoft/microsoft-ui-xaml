@@ -6,12 +6,10 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
-    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <ScrollViewer >
+    <ScrollViewer>
         <Grid RowSpacing="10" ColumnSpacing="10">
             <Grid.Resources>
                 <Style x:Key="SideHeader" TargetType="TextBlock">
@@ -239,30 +237,6 @@
                     </Button.ContextFlyout>
                 </Button>
             </Grid>
-            <Grid Grid.Row="12" Style="{StaticResource RightColumn}">
-                <Button Content="Click me">
-                    <Button.Flyout>
-                        <Flyout>
-                            <Flyout.FlyoutPresenterStyle>
-                                <Style TargetType="FlyoutPresenter">
-                                    <Setter Property="CornerRadius" Value="6"/>
-                                </Style>
-                            </Flyout.FlyoutPresenterStyle>
-                            <TextBlock Text="Hello World"/>
-                        </Flyout>
-                    </Button.Flyout>
-                    <Button.ContextFlyout>
-                        <Flyout>
-                            <Flyout.FlyoutPresenterStyle>
-                                <Style TargetType="FlyoutPresenter">
-                                    <Setter Property="CornerRadius" Value="6"/>
-                                </Style>
-                            </Flyout.FlyoutPresenterStyle>
-                            <TextBlock Text="Hello World" MinHeight="300" MinWidth="300"/>
-                        </Flyout>
-                    </Button.ContextFlyout>
-                </Button>
-            </Grid>
 
             <TextBlock Grid.Row="13" Text="MenuFlyout" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="13" Style="{StaticResource LeftColumn}">
@@ -283,48 +257,6 @@
                     </Button.Flyout>
                     <Button.ContextFlyout>
                         <MenuFlyout>
-                            <MenuFlyoutItem Text="Share" >
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon Glyph="&#xE72D;" />
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
-                            <MenuFlyoutItem Text="Copy" Icon="Copy" />
-                            <MenuFlyoutItem Text="Delete" Icon="Delete" />
-                            <MenuFlyoutSeparator />
-                            <MenuFlyoutItem Text="Rename" />
-                            <MenuFlyoutItem Text="Select" />
-                        </MenuFlyout>
-                    </Button.ContextFlyout>
-                </Button>
-            </Grid>
-            <Grid Grid.Row="13" Style="{StaticResource RightColumn}">
-                <Button Content="Click me">
-                    <Button.Flyout>
-                        <MenuFlyout>
-                            <MenuFlyout.MenuFlyoutPresenterStyle>
-                                <Style TargetType="MenuFlyoutPresenter">
-                                    <Setter Property="CornerRadius" Value="6"/>
-                                </Style>
-                            </MenuFlyout.MenuFlyoutPresenterStyle>
-                            <MenuFlyoutItem Text="Share" >
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon Glyph="&#xE72D;" />
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
-                            <MenuFlyoutItem Text="Copy" Icon="Copy" />
-                            <MenuFlyoutItem Text="Delete" Icon="Delete" />
-                            <MenuFlyoutSeparator />
-                            <MenuFlyoutItem Text="Rename" />
-                            <MenuFlyoutItem Text="Select" />
-                        </MenuFlyout>
-                    </Button.Flyout>
-                    <Button.ContextFlyout>
-                        <MenuFlyout>
-                            <MenuFlyout.MenuFlyoutPresenterStyle>
-                                <Style TargetType="MenuFlyoutPresenter">
-                                    <Setter Property="CornerRadius" Value="6"/>
-                                </Style>
-                            </MenuFlyout.MenuFlyoutPresenterStyle>
                             <MenuFlyoutItem Text="Share" >
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xE72D;" />
@@ -385,26 +317,26 @@
             </Grid>
 
             <TextBlock Grid.Row="21" Text="Slider" Style="{StaticResource SideHeader}"/>
-            <Grid Grid.Row="21" Style="{StaticResource LeftColumn}" MinWidth="200">
+            <Grid Grid.Row="21" Style="{StaticResource LeftColumn}" MinWidth="50">
                 <Slider Orientation="Horizontal"/>
             </Grid>
-            <Grid Grid.Row="21" Style="{StaticResource RightColumn}" MinWidth="200">
+            <Grid Grid.Row="21" Style="{StaticResource RightColumn}" MinWidth="50">
                 <Slider Orientation="Horizontal" CornerRadius="6"/>
             </Grid>
 
             <TextBlock Grid.Row="22" Text="Slider" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="22" Style="{StaticResource LeftColumn}">
-                <Slider Orientation="Horizontal" TickFrequency="1" Width="200" TickPlacement="Outside"/>
+                <Slider Orientation="Horizontal" TickFrequency="1" Width="100" TickPlacement="Outside"/>
             </Grid>
             <Grid Grid.Row="22" Style="{StaticResource RightColumn}">
-                <Slider Orientation="Horizontal" TickFrequency="1" Width="200" TickPlacement="Outside" CornerRadius="6"/>
+                <Slider Orientation="Horizontal" TickFrequency="1" Width="100" TickPlacement="Outside" CornerRadius="6"/>
             </Grid>
 
             <TextBlock Grid.Row="23" Text="" Style="{StaticResource SideHeader}"/>
-            <Grid Grid.Row="23" Style="{StaticResource LeftColumn}" MinHeight="100">
+            <Grid Grid.Row="23" Style="{StaticResource LeftColumn}" MinHeight="50">
                 <Slider Orientation="Vertical"/>
             </Grid>
-            <Grid Grid.Row="23" Style="{StaticResource RightColumn}" MinHeight="100">
+            <Grid Grid.Row="23" Style="{StaticResource RightColumn}" MinHeight="50">
                 <Slider Orientation="Vertical" CornerRadius="6"/>
             </Grid>
 
@@ -417,19 +349,16 @@
             </Grid>
 
             <TextBlock Grid.Row="31" Text="ProgressBar" Style="{StaticResource SideHeader}"/>
-            <Grid Grid.Row="31" Style="{StaticResource LeftColumn}" MinWidth="100">
+            <Grid Grid.Row="31" Style="{StaticResource LeftColumn}" MinWidth="50">
                 <ProgressBar Minimum="0" Maximum="100" Value="50"/>
             </Grid>
-            <Grid Grid.Row="31" Style="{StaticResource RightColumn}" MinWidth="100">
+            <Grid Grid.Row="31" Style="{StaticResource RightColumn}" MinWidth="50">
                 <ProgressBar Minimum="0" Maximum="100" Value="50" CornerRadius="6"/>
             </Grid>
 
             <TextBlock Grid.Row="32" Text="TextBlock" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="32" Style="{StaticResource LeftColumn}">
                 <TextBlock Text="Hello World"/>
-            </Grid>
-            <Grid Grid.Row="32" Style="{StaticResource RightColumn}">
-                <TextBlock>N/A</TextBlock>
             </Grid>
 
             <TextBlock Grid.Row="33" Text="RichTextBlock" Style="{StaticResource SideHeader}"/>
@@ -439,9 +368,6 @@
                         Hello World
                     </Paragraph>
                 </RichTextBlock>
-            </Grid>
-            <Grid Grid.Row="33" Style="{StaticResource RightColumn}">
-                <TextBlock>N/A</TextBlock>
             </Grid>
 
             <TextBlock Grid.Row="34" Text="CheckBox" Style="{StaticResource SideHeader}"/>
@@ -482,22 +408,6 @@
             </Grid>
             <Grid Grid.Row="38" Style="{StaticResource RightColumn}">
                 <RichEditBox CornerRadius="6"/>
-            </Grid>
-
-            <TextBlock Grid.Row="39" Text="FlipView" Style="{StaticResource SideHeader}"/>
-            <Grid Grid.Row="39" Style="{StaticResource LeftColumn}" Width="200" Height="200">
-                <FlipView>
-                    <Grid Background="Red"/>
-                    <Grid Background="Green"/>
-                    <Grid Background="Blue"/>
-                </FlipView>
-            </Grid>
-            <Grid Grid.Row="39" Style="{StaticResource RightColumn}" Width="200" Height="200">
-                <FlipView CornerRadius="6">
-                    <Grid Background="Red"/>
-                    <Grid Background="Green"/>
-                    <Grid Background="Blue"/>
-                </FlipView>
             </Grid>
 
             <TextBlock Grid.Row="40" Text="RadioButton" Style="{StaticResource SideHeader}"/>
@@ -552,41 +462,6 @@
                 <HyperlinkButton Content="Hello World" CornerRadius="6"/>
             </Grid>
 
-            <TextBlock Grid.Row="45" Text="DropDownButton" Style="{StaticResource SideHeader}"/>
-            <Grid Grid.Row="45" Style="{StaticResource LeftColumn}">
-                <controls:DropDownButton Content="Hello World"/>
-            </Grid>
-            <Grid Grid.Row="45" Style="{StaticResource RightColumn}">
-                <controls:DropDownButton Content="Hello World" CornerRadius="6"/>
-            </Grid>
-
-            <TextBlock Grid.Row="46" Text="SplitButton" Style="{StaticResource SideHeader}"/>
-            <Grid Grid.Row="46" Style="{StaticResource LeftColumn}">
-                <controls:SplitButton Content="Hello World"/>
-            </Grid>
-            <Grid Grid.Row="46" Style="{StaticResource RightColumn}">
-                <controls:SplitButton Content="Hello World" CornerRadius="6"/>
-            </Grid>
-
-            <TextBlock Grid.Row="47" Text="ColorPicker" Style="{StaticResource SideHeader}"/>
-            <Grid Grid.Row="47" Style="{StaticResource LeftColumn}">
-                <controls:ColorPicker IsAlphaEnabled="True"/>
-            </Grid>
-            <Grid Grid.Row="47" Style="{StaticResource RightColumn}">
-                <Grid.Resources>
-                    <Style TargetType="ComboBox">
-                        <Setter Property="CornerRadius" Value="6"/>
-                    </Style>
-                    <Style TargetType="TextBox">
-                        <Setter Property="CornerRadius" Value="6"/>
-                    </Style>
-                    <Style TargetType="primitives:ColorPickerSlider">
-                        <Setter Property="CornerRadius" Value="6"/>
-                    </Style>
-                </Grid.Resources>
-                <controls:ColorPicker IsAlphaEnabled="True" CornerRadius="6"/>
-            </Grid>
-
             <TextBlock Grid.Row="48" Text="ListView" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="48" Style="{StaticResource LeftColumn}">
                 <ListView SelectionMode="Multiple">
@@ -597,11 +472,6 @@
                 </ListView>
             </Grid>
             <Grid Grid.Row="48" Style="{StaticResource RightColumn}">
-                <Grid.Resources>
-                    <Style TargetType="CheckBox">
-                        <Setter Property="CornerRadius" Value="6"/>
-                    </Style>
-                </Grid.Resources>
                 <ListView SelectionMode="Multiple" CornerRadius="6">
                     <ListViewHeaderItem Content="Header 1"/>
                     <ListViewItem Content="Item 1"/>
@@ -621,11 +491,6 @@
                 </GridView>
             </Grid>
             <Grid Grid.Row="49" Style="{StaticResource RightColumn}" MaxWidth="400">
-                <Grid.Resources>
-                    <Style TargetType="CheckBox">
-                        <Setter Property="CornerRadius" Value="6"/>
-                    </Style>
-                </Grid.Resources>
                 <GridView SelectionMode="Multiple" CornerRadius="6">
                     <GridViewHeaderItem Content="Header 1"/>
                     <GridViewItem Content="Item 1.1"/>
@@ -655,11 +520,6 @@
                 </TreeView>
             </Grid>
             <Grid Grid.Row="50" Style="{StaticResource RightColumn}">
-                <Grid.Resources>
-                    <Style TargetType="CheckBox">
-                        <Setter Property="CornerRadius" Value="6"/>
-                    </Style>
-                </Grid.Resources>
                 <TreeView SelectionMode="Multiple" CornerRadius="6">
                     <TreeView.RootNodes>
                         <TreeViewNode Content="Item 1" IsExpanded="True">
