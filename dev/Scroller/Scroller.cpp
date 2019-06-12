@@ -3617,17 +3617,19 @@ winrt::AnimationMode Scroller::GetComputedAnimationMode(
 {
     if (animationMode == winrt::AnimationMode::Auto)
     {
-        bool isAnimationsEnabled;
-        auto globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
+        bool isAnimationsEnabled = []()
+        {
+            auto globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
 
-        if (globalTestHooks && globalTestHooks->IsAnimationsEnabledOverride())
-        {
-            isAnimationsEnabled = globalTestHooks->IsAnimationsEnabledOverride().Value();
-        }
-        else
-        {
-            isAnimationsEnabled = SharedHelpers::IsAnimationsEnabled();
-        }
+            if (globalTestHooks && globalTestHooks->IsAnimationsEnabledOverride())
+            {
+                return globalTestHooks->IsAnimationsEnabledOverride().Value();
+            }
+            else
+            {
+                return SharedHelpers::IsAnimationsEnabled();
+            }
+        }();
 
         return isAnimationsEnabled ? winrt::AnimationMode::Enabled : winrt::AnimationMode::Disabled;
     }
