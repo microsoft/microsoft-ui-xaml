@@ -6,15 +6,27 @@ This script does not push the vpack, but gives the required command to do so.
 #>
 [CmdLetBinding()]
 Param(
+    [Parameter(Mandatory=$true)]
     [string]$NugetPackageInputPath,
+
+    [Parameter(Mandatory=$true)]
     [string]$VPackDirectoryOutputPath
     )
 
+$outputDirName = "Microsoft.UI.Xaml"
+$outputPath = Join-Path $VPackDirectoryOutputPath $outputDirName
+
+if(Test-Path $outputPath)
+{
+    Write-Error "The path '$outputPath' already exists. Please delete the old '$outputDirName' directory before running this script."
+    exit 1
+}
+
 $nupkgFileNameWithoutExtension = (Get-Item $NugetPackageInputPath).Basename
 
-if(!$nupkgFileNameWithoutExtension.StartsWith("Microsoft.UI.Xaml.","CurrentCultureIgnoreCase"))
+if(!$nupkgFileNameWithoutExtension.StartsWith("Microsoft.UI.Xaml.","OrdinalIgnoreCase"))
 {
-    Write-Error "Expected input nupkg file to start with 'Microsoft.UI.Xaml'"
+    Write-Error "Expected input nupkg file to start with 'Microsoft.UI.Xaml.'"
     exit 1
 }
 
@@ -45,16 +57,8 @@ Write-Verbose "Temp Nuget directory: $nugetUnpacked"
 
 [System.IO.Compression.ZipFileExtensions]::ExtractToDirectory($archive, $nugetUnpacked)
 
-$outputDirName = "Microsoft.UI.Xaml"
-$outputPath = Join-Path $VPackDirectoryOutputPath $outputDirName
 
-if(Test-Path $outputPath)
-{
-    Write-Error "The path '$outputPath' already exists. Please delete the old '$outputDirName' directory before running this script."
-    exit 1
-}
-
-New-Item -ItemType Directory -Force -Path $outputPath
+New-Item -ItemType Directory -Force -Path $outputPath | Out-Null
 
 $flavors = @("x86", "x64", "arm", "arm64")
 foreach ($flavor in $flavors)
@@ -76,7 +80,7 @@ foreach ($flavor in $flavors)
     $destPathFull = Join-Path $destPathDir $fileName
 
     Write-Verbose "Create directory '$destPathDir'"
-    New-Item -ItemType Directory -Force -Path $destPathDir
+    New-Item -ItemType Directory -Force -Path $destPathDir | Out-Null
 
     Write-Verbose "Copy item from '$sourcePathFull' to '$destPathFull' "
     Copy-Item $sourcePathFull $destPathFull
@@ -85,6 +89,9 @@ foreach ($flavor in $flavors)
 Write-Verbose "Removing temp dir '$nugetUnpacked'"
 Remove-Item -Force -Recurse $nugetUnpacked
 
+Write-Host "Created the vpack in this directory:"
+Write-Host "    $outputPath" 
+Write-Host "" 
 Write-Host "Push this vpack with the following command:"
-Write-Host "VPack.exe push /Name:Microsoft.UI.Xaml /SourceDirectory:$outputPath /VersionIncrementType:None /Major:$verMajor /Minor:$verMinor /Patch:$verPatch"
+Write-Host "    VPack.exe push /Name:Microsoft.UI.Xaml /SourceDirectory:$outputPath /VersionIncrementType:None /Major:$verMajor /Minor:$verMinor /Patch:$verPatch"
 Write-Host "Then update %SDXROOT%/build/Config/OSDependencies.Manifest in the OS repo to consume this new version."
