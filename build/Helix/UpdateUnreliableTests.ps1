@@ -4,7 +4,7 @@ Param(
     [int]$RerunPassesRequiredToAvoidFailure
 )
 
-. "./AzurePipelinesHelperScripts.ps1"
+. "$PSScriptRoot/AzurePipelinesHelperScripts.ps1"
 
 
 $azureDevOpsRestApiHeaders = @{
