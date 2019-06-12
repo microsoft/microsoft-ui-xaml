@@ -55,6 +55,7 @@
 #define TRACE_MSG_METH_STR_STR_INT_INT L"%s[0x%p](%s, %s, %d, %d)\n"
 
 #define TRACE_MSG_METH_METH L"%s[0x%p] - calls %s()\n"
+#define TRACE_MSG_METH_METH_INT L"%s[0x%p] - calls %s(%d)\n"
 #define TRACE_MSG_METH_METH_STR L"%s[0x%p] - calls %s(%s)\n"
 #define TRACE_MSG_METH_METH_STR_STR L"%s[0x%p] - calls %s(%s, %s)\n"
 #define TRACE_MSG_METH_METH_FLT_STR L"%s[0x%p] - calls %s(%f, %s)\n"

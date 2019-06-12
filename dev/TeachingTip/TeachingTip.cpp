@@ -37,6 +37,7 @@ void TeachingTip::OnApplyTemplate()
     m_closeButtonClickedRevoker.revoke();
     m_alternateCloseButtonClickedRevoker.revoke();
     m_actionButtonClickedRevoker.revoke();
+    m_windowSizeChangedRevoker.revoke();
 
     winrt::IControlProtected controlProtected{ *this };
 
@@ -784,11 +785,7 @@ void TeachingTip::IsOpenChangedToOpen()
     }
 
     // We are about to begin the process of trying to open the teaching tip, so notify that we are no longer idle.
-    if (m_isIdle)
-    {
-        m_isIdle = false;
-        TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
-    }
+    SetIsIdle(false);
 
     //If the developer defines their TeachingTip in a resource dictionary it is possible that it's template will have never been applied
     if (!m_isTemplateApplied)
@@ -831,10 +828,9 @@ void TeachingTip::IsOpenChangedToOpen()
             else
             {
                 // We have become Open but our popup was already open. This can happen when a close is canceled by the closing event, so make sure the idle status is correct.
-                if (!m_isIdle && !m_isExpandAnimationPlaying && !m_isContractAnimationPlaying)
+                if (!m_isExpandAnimationPlaying && !m_isContractAnimationPlaying)
                 {
-                    m_isIdle = true;
-                    TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
+                    SetIsIdle(true);
                 }
             }
         }
@@ -850,20 +846,15 @@ void TeachingTip::IsOpenChangedToClose()
         if (popup.IsOpen())
         {
             // We are about to begin the process of trying to close the teaching tip, so notify that we are no longer idle.
-            if (m_isIdle)
-            {
-                m_isIdle = false;
-                TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
-            }
+            SetIsIdle(false);
             RaiseClosingEvent(true);
         }
         else
         {
             // We have become not Open but our popup was already not open. Lets make sure the idle status is correct.
-            if (!m_isIdle && !m_isExpandAnimationPlaying && !m_isContractAnimationPlaying)
+            if (!m_isExpandAnimationPlaying && !m_isContractAnimationPlaying)
             {
-                m_isIdle = true;
-                TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
+                SetIsIdle(true);
             }
         }
     }
@@ -1115,25 +1106,51 @@ void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt:
 
 void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&)
 {
+    if (winrt::IUIElement10 uiElement10 = *this)
+    {
+        if (auto xamlRoot = uiElement10.XamlRoot())
+        {
+            m_currentXamlRootSize = xamlRoot.Size();
+            m_xamlRootChangedRevoker = { xamlRoot, xamlRoot.Changed({ this, &TeachingTip::XamlRootChanged }) };
+        }
+    }
+    else
+    {
+        if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
+        {
+            m_windowSizeChangedRevoker = coreWindow.SizeChanged(winrt::auto_revoke, { this, &TeachingTip::WindowSizeChanged });
+        }
+    }
+  
     // Expand animation requires IUIElement9
     if (this->try_as<winrt::IUIElement9>() && SharedHelpers::IsAnimationsEnabled())
     {
         StartExpandToOpen();
     }
+    else
+    {
+        // We won't be playing an animation so we're immediately idle.
+        SetIsIdle(true);
+    }
 
     if (auto const teachingTipPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TeachingTipAutomationPeer>())
     {
-        auto const appName = []()
+        auto const notificationString = [this]()
         {
-            if (auto&& package = winrt::ApplicationModel::Package::Current())
+            auto const appName = []()
             {
-                return package.DisplayName();
-            }
-            return winrt::hstring{};
-        }();
+                try
+                {
+                    if (auto&& package = winrt::ApplicationModel::Package::Current())
+                    {
+                        return package.DisplayName();
+                    }
+                }
+                catch (...) {}
 
-        auto const notificationString = [this, appName]()
-        {
+                return winrt::hstring{};
+            }();
+
             if (!appName.empty())
             {
                 return StringUtil::FormatString(
@@ -1155,6 +1172,8 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
 
 void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
 {
+    m_windowSizeChangedRevoker.revoke();
+    m_xamlRootChangedRevoker.revoke();
     if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
     {
         lightDismissIndicatorPopup.IsOpen(false);
@@ -1164,6 +1183,7 @@ void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspec
         popup.Child(nullptr);
     }
     auto const myArgs = winrt::make_self<TeachingTipClosedEventArgs>();
+  
     myArgs->Reason(m_lastCloseReason);
     m_closedEventSource(*this, *myArgs);
 
@@ -1229,7 +1249,8 @@ void TeachingTip::ClosePopupWithAnimationIfAvailable()
 {
     if (m_popup && m_popup.get().IsOpen())
     {
-        if (SharedHelpers::IsRS5OrHigher() && SharedHelpers::IsAnimationsEnabled())
+        // Contract animation requires IUIElement9
+        if (this->try_as<winrt::IUIElement9>() && SharedHelpers::IsAnimationsEnabled())
         {
             StartContractToClose();
         }
@@ -1240,10 +1261,9 @@ void TeachingTip::ClosePopupWithAnimationIfAvailable()
 
         // Under normal circumstances we would have launched an animation just now, if we did not then we should make sure
         // that the idle state is correct.
-        if (!m_isContractAnimationPlaying && !m_isIdle && !m_isExpandAnimationPlaying)
+        if (!m_isContractAnimationPlaying && !m_isExpandAnimationPlaying)
         {
-            m_isIdle = true;
-            TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
+            SetIsIdle(true);
         }
     }
 }
@@ -1320,6 +1340,21 @@ void TeachingTip::RevokeViewportChangedEvent()
     m_targetEffectiveViewportChangedRevoker.revoke();
     m_effectiveViewportChangedRevoker.revoke();
     m_targetLayoutUpdatedRevoker.revoke();
+}
+
+void TeachingTip::WindowSizeChanged(const winrt::CoreWindow&, const winrt::WindowSizeChangedEventArgs&)
+{
+    RepositionPopup();
+}
+
+void TeachingTip::XamlRootChanged(const winrt::XamlRoot& xamlRoot, const winrt::XamlRootChangedEventArgs&)
+{
+    auto xamlRootSize = xamlRoot.Size();
+    if (xamlRootSize != m_currentXamlRootSize)
+    {
+        m_currentXamlRootSize = xamlRootSize;
+        RepositionPopup();
+    }
 }
 
 void TeachingTip::RepositionPopup()
@@ -1499,18 +1534,16 @@ void TeachingTip::StartExpandToOpen()
     scopedBatch.Completed([strongThis = get_strong()](auto, auto)
     {
         strongThis->m_isExpandAnimationPlaying = false;
-        if (!strongThis->m_isContractAnimationPlaying && !strongThis->m_isIdle)
+        if (!strongThis->m_isContractAnimationPlaying)
         {
-            strongThis->m_isIdle = true;
-            TeachingTipTestHooks::NotifyIdleStatusChanged(*strongThis);
+            strongThis->SetIsIdle(true);
         }
     });
 
     // Under normal circumstances we would have launched an animation just now, if we did not then we should make sure that the idle state is correct
-    if (!m_isExpandAnimationPlaying && !m_isIdle && !m_isContractAnimationPlaying)
+    if (!m_isExpandAnimationPlaying && !m_isContractAnimationPlaying)
     {
-        m_isIdle = true;
-        TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
+        SetIsIdle(true);
     }
 }
 
@@ -1554,10 +1587,9 @@ void TeachingTip::StartContractToClose()
     {
         strongThis->m_isContractAnimationPlaying = false;
         strongThis->ClosePopup();
-        if (!strongThis->m_isExpandAnimationPlaying && !strongThis->m_isIdle)
+        if (!strongThis->m_isExpandAnimationPlaying)
         {
-            strongThis->m_isIdle = true;
-            TeachingTipTestHooks::NotifyIdleStatusChanged(*strongThis);
+            strongThis->SetIsIdle(true);
         }
     });
 }
@@ -2007,6 +2039,7 @@ void TeachingTip::EstablishShadows()
         }
     }
 #endif
+#endif
     if (winrt::IUIElement10 m_contentRootGrid_uiElement10 = m_contentRootGrid.get())
     {
         if (m_tipShouldHaveShadow)
@@ -2026,7 +2059,6 @@ void TeachingTip::EstablishShadows()
             m_contentRootGrid_uiElement10.Shadow(nullptr);
         }
     }
-#endif
 }
 
 void TeachingTip::TrySetCenterPoint(const winrt::IUIElement9& element, const winrt::float3& centerPoint)
@@ -2221,6 +2253,15 @@ void TeachingTip::SetContractAnimationDuration(const winrt::TimeSpan& contractAn
 bool TeachingTip::GetIsIdle()
 {
     return m_isIdle;
+}
+
+void TeachingTip::SetIsIdle(bool isIdle)
+{
+    if (m_isIdle != isIdle)
+    {
+        m_isIdle = isIdle;
+        TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
+    }
 }
 
 winrt::TeachingTipPlacementMode TeachingTip::GetEffectivePlacement()
