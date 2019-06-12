@@ -44,6 +44,13 @@ Copy-IntoNewDirectory PriConfig\* $fullOutputPath
 
 $KitsRoot10 = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows Kits\Installed Roots" -Name KitsRoot10).KitsRoot10
 $WindowsSdkBinDir = Join-Path $KitsRoot10 "bin\x86"
+# If this path is not found, construct one using Program Files (x86). VS2019 hosted agents seem to have the wrong path populated in the registry.
+if (-not (Test-Path $WindowsSdkBinDir))
+{
+    Write-Host "Not found: $WindowsSdkBinDir"
+    $KitsRoot10 =  "${env:ProgramFiles(x86)}\Windows Kits\10"
+    $WindowsSdkBinDir = Join-Path $KitsRoot10 "bin\x86"
+}
 
 $ActivatableTypes = ""
 
@@ -68,7 +75,7 @@ function Get-SDK-References-Path
     $sdkVersions = $sdkPropsContent.SelectNodes("//*[contains(local-name(), 'SDKVersion')]") | Sort-Object -Property '#text' -Descending 
     foreach ($version in $sdkVersions)
     {
-        $sdkReferencesPath=$kitsRoot10 + "References\" + $version.'#text'
+        $sdkReferencesPath = Join-Path (Join-Path $kitsRoot10 "References\") ($version.'#text')
         Write-Verbose "Checking $sdkReferencesPath ..."
         if (Test-Path $sdkReferencesPath)
         {
@@ -80,9 +87,13 @@ function Get-SDK-References-Path
 }
 
 $sdkReferencesPath = Get-SDK-References-Path
+$WindowsSdkBinDir = Join-Path $sdkReferencesPath.Replace("References", "bin") "x64"
+Write-Verbose "SdkReferencesPath = $sdkReferencesPath"
+Write-Verbose "WindowsSdkBinDir = $WindowsSdkBinDir"
 $foundationWinmdPath = Get-ChildItem -Recurse $sdkReferencesPath"\Windows.Foundation.FoundationContract" -Filter "Windows.Foundation.FoundationContract.winmd" | Select-Object -ExpandProperty FullName
 $universalWinmdPath = Get-ChildItem -Recurse $sdkReferencesPath"\Windows.Foundation.UniversalApiContract" -Filter "Windows.Foundation.UniversalApiContract.winmd" | Select-Object -ExpandProperty FullName
 $refrenceWinmds = $foundationWinmdPath + ";" + $universalWinmdPath
+Write-Verbose "Calling Get-ActivatableTypes with '$inputBasePath\sdk\$inputBaseFileName.winmd' '$refrenceWinmds'"
 $classes = Get-ActivatableTypes $inputBasePath\sdk\$inputBaseFileName.winmd  $refrenceWinmds  | Sort-Object -Property FullName
 Write-Host $classes.Length Types found.
 @"
