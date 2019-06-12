@@ -3,16 +3,11 @@ $azureDevOpsRestApiHeaders = @{
     "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:SYSTEM_ACCESSTOKEN)")))"
 }
 
+. "./AzurePipelinesHelperScripts.ps1"
+
 Write-Host "Checking test results..."
 
-$collectionUri = $env:SYSTEM_COLLECTIONURI 
-$teamProject = $env:SYSTEM_TEAMPROJECT
-
-Write-Host "collectionUri = $collectionUri"
-Write-Host "teamProject = $teamProject"
-
-$baseUri = $collectionUri + $teamProject
-$queryUri = "$baseUri/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)"
+$queryUri = GetQueryTestRunsUri
 Write-Host "queryUri = $queryUri"
 
 $testRuns = Invoke-RestMethod -Uri $queryUri -Method Get -Headers $azureDevOpsRestApiHeaders

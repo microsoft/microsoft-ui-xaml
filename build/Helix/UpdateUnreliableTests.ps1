@@ -4,21 +4,15 @@ Param(
     [int]$RerunPassesRequiredToAvoidFailure
 )
 
-$collectionUri = $env:SYSTEM_COLLECTIONURI 
-$teamProject = $env:SYSTEM_TEAMPROJECT
+. "./AzurePipelinesHelperScripts.ps1"
 
-Write-Host "collectionUri = $collectionUri"
-Write-Host "teamProject = $teamProject"
 
 $azureDevOpsRestApiHeaders = @{
     "Accept"="application/json"
     "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:SYSTEM_ACCESSTOKEN)")))"
 }
 
-$baseUri = $collectionUri + $teamProject
-Write-Host "baseUri = $baseUri"
-
-$queryUri = "$baseUri/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)"
+$queryUri = GetQueryTestRunsUri
 Write-Host "queryUri = $queryUri"
 
 # To account for unreliable tests, we'll iterate through all of the tests associated with this build, check to see any tests that were unreliable
