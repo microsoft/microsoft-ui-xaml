@@ -83,6 +83,7 @@ namespace MUXControlsTestApp
             public string StringValue { get; set; }
         }
 
+        private bool trackPointerOnNextMove = false;
         private int lastOffsetsChangeId = -1;
         private int lastOffsetsChangeWithAdditionalVelocityId = -1;
         private int lastZoomFactorChangeId = -1;
@@ -2242,6 +2243,9 @@ namespace MUXControlsTestApp
             {
                 if (scroller != null)
                 {
+                    trackPointerOnNextMove = false;
+                    scroller.PointerMoved -= Scroller_PointerMoved;
+
                     if (chkLogScrollerMessages.IsChecked == true)
                     {
                         MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
@@ -2295,8 +2299,12 @@ namespace MUXControlsTestApp
                 txtWidth.Text = string.Empty;
                 txtHeight.Text = string.Empty;
 
+                btnTrackPointer.IsEnabled = scroller != null;
+
                 if (scroller != null)
                 {
+                    scroller.PointerMoved += Scroller_PointerMoved;
+
                     if (chkLogScrollerEvents.IsChecked == true)
                     {
                         scroller.ExtentChanged += Scroller_ExtentChanged;
@@ -2403,6 +2411,21 @@ namespace MUXControlsTestApp
                 txtExceptionReport.Text = ex.ToString();
                 lstScrollerEvents.Items.Add(ex.ToString());
             }
+        }
+
+
+        private void Scroller_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (trackPointerOnNextMove)
+            {
+                trackPointerOnNextMove = false;
+                bool result = scroller.TrackPointer(e);
+            }
+        }
+
+        private void BtnTrackPointer_Click(object sender, RoutedEventArgs e)
+        {
+            trackPointerOnNextMove = true;
         }
     }
 }

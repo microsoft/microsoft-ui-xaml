@@ -276,6 +276,7 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     Windows.Foundation.Collections.IVector<ScrollSnapPointBase> HorizontalSnapPoints { get; };
     Windows.Foundation.Collections.IVector<ScrollSnapPointBase> VerticalSnapPoints { get; };
     Windows.Foundation.Collections.IVector<ZoomSnapPointBase> ZoomSnapPoints { get; };
+    Boolean TrackPointer(Windows.UI.Xaml.Input.PointerRoutedEventArgs args);
     [method_name("ScrollTo")]
     MU_XC_NAMESPACE.ScrollInfo ScrollTo(
         Double horizontalOffset,

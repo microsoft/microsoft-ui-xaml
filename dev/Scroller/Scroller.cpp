@@ -4424,14 +4424,19 @@ void Scroller::OnPointerPressed(
     MUX_ASSERT(m_interactionTracker);
     MUX_ASSERT(m_scrollerVisualInteractionSource);
 
+    TrackPointer(args);
+}
+
+bool Scroller::TrackPointer(const winrt::PointerRoutedEventArgs& args)
+{
     if (m_horizontalScrollController && !m_horizontalScrollController.get().AreScrollerInteractionsAllowed())
     {
-        return;
+        return false;
     }
 
     if (m_verticalScrollController && !m_verticalScrollController.get().AreScrollerInteractionsAllowed())
     {
-        return;
+        return false;
     }
 
     const winrt::UIElement content = Content();
@@ -4448,21 +4453,21 @@ void Scroller::OnPointerPressed(
          verticalScrollMode == winrt::ScrollMode::Disabled &&
          ZoomMode() == winrt::ZoomMode::Disabled))
     {
-        return;
+        return false;
     }
 
     switch (args.Pointer().PointerDeviceType())
     {
         case winrt::Devices::Input::PointerDeviceType::Touch:
             if (IsInputKindIgnored(winrt::InputKind::Touch))
-                return;
+                return false;
             break;
         case winrt::Devices::Input::PointerDeviceType::Pen:
             if (IsInputKindIgnored(winrt::InputKind::Pen))
-                return;
+                return false;
             break;
         default:
-            return;
+            return false;
     }
 
     // All UIElement instances between the touched one and the Scroller must include ManipulationModes.System in their
@@ -4483,7 +4488,7 @@ void Scroller::OnPointerPressed(
 
             if ((mm & winrt::ManipulationModes::System) == winrt::ManipulationModes::None)
             {
-                return;
+                return false;
             }
 
             if (sourceAsUIE == thisAsUIElement)
@@ -4514,7 +4519,11 @@ void Scroller::OnPointerPressed(
         {
             throw;
         }
+
+        return false;
     }
+
+    return true;
 }
 
 void Scroller::OnXamlRootKeyDownOrUp(

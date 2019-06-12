@@ -170,6 +170,7 @@ public:
 
     winrt::IVector<winrt::ZoomSnapPointBase> ZoomSnapPoints();
 
+    bool TrackPointer(const winrt::PointerRoutedEventArgs& args);
     winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset);
     winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options);
     winrt::ScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
