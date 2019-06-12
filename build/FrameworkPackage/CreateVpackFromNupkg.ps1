@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS
+Use this script to create a VPack that can be pushed to the OS.
+The input to this script should be a non-prerelease .nupkg containing the MUX Framework Packages.
+This script does not push the vpack, but gives the required command to do so.
+#>
 [CmdLetBinding()]
 Param(
     [string]$NugetPackageInputPath,
