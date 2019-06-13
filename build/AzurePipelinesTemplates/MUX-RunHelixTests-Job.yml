@@ -16,8 +16,8 @@ parameters:
       buildPlatform: 'x64'
       buildConfiguration: 'release'
       # temporarily disabling RS2 and RS4 queues to unblock tests.
-      helixTargetQueues: 'Windows.10.Amd64.Client19H1.Open'
-      #helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open%3bWindows.10.Amd64.Client19H1.Open'
+      # helixTargetQueues: 'Windows.10.Amd64.Client19H1.Open'
+      helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open%3bWindows.10.Amd64.Client19H1.Open'
 
 jobs:
 - job: ${{ parameters.name }}
