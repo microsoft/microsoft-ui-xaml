@@ -2582,6 +2582,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         public void TreeViewRootNodeBindingTest()
         {
+            // TreeView databinding only works on RS5+
+            if(IsLowerThanRS5())
+            {
+                return;
+            }
+
             using (var setup = new TestSetupHelper("TreeView Tests"))
             {
                 SetContentMode(true);
