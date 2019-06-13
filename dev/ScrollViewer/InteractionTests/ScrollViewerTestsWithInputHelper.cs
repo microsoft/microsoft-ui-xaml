@@ -833,6 +833,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 GetScrollerView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
             }
 
+            if (triesRemaining >= 0)
+            {
+                // Allow the view to settle and the STateChanged, ScrollCompleted or ZoomCompleted events to be raised.
+                Thread.Sleep(250);
+                GetScrollerView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
+            }
+
             Log.Comment($"Final ScrollViewer offsets. Expected={expectedHorizontalOffset},{expectedVerticalOffset}, Actual={actualHorizontalOffset},{actualVerticalOffset}.");
             if (!areOffsetsCorrect())
             {
@@ -1089,7 +1096,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
             else
             {
-                checkBox.GetToggledWaiter().Wait();
+                checkBox.GetToggledWaiter().TryWait();
+                if (checkBox.ToggleState != ToggleState.On)
+                {
+                    Log.Warning($"{checkBoxName} was not checked.");
+                    throw new WaiterException();
+                }
                 Log.Comment("CheckBox checked.");
             }
         }
