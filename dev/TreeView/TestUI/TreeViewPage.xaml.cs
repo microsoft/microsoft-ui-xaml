@@ -225,9 +225,9 @@ namespace MUXControlsTestApp
             return node.Content.ToString();
         }
 
-        private String GetRootNodeChildrenOrder(TreeView tree)
+        private string GetRootNodeChildrenOrder(TreeView tree)
         {
-            StringBuilder sb = new StringBuilder();
+            List<string> result = new List<string>();
             Stack<TreeViewNode> pendingNodes = new Stack<TreeViewNode>();
             pendingNodes.Push(tree.RootNodes[0]);
             while (pendingNodes.Count > 0)
@@ -238,19 +238,16 @@ namespace MUXControlsTestApp
                 {
                     pendingNodes.Push(currentNode.Children[size - 1 - i]);
                 }
-                if (sb.Length > 0)
-                {
-                    sb.Append(" | ");
-                }
-                sb.Append(GetNodeContent(currentNode));
+                
+                result.Add(GetNodeContent(currentNode));
             }
 
-            return sb.ToString();
+            return string.Join(" | ", result);
         }
 
-        private String GetItemsSourceOrder()
+        private string GetItemsSourceOrder()
         {
-            StringBuilder sb = new StringBuilder();
+            List<string> result = new List<string>();
             Stack<TreeViewItemSource> pendingItems = new Stack<TreeViewItemSource>();
             pendingItems.Push(TestTreeViewItemsSource[0]);
             while (pendingItems.Count > 0)
@@ -261,14 +258,10 @@ namespace MUXControlsTestApp
                 {
                     pendingItems.Push(currentItem.Children[size - 1 - i]);
                 }
-                if (sb.Length > 0)
-                {
-                    sb.Append(" | ");
-                }
-                sb.Append(currentItem.Content);
+                result.Add(currentItem.Content);
             }
 
-            return sb.ToString();
+            return string.Join(" | ", result);
         }
 
         private void GetChildrenOrder_Click(object sender, RoutedEventArgs e)

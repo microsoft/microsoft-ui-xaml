@@ -433,10 +433,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 treeView.ItemsSource = items;
 
                 // Insert
-                var newItem = new TreeViewItemSource();
+                var newItem = new TreeViewItemSource() { Content = "newItem" };
                 items.Add(newItem);
                 Verify.AreEqual(treeView.RootNodes.Count, 3);
-                Verify.AreEqual(treeView.RootNodes[2].Content as TreeViewItemSource, newItem);
+                var itemFromNode = treeView.RootNodes[2].Content as TreeViewItemSource;
+                Verify.AreEqual(newItem.Content, itemFromNode.Content);
 
                 // Remove
                 items.Remove(newItem);
@@ -445,7 +446,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 // Replace
                 var item3 = new TreeViewItemSource() { Content = "3" };
                 items[1] = item3;
-                Verify.AreEqual(treeView.RootNodes[1].Content as TreeViewItemSource, item3);
+                itemFromNode = treeView.RootNodes[1].Content as TreeViewItemSource;
+                Verify.AreEqual(item3.Content, itemFromNode.Content);
 
                 // Clear
                 items.Clear();
