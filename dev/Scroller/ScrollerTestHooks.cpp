@@ -10,15 +10,6 @@ com_ptr<ScrollerTestHooks> ScrollerTestHooks::s_testHooks{};
 
 ScrollerTestHooks::ScrollerTestHooks()
 {
-    m_offsetsChangeMsPerUnit = Scroller::s_offsetsChangeMsPerUnit;
-    m_offsetsChangeMinMs = Scroller::s_offsetsChangeMinMs;
-    m_offsetsChangeMaxMs = Scroller::s_offsetsChangeMaxMs;
-
-    m_zoomFactorChangeMsPerUnit = Scroller::s_zoomFactorChangeMsPerUnit;
-    m_zoomFactorChangeMinMs = Scroller::s_zoomFactorChangeMinMs;
-    m_zoomFactorChangeMaxMs = Scroller::s_zoomFactorChangeMaxMs;
-
-    m_mouseWheelDeltaForVelocityUnit = Scroller::s_mouseWheelDeltaForVelocityUnit;
     m_mouseWheelInertiaDecayRate = SharedHelpers::IsRS2OrHigher() ? Scroller::s_mouseWheelInertiaDecayRate : Scroller::s_mouseWheelInertiaDecayRateRS1;
 }
 
@@ -89,6 +80,30 @@ void ScrollerTestHooks::MouseWheelDeltaForVelocityUnit(int mouseWheelDeltaForVel
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_mouseWheelDeltaForVelocityUnit = mouseWheelDeltaForVelocityUnit;
+}
+
+int ScrollerTestHooks::MouseWheelScrollLines()
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_mouseWheelScrollLines;
+}
+
+void ScrollerTestHooks::MouseWheelScrollLines(int mouseWheelScrollLines)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_mouseWheelScrollLines = mouseWheelScrollLines;
+}
+
+int ScrollerTestHooks::MouseWheelScrollChars()
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_mouseWheelScrollChars;
+}
+
+void ScrollerTestHooks::MouseWheelScrollChars(int mouseWheelScrollChars)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_mouseWheelScrollChars = mouseWheelScrollChars;
 }
 
 float ScrollerTestHooks::MouseWheelInertiaDecayRate()
