@@ -515,22 +515,6 @@
     <member name="M:Microsoft.UI.Xaml.Controls.DropDownButton.#ctor">
       <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.DropDownButton?text=DropDownButton" /> class.</summary>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.DropDownButtonAutomationPeer">
-      <summary>Exposes <see cref="Microsoft.UI.Xaml.Controls.DropDownButton?text=DropDownButton" /> types to Microsoft UI Automation.</summary>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.DropDownButtonAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.DropDownButton)">
-      <param name="owner" />
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.DropDownButtonAutomationPeer.Collapse">
-      <summary>Hides the control's drop down menu.</summary>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.DropDownButtonAutomationPeer.Expand">
-      <summary>Displays the control's drop down menu.</summary>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.DropDownButtonAutomationPeer.ExpandCollapseState">
-      <summary>Gets the state, expanded or collapsed, of the control.</summary>
-      <returns>A value of the enumeration.</returns>
-    </member>
     <member name="T:Microsoft.UI.Xaml.Controls.ElementAnimationCompleted">
       <param name="sender" />
       <param name="element" />
@@ -1146,12 +1130,27 @@
       <summary>Gets the index of the item the element was prepared for.</summary>
       <returns>The index of the item the element was prepared for.</returns>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost" />
+    <member name="T:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost">
+      <summary>A helper to coordinate interaction between the <see cref="Microsoft.UI.Xaml.Controls.ItemsRepeater?text=ItemsRepeater" /> and ScrollViewer.
+Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prior Windows 10 1809 (Build 17763).  If your app will only run on versions of Windows 1809 or higher, there is no need to use this control.</summary>
+    </member>
     <member name="M:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.#ctor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.CurrentAnchor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.HorizontalAnchorRatio" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.ScrollViewer" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.VerticalAnchorRatio" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.CurrentAnchor">
+      <summary>The currently chosen anchor element to use for scroll anchoring.</summary>
+      <returns>The most recently chosen UIElement for scroll anchoring after a layout pass, or null.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.HorizontalAnchorRatio">
+      <summary>Determines the horizontal position of the ScrollViewer's anchor point with respect to the viewport. By default, the ScrollViewer selects an element as its <see cref="Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.CurrentAnchor?text=CurrentAnchor" /> by identifying the element in its viewport nearest to the anchor point.</summary>
+      <returns>A normalized value (0.0 to 1.0). The default is 0.0.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.ScrollViewer">
+      <summary>Gets or sets the ScrollViewer to host.</summary>
+      <returns>A ScrollViewer that contains one or more <see cref="Microsoft.UI.Xaml.Controls.ItemsRepeater?text=ItemsRepeater" /> controls.</returns>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.VerticalAnchorRatio">
+      <summary>Determines the vertical position of the ScrollViewer's anchor point with respect to the viewport. By default, the ScrollViewer selects an element as its CurrentAnchor by identifying the element in its viewport nearest to the anchor point.</summary>
+      <returns>A normalized value (0.0 to 1.0). The default is 0.0.</returns>
+    </member>
     <member name="T:Microsoft.UI.Xaml.Controls.ItemsSourceView">
       <summary>Represents a standardized view of the supported interactions between a given ItemsSource object and an ItemsRepeater control.</summary>
     </member>
@@ -3500,25 +3499,6 @@
       <summary>Identifies the Flyout dependency property.</summary>
       <returns>The identifier for the Flyout dependency property.</returns>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.SplitButtonAutomationPeer">
-      <summary>Exposes <see cref="Microsoft.UI.Xaml.Controls.SplitButton?text=SplitButton" /> types to Microsoft UI Automation.</summary>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SplitButtonAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.SplitButton)">
-      <param name="owner" />
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SplitButtonAutomationPeer.Collapse">
-      <summary>Hides the control's drop down menu.</summary>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SplitButtonAutomationPeer.Expand">
-      <summary>Displays the control's drop down menu.</summary>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.SplitButtonAutomationPeer.ExpandCollapseState">
-      <summary>Gets the state, expanded or collapsed, of the control.</summary>
-      <returns>A value of the enumeration.</returns>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.SplitButtonAutomationPeer.Invoke">
-      <summary>Sends a request to click the button associated with the automation peer.</summary>
-    </member>
     <member name="T:Microsoft.UI.Xaml.Controls.SplitButtonClickEventArgs">
       <summary>Provides event data for the SplitButton.Click event.</summary>
     </member>
@@ -3760,94 +3740,224 @@
       <summary>Identifies the Symbol dependency property.</summary>
       <returns>The identifier for the Symbol dependency property.</returns>
     </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTip" />
+    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTip">
+      <summary>A teaching tip is a semi-persistent and content-rich flyout that provides contextual information. It is often used for informing, reminding, and teaching users about important and new features that may enhance their experience.</summary>
+    </member>
     <member name="M:Microsoft.UI.Xaml.Controls.TeachingTip.#ctor" />
-    <member name="E:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonClick" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonCommand" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonCommandParameter" />
+    <member name="E:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonClick">
+      <summary>Occurs after the action button is clicked.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonCommand">
+      <summary>Gets or sets the command to invoke when the action button is clicked.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonCommandParameter">
+      <summary>Gets or sets the parameter to pass to the command for the action button.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonCommandParameterProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonCommandProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonContent" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonContent">
+      <summary>Gets or sets the text of the teaching tip's action button.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonContentProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonStyle" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonStyle">
+      <summary>Gets or sets the Style to apply to the action button.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ActionButtonStyleProperty" />
-    <member name="E:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonClick" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonCommand" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonCommandParameter" />
+    <member name="E:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonClick">
+      <summary>Occurs after the close button is clicked.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonCommand">
+      <summary>Gets or sets the command to invoke when the close button is clicked.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonCommandParameter">
+      <summary>Gets or sets the parameter to pass to the command for the close button.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonCommandParameterProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonCommandProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonContent" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonContent">
+      <summary>Gets or sets the content of the teaching tip's close button.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonContentProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonStyle" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonStyle">
+      <summary>Gets or sets the Style to apply to the teaching tip's close button.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.CloseButtonStyleProperty" />
-    <member name="E:Microsoft.UI.Xaml.Controls.TeachingTip.Closed" />
-    <member name="E:Microsoft.UI.Xaml.Controls.TeachingTip.Closing" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.HeroContent" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.HeroContentPlacement" />
+    <member name="E:Microsoft.UI.Xaml.Controls.TeachingTip.Closed">
+      <summary>Occurs after the tip is closed.</summary>
+    </member>
+    <member name="E:Microsoft.UI.Xaml.Controls.TeachingTip.Closing">
+      <summary>Occurs just before the tip begins to close.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.HeroContent">
+      <summary>Border-to-border graphic content displayed in the header or footer of the teaching tip. Will appear opposite of the tail in targeted teaching tips unless otherwise set.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.HeroContentPlacement">
+      <summary>Placement of the hero content within the teaching tip.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.HeroContentPlacementProperty" />
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.HeroContentProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IconSource" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IconSource">
+      <summary>Gets or sets the graphic content to appear alongside the title and subtitle.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IconSourceProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IsLightDismissEnabled" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IsLightDismissEnabled">
+      <summary>Enables light-dismiss functionality so that a teaching tip will dismiss when a user scrolls or interacts with other elements of the application.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IsLightDismissEnabledProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IsOpen" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IsOpen">
+      <summary>Gets or sets a value that indicates whether the teaching tip is open.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.IsOpenProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.PlacementMargin" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.PlacementMargin">
+      <summary>Adds a margin between a targeted teaching tip and its target or between a non-targeted teaching tip and the xaml root.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.PlacementMarginProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.PreferredPlacement" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.PreferredPlacement">
+      <summary>Preferred placement to be used for the teaching tip. If there is not enough space to show at the preferred placement, a new placement will be automatically chosen. 
+Placement is relative to its target if Target is non-null or to the parent window of the teaching tip if Target is null.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.PreferredPlacementProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ShouldConstrainToRootBounds" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ShouldConstrainToRootBounds">
+      <summary>Gets or sets a value that indicates whether the teaching tip will constrain to the bounds of its xaml root.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.ShouldConstrainToRootBoundsProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.Subtitle" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.Subtitle">
+      <summary>Gets or sets the subtitle of the teaching tip.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.SubtitleProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TailVisibility" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TailVisibility">
+      <summary>Toggles collapse of a teaching tip's tail. Can be used to override auto behavior to make a tail visible on a non-targeted teaching tip and hidden on a targeted teaching tip.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TailVisibilityProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.Target" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.Target">
+      <summary>Sets the target for a teaching tip to position itself relative to and point at with its tail.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TargetProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TemplateSettings" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TemplateSettings">
+      <summary>Provides calculated values that can be referenced as TemplatedParent sources when defining templates for a <see cref="Microsoft.UI.Xaml.Controls.TeachingTip?text=TeachingTip" />.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TemplateSettingsProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.Title" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.Title">
+      <summary>Gets or sets the title of the teaching tip.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTip.TitleProperty" />
-    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs.Reason" />
-    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipCloseReason" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipCloseReason.CloseButton" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipCloseReason.LightDismiss" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipCloseReason.Programmatic" />
-    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs.Cancel" />
-    <member name="M:Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs.GetDeferral" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs.Reason" />
-    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode.Auto" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode.Bottom" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode.Top" />
-    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Auto" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Bottom" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.BottomLeft" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.BottomRight" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Center" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Left" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.LeftBottom" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.LeftTop" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Right" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.RightBottom" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.RightTop" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Top" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.TopLeft" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.TopRight" />
-    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipTailVisibility" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipTailVisibility.Auto" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipTailVisibility.Collapsed" />
-    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipTailVisibility.Visible" />
-    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings" />
-    <member name="M:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.#ctor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.IconElement" />
+    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs">
+      <summary>Provides data for the Closed event.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs.Reason">
+      <summary>Gets constant that specifies whether the cause of the Closed event was due to user interaction (Close button click), light-dismissal, or programmatic closure.</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipCloseReason">
+      <summary>Defines constants that specify the cause of the Close event.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipCloseReason.CloseButton">
+      <summary>The teaching tip was closed by the user clicking the close button.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipCloseReason.LightDismiss">
+      <summary>The teaching tip was closed by light-dismissal.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipCloseReason.Programmatic">
+      <summary>The teaching tip was programmatically closed.</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs">
+      <summary>Provides data for the Closing event.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs.Cancel">
+      <summary>Gets or sets a value that indicates whether the Closing event should be canceled.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs.GetDeferral">
+      <summary>Gets a deferral object for managing the work done in the Closing event handler.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs.Reason">
+      <summary>Gets constant that specifies whether the cause of the Closing event was due to user interaction (Close button click), light-dismissal, or programmatic closure.</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode">
+      <summary>Defines constants that specify the location for positioning <see cref="Microsoft.UI.Xaml.Controls.TeachingTip.HeroContent?text=HeroContent" /> within a teaching tip.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode.Auto">
+      <summary>The preferred location of the hero content is in the header of the teaching tip. 
+If possible, the hero content will move to the footer to avoid intersecting with a targeted teaching tip's tail.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode.Bottom">
+      <summary>The preferred location of the hero content is in the footer of the teaching tip.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode.Top">
+      <summary>The preferred location of the hero content is in the header of the teaching tip.</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode">
+      <summary>Defines constants that specify the preferred location for positioning a teaching tip.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Auto">
+      <summary>The preferred location of the teaching tip is along the bottom side of the xaml root when non-targeted and above the target element when targeted.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Bottom">
+      <summary>The preferred location of the teaching tip is along the bottom side of the xaml root when non-targeted and below the target element when targeted.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.BottomLeft">
+      <summary>The preferred location of the teaching tip is the bottom left corner of the xaml root when non-targeted and below the target element expanding leftward when targeted.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.BottomRight">
+      <summary>The preferred location of the teaching tip is the bottom right corner of the xaml root when non-targeted and below the target element expanding rightward when targeted.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Center">
+      <summary>The preferred location of the teaching tip is the center of the xaml root when non-targeted and pointing at the center of the target element when targeted.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Left">
+      <summary>The preferred location of the teaching tip is along the left side of the xaml root when non-targeted and left of the target element when targeted.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.LeftBottom">
+      <summary>The preferred location of the teaching tip is the bottom left corner of the xaml root when non-targeted and left of the target element expanding downward when targeted.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.LeftTop">
+      <summary>The preferred location of the teaching tip is the top left corner of the xaml root when non-targeted and left of the target element expanding upward when targeted.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Right">
+      <summary>The preferred location of the teaching tip is along the right side of the xaml root when non-targeted and right of the target element when targeted.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.RightBottom">
+      <summary>The preferred location of the teaching tip is the bottom right corner of the xaml root when non-targeted and right of the target element expanding downward when targeted.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.RightTop">
+      <summary>The preferred location of the teaching tip is the top right corner of the xaml root when non-targeted and right of the target element expanding upward when targeted.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Top">
+      <summary>The preferred location of the teaching tip is along the top side of the xaml root when non-targeted and above the target element when targeted.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.TopLeft">
+      <summary>The preferred location of the teaching tip is the top left corner of the xaml root when non-targeted and above the target element expanding leftward when targeted.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.TopRight">
+      <summary>The preferred location of the teaching tip is the top right corner of the xaml root when non-targeted and above the target element expanding rightward when targeted.</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipTailVisibility">
+      <summary>Defines constants that specify whether a teaching tip's Tail is visible or collapsed.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipTailVisibility.Auto">
+      <summary>The teaching tip's tail is collapsed when non-targeted and visible when the targeted.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipTailVisibility.Collapsed">
+      <summary>The teaching tip's tail is collapsed.</summary>
+    </member>
+    <member name="F:Microsoft.UI.Xaml.Controls.TeachingTipTailVisibility.Visible">
+      <summary>The teaching tip's tail is visible.</summary>
+    </member>
+    <member name="T:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings">
+      <summary>Provides calculated values that can be referenced as TemplatedParent sources when defining templates for a <see cref="Microsoft.UI.Xaml.Controls.TeachingTip?text=TeachingTip" />.</summary>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.#ctor">
+      <summary>Provides calculated values that can be referenced as TemplatedParent sources when defining templates for a <see cref="Microsoft.UI.Xaml.Controls.TeachingTip?text=TeachingTip" />.</summary>
+    </member>
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.IconElement">
+      <summary>Gets the icon element.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.IconElementProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.TopLeftHighlightMargin" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.TopLeftHighlightMargin">
+      <summary>Gets the thickness value of the top left highlight margin.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.TopLeftHighlightMarginProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.TopRightHighlightMargin" />
+    <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.TopRightHighlightMargin">
+      <summary>Gets the thickness value of the top right highlight margin.</summary>
+    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.TeachingTipTemplateSettings.TopRightHighlightMarginProperty" />
     <member name="T:Microsoft.UI.Xaml.Controls.TextCommandBarFlyout">
       <summary>Represents a specialized command bar flyout that contains commands for editing text.</summary>
@@ -3867,29 +3977,6 @@
     </member>
     <member name="E:Microsoft.UI.Xaml.Controls.ToggleSplitButton.IsCheckedChanged">
       <summary>Occurs when the value of the IsChecked property is changed.</summary>
-    </member>
-    <member name="T:Microsoft.UI.Xaml.Controls.ToggleSplitButtonAutomationPeer">
-      <summary>Exposes <see cref="Microsoft.UI.Xaml.Controls.ToggleSplitButton?text=ToggleSplitButton" /> types to Microsoft UI Automation.</summary>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ToggleSplitButtonAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.ToggleSplitButton)">
-      <param name="owner" />
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ToggleSplitButtonAutomationPeer.Collapse">
-      <summary>Hides the control's drop down menu.</summary>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ToggleSplitButtonAutomationPeer.Expand">
-      <summary>Displays the control's drop down menu.</summary>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ToggleSplitButtonAutomationPeer.ExpandCollapseState">
-      <summary>Gets the state, expanded or collapsed, of the control.</summary>
-      <returns>A value of the enumeration.</returns>
-    </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ToggleSplitButtonAutomationPeer.Toggle">
-      <summary>Cycles through the toggle states of a control.</summary>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ToggleSplitButtonAutomationPeer.ToggleState">
-      <summary>Gets the toggle state of the control.</summary>
-      <returns>A value of the enumeration.</returns>
     </member>
     <member name="T:Microsoft.UI.Xaml.Controls.ToggleSplitButtonIsCheckedChangedEventArgs">
       <summary>Provides event data for the <see cref="Microsoft.UI.Xaml.Controls.ToggleSplitButton.IsCheckedChanged?text=ToggleSplitButton.IsCheckedChanged" /> event.</summary>
@@ -4730,8 +4817,6 @@ WinUI library.</summary>
     <member name="F:Microsoft.UI.Xaml.Media.RevealBrushState.Pressed">
       <summary>The element is pressed.</summary>
     </member>
-    <member name="T:Microsoft.UI.Xaml.MUXContractPropertyAttribute" />
-    <member name="M:Microsoft.UI.Xaml.MUXContractPropertyAttribute.#ctor" />
     <member name="T:Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider">
       <summary>Implements XAML schema context concepts that support XAML parsing.</summary>
     </member>
