@@ -94,6 +94,7 @@ enum AnimationMode
 { 
    Disabled = 0,
    Enabled = 1,
+   Auto = 2,
 };
 
 [WUXC_VERSION_PREVIEW]

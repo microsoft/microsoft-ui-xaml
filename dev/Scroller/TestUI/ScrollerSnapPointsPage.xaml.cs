@@ -232,7 +232,7 @@ namespace MUXControlsTestApp
         {
             try
             { 
-                markupScroller.ScrollBy(0.0, 10.0, new ScrollOptions(AnimationMode.Enabled, SnapPointsMode.Default));
+                markupScroller.ScrollBy(0.0, 10.0, new ScrollOptions(AnimationMode.Auto, SnapPointsMode.Default));
             }
             catch (Exception ex)
             {
@@ -244,7 +244,7 @@ namespace MUXControlsTestApp
         {
             try
             {                
-                markupScroller.ScrollBy(0.0, 10.0, new ScrollOptions(AnimationMode.Enabled, SnapPointsMode.Ignore));
+                markupScroller.ScrollBy(0.0, 10.0, new ScrollOptions(AnimationMode.Auto, SnapPointsMode.Ignore));
             }
             catch (Exception ex)
             {

@@ -947,7 +947,7 @@ namespace MUXControlsTestApp.Utilities
             Point targetThumbOffset = new Point(targetThumbHorizontalOffset, targetThumbVerticalOffset);
             Point targetScrollerOffset = ScrollerOffsetFromThumbOffset(targetThumbOffset);
 
-            int viewChangeId = RaiseScrollToRequested(targetScrollerOffset, AnimationMode.Enabled, true /*hookupCompletion*/);
+            int viewChangeId = RaiseScrollToRequested(targetScrollerOffset, AnimationMode.Auto, true /*hookupCompletion*/);
             if (viewChangeId != -1 && !operations.ContainsKey(viewChangeId))
             {
                 operations.Add(

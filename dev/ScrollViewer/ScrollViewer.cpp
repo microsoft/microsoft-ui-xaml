@@ -998,13 +998,13 @@ void ScrollViewer::OnScrollerScrollCompleted(
     const winrt::IInspectable& /*sender*/,
     const winrt::ScrollCompletedEventArgs& args)
 {
-    if (args.ScrollInfo().OffsetsChangeId == m_horizontalScrollWithKeyboardOffsetChangeId)
+    if (args.ScrollInfo().OffsetsChangeId == m_horizontalScrollFromOffsetChangeId)
     {
-        m_horizontalScrollWithKeyboardOffsetChangeId = -1;
+        m_horizontalScrollFromOffsetChangeId = -1;
     }
-    else if (args.ScrollInfo().OffsetsChangeId == m_verticalScrollWithKeyboardOffsetChangeId)
+    else if (args.ScrollInfo().OffsetsChangeId == m_verticalScrollFromOffsetChangeId)
     {
-        m_verticalScrollWithKeyboardOffsetChangeId = -1;
+        m_verticalScrollFromOffsetChangeId = -1;
     }
 
     if (m_scrollCompletedEventSource)
@@ -2288,52 +2288,72 @@ void ScrollViewer::DoScroll(double offset, winrt::Orientation orientation)
 {
     SCROLLVIEWER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_INT, METH_NAME, this, offset, static_cast<int>(orientation));
 
-    static const winrt::float2 inertiaDecayRate(0.9995f, 0.9995f);
-
-    // A velocity less than or equal to this value has no effect.
-    static const double minVelocity = 30.0;
-
-    // We need to add this much velocity over minVelocity per pixel we want to move:
-    static constexpr double s_velocityNeededPerPixel{ 7.600855902349023 };
-
     bool isVertical = orientation == winrt::Orientation::Vertical;
 
     if (auto scroller = m_scroller.get().as<winrt::Scroller>())
     {
-        int scrollDir = offset > 0 ? 1 : -1;
-
-        // The minimum velocity required to move in the given direction.
-        double baselineVelocity = minVelocity * scrollDir;
-
-        // If there is already a scroll animation running for a previous key press, we want to take that into account
-        // for calculating the baseline velocity. 
-        auto previousScrollViewChangeId = isVertical ? m_verticalScrollWithKeyboardOffsetChangeId : m_horizontalScrollWithKeyboardOffsetChangeId;
-        if (previousScrollViewChangeId != -1)
+        if (SharedHelpers::IsAnimationsEnabled())
         {
-            auto directionOfPreviousScrollOperation = isVertical ? m_verticalScrollWithKeyboardDirection : m_horizontalScrollWithKeyboardDirection;
-            if (directionOfPreviousScrollOperation == 1)
-            {
-                baselineVelocity -= minVelocity;
-            }
-            else if (directionOfPreviousScrollOperation == -1)
-            {
-                baselineVelocity += minVelocity;
-            }
-        }
+            static const winrt::float2 inertiaDecayRate(0.9995f, 0.9995f);
 
-        float velocity = static_cast<float>(baselineVelocity + (offset * s_velocityNeededPerPixel));
+            // A velocity less than or equal to this value has no effect.
+            static const double minVelocity = 30.0;
 
-        if (isVertical)
-        {
-            winrt::float2 offsetsVelocity(0.0f, velocity);
-            m_verticalScrollWithKeyboardOffsetChangeId = scroller.ScrollFrom(offsetsVelocity, inertiaDecayRate).OffsetsChangeId;
-            m_verticalScrollWithKeyboardDirection = scrollDir;
+            // We need to add this much velocity over minVelocity per pixel we want to move:
+            static constexpr double s_velocityNeededPerPixel{ 7.600855902349023 };
+
+            int scrollDir = offset > 0 ? 1 : -1;
+
+            // The minimum velocity required to move in the given direction.
+            double baselineVelocity = minVelocity * scrollDir;
+
+            // If there is already a scroll animation running for a previous key press, we want to take that into account
+            // for calculating the baseline velocity. 
+            auto previousScrollViewChangeId = isVertical ? m_verticalScrollFromOffsetChangeId : m_horizontalScrollFromOffsetChangeId;
+            if (previousScrollViewChangeId != -1)
+            {
+                auto directionOfPreviousScrollOperation = isVertical ? m_verticalScrollFromDirection : m_horizontalScrollFromDirection;
+                if (directionOfPreviousScrollOperation == 1)
+                {
+                    baselineVelocity -= minVelocity;
+                }
+                else if (directionOfPreviousScrollOperation == -1)
+                {
+                    baselineVelocity += minVelocity;
+                }
+            }
+
+            float velocity = static_cast<float>(baselineVelocity + (offset * s_velocityNeededPerPixel));
+
+            if (isVertical)
+            {
+                winrt::float2 offsetsVelocity(0.0f, velocity);
+                m_verticalScrollFromOffsetChangeId = scroller.ScrollFrom(offsetsVelocity, inertiaDecayRate).OffsetsChangeId;
+                m_verticalScrollFromDirection = scrollDir;
+            }
+            else
+            {
+                winrt::float2 offsetsVelocity(velocity, 0.0f);
+                m_horizontalScrollFromOffsetChangeId = scroller.ScrollFrom(offsetsVelocity, inertiaDecayRate).OffsetsChangeId;
+                m_horizontalScrollFromDirection = scrollDir;
+            }
         }
         else
         {
-            winrt::float2 offsetsVelocity(velocity, 0.0f);
-            m_horizontalScrollWithKeyboardOffsetChangeId = scroller.ScrollFrom(offsetsVelocity, inertiaDecayRate).OffsetsChangeId;
-            m_horizontalScrollWithKeyboardDirection = scrollDir;
+            if (isVertical)
+            {
+                // Any horizontal ScrollFrom animation recently launched should be ignored by a potential subsequent ScrollFrom call.
+                m_verticalScrollFromOffsetChangeId = -1;
+
+                scroller.ScrollBy(0.0 /*horizontalOffsetDelta*/, offset /*verticalOffsetDelta*/).OffsetsChangeId;
+            }
+            else
+            {
+                // Any vertical ScrollFrom animation recently launched should be ignored by a potential subsequent ScrollFrom call.
+                m_horizontalScrollFromOffsetChangeId = -1;
+
+                scroller.ScrollBy(offset /*horizontalOffsetDelta*/, 0.0 /*verticalOffsetDelta*/).OffsetsChangeId;
+            }
         }
     }
 }

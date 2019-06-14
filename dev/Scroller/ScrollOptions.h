@@ -18,7 +18,7 @@ public:
         SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    static constexpr winrt::AnimationMode s_defaultAnimationMode{ winrt::AnimationMode::Enabled };
+    static constexpr winrt::AnimationMode s_defaultAnimationMode{ winrt::AnimationMode::Auto };
     static constexpr winrt::SnapPointsMode s_defaultSnapPointsMode{ winrt::SnapPointsMode::Default };
 
     winrt::AnimationMode AnimationMode() const;
