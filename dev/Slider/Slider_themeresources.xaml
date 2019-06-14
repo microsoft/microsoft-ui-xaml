@@ -166,6 +166,11 @@
     <x:Double x:Key="SliderPostContentMargin">15</x:Double>
     <x:Double x:Key="SliderHorizontalHeight">32</x:Double>
     <x:Double x:Key="SliderVerticalWidth">32</x:Double>
+    <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
+    <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
+    <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
+    <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
+    <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
     
     <Style TargetType="Slider">
         <Setter Property="Background" Value="{ThemeResource SliderTrackFill}" />
@@ -192,7 +197,7 @@
                                                 Background="{TemplateBinding Background}"
                                                 BorderBrush="{TemplateBinding BorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                                contract7Present:CornerRadius="4" />
+                                                contract7Present:CornerRadius="{ThemeResource SliderThumbCornerRadius}" />
                                         </ControlTemplate>
                                     </Setter.Value>
                                 </Setter>
@@ -366,8 +371,12 @@
                                     Fill="{TemplateBinding Background}"
                                     Height="{ThemeResource SliderTrackThemeHeight}"
                                     Grid.Row="1"
-                                    Grid.ColumnSpan="3" />
-                                <Rectangle x:Name="HorizontalDecreaseRect" Fill="{TemplateBinding Foreground}" Grid.Row="1" />
+                                    Grid.ColumnSpan="3"
+                                    RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                    RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"/>
+                                <Rectangle x:Name="HorizontalDecreaseRect" Fill="{TemplateBinding Foreground}" Grid.Row="1"
+                                    RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                    RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"/>
                                 <TickBar x:Name="TopTickBar"
                                     Visibility="Collapsed"
                                     Fill="{ThemeResource SliderTickBarFill}"
@@ -392,8 +401,8 @@
                                 <Thumb x:Name="HorizontalThumb"
                                     Style="{StaticResource SliderThumbStyle}"
                                     DataContext="{TemplateBinding Value}"
-                                    Height="24"
-                                    Width="8"
+                                    Height="{ThemeResource SliderHorizontalThumbHeight}"
+                                    Width="{ThemeResource SliderHorizontalThumbWidth}"
                                     Grid.Row="0"
                                     Grid.RowSpan="3"
                                     Grid.Column="1"
@@ -418,11 +427,15 @@
                                     Fill="{TemplateBinding Background}"
                                     Width="{ThemeResource SliderTrackThemeHeight}"
                                     Grid.Column="1"
-                                    Grid.RowSpan="3" />
+                                    Grid.RowSpan="3"
+                                    RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                    RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"/>
                                 <Rectangle x:Name="VerticalDecreaseRect"
                                     Fill="{TemplateBinding Foreground}"
                                     Grid.Column="1"
-                                    Grid.Row="2" />
+                                    Grid.Row="2"
+                                    RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                    RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"/>
                                 <TickBar x:Name="LeftTickBar"
                                     Visibility="Collapsed"
                                     Fill="{ThemeResource SliderTickBarFill}"
@@ -447,8 +460,8 @@
                                 <Thumb x:Name="VerticalThumb"
                                     Style="{StaticResource SliderThumbStyle}"
                                     DataContext="{TemplateBinding Value}"
-                                    Width="24"
-                                    Height="8"
+                                    Width="{ThemeResource SliderVerticalThumbWidth}"
+                                    Height="{ThemeResource SliderVerticalThumbHeight}"
                                     Grid.Row="1"
                                     Grid.Column="0"
                                     Grid.ColumnSpan="3"

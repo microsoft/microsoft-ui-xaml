@@ -649,7 +649,9 @@
                                 StrokeThickness="{ThemeResource CheckBoxBorderThemeThickness}"
                                 UseLayoutRounding="False"
                                 Height="20"
-                                Width="20" />
+                                Width="20"
+                                RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"/>
                             <FontIcon x:Name="CheckGlyph"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Glyph="&#xE001;"
