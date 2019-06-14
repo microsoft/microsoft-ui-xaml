@@ -8,8 +8,8 @@ jobs:
   timeoutInMinutes: 120
 
   variables:
-    buildPlatform: 'x86'
-    buildConfiguration: 'release'
+    #buildPlatform: 'x86'
+    #buildConfiguration: 'release'
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
@@ -25,10 +25,10 @@ jobs:
     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
     testSuite: 'DevTestSuite'
     matrix: 
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'release'
-        helixTargetQueues: 'Windows.10.Amd64.ClientRS3.DevEx.Open'
+      buildConfig:
+        buildPlatform: $(buildPlatform)
+        buildConfiguration: $(buildConfiguration)
+        helixTargetQueues: $(helixTargetQueues)
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
