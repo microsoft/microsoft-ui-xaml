@@ -1,19 +1,20 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
+- job: A
+  steps:
+  - powershell: echo "##vso[task.setvariable variable=buildPlatform;isOutput=true]$(buildPlatform2)"
+    name: a_step
+
 - job: Build
   condition:
     eq(variables['useBuildOutputFromBuildId'],'') 
   pool:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
-
   variables:
-    #buildPlatform: 'x86'
-    #buildConfiguration: 'release'
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration2)\$(buildPlatform2)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
-
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
@@ -21,15 +22,19 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
   parameters:
     name: 'RunTestsInHelix'
-    dependsOn: Build
+    dependsOn:
+    - Build
+    - A
     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
     testSuite: 'DevTestSuite'
     buildPlatform: $(buildPlatform2)
     buildConfiguration: $(buildConfiguration2)
     helixTargetQueues: $(helixTargetQueues2)
     matrix: 
-      buildConfig:
-        foo: bar
+      config:
+        buildPlatform: $[ dependencies.A.outputs['a_step.buildPlatform'] ] 
+        buildConfiguration: 'release'
+        helixTargetQueues: 'Windows.10.Amd64.ClientRS3.DevEx.Open'
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:

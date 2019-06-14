@@ -9,23 +9,18 @@ parameters:
   artifactName: 'drop'
   maxParallel: 4
   rerunPassesRequiredToAvoidFailure: 5
-  buildPlatform: 'foo'
-  buildConfiguration: 'bar'
   matrix: 
-    buildConfig:
-      foo: bar
-  # matrix: 
-  #   Release_x86:
-  #     buildPlatform: 'x86'
-  #     buildConfiguration: 'release'
-  #     # %3b is the escape code for ';' which is used as the delimiter
-  #     helixTargetQueues: 'Windows.10.Amd64.ClientRS3.DevEx.Open%3bWindows.10.Amd64.ServerRS5.Open'
-  #   Release_x64:
-  #     buildPlatform: 'x64'
-  #     buildConfiguration: 'release'
-  #     # temporarily disabling RS2 and RS4 queues to unblock tests.
-  #     helixTargetQueues: 'Windows.10.Amd64.Client19H1.Open'
-  #     #helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open%3bWindows.10.Amd64.Client19H1.Open'
+    Release_x86:
+      buildPlatform: 'x86'
+      buildConfiguration: 'release'
+      # %3b is the escape code for ';' which is used as the delimiter
+      helixTargetQueues: 'Windows.10.Amd64.ClientRS3.DevEx.Open%3bWindows.10.Amd64.ServerRS5.Open'
+    Release_x64:
+      buildPlatform: 'x64'
+      buildConfiguration: 'release'
+      # temporarily disabling RS2 and RS4 queues to unblock tests.
+      helixTargetQueues: 'Windows.10.Amd64.Client19H1.Open'
+      #helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open%3bWindows.10.Amd64.Client19H1.Open'
 
 jobs:
 - job: ${{ parameters.name }}
@@ -39,8 +34,6 @@ jobs:
   variables:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
     taefPath: $(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)
-    buildPlatform: ${{ parameters.buildPlatform }}
-    buildConfiguration: ${{ parameters.buildConfiguration }}
   strategy:
     maxParallel: ${{ parameters.maxParallel }}
     matrix: ${{ parameters.matrix }}
@@ -130,15 +123,15 @@ jobs:
       PathtoPublish: $(Build.ArtifactStagingDirectory)
       artifactName: ${{ parameters.artifactName }}
       
-  - task: DotNetCoreCLI@2
-    displayName: 'Run tests in Helix'
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    inputs:
-      command: custom
-      projects: build\Helix\RunTestsInHelix.proj
-      custom: msbuild
-      arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:HelixType=${{parameters.helixType}} /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
+  # - task: DotNetCoreCLI@2
+  #   displayName: 'Run tests in Helix'
+  #   env:
+  #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+  #   inputs:
+  #     command: custom
+  #     projects: build\Helix\RunTestsInHelix.proj
+  #     custom: msbuild
+  #     arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:HelixType=${{parameters.helixType}} /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
       
   - task: PublishBuildArtifacts@1
     displayName: 'Publish ${{parameters.name}} binlog'
