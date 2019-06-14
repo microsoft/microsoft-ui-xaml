@@ -88,10 +88,14 @@ namespace Flick
             carouselPrevButton.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(OnCarouselPrevButtonPointerPressed), true);
             carouselPrevButton.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(OnCarouselPrevButtonPointerCanceled), true);
             carouselPrevButton.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(OnCarouselPrevButtonPointerReleased), true);
+            carouselPrevButton.AddHandler(UIElement.PointerExitedEvent, new PointerEventHandler(OnCarouselPrevButtonPointerExited), true);
+            carouselPrevButton.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler(OnCarouselPrevButtonPointerCaptureLost), true);
 
             carouselNextButton.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(OnCarouselNextButtonPointerPressed), true);
             carouselNextButton.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(OnCarouselNextButtonPointerCanceled), true);
             carouselNextButton.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(OnCarouselNextButtonPointerReleased), true);
+            carouselNextButton.AddHandler(UIElement.PointerExitedEvent, new PointerEventHandler(OnCarouselNextButtonPointerExited), true);
+            carouselNextButton.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler(OnCarouselNextButtonPointerCaptureLost), true);
         }
 
         public object SelectedItem { get; set; } = null;
@@ -409,7 +413,7 @@ namespace Flick
         protected void OnCarouselPrevButtonPointerPressed(object sender, PointerRoutedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
-            ((UIElement)sender).CapturePointer(e.Pointer);
+            bool pointerCaptured = ((UIElement)sender).CapturePointer(e.Pointer);
 
             if (ScrollViewerChangeViewTimer != null)
             {
@@ -441,6 +445,11 @@ namespace Flick
                 NextButtonContinuousScrollingPeriodicTimer = null;
             }
 
+            if (!pointerCaptured)
+            {
+                return;
+            }
+
             SelectPreviousItem();
 
             PrevButtonHoldTimer = ThreadPoolTimer.CreateTimer(async (source) =>
@@ -455,6 +464,12 @@ namespace Flick
 
         private void OnCarouselPrevButtonPointerPressEnded()
         {
+            if (ScrollViewerChangeViewTimer != null)
+            {
+                ScrollViewerChangeViewTimer.Cancel();
+                ScrollViewerChangeViewTimer = null;
+            }
+
             if (PrevButtonHoldTimer != null)
             {
                 PrevButtonHoldTimer.Cancel();
@@ -472,7 +487,6 @@ namespace Flick
         protected void OnCarouselPrevButtonPointerCanceled(object sender, PointerRoutedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
-            ((UIElement)sender).CapturePointer(e.Pointer);
             OnCarouselPrevButtonPointerPressEnded();
         }
 
@@ -480,7 +494,20 @@ namespace Flick
         protected void OnCarouselPrevButtonPointerReleased(object sender, PointerRoutedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
-            ((UIElement)sender).CapturePointer(e.Pointer);
+            OnCarouselPrevButtonPointerPressEnded();
+        }
+
+#pragma warning disable CS0628 // New protected member declared in sealed class
+        protected void OnCarouselPrevButtonPointerExited(object sender, PointerRoutedEventArgs e)
+#pragma warning restore CS0628 // New protected member declared in sealed class
+        {
+            OnCarouselPrevButtonPointerPressEnded();
+        }
+
+#pragma warning disable CS0628 // New protected member declared in sealed class
+        protected void OnCarouselPrevButtonPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+#pragma warning restore CS0628 // New protected member declared in sealed class
+        {
             OnCarouselPrevButtonPointerPressEnded();
         }
 
@@ -488,7 +515,7 @@ namespace Flick
         protected void OnCarouselNextButtonPointerPressed(object sender, PointerRoutedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
-            ((UIElement)sender).CapturePointer(e.Pointer);
+            bool pointerCaptured = ((UIElement)sender).CapturePointer(e.Pointer);
 
             if (ScrollViewerChangeViewTimer != null)
             {
@@ -520,6 +547,11 @@ namespace Flick
                 NextButtonContinuousScrollingPeriodicTimer = null;
             }
 
+            if (!pointerCaptured)
+            {
+                return;
+            }
+
             SelectNextItem();
 
             PrevButtonHoldTimer = ThreadPoolTimer.CreateTimer(async (source) =>
@@ -534,6 +566,12 @@ namespace Flick
 
         private void OnCarouselNextButtonPointerPressEnded()
         {
+            if (ScrollViewerChangeViewTimer != null)
+            {
+                ScrollViewerChangeViewTimer.Cancel();
+                ScrollViewerChangeViewTimer = null;
+            }
+
             if (NextButtonHoldTimer != null)
             {
                 NextButtonHoldTimer.Cancel();
@@ -551,7 +589,6 @@ namespace Flick
         protected void OnCarouselNextButtonPointerCanceled(object sender, PointerRoutedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
-            ((UIElement)sender).CapturePointer(e.Pointer);
             OnCarouselNextButtonPointerPressEnded();
         }
 
@@ -559,7 +596,20 @@ namespace Flick
         protected void OnCarouselNextButtonPointerReleased(object sender, PointerRoutedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
-            ((UIElement)sender).CapturePointer(e.Pointer);
+            OnCarouselNextButtonPointerPressEnded();
+        }
+
+#pragma warning disable CS0628 // New protected member declared in sealed class
+        protected void OnCarouselNextButtonPointerExited(object sender, PointerRoutedEventArgs e)
+#pragma warning restore CS0628 // New protected member declared in sealed class
+        {
+            OnCarouselNextButtonPointerPressEnded();
+        }
+
+#pragma warning disable CS0628 // New protected member declared in sealed class
+        protected void OnCarouselNextButtonPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+#pragma warning restore CS0628 // New protected member declared in sealed class
+        {
             OnCarouselNextButtonPointerPressEnded();
         }
 
