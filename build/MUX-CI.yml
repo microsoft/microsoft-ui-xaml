@@ -52,6 +52,7 @@ jobs:
     buildJobName: 'BuildNugetPkgTests'
     buildArtifactName: 'NugetPkgTestsDrop'
     runTestJobName: 'RunNugetPkgTestsInHelix'
+    helixType: 'test/nuget'
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop'
    
@@ -61,6 +62,7 @@ jobs:
     buildJobName: 'BuildFrameworkPkgTests'
     buildArtifactName: 'FrameworkPkgTestsDrop'
     runTestJobName: 'RunFrameworkPkgTestsInHelix'
+    helixType: 'test/frpkg'
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
 
