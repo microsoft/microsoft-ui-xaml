@@ -54,6 +54,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
+
         [TestMethod]
         public void CloseReasonIsAccurate()
         {
@@ -412,6 +413,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+
         [TestMethod]
         public void NoIconDoesNotCrash()
         {
@@ -435,6 +437,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
         }
+
 
         [TestMethod]
         public void CanSwitchShouldConstrainToRootBounds()
@@ -485,6 +488,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     ScrollBy(10);
                     UseTestWindowBounds(10, 10, 10, 10);
 
+
                     elements.GetShowButton().InvokeAndWait();
 
                     var message1 = GetTeachingTipDebugMessage(1);
@@ -502,6 +506,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
         }
+
 
         [TestMethod]
         public void VerifyTheming()
@@ -525,7 +530,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     OpenTeachingTip();
 
                     var themingComboBox = elements.GetThemingComboBox();
-                    themingComboBox.SelectItemByName("Default");
+                    themingComboBox.SelectItemByName("Light");
 
                     Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
                     Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
@@ -677,7 +682,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
             {
-                elements.GetCloseButton().Invoke();
+                elements.GetCloseButton().InvokeAndWait();
                 WaitForTipClosed();
             }
         }
@@ -750,7 +755,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 elements.GetIsLightDismissEnabledComboBox().SelectItemByName("False");
             }
-            elements.GetIsLightDismissEnabledButton().Invoke();
+            elements.GetIsLightDismissEnabledButton().InvokeAndWait();
         }
 
         private void SetShouldConstrainToRootBounds(bool constrain)
@@ -763,7 +768,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 elements.GetShouldConstrainToRootBoundsComboBox().SelectItemByName("False");
             }
-            elements.GetShouldConstrainToRootBoundsButton().Invoke();
+            elements.GetShouldConstrainToRootBoundsButton().InvokeAndWait();
         }
 
         private void SetCloseButtonContent(CloseButtonContentOptions closeButtonContent)
@@ -780,7 +785,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     elements.GetCloseButtonContentComboBox().SelectItemByName("Long text");
                     break;
             }
-            elements.GetSetCloseButtonContentButton().Invoke();
+            elements.GetSetCloseButtonContentButton().InvokeAndWait();
         }
 
         private void SetPreferredPlacement(PlacementOptions placement)
@@ -830,7 +835,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     elements.GetPreferredPlacementComboBox().SelectItemByName("Auto");
                     break;
             }
-            elements.GetSetPreferredPlacementButton().Invoke();
+            elements.GetSetPreferredPlacementButton().InvokeAndWait();
         }
 
         private void SetHeroContent(HeroContentOptions heroContent)
@@ -850,18 +855,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     elements.GetHeroContentComboBox().SelectItemByName("No Content");
                     break;
             }
-            elements.GetSetHeroContentButton().Invoke();
+            elements.GetSetHeroContentButton().InvokeAndWait();
         }
 
         private void SetTipIsTargeted(bool targeted)
         {
             if(targeted)
             {
-                elements.GetSetTargetButton().Invoke();
+                elements.GetSetTargetButton().InvokeAndWait();
             }
             else
             {
-                elements.GetRemoveTargetButton().Invoke();
+                elements.GetRemoveTargetButton().InvokeAndWait();
             }
         }
 
@@ -876,7 +881,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     elements.GetIconComboBox().SelectItemByName("No Icon");
                     break;
             }
-            elements.GetSetIconButton().Invoke();
+            elements.GetSetIconButton().InvokeAndWait();
         }
 
         private double GetTipVerticalOffset()
@@ -893,7 +898,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             double initialOffset = double.Parse(elements.GetScrollViewerOffsetTextBox().GetText());
             elements.GetScrollViewerOffsetTextBox().SetValue((initialOffset + ammount).ToString());
-            elements.GetScrollViewerOffsetButton().Invoke();
+            elements.GetScrollViewerOffsetButton().InvokeAndWait();
         }
 
         private void UseTestBounds(double x, double y, double width, double height, Vector4 targetRect, bool forWindowBounds)
@@ -959,7 +964,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         Vector4 GetTargetBounds()
         {
-            elements.GetTargetBoundsButton().Invoke();
+            elements.GetTargetBoundsButton().InvokeAndWait();
 
             var retVal = new Vector4();
             retVal.W = (int)Math.Floor(double.Parse(elements.GetTargetXOffsetTextBlock().GetText()));
@@ -998,14 +1003,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     elements.GetAutomationNameComboBox().SelectItemByName("None");
                     break;
             }
-            elements.GetSetAutomationNameButton().Invoke();
+            elements.GetSetAutomationNameButton().InvokeAndWait();
         }
 
         private void SetActionButtonContentTo(string option)
         {
             var actionButtonComboBox = elements.GetActionButtonContentComboBox();
             actionButtonComboBox.SelectItemByName(option);
-            elements.GetSetActionButtonContentButton().Invoke();
+            elements.GetSetActionButtonContentButton().InvokeAndWait();
         }
 
         // The test UI has a list box which the teaching tip populates with messages about which events have fired and other useful
@@ -1024,7 +1029,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void ClearTeachingTipDebugMessages()
         {
-            elements.GetBtnClearTeachingTipEvents().Invoke();
+            elements.GetBtnClearTeachingTipEvents().InvokeAndWait();
         }
 
         private bool WaitForChecked(CheckBox checkBox, double millisecondsTimeout = 2000, bool throwOnError = true)
