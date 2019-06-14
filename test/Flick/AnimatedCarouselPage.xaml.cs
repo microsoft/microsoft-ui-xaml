@@ -31,7 +31,7 @@ namespace Flick
             if (alignment == SnapPointsAlignment.Center && orientation == Orientation.Horizontal)
             {
                 var l = (Layout as VirtualizingUniformCarouselStackLayout);
-                offset = (float)((l.ItemWidth / 2));
+                offset = (float)(Margin.Left + l.ItemWidth / 2);
                 return (float)(l.ItemWidth + l.Spacing);
             }
 
@@ -43,8 +43,28 @@ namespace Flick
 
         public bool AreVerticalSnapPointsRegular => false;
 
+        // Number of times to repeat the count to give the 
+        // illusion of infinite scrolling.
+        public int RepeatCount
+        {
+            get { return (int)GetValue(RepeatCountProperty); }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentException(String.Format("{0} must be a non-negative integer", "RepeatCount"));
+                }
+
+                SetValue(RepeatCountProperty, value);
+            }
+        }
+
+        public static readonly DependencyProperty RepeatCountProperty = DependencyProperty.Register(
+            "RepeatCount", typeof(int), typeof(VirtualizingUniformCarouselStackLayout), new PropertyMetadata(500));
+
         public event EventHandler<object> HorizontalSnapPointsChanged;
         public event EventHandler<object> VerticalSnapPointsChanged;
+
     }
 
     /// <summary>
@@ -90,9 +110,25 @@ namespace Flick
 
         private ThreadPoolTimer NextButtonHoldTimer { get; set; } = null;
 
+        private ThreadPoolTimer ScrollViewerChangeViewTimer { get; set; } = null;
+
         private static int ContinousScrollingItemSkipCount { get; } = 2;
 
         private static TimeSpan PrevNextButtonContinousScrollingSelectionPeriod { get; } = TimeSpan.FromMilliseconds(100);
+
+        public Visibility CarouselPrevButtonVisibility { get; set; } = Visibility.Collapsed;
+
+        public Visibility CarouselNextButtonVisibility { get; set; } = Visibility.Collapsed;
+
+        private void HideCarouselNextPrevButtons()
+        {
+            CarouselPrevButtonVisibility = CarouselNextButtonVisibility = Visibility.Collapsed;
+        }
+
+        private void ShowCarouselNextPrevButtons()
+        {
+            CarouselPrevButtonVisibility = CarouselNextButtonVisibility = Visibility.Visible;
+        }
 
         protected void OnScrollViewerViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
@@ -141,7 +177,21 @@ namespace Flick
 
         private void Repeater_Loaded(object sender, RoutedEventArgs e)
         {
-            sv.ChangeView(((layout.ItemWidth + layout.Spacing) * layout.RepeatCount), null, null, true);
+            if (repeater.ItemsSourceView.Count == 0)
+            {
+                HideCarouselNextPrevButtons();
+            }
+            else if (repeater.ItemsSourceView.Count == 1)
+            {
+                sv.ChangeView(0, null, null, true);
+                SelectedItem = GetSelectedItemFromViewport();
+                HideCarouselNextPrevButtons();
+            }
+            else
+            {
+                sv.ChangeView(((layout.ItemWidth + layout.Spacing) * layout.RepeatCount), null, null, true);
+                ShowCarouselNextPrevButtons();
+            }
         }
 
         private void OnElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
@@ -149,8 +199,8 @@ namespace Flick
             var item = ElementCompositionPreview.GetElementVisual(args.Element);
             var svVisual = ElementCompositionPreview.GetElementVisual(sv);
             var scrollProperties = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(sv);
-            
-            //Animate each item's centerpoint based on the item's distance from the center of the viewport
+
+            // Animate each item's centerpoint based on the item's distance from the center of the viewport
             // translate the position of each item horizontally closer to the center of the viewport as much as is necessary
             // in order to ensure that the Spacing property of the ItemsRepeater is still respected after the items have been scaled.
             var centerPointExpression = scrollProperties.Compositor.CreateExpressionAnimation();
@@ -161,7 +211,7 @@ namespace Flick
             var centerPointExpressionString = "Vector3(((item.Size.X/2) + ((((item.Offset.X + (item.Size.X/2)) < ((svVisual.Size.X/2) - scrollProperties.Translation.X)) ? 1 : -1) * (((item.Size.X/2) * clamp((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing)), 0, 1)) + ((item.Size.X) * max((abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing)) - 1, 0))) )), item.Size.Y/2, 0)";
             centerPointExpression.Expression = centerPointExpressionString;
             centerPointExpression.Target = "CenterPoint";
-            
+
             // scale the item based on the distance of the item relative to the center of the viewport.            
             var scaleExpression = scrollProperties.Compositor.CreateExpressionAnimation();
             scaleExpression.SetReferenceParameter("svVisual", svVisual);
@@ -206,6 +256,36 @@ namespace Flick
 
         private void OnScrollViewerTapped(object sender, TappedRoutedEventArgs e)
         {
+            if (ScrollViewerChangeViewTimer != null)
+            {
+                ScrollViewerChangeViewTimer.Cancel();
+                ScrollViewerChangeViewTimer = null;
+            }
+
+            if (PrevButtonHoldTimer != null)
+            {
+                PrevButtonHoldTimer.Cancel();
+                PrevButtonHoldTimer = null;
+            }
+
+            if (NextButtonHoldTimer != null)
+            {
+                NextButtonHoldTimer.Cancel();
+                NextButtonHoldTimer = null;
+            }
+
+            if (PrevButtonContinuousScrollingPeriodicTimer != null)
+            {
+                PrevButtonContinuousScrollingPeriodicTimer.Cancel();
+                PrevButtonContinuousScrollingPeriodicTimer = null;
+            }
+
+            if (NextButtonContinuousScrollingPeriodicTimer != null)
+            {
+                NextButtonContinuousScrollingPeriodicTimer.Cancel();
+                NextButtonContinuousScrollingPeriodicTimer = null;
+            }
+
             if (!IsScrolling)
             {
                 var centerOfViewportOffsetInScrollViewer = CenterPointOfViewportInExtent();
@@ -237,7 +317,7 @@ namespace Flick
                     // on every call to ChangeView. 
                     // TODO: Why is this required ?? Should be removed.
                     var period = TimeSpan.FromMilliseconds(10);
-                    Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
+                    ScrollViewerChangeViewTimer = Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
                     {
                         await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                         {
@@ -267,7 +347,7 @@ namespace Flick
             // This odd delay is required in order to ensure that the scrollviewer animates the scroll
             // on every call to ChangeView.
             var period = TimeSpan.FromMilliseconds(10);
-            Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
+            ScrollViewerChangeViewTimer = Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
             {
                 await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                 {
@@ -295,7 +375,7 @@ namespace Flick
             // This odd delay is required in order to ensure that the scrollviewer animates the scroll
             // on every call to ChangeView.
             var period = TimeSpan.FromMilliseconds(10);
-            ThreadPoolTimer.CreateTimer(async (source) =>
+            ScrollViewerChangeViewTimer = ThreadPoolTimer.CreateTimer(async (source) =>
             {
                 await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                 {
@@ -311,7 +391,7 @@ namespace Flick
 
         private int GetSelectedIndexFromViewport()
         {
-            int selectedItemIndex = (int)Math.Floor((CenterPointOfViewportInExtent() + layout.Spacing / 2) / (layout.Spacing + layout.ItemWidth));
+            int selectedItemIndex = (int)Math.Floor((CenterPointOfViewportInExtent() - layout.Margin.Left + layout.Spacing / 2) / (layout.Spacing + layout.ItemWidth));
             selectedItemIndex %= repeater.ItemsSourceView.Count;
 
             return selectedItemIndex;
@@ -330,6 +410,12 @@ namespace Flick
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
             ((UIElement)sender).CapturePointer(e.Pointer);
+
+            if (ScrollViewerChangeViewTimer != null)
+            {
+                ScrollViewerChangeViewTimer.Cancel();
+                ScrollViewerChangeViewTimer = null;
+            }
 
             if (PrevButtonHoldTimer != null)
             {
@@ -364,7 +450,7 @@ namespace Flick
                     startContinuousScrolling(ScrollDirection.Previous);
                 });
             },
-            PrevNextButtonHoldPeriod);            
+            PrevNextButtonHoldPeriod);
         }
 
         private void OnCarouselPrevButtonPointerPressEnded()
@@ -403,6 +489,12 @@ namespace Flick
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
             ((UIElement)sender).CapturePointer(e.Pointer);
+
+            if (ScrollViewerChangeViewTimer != null)
+            {
+                ScrollViewerChangeViewTimer.Cancel();
+                ScrollViewerChangeViewTimer = null;
+            }
 
             if (NextButtonHoldTimer != null)
             {

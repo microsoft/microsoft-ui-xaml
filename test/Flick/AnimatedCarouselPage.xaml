@@ -23,7 +23,7 @@
                     <ControlTemplate TargetType="Button">
                         <Grid>
                             <Ellipse/>
-                            <ContentPresenter Margin="{TemplateBinding Padding}" Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <ContentPresenter Margin="{TemplateBinding Padding}" Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{TemplateBinding Visibility}"/>
                         </Grid>
                     </ControlTemplate>
                 </Setter.Value>
@@ -50,24 +50,36 @@
             </Grid.ColumnDefinitions>
             <Button x:Name="carouselPrevButton"
                     Grid.Column="0"
-                    Style="{StaticResource CarouselNextPrevButtonStyle}">
+                    Style="{StaticResource CarouselNextPrevButtonStyle}"
+                    Visibility="{Binding CarouselPrevButtonVisibility}">
                 <FontIcon Style="{StaticResource CarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76B;"/><!--ChevronLeft-->
             </Button>
             <ScrollViewer x:Name="sv"
                       Grid.Column="1"
                       HorizontalScrollBarVisibility="Hidden"
                       VerticalScrollBarVisibility="Disabled"
-                      HorizontalScrollMode="Enabled"
-                      VerticalScrollMode="Disabled"
                       HorizontalSnapPointsAlignment="Center"
                       HorizontalSnapPointsType="Mandatory"
                       VerticalAlignment="Center"
                       ViewChanged="OnScrollViewerViewChanged"
                       ViewChanging="OnScrollViewerViewChanging"
-                      Tapped="OnScrollViewerTapped">
-                <local:SnappPointForwardingRepeater x:Name="repeater" HorizontalCacheLength="0.5" VerticalCacheLength="0" ElementPrepared="OnElementPrepared">
+                      Tapped="OnScrollViewerTapped"
+                      VerticalScrollMode="Disabled"
+                      HorizontalScrollMode="Enabled">
+                <local:SnappPointForwardingRepeater
+                    x:Name="repeater"
+                    HorizontalCacheLength="0.5"
+                    VerticalCacheLength="0"
+                    RepeatCount="500"
+                    ElementPrepared="OnElementPrepared">
                     <mux:ItemsRepeater.Layout>
-                        <local:VirtualizingUniformCarouselStackLayout x:Name="layout" ItemWidth="450" ItemHeight="525" Spacing="50"/>
+                        <local:VirtualizingUniformCarouselStackLayout
+                            x:Name="layout"
+                            ItemWidth="450"
+                            ItemHeight="525"
+                            Spacing="50"
+                            HorizontalCacheLength="{Binding ElementName=repeater, Path=HorizontalCacheLength}"
+                            RepeatCount="{Binding ElementName=repeater, Path=RepeatCount}"/>
                     </mux:ItemsRepeater.Layout>
                     <mux:ItemsRepeater.ItemTemplate>
                         <DataTemplate>
@@ -85,7 +97,8 @@
             </ScrollViewer>
             <Button x:Name="carouselNextButton"
                     Grid.Column="2"
-                    Style="{StaticResource CarouselNextPrevButtonStyle}">
+                    Style="{StaticResource CarouselNextPrevButtonStyle}"
+                    Visibility="{Binding CarouselNextButtonVisibility}">
                 <FontIcon Style="{StaticResource CarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76C;"/><!--ChevronRight-->
             </Button>
         </Grid>
