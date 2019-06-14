@@ -9,6 +9,8 @@ parameters:
   artifactName: 'drop'
   maxParallel: 4
   rerunPassesRequiredToAvoidFailure: 5
+  buildPlatform: 'foo'
+  buildConfiguration: 'bar'
   matrix: 
     Release_x86:
       buildPlatform: 'x86'
