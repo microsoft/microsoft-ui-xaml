@@ -517,9 +517,10 @@
                     <TextBlock Text="Vertical Offset:" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center"/>
                     <TextBox x:Name="txtCOAVO" Text="0" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center"/>
                     <TextBlock Text="AnimationMode:" Grid.Column="0" Grid.Row="3" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbScrollAnimationMode" Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" SelectedIndex="1">
+                    <ComboBox x:Name="cmbScrollAnimationMode" Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" SelectedIndex="2">
                         <ComboBoxItem>Disabled</ComboBoxItem>
                         <ComboBoxItem>Enabled</ComboBoxItem>
+                        <ComboBoxItem>Auto</ComboBoxItem>
                     </ComboBox>
                     <TextBlock Text="SnapPointsMode:" Grid.Column="0" Grid.Row="4" VerticalAlignment="Center"/>
                     <ComboBox x:Name="cmbScrollSnapPointsMode" Grid.Column="1" Grid.Row="4" VerticalAlignment="Center" SelectedIndex="0">
@@ -563,9 +564,10 @@
                     <TextBlock Text="CenterPoint:" Grid.Column="0" Grid.Row="16" VerticalAlignment="Center"/>
                     <TextBox x:Name="txtCZFACP" Text="0, 0"  Grid.Column="1" Grid.Row="16" VerticalAlignment="Center"/>
                     <TextBlock Text="AnimationMode:" Grid.Column="0" Grid.Row="17" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbZoomAnimationMode" Grid.Column="1" Grid.Row="17" VerticalAlignment="Center" SelectedIndex="1">
+                    <ComboBox x:Name="cmbZoomAnimationMode" Grid.Column="1" Grid.Row="17" VerticalAlignment="Center" SelectedIndex="2">
                         <ComboBoxItem>Disabled</ComboBoxItem>
                         <ComboBoxItem>Enabled</ComboBoxItem>
+                        <ComboBoxItem>Auto</ComboBoxItem>
                     </ComboBox>
                     <TextBlock Text="SnapPointsMode:" Grid.Column="0" Grid.Row="18" VerticalAlignment="Center"/>
                     <ComboBox x:Name="cmbZoomSnapPointsMode" Grid.Column="1" Grid.Row="18" VerticalAlignment="Center" SelectedIndex="0">

@@ -4,15 +4,21 @@ Param(
     [int]$RerunPassesRequiredToAvoidFailure
 )
 
+. "$PSScriptRoot/AzurePipelinesHelperScripts.ps1"
+
+
 $azureDevOpsRestApiHeaders = @{
     "Accept"="application/json"
     "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:SYSTEM_ACCESSTOKEN)")))"
 }
 
+$queryUri = GetQueryTestRunsUri
+Write-Host "queryUri = $queryUri"
+
 # To account for unreliable tests, we'll iterate through all of the tests associated with this build, check to see any tests that were unreliable
 # (denoted by being marked as "skipped"), and if so, we'll instead mark those tests with a warning and enumerate all of the attempted runs
 # with their pass/fail states as well as any relevant error messages for failed attempts.
-$testRuns = Invoke-RestMethod -Uri "https://dev.azure.com/ms/microsoft-ui-xaml/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)" -Method Get -Headers $azureDevOpsRestApiHeaders
+$testRuns = Invoke-RestMethod -Uri $queryUri -Method Get -Headers $azureDevOpsRestApiHeaders
       
 foreach ($testRun in $testRuns.value)
 {

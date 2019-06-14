@@ -70,6 +70,18 @@ void ScrollerTestHooks::IsInteractionTrackerPointerWheelRedirectionEnabled(bool 
     hooks->m_isInteractionTrackerPointerWheelRedirectionEnabled = isInteractionTrackerPointerWheelRedirectionEnabled;
 }
 
+winrt::IReference<bool> ScrollerTestHooks::IsAnimationsEnabledOverride()
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_isAnimationsEnabledOverride;
+}
+
+void ScrollerTestHooks::IsAnimationsEnabledOverride(winrt::IReference<bool> isAnimationsEnabledOverride)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_isAnimationsEnabledOverride = isAnimationsEnabledOverride;
+}
+
 int ScrollerTestHooks::MouseWheelDeltaForVelocityUnit()
 {
     auto hooks = EnsureGlobalTestHooks();

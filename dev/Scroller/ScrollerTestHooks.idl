@@ -43,6 +43,7 @@ runtimeclass ScrollerTestHooks
     static Boolean AreInteractionSourcesNotificationsRaised { get; set; };
     static Boolean AreExpressionAnimationStatusNotificationsRaised { get; set; };
     static Boolean IsInteractionTrackerPointerWheelRedirectionEnabled { get; set; };
+    static Windows.Foundation.IReference<Boolean> IsAnimationsEnabledOverride { get; set; };
     static Int32 MouseWheelDeltaForVelocityUnit { get; set; };
     static Int32 MouseWheelScrollLines{ get; set; };
     static Int32 MouseWheelScrollChars{ get; set; };

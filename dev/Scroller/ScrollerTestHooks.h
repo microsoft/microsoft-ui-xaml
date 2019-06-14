@@ -31,6 +31,8 @@ public:
     static void AreExpressionAnimationStatusNotificationsRaised(bool areExpressionAnimationStatusNotificationsRaised);
     static bool IsInteractionTrackerPointerWheelRedirectionEnabled();
     static void IsInteractionTrackerPointerWheelRedirectionEnabled(bool isInteractionTrackerPointerWheelRedirectionEnabled);
+    static winrt::IReference<bool> IsAnimationsEnabledOverride();
+    static void IsAnimationsEnabledOverride(winrt::IReference<bool> isAnimationsEnabledOverride);
     static int MouseWheelDeltaForVelocityUnit();
     static void MouseWheelDeltaForVelocityUnit(int mouseWheelDeltaForVelocityUnit);
     static int MouseWheelScrollLines();
@@ -107,6 +109,7 @@ private:
     bool m_areInteractionSourcesNotificationsRaised{ false };
     bool m_areExpressionAnimationStatusNotificationsRaised{ false };
     bool m_isInteractionTrackerPointerWheelRedirectionEnabled{ true };
+    winrt::IReference<bool> m_isAnimationsEnabledOverride{ nullptr };
     int m_offsetsChangeMsPerUnit{ Scroller::s_offsetsChangeMsPerUnit };
     int m_offsetsChangeMinMs{ Scroller::s_offsetsChangeMinMs };
     int m_offsetsChangeMaxMs{ Scroller::s_offsetsChangeMaxMs };

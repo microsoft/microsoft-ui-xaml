@@ -1,6 +1,8 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: Build
+  condition:
+    eq(variables['useBuildOutputFromBuildId'],'') 
   pool:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
