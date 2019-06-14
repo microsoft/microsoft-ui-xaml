@@ -12,17 +12,20 @@ parameters:
   buildPlatform: 'foo'
   buildConfiguration: 'bar'
   matrix: 
-    Release_x86:
-      buildPlatform: 'x86'
-      buildConfiguration: 'release'
-      # %3b is the escape code for ';' which is used as the delimiter
-      helixTargetQueues: 'Windows.10.Amd64.ClientRS3.DevEx.Open%3bWindows.10.Amd64.ServerRS5.Open'
-    Release_x64:
-      buildPlatform: 'x64'
-      buildConfiguration: 'release'
-      # temporarily disabling RS2 and RS4 queues to unblock tests.
-      helixTargetQueues: 'Windows.10.Amd64.Client19H1.Open'
-      #helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open%3bWindows.10.Amd64.Client19H1.Open'
+    buildConfig:
+      foo: bar
+  # matrix: 
+  #   Release_x86:
+  #     buildPlatform: 'x86'
+  #     buildConfiguration: 'release'
+  #     # %3b is the escape code for ';' which is used as the delimiter
+  #     helixTargetQueues: 'Windows.10.Amd64.ClientRS3.DevEx.Open%3bWindows.10.Amd64.ServerRS5.Open'
+  #   Release_x64:
+  #     buildPlatform: 'x64'
+  #     buildConfiguration: 'release'
+  #     # temporarily disabling RS2 and RS4 queues to unblock tests.
+  #     helixTargetQueues: 'Windows.10.Amd64.Client19H1.Open'
+  #     #helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open%3bWindows.10.Amd64.Client19H1.Open'
 
 jobs:
 - job: ${{ parameters.name }}
