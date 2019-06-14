@@ -1123,7 +1123,7 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
     }
   
     // Expand animation requires IUIElement9
-    if (this->try_as<winrt::IUIElement9>())
+    if (this->try_as<winrt::IUIElement9>() && SharedHelpers::IsAnimationsEnabled())
     {
         StartExpandToOpen();
     }
@@ -1250,7 +1250,7 @@ void TeachingTip::ClosePopupWithAnimationIfAvailable()
     if (m_popup && m_popup.get().IsOpen())
     {
         // Contract animation requires IUIElement9
-        if (this->try_as<winrt::IUIElement9>())
+        if (this->try_as<winrt::IUIElement9>() && SharedHelpers::IsAnimationsEnabled())
         {
             StartContractToClose();
         }
