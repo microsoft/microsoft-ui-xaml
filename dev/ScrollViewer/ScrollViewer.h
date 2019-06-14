@@ -200,8 +200,8 @@ private:
 
     void ResetHideIndicatorsTimer(bool isForDestructor = false, bool restart = false);
 
-	void HookUISettingsEvent();
-	void HookCompositionTargetRendering();
+    void HookUISettingsEvent();
+    void HookCompositionTargetRendering();
     void UnhookCompositionTargetRendering();
     void HookScrollViewerEvents();
     void UnhookScrollViewerEvents();
@@ -346,11 +346,11 @@ private:
     bool m_isPointerOverHorizontalScrollController{ false };
     bool m_isPointerOverVerticalScrollController{ false };
 
-    int m_verticalScrollWithKeyboardDirection{ 0 };
-    int m_verticalScrollWithKeyboardOffsetChangeId{ -1 };
+    int m_verticalScrollFromDirection{ 0 };
+    int m_verticalScrollFromOffsetChangeId{ -1 };
 
-    int m_horizontalScrollWithKeyboardDirection{ 0 };
-    int m_horizontalScrollWithKeyboardOffsetChangeId{ -1 };
+    int m_horizontalScrollFromDirection{ 0 };
+    int m_horizontalScrollFromOffsetChangeId{ -1 };
 
     // List of temporary ScrollViewerBringIntoViewOperation instances used to track expected
     // Scroller::BringingIntoView occurrences due to navigation.

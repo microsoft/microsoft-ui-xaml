@@ -776,7 +776,7 @@ namespace MUXControlsTestApp
                 int viewChangeId = scroller.ScrollTo(
                     chkHorizontalOrientation.IsChecked == true ? Convert.ToDouble(txtCOAO.Text) : 0,
                     chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToDouble(txtCOAO.Text),
-                    new ScrollOptions(AnimationMode.Enabled, SnapPointsMode.Ignore)).OffsetsChangeId;
+                    new ScrollOptions(AnimationMode.Auto, SnapPointsMode.Ignore)).OffsetsChangeId;
                 AppendAsyncEventMessage("Invoked ScrollTo Id=" + viewChangeId);
             }
             catch (Exception ex)

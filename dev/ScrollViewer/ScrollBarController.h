@@ -88,6 +88,8 @@ private:
 
     bool RaiseScrollToRequested(
         double offset);
+    bool RaiseScrollByRequested(
+        double offsetChange);
     bool RaiseScrollFromRequested(
         double offsetChange);
     void RaiseInteractionInfoChanged();
@@ -114,6 +116,7 @@ private:
     winrt::ScrollBar m_scrollBar;
     winrt::ScrollMode m_scrollMode{ winrt::ScrollMode::Disabled };
     int32_t m_lastOffsetChangeIdForScrollTo{ -1 };
+    int32_t m_lastOffsetChangeIdForScrollBy{ -1 };
     int32_t m_lastOffsetChangeIdForScrollFrom{ -1 };
     int m_operationsCount{ 0 };
     double m_lastScrollBarValue{ 0.0 };
@@ -124,6 +127,7 @@ private:
 
     // Event Sources
     event<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs>> m_scrollToRequested { };
+    event<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollByRequestedEventArgs>> m_scrollByRequested { };
     event<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollFromRequestedEventArgs>> m_scrollFromRequested { };
     event<winrt::TypedEventHandler<winrt::IScrollController, winrt::IInspectable>> m_interactionInfoChanged{ };
 

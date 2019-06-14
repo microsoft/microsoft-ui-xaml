@@ -115,6 +115,8 @@ winrt::hstring AnimationModeToString(const winrt::AnimationMode& animationMode)
         return L"Disabled";
     case winrt::AnimationMode::Enabled:
         return L"Enabled";
+    case winrt::AnimationMode::Auto:
+        return L"Auto";
     default:
         MUX_ASSERT(false);
         return L"";

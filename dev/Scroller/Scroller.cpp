@@ -3612,6 +3612,31 @@ winrt::Rect Scroller::GetDescendantBounds(
         descendantRect.Height });
 }
 
+winrt::AnimationMode Scroller::GetComputedAnimationMode(
+    winrt::AnimationMode const& animationMode)
+{
+    if (animationMode == winrt::AnimationMode::Auto)
+    {
+        bool isAnimationsEnabled = []()
+        {
+            auto globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
+
+            if (globalTestHooks && globalTestHooks->IsAnimationsEnabledOverride())
+            {
+                return globalTestHooks->IsAnimationsEnabledOverride().Value();
+            }
+            else
+            {
+                return SharedHelpers::IsAnimationsEnabled();
+            }
+        }();
+
+        return isAnimationsEnabled ? winrt::AnimationMode::Enabled : winrt::AnimationMode::Disabled;
+    }
+
+    return animationMode;
+}
+
 bool Scroller::IsZoomFactorBoundaryValid(
     double value)
 {
@@ -4381,7 +4406,7 @@ void Scroller::OnBringIntoViewRequestedHandler(
     {
         com_ptr<ScrollOptions> options =
             winrt::make_self<ScrollOptions>(
-                args.AnimationDesired() ? winrt::AnimationMode::Enabled : winrt::AnimationMode::Disabled,
+                args.AnimationDesired() ? winrt::AnimationMode::Auto : winrt::AnimationMode::Disabled,
                 snapPointsMode);
 
         ChangeOffsetsPrivate(
@@ -5650,6 +5675,8 @@ void Scroller::ChangeOffsetsPrivate(
     winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
     InteractionTrackerAsyncOperationType operationType;
 
+    animationMode = GetComputedAnimationMode(animationMode);
+
     switch (animationMode)
     {
     case winrt::AnimationMode::Disabled:
@@ -5883,6 +5910,8 @@ void Scroller::ChangeZoomFactorPrivate(
     winrt::AnimationMode animationMode = options ? options.AnimationMode() : ZoomOptions::s_defaultAnimationMode;
     winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ZoomOptions::s_defaultSnapPointsMode;
     InteractionTrackerAsyncOperationType operationType;
+
+    animationMode = GetComputedAnimationMode(animationMode);
 
     switch (animationMode)
     {
@@ -6445,6 +6474,8 @@ void Scroller::ProcessOffsetsChange(
     winrt::AnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
     winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
 
+    animationMode = GetComputedAnimationMode(animationMode);
+
     switch (offsetsChange->ViewKind())
     {
 #ifdef ScrollerViewKind_RelativeToEndOfInertiaView
@@ -6652,6 +6683,8 @@ void Scroller::ProcessZoomFactorChange(
 
     winrt::AnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
     winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+
+    animationMode = GetComputedAnimationMode(animationMode);
 
     if (snapPointsMode == winrt::SnapPointsMode::Default)
     {

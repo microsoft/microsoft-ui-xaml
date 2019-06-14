@@ -497,36 +497,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     double expectedVerticalOffset = 0;
                     double expectedHorizontalOffset = 0;
+                    int? expectedViewChangeCount = areAnimationsEnabled ? null : (int?)1;
 
                     //Down. Change focus. Don't scroll.
                     PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 2", expectedHorizontalOffset, expectedVerticalOffset, 0);
 
                     //Down. Change focus. Scroll.
                     expectedVerticalOffset = 220;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 3", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 3", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     //Down. Don't change focus. Scroll.
                     expectedVerticalOffset += scrollAmountForGamepadUpDown;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 3", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 3", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     //Down. Change focus. Scroll.
                     expectedVerticalOffset = 920;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 4", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 4", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     //Down. Change focus. Scroll.
                     expectedVerticalOffset = 1020;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 5", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickDown, "Button 5", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     //Up. Change focus. Don't scroll.
                     PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickUp, "Button 4", expectedHorizontalOffset, expectedVerticalOffset, 0);
 
                     //Up. Don't change focus. Scroll.
                     expectedVerticalOffset -= scrollAmountForGamepadUpDown;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickUp, "Button 4", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickUp, "Button 4", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     //Up. Change focus. Scroll.
                     expectedVerticalOffset = 480;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickUp, "Button 3", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickUp, "Button 3", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
                 }
             }
         }
@@ -594,6 +595,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     double expectedVerticalOffset = 0;
                     double expectedHorizontalOffset = 0;
+                    int? expectedViewChangeCount = areAnimationsEnabled ? null : (int?)1;
 
                     //Right. Change focus. Don't scroll. 
                     PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickRight, "Button 1B", expectedHorizontalOffset, expectedVerticalOffset, 0);
@@ -606,23 +608,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     //Right. Change focus. Scroll. 
                     expectedHorizontalOffset = 320;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickRight, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickRight, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     //Right. Don't Change focus. Scroll. 
                     expectedHorizontalOffset += scrollAmountForGamepadLeftRight;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickRight, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickRight, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     //Right. Don't Change focus. Scroll. 
                     expectedHorizontalOffset += scrollAmountForGamepadLeftRight;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickRight, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickRight, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     //Left. Don't Change focus. Scroll. 
                     expectedHorizontalOffset -= scrollAmountForGamepadLeftRight;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickLeft, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickLeft, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     //Left. Change focus. Scroll. 
                     expectedHorizontalOffset = 80;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickLeft, "Button 1B", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftThumbstickLeft, "Button 1B", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
                 }
             }
         }
@@ -652,18 +654,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     double expectedVerticalOffset = 0;
                     double expectedHorizontalOffset = 0;
+                    int? expectedViewChangeCount = areAnimationsEnabled ? null : (int?)1;
 
                     //Down. Change focus. Scroll.
                     expectedVerticalOffset = areAnimationsEnabled ? scrollAmountForGamepadTrigger : 220.0;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.RightTrigger, "Button 3", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.RightTrigger, "Button 3", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     //Down. Don't change focus. Scroll.
                     expectedVerticalOffset += scrollAmountForGamepadTrigger;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.RightTrigger, "Button 3", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.RightTrigger, "Button 3", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     //Up. Don't change focus. Scroll.
                     expectedVerticalOffset -= scrollAmountForGamepadTrigger;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftTrigger, "Button 3", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftTrigger, "Button 3", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     double actualHorizontalOffset;
                     double actualVerticalOffset;
@@ -672,7 +675,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     //Up. Change focus. Scroll.
                     expectedVerticalOffset = 0;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftTrigger, actualVerticalOffset < scrollAmountForGamepadTrigger ? "Button 1" : "Button 2", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftTrigger, actualVerticalOffset < scrollAmountForGamepadTrigger ? "Button 1" : "Button 2", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
                 }
             }
         }
@@ -702,18 +705,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     double expectedVerticalOffset = 0;
                     double expectedHorizontalOffset = 0;
+                    int? expectedViewChangeCount = areAnimationsEnabled ? null : (int?)1;
 
                     //Right. Change focus. Scroll.
                     expectedHorizontalOffset = areAnimationsEnabled ? scrollAmountForBumper : 320.0;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.RightShoulder, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.RightShoulder, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     //Right. Don't change focus. Scroll.
                     expectedHorizontalOffset += scrollAmountForBumper;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.RightShoulder, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.RightShoulder, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     //Left. Don't change focus. Scroll.
                     expectedHorizontalOffset -= scrollAmountForBumper;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftShoulder, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftShoulder, "Button 1C", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
 
                     double actualHorizontalOffset;
                     double actualVerticalOffset;
@@ -722,7 +726,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     //Left. Change focus. Scroll.
                     expectedHorizontalOffset = areAnimationsEnabled ? 0 : 80.0;
-                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftShoulder, actualHorizontalOffset > scrollAmountForBumper ? "Button 1B" : "Button 1", expectedHorizontalOffset, expectedVerticalOffset, areAnimationsEnabled ? null : (int?)1);
+                    PressGamepadButtonAndVerifyOffsetAndFocus(GamepadButton.LeftShoulder, actualHorizontalOffset > scrollAmountForBumper ? "Button 1B" : "Button 1", expectedHorizontalOffset, expectedVerticalOffset, expectedViewChangeCount);
                 }
             }
         }
@@ -829,6 +833,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 GetScrollerView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
             }
 
+            if (triesRemaining >= 0)
+            {
+                // Allow the view to settle and the STateChanged, ScrollCompleted or ZoomCompleted events to be raised.
+                Thread.Sleep(250);
+                GetScrollerView(out actualHorizontalOffset, out actualVerticalOffset, out actualZoomFactor);
+            }
+
             Log.Comment($"Final ScrollViewer offsets. Expected={expectedHorizontalOffset},{expectedVerticalOffset}, Actual={actualHorizontalOffset},{actualVerticalOffset}.");
             if (!areOffsetsCorrect())
             {
@@ -922,11 +933,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
         }
 
+        private void LogEditValue(string editName)
+        {
+            Edit edit = new Edit(FindElement.ById(editName));
+            Verify.IsNotNull(edit);
+            LogEditValue(editName, edit);
+        }
+
+        private void LogEditValue(string editName, Edit edit)
+        {
+            Log.Comment("Current value for " + editName + ": " + edit.Value);
+        }
+
         private bool WaitForEditValue(string editName, string editValue, double secondsTimeout = 2.0, bool throwOnError = true)
         {
             Edit edit = new Edit(FindElement.ById(editName));
             Verify.IsNotNull(edit);
-            Log.Comment("Current value for " + editName + ": " + edit.Value);
+            LogEditValue(editName, edit);
             if (edit.Value != editValue)
             {
                 using (var waiter = new ValueChangedEventWaiter(edit, editValue))
@@ -1060,23 +1083,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private void WaitForBoxChecked(string checkBoxName)
         {
             Log.Comment($"Waiting for checkbox {checkBoxName} checked...");
+            LogEditValue("txtResetStatus");
 
             UIObject checkBoxUIObject = FindElement.ById(checkBoxName);
             Verify.IsNotNull(checkBoxUIObject);
             CheckBox checkBox = new CheckBox(checkBoxUIObject);
             Verify.IsNotNull(checkBox);
 
-            if (checkBox.ToggleState != ToggleState.On)
+            if (checkBox.ToggleState == ToggleState.On)
             {
-                checkBox.GetToggledWaiter().Wait();
+                Log.Comment("CheckBox already checked.");
             }
-
-            Log.Comment("CheckBox checked.");
+            else
+            {
+                checkBox.GetToggledWaiter().TryWait();
+                if (checkBox.ToggleState != ToggleState.On)
+                {
+                    Log.Warning($"{checkBoxName} was not checked.");
+                    throw new WaiterException();
+                }
+                Log.Comment("CheckBox checked.");
+            }
         }
 
         private void UpdateTraces()
         {
             Log.Comment("Updating full log:");
+            LogEditValue("txtResetStatus");
 
             // Triggering ScrollViewersWithSimpleContentsPage.GetFullLog() call.
             TextInput.SendText("g");
@@ -1103,6 +1136,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private void ClearTraces()
         {
             Log.Comment("Clearing full log.");
+            LogEditValue("txtResetStatus");
 
             // Triggering ScrollViewersWithSimpleContentsPage.ClearFullLog() call.
             TextInput.SendText("c");
