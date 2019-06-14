@@ -183,90 +183,15 @@ void TreeView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs
     }
     else if (property == s_ItemsSourceProperty)
     {
-        m_itemItemsSourceViewChangedRevoker.revoke();
-        m_itemsDataSource = ItemsSource() ? winrt::ItemsSourceView(ItemsSource()) : nullptr;
-        if (m_itemsDataSource)
+        winrt::get_self<TreeViewNode>(m_rootNode.get())->IsContentMode(true);
+
+        if (auto listControl = ListControl())
         {
-            m_itemItemsSourceViewChangedRevoker = m_itemsDataSource.CollectionChanged(winrt::auto_revoke, { this, &TreeView::OnItemsSourceChanged });
+            auto viewModel = listControl->ListViewModel();
+            viewModel->IsContentMode(true);
         }
 
-        SyncRootNodesWithItemsSource();
-    }
-}
-
-void TreeView::OnItemsSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args)
-{
-    switch (args.Action())
-    {
-        case winrt::NotifyCollectionChangedAction::Add:
-        {
-            OnItemsAdded(args.NewStartingIndex(), args.NewItems().Size());
-            break;
-        }
-
-        case winrt::NotifyCollectionChangedAction::Remove:
-        {
-            OnItemsRemoved(args.OldStartingIndex(), args.OldItems().Size());
-            break;
-        }
-
-        case winrt::NotifyCollectionChangedAction::Reset:
-        {
-            SyncRootNodesWithItemsSource();
-            break;
-        }
-
-        case winrt::NotifyCollectionChangedAction::Replace:
-        {
-            OnItemsRemoved(args.OldStartingIndex(), args.OldItems().Size());
-            OnItemsAdded(args.NewStartingIndex(), args.NewItems().Size());
-            break;
-        }
-    }
-}
-
-void TreeView::OnItemsAdded(int index, int count)
-{
-    for (int i = index + count - 1; i >= index; i--)
-    {
-        auto item = m_itemsDataSource.GetAt(i);
-        auto node = winrt::make_self<TreeViewNode>();
-        node->Content(item);
-        winrt::get_self<TreeViewNodeVector>(RootNodes())->InsertAt(index, *node, false /* updateItemsSource */);
-    }
-}
-
-void TreeView::OnItemsRemoved(int index, int count)
-{
-    for (int i = 0; i < count; i++)
-    {
-        winrt::get_self<TreeViewNodeVector>(RootNodes())->RemoveAt(index, false /* updateItemsSource */);
-    }
-}
-
-void TreeView::SyncRootNodesWithItemsSource()
-{
-    winrt::get_self<TreeViewNode>(m_rootNode.get())->IsContentMode(true);
-    if (auto listControl = ListControl())
-    {
-        auto viewModel = listControl->ListViewModel();
-        viewModel->IsContentMode(true);
-    }
-
-    auto children = winrt::get_self<TreeViewNodeVector>(RootNodes());
-    children->Clear(false /* updateItemsSource */);
-
-    if (m_itemsDataSource)
-    {
-        int size = m_itemsDataSource.Count();
-        for (int i = 0; i < size; i++)
-        {
-            auto item = m_itemsDataSource.GetAt(i);
-            auto node = winrt::make_self<TreeViewNode>();
-            node->IsContentMode(true);
-            node->Content(item);
-            children->Append(*node, false /* updateItemsSource */);
-        }
+        winrt::get_self<TreeViewNode>(m_rootNode.get())->ItemsSource(ItemsSource());
     }
 }
 
