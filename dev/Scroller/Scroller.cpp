@@ -14,6 +14,7 @@
 #include "ScrollerAutomationPeer.h"
 #include "ScrollerTestHooks.h"
 #include "Vector.h"
+#include "RegUtil.h"
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool ScrollerTrace::s_IsDebugOutputEnabled{ false };
@@ -6112,12 +6113,25 @@ void Scroller::ProcessPointerWheelScroll(
         true /*isOperationTypeForOffsetsChange*/,
         InteractionTrackerAsyncOperationTrigger::MouseWheel);
 
+    // When isHorizontalMouseWheel == True, retrieve the reg key value for HKEY_CURRENT_USER\Control Panel\Desktop\WheelScrollChars.
+    // When isHorizontalMouseWheel == False, retrieve WheelScrollLines instead. Those two values can be set in the Control Panel's Mouse Properties / Wheel page.
+    // For improved performance, use the cached value, if present, when the InteractionTracker is in Inertia state, which is the state triggered by a mouse wheel input.
+    int32_t mouseWheelScrollLinesOrChars = RegUtil::GetMouseWheelScrollLinesOrChars(m_state == winrt::InteractionState::Inertia /*useCache*/, isHorizontalMouseWheel);
+
+    if (mouseWheelScrollLinesOrChars == -1)
+    {
+        MUX_ASSERT(!isHorizontalMouseWheel);
+        // The 'One screen at a time' option is selected in the Control Panel. The InteractionTracker's built-in behavior on RS5+ is equivalent to WheelScrollChars == 20.
+        mouseWheelScrollLinesOrChars = 20;
+    }
+
     // Mouse wheel delta amount required per initial velocity unit.
     int32_t mouseWheelDeltaForVelocityUnit = s_mouseWheelDeltaForVelocityUnit;
     com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
 
     if (globalTestHooks)
     {
+        mouseWheelScrollLinesOrChars = isHorizontalMouseWheel ? globalTestHooks->MouseWheelScrollChars() : globalTestHooks->MouseWheelScrollLines();
         mouseWheelDeltaForVelocityUnit = globalTestHooks->MouseWheelDeltaForVelocityUnit();
     }
 
@@ -6125,9 +6139,9 @@ void Scroller::ProcessPointerWheelScroll(
     // Maximum absolute velocity. Any additional velocity has no effect.
     const float c_maxVelocity = 4000.0f;
     // Velocity per unit (which is a mouse wheel delta of 120 by default). That is the velocity required to achieve a change of c_offsetChangePerVelocityUnit pixels.
-    const float c_unitVelocity = 1.572420572916667f * c_displayAdjustment;
+    const float c_unitVelocity = 0.524140190972223f * c_displayAdjustment * mouseWheelScrollLinesOrChars;
     // Effect of unit velocity on offset, to match the built-in RS5 behavior.
-    const float c_offsetChangePerVelocityUnit = 0.15f * c_displayAdjustment;
+    const float c_offsetChangePerVelocityUnit = 0.05f * mouseWheelScrollLinesOrChars * c_displayAdjustment;
 
     std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = nullptr;
     float offsetVelocity = static_cast<float>(mouseWheelDelta) / mouseWheelDeltaForVelocityUnit * c_unitVelocity;
@@ -7332,12 +7346,7 @@ void Scroller::UnhookScrollerEvents()
     m_loadedToken.revoke();
     m_unloadedToken.revoke();
     m_bringIntoViewRequested.revoke();
-    
-    if (m_pointerWheelChangedToken)
-    {
-        MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
-        m_pointerWheelChangedToken.revoke();
-    }
+    m_pointerWheelChangedToken.revoke();
 
     if (m_pointerPressedEventHandler)
     {
