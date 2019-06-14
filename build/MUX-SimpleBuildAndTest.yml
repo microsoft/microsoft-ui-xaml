@@ -27,9 +27,6 @@ jobs:
     - A
     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
     testSuite: 'DevTestSuite'
-    buildPlatform: $(buildPlatform2)
-    buildConfiguration: $(buildConfiguration2)
-    helixTargetQueues: $(helixTargetQueues2)
     matrix: 
       config:
         buildPlatform: $[ dependencies.A.outputs['a_step.buildPlatform'] ] 
