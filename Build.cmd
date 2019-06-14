@@ -18,6 +18,7 @@ set BUILDALL=
 set BUILDLEANMUXFORTHESTOREAPP=
 set MUXFINAL=
 set PROJECTPATH=
+set BUILDTARGET=
 
 if "%1" == "" goto :usage
 
@@ -96,6 +97,12 @@ if "%1" == "/project" (
     shift
     goto :MoreArguments
 )
+if "%1" == "/target" (
+    set BUILDTARGET=%BUILDTARGET%  -t:%~2
+    shift
+    shift
+    goto :MoreArguments
+)
 if "%1" == "/usevsprerelease" (
     set VSWHEREPARAMS=%VSWHEREPARAMS% -prerelease
     shift
@@ -137,15 +144,18 @@ if "%USEINSIDERSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInsiderSDK=true )
 if "%USEINTERNALSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInternalSDK=true )
 if "%EMITTELEMETRYEVENTS%" == "1" ( set EXTRAMSBUILDPARAMS=/p:EmitTelemetryEvents=true )
 
+
+if "%BUILDTARGET%" NEQ "" ( set EXTRAMSBUILDPARAMS=%EXTRAMSBUILDPARAMS% %BUILDTARGET% )
+
 if "%PROJECTPATH%" NEQ "" (
-    set MSBuildCommand="%MSBUILDPATH%" %PROJECTPATH% /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
+    set MSBuildCommand="%MSBUILDPATH%" %PROJECTPATH% /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false 
     echo !MSBuildCommand!
     !MSBuildCommand!
 ) else (
     if "%BUILDALL%" == "" (
         set XES_OUTDIR=%BUILD_BINARIESDIRECTORY%\%BUILDCONFIGURATION%\%BUILDPLATFORM%\
 
-        "%MSBUILDPATH%" .\MUXControls.sln /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal
+        "%MSBUILDPATH%" .\MUXControls.sln /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false 
 
         if "%ERRORLEVEL%" == "0" call .\tools\MakeAppxHelper.cmd %BUILDPLATFORM% %BUILDCONFIGURATION%
     ) else (
@@ -192,6 +202,7 @@ echo        /UseInternalSDK - build using internal SDK
 echo        /EmitTelemetryEvents - build with telemetry events turned on
 echo        /project ^<path^> - builds a specific project
 echo        /usevsprerelease - use the prerelease VS on the machine instead of latest stable
+echo        /target - specify the msbuild target. Specify multiple times to build multiple targets.
 echo.
 
 :end

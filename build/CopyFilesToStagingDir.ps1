@@ -3,7 +3,8 @@ Param(
     [string]$BuildOutputDir,
     [string]$PublishDir,
     [string]$Platform,
-    [string]$Configuration
+    [string]$Configuration,
+    [switch]$PublishAppxFiles=$false
 )
 
 $FullBuildOutput = "$($BuildOutputDir)\$($Configuration)\$($Platform)"
@@ -22,7 +23,7 @@ function PublishFile {
         {
             $ignore = New-Item -ItemType Directory $destinationDir
         }
-        Copy-Item -Force $source $destinationDir
+        Copy-Item -Recurse -Force $source $destinationDir
     }
     else
     {
@@ -38,6 +39,18 @@ PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml.Design\Microsoft.UI.Xam
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\MUXControls.Test.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\MUXControls.ReleaseTest.dll $FullPublishDir\Test\
 PublishFile -IfExists $FullBuildOutput\FrameworkPackage\*.* $FullPublishDir\FrameworkPackage
+
+if($PublishAppxFiles)
+{
+    $AppxPackagesDir = "$FullPublishDir\AppxPackages"
+
+    PublishFile -IfExists $FullBuildOutput\MUXControlsTestApp.TAEF\AppPackages\MUXControlsTestApp_Test\ $AppxPackagesDir
+    PublishFile -IfExists $FullBuildOutput\IXMPTestApp.TAEF\AppPackages\IXMPTestApp_Test\ $AppxPackagesDir
+    PublishFile -IfExists $FullBuildOutput\MUXControlsTestAppWPFPackage\AppPackages\MUXControlsTestAppWPFPackage_Test\ $AppxPackagesDir
+
+    PublishFile -IfExists $FullBuildOutput\NugetPackageTestApp\AppPackages\NugetPackageTestApp_Test\ $AppxPackagesDir
+    PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\AppPackages\NugetPackageTestAppCX_Test\ $AppxPackagesDir
+}
 
 # Publish pdbs:
 $symbolsOutputDir = "$($FullPublishDir)\Symbols\"
