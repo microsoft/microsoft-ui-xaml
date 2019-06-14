@@ -3243,34 +3243,30 @@ void Scroller::SetupTransformExpressionAnimations(
         m_transformMatrixZoomFactorExpressionAnimation.SetReferenceParameter(L"it", m_interactionTracker);
     }
 
-    StartTransformExpressionAnimations(content, false /*forZoomFactorAnimationInterruption*/);
+    StartTransformExpressionAnimations(content, false /*forAnimationsInterruption*/);
 }
 
 void Scroller::StartTransformExpressionAnimations(
     const winrt::UIElement& content,
-    bool forZoomFactorAnimationInterruption)
+    bool forAnimationsInterruption)
 {
     if (content)
     {
         if (SharedHelpers::IsTranslationFacadeAvailable(content))
         {
             auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+            auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
 
-            if (!forZoomFactorAnimationInterruption)
-            {
-                auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+            m_translationExpressionAnimation.Target(scrollPropertyName);
+            m_zoomFactorExpressionAnimation.Target(zoomFactorPropertyName);
 
-                m_translationExpressionAnimation.Target(scrollPropertyName);
-                m_zoomFactorExpressionAnimation.Target(zoomFactorPropertyName);
-
-                content.StartAnimation(m_translationExpressionAnimation);
-                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
-            }
+            content.StartAnimation(m_translationExpressionAnimation);
+            RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
 
             content.StartAnimation(m_zoomFactorExpressionAnimation);
             RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
         }
-        else if (!forZoomFactorAnimationInterruption) // The zoom factor animation interruption is only effective with facades.
+        else if (!forAnimationsInterruption) // The animations interruption is only effective with facades.
         {
             const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(content);
 
@@ -3312,26 +3308,23 @@ void Scroller::StartTransformExpressionAnimations(
 
 void Scroller::StopTransformExpressionAnimations(
     const winrt::UIElement& content,
-    bool forZoomFactorAnimationInterruption)
+    bool forAnimationsInterruption)
 {
     if (content)
     {
         if (SharedHelpers::IsTranslationFacadeAvailable(content))
         {
-            if (!forZoomFactorAnimationInterruption)
-            {
-                auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+            auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
 
-                content.StopAnimation(m_translationExpressionAnimation);
-                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
-            }
+            content.StopAnimation(m_translationExpressionAnimation);
+            RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
 
             auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
 
             content.StopAnimation(m_zoomFactorExpressionAnimation);
             RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
         }
-        else if (!forZoomFactorAnimationInterruption) // The zoom factor animation interruption is only effective with facades.
+        else if (!forAnimationsInterruption) // The animations interruption is only effective with facades.
         {
             const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(content);
 
@@ -3370,7 +3363,7 @@ void Scroller::StopTransformExpressionAnimations(
 }
 
 // Returns True when Scroller::OnCompositionTargetRendering calls are not needed for restarting the Scale animation.
-bool Scroller::StartZoomFactorExpressionAnimation()
+bool Scroller::StartZoomFactorExpressionAnimation(bool interruptCountdown)
 {
     if (m_zoomFactorAnimationRestartTicksCountdown > 0)
     {
@@ -3379,14 +3372,22 @@ bool Scroller::StartZoomFactorExpressionAnimation()
         // A Scale animation restart is pending after the Idle State was reached or a zoom factor change operation completed.
         m_zoomFactorAnimationRestartTicksCountdown--;
 
-        if (m_zoomFactorAnimationRestartTicksCountdown == 0)
+        if (m_zoomFactorAnimationRestartTicksCountdown == 0 || interruptCountdown)
         {
-            // Countdown is over, restart the Scale animation.
+            // Countdown is over or state is no longer Idle, restart the Scale animation.
             MUX_ASSERT(m_interactionTracker);
 
             SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, m_animationRestartZoomFactor, m_zoomFactor);
 
-            StartTransformExpressionAnimations(Content(), true /*forZoomFactorAnimationInterruption*/);
+            if (m_zoomFactorAnimationRestartTicksCountdown > 0)
+            {
+                MUX_ASSERT(interruptCountdown);
+
+                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, m_zoomFactorAnimationRestartTicksCountdown);
+                m_zoomFactorAnimationRestartTicksCountdown = 0;
+            }
+            
+            StartTransformExpressionAnimations(Content(), true /*forAnimationsInterruption*/);
         }
         else
         {
@@ -3415,7 +3416,7 @@ void Scroller::StopZoomFactorExpressionAnimation()
                 SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, m_animationRestartZoomFactor, m_zoomFactor);
 
                 // Stop Scale animation to trigger rasterization of Content, to avoid fuzzy text rendering for instance.
-                StopTransformExpressionAnimations(content, true /*forZoomFactorAnimationInterruption*/);
+                StopTransformExpressionAnimations(content, true /*forAnimationsInterruption*/);
 
                 // Trigger Scroller::OnCompositionTargetRendering calls in order to re-establish the Scale animation
                 // after the Content rasterization was triggered within a few ticks.
@@ -5201,7 +5202,7 @@ void Scroller::UpdateContent(
             if ((m_transformMatrixTranslateXExpressionAnimation && m_transformMatrixTranslateYExpressionAnimation && m_transformMatrixZoomFactorExpressionAnimation && !useTranslationProperty) ||
                 (m_translationExpressionAnimation && m_zoomFactorExpressionAnimation && useTranslationProperty))
             {
-                StopTransformExpressionAnimations(oldContent, false /*forZoomFactorAnimationInterruption*/);
+                StopTransformExpressionAnimations(oldContent, false /*forAnimationsInterruption*/);
             }
             ScrollToOffsets(0.0 /*zoomedHorizontalOffset*/, 0.0 /*zoomedVerticalOffset*/);
         }
@@ -5259,13 +5260,19 @@ void Scroller::UpdateTransformSource(
         (m_translationExpressionAnimation && m_zoomFactorExpressionAnimation && IsVisualTranslationPropertyAvailable()));
     MUX_ASSERT(m_interactionTracker);
 
-    StopTransformExpressionAnimations(oldContent, false /*forZoomFactorAnimationInterruption*/);
-    StartTransformExpressionAnimations(newContent, false /*forZoomFactorAnimationInterruption*/);
+    StopTransformExpressionAnimations(oldContent, false /*forAnimationsInterruption*/);
+    StartTransformExpressionAnimations(newContent, false /*forAnimationsInterruption*/);
 }
 
 void Scroller::UpdateState(
     const winrt::InteractionState& state)
 {
+    if (state != winrt::InteractionState::Inertia)
+    {
+        // Restart the interrupted expression animations sooner than planned to visualize the new view change immediately.
+        StartZoomFactorExpressionAnimation(true /*interruptCountdown*/);
+    }
+
     if (state != m_state)
     {
         m_state = state;

@@ -368,11 +368,11 @@ private:
         const winrt::UIElement& content);
     void StartTransformExpressionAnimations(
         const winrt::UIElement& content,
-        bool forZoomFactorAnimationInterruption);
+        bool forAnimationsInterruption);
     void StopTransformExpressionAnimations(
         const winrt::UIElement& content,
-        bool forZoomFactorAnimationInterruption);
-    bool StartZoomFactorExpressionAnimation();
+        bool forAnimationsInterruption);
+    bool StartZoomFactorExpressionAnimation(bool interruptCountdown = false);
     void StopZoomFactorExpressionAnimation();
     void StartExpressionAnimationSourcesAnimations();
     void StartScrollControllerExpressionAnimationSourcesAnimations(
