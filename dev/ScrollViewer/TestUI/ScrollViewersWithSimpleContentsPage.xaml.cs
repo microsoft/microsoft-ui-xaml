@@ -401,20 +401,24 @@ namespace MUXControlsTestApp
 
         private void GetFullLog()
         {
+            this.txtResetStatus.Text = "GetFullLog. Populating cmbFullLog...";
             chkLogCleared.IsChecked = false;
             foreach (string log in this.fullLogs)
             {
                 this.cmbFullLog.Items.Add(log);
             }
             chkLogUpdated.IsChecked = true;
+            this.txtResetStatus.Text = "GetFullLog. Done.";
         }
 
         private void ClearFullLog()
         {
+            this.txtResetStatus.Text = "ClearFullLog. Clearing cmbFullLog & fullLogs...";
             chkLogUpdated.IsChecked = false;
             this.fullLogs.Clear();
             this.cmbFullLog.Items.Clear();
             chkLogCleared.IsChecked = true;
+            this.txtResetStatus.Text = "ClearFullLog. Done.";
         }
 
         private void MUXControlsTestHooks_LoggingMessage(object sender, MUXControlsTestHooksLoggingMessageEventArgs args)

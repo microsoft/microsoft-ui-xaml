@@ -215,14 +215,15 @@ void ScrollBarController::ScrollToRequested(winrt::event_token const& token)
 winrt::event_token ScrollBarController::ScrollByRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollByRequestedEventArgs> const& value)
 {
     SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
-    // This IScrollController implementation only uses the ScrollToRequested and ScrollFromRequested events, and not ScrollByRequested.
-    return {};
+
+    return m_scrollByRequested.add(value);
 }
 
 void ScrollBarController::ScrollByRequested(winrt::event_token const& token)
 {
     SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
-    // This IScrollController implementation only uses the ScrollToRequested and ScrollFromRequested events, and not ScrollByRequested.
+
+    m_scrollByRequested.remove(token);
 }
 
 winrt::event_token ScrollBarController::ScrollFromRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollFromRequestedEventArgs> const& value)
@@ -507,7 +508,14 @@ void ScrollBarController::OnScroll(
                 offsetChange += s_minMaxEpsilon;
             }
 
-            offsetChangeRequested = RaiseScrollFromRequested(offsetChange);
+            if (SharedHelpers::IsAnimationsEnabled())
+            {
+                offsetChangeRequested = RaiseScrollFromRequested(offsetChange);
+            }
+            else
+            {
+                offsetChangeRequested = RaiseScrollByRequested(offsetChange);
+            }
         }
 
         if (!offsetChangeRequested)
@@ -548,6 +556,39 @@ bool ScrollBarController::RaiseScrollToRequested(
     if (offsetChangeId != -1 && offsetChangeId != m_lastOffsetChangeIdForScrollTo)
     {
         m_lastOffsetChangeIdForScrollTo = offsetChangeId;
+        m_operationsCount++;
+        return true;
+    }
+
+    return false;
+}
+
+bool ScrollBarController::RaiseScrollByRequested(
+    double offsetChange)
+{
+    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, offsetChange);
+
+    if (!m_scrollByRequested)
+    {
+        return false;
+    }
+
+    auto options = winrt::make_self<ScrollOptions>(
+        winrt::AnimationMode::Disabled,
+        winrt::SnapPointsMode::Ignore);
+
+    auto scrollByRequestedEventArgs = winrt::make_self<ScrollControllerScrollByRequestedEventArgs>(
+        offsetChange,
+        *options);
+
+    m_scrollByRequested(*this, *scrollByRequestedEventArgs);
+
+    int32_t offsetChangeId = scrollByRequestedEventArgs.as<winrt::ScrollControllerScrollByRequestedEventArgs>().Info().OffsetsChangeId;
+
+    // Only increment m_operationsCount when the returned OffsetsChangeId represents a new request that was not coalesced with a pending request. 
+    if (offsetChangeId != -1 && offsetChangeId != m_lastOffsetChangeIdForScrollBy)
+    {
+        m_lastOffsetChangeIdForScrollBy = offsetChangeId;
         m_operationsCount++;
         return true;
     }
