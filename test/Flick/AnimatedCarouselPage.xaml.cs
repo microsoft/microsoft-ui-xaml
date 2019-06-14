@@ -104,17 +104,107 @@ namespace Flick
 
         public double ItemScaleRatio { get; set; } = 0.5;
 
-        private ThreadPoolTimer PrevButtonContinuousScrollingPeriodicTimer { get; set; } = null;
+        private ThreadPoolTimer m_prevButtonContinuousScrollingPeriodicTimer = null;
 
-        private ThreadPoolTimer NextButtonContinuousScrollingPeriodicTimer { get; set; } = null;
+        private ThreadPoolTimer PrevButtonContinuousScrollingPeriodicTimer
+        {
+            get
+            {
+                return m_prevButtonContinuousScrollingPeriodicTimer;
+            }
+            set
+            {
+                if (m_prevButtonContinuousScrollingPeriodicTimer != null)
+                {
+                    m_prevButtonContinuousScrollingPeriodicTimer.Cancel();
+                    m_prevButtonContinuousScrollingPeriodicTimer = null;
+                }
+
+                m_prevButtonContinuousScrollingPeriodicTimer = value;
+            }
+        }
+
+        private ThreadPoolTimer m_nextButtonContinuousScrollingPeriodicTimer = null;
+
+        private ThreadPoolTimer NextButtonContinuousScrollingPeriodicTimer
+        {
+            get
+            {
+                return m_nextButtonContinuousScrollingPeriodicTimer;
+            }
+            set
+            {
+                if (m_nextButtonContinuousScrollingPeriodicTimer != null)
+                {
+                    m_nextButtonContinuousScrollingPeriodicTimer.Cancel();
+                    m_nextButtonContinuousScrollingPeriodicTimer = null;
+                }
+
+                m_nextButtonContinuousScrollingPeriodicTimer = value;
+            }
+        }
 
         private static TimeSpan PrevNextButtonHoldPeriod { get; } = TimeSpan.FromMilliseconds(300);
 
-        private ThreadPoolTimer PrevButtonHoldTimer { get; set; } = null;
+        private ThreadPoolTimer m_prevButtonHoldTimer = null;
 
-        private ThreadPoolTimer NextButtonHoldTimer { get; set; } = null;
+        private ThreadPoolTimer PrevButtonHoldTimer
+        {
+            get
+            {
+                return m_prevButtonHoldTimer;
+            }
+            set
+            {
+                if (m_prevButtonHoldTimer != null)
+                {
+                    m_prevButtonHoldTimer.Cancel();
+                    m_prevButtonHoldTimer = null;
+                }
 
-        private ThreadPoolTimer ScrollViewerChangeViewTimer { get; set; } = null;
+                m_prevButtonHoldTimer = value;
+            }
+        }
+
+        private ThreadPoolTimer m_nextButtonHoldTimer = null;
+
+        private ThreadPoolTimer NextButtonHoldTimer
+        {
+            get
+            {
+                return m_nextButtonHoldTimer;
+            }
+            set
+            {
+                if (m_nextButtonHoldTimer != null)
+                {
+                    m_nextButtonHoldTimer.Cancel();
+                    m_nextButtonHoldTimer = null;
+                }
+
+                m_nextButtonHoldTimer = value;
+            }
+        }
+
+        private ThreadPoolTimer m_scrollViewerChangeViewTimer = null;
+
+        private ThreadPoolTimer ScrollViewerChangeViewTimer
+        {
+            get
+            {
+                return m_scrollViewerChangeViewTimer;
+            }
+            set
+            {
+                if (m_scrollViewerChangeViewTimer != null)
+                {
+                    m_scrollViewerChangeViewTimer.Cancel();
+                    m_scrollViewerChangeViewTimer = null;
+                }
+
+                m_scrollViewerChangeViewTimer = value;
+            }
+        }
 
         private static int ContinousScrollingItemSkipCount { get; } = 2;
 
@@ -134,7 +224,9 @@ namespace Flick
             CarouselPrevButtonVisibility = CarouselNextButtonVisibility = Visibility.Visible;
         }
 
+#pragma warning disable CS0628 // New protected member declared in sealed class
         protected void OnScrollViewerViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+#pragma warning restore CS0628 // New protected member declared in sealed class
         {
             if (e.IsIntermediate)
             {
@@ -152,8 +244,11 @@ namespace Flick
             }
         }
 
+
         // TODO: Is this really required when we have ViewChanged with IsIntermediate = false handled ?
+#pragma warning disable CS0628 // New protected member declared in sealed class
         protected void OnScrollViewerViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
+#pragma warning restore CS0628 // New protected member declared in sealed class
         {
             if (!IsScrolling)
             {
@@ -415,35 +510,7 @@ namespace Flick
         {
             bool pointerCaptured = ((UIElement)sender).CapturePointer(e.Pointer);
 
-            if (ScrollViewerChangeViewTimer != null)
-            {
-                ScrollViewerChangeViewTimer.Cancel();
-                ScrollViewerChangeViewTimer = null;
-            }
-
-            if (PrevButtonHoldTimer != null)
-            {
-                PrevButtonHoldTimer.Cancel();
-                PrevButtonHoldTimer = null;
-            }
-
-            if (NextButtonHoldTimer != null)
-            {
-                NextButtonHoldTimer.Cancel();
-                NextButtonHoldTimer = null;
-            }
-
-            if (PrevButtonContinuousScrollingPeriodicTimer != null)
-            {
-                PrevButtonContinuousScrollingPeriodicTimer.Cancel();
-                PrevButtonContinuousScrollingPeriodicTimer = null;
-            }
-
-            if (NextButtonContinuousScrollingPeriodicTimer != null)
-            {
-                NextButtonContinuousScrollingPeriodicTimer.Cancel();
-                NextButtonContinuousScrollingPeriodicTimer = null;
-            }
+            CancelAllCarouselScrollRelatedTimers();
 
             if (!pointerCaptured)
             {
@@ -456,13 +523,13 @@ namespace Flick
             {
                 await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                 {
-                    startContinuousScrolling(ScrollDirection.Previous);
+                    StartContinuousScrolling(ScrollDirection.Previous);
                 });
             },
             PrevNextButtonHoldPeriod);
         }
 
-        private void OnCarouselPrevButtonPointerPressEnded()
+        private void CancelAllCarouselPrevButtonTimers()
         {
             if (ScrollViewerChangeViewTimer != null)
             {
@@ -487,28 +554,28 @@ namespace Flick
         protected void OnCarouselPrevButtonPointerCanceled(object sender, PointerRoutedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
-            OnCarouselPrevButtonPointerPressEnded();
+            CancelAllCarouselPrevButtonTimers();
         }
 
 #pragma warning disable CS0628 // New protected member declared in sealed class
         protected void OnCarouselPrevButtonPointerReleased(object sender, PointerRoutedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
-            OnCarouselPrevButtonPointerPressEnded();
+            CancelAllCarouselPrevButtonTimers();
         }
 
 #pragma warning disable CS0628 // New protected member declared in sealed class
         protected void OnCarouselPrevButtonPointerExited(object sender, PointerRoutedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
-            OnCarouselPrevButtonPointerPressEnded();
+            CancelAllCarouselPrevButtonTimers();
         }
 
 #pragma warning disable CS0628 // New protected member declared in sealed class
         protected void OnCarouselPrevButtonPointerCaptureLost(object sender, PointerRoutedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
-            OnCarouselPrevButtonPointerPressEnded();
+            CancelAllCarouselPrevButtonTimers();
         }
 
 #pragma warning disable CS0628 // New protected member declared in sealed class
@@ -517,35 +584,7 @@ namespace Flick
         {
             bool pointerCaptured = ((UIElement)sender).CapturePointer(e.Pointer);
 
-            if (ScrollViewerChangeViewTimer != null)
-            {
-                ScrollViewerChangeViewTimer.Cancel();
-                ScrollViewerChangeViewTimer = null;
-            }
-
-            if (NextButtonHoldTimer != null)
-            {
-                NextButtonHoldTimer.Cancel();
-                NextButtonHoldTimer = null;
-            }
-
-            if (PrevButtonHoldTimer != null)
-            {
-                PrevButtonHoldTimer.Cancel();
-                PrevButtonHoldTimer = null;
-            }
-
-            if (PrevButtonContinuousScrollingPeriodicTimer != null)
-            {
-                PrevButtonContinuousScrollingPeriodicTimer.Cancel();
-                PrevButtonContinuousScrollingPeriodicTimer = null;
-            }
-
-            if (NextButtonContinuousScrollingPeriodicTimer != null)
-            {
-                NextButtonContinuousScrollingPeriodicTimer.Cancel();
-                NextButtonContinuousScrollingPeriodicTimer = null;
-            }
+            CancelAllCarouselScrollRelatedTimers();
 
             if (!pointerCaptured)
             {
@@ -558,13 +597,13 @@ namespace Flick
             {
                 await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                 {
-                    startContinuousScrolling(ScrollDirection.Next);
+                    StartContinuousScrolling(ScrollDirection.Next);
                 });
             },
             PrevNextButtonHoldPeriod);
         }
 
-        private void OnCarouselNextButtonPointerPressEnded()
+        private void CancelAllCarouselNextButtonTimers()
         {
             if (ScrollViewerChangeViewTimer != null)
             {
@@ -589,31 +628,37 @@ namespace Flick
         protected void OnCarouselNextButtonPointerCanceled(object sender, PointerRoutedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
-            OnCarouselNextButtonPointerPressEnded();
+            CancelAllCarouselNextButtonTimers();
         }
 
 #pragma warning disable CS0628 // New protected member declared in sealed class
         protected void OnCarouselNextButtonPointerReleased(object sender, PointerRoutedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
-            OnCarouselNextButtonPointerPressEnded();
+            CancelAllCarouselNextButtonTimers();
         }
 
 #pragma warning disable CS0628 // New protected member declared in sealed class
         protected void OnCarouselNextButtonPointerExited(object sender, PointerRoutedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
-            OnCarouselNextButtonPointerPressEnded();
+            CancelAllCarouselNextButtonTimers();
         }
 
 #pragma warning disable CS0628 // New protected member declared in sealed class
         protected void OnCarouselNextButtonPointerCaptureLost(object sender, PointerRoutedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
         {
-            OnCarouselNextButtonPointerPressEnded();
+            CancelAllCarouselNextButtonTimers();
         }
 
-        private void startContinuousScrolling(ScrollDirection scrollDirection)
+        private void CancelAllCarouselScrollRelatedTimers()
+        {
+            CancelAllCarouselPrevButtonTimers();
+            CancelAllCarouselNextButtonTimers();
+        }
+
+        private void StartContinuousScrolling(ScrollDirection scrollDirection)
         {
             if ((scrollDirection == ScrollDirection.Previous && PrevButtonContinuousScrollingPeriodicTimer != null)
                 || (scrollDirection == ScrollDirection.Next && NextButtonContinuousScrollingPeriodicTimer != null)
