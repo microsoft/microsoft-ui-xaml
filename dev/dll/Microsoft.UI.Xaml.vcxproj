@@ -9,6 +9,7 @@
   <Import Project="$(MSBuildProjectDirectory)\..\..\environment.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\ProjectConfigurations.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\version.props" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\mux.PGO.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</ProjectGuid>
     <Keyword>DynamicLibrary</Keyword>
@@ -692,4 +693,5 @@
     <!-- Tell CreateLCGFile to use the LCE file from RC.EXE -->
     <LCEFile>$(_LceFile)</LCEFile>
   </PropertyGroup>
+  <Import Project="$(MSBuildProjectDirectory)\..\..\Build\PGO\Microsoft.UI.Xaml.PGO.targets"/>
 </Project>
