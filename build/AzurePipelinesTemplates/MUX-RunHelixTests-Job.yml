@@ -39,9 +39,9 @@ jobs:
     matrix: ${{ parameters.matrix }}
       
   steps:
-  - powershell: |
-      echo "##vso[task.setvariable variable=buildPlatform]$(buildPlatform2)"
-    displayName: set vars
+  # - powershell: |
+  #     echo "##vso[task.setvariable variable=buildPlatform]$(buildPlatform2)"
+  #   displayName: set vars
   - task: CmdLine@1
     displayName: 'Display build machine environment variables'
     inputs:
