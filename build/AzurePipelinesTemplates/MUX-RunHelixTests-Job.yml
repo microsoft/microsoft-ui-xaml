@@ -15,7 +15,9 @@ parameters:
     Release_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'release'
-      helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open%3bWindows.10.Amd64.Client19H1.Open'
+      # temporarily disabling RS2 and RS4 queues to unblock tests.
+      helixTargetQueues: 'Windows.10.Amd64.Client19H1.Open'
+      #helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open%3bWindows.10.Amd64.Client19H1.Open'
 
 jobs:
 - job: ${{ parameters.name }}
@@ -23,7 +25,9 @@ jobs:
   condition: ${{ parameters.condition }}
   pool:
     vmImage: 'windows-2019'
-  timeoutInMinutes: 120
+  # temporarily increasing timeout to 180
+  timeoutInMinutes: 180
+  #timeoutInMinutes: 120
   variables:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
     taefPath: $(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)
