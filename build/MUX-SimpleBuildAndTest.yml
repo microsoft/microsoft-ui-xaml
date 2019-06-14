@@ -10,7 +10,7 @@ jobs:
   variables:
     #buildPlatform: 'x86'
     #buildConfiguration: 'release'
-    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration2)\$(buildPlatform2)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
 
@@ -24,11 +24,12 @@ jobs:
     dependsOn: Build
     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
     testSuite: 'DevTestSuite'
+    buildPlatform: $(buildPlatform2)
+    buildConfiguration: $(buildConfiguration2)
+    helixTargetQueues: $(helixTargetQueues2)
     matrix: 
       buildConfig:
-        buildPlatform: $(buildPlatform)
-        buildConfiguration: $(buildConfiguration)
-        helixTargetQueues: $(helixTargetQueues)
+        foo: bar
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
