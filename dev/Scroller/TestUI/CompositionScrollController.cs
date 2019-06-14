@@ -1251,7 +1251,7 @@ namespace MUXControlsTestApp.Utilities
             offsetTarget = newOffsetTarget;
 
             int offsetChangeId = RaiseScrollToRequested(
-                offsetTarget, AnimationMode.Enabled, true /*hookupCompletion*/);
+                offsetTarget, AnimationMode.Auto, true /*hookupCompletion*/);
             if (offsetChangeId != -1 && !operations.ContainsKey(offsetChangeId))
             {
                 operations.Add(offsetChangeId, new OperationInfo(offsetChangeId, relativeOffsetChange, offsetTarget));

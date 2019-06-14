@@ -31,72 +31,6 @@ param(
 #       TODO 19757865: Change this so that it no longer has a dependency on TShell.
 #
 
-function Build-TaefAppXIfNeeded
-{
-    param(
-        [System.IO.FileSystemInfo]$MuxDllFile,
-        [string]$ProjectName,
-        [string]$Platform,
-        [string]$Flavor
-    )
-
-    $projectFileName = "$($ProjectName).TAEF"
-
-    Build-AppXIfNeeded -MuxDllFile $MuxDllFile -ProjectName $ProjectName -Platform $Platform -Flavor $Flavor -AppXPath "$projectFileName\AppPackages\$($ProjectName)_Test\$ProjectName.appx" -ExePath "$projectFileName\$ProjectName.exe" -ProjectPath "$($ProjectName)\TAEF\$projectFileName.csproj"
-}
-
-function Build-AppXIfNeeded
-{
-    param(
-        [System.IO.FileSystemInfo]$MuxDllFile,
-        [string]$AppXPath,
-        [string]$ExePath,
-        [string]$ProjectPath,
-        [string]$ProjectName,
-        [string]$Platform,
-        [string]$Flavor
-    )
-
-    $appxFullPath = "$PSScriptRoot\BuildOutput\$Flavor\$Platform\$AppXPath"
-    $testAppxFile = Get-Item $appxFullPath -ErrorAction Ignore
-    $testExeFile = Get-Item "$PSScriptRoot\BuildOutput\$Flavor\$Platform\$ExePath" -ErrorAction Ignore
-
-    if ((!$testAppxFile) -or (!$testExeFile) -or ($testExeFile.LastWriteTime -gt $testAppxFile.LastWriteTime) -or ($muxDllFile.LastWriteTime -gt $testAppxFile.LastWriteTime))
-    {
-        if ($testAppxFile)
-        {
-            Write-Verbose "$testAppxFile LastWriteTime = $($testAppxFile.LastWriteTime)"
-        }
-        else
-        {
-            Write-Verbose "No appx at $appxFullPath"
-        }
-        if ($testExeFile)
-        {
-            Write-Verbose "$testExeFile LastWriteTime = $($testExeFile.LastWriteTime)"
-        }
-        Write-Verbose "$muxDllFile LastWriteTime = $($muxDllFile.LastWriteTime)"
-
-        if (-not $NoBuild)
-        {
-            Write-Host ""
-            Write-Host "$ProjectName AppX does not exist or is not up-to-date. Running build to generate..." -foregroundcolor Magenta
-            Write-Host ""
-            $buildCmd = "$PSScriptRoot\build.cmd $($Platform.ToLower()) $($Flavor.ToLower()) /project `"$PSScriptRoot\test\$ProjectPath`""
-            Write-Host $buildCmd
-            Invoke-Expression $buildCmd
-            Write-Host ""
-            Write-Host "Rebuild complete." -foregroundcolor Magenta
-        }
-        else
-        {
-            Write-Host ""
-            Write-Warning "$ProjectName AppX does not exist or is not up-to-date. But -NoBuild was requested so not running build."
-            Write-Host ""
-        }
-    }
-}
-
 if (!(test-path variable:\DeviceAddress))
 {
     Write-Host "";
@@ -108,40 +42,12 @@ if (!(test-path variable:\DeviceAddress))
 $deviceDir = "c:\data\test\bin"
 $ignoredOutput = cmdd if not exist $deviceDir mkdir $deviceDir
 
-$muxDllFile = Get-Item "$PSScriptRoot\BuildOutput\$Flavor\$Platform\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll"
 
-if(!$Release)
+if(!$NoDeploy)
 {
-    Build-TaefAppXIfNeeded -MuxDllFile $muxDllFile -ProjectName "MUXControlsTestApp" -Platform $Platform -Flavor $Flavor
-    Build-TaefAppXIfNeeded -MuxDllFile $muxDllFile -ProjectName "IXMPTestApp" -Platform $Platform -Flavor $Flavor
-    Build-AppXIfNeeded -MuxDllFile $muxDllFile -ProjectName "MUXControlsTestAppWPFPackage" -Platform $Platform -Flavor $Flavor -AppXPath "MUXControlsTestAppWPFPackage\AppPackages\MUXControlsTestAppWPFPackage_Test\MUXControlsTestAppWPFPackage.appx" -ExePath "MUXControlsTestAppWPF\MUXControlsTestAppWPF.exe" -ProjectPath "MUXControlsTestAppWPFPackage\MUXControlsTestAppWPFPackage.wapproj"
-}
-else
-{
-    Build-AppXIfNeeded -MuxDllFile $muxDllFile -ProjectName "NugetPackageTestApp" -Platform $Platform -Flavor $Flavor -AppXPath "NugetPackageTestApp\AppPackages\NugetPackageTestApp_Test\NugetPackageTestApp.appx" -ExePath "NugetPackageTestApp\NugetPackageTestApp.exe" -ProjectPath "MUXControlsReleaseTest\NugetPackageTestApp\NugetPackageTestApp.csproj"
-    Build-AppXIfNeeded -MuxDllFile $muxDllFile -ProjectName "NugetPackageTestAppCX" -Platform $Platform -Flavor $Flavor -AppXPath "NugetPackageTestAppCX\AppPackages\NugetPackageTestAppCX_Test\NugetPackageTestAppCX.appx" -ExePath "NugetPackageTestAppCX\NugetPackageTestAppCX.exe" -ProjectPath "MUXControlsReleaseTest\NugetPackageTestAppCX\NugetPackageTestAppCX.csproj"
+    & .\CreateTestBinariesDirFromLocalBuild.ps1 -NoBuild:$NoBuild -Release:$Release -Flavor:$Flavor -Platform:$Platform
 }
 
-Write-Host ""
-
-#
-# Deploy TAEF, .NETCoreApp, and Microsoft.Windows.Apps.Test. These are the ones that we grabbed off nuget
-# so that they match the ones we linked against/packaged in our appx.
-#
-
-if (!$NoDeploy)
-{
-    $nugetPackagesDir = "$env:USERPROFILE\.nuget\packages"
-    $binplaceDir = "C:\data\test\bin\"
-
-    putd "$nugetPackagesDir\microsoft.windows.apps.test\1.0.181203002\lib\netcoreapp2.1\*.dll" $binplaceDir
-    putd "$nugetPackagesDir\taef.redist.wlk\10.31.180822002\build\Binaries\$platform\*" $binplaceDir
-    putd "$nugetPackagesDir\taef.redist.wlk\10.31.180822002\build\Binaries\$platform\CoreClr\*" $binplaceDir
-    putd "$nugetPackagesDir\runtime.win-$platform.microsoft.netcore.app\2.1.0\runtimes\win-$platform\lib\netcoreapp2.1\*" $binplaceDir
-    putd "$nugetPackagesDir\runtime.win-$platform.microsoft.netcore.app\2.1.0\runtimes\win-$platform\native\*" $binplaceDir
-    putd "$nugetPackagesDir\runtime.win-$platform.microsoft.netcore.app\2.1.0\runtimes\win-$platform\lib\netcoreapp2.1\*" "$binplaceDir\.NETCoreApp2.1\"
-    putd "$nugetPackagesDir\runtime.win-$platform.microsoft.netcore.app\2.1.0\runtimes\win-$platform\native\*" "$binplaceDir\.NETCoreApp2.1\"
-}
 
 # If we're doing a code coverage run, let's instrument the binaries now.
 if ($CodeCoverage)
@@ -152,39 +58,11 @@ if ($CodeCoverage)
 # Always copy over the test files.
 
 $repoDirectory = Split-Path -Parent $script:MyInvocation.MyCommand.Path
-if(!$Release)
+if(!$NoDeploy)
 {
-    $testDllOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\AnyCPU\MUXControls.Test.TAEF"
-    $testAppOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\$platform\MUXControlsTestApp.TAEF"
-    $ixmpAppOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\$platform\IXMPTestApp.TAEF"
-    $testAppWPFXamlIslandsOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\$platform\MUXControlsTestAppWPFPackage"
-
-    $appxPath = Join-Path $testAppOutputDir "AppPackages\MUXControlsTestApp_Test"
-    $dependenciesPath = Join-Path $testAppOutputDir "AppPackages\MUXControlsTestApp_Test\Dependencies\$platform"
-
-    $putDOutput += putd (Join-Path $testDllOutputDir "MUXControls.Test.dll") $deviceDir
-    $putDOutput += putd "$appxPath\*" $deviceDir
-    $putDOutput += putd "$dependenciesPath\MUXControlsTestApp*" $deviceDir
-    $putDOutput += putd (Join-Path $ixmpAppOutputDir "AppPackages\IXMPTestApp_Test\IXMPTestApp*") $deviceDir
-    $putDOutput += putd (Join-Path $ixmpAppOutputDir "AppPackages\IXMPTestApp_Test\Dependencies\$platform\*") $deviceDir
-
-    $putDOutput += putd (Join-Path $testAppWPFXamlIslandsOutputDir "AppPackages\MUXControlsTestAppWPFPackage_Test\MUXControlsTestAppWPFPackage*") $deviceDir
-    # app package dependencies are missing. Following up on email
-    #$putDOutput += putd (Join-Path $testAppWPFXamlIslandsOutputDir "AppPackages\MUXControlsTestAppWPFPackage_Test\Dependencies\$platform\*") $deviceDir
-}
-else
-{
-    $testDllOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\AnyCPU\MUXControls.Test.TAEF"
-    $releaseTestDllOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\AnyCPU\MUXControls.ReleaseTest.TAEF"
-    $testAppOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\$platform\NugetPackageTestApp"
-    $testAppCxOutputDir = Join-Path $repoDirectory "BuildOutput\$flavor\$platform\NugetPackageTestAppCX"
-
-    $putDOutput += putd (Join-Path $testDllOutputDir "MUXControls.Test.dll") $deviceDir
-    $putDOutput += putd (Join-Path $releaseTestDllOutputDir "MUXControls.ReleaseTest.dll") $deviceDir
-    $putDOutput += putd (Join-Path $testAppOutputDir "AppPackages\NugetPackageTestApp_Test\NugetPackageTestApp*") $deviceDir
-    $putDOutput += putd (Join-Path $testAppOutputDir "AppPackages\NugetPackageTestApp_Test\Dependencies\$platform\*") $deviceDir
-    $putDOutput += putd (Join-Path $testAppCxOutputDir "AppPackages\NugetPackageTestAppCX_Test\NugetPackageTestAppCX*") $deviceDir
-    $putDOutput += putd (Join-Path $testAppCxOutputDir "AppPackages\NugetPackageTestAppCX_Test\Dependencies\$platform\*") $deviceDir
+    $payloadDir = Join-Path $repoDirectory "HelixPayload\$flavor\$platform\*"
+    Write-Host "Copying files from '$payloadDir' to device";
+    $putDOutput += putd -Recurse $payloadDir $deviceDir
 }
 
 # Make watson keep dumps offline locally. We will check after the tests run to see if there were any dumps.

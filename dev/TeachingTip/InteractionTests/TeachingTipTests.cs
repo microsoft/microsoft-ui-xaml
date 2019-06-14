@@ -3,6 +3,7 @@ using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using System;
 using System.Numerics;
 using Common;
+using System.Threading.Tasks;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -53,7 +54,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+
+        [TestMethod]
         public void CloseReasonIsAccurate()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -121,7 +123,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void TipCanFollowTarget()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -177,6 +179,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void TipFollowsTargetOnWindowResize()
+        {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("This test requires RS3+ functionality");
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
+
+                    ScrollTargetIntoView();
+                    Wait.ForIdle();
+                    OpenTeachingTip();
+                    double initialTipVerticalOffset = GetTipVerticalOffset();
+                    double initialScrollViewerVerticalOffset = GetScrollViewerVerticalOffset();
+
+                    ScrollBy(10);
+                    WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
+                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+
+                    //Unmaximize then maximize the window, to force a window size changed event.
+                    KeyboardHelper.PressKey(Key.Down, ModifierKey.Windows);
+                    Wait.ForIdle();
+                    KeyboardHelper.PressKey(Key.Up, ModifierKey.Windows);
+                    Wait.ForIdle();
+
+                    Verify.IsLessThan(GetTipVerticalOffset(), initialTipVerticalOffset);
+                }
+            }
+        }
+
         // [TestMethod] // Not currently passing, tracked by issue #643
         public void AutoPlacement()
         {
@@ -203,7 +242,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void SpecifiedPlacement()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -374,7 +413,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+
+        [TestMethod]
         public void NoIconDoesNotCrash()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -398,7 +438,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+
+        [TestMethod]
         public void CanSwitchShouldConstrainToRootBounds()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -432,7 +473,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void TipsWhichDoNotFitDoNotOpen()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -447,7 +488,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     ScrollBy(10);
                     UseTestWindowBounds(10, 10, 10, 10);
 
-                    elements.GetShowButton().Invoke();
+
+                    elements.GetShowButton().InvokeAndWait();
 
                     var message1 = GetTeachingTipDebugMessage(1);
                     Verify.IsTrue(message1.ToString().Contains("Closed"));
@@ -465,7 +507,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+
+        [TestMethod]
         public void VerifyTheming()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -487,7 +530,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     OpenTeachingTip();
 
                     var themingComboBox = elements.GetThemingComboBox();
-                    themingComboBox.SelectItemByName("Default");
+                    themingComboBox.SelectItemByName("Light");
 
                     Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipButtonTextBlock().GetText(), "Default button foreground should be black");
                     Verify.AreEqual("#FF000000", elements.GetEffectiveForegroundOfTeachingTipContentTextBlock().GetText(), "Default content foreground should be black");
@@ -557,7 +600,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             CloseTeachingTipProgrammatically();
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void AutomationNameIsForwardedToPopup()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -579,7 +622,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] TODO: Re-enable after fixing issue #643
+        [TestMethod]
         public void F6PutsFocusOnCloseButton()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
@@ -629,7 +672,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if(elements.GetIsOpenCheckBox().ToggleState != ToggleState.On)
             {
-                elements.GetShowButton().Invoke();
+                elements.GetShowButton().InvokeAndWait();
                 WaitForChecked(elements.GetIsOpenCheckBox());
                 WaitForChecked(elements.GetIsIdleCheckBox());
             }
@@ -639,7 +682,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
             {
-                elements.GetCloseButton().Invoke();
+                elements.GetCloseButton().InvokeAndWait();
                 WaitForTipClosed();
             }
         }
@@ -712,7 +755,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 elements.GetIsLightDismissEnabledComboBox().SelectItemByName("False");
             }
-            elements.GetIsLightDismissEnabledButton().Invoke();
+            elements.GetIsLightDismissEnabledButton().InvokeAndWait();
         }
 
         private void SetShouldConstrainToRootBounds(bool constrain)
@@ -725,7 +768,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 elements.GetShouldConstrainToRootBoundsComboBox().SelectItemByName("False");
             }
-            elements.GetShouldConstrainToRootBoundsButton().Invoke();
+            elements.GetShouldConstrainToRootBoundsButton().InvokeAndWait();
         }
 
         private void SetCloseButtonContent(CloseButtonContentOptions closeButtonContent)
@@ -742,7 +785,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     elements.GetCloseButtonContentComboBox().SelectItemByName("Long text");
                     break;
             }
-            elements.GetSetCloseButtonContentButton().Invoke();
+            elements.GetSetCloseButtonContentButton().InvokeAndWait();
         }
 
         private void SetPreferredPlacement(PlacementOptions placement)
@@ -792,7 +835,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     elements.GetPreferredPlacementComboBox().SelectItemByName("Auto");
                     break;
             }
-            elements.GetSetPreferredPlacementButton().Invoke();
+            elements.GetSetPreferredPlacementButton().InvokeAndWait();
         }
 
         private void SetHeroContent(HeroContentOptions heroContent)
@@ -812,18 +855,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     elements.GetHeroContentComboBox().SelectItemByName("No Content");
                     break;
             }
-            elements.GetSetHeroContentButton().Invoke();
+            elements.GetSetHeroContentButton().InvokeAndWait();
         }
 
         private void SetTipIsTargeted(bool targeted)
         {
             if(targeted)
             {
-                elements.GetSetTargetButton().Invoke();
+                elements.GetSetTargetButton().InvokeAndWait();
             }
             else
             {
-                elements.GetRemoveTargetButton().Invoke();
+                elements.GetRemoveTargetButton().InvokeAndWait();
             }
         }
 
@@ -838,7 +881,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     elements.GetIconComboBox().SelectItemByName("No Icon");
                     break;
             }
-            elements.GetSetIconButton().Invoke();
+            elements.GetSetIconButton().InvokeAndWait();
         }
 
         private double GetTipVerticalOffset()
@@ -855,7 +898,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             double initialOffset = double.Parse(elements.GetScrollViewerOffsetTextBox().GetText());
             elements.GetScrollViewerOffsetTextBox().SetValue((initialOffset + ammount).ToString());
-            elements.GetScrollViewerOffsetButton().Invoke();
+            elements.GetScrollViewerOffsetButton().InvokeAndWait();
         }
 
         private void UseTestBounds(double x, double y, double width, double height, Vector4 targetRect, bool forWindowBounds)
@@ -921,7 +964,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         Vector4 GetTargetBounds()
         {
-            elements.GetTargetBoundsButton().Invoke();
+            elements.GetTargetBoundsButton().InvokeAndWait();
 
             var retVal = new Vector4();
             retVal.W = (int)Math.Floor(double.Parse(elements.GetTargetXOffsetTextBlock().GetText()));
@@ -960,14 +1003,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     elements.GetAutomationNameComboBox().SelectItemByName("None");
                     break;
             }
-            elements.GetSetAutomationNameButton().Invoke();
+            elements.GetSetAutomationNameButton().InvokeAndWait();
         }
 
         private void SetActionButtonContentTo(string option)
         {
             var actionButtonComboBox = elements.GetActionButtonContentComboBox();
             actionButtonComboBox.SelectItemByName(option);
-            elements.GetSetActionButtonContentButton().Invoke();
+            elements.GetSetActionButtonContentButton().InvokeAndWait();
         }
 
         // The test UI has a list box which the teaching tip populates with messages about which events have fired and other useful
@@ -975,12 +1018,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // the expected order.
         private ListBoxItem GetTeachingTipDebugMessage(int index)
         {
+            var count = elements.GetLstTeachingTipEvents().Items.Count;
+            if (count <= index)
+            {
+                Log.Comment($"TeachingTipEvents list only has {count} items, waiting a little bit longer to see if they show up");
+                Task.Delay(TimeSpan.FromMilliseconds(250)).Wait();
+            }
             return elements.GetLstTeachingTipEvents().Items[index];
         }
 
         private void ClearTeachingTipDebugMessages()
         {
-            elements.GetBtnClearTeachingTipEvents().Invoke();
+            elements.GetBtnClearTeachingTipEvents().InvokeAndWait();
         }
 
         private bool WaitForChecked(CheckBox checkBox, double millisecondsTimeout = 2000, bool throwOnError = true)

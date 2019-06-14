@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -54,6 +54,7 @@ namespace MUXControlsTestApp
                 {"Compact", typeof(CompactPage), "CompactSizing.png"},
                 {"RadioButtons", typeof(RadioButtonsPage), "RadioButton.png"},
                 {"RadioMenuFlyoutItem", typeof(RadioMenuFlyoutItemPage)},
+                {"TabView", typeof(TabViewPage)},
 #endif
 
                 // These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
@@ -73,6 +74,14 @@ namespace MUXControlsTestApp
                 {"Reveal", typeof(RevealPage), "Reveal.png"},
                 {"ItemsRepeater", typeof(RepeaterTestUIPage), "ListView.png"},
                 {"Scroller", typeof(ScrollerPage), "ScrollViewer.png"},
+                {"CornerRadius", typeof(CornerRadiusPage)},
+                {"AutoSuggestBox", typeof(AutoSuggestBoxPage), "AutoSuggestBox.png"},
+                {"CheckBox", typeof(CheckBoxPage), "CheckBox.png"},
+                {"CalendarDatePicker", typeof(CalendarDatePickerPage), "CalendarDatePicker.png"},
+                {"DatePicker", typeof(DatePickerPage), "DatePicker.png"},
+                {"Slider", typeof(SliderPage), "Slider.png"},
+                {"TimePicker", typeof(TimePickerPage), "TimePicker.png"},
+                {"ToolTip", typeof(ToolTipPage), "ToolTip.png"},
             };
 
             Tests.Sort((a, b) =>
@@ -84,4 +93,5 @@ namespace MUXControlsTestApp
         public static List<TestDeclaration> Tests { get; private set; }
     }
 }
+
 

@@ -66,7 +66,6 @@ namespace MUXControlsTestApp
             this.TeachingTipInVisualTree.Closed += TeachingTipInVisualTree_Closed;
             this.TeachingTipInResources.Closed += TeachingTipInResources_Closed;
             this.ContentScrollViewer.ViewChanged += ContentScrollViewer_ViewChanged;
-            this.TeachingTipInResources.IsOpen = true;
         }
 
         private void TeachingTipInResources_Closed(TeachingTip sender, TeachingTipClosedEventArgs args)
@@ -909,7 +908,7 @@ namespace MUXControlsTestApp
             var selectedItem = ((ComboBoxItem)PageThemeComboBox.SelectedItem);
             if (String.Equals(selectedItem?.Content, "Light"))
             {
-                RequestedTheme = ElementTheme.Default;
+                RequestedTheme = ElementTheme.Light;
             }
             else if (String.Equals(selectedItem?.Content, "Dark"))
             {

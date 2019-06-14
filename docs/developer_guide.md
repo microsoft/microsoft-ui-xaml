@@ -17,13 +17,13 @@ Additional reading:
 ## Prerequisites
 #### Visual Studio
 
-Install latest VS2017 (15.9 or later) from here: http://visualstudio.com/downloads
+Install latest VS2019 (16.1 or later) from here: http://visualstudio.com/downloads
 
 #### SDK
 
 While WinUI is designed to work against many versions of Windows, you will need 
 a fairly recent SDK in order to build WinUI. It's required that you install the 
-16299, 17134, 17763 and 18362 SDKs. You can download these via Visual Studio (check 
+17763 and 18362 SDKs. You can download these via Visual Studio (check 
 all the boxes when prompted), or you can manually download them from here: 
 https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk
 
@@ -36,7 +36,7 @@ an Administrator Powershell window:
 
 ## Building the repository
 
-Generally you will want to set your configuration to **Debug**, **x86**, and 
+Generally you will want to set your configuration to **Debug**, **x64**, and 
 select **MUXControlsTestApp** as your startup project in Visual Studio.
 
 ### Creating a NuGet package
@@ -110,7 +110,7 @@ versions you can make use of a Visual Studio subscription [as described here](ht
 ### Automated testing
 
 You can run the test suite from within Visual Studio by using the Test top 
-level menu. For targeting indivual tests you can use [Test Explorer](https://docs.microsoft.com/en-us/visualstudio/test/run-unit-tests-with-test-explorer?view=vs-2017) 
+level menu. For targeting indivual tests you can use [Test Explorer](https://docs.microsoft.com/en-us/visualstudio/test/run-unit-tests-with-test-explorer?view=vs-2019) 
 (found under the Test->Windows sub menu).
 
 This same suite of tests will be run as part of your Pull Request validation 

@@ -3612,6 +3612,31 @@ winrt::Rect Scroller::GetDescendantBounds(
         descendantRect.Height });
 }
 
+winrt::AnimationMode Scroller::GetComputedAnimationMode(
+    winrt::AnimationMode const& animationMode)
+{
+    if (animationMode == winrt::AnimationMode::Auto)
+    {
+        bool isAnimationsEnabled = []()
+        {
+            auto globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
+
+            if (globalTestHooks && globalTestHooks->IsAnimationsEnabledOverride())
+            {
+                return globalTestHooks->IsAnimationsEnabledOverride().Value();
+            }
+            else
+            {
+                return SharedHelpers::IsAnimationsEnabled();
+            }
+        }();
+
+        return isAnimationsEnabled ? winrt::AnimationMode::Enabled : winrt::AnimationMode::Disabled;
+    }
+
+    return animationMode;
+}
+
 bool Scroller::IsZoomFactorBoundaryValid(
     double value)
 {
@@ -3979,7 +4004,7 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
 
     bool unhookCompositionTargetRendering = StartZoomFactorExpressionAnimation();
 
-    if (!m_interactionTrackerAsyncOperations.empty() && IsLoaded())
+    if (!m_interactionTrackerAsyncOperations.empty() && SharedHelpers::IsFrameworkElementLoaded(*this))
     {
         for (auto operationsIter = m_interactionTrackerAsyncOperations.begin(); operationsIter != m_interactionTrackerAsyncOperations.end();)
         {
@@ -4104,7 +4129,7 @@ void Scroller::OnUnloaded(
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    if (!IsLoaded())
+    if (!SharedHelpers::IsFrameworkElementLoaded(*this))
     {
         MUX_ASSERT(RenderSize().Width == 0.0);
         MUX_ASSERT(RenderSize().Height == 0.0);
@@ -4381,7 +4406,7 @@ void Scroller::OnBringIntoViewRequestedHandler(
     {
         com_ptr<ScrollOptions> options =
             winrt::make_self<ScrollOptions>(
-                args.AnimationDesired() ? winrt::AnimationMode::Enabled : winrt::AnimationMode::Disabled,
+                args.AnimationDesired() ? winrt::AnimationMode::Auto : winrt::AnimationMode::Disabled,
                 snapPointsMode);
 
         ChangeOffsetsPrivate(
@@ -5650,6 +5675,8 @@ void Scroller::ChangeOffsetsPrivate(
     winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
     InteractionTrackerAsyncOperationType operationType;
 
+    animationMode = GetComputedAnimationMode(animationMode);
+
     switch (animationMode)
     {
     case winrt::AnimationMode::Disabled:
@@ -5883,6 +5910,8 @@ void Scroller::ChangeZoomFactorPrivate(
     winrt::AnimationMode animationMode = options ? options.AnimationMode() : ZoomOptions::s_defaultAnimationMode;
     winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ZoomOptions::s_defaultSnapPointsMode;
     InteractionTrackerAsyncOperationType operationType;
+
+    animationMode = GetComputedAnimationMode(animationMode);
 
     switch (animationMode)
     {
@@ -6445,6 +6474,8 @@ void Scroller::ProcessOffsetsChange(
     winrt::AnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
     winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
 
+    animationMode = GetComputedAnimationMode(animationMode);
+
     switch (offsetsChange->ViewKind())
     {
 #ifdef ScrollerViewKind_RelativeToEndOfInertiaView
@@ -6652,6 +6683,8 @@ void Scroller::ProcessZoomFactorChange(
 
     winrt::AnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
     winrt::SnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+
+    animationMode = GetComputedAnimationMode(animationMode);
 
     if (snapPointsMode == winrt::SnapPointsMode::Default)
     {
@@ -7211,14 +7244,9 @@ bool Scroller::IsInertiaFromImpulse() const
     }
 }
 
-bool Scroller::IsLoaded() const
-{
-    return winrt::VisualTreeHelper::GetParent(*this) != nullptr;
-}
-
 bool Scroller::IsLoadedAndSetUp() const
 {
-    return IsLoaded() && m_interactionTracker;
+    return SharedHelpers::IsFrameworkElementLoaded(*this) && m_interactionTracker;
 }
 
 bool Scroller::IsInputKindIgnored(winrt::InputKind const& inputKind)

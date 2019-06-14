@@ -10,6 +10,7 @@
 #include <winrt\Windows.ApplicationModel.Activation.h>
 #include <winrt\Windows.ApplicationModel.Contacts.h>
 #include <winrt\Windows.ApplicationModel.Core.h>
+#include <winrt\Windows.ApplicationModel.DataTransfer.h>
 #include <winrt\Windows.ApplicationModel.Resources.h>
 #include <winrt\Windows.ApplicationModel.Resources.Core.h>
 #include <winrt\Windows.Devices.Input.h>
@@ -337,6 +338,7 @@ namespace winrt
     using Popup = winrt::Windows::UI::Xaml::Controls::Primitives::Popup;
     using IPopup3 = winrt::Windows::UI::Xaml::Controls::Primitives::IPopup3;
     using RangeBaseValueChangedEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs;
+    using RepeatButton = winrt::Windows::UI::Xaml::Controls::Primitives::RepeatButton;
     using ScrollBar = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollBar;
     using ScrollEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollEventArgs;
     using ScrollEventType = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollEventType;

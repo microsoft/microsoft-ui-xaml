@@ -547,7 +547,6 @@ private:
     int GetNextViewChangeId();
 
     bool IsInertiaFromImpulse() const;
-    bool IsLoaded() const;
     bool IsLoadedAndSetUp() const;
     bool IsInputKindIgnored(winrt::InputKind const& inputKind);
     bool HasBringingIntoViewListener() const
@@ -753,6 +752,9 @@ private:
         const winrt::UIElement& content,
         const winrt::UIElement& descendant,
         const winrt::Rect& descendantRect);
+
+    static winrt::AnimationMode GetComputedAnimationMode(
+        winrt::AnimationMode const& animationMode);
 
     static bool IsInteractionTrackerPointerWheelRedirectionEnabled();
     static bool IsVisualTranslationPropertyAvailable();

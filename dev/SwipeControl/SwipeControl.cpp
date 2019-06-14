@@ -829,7 +829,7 @@ void SwipeControl::GetTemplateParts()
     }
     m_swipeContentStackPanel.get().Orientation(m_isHorizontal ? winrt::Orientation::Horizontal : winrt::Orientation::Vertical);
 
-    if (auto lookedUpStyle = SharedHelpers::FindResourceOrNull(s_swipeItemStyleName, winrt::Application::Current().Resources()))
+    if (auto lookedUpStyle = SharedHelpers::FindResource(s_swipeItemStyleName, winrt::Application::Current().Resources()))
     {
         m_swipeItemStyle.set(lookedUpStyle.try_as<winrt::UI::Xaml::Style>());
     }
@@ -1279,7 +1279,7 @@ winrt::AppBarButton SwipeControl::GetSwipeItemButton(const winrt::SwipeItem& swi
 
     if (!swipeItem.Background())
     {
-        if (auto lookedUpBrush = SharedHelpers::FindResourceOrNull(m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemBackgroundResourceName : m_thresholdReached ? s_executeSwipeItemPostThresholdBackgroundResourceName : s_executeSwipeItemPreThresholdBackgroundResourceName, resources))
+        if (auto lookedUpBrush = SharedHelpers::FindResource(m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemBackgroundResourceName : m_thresholdReached ? s_executeSwipeItemPostThresholdBackgroundResourceName : s_executeSwipeItemPreThresholdBackgroundResourceName, resources))
         {
             itemAsButton.Background(lookedUpBrush.try_as<winrt::Brush>());
         }
@@ -1287,7 +1287,7 @@ winrt::AppBarButton SwipeControl::GetSwipeItemButton(const winrt::SwipeItem& swi
 
     if (!swipeItem.Foreground())
     {
-        if (auto lookedUpBrush = SharedHelpers::FindResourceOrNull(m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemForegroundResourceName : m_thresholdReached ? s_executeSwipeItemPostThresholdForegroundResourceName : s_executeSwipeItemPreThresholdForegroundResourceName, resources))
+        if (auto lookedUpBrush = SharedHelpers::FindResource(m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemForegroundResourceName : m_thresholdReached ? s_executeSwipeItemPostThresholdForegroundResourceName : s_executeSwipeItemPreThresholdForegroundResourceName, resources))
         {
             itemAsButton.Foreground(lookedUpBrush.try_as<winrt::Brush>());
         }
@@ -1339,14 +1339,14 @@ void SwipeControl::UpdateExecuteBackgroundColor(const winrt::SwipeItem& swipeIte
 
     if (!m_thresholdReached)
     {
-        if (auto lookedUpBackgroundBrush = SharedHelpers::FindResourceOrNull(s_executeSwipeItemPreThresholdBackgroundResourceName, resources))
+        if (auto lookedUpBackgroundBrush = SharedHelpers::FindResource(s_executeSwipeItemPreThresholdBackgroundResourceName, resources))
         {
             background = lookedUpBackgroundBrush.try_as<winrt::Brush>();
         }
     }
     else
     {
-        if (auto lookedUpBackgroundBrush = SharedHelpers::FindResourceOrNull(s_executeSwipeItemPostThresholdBackgroundResourceName, resources))
+        if (auto lookedUpBackgroundBrush = SharedHelpers::FindResource(s_executeSwipeItemPostThresholdBackgroundResourceName, resources))
         {
             background = lookedUpBackgroundBrush.try_as<winrt::Brush>();
         }
@@ -1374,14 +1374,14 @@ void SwipeControl::UpdateExecuteForegroundColor(const winrt::SwipeItem& swipeIte
 
             if (!m_thresholdReached)
             {
-                if (auto lookedUpForegroundBrush = SharedHelpers::FindResourceOrNull(s_executeSwipeItemPreThresholdForegroundResourceName, resources))
+                if (auto lookedUpForegroundBrush = SharedHelpers::FindResource(s_executeSwipeItemPreThresholdForegroundResourceName, resources))
                 {
                     foreground = lookedUpForegroundBrush.try_as<winrt::Brush>();
                 }
             }
             else
             {
-                if (auto lookedUpForegroundBrush = SharedHelpers::FindResourceOrNull(s_executeSwipeItemPostThresholdForegroundResourceName, resources))
+                if (auto lookedUpForegroundBrush = SharedHelpers::FindResource(s_executeSwipeItemPostThresholdForegroundResourceName, resources))
                 {
                     foreground = lookedUpForegroundBrush.try_as<winrt::Brush>();
                 }
@@ -1409,7 +1409,7 @@ void SwipeControl::UpdateColorsIfRevealItems()
 
     winrt::Brush rootGridBackground = nullptr;
 
-    if (auto lookedUpBrush = SharedHelpers::FindResourceOrNull(s_swipeItemBackgroundResourceName, winrt::Application::Current().Resources()))
+    if (auto lookedUpBrush = SharedHelpers::FindResource(s_swipeItemBackgroundResourceName, winrt::Application::Current().Resources()))
     {
         rootGridBackground = lookedUpBrush.try_as<winrt::Brush>();
     }

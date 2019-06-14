@@ -32,7 +32,6 @@ namespace MUXControlsTestApp
     public sealed partial class TreeViewPage : TestPage
     {
         bool _disableClickToExpand;
-        //public TreeViewNode _rootNode { get; set; }
         public TreeViewItem flyoutTVI;
         TreeViewNode _visualRoot;
         TreeViewNode _virtualizedNode;
@@ -121,7 +120,7 @@ namespace MUXControlsTestApp
 
         private void GetSelected_Click(object sender, RoutedEventArgs e)
         {
-            if(IsInContentMode())
+            if (IsInContentMode())
             {
                 Results.Text = GetSelection(ContentModeTestTreeView);
             }
@@ -156,13 +155,13 @@ namespace MUXControlsTestApp
 
         private void MoveNodesToNewTreeView_Click(object sender, RoutedEventArgs e)
         {
-            if(IsInContentMode())
+            if (IsInContentMode())
             {
                 ContentModeTestTreeView.ItemsSource = null;
                 TestTreeView2ItemsSource.Add(TestTreeViewItemsSource[0]);
                 ContentModeTestStackPanel.Children.Remove(ContentModeTestTreeView);
             }
-            else
+            else if (_visualRoot != null)
             {
                 TestTreeView.RootNodes.Remove(_visualRoot);
                 TestTreeView2.RootNodes.Add(_visualRoot);
@@ -177,13 +176,13 @@ namespace MUXControlsTestApp
 
         private void SetupExpandingNodeEvent_Click(object sender, RoutedEventArgs e)
         {
-            if(IsInContentMode())
+            if (IsInContentMode())
             {
                 TreeViewItemSource item = new TreeViewItemSource() { Content = "Virtualized", HasUnrealizedChildren = true };
                 TestTreeViewItemsSource[0].Children.Add(item);
                 ContentModeTestTreeView.Expanding += ContentModeTestTreeView_Expanding;
             }
-            else
+            else if(_visualRoot != null)
             {
                 _virtualizedNode = new TreeViewNode() { Content = "Virtualized" };
                 _virtualizedNode.HasUnrealizedChildren = true;
@@ -195,7 +194,7 @@ namespace MUXControlsTestApp
 
         private void LabelItems_Click(object sender, RoutedEventArgs e)
         {
-            if(IsInContentMode())
+            if (IsInContentMode())
             {
                 SetAutomationIdForNodes(ContentModeTestTreeView);
             }
@@ -239,9 +238,9 @@ namespace MUXControlsTestApp
             return node.Content.ToString();
         }
 
-        private String GetRootNodeChildrenOrder(TreeView tree)
+        private string GetRootNodeChildrenOrder(TreeView tree)
         {
-            StringBuilder sb = new StringBuilder();
+            List<string> result = new List<string>();
             Stack<TreeViewNode> pendingNodes = new Stack<TreeViewNode>();
             pendingNodes.Push(tree.RootNodes[0]);
             while (pendingNodes.Count > 0)
@@ -252,19 +251,16 @@ namespace MUXControlsTestApp
                 {
                     pendingNodes.Push(currentNode.Children[size - 1 - i]);
                 }
-                if (sb.Length > 0)
-                {
-                    sb.Append(" | ");
-                }
-                sb.Append(GetNodeContent(currentNode));
+                
+                result.Add(GetNodeContent(currentNode));
             }
 
-            return sb.ToString();
+            return string.Join(" | ", result);
         }
 
-        private String GetItemsSourceOrder()
+        private string GetItemsSourceOrder()
         {
-            StringBuilder sb = new StringBuilder();
+            List<string> result = new List<string>();
             Stack<TreeViewItemSource> pendingItems = new Stack<TreeViewItemSource>();
             pendingItems.Push(TestTreeViewItemsSource[0]);
             while (pendingItems.Count > 0)
@@ -275,19 +271,15 @@ namespace MUXControlsTestApp
                 {
                     pendingItems.Push(currentItem.Children[size - 1 - i]);
                 }
-                if (sb.Length > 0)
-                {
-                    sb.Append(" | ");
-                }
-                sb.Append(currentItem.Content);
+                result.Add(currentItem.Content);
             }
 
-            return sb.ToString();
+            return string.Join(" | ", result);
         }
 
         private void GetChildrenOrder_Click(object sender, RoutedEventArgs e)
         {
-            if(IsInContentMode())
+            if (IsInContentMode())
             {
                 var itemsSourceOrder = GetItemsSourceOrder();
                 var treeViewNodeOrder = GetRootNodeChildrenOrder(ContentModeTestTreeView);
@@ -314,7 +306,7 @@ namespace MUXControlsTestApp
             {
                 selectionMode = TreeViewSelectionMode.Multiple;
             }
-            else if(TestTreeView.SelectionMode == TreeViewSelectionMode.Multiple)
+            else if (TestTreeView.SelectionMode == TreeViewSelectionMode.Multiple)
             {
                 selectionMode = TreeViewSelectionMode.None;
             }
@@ -331,7 +323,7 @@ namespace MUXControlsTestApp
         {
             string commonStates = string.Empty;
             var listControl = FindVisualChildByName(this.TestTreeView, "ListControl") as TreeViewList;
-            if(IsInContentMode())
+            if (IsInContentMode())
             {
                 listControl = FindVisualChildByName(ContentModeTestTreeView, "ListControl") as TreeViewList;
             }
@@ -421,7 +413,7 @@ namespace MUXControlsTestApp
             var lockedItem = (TreeViewItem)listControl.ContainerFromIndex(1);
             lockedItem.AllowDrop = false;
 
-            if(IsInContentMode())
+            if (IsInContentMode())
             {
                 var lockedNode = treeView.ItemFromContainer(lockedItem) as TreeViewItemSource;
                 lockedNode.Children.Add(new TreeViewItemSource() { Content = "Locked1" });
@@ -513,8 +505,15 @@ namespace MUXControlsTestApp
 
         private async void TreeView_Drop(object sender, DragEventArgs e)
         {
-            var text = await e.DataView.GetTextAsync();
-            Results.Text = "Dropped: " + text;
+            try
+            { 
+                var text = await e.DataView.GetTextAsync();
+                Results.Text = "Dropped: " + text;
+            }
+            catch (Exception ex)
+            {
+                ExceptionMessage.Text = ex.ToString();
+            }
         }
 
         private void Draggable_DragStarting(UIElement sender, DragStartingEventArgs args)
@@ -542,14 +541,21 @@ namespace MUXControlsTestApp
 
         private async void DropTarget_Drop(object sender, DragEventArgs e)
         {
-            var text = await e.DataView.GetTextAsync();
-            DropTargetTextBlock.Text = text;
+            try
+            {
+                var text = await e.DataView.GetTextAsync();
+                DropTargetTextBlock.Text = text;
+            }
+            catch (Exception ex)
+            {
+                ExceptionMessage.Text = ex.ToString();
+            }
         }
 
         private void TestTreeView_DragItemsStarting(TreeView sender, TreeViewDragItemsStartingEventArgs e)
         {
             var items = new StringBuilder();
-            if(IsInContentMode())
+            if (IsInContentMode())
             {
                 foreach (TreeViewItemSource item in e.Items)
                 {
@@ -572,7 +578,7 @@ namespace MUXControlsTestApp
 
         private void AddSecondLevelOfNodes_Click(object sender, RoutedEventArgs e)
         {
-            if(IsInContentMode())
+            if (IsInContentMode())
             {
                 var root0 = TestTreeViewItemsSource[0].Children[0];
                 var x0 = new TreeViewItemSource { Content = "Root.0.0" };
@@ -586,7 +592,7 @@ namespace MUXControlsTestApp
                 root1.Children.Add(y1);
                 root1.Children.Add(y2);
             }
-            else
+            else if (_visualRoot != null)
             {
                 var root0 = _visualRoot.Children[0];
                 var x0 = new TreeViewNode { Content = "Root.0.0" };
@@ -604,12 +610,12 @@ namespace MUXControlsTestApp
 
         private void RemoveSecondLevelOfNode_Click(object sender, RoutedEventArgs e)
         {
-            if(IsInContentMode())
+            if (IsInContentMode())
             {
                 var root0 = TestTreeViewItemsSource[0].Children[0];
                 root0.Children.RemoveAt(0);
             }
-            else
+            else if (_visualRoot != null)
             {
                 var root0 = _visualRoot.Children[0];
                 root0.Children.RemoveAt(0);
@@ -618,35 +624,37 @@ namespace MUXControlsTestApp
 
         private void ModifySecondLevelOfNode_Click(object sender, RoutedEventArgs e)
         {
-            if(IsInContentMode())
+            if (IsInContentMode())
             {
                 var y0 = new TreeViewItemSource { Content = "THIS IS NEW" };
                 var root0 = TestTreeViewItemsSource[0].Children[0];
                 root0.Children[0] = y0;
             }
-            else
+            else if (_visualRoot != null)
             {
                 var y0 = new TreeViewNode { Content = "THIS IS NEW" };
                 var root0 = _visualRoot.Children[0];
                 root0.Children[0] = y0;
-            }
-            
+            }            
         }
 
         private void SetRoot1HasUnrealizedChildren_Click(object sender, RoutedEventArgs e)
         {
-            var root1 = _visualRoot.Children[1];
-            root1.HasUnrealizedChildren = true;
-            TestTreeView.Expanding += (tv, args) =>
+            if (_visualRoot != null)
             {
-                Results.Text = "Expanding Raised";
-            };
+                var root1 = _visualRoot.Children[1];
+                root1.HasUnrealizedChildren = true;
+                TestTreeView.Expanding += (tv, args) =>
+                {
+                    Results.Text = "Expanding Raised";
+                };
 
-            TestTreeViewItemsSource[0].Children[1].HasUnrealizedChildren = true;
-            ContentModeTestTreeView.Expanding += (tv, args) =>
-            {
-                Results.Text = "Expanding Raised";
-            };
+                TestTreeViewItemsSource[0].Children[1].HasUnrealizedChildren = true;
+                ContentModeTestTreeView.Expanding += (tv, args) =>
+                {
+                    Results.Text = "Expanding Raised";
+                };
+            }
         }
 
         private void SetupDragDropHandlersForApiTest_Click(object sender, RoutedEventArgs e)
@@ -679,7 +687,7 @@ namespace MUXControlsTestApp
         private void DragOverForApiTest(object sender, DragEventArgs args)
         {
             args.AcceptedOperation = DataPackageOperation.Copy;
-            if(!Results.Text.Contains("DragOver"))
+            if (!Results.Text.Contains("DragOver"))
             {
                 Results.Text += "->DragOver";
             }
@@ -720,7 +728,7 @@ namespace MUXControlsTestApp
         private String GetDraggedItemsNames(IEnumerable<object> items)
         {
             var names = new StringBuilder();
-            if(IsInContentMode())
+            if (IsInContentMode())
             {
                 foreach (TreeViewItemSource item in items)
                 {
@@ -747,18 +755,25 @@ namespace MUXControlsTestApp
 
         private void AddNodeWithEmpyUnrealizedChildren_Click(object sender, RoutedEventArgs e)
         {
-            var node = new TreeViewNode()
+            if (_visualRoot != null)
             {
-                Content = "Root.3",
-                HasUnrealizedChildren = true,
-                IsExpanded = true
-            };
-            _visualRoot.Children.Add(node);
+                var node = new TreeViewNode() {
+                    Content = "Root.3",
+                    HasUnrealizedChildren = true,
+                    IsExpanded = true
+                };
+                _visualRoot.Children.Add(node);
+            }
         }
 
         private void SetContentMode_Click(object sender, RoutedEventArgs e)
         {
             Mode.Text = "content mode";
+        }
+
+        private void ResetContentMode_Click(object sender, RoutedEventArgs e)
+        {
+            Mode.Text = string.Empty;
         }
 
         private bool IsInContentMode()
@@ -782,12 +797,12 @@ namespace MUXControlsTestApp
                 }
                 var treeViewItem = tree.ContainerFromNode(currentNode) as TreeViewItem;
                 var checkBox = FindVisualChildByName(treeViewItem, "MultiSelectCheckBox") as CheckBox;
-                if(checkBox.IsChecked == true)
+                if (checkBox.IsChecked == true)
                 {
                     // selected
                     sb.Append("s|");
                 }
-                else if(checkBox.IsChecked == false)
+                else if (checkBox.IsChecked == false)
                 {
                     // unselected
                     sb.Append("u|");
@@ -804,7 +819,7 @@ namespace MUXControlsTestApp
 
         private void GetMultiSelectCheckBoxStates_Click(object sender, RoutedEventArgs e)
         {
-            if(IsInContentMode())
+            if (IsInContentMode())
             {
                 GetCheckBoxStates(ContentModeTestTreeView);
             }
@@ -854,8 +869,57 @@ namespace MUXControlsTestApp
 
         private void AddInheritedTreeViewNode_Click(object sender, RoutedEventArgs e)
         {
-            var node = new TreeViewNode2() { Content = "Inherited from TreeViewNode"};
-            _visualRoot.Children.Add(node);
+            if (_visualRoot != null)
+            {
+                var node = new TreeViewNode2() { Content = "Inherited from TreeViewNode" };
+                _visualRoot.Children.Add(node);
+            }
+        }
+
+        private void ClearNodes_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (IsInContentMode())
+                {
+                    TestTreeViewItemsSource.Clear();
+                }
+                else if (_visualRoot != null)
+                {
+                    _visualRoot.Children.Clear();
+                    _visualRoot = null;
+                    TestTreeView.RootNodes.Clear();
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionMessage.Text = ex.ToString();
+            }
+        }
+
+        private void AddRootNode_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            { 
+                if (IsInContentMode())
+                {
+                    var newNode = new TreeViewItemSource() { Content = "Root" + TestTreeViewItemsSource.Count };
+                    TestTreeViewItemsSource.Add(newNode);
+                }
+                else
+                {
+                    var newNode = new TreeViewNode() { Content = "Root" + TestTreeView.RootNodes.Count };
+                    TestTreeView.RootNodes.Add(newNode);
+                    if (_visualRoot == null)
+                    {
+                        _visualRoot = newNode;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionMessage.Text = ex.ToString();
+            }
         }
 
         private void AddExtraNodes_Click(object sender, RoutedEventArgs e)
@@ -880,6 +944,11 @@ namespace MUXControlsTestApp
         private void TreeViewNodeInMarkupTestPage_Click(object sender, RoutedEventArgs e)
         {
             Frame.NavigateWithoutAnimation(typeof(TreeViewNodeInMarkupTestPage));
+        }
+
+        private void ClearException_Click(object sender, RoutedEventArgs e)
+        {
+            ExceptionMessage.Text = string.Empty;
         }
     }
 }
