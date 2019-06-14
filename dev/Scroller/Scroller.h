@@ -75,10 +75,9 @@ public:
     static constexpr int s_zoomFactorChangeMinMs{ 50 };
     static constexpr int s_zoomFactorChangeMaxMs{ 1000 };
 
-    // Number of ticks ellapsed before restarting the Scale animation to allow
-    // the Content rasterization to be triggered after the Idle State is reached
-    // or a zoom factor change operation completed.
-    static constexpr int s_zoomFactorAnimationRestartTicks = 4;
+    // Number of ticks ellapsed before restarting the Translation and Scale animations to allow the Content
+    // rasterization to be triggered after the Idle State is reached or a zoom factor change operation completed.
+    static constexpr int s_translationAndZoomFactorAnimationsRestartTicks = 4;
 
     // Mouse-wheel-triggered scrolling/zooming constants
     // Mouse wheel delta amount required per initial velocity unit
@@ -372,8 +371,8 @@ private:
     void StopTransformExpressionAnimations(
         const winrt::UIElement& content,
         bool forAnimationsInterruption);
-    bool StartZoomFactorExpressionAnimation(bool interruptCountdown = false);
-    void StopZoomFactorExpressionAnimation();
+    bool StartTranslationAndZoomFactorExpressionAnimations(bool interruptCountdown = false);
+    void StopTranslationAndZoomFactorExpressionAnimations();
     void StartExpressionAnimationSourcesAnimations();
     void StartScrollControllerExpressionAnimationSourcesAnimations(
         ScrollerDimension dimension);
@@ -790,10 +789,9 @@ private:
     uint32_t m_screenWidthInRawPixels{};
     uint32_t m_screenHeightInRawPixels{};
 
-    // Number of ticks remaining before restarting the Scale animation to allow
-    // the Content rasterization to be triggered after the Idle State is reached
-    // or a zoom factor change operation completed.
-    uint8_t m_zoomFactorAnimationRestartTicksCountdown{};
+    // Number of ticks remaining before restarting the Translation and Scale animations to allow the Content
+    // rasterization to be triggered after the Idle State is reached or a zoom factor change operation completed.
+    uint8_t m_translationAndZoomFactorAnimationsRestartTicksCountdown{};
 
     // For perf reasons, the value of ContentOrientation is cached.
     winrt::ContentOrientation m_contentOrientation{ s_defaultContentOrientation };
