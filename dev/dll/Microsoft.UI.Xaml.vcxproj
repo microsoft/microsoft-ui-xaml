@@ -264,6 +264,7 @@
     <ClCompile Include="DoubleUtil.cpp" />
     <ClCompile Include="DownlevelHelper.cpp" />
     <ClCompile Include="FloatUtil.cpp" />
+    <ClCompile Include="RegUtil.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

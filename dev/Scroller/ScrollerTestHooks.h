@@ -7,8 +7,8 @@
 #include "ScrollerTestHooksAnchorEvaluatedEventArgs.h"
 #include "ScrollerTestHooksInteractionSourcesChangedEventArgs.h"
 #include "ScrollerTestHooksExpressionAnimationStatusChangedEventArgs.h"
-
 #include "ScrollerTestHooks.g.h"
+#include "RegUtil.h"
 
 class ScrollerTestHooks :
     public winrt::implementation::ScrollerTestHooksT<ScrollerTestHooks>
@@ -35,6 +35,10 @@ public:
     static void IsAnimationsEnabledOverride(winrt::IReference<bool> isAnimationsEnabledOverride);
     static int MouseWheelDeltaForVelocityUnit();
     static void MouseWheelDeltaForVelocityUnit(int mouseWheelDeltaForVelocityUnit);
+    static int MouseWheelScrollLines();
+    static void MouseWheelScrollLines(int mouseWheelScrollLines);
+    static int MouseWheelScrollChars();
+    static void MouseWheelScrollChars(int mouseWheelScrollChars);
     static float MouseWheelInertiaDecayRate();
     static void MouseWheelInertiaDecayRate(float mouseWheelInertiaDecayRate);
     static void GetOffsetsChangeVelocityParameters(_Out_ int& millisecondsPerUnit, _Out_ int& minMilliseconds, _Out_ int& maxMilliseconds);
@@ -106,12 +110,14 @@ private:
     bool m_areExpressionAnimationStatusNotificationsRaised{ false };
     bool m_isInteractionTrackerPointerWheelRedirectionEnabled{ true };
     winrt::IReference<bool> m_isAnimationsEnabledOverride{ nullptr };
-    int m_offsetsChangeMsPerUnit{ 0 };
-    int m_offsetsChangeMinMs{ 0 };
-    int m_offsetsChangeMaxMs{ 0 };
-    int m_zoomFactorChangeMsPerUnit{ 0 };
-    int m_zoomFactorChangeMinMs{ 0 };
-    int m_zoomFactorChangeMaxMs{ 0 };
-    int m_mouseWheelDeltaForVelocityUnit{ 0 };
+    int m_offsetsChangeMsPerUnit{ Scroller::s_offsetsChangeMsPerUnit };
+    int m_offsetsChangeMinMs{ Scroller::s_offsetsChangeMinMs };
+    int m_offsetsChangeMaxMs{ Scroller::s_offsetsChangeMaxMs };
+    int m_zoomFactorChangeMsPerUnit{ Scroller::s_zoomFactorChangeMsPerUnit };
+    int m_zoomFactorChangeMinMs{ Scroller::s_zoomFactorChangeMinMs };
+    int m_zoomFactorChangeMaxMs{ Scroller::s_zoomFactorChangeMaxMs };
+    int m_mouseWheelDeltaForVelocityUnit{ Scroller::s_mouseWheelDeltaForVelocityUnit };
+    int m_mouseWheelScrollLines{ RegUtil::s_defaultMouseWheelScrollLines };
+    int m_mouseWheelScrollChars{ RegUtil::s_defaultMouseWheelScrollChars };
     float m_mouseWheelInertiaDecayRate{ 0.0f };
 };
