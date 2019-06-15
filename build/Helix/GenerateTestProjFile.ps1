@@ -10,7 +10,9 @@ Param(
     [string]$JobTestSuiteName,
 
     [Parameter(Mandatory = $true)] 
-    [string]$TaefPath
+    [string]$TaefPath,
+
+    [string]$TaefQuery
 )
 
 Class TestCollection
@@ -233,7 +235,13 @@ function Parse-TestInfo([string]$taefOutput)
 }
 
 $taefExe = "$TaefPath\te.exe"
-[string]$taefOutput = & "$taefExe" /listproperties $TestFile | Out-String
+[string]$taefOutput = & "$taefExe" /listproperties $TaefQuery $TestFile | Out-String
+
+$TaefQueryToAppend = ""
+if($TaefQuery)
+{
+   $TaefQueryToAppend = $" and ($TaefQuery)"
+}
 
 [System.Collections.Generic.List[TestModule]]$testModules = (Parse-TestInfo $taefOutput)
 
@@ -278,7 +286,7 @@ foreach ($testModule in $testModules)
 
     <HelixWorkItem Include="$($testClass.Name)" Condition="'`$(TestSuite)'=='$($JobTestSuiteName)'">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='$($testClass.Name).*'$(if ($testSuiteExists) { "and not @TestSuite='*'" }))"</Command>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='$($testClass.Name).*'$(if ($testSuiteExists) { "and not @TestSuite='*'" }))$($TaefQueryToAppend)"</Command>
     </HelixWorkItem>
 "@
         }
@@ -289,7 +297,7 @@ foreach ($testModule in $testModules)
 
     <HelixWorkItem Include="$($testClass.Name)-$testSuiteName" Condition="'`$(TestSuite)'=='$($JobTestSuiteName)'">
       <Timeout>00:20:00</Timeout>
-      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='$($testClass.Name).*' and @TestSuite='$testSuiteName')"</Command>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\runtests.cmd /select:"(@Name='$($testClass.Name).*' and @TestSuite='$testSuiteName')$($TaefQueryToAppend)"</Command>
     </HelixWorkItem>
 "@
         }

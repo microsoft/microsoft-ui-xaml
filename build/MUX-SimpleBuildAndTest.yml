@@ -21,12 +21,9 @@ jobs:
     - Build
     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
     testSuite: 'DevTestSuite'
+    taefQuery: $(taefQuery)
     matrix: 
       config:
-        foo: bar
-        #buildPlatform: $[ dependencies.A.outputs['a_step.buildPlatform'] ] 
-        # buildConfiguration: 'release'
-        # helixTargetQueues: 'Windows.10.Amd64.ClientRS3.DevEx.Open'
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
