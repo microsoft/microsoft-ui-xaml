@@ -24,6 +24,7 @@ jobs:
     taefQuery: $(taefQuery)
     matrix: 
       config:
+        foo: bar
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
