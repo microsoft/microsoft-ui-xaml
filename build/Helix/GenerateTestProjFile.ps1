@@ -237,10 +237,12 @@ function Parse-TestInfo([string]$taefOutput)
 $taefExe = "$TaefPath\te.exe"
 [string]$taefOutput = & "$taefExe" /listproperties $TaefQuery $TestFile | Out-String
 
+Write-Host "TaefQuery = $TaefQuery"
+
 $TaefQueryToAppend = ""
 if($TaefQuery)
 {
-   $TaefQueryToAppend = $" and ($TaefQuery)"
+   $TaefQueryToAppend = " and $TaefQuery"
 }
 
 [System.Collections.Generic.List[TestModule]]$testModules = (Parse-TestInfo $taefOutput)
