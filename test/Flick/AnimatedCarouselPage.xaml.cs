@@ -210,18 +210,14 @@ namespace Flick
 
         private static TimeSpan PrevNextButtonContinousScrollingSelectionPeriod { get; } = TimeSpan.FromMilliseconds(100);
 
-        public Visibility CarouselPrevButtonVisibility { get; set; } = Visibility.Collapsed;
-
-        public Visibility CarouselNextButtonVisibility { get; set; } = Visibility.Collapsed;
-
         private void HideCarouselNextPrevButtons()
         {
-            CarouselPrevButtonVisibility = CarouselNextButtonVisibility = Visibility.Collapsed;
+            carouselNextButton.IsEnabled = carouselPrevButton.IsEnabled = false;
         }
 
         private void ShowCarouselNextPrevButtons()
         {
-            CarouselPrevButtonVisibility = CarouselNextButtonVisibility = Visibility.Visible;
+            carouselNextButton.IsEnabled = carouselPrevButton.IsEnabled = true;
         }
 
 #pragma warning disable CS0628 // New protected member declared in sealed class

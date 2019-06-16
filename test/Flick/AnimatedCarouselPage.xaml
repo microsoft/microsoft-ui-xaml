@@ -14,13 +14,44 @@
         <Style x:Name="CarouselNextPrevButtonStyle" TargetType="Button">
             <Setter Property="VerticalAlignment" Value="Stretch"/>
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Padding" Value="20,0"/>
+            <Setter Property="IsEnabled" Value="False"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Grid Visibility="{TemplateBinding Visibility}">
+                        <Grid>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualStateGroup.Transitions>
+                                        <VisualTransition To="Disabled">
+                                            <VisualTransition.Storyboard>
+                                                <Storyboard TargetName="carouselNextPrevButtonTemplateContentPresenter" TargetProperty="FontIcon.Opacity">
+                                                    <DoubleAnimation From="1" To="0" Duration="0:0:0" EnableDependentAnimation="True"/>
+                                                </Storyboard>
+                                            </VisualTransition.Storyboard>
+                                        </VisualTransition>
+                                        <VisualTransition From="Disabled">
+                                            <VisualTransition.Storyboard>
+                                                <Storyboard TargetName="carouselNextPrevButtonTemplateContentPresenter" TargetProperty="FontIcon.Opacity">
+                                                    <DoubleAnimation From="0" To="1" Duration="0:0:0" EnableDependentAnimation="True"/>
+                                                </Storyboard>
+                                            </VisualTransition.Storyboard>
+                                        </VisualTransition>
+                                    </VisualStateGroup.Transitions>
+                                    <VisualState x:Name="Normal">
+                                        <VisualState.Setters>
+                                            <Setter Target="carouselNextPrevButtonTemplateContentPresenter.Opacity" Value="1"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <VisualState.Setters>
+                                            <Setter Target="carouselNextPrevButtonTemplateContentPresenter.Opacity" Value="0"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
                             <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="{TemplateBinding Background}"/>
-                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="{TemplateBinding Padding}" Content="{TemplateBinding Content}"/>
+                            <ContentPresenter x:Name="carouselNextPrevButtonTemplateContentPresenter" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="{TemplateBinding Padding}" Content="{TemplateBinding Content}" Opacity="{TemplateBinding Opacity}"/>
                         </Grid>
                     </ControlTemplate>
                 </Setter.Value>
@@ -48,6 +79,7 @@
             <Button x:Name="carouselPrevButton"
                     Grid.Column="0"
                     Style="{StaticResource CarouselNextPrevButtonStyle}"
+                    Visibility="{Binding CarouselPrevButtonVisibility}"
                     Height="{Binding ElementName=layout, Path=ItemHeight}">
                 <FontIcon Style="{StaticResource CarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76B;"/><!--ChevronLeft-->
             </Button>
