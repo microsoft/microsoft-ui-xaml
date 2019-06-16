@@ -14,6 +14,7 @@
         <Style x:Name="CarouselNextPrevButtonStyle" TargetType="Button">
             <Setter Property="VerticalAlignment" Value="Stretch"/>
             <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="10,0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -47,7 +48,6 @@
             <Button x:Name="carouselPrevButton"
                     Grid.Column="0"
                     Style="{StaticResource CarouselNextPrevButtonStyle}"
-                    Padding="10,0"
                     Height="{Binding ElementName=layout, Path=ItemHeight}">
                 <FontIcon Style="{StaticResource CarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76B;"/><!--ChevronLeft-->
             </Button>
@@ -96,7 +96,6 @@
                     Grid.Column="2"
                     Style="{StaticResource CarouselNextPrevButtonStyle}"
                     Visibility="{Binding CarouselNextButtonVisibility}"
-                    Padding="10,0"
                     Height="{Binding ElementName=layout, Path=ItemHeight}">
                 <FontIcon Style="{StaticResource CarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76C;"/><!--ChevronRight-->
             </Button>
