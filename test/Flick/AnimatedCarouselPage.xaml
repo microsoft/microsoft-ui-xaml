@@ -12,18 +12,14 @@
 
     <Page.Resources>
         <Style x:Name="CarouselNextPrevButtonStyle" TargetType="Button">
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Padding" Value="25,25" />
-            <!--<Setter Property="Height" Value="262.5" />-->
-            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Grid>
-                            <Ellipse/>
-                            <ContentPresenter Margin="{TemplateBinding Padding}" Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{TemplateBinding Visibility}"/>
+                        <Grid Visibility="{TemplateBinding Visibility}">
+                            <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="{TemplateBinding Background}"/>
+                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="{TemplateBinding Padding}" Content="{TemplateBinding Content}"/>
                         </Grid>
                     </ControlTemplate>
                 </Setter.Value>
@@ -36,7 +32,7 @@
         </Style>
     </Page.Resources>
 
-    <Grid Margin="10" KeyDown="Grid_KeyDown">
+    <Grid KeyDown="Grid_KeyDown">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition Height="9*"/>
@@ -51,7 +47,8 @@
             <Button x:Name="carouselPrevButton"
                     Grid.Column="0"
                     Style="{StaticResource CarouselNextPrevButtonStyle}"
-                    Visibility="{Binding CarouselPrevButtonVisibility}">
+                    Padding="10,0"
+                    Height="{Binding ElementName=layout, Path=ItemHeight}">
                 <FontIcon Style="{StaticResource CarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76B;"/><!--ChevronLeft-->
             </Button>
             <ScrollViewer x:Name="sv"
@@ -98,7 +95,9 @@
             <Button x:Name="carouselNextButton"
                     Grid.Column="2"
                     Style="{StaticResource CarouselNextPrevButtonStyle}"
-                    Visibility="{Binding CarouselNextButtonVisibility}">
+                    Visibility="{Binding CarouselNextButtonVisibility}"
+                    Padding="10,0"
+                    Height="{Binding ElementName=layout, Path=ItemHeight}">
                 <FontIcon Style="{StaticResource CarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76C;"/><!--ChevronRight-->
             </Button>
         </Grid>
