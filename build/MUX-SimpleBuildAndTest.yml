@@ -14,7 +14,7 @@ jobs:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
   variables:
-    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration2)\$(buildPlatform2)\AppxPackages
+    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
   steps:
@@ -30,9 +30,10 @@ jobs:
     testSuite: 'DevTestSuite'
     taefQuery: $(taefQuery)
     useBuildOutputFromPipeline: $(useBuildOutputFromPipeline)
+    # Specify a dummy matrix to override the default matrix
     matrix: 
       config:
-        foo: bar
+        isDummyMatrix: true
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
