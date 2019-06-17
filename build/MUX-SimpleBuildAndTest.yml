@@ -1,4 +1,11 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+# The following variables are set at queue time:
+#   buildPlatform
+#   buildConfiguration
+#   helixTargetQueues
+#   taefQuery
+#   useBuildOutputFromBuildId
+#   useBuildOutputFromPipeline
 jobs:
 - job: Build
   condition:
@@ -22,6 +29,7 @@ jobs:
     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
     testSuite: 'DevTestSuite'
     taefQuery: $(taefQuery)
+    useBuildOutputFromPipeline: $(useBuildOutputFromPipeline)
     matrix: 
       config:
         foo: bar

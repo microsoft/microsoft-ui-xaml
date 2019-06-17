@@ -4,8 +4,6 @@ robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP
 
 reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
 
-dir /b /s 
-
 :: kill dhandler, which is a tool designed to handle unexpected windows appearing. But since our tests are 
 :: expected to show UI we don't want it running.
 taskkill -f -im dhandler.exe

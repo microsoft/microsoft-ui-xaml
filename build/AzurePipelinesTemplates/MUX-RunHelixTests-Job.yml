@@ -10,6 +10,8 @@ parameters:
   maxParallel: 4
   rerunPassesRequiredToAvoidFailure: 5
   taefQuery: ''
+  # if 'useBuildOutputFromBuildId' is set, we will default to using a build from this pipeline:
+  useBuildOutputFromPipeline: $(System.DefinitionId)
   matrix: 
     Release_x86:
       buildPlatform: 'x86'
@@ -72,7 +74,7 @@ jobs:
       buildType: specific
       buildVersionToDownload: specific
       project: $(System.TeamProjectId)
-      pipeline: $(System.DefinitionId)
+      pipeline: $(useBuildOutputFromPipeline)
       buildId: $(useBuildOutputFromBuildId)
       artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactsDir)'

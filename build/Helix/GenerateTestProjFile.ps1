@@ -234,31 +234,20 @@ function Parse-TestInfo([string]$taefOutput)
     return $testModules
 }
 
-Write-Host "TaefQuery = $TaefQuery"
+Write-Verbose "TaefQuery = $TaefQuery"
 
+$TaefSelectQuery = ""
 $TaefQueryToAppend = ""
 if($TaefQuery)
 {
-   $TaefQueryToAppend = " and $TaefQuery"
-}
-
-
-$TaefSelectQuery
-if($TaefQuery)
-{
     $TaefSelectQuery = "/select:`"$TaefQuery`""
+    $TaefQueryToAppend = " and $TaefQuery"
 }
-
-Write-Host "TaefSelectQuery = $TaefSelectQuery"
-Write-Host "TaefQueryToAppend = $TaefQueryToAppend"
-
+Write-Verbose "TaefSelectQuery = $TaefSelectQuery"
 
 
 $taefExe = "$TaefPath\te.exe"
 [string]$taefOutput = & "$taefExe" /listproperties $TaefSelectQuery $TestFile | Out-String
-
-Write-Host = "$taefExe /listproperties $TaefSelectQuery $TestFile"
-
 
 [System.Collections.Generic.List[TestModule]]$testModules = (Parse-TestInfo $taefOutput)
 
