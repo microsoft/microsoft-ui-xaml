@@ -41,6 +41,7 @@
     <Page Include="$(MSBuildThisFileDirectory)ColorPicker.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ColorPicker_themeresources.xaml">
       <Version>RS1</Version>
@@ -49,6 +50,7 @@
     <Page Include="$(MSBuildThisFileDirectory)ColorSpectrum.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
   </ItemGroup>
   <ItemGroup>

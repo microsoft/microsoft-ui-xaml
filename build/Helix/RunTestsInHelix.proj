@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
   <PropertyGroup>
     <HelixSource>pr/winui/$(BUILD_SOURCEBRANCH)/</HelixSource>
-    <HelixType>test/product/</HelixType>
     <EnableXUnitReporter>true</EnableXUnitReporter>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
