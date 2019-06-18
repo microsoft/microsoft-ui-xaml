@@ -696,7 +696,10 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
             content.DesiredSize().Height
         };
 
+        bool wasContentArrangeWidthStretched = false;
+        bool wasContentArrangeHeightStretched = false;
         const winrt::FrameworkElement contentAsFE = content.try_as<winrt::FrameworkElement>();
+        winrt::Thickness contentMargin{};
 
         if (contentAsFE)
         {
@@ -704,15 +707,21 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
                 isnan(contentAsFE.Width()) &&
                 contentArrangeSize.Width < viewport.Width)
             {
+                // Allow the content to stretch up to the larger viewport width.
                 contentArrangeSize.Width = viewport.Width;
+                wasContentArrangeWidthStretched = true;
             }
 
             if (contentAsFE.VerticalAlignment() == winrt::VerticalAlignment::Stretch &&
                 isnan(contentAsFE.Height()) &&
                 contentArrangeSize.Height < viewport.Height)
             {
+                // Allow the content to stretch up to the larger viewport height.
                 contentArrangeSize.Height = viewport.Height;
+                wasContentArrangeHeightStretched = true;
             }
+
+            contentMargin = contentAsFE.Margin();
         }
 
         finalContentRect =
@@ -722,9 +731,6 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
             contentArrangeSize.Width,
             contentArrangeSize.Height
         };
-
-        newUnzoomedExtentWidth = contentArrangeSize.Width;
-        newUnzoomedExtentHeight = contentArrangeSize.Height;
 
         IsAnchoring(&isAnchoringElementHorizontally, &isAnchoringElementVertically, &isAnchoringFarEdgeHorizontally, &isAnchoringFarEdgeVertically);
 
@@ -750,8 +756,12 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
                 ResetAnchorElement();
             }
 
-            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, L"content Arrange", TypeLogging::RectToString(finalContentRect).c_str());
-            content.Arrange(finalContentRect);
+            contentArrangeSize = ArrangeContent(
+                content,
+                contentMargin,
+                finalContentRect,
+                wasContentArrangeWidthStretched,
+                wasContentArrangeHeightStretched);
 
             if (!isnan(preArrangeViewportToElementAnchorPointsDistance.Width) || !isnan(preArrangeViewportToElementAnchorPointsDistance.Height))
             {
@@ -788,20 +798,22 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         {
             ResetAnchorElement();
 
-            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, L"content Arrange", TypeLogging::RectToString(finalContentRect).c_str());
-            content.Arrange(finalContentRect);
+            contentArrangeSize = ArrangeContent(
+                content,
+                contentMargin,
+                finalContentRect,
+                wasContentArrangeWidthStretched,
+                wasContentArrangeHeightStretched);
         }
 
-        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"content RenderSize", content.RenderSize().Width, content.RenderSize().Height);
+        newUnzoomedExtentWidth = contentArrangeSize.Width;
+        newUnzoomedExtentHeight = contentArrangeSize.Height;
 
-        winrt::Thickness contentMargin{};
         double maxUnzoomedExtentWidth = std::numeric_limits<double>::infinity();
         double maxUnzoomedExtentHeight = std::numeric_limits<double>::infinity();
 
         if (contentAsFE)
         {
-            contentMargin = contentAsFE.Margin();
-
             // Determine the maximum size directly set on the content, if any.
             maxUnzoomedExtentWidth = GetComputedMaxWidth(maxUnzoomedExtentWidth, contentAsFE);
             maxUnzoomedExtentHeight = GetComputedMaxHeight(maxUnzoomedExtentHeight, contentAsFE);
@@ -1192,6 +1204,65 @@ void Scroller::ValuesChanged(
 }
 
 #pragma endregion
+
+// Returns the size used to arrange the provided Scroller content.
+winrt::Size Scroller::ArrangeContent(
+    const winrt::UIElement& content,
+    const winrt::Thickness& contentMargin,
+    winrt::Rect& finalContentRect,
+    bool wasContentArrangeWidthStretched,
+    bool wasContentArrangeHeightStretched)
+{
+    MUX_ASSERT(content);
+
+    winrt::Size contentArrangeSize =
+    {
+        finalContentRect.Width,
+        finalContentRect.Height
+    };
+
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, L"content Arrange", TypeLogging::RectToString(finalContentRect).c_str());
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, wasContentArrangeWidthStretched, wasContentArrangeHeightStretched);
+    content.Arrange(finalContentRect);
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"content RenderSize", content.RenderSize().Width, content.RenderSize().Height);
+
+    if (wasContentArrangeWidthStretched || wasContentArrangeHeightStretched)
+    {
+        bool reArrangeNeeded = false;
+        const auto renderWidth = content.RenderSize().Width;
+        const auto renderHeight = content.RenderSize().Height;
+        const auto marginWidth = static_cast<float>(contentMargin.Left + contentMargin.Right);
+        const auto marginHeight = static_cast<float>(contentMargin.Top + contentMargin.Bottom);
+        const auto scaleFactorRounding = 0.5f / static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
+
+        if (wasContentArrangeWidthStretched &&
+            renderWidth > 0.0f &&
+            renderWidth + marginWidth < finalContentRect.Width * (1.0f - std::numeric_limits<float>::epsilon()) - scaleFactorRounding)
+        {
+            // Content stretched partially horizontally.
+            contentArrangeSize.Width = finalContentRect.Width = renderWidth + marginWidth;
+            reArrangeNeeded = true;
+        }
+
+        if (wasContentArrangeHeightStretched &&
+            renderHeight > 0.0f &&
+            renderHeight + marginHeight < finalContentRect.Height * (1.0f - std::numeric_limits<float>::epsilon()) - scaleFactorRounding)
+        {
+            // Content stretched partially vertically.
+            contentArrangeSize.Height = finalContentRect.Height = renderHeight + marginHeight;
+            reArrangeNeeded = true;
+        }
+
+        if (reArrangeNeeded)
+        {
+            // Re-arrange the content using the partially stretched size.
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, L"content re-Arrange", TypeLogging::RectToString(finalContentRect).c_str());
+            content.Arrange(finalContentRect);
+        }
+    }
+
+    return contentArrangeSize;
+}
 
 // Used to perform a flickerless change to the Content's XAML Layout Offset. The InteractionTracker's Position is unaffected, but its Min/MaxPosition expressions
 // and the Scroller HorizontalOffset/VerticalOffset property are updated accordingly once the change is incorporated into the XAML layout engine.
