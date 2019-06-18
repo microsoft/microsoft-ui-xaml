@@ -448,6 +448,70 @@
                 <Slider Orientation="Vertical" TickFrequency="1" Height="100" TickPlacement="Outside" CornerRadius="6"/>
             </Grid>
 
+            <TextBlock Grid.Row="25" Text="AppBar" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Row="25" Style="{StaticResource LeftColumn}">
+                <AppBar>
+                    <AppBarButton Icon="World"/>
+                </AppBar>
+            </Grid>
+            <Grid Grid.Row="25" Style="{StaticResource RightColumn}">
+                <AppBar CornerRadius="6">
+                    <AppBarButton Icon="World"/>
+                </AppBar>
+            </Grid>
+
+            <TextBlock Grid.Row="26" Text="MenuBar" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Row="26" Style="{StaticResource LeftColumn}">
+                <controls:MenuBar>
+                    <controls:MenuBarItem Title="One">
+                        <controls:MenuBarItem.Items>
+                            <MenuFlyoutItem Text="A"/>
+                            <MenuFlyoutItem Text="B"/>
+                            <MenuFlyoutItem Text="C"/>
+                        </controls:MenuBarItem.Items>
+                    </controls:MenuBarItem>
+                    <controls:MenuBarItem Title="Two">
+                        <controls:MenuBarItem.Items>
+                            <MenuFlyoutItem Text="1"/>
+                            <MenuFlyoutItem Text="2"/>
+                            <MenuFlyoutItem Text="3"/>
+                        </controls:MenuBarItem.Items>
+                    </controls:MenuBarItem>
+                    <controls:MenuBarItem Title="Three">
+                        <controls:MenuBarItem.Items>
+                            <MenuFlyoutItem Text="i"/>
+                            <MenuFlyoutItem Text="ii"/>
+                            <MenuFlyoutItem Text="iii"/>
+                        </controls:MenuBarItem.Items>
+                    </controls:MenuBarItem>
+                </controls:MenuBar>
+            </Grid>
+            <Grid Grid.Row="26" Style="{StaticResource RightColumn}">
+                <controls:MenuBar CornerRadius="6">
+                    <controls:MenuBarItem Title="One">
+                        <controls:MenuBarItem.Items>
+                            <MenuFlyoutItem Text="A"/>
+                            <MenuFlyoutItem Text="B"/>
+                            <MenuFlyoutItem Text="C"/>
+                        </controls:MenuBarItem.Items>
+                    </controls:MenuBarItem>
+                    <controls:MenuBarItem Title="Two">
+                        <controls:MenuBarItem.Items>
+                            <MenuFlyoutItem Text="1"/>
+                            <MenuFlyoutItem Text="2"/>
+                            <MenuFlyoutItem Text="3"/>
+                        </controls:MenuBarItem.Items>
+                    </controls:MenuBarItem>
+                    <controls:MenuBarItem Title="Three">
+                        <controls:MenuBarItem.Items>
+                            <MenuFlyoutItem Text="i"/>
+                            <MenuFlyoutItem Text="ii"/>
+                            <MenuFlyoutItem Text="iii"/>
+                        </controls:MenuBarItem.Items>
+                    </controls:MenuBarItem>
+                </controls:MenuBar>
+            </Grid>
+
             <TextBlock Grid.Row="31" Text="ProgressBar" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="31" Style="{StaticResource LeftColumn}" MinWidth="100">
                 <ProgressBar Minimum="0" Maximum="100" Value="50"/>
@@ -547,24 +611,36 @@
                 </StackPanel>
             </Grid>
 
-            <TextBlock Grid.Row="41" Text="AppBar" Style="{StaticResource SideHeader}"/>
+            <TextBlock Grid.Row="41" Text="ToggleButton" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="41" Style="{StaticResource LeftColumn}">
-                <AppBar>
-                    <AppBarButton Icon="World"/>
-                </AppBar>
-            </Grid>
-            <Grid Grid.Row="41" Style="{StaticResource RightColumn}">
-                <AppBar CornerRadius="6">
-                    <AppBarButton Icon="World"/>
-                </AppBar>
-            </Grid>
-
-            <TextBlock Grid.Row="42" Text="ToggleButton" Style="{StaticResource SideHeader}"/>
-            <Grid Grid.Row="42" Style="{StaticResource LeftColumn}">
                 <ToggleButton Content="Hello World"/>
             </Grid>
-            <Grid Grid.Row="42" Style="{StaticResource RightColumn}">
+            <Grid Grid.Row="41" Style="{StaticResource RightColumn}">
                 <ToggleButton Content="Hello World" CornerRadius="6"/>
+            </Grid>
+
+            <TextBlock Grid.Row="42" Text="ToggleSplitButton" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Row="42" Style="{StaticResource LeftColumn}">
+                <controls:ToggleSplitButton Content="Hello World">
+                    <controls:ToggleSplitButton.Flyout>
+                        <Flyout>
+                            <Flyout.Content>
+                                <TextBlock>Hello World</TextBlock>
+                            </Flyout.Content>
+                        </Flyout>
+                    </controls:ToggleSplitButton.Flyout>
+                </controls:ToggleSplitButton>
+            </Grid>
+            <Grid Grid.Row="42" Style="{StaticResource RightColumn}">
+                <controls:ToggleSplitButton Content="Hello World" CornerRadius="6">
+                    <controls:ToggleSplitButton.Flyout>
+                        <Flyout>
+                            <Flyout.Content>
+                                <TextBlock>Hello World</TextBlock>
+                            </Flyout.Content>
+                        </Flyout>
+                    </controls:ToggleSplitButton.Flyout>
+                </controls:ToggleSplitButton>
             </Grid>
 
             <TextBlock Grid.Row="43" Text="RepeatButton" Style="{StaticResource SideHeader}"/>
@@ -585,17 +661,49 @@
 
             <TextBlock Grid.Row="45" Text="DropDownButton" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="45" Style="{StaticResource LeftColumn}">
-                <controls:DropDownButton Content="Hello World"/>
+                <controls:DropDownButton Content="Hello World">
+                    <controls:DropDownButton.Flyout>
+                        <Flyout>
+                            <Flyout.Content>
+                                <TextBlock>Hello World</TextBlock>
+                            </Flyout.Content>
+                        </Flyout>
+                    </controls:DropDownButton.Flyout>
+                </controls:DropDownButton>
             </Grid>
             <Grid Grid.Row="45" Style="{StaticResource RightColumn}">
-                <controls:DropDownButton Content="Hello World" CornerRadius="6"/>
+                <controls:DropDownButton Content="Hello World" CornerRadius="6">
+                    <controls:DropDownButton.Flyout>
+                        <Flyout>
+                            <Flyout.Content>
+                                <TextBlock>Hello World</TextBlock>
+                            </Flyout.Content>
+                        </Flyout>
+                    </controls:DropDownButton.Flyout>
+                </controls:DropDownButton>
             </Grid>
             <TextBlock Grid.Row="46" Text="SplitButton" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="46" Style="{StaticResource LeftColumn}">
-                <controls:SplitButton Content="Hello World"/>
+                <controls:SplitButton Content="Hello World">
+                    <controls:SplitButton.Flyout>
+                        <Flyout>
+                            <Flyout.Content>
+                                <TextBlock>Hello World</TextBlock>
+                            </Flyout.Content>
+                        </Flyout>
+                    </controls:SplitButton.Flyout>
+                </controls:SplitButton>
             </Grid>
             <Grid Grid.Row="46" Style="{StaticResource RightColumn}">
-                <controls:SplitButton Content="Hello World" CornerRadius="6"/>
+                <controls:SplitButton Content="Hello World" CornerRadius="6">
+                    <controls:SplitButton.Flyout>
+                        <Flyout>
+                            <Flyout.Content>
+                                <TextBlock>Hello World</TextBlock>
+                            </Flyout.Content>
+                        </Flyout>
+                    </controls:SplitButton.Flyout>
+                </controls:SplitButton>
             </Grid>
             <TextBlock Grid.Row="47" Text="ColorPicker" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="47" Style="{StaticResource LeftColumn}">
