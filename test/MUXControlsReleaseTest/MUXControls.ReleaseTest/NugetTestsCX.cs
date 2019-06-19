@@ -42,5 +42,15 @@ namespace MUXControls.ReleaseTest
             Verify.IsNotNull(textBlock);
             Verify.AreEqual(textBlock.DocumentText, "Loaded");
         }
+
+        [TestMethod]
+        public void RepeaterNoCrashTest()
+        {
+            var button = new Button(FindElement.ByName("AddItemsButton"));
+            button.Click();
+
+            var item3 = FindElement.ByName("Item3");
+            Verify.IsNotNull(item3);
+        }
     }
 }

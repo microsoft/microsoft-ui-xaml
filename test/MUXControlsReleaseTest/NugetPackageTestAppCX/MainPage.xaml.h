@@ -23,5 +23,8 @@ namespace NugetPackageTestAppCX
     private:
         void CloseAppInvokerButton_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
         void PageLoaded(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+        void OnAddItemsButtonClick(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+
+        Platform::Collections::Vector<Platform::String^>^ mItems;
     };
 }

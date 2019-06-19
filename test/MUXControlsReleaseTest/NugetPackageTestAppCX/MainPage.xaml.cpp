@@ -12,9 +12,11 @@
 using namespace NugetPackageTestAppCX;
 
 using namespace Platform;
+using namespace Platform::Collections;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::UI::Xaml;
+using namespace Windows::UI::Xaml::Automation;
 using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Controls::Primitives;
 using namespace Windows::UI::Xaml::Data;
@@ -24,19 +26,29 @@ using namespace Windows::UI::Xaml::Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
-MainPage::MainPage()
+MainPage::MainPage() :
+    mItems(ref new Vector<String^>())
 {
 	InitializeComponent();
-}
 
+    AutomationProperties::SetName(this, L"MainPage");
+        
+    Repeater->ItemsSource = mItems;
+}
 
 void NugetPackageTestAppCX::MainPage::CloseAppInvokerButton_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
     Application::Current->Exit();
 }
 
-
 void NugetPackageTestAppCX::MainPage::PageLoaded(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
     TestContentLoadedCheckBox->IsChecked = true;
+}
+
+void NugetPackageTestAppCX::MainPage::OnAddItemsButtonClick(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    mItems->Append(L"Item1");
+    mItems->Append(L"Item2");
+    mItems->Append(L"Item3");
 }

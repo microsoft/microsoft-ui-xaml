@@ -36,6 +36,10 @@ private:
         const winrt::IInspectable& sender,
         const winrt::NotifyCollectionChangedEventArgs& e);
 
+    void OnBindableVectorChanged(
+        const winrt::IBindableObservableVector& sender,
+        const winrt::IInspectable& e);
+
     void OnVectorChanged(
         const winrt::Collections::IObservableVector<winrt::IInspectable>& sender,
         const winrt::Collections::IVectorChangedEventArgs& e);
