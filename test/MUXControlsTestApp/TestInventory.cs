@@ -56,6 +56,7 @@ namespace MUXControlsTestApp
                 {"RadioMenuFlyoutItem", typeof(RadioMenuFlyoutItemPage)},
                 {"TabView", typeof(TabViewPage)},
                 {"FlipView", typeof(FlipViewPage)},
+                {"ComboBox", typeof(ComboBoxPage)},
 #endif
 
                 // These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
