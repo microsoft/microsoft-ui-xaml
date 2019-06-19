@@ -12,7 +12,7 @@ jobs:
 - job: Build
   dependsOn: Setup
   condition:
-    ne(dependencies.Setup.outputs['foo.shouldSkipPRBuild'],'True')
+    and(eq(variables['useBuildOutputFromBuildId'],''), ne(dependencies.Setup.outputs['foo.shouldSkipPRBuild'],'True'))
   pool:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
@@ -41,8 +41,10 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
   parameters:
     name: 'RunTestsInHelix'
-    dependsOn: Build
-    condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+    dependsOn: 
+      - Build
+      - Setup
+    condition: and(in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped'), ne(dependencies.Setup.outputs['foo.shouldSkipPRBuild'],'True'))
     testSuite: 'DevTestSuite'
 
 # Create Nuget Package
