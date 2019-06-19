@@ -31,9 +31,9 @@ MainPage::MainPage() :
 {
 	InitializeComponent();
 
-    Repeater->ItemsSource = mItems;
-
     AutomationProperties::SetName(this, L"MainPage");
+        
+    Repeater->ItemsSource = mItems;
 }
 
 void NugetPackageTestAppCX::MainPage::CloseAppInvokerButton_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
