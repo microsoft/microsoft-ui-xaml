@@ -18,10 +18,6 @@ public:
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     hstring GetClassNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
-    winrt::IVector<winrt::AutomationPeer> GetChildrenCore();
-
-private:
-    void AddToChildren(winrt::FrameworkElement fe, winrt::IVector<winrt::AutomationPeer> childrenPeers);
 };
 
 CppWinRTActivatableClassWithBasicFactory(TabViewAutomationPeer);

@@ -29,38 +29,3 @@ winrt::AutomationControlType TabViewAutomationPeer::GetAutomationControlTypeCore
     return winrt::AutomationControlType::Tab;
 }
 
-winrt::IVector<winrt::AutomationPeer> TabViewAutomationPeer::GetChildrenCore()
-{
-    auto tabView = winrt::get_self<TabView>(safe_cast<winrt::TabView>(Owner()));
-    auto childrenPeers = GetInner().as<winrt::IAutomationPeerOverrides>().GetChildrenCore();
-    unsigned peerCount = childrenPeers.Size();
-
-    if (auto accessibleChildren = tabView->GetAccessibleChildElements())
-    {
-        for (auto child : accessibleChildren)
-        {
-            AddToChildren(child, childrenPeers);
-        }
-    }
-
-    return childrenPeers;
-}
-
-void TabViewAutomationPeer::AddToChildren(winrt::FrameworkElement fe, winrt::IVector<winrt::AutomationPeer> childrenPeers)
-{
-    if (fe && fe.Visibility() == winrt::Visibility::Visible)
-    {
-        if (auto tabContentPeer = winrt::FrameworkElementAutomationPeer::FromElement(fe))
-        {
-            childrenPeers.Append(tabContentPeer);
-        }
-        else
-        {
-            auto numChildren = winrt::VisualTreeHelper::GetChildrenCount(fe);
-            for (int i = 0; i < numChildren; i++)
-            {
-                AddToChildren(winrt::VisualTreeHelper::GetChild(fe, i).as<winrt::FrameworkElement>(), childrenPeers);
-            }
-        }
-    }
-}
