@@ -41,7 +41,9 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
   parameters:
     name: 'RunTestsInHelix'
-    dependsOn: Setup
+    dependsOn: 
+    - Setup 
+    - Build
     condition: ne(dependencies.Setup.outputs['foo.shouldSkipPRBuild'],'True')
     testSuite: 'DevTestSuite'
 
