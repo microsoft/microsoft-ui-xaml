@@ -37,7 +37,13 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.ListView
     Object RightCustomContent{ get; set; };
     Windows.UI.Xaml.DataTemplate RightCustomContentTemplate{ get; set; };
 
+    [MUX_DEFAULT_VALUE("true")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsAddButtonVisible{ get; set; };
+
     event Windows.Foundation.TypedEventHandler<TabView, TabViewTabClosingEventArgs> TabClosing;
+
+    event Windows.Foundation.TypedEventHandler<TabView, Object> AddButtonClick;
 
     static Windows.UI.Xaml.DependencyProperty TabWidthModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CanCloseTabsProperty{ get; };
@@ -45,6 +51,7 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.ListView
     static Windows.UI.Xaml.DependencyProperty LeftCustomContentTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty RightCustomContentProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty RightCustomContentTemplateProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsAddButtonVisibleProperty{ get; };
 }
 
 [WUXC_VERSION_PREVIEW]

@@ -12,6 +12,9 @@ public:
     void CanCloseTabs(bool value);
     bool CanCloseTabs();
 
+    void IsAddButtonVisible(bool value);
+    bool IsAddButtonVisible();
+
     void LeftCustomContent(winrt::IInspectable const& value);
     winrt::IInspectable LeftCustomContent();
 
@@ -28,6 +31,7 @@ public:
     winrt::TabViewWidthMode TabWidthMode();
 
     static winrt::DependencyProperty CanCloseTabsProperty() { return s_CanCloseTabsProperty; }
+    static winrt::DependencyProperty IsAddButtonVisibleProperty() { return s_IsAddButtonVisibleProperty; }
     static winrt::DependencyProperty LeftCustomContentProperty() { return s_LeftCustomContentProperty; }
     static winrt::DependencyProperty LeftCustomContentTemplateProperty() { return s_LeftCustomContentTemplateProperty; }
     static winrt::DependencyProperty RightCustomContentProperty() { return s_RightCustomContentProperty; }
@@ -35,19 +39,27 @@ public:
     static winrt::DependencyProperty TabWidthModeProperty() { return s_TabWidthModeProperty; }
 
     static GlobalDependencyProperty s_CanCloseTabsProperty;
+    static GlobalDependencyProperty s_IsAddButtonVisibleProperty;
     static GlobalDependencyProperty s_LeftCustomContentProperty;
     static GlobalDependencyProperty s_LeftCustomContentTemplateProperty;
     static GlobalDependencyProperty s_RightCustomContentProperty;
     static GlobalDependencyProperty s_RightCustomContentTemplateProperty;
     static GlobalDependencyProperty s_TabWidthModeProperty;
 
+    winrt::event_token AddButtonClick(winrt::TypedEventHandler<winrt::TabView, winrt::IInspectable> const& value);
+    void AddButtonClick(winrt::event_token const& token);
     winrt::event_token TabClosing(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabClosingEventArgs> const& value);
     void TabClosing(winrt::event_token const& token);
 
+    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::IInspectable>> m_addButtonClickEventSource;
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabClosingEventArgs>> m_tabClosingEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnIsAddButtonVisiblePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnTabWidthModePropertyChanged(
         winrt::DependencyObject const& sender,

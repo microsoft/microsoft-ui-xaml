@@ -159,6 +159,7 @@ public:
 #define SR_TeachingTipCustomLandmarkName L"TeachingTipCustomLandmarkName"
 #define SR_TeachingTipNotification L"TeachingTipNotification"
 #define SR_TeachingTipNotificationWithoutAppName L"TeachingTipNotificationWithoutAppName"
+#define SR_TabViewAddButtonName L"TabViewAddButtonName"
 
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"
 

@@ -28,6 +28,7 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using Windows.Devices.PointOfService;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
@@ -49,8 +50,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
-        // TODO: This test doesn't pass because it can't find the tab content -- this is an acc bug.
-        //[TestMethod]
+        [TestMethod]
         public void SelectionTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
@@ -76,7 +76,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 Log.Comment("Adding tab.");
-                Button addTabButton = FindElement.ByName<Button>("AddTabButton");
+                Button addTabButton = FindElement.ByName<Button>("Add New Tab");
                 addTabButton.InvokeAndWait();
 
                 ElementCache.Refresh();
@@ -210,6 +210,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ElementCache.Refresh();
                 firstTab = TryFindElement.ByName("FirstTab");
                 Verify.IsNull(firstTab);
+            }
+        }
+
+        [TestMethod]
+        public void AddButtonTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Log.Comment("Add new tab button should be visible.");
+                var addButton = FindElement.ByName("Add New Tab");
+                Verify.IsNotNull(addButton);
+
+                CheckBox isAddButtonVisibleCheckBox = FindElement.ByName<CheckBox>("IsAddButtonVisibleCheckBox");
+                isAddButtonVisibleCheckBox.Uncheck();
+                Wait.ForIdle();
+
+                ElementCache.Refresh();
+                Log.Comment("Add new tab button should not be visible.");
+                addButton = TryFindElement.ByName("Add New Tab");
+                Verify.IsNull(addButton);
             }
         }
 
