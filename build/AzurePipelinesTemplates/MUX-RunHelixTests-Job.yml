@@ -49,6 +49,7 @@ jobs:
       filename: 'set'
       
   - task: NuGetToolInstaller@0
+    condition: ${{ parameters.condition }}
     displayName: 'Use NuGet 4.9.3'
     inputs:
       versionSpec: 4.9.3
