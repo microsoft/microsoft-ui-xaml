@@ -1,8 +1,15 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
+- job: Setup
+  steps:
+    - task: powershell@2
+      displayName: 'Check if build required'
+      inputs:
+        targetType: filePath
+        filePath: build\ShouldSkipPRBuild.ps1
 - job: Build
   condition:
-    eq(variables['useBuildOutputFromBuildId'],'') 
+    and(eq(variables['useBuildOutputFromBuildId'],''), ne(variables['shouldSkipPRBuild'],'True'))
   pool:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
@@ -29,6 +36,7 @@ jobs:
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+  condition: ne(variables['shouldSkipPRBuild'],'True')
   parameters:
     name: 'RunTestsInHelix'
     dependsOn: Build
@@ -37,12 +45,14 @@ jobs:
 
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+  condition: ne(variables['shouldSkipPRBuild'],'True')
   parameters:
     jobName: CreateNugetPackage
     dependsOn: Build
     primaryBuildArch: x64
 
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  condition: ne(variables['shouldSkipPRBuild'],'True')
   parameters:
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop'
@@ -56,6 +66,7 @@ jobs:
         buildConfiguration: 'Release'
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+  condition: ne(variables['shouldSkipPRBuild'],'True')
   parameters:
     dependsOn: RunTestsInHelix
     rerunPassesRequiredToAvoidFailure: 5
