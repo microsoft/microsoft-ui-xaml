@@ -3,7 +3,7 @@ jobs:
 - job: Setup
   steps:
     - task: powershell@2
-      name: foo
+      name: checkPayload
       displayName: 'Check if build required'
       inputs:
         targetType: filePath
@@ -11,8 +11,12 @@ jobs:
  
 - job: Build
   dependsOn: Setup
-  condition:
-    and(eq(variables['useBuildOutputFromBuildId'],''), ne(dependencies.Setup.outputs['foo.shouldSkipPRBuild'],'True'))
+  condition: |
+    and
+    (
+      eq(variables['useBuildOutputFromBuildId'],''), 
+      ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
+    )
   pool:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
@@ -44,7 +48,12 @@ jobs:
     dependsOn: 
     - Setup 
     - Build
-    condition: and(ne(dependencies.Setup.outputs['foo.shouldSkipPRBuild'],'True'), in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped'))
+    condition: |
+      and
+      (
+        ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True'),
+        in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+      )
     testSuite: 'DevTestSuite'
 
 # Create Nuget Package
