@@ -3,15 +3,16 @@ jobs:
 - job: Setup
   steps:
     - task: powershell@2
+      name: foo
       displayName: 'Check if build required'
       inputs:
         targetType: filePath
         filePath: build\ShouldSkipPRBuild.ps1
-
+ 
 - job: Build
   dependsOn: Setup
   condition:
-    and(eq(variables['useBuildOutputFromBuildId'],''), ne(variables['shouldSkipPRBuild'],'True'))
+    and(eq(variables['useBuildOutputFromBuildId'],''), ne($[dependencies.Setup.outputs['foo.shouldSkipPRBuild']],'True'))
   pool:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120

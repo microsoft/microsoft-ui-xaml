@@ -47,4 +47,4 @@ $shouldSkipBuild = $false
 
 Write-Host $shouldSkipBuild
 
-Write-Host "##vso[task.setvariable variable=shouldSkipPRBuild]$shouldSkipBuild"
+Write-Host "##vso[task.setvariable variable=shouldSkipPRBuild;isOutput=true]$shouldSkipBuild"
