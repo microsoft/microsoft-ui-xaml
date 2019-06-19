@@ -26,8 +26,9 @@ $shouldSkipBuild = $false
 
 #if($env:BUILD_REASON -eq "PullRequest")
 #{
-    #$targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
-    $targetBranch = "master"
+    #$targetBranch = "origin/$env:SYSTEM_PULLREQUEST_TARGETBRANCH"
+
+    $targetBranch = "origin/master"
 
     $gitCommandLine = "git diff $targetBranch --name-only"
     Write-Host "$gitCommandLine"
