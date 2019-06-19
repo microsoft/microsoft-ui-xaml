@@ -26,10 +26,13 @@ $shouldSkipBuild = $false
 
 #if($env:BUILD_REASON -eq "PullRequest")
 #{
-    #$targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
-    $targetBranch = "master"
+    $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
+    #$targetBranch = "master"
 
-    $diffOutput = & git diff $targetBranch --name-only
+    $gitCommandLine = "git diff $targetBranch --name-only"
+    Write-Host "$gitCommandLine"
+
+    $diffOutput = & $gitCommandLine
     $files = $diffOutput.Split([Environment]::NewLine)
 
     Write-Host "Files changed: $files"
