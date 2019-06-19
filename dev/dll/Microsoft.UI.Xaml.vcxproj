@@ -121,6 +121,7 @@
     <Import Project="..\Slider\Slider.vcxitems" Label="Shared" />
     <Import Project="..\TimePicker\TimePicker.vcxitems" Label="Shared" />
     <Import Project="..\ToolTip\ToolTip.vcxitems" Label="Shared" />
+    <Import Project="..\FlipView\FlipView.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
