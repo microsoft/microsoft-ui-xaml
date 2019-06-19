@@ -4,7 +4,7 @@ jobs:
   steps:
     - task: powershell@2
       name: checkPayload
-      displayName: 'Check if build required'
+      displayName: 'Check if build is required for this PR'
       inputs:
         targetType: filePath
         filePath: build\ShouldSkipPRBuild.ps1
@@ -40,7 +40,7 @@ jobs:
 
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-  # - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
   parameters:

@@ -7,6 +7,6 @@ steps:
       buildOutputDir: $(buildOutputDir)
       publishDir: $(publishDir)
 
-  # - template: MUX-MakeFrameworkPackages-Steps.yml
-  #   parameters:
-  #     buildOutputDir: $(buildOutputDir)
+  - template: MUX-MakeFrameworkPackages-Steps.yml
+    parameters:
+      buildOutputDir: $(buildOutputDir)

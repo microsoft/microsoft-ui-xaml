@@ -1,9 +1,11 @@
-﻿function AllChangedFilesAreSkippable
+﻿# Determine if the current PR payload requires a build.
+# We skip the build if the only files changed are .md files.
+
+function AllChangedFilesAreSkippable
 {
     Param($files)
 
-    #$skipExts = @(".md")
-    $skipExts = @(".md", ".ps1", ".yml")
+    $skipExts = @(".md")
     $allFilesAreSkippable = $true
 
     foreach($file in $files)
@@ -24,11 +26,9 @@
 
 $shouldSkipBuild = $false
 
-#if($env:BUILD_REASON -eq "PullRequest")
-#{
-    #$targetBranch = "origin/$env:SYSTEM_PULLREQUEST_TARGETBRANCH"
-
-    $targetBranch = "origin/master"
+if($env:BUILD_REASON -eq "PullRequest")
+{
+    $targetBranch = "origin/$env:SYSTEM_PULLREQUEST_TARGETBRANCH"
 
     $gitCommandLine = "git diff $targetBranch --name-only"
     Write-Host "$gitCommandLine"
@@ -42,9 +42,8 @@ $shouldSkipBuild = $false
     
 
     $shouldSkipBuild = AllChangedFilesAreSkippable($files)
-#}
+}
 
-
-Write-Host $shouldSkipBuild
+Write-Host "shouldSkipBuild = $shouldSkipBuild"
 
 Write-Host "##vso[task.setvariable variable=shouldSkipPRBuild;isOutput=true]$shouldSkipBuild"
