@@ -44,8 +44,7 @@ jobs:
     dependsOn: 
     - Setup 
     - Build
-    condition: and(in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped'), ne(dependencies.Setup.outputs['foo.shouldSkipPRBuild'],'True'))
-    taefQuery: dependencies.Setup.outputs['foo.shouldSkipPRBuild']
+    condition: and(ne(dependencies.Setup.outputs['foo.shouldSkipPRBuild'],'True'), in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped'))
     testSuite: 'DevTestSuite'
 
 # Create Nuget Package

@@ -37,7 +37,7 @@ jobs:
   variables:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
     taefPath: $(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\$(buildPlatform)
-    foo: ${{ parameters.taefQuery }}
+    foo: ${{ parameters.condition }}
   strategy:
     maxParallel: ${{ parameters.maxParallel }}
     matrix: ${{ parameters.matrix }}
@@ -49,7 +49,6 @@ jobs:
       filename: 'set'
       
   - task: NuGetToolInstaller@0
-    condition: ${{ parameters.condition }}
     displayName: 'Use NuGet 4.9.3'
     inputs:
       versionSpec: 4.9.3
