@@ -44,7 +44,7 @@ jobs:
     dependsOn: 
     - Setup 
     - Build
-    condition: and(in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped'),ne(dependencies.Setup.outputs['foo.shouldSkipPRBuild'],'True'))
+    condition: and(in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped'), ne(dependencies.Setup.outputs['foo.shouldSkipPRBuild'],'True'))
     testSuite: 'DevTestSuite'
 
 # Create Nuget Package
