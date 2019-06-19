@@ -32,7 +32,9 @@ $shouldSkipBuild = $false
     $gitCommandLine = "git diff $targetBranch --name-only"
     Write-Host "$gitCommandLine"
 
-    $diffOutput = & $gitCommandLine
+    $diffOutput = Invoke-Expression $gitCommandLine
+    Write-Host $diffOutput
+
     $files = $diffOutput.Split([Environment]::NewLine)
 
     Write-Host "Files changed: $files"
@@ -44,4 +46,4 @@ $shouldSkipBuild = $false
 
 Write-Host $shouldSkipBuild
 
-Write-Host "##vso[task.setvariable variable=shouldSkipPRBuild]$shouldSkipPRBuild"
+Write-Host "##vso[task.setvariable variable=shouldSkipPRBuild]$shouldSkipBuild"

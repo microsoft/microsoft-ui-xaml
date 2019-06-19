@@ -7,7 +7,9 @@ jobs:
       inputs:
         targetType: filePath
         filePath: build\ShouldSkipPRBuild.ps1
+
 - job: Build
+  dependsOn: Setup
   condition:
     and(eq(variables['useBuildOutputFromBuildId'],''), ne(variables['shouldSkipPRBuild'],'True'))
   pool:
