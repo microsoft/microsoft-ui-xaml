@@ -41,10 +41,8 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
   parameters:
     name: 'RunTestsInHelix'
-    dependsOn: 
-      - Build
-      - Setup
-    condition: and(in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped'), ne(dependencies.Setup.outputs['foo.shouldSkipPRBuild'],'True'))
+    dependsOn: Setup
+    condition: ne(dependencies.Setup.outputs['foo.shouldSkipPRBuild'],'True')
     testSuite: 'DevTestSuite'
 
 # Create Nuget Package
