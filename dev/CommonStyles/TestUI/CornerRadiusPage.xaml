@@ -89,6 +89,7 @@
                 <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
+                <RowDefinition/>
             </Grid.RowDefinitions>
 
             <TextBlock Text="Normal" Grid.Column="1" Style="{StaticResource BaseTextBlockStyle}"/>
@@ -803,6 +804,14 @@
                         </TreeViewNode>
                     </TreeView.RootNodes>
                 </TreeView>
+            </Grid>
+            <TextBlock Grid.Row="51" Text="MediaPlayerElement" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Row="51" Style="{StaticResource LeftColumn}">
+                <MediaPlayerElement 
+                    Width="200"
+                    Height="100"
+                    x:Name="mediaPlayer"
+                    AreTransportControlsEnabled="True" />
             </Grid>
         </Grid>
 
