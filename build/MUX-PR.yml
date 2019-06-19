@@ -36,7 +36,6 @@ jobs:
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
-  condition: ne(variables['shouldSkipPRBuild'],'True')
   parameters:
     name: 'RunTestsInHelix'
     dependsOn: Build
