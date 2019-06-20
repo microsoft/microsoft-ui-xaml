@@ -43,8 +43,7 @@ namespace MUXControls.ReleaseTest
             Verify.AreEqual(textBlock.DocumentText, "Loaded");
         }
 
-        // Disabled due to: NugetTestsCX.RepeaterNoCrashTest is failing in CI builds #908
-        //[TestMethod]
+        [TestMethod]
         public void RepeaterNoCrashTest()
         {
             var button = new Button(FindElement.ByName("AddItemsButton"));

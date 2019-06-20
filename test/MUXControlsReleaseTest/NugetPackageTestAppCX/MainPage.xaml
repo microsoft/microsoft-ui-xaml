@@ -13,9 +13,14 @@
     mc:Ignorable="d">
 
     <Grid>
-        <Grid
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal"
             x:Name="AutomationHelpersPanel"
             Height="0"
+            VerticalAlignment="Top"
             HorizontalAlignment="Stretch">
 
             <!--  Automation Helpers  -->
@@ -23,11 +28,8 @@
                 These are not visible, but are used via UIA. They are fundamental to the operation of our test automation, so they should not be collapsed since
                 that prevents them from showing up in the UIA tree.
             -->
-            <Button
-                x:Name="CloseAppInvokerButton"
-                AutomationProperties.AutomationId="__CloseAppInvoker"
-                Click="CloseAppInvokerButton_Click" />
-            <Button x:Name="WaitForIdleInvokerButton" AutomationProperties.AutomationId="__WaitForIdleInvoker" />
+            <Button x:Name="CloseAppInvokerButton" AutomationProperties.AutomationId="__CloseAppInvoker" Click="CloseAppInvokerButton_Click" />
+            <Button x:Name="WaitForIdleInvokerButton" AutomationProperties.AutomationId="__WaitForIdleInvoker" Click="WaitForIdleInvokerButton_Click" />
             <CheckBox x:Name="IdleStateEnteredCheckBox" AutomationProperties.AutomationId="__IdleStateEnteredCheckBox" />
             <TextBox x:Name="ErrorReportingTextBox" AutomationProperties.AutomationId="__ErrorReportingTextBox" />
             <TextBox x:Name="LogReportingTextBox" AutomationProperties.AutomationId="__LogReportingTextBox" />
@@ -35,15 +37,11 @@
             <Button x:Name="WaitForDebuggerInvokerButton" AutomationProperties.AutomationId="__WaitForDebuggerInvoker" />
             <CheckBox x:Name="DebuggerAttachedCheckBox" AutomationProperties.AutomationId="__DebuggerAttachedCheckBox" />
             <TextBox x:Name="UnhandledExceptionReportingTextBox" AutomationProperties.AutomationId="__UnhandledExceptionReportingTextBox" />
-            <CheckBox
-                x:Name="TestContentLoadedCheckBox"
-                AutomationProperties.AutomationId="__TestContentLoadedCheckBox"
-                Content="TestContentLoadedCheckbox"
-                IsChecked="False" />
+            <CheckBox x:Name="TestContentLoadedCheckBox" AutomationProperties.AutomationId="__TestContentLoadedCheckBox" Content="TestContentLoadedCheckbox" IsChecked="False" />
 
-        </Grid>
+        </StackPanel>
 
-        <Grid>
+        <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
