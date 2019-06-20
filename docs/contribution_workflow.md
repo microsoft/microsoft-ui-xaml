@@ -74,7 +74,7 @@ discussing it first: see the [New Feature or API Process](feature_proposal_proce
 Each pull request to `master` must pass the following checks.
 
 Pull requests from a fork will not automatically trigger all of these checks. A member of the WinUI 
-team can trigger the Azure Pipeline checks by commenting "/azp run" on the PR. The Azure Pipelines
+team can trigger the Azure Pipeline checks by commenting `/azp run` on the PR. The Azure Pipelines
 bot will then trigger the build.
 
 In order to have your change automatically merge once all checks have passed (including optional 
