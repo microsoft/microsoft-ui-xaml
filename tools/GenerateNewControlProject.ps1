@@ -89,18 +89,6 @@ AddAttribute $xml $import "Condition" "`$(BuildLeanMuxForTheStoreApp) != 'true'"
 $xml.Project.AppendChild($import);
 $xml.Save($testAppProject)
 
-# Add .idl to main idl file
-FindAndReplaceInFile ($muxControlsDir + "\idl\Microsoft.UI.Xaml.idl") "(#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP)([.\S\s]*?)(#endif)" @"
-`$1`$2#include <$controlName\$controlName.idl>
-`$3
-"@
-
-# Add header file to XamlMetadataProviderGenerated.tt
-FindAndReplaceInFile ($muxControlsDir + "\dev\dll\XamlMetadataProviderGenerated.tt") "#endif" @"
-#include "$controlName.h"
-#endif
-"@
-
 # Add new profiler id to RuntimeProfiler.h
 FindAndReplaceInFile ($muxControlsDir + "\dev\Telemetry\RuntimeProfiler.h") "(\s*ProfId_Size.*\s*})" @"
 
@@ -109,6 +97,6 @@ FindAndReplaceInFile ($muxControlsDir + "\dev\Telemetry\RuntimeProfiler.h") "(\s
 
 # Add page to TestInventory.cs
 FindAndReplaceInFile ($muxControlsDir + "\test\MUXControlsTestApp\TestInventory.cs") "#endif" @"
-            Tests.Add(new TestDeclaration("$controlName Tests", typeof($($controlName)Page)));
+                {"$controlName", typeof($($controlName)Page)},
 #endif
 "@
