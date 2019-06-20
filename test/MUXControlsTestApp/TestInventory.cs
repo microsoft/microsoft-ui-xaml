@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -55,9 +55,9 @@ namespace MUXControlsTestApp
                 {"RadioButtons", typeof(RadioButtonsPage), "RadioButton.png"},
                 {"RadioMenuFlyoutItem", typeof(RadioMenuFlyoutItemPage)},
                 {"TabView", typeof(TabViewPage)},
-                {"FlipView", typeof(FlipViewPage)},
-                {"ComboBox", typeof(ComboBoxPage)},
-                {"Pivot", typeof(PivotPage)},
+                {"FlipView", typeof(FlipViewPage), "FlipView.png"},
+                {"ComboBox", typeof(ComboBoxPage), "ComboBox.png"},
+                {"Pivot", typeof(PivotPage), "Pivot.png"},
 #endif
 
                 // These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
