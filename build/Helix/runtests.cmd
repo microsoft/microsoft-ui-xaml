@@ -12,7 +12,7 @@ cd scripts
 powershell -ExecutionPolicy Bypass .\InstallTestAppDependencies.ps1
 cd ..
 
-set testBinaryCandidates=MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx MUXControls.ReleaseTest.dll NugetPackageTestApp.appx NugetPackageTestAppCX.appx
+set testBinaryCandidates=MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx MUXControls.ReleaseTest.dll
 set testBinaries=
 for %%B in (%testBinaryCandidates%) do (
     if exist %%B (

@@ -46,10 +46,12 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <Button Click="OnAddItemsButtonClick" Content="Add Items" />
-            <ScrollViewer Grid.Row="1">
+            <TextBlock x:Name="TestTextBlock" AutomationProperties.Name="TestTextBlock" Text="Loaded"/>
+            <Button Grid.Row="1" Click="OnAddItemsButtonClick" Content="Add Items" AutomationProperties.Name="AddItemsButton"  />
+            <ScrollViewer Grid.Row="2">
                 <controls:ItemsRepeater x:Name="Repeater" />
             </ScrollViewer>
         </Grid>
