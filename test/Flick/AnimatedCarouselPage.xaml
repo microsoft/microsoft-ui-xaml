@@ -94,7 +94,7 @@
                       ViewChanging="OnScrollViewerViewChanging"
                       Tapped="OnScrollViewerTapped"
                       VerticalScrollMode="Disabled"
-                      HorizontalScrollMode="Enabled">
+                      HorizontalScrollMode="Auto">
                 <local:SnappPointForwardingRepeater
                     x:Name="repeater"
                     HorizontalCacheLength="0.5"
@@ -108,7 +108,8 @@
                             ItemHeight="525"
                             Spacing="50"
                             HorizontalCacheLength="{Binding ElementName=repeater, Path=HorizontalCacheLength}"
-                            RepeatCount="{Binding ElementName=repeater, Path=RepeatCount}"/>
+                            RepeatCount="{Binding ElementName=repeater, Path=RepeatCount}"
+                            ItemScaleRatio="0.5"/>
                     </mux:ItemsRepeater.Layout>
                     <mux:ItemsRepeater.ItemTemplate>
                         <DataTemplate>

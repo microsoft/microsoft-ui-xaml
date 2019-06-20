@@ -21,6 +21,11 @@ namespace Flick
         {
         }
 
+        // IScrollSnapPointsInfo
+
+        public event EventHandler<object> HorizontalSnapPointsChanged;
+        public event EventHandler<object> VerticalSnapPointsChanged;
+
         public IReadOnlyList<float> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment alignment)
         {
             return null;
@@ -30,18 +35,20 @@ namespace Flick
         {
             if (alignment == SnapPointsAlignment.Center && orientation == Orientation.Horizontal)
             {
-                var l = (Layout as VirtualizingUniformCarouselStackLayout);
-                offset = (float)(Margin.Left + l.ItemWidth / 2);
-                return (float)(l.ItemWidth + l.Spacing);
+                VirtualizingUniformCarouselStackLayout layout = (VirtualizingUniformCarouselStackLayout)Layout;
+                offset = layout.FirstSnapPointOffset;
+                return (float)(layout.ItemWidth + layout.Spacing);
             }
 
-            offset = 0;
+            offset = 0.0f;
             return 0.0f;
         }
 
-        public bool AreHorizontalSnapPointsRegular => true;
+        public bool AreHorizontalSnapPointsRegular { get; private set; } = true;
 
-        public bool AreVerticalSnapPointsRegular => false;
+        public bool AreVerticalSnapPointsRegular { get; private set; } = true;
+
+        // SnappPointForwardingRepeater
 
         // Number of times to repeat the count to give the 
         // illusion of infinite scrolling.
@@ -61,10 +68,6 @@ namespace Flick
 
         public static readonly DependencyProperty RepeatCountProperty = DependencyProperty.Register(
             "RepeatCount", typeof(int), typeof(VirtualizingUniformCarouselStackLayout), new PropertyMetadata(500));
-
-        public event EventHandler<object> HorizontalSnapPointsChanged;
-        public event EventHandler<object> VerticalSnapPointsChanged;
-
     }
 
     /// <summary>
@@ -102,7 +105,13 @@ namespace Flick
 
         private bool IsScrolling { get; set; }
 
-        public double ItemScaleRatio { get; set; } = 0.5;
+        public double ItemScaleRatio
+        {
+            get
+            {
+                return ((VirtualizingUniformCarouselStackLayout)(repeater.Layout)).ItemScaleRatio;
+            }
+        }
 
         private ThreadPoolTimer m_prevButtonContinuousScrollingPeriodicTimer = null;
 
@@ -277,18 +286,47 @@ namespace Flick
             if (repeater.ItemsSourceView.Count == 0)
             {
                 HideCarouselNextPrevButtons();
+                return;
             }
             else if (repeater.ItemsSourceView.Count == 1)
             {
                 sv.ChangeView(0, null, null, true);
-                SelectedItem = GetSelectedItemFromViewport();
                 HideCarouselNextPrevButtons();
+            }
+            else if (repeater.ItemsSourceView.Count < layout.MaxNumberOfItemsThatCanFitInViewport)
+            {
+                if ((repeater.ItemsSourceView.Count % 2) == 0)
+                {
+                    // The ThreadPoolTimer and Dispatcher.RunIdleAsync combo here are necessary to
+                    // fix a ScrollViewer issue where some background process cause the ChangeView to be
+                    // interrupted and prevent the offset of the scrollviewer from being updated with the passed-in value.
+                    // E.g. Without the timing/dispatching here, in the 4-item scenario:
+                    // Expected result: Item 2/4 is selected
+                    // Actual result: Item 3/4 is selected
+                    var period = TimeSpan.FromMilliseconds(125);
+                    Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
+                    {
+                        await Dispatcher.RunIdleAsync((idleDispatchHandlerArgs) =>
+                        {
+                            var Success = sv.ChangeView(((sv.ExtentWidth / 2) - (sv.ViewportWidth / 2) - (layout.Spacing / 2) - (layout.ItemWidth / 2)), null, null, true);
+                        });
+                    }, period);
+                }
+                else
+                {
+                    var Success = sv.ChangeView(((sv.ExtentWidth / 2) - sv.ViewportWidth / 2), null, null, true);
+                }
+
+                ShowCarouselNextPrevButtons();
             }
             else
             {
-                sv.ChangeView(((layout.ItemWidth + layout.Spacing) * layout.RepeatCount), null, null, true);
+                sv.ChangeView(((layout.ItemWidth / 2) + ((layout.ItemWidth + layout.Spacing) * repeater.ItemsSourceView.Count * Math.Floor(layout.RepeatCount / 2.0))) - (sv.ViewportWidth / 2), null, null, true);
                 ShowCarouselNextPrevButtons();
             }
+
+            SelectedItem = GetSelectedItemFromViewport();
+            textBlock.Text = "Selected Item: " + GetSelectedIndexFromViewport() ?? "null";
         }
 
         private void OnElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
@@ -356,46 +394,42 @@ namespace Flick
             lock (ScrollViewerRelatedTimersWriteLockObject)
             {
                 CancelAllCarouselScrollRelatedTimers();
+                var centerOfViewportOffsetInScrollViewer = CenterPointOfViewportInExtent();
+                // In the nominal case, centerOfViewportOffsetInScrollViewer will be the offset of the current centerpoint in the scrollviewer's viewport;
+                // however, if the "center" item is not perfectly centered (i.e. where the centerpoint falls on the item's size.x/2)
+                // then set centerOfViewportOffsetInScrollViewer equal to the offset where the "centered" item would be perfectly centered.
+                // This makes later calculations much simpler with respect to item animations.
+                centerOfViewportOffsetInScrollViewer -= (centerOfViewportOffsetInScrollViewer + layout.Spacing / 2) % (layout.Spacing + layout.ItemWidth);
+                centerOfViewportOffsetInScrollViewer += layout.Spacing / 2 + layout.ItemWidth / 2;
 
-                if (!IsScrolling)
+                var tapPositionOffsetInScrollViewer = e.GetPosition(sv).X + sv.HorizontalOffset;
+                var tapPositionDistanceFromSVCenterPoint = Math.Abs(tapPositionOffsetInScrollViewer - centerOfViewportOffsetInScrollViewer);
+                double offsetToScrollTo;
+
+                if (tapPositionDistanceFromSVCenterPoint <= (layout.ItemWidth / 2 + layout.Spacing / 2))
                 {
-                    var centerOfViewportOffsetInScrollViewer = CenterPointOfViewportInExtent();
-                    // In the nominal case, centerOfViewportOffsetInScrollViewer will be the offset of the current centerpoint in the scrollviewer's viewport;
-                    // however, if the "center" item is not perfectly centered (i.e. where the centerpoint falls on the item's size.x/2)
-                    // then set centerOfViewportOffsetInScrollViewer equal to the offset where the "centered" item would be perfectly centered.
-                    // This makes later calculations much simpler with respect to item animations.
-                    centerOfViewportOffsetInScrollViewer -= (centerOfViewportOffsetInScrollViewer + layout.Spacing / 2) % (layout.Spacing + layout.ItemWidth);
-                    centerOfViewportOffsetInScrollViewer += layout.Spacing / 2 + layout.ItemWidth / 2;
+                    offsetToScrollTo = centerOfViewportOffsetInScrollViewer - sv.ViewportWidth / 2;
+                }
+                else
+                {
+                    tapPositionDistanceFromSVCenterPoint -= layout.ItemWidth / 2 + layout.Spacing / 2;
+                    var tappedItemIndexDifferenceFromCenter = (int)Math.Floor(tapPositionDistanceFromSVCenterPoint / (layout.ItemWidth * ItemScaleRatio + layout.Spacing)) + 1;
+                    offsetToScrollTo = sv.HorizontalOffset + (((tapPositionOffsetInScrollViewer < centerOfViewportOffsetInScrollViewer) ? -1 : 1) * (tappedItemIndexDifferenceFromCenter * (layout.ItemWidth + layout.Spacing)));
+                }
 
-                    var tapPositionOffsetInScrollViewer = e.GetPosition(sv).X + sv.HorizontalOffset;
-                    var tapPositionDistanceFromSVCenterPoint = Math.Abs(tapPositionOffsetInScrollViewer - centerOfViewportOffsetInScrollViewer);
-                    double offsetToScrollTo;
-
-                    if (tapPositionDistanceFromSVCenterPoint <= (layout.ItemWidth / 2 + layout.Spacing / 2))
+                if (offsetToScrollTo != sv.HorizontalOffset)
+                {
+                    // This odd delay is required in order to ensure that the scrollviewer animates the scroll
+                    // on every call to ChangeView. 
+                    // TODO: Why is this required ?? Should be removed.
+                    var period = TimeSpan.FromMilliseconds(10);
+                    ScrollViewerChangeViewTimer = Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
                     {
-                        offsetToScrollTo = centerOfViewportOffsetInScrollViewer - sv.ViewportWidth / 2;
-                    }
-                    else
-                    {
-                        tapPositionDistanceFromSVCenterPoint -= layout.ItemWidth / 2 + layout.Spacing / 2;
-                        var tappedItemIndexDifferenceFromCenter = (int)Math.Floor(tapPositionDistanceFromSVCenterPoint / (layout.ItemWidth * ItemScaleRatio + layout.Spacing)) + 1;
-                        offsetToScrollTo = sv.HorizontalOffset + (((tapPositionOffsetInScrollViewer < centerOfViewportOffsetInScrollViewer) ? -1 : 1) * (tappedItemIndexDifferenceFromCenter * (layout.ItemWidth + layout.Spacing)));
-                    }
-
-                    if (offsetToScrollTo != sv.HorizontalOffset)
-                    {
-                        // This odd delay is required in order to ensure that the scrollviewer animates the scroll
-                        // on every call to ChangeView. 
-                        // TODO: Why is this required ?? Should be removed.
-                        var period = TimeSpan.FromMilliseconds(10);
-                        ScrollViewerChangeViewTimer = Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
+                        await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                         {
-                            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-                            {
-                                var Success = sv.ChangeView(offsetToScrollTo, null, null, false);
-                            });
-                        }, period);
-                    }
+                            var Success = sv.ChangeView(offsetToScrollTo, null, null, false);
+                        });
+                    }, period);
                 }
             }
         }
