@@ -84,7 +84,8 @@ label. It will take effect after an 8 hour delay, [more info here](https://micro
 #### [WinUI-Public-MUX-PR](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21)
 
 This pipeline builds your change and runs automated tests. These tests should match what you're 
-able to run with local automated testing using Test Explorer.
+able to run with local automated testing using Test Explorer. It also creates a NuGet package to
+match your change.
 
 #### license/cla
 
