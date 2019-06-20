@@ -66,11 +66,11 @@ The Microsoft.UI.Xaml 2.2 NuGet package requires your project to have TargetPlat
 Your app's users can be on any of the following supported Windows versions:
 * Windows Insider Previews
 * May 2019 Update (18362 aka "19H1")
-* October 2018 Update (17763 aka "Redstone 5')
+* October 2018 Update (17763 aka "Redstone 5")
 * April 2018 Update (17134 aka "Redstone 4")
-* Fall Creators Update (16299 aka "Redstone 3')
-* Creators Update (15063 aka "Redstone 2')
-* Anniversary Update (14393 aka "Redstone 1')
+* Fall Creators Update (16299 aka "Redstone 3")
+* Creators Update (15063 aka "Redstone 2")
+* Anniversary Update (14393 aka "Redstone 1")
 
 Some features may have a reduced or slightly different user experience on older versions, particularly on builds before 15063. This should not impact overall usability.
 
