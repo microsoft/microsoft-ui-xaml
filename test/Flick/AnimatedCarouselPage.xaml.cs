@@ -293,7 +293,7 @@ namespace Flick
             var args = e.Parameter as NavigateArgs;
 
             List<Photo> subsetOfPhotos = new List<Photo>();
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
             {
                 args.Photos[i].Description = "Item " + i; ;
                 subsetOfPhotos.Add(args.Photos[i]);
@@ -333,12 +333,14 @@ namespace Flick
                         await Dispatcher.RunIdleAsync((idleDispatchHandlerArgs) =>
                         {
                             var Success = sv.ChangeView(((sv.ExtentWidth / 2) - (sv.ViewportWidth / 2) - (layout.Spacing / 2) - (layout.ItemWidth / 2)), null, null, true);
+                            DetermineIfCarouselNextPrevButtonsShouldBeHiddenAfterScroll();
                         });
                     }, period);
                 }
                 else
                 {
                     var Success = sv.ChangeView(((sv.ExtentWidth / 2) - sv.ViewportWidth / 2), null, null, true);
+                    DetermineIfCarouselNextPrevButtonsShouldBeHiddenAfterScroll();
                 }
             }
             else
