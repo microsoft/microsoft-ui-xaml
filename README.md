@@ -67,7 +67,7 @@ Your app's users can be on any of the following supported Windows versions:
 * Windows Insider Previews
 * May 2019 Update (18362 aka "19H1")
 * October 2018 Update (17763 aka "Redstone 5')
-* April 2018 Update (17134 aka "Redstone 4')
+* April 2018 Update (17134 aka "Redstone 4")
 * Fall Creators Update (16299 aka "Redstone 3')
 * Creators Update (15063 aka "Redstone 2')
 * Anniversary Update (14393 aka "Redstone 1')
