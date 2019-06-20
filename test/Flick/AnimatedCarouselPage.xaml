@@ -26,14 +26,14 @@
                                         <VisualTransition To="Disabled">
                                             <VisualTransition.Storyboard>
                                                 <Storyboard TargetName="carouselNextPrevButtonTemplateContentPresenter" TargetProperty="FontIcon.Opacity">
-                                                    <DoubleAnimation From="1" To="0" Duration="0:0:0" EnableDependentAnimation="True"/>
+                                                    <DoubleAnimation From="1" To="0" Duration="0:0:0.125" EnableDependentAnimation="True"/>
                                                 </Storyboard>
                                             </VisualTransition.Storyboard>
                                         </VisualTransition>
                                         <VisualTransition From="Disabled">
                                             <VisualTransition.Storyboard>
                                                 <Storyboard TargetName="carouselNextPrevButtonTemplateContentPresenter" TargetProperty="FontIcon.Opacity">
-                                                    <DoubleAnimation From="0" To="1" Duration="0:0:0" EnableDependentAnimation="True"/>
+                                                    <DoubleAnimation From="0" To="1" Duration="0:0:0.125" EnableDependentAnimation="True"/>
                                                 </Storyboard>
                                             </VisualTransition.Storyboard>
                                         </VisualTransition>
@@ -106,10 +106,10 @@
                             x:Name="layout"
                             ItemWidth="450"
                             ItemHeight="525"
+                            ItemScaleRatio="0.5"
                             Spacing="50"
                             HorizontalCacheLength="{Binding ElementName=repeater, Path=HorizontalCacheLength}"
-                            RepeatCount="{Binding ElementName=repeater, Path=RepeatCount}"
-                            ItemScaleRatio="0.5"/>
+                            RepeatCount="{Binding ElementName=repeater, Path=RepeatCount}"/>
                     </mux:ItemsRepeater.Layout>
                     <mux:ItemsRepeater.ItemTemplate>
                         <DataTemplate>

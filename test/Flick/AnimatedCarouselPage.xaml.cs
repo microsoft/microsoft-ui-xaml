@@ -231,6 +231,27 @@ namespace Flick
             carouselNextButton.IsEnabled = carouselPrevButton.IsEnabled = true;
         }
 
+        private void DetermineIfCarouselNextPrevButtonsShouldBeHiddenAfterScroll()
+        {
+            if ((repeater.ItemsSourceView.Count > 1) && (repeater.ItemsSourceView.Count < layout.MaxNumberOfItemsThatCanFitInViewport))
+            {
+                double firstItemOffset = (layout.FirstSnapPointOffset - (layout.ItemWidth / 2));
+                double lastItemOffset = (firstItemOffset + ((repeater.ItemsSourceView.Count - 1) * (layout.ItemWidth + layout.Spacing)));
+                bool hideCarouselPrevButton = (CenterPointOfViewportInExtent() <= (firstItemOffset + layout.ItemWidth + (layout.Spacing / 2)));
+                bool hideCarouselNextButton = (CenterPointOfViewportInExtent() >= (lastItemOffset - (layout.Spacing / 2)));
+
+                if (carouselPrevButton.IsEnabled == hideCarouselPrevButton)
+                {
+                    carouselPrevButton.IsEnabled = !carouselPrevButton.IsEnabled;
+                }
+
+                if (carouselNextButton.IsEnabled == hideCarouselNextButton)
+                {
+                    carouselNextButton.IsEnabled = !carouselNextButton.IsEnabled;
+                }
+            }
+        }
+
 #pragma warning disable CS0628 // New protected member declared in sealed class
         protected void OnScrollViewerViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
 #pragma warning restore CS0628 // New protected member declared in sealed class
@@ -241,6 +262,8 @@ namespace Flick
                 {
                     IsScrolling = true;
                 }
+
+                DetermineIfCarouselNextPrevButtonsShouldBeHiddenAfterScroll();
             }
             else
             {
@@ -251,7 +274,6 @@ namespace Flick
             }
         }
 
-
         // TODO: Is this really required when we have ViewChanged with IsIntermediate = false handled ?
 #pragma warning disable CS0628 // New protected member declared in sealed class
         protected void OnScrollViewerViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
@@ -261,6 +283,8 @@ namespace Flick
             {
                 IsScrolling = true;
             }
+
+            DetermineIfCarouselNextPrevButtonsShouldBeHiddenAfterScroll();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -269,7 +293,7 @@ namespace Flick
             var args = e.Parameter as NavigateArgs;
 
             List<Photo> subsetOfPhotos = new List<Photo>();
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 4; i++)
             {
                 args.Photos[i].Description = "Item " + i; ;
                 subsetOfPhotos.Add(args.Photos[i]);
@@ -316,8 +340,6 @@ namespace Flick
                 {
                     var Success = sv.ChangeView(((sv.ExtentWidth / 2) - sv.ViewportWidth / 2), null, null, true);
                 }
-
-                ShowCarouselNextPrevButtons();
             }
             else
             {
