@@ -34,11 +34,6 @@
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ComboBox_themeresources.xaml">
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)ToggleSwitch_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
