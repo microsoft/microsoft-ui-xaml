@@ -43,9 +43,6 @@ namespace RuntimeProfiler
         ProfId_ItemsRepeaterScrollHost,
         ProfId_TabView,
         ProfId_TabViewItem,
-        ProfId_FlipView,
-        ProfId_ComboBox,
-        ProfId_Pivot,
         ProfId_Size // ProfId_Size is the last always. 
     } ProfilerClassId;
 
