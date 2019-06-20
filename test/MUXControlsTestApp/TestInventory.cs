@@ -57,6 +57,7 @@ namespace MUXControlsTestApp
                 {"TabView", typeof(TabViewPage)},
                 {"FlipView", typeof(FlipViewPage)},
                 {"ComboBox", typeof(ComboBoxPage)},
+                {"Pivot", typeof(PivotPage)},
 #endif
 
                 // These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
