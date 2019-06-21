@@ -45,7 +45,7 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnIsAddButtonVisiblePropertyChanged));
+                nullptr);
     }
     if (!s_LeftCustomContentProperty)
     {
@@ -113,14 +113,6 @@ void TabViewProperties::ClearProperties()
     s_RightCustomContentProperty = nullptr;
     s_RightCustomContentTemplateProperty = nullptr;
     s_TabWidthModeProperty = nullptr;
-}
-
-void TabViewProperties::OnIsAddButtonVisiblePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TabView>();
-    winrt::get_self<TabView>(owner)->OnIsAddButtonVisiblePropertyChanged(args);
 }
 
 void TabViewProperties::OnTabWidthModePropertyChanged(

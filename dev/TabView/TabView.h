@@ -45,7 +45,6 @@ public:
 
     // Internal
     void OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnIsAddButtonVisiblePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void CloseTab(winrt::TabViewItem const& item);
 

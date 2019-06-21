@@ -44,17 +44,6 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:TabView">
                     <Grid>
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="AddButtonStates">
-                                <VisualState x:Name="AddButtonVisible"/>
-                                <VisualState x:Name="AddButtonCollapsed">
-                                    <VisualState.Setters>
-                                        <Setter Target="AddButton.Visibility" Value="Collapsed"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
-
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
@@ -101,6 +90,7 @@
                                 Grid.Column="2"
                                 x:Name="AddButton"
                                 Content="&#xE710;"
+                                Visibility="{Binding IsAddButtonVisible, RelativeSource={RelativeSource TemplatedParent}}"
                                 Style="{StaticResource TabViewButtonStyle}"/>
 
                             <ContentPresenter

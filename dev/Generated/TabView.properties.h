@@ -57,10 +57,6 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnIsAddButtonVisiblePropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
     static void OnTabWidthModePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);

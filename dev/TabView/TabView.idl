@@ -38,7 +38,6 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.ListView
     Windows.UI.Xaml.DataTemplate RightCustomContentTemplate{ get; set; };
 
     [MUX_DEFAULT_VALUE("true")]
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsAddButtonVisible{ get; set; };
 
     event Windows.Foundation.TypedEventHandler<TabView, TabViewTabClosingEventArgs> TabClosing;

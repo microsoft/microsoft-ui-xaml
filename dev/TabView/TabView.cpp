@@ -83,11 +83,6 @@ void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChang
     UpdateTabWidths();
 }
 
-void TabView::OnIsAddButtonVisiblePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    winrt::VisualStateManager::GoToState(*this, IsAddButtonVisible() ? L"AddButtonVisible" : L"AddButtonCollapsed", true);
-}
-
 void TabView::OnAddButtonClick(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
 {
     m_addButtonClickEventSource(*this, args);
