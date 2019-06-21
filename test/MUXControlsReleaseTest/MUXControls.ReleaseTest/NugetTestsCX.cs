@@ -29,8 +29,8 @@ namespace MUXControls.ReleaseTest
             TestEnvironment.Initialize(testContext, TestType.NugetCX);
         }
 
-        [TestCleanup]
-        public void TestCleanup()
+        [AssemblyCleanup]
+        public static void AssemblyCleanup()
         {
             TestEnvironment.AssemblyCleanupWorker(TestType.NugetCX);
         }
@@ -48,6 +48,7 @@ namespace MUXControls.ReleaseTest
         {
             var button = new Button(FindElement.ByName("AddItemsButton"));
             button.Click();
+            Wait.ForIdle();
 
             var item3 = FindElement.ByName("Item3");
             Verify.IsNotNull(item3);

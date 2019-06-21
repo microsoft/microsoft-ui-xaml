@@ -62,3 +62,4 @@ Copy-Item "build\helix\OutputFailedTestQuery.ps1" "$payloadDir\scripts"
 Copy-Item "build\helix\HelixTestHelpers.cs" "$payloadDir\scripts"
 Copy-Item "build\helix\runtests.cmd" $payloadDir
 Copy-Item "build\helix\InstallTestAppDependencies.ps1" "$payloadDir\scripts"
+Copy-Item "build\Helix\EnsureMachineState.ps1" "$payloadDir\scripts"
