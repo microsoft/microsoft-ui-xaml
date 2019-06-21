@@ -11,7 +11,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <ScrollViewer>
+    <controls:ScrollViewer CornerRadius="6">
         <Grid RowSpacing="10" ColumnSpacing="10">
             <Grid.Resources>
                 <Style x:Key="SideHeader" TargetType="TextBlock">
@@ -815,6 +815,6 @@
             </Grid>
         </Grid>
 
-    </ScrollViewer>
+    </controls:ScrollViewer>
 
 </local:TestPage>
