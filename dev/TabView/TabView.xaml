@@ -198,7 +198,6 @@
                 <ControlTemplate TargetType="local:TabViewItem">
 
                     <Grid
-                        x:Name="BackgroundGrid"
                         Background="{ThemeResource TabViewItemHeaderBackground}"
                         Padding="{TemplateBinding Padding}">
 
