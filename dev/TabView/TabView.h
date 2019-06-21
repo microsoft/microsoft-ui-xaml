@@ -49,8 +49,6 @@ public:
 
     void CloseTab(winrt::TabViewItem const& item);
 
-    winrt::IVector<winrt::FrameworkElement> GetAccessibleChildElements();
-
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -71,8 +69,6 @@ private:
     tracker_ref<winrt::ColumnDefinition> m_rightContentColumn{ this };
 
     tracker_ref<winrt::ContentPresenter> m_tabContentPresenter{ this };
-    tracker_ref<winrt::ContentPresenter> m_leftContentPresenter{ this };
-    tracker_ref<winrt::ContentPresenter> m_rightContentPresenter{ this };
     tracker_ref<winrt::Grid> m_tabContainerGrid{ this };
     tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ this };
     tracker_ref<winrt::Button> m_addButton{ this };

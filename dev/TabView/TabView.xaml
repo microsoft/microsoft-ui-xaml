@@ -100,7 +100,6 @@
                             <Button
                                 Grid.Column="2"
                                 x:Name="AddButton"
-                                AutomationProperties.Name="AddButton"
                                 Content="&#xE710;"
                                 Style="{StaticResource TabViewButtonStyle}"/>
 

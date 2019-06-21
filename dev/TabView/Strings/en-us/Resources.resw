@@ -121,4 +121,8 @@
     <value>Add New Tab</value>
     <comment>Automation name for the add new tab button.</comment>
   </data>
+  <data name="TabViewAddButtonTooltip" xml:space="preserve">
+    <value>Add new tab</value>
+    <comment>Tooltip for the add new tab button.</comment>
+  </data>
 </root>

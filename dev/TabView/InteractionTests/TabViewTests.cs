@@ -28,7 +28,6 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-using Windows.Devices.PointOfService;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests

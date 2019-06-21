@@ -36,8 +36,6 @@ void TabView::OnApplyTemplate()
     winrt::IControlProtected controlProtected{ *this };
 
     m_tabContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"TabContentPresenter", controlProtected));
-    m_leftContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"LeftContentPresenter", controlProtected));
-    m_rightContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"RightContentPresenter", controlProtected));
     
     m_leftContentColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"LeftContentColumn", controlProtected));
     m_tabColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"TabColumn", controlProtected));
@@ -60,25 +58,24 @@ void TabView::OnApplyTemplate()
         if (addButton)
         {
             // Do localization for the add button
-            auto addButtonName = ResourceAccessor::GetLocalizedStringResource(SR_TabViewAddButtonName);
-            winrt::AutomationProperties::SetName(addButton, addButtonName);
+            if (winrt::AutomationProperties::GetName(addButton).empty())
+            {
+                auto addButtonName = ResourceAccessor::GetLocalizedStringResource(SR_TabViewAddButtonName);
+                winrt::AutomationProperties::SetName(addButton, addButtonName);
+            }
+
+            auto toolTip = winrt::ToolTipService::GetToolTip(addButton);
+            if (!toolTip)
+            {
+                winrt::ToolTip tooltip = winrt::ToolTip();
+                tooltip.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_TabViewAddButtonTooltip)));
+                winrt::ToolTipService::SetToolTip(addButton, tooltip);
+            }
 
             m_addButtonClickRevoker = addButton.Click(winrt::auto_revoke, { this, &TabView::OnAddButtonClick });
         }
         return addButton;
     }());
-}
-
-winrt::IVector<winrt::FrameworkElement> TabView::GetAccessibleChildElements()
-{
-    auto children = winrt::make<Vector<winrt::FrameworkElement>>();
-
-    children.Append(m_leftContentPresenter.get());
-    children.Append(m_addButton.get());
-    children.Append(m_rightContentPresenter.get());
-    children.Append(m_tabContentPresenter.get());
-
-    return children;
 }
 
 void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)

@@ -21,7 +21,7 @@
                 <CheckBox x:Name="CanCloseCheckBox" AutomationProperties.Name="CanCloseCheckBox" Checked="CanCloseCheckBox_CheckChanged" Unchecked="CanCloseCheckBox_CheckChanged" IsChecked="True" Content="CanCloseTabs"/>
                 <CheckBox x:Name="IsCloseableCheckBox" AutomationProperties.Name="IsCloseableCheckBox" Checked="IsCloseableCheckBox_CheckChanged" Unchecked="IsCloseableCheckBox_CheckChanged" IsChecked="True" Content="IsCloseable on first tab"/>
                 <CheckBox x:Name="CancelCloseCheckBox" AutomationProperties.Name="CancelCloseCheckBox" Content="Cancel Closing event"/>
-                <CheckBox x:Name="IsAddButtonVisibleCheckBox" AutomationProperties.Name="IsAddButtonVisibleCheckBox" Content="Add button visible" IsChecked="true" Checked="IsAddButtonVisibleCheckBox_CheckChanged" Unchecked="IsAddButtonVisibleCheckBox_CheckChanged"/>
+                <CheckBox x:Name="IsAddButtonVisibleCheckBox" AutomationProperties.Name="IsAddButtonVisibleCheckBox" Content="Add button visible" IsChecked="{x:Bind Tabs.IsAddButtonVisible, Mode=TwoWay}"/>
 
                 <Button x:Name="RemoveTabButton" AutomationProperties.Name="RemoveTabButton"  Content="Remove Tab" Margin="0,0,0,8" Click="RemoveTabButton_Click"/>
 

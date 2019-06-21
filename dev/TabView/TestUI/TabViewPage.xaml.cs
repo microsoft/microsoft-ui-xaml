@@ -44,14 +44,6 @@ namespace MUXControlsTestApp
             }
         }
 
-        public void IsAddButtonVisibleCheckBox_CheckChanged(object sender, RoutedEventArgs e)
-        {
-            if (Tabs != null)
-            {
-                Tabs.IsAddButtonVisible = (bool)IsAddButtonVisibleCheckBox.IsChecked;
-            }
-        }
-
         public void AddButtonClick(object sender, object e)
         {
             if (Tabs != null)
