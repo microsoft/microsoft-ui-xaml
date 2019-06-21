@@ -45,8 +45,12 @@ $ignoredOutput = cmdd if not exist $deviceDir mkdir $deviceDir
 
 if(!$NoDeploy)
 {
-
-    & .\CreateTestBinariesDirFromBuild.ps1 -NoBuild:$NoBuild -NugetPkgTests:$Release -Flavor:$Flavor -Platform:$Platform
+    $testSuite = "DevTest"
+    if($Release)
+    {
+        $testSuite = "NugetPkgTests"
+    }
+    & .\CreateTestBinariesDirFromBuild.ps1 -NoBuild:$NoBuild -TestSuite:$testSuite -Flavor:$Flavor -Platform:$Platform
 }
 
 

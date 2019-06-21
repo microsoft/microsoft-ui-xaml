@@ -3,19 +3,14 @@ param(
     [String]$Flavor = "Debug",
     [String]$Platform = "x86",
     [switch]$NoBuild,
-    [switch]$NugetPkgTests,
-    [switch]$FrameworkPkgTests,
-    [String]$BuildId
+    [String]$BuildId,
+    [ValidateSet("DevTest", "NugetPkgTests", "FrameworkPkgTests")]
+    [string]$TestSuite = "DevTest"
 )
 
-if($NugetPkgTests -and $FrameworkPkgTests)
+if(!$BuildId -and $TestSuite -eq "FrameworkPkgTests")
 {
-    Write-Error "-NugetPkgTests and -FrameworkPkgTests are mutually exclusive"
-    exit 1
-}
-if(!$BuildId -and $FrameworkPkgTests)
-{
-    Write-Error "-FrameworkPkgTests is only valid when using a -BuildId. Use -NugetPkgTests for testing locally."
+    Write-Error "-TestSuite='FrameworkPkgTests' is only valid when using a -BuildId. Use -TestSuite='NugetPkgTests' for testing locally."
     exit 1
 }
 
@@ -97,13 +92,19 @@ if(Test-Path $helixpayloadDir)
 if($BuildId)
 {
     $artifactName = "drop"
-    if($NugetPkgTests)
+    if($TestSuite -eq "NugetPkgTests")
     {
         $artifactName = "NugetPkgTestsDrop"
     }
-    elseif($FrameworkPkgTests)
+    elseif($TestSuite -eq "FrameworkPkgTests")
     {
         $artifactName = "FrameworkPkgTestsDrop"
+    }
+
+    $artifactTargetDir = "$artifactsDir\$artifactName"
+    if(Test-Path $artifactTargetDir)
+    {
+        Remove-Item $artifactTargetDir -Force -Recurse
     }
 
     $tempDir = New-TemporaryDirectory
@@ -151,7 +152,7 @@ else
 
     $shouldBuild = $false;
     $buildCmd = "";
-    if(!$NugetPkgTests)
+    if($TestSuite -eq "DevTest")
     {   
         $shouldBuild = $shouldBuild -Or (DoesTaefAppXNeedBuild -MuxDllFile $muxDllFile -ProjectName "MUXControlsTestApp" -Platform $Platform -Flavor $Flavor)
         $shouldBuild = $shouldBuild -Or (DoesTaefAppXNeedBuild -MuxDllFile $muxDllFile -ProjectName "IXMPTestApp" -Platform $Platform -Flavor $Flavor)
