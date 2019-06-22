@@ -251,6 +251,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             ScrollViewer scrollViewer = null;
             ItemsRepeater repeater = null;
             var viewChangedEvent = new ManualResetEvent(false);
+            int elementsCleared = 0;
+            int elementsPrepared = 0;
 
             RunOnUIThread.Execute(() =>
             {
@@ -262,6 +264,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         viewChangedEvent.Set();
                     }
                 };
+
+                repeater.ElementPrepared += (sender, args) => { elementsPrepared++; };
+                repeater.ElementClearing += (sender, args) => { elementsCleared++; };
+
                 scrollViewer.ChangeView(null, 200, null, true);
             });
 
@@ -281,8 +287,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(4, realized);
 
                 Log.Comment("Replace in realized range.");
+                elementsPrepared = 0;
+                elementsCleared = 0;
                 dataSource.Replace(index: 2, oldCount: 1, newCount: 1, reset: false);
                 repeater.UpdateLayout();
+                Verify.AreEqual(1, elementsPrepared);
+                Verify.AreEqual(1, elementsCleared);
 
                 realized = VerifyRealizedRange(repeater, dataSource);
                 Verify.AreEqual(4, realized);
@@ -293,6 +303,44 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 realized = VerifyRealizedRange(repeater, dataSource);
                 Verify.AreEqual(4, realized);
+            });
+        }
+
+        [TestMethod]
+        public void EnsureReplaceOfAnchorDoesNotResetAllContainers()
+        {
+            CustomItemsSource dataSource = null;
+            RunOnUIThread.Execute(() => dataSource = new CustomItemsSource(Enumerable.Range(0, 10).ToList()));
+            ScrollViewer scrollViewer = null;
+            ItemsRepeater repeater = null;
+            var viewChangedEvent = new ManualResetEvent(false);
+            int elementsCleared = 0;
+            int elementsPrepared = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = SetupRepeater(dataSource, ref scrollViewer);
+                repeater.ElementPrepared += (sender, args) => { elementsPrepared++; };
+                repeater.ElementClearing += (sender, args) => { elementsCleared++; };
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var realized = VerifyRealizedRange(repeater, dataSource);
+                Verify.AreEqual(3, realized);
+
+                Log.Comment("Replace anchor element 0");
+                elementsPrepared = 0;
+                elementsCleared = 0;
+                dataSource.Replace(index: 0, oldCount: 1, newCount: 1, reset: false);
+                repeater.UpdateLayout();
+                Verify.AreEqual(1, elementsPrepared);
+                Verify.AreEqual(1, elementsCleared);
+
+                realized = VerifyRealizedRange(repeater, dataSource);
+                Verify.AreEqual(3, realized);
             });
         }
 
