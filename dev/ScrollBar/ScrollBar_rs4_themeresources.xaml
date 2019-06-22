@@ -1,5 +1,9 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All Rights Reserved. -->
-<ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:maps="using:Windows.UI.Xaml.Controls.Maps" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<ResourceDictionary
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:maps="using:Windows.UI.Xaml.Controls.Maps"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -234,7 +238,9 @@
                                 </Grid>
                             </ControlTemplate>
                             <ControlTemplate x:Key="VerticalThumbTemplate" TargetType="Thumb">
-                                <Rectangle x:Name="ThumbVisual" Fill="{TemplateBinding Background}">
+                                <Rectangle x:Name="ThumbVisual" Fill="{TemplateBinding Background}"
+                                           contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                           contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}">
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
                                             <VisualState x:Name="Normal" />
@@ -265,7 +271,9 @@
                                 </Rectangle>
                             </ControlTemplate>
                             <ControlTemplate x:Key="HorizontalThumbTemplate" TargetType="Thumb">
-                                <Rectangle x:Name="ThumbVisual" Fill="{TemplateBinding Background}">
+                                <Rectangle x:Name="ThumbVisual" Fill="{TemplateBinding Background}"
+                                           contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                           contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}">
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
                                             <VisualState x:Name="Normal" />
@@ -422,6 +430,8 @@
                                         <Setter Target="VerticalTrackRect.Stroke" Value="{ThemeResource ScrollBarTrackStrokePointerOver}" />
                                         <Setter Target="HorizontalTrackRect.Fill" Value="{ThemeResource ScrollBarTrackFillPointerOver}" />
                                         <Setter Target="VerticalTrackRect.Fill" Value="{ThemeResource ScrollBarTrackFillPointerOver}" />
+                                        <contract7Present:Setter Target="HorizontalThumb.CornerRadius" Value="0" />
+                                        <contract7Present:Setter Target="VerticalThumb.CornerRadius" Value="0" />
                                     </VisualState.Setters>
 
                                     <Storyboard>
@@ -451,6 +461,8 @@
                                         <Setter Target="VerticalTrackRect.Stroke" Value="{ThemeResource ScrollBarTrackStrokePointerOver}" />
                                         <Setter Target="HorizontalTrackRect.Fill" Value="{ThemeResource ScrollBarTrackFillPointerOver}" />
                                         <Setter Target="VerticalTrackRect.Fill" Value="{ThemeResource ScrollBarTrackFillPointerOver}" />
+                                        <contract7Present:Setter Target="HorizontalThumb.CornerRadius" Value="0" />
+                                        <contract7Present:Setter Target="VerticalThumb.CornerRadius" Value="0" />
                                     </VisualState.Setters>
                                     <!-- The storyboard below cannot be moved to a transition since transitions
                                              will not be run by the framework when animations are disabled in the system -->
@@ -474,6 +486,10 @@
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="CollapsedWithoutAnimation">
+                                    <VisualState.Setters>
+                                        <contract7Present:Setter Target="HorizontalThumb.CornerRadius" Value="{TemplateBinding CornerRadius}" />
+                                        <contract7Present:Setter Target="VerticalThumb.CornerRadius" Value="{TemplateBinding CornerRadius}" />
+                                    </VisualState.Setters>
                                     <!-- The storyboard below cannot be moved to a transition since transitions
                                              will not be run by the framework when animations are disabled in the system -->
                                     <Storyboard>
@@ -518,7 +534,8 @@
                                    MinWidth="{ThemeResource ScrollBarSize}"
                                    AutomationProperties.AccessibilityView="Raw"
                                    VerticalAlignment="Bottom"
-                                   RenderTransformOrigin="0.5,1">
+                                   RenderTransformOrigin="0.5,1"
+                                   contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                                 <Thumb.RenderTransform>
                                     <CompositeTransform x:Name="HorizontalThumbTransform" ScaleX="1.0" ScaleY="{ThemeResource SmallScrollThumbScale}" TranslateX="0" TranslateY="{ThemeResource SmallScrollThumbOffset}" />
                                 </Thumb.RenderTransform>
@@ -526,8 +543,8 @@
                             <RepeatButton x:Name="HorizontalLargeIncrease" Opacity="0" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
                             <RepeatButton x:Name="HorizontalSmallIncrease" Opacity="0" Grid.Column="4" MinHeight="{ThemeResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Template="{StaticResource HorizontalIncrementTemplate}" Width="{ThemeResource ScrollBarSize}" AllowFocusOnInteraction="False" VerticalAlignment="Center" />
                         </Grid>
-                        <Grid x:Name="HorizontalPanningRoot" MinWidth="24" Visibility="Collapsed" Opacity="0">
-                            <Border x:Name="HorizontalPanningThumb" VerticalAlignment="Bottom" HorizontalAlignment="Left" Background="{ThemeResource ScrollBarPanningThumbBackground}" BorderThickness="0" Height="2" MinWidth="32" Margin="0,2,0,2" />
+                        <Grid x:Name="HorizontalPanningRoot" MinWidth="24" Visibility="Collapsed" Opacity="0" contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
+                            <Border x:Name="HorizontalPanningThumb" VerticalAlignment="Bottom" HorizontalAlignment="Left" Background="{ThemeResource ScrollBarPanningThumbBackground}" BorderThickness="0" Height="2" MinWidth="32" Margin="0,2,0,2"/>
                         </Grid>
                         <Grid x:Name="VerticalRoot" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" IsHitTestVisible="False">
 
@@ -549,7 +566,8 @@
                                    Width="{ThemeResource ScrollBarSize}"
                                    MinHeight="{ThemeResource ScrollBarSize}"
                                    AutomationProperties.AccessibilityView="Raw"
-                                   RenderTransformOrigin="1,0.5">
+                                   RenderTransformOrigin="1,0.5"
+                                   contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                                 <Thumb.RenderTransform>
                                     <CompositeTransform x:Name="VerticalThumbTransform" ScaleX="{ThemeResource SmallScrollThumbScale}" ScaleY="1.0" TranslateX="{ThemeResource SmallScrollThumbOffset}" TranslateY="0" />
                                 </Thumb.RenderTransform>
@@ -557,8 +575,8 @@
                             <RepeatButton x:Name="VerticalLargeIncrease" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" Grid.Row="3" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
                             <RepeatButton x:Name="VerticalSmallIncrease" Opacity="0" Height="{ThemeResource ScrollBarSize}" MinWidth="{ThemeResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Grid.Row="4" Template="{StaticResource VerticalIncrementTemplate}" HorizontalAlignment="Center" />
                         </Grid>
-                        <Grid x:Name="VerticalPanningRoot" MinHeight="24" Visibility="Collapsed" Opacity="0">
-                            <Border x:Name="VerticalPanningThumb" VerticalAlignment="Top" HorizontalAlignment="Right" Background="{ThemeResource ScrollBarPanningThumbBackground}" BorderThickness="0" Width="2" MinHeight="32" Margin="2,0,2,0" />
+                        <Grid x:Name="VerticalPanningRoot" MinHeight="24" Visibility="Collapsed" Opacity="0" contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
+                            <Border x:Name="VerticalPanningThumb" VerticalAlignment="Top" HorizontalAlignment="Right" Background="{ThemeResource ScrollBarPanningThumbBackground}" BorderThickness="0" Width="2" MinHeight="32" Margin="2,0,2,0"/>
                         </Grid>
 
                     </Grid>
