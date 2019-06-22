@@ -94,7 +94,10 @@
                       ViewChanging="OnScrollViewerViewChanging"
                       Tapped="OnScrollViewerTapped"
                       VerticalScrollMode="Disabled"
-                      HorizontalScrollMode="Auto">
+                      HorizontalScrollMode="Auto"
+                      LayoutUpdated="OnScrollViewerLayoutUpdated"
+                      Height="{Binding Parent.ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
+                      Width="{Binding Parent.ActualWidth, Mode=OneWay, RelativeSource={RelativeSource Self}}">
                 <local:SnappPointForwardingRepeater
                     x:Name="repeater"
                     HorizontalCacheLength="0.5"

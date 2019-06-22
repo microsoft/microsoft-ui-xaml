@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
+using Windows.Graphics.Display;
 using Windows.System.Threading;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -88,6 +89,10 @@ namespace Flick
             // Workaround for known numerical limitation on inset clips where scrollviewer fails to clip content on right side of viewport
             ElementCompositionPreview.GetElementVisual(sv).Clip = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(sv).Compositor.CreateInsetClip();
 
+            repeater.Loaded += Repeater_Loaded;
+
+            SizeChanged += OnSizeChanged;
+
             carouselPrevButton.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(OnCarouselPrevButtonPointerPressed), true);
             carouselPrevButton.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(OnCarouselPrevButtonPointerCanceled), true);
             carouselPrevButton.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(OnCarouselPrevButtonPointerReleased), true);
@@ -103,13 +108,15 @@ namespace Flick
 
         public object SelectedItem { get; set; } = null;
 
+        public int SelectedItemIndex { get; set; } = -1;
+
         private bool IsScrolling { get; set; }
 
         public double ItemScaleRatio
         {
             get
             {
-                return ((VirtualizingUniformCarouselStackLayout)(repeater.Layout)).ItemScaleRatio;
+                return layout.ItemScaleRatio;
             }
         }
 
@@ -215,6 +222,8 @@ namespace Flick
             }
         }
 
+        private double ScrollViewerOffsetProportionPriorToContainerSizeChanging { get; set; } = 1.0;
+
         private object ScrollViewerRelatedTimersWriteLockObject { get; } = new object();
 
         private static int ContinousScrollingItemSkipCount { get; } = 2;
@@ -252,9 +261,7 @@ namespace Flick
             }
         }
 
-#pragma warning disable CS0628 // New protected member declared in sealed class
-        protected void OnScrollViewerViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
-#pragma warning restore CS0628 // New protected member declared in sealed class
+        private void OnScrollViewerViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
             if (e.IsIntermediate)
             {
@@ -262,22 +269,21 @@ namespace Flick
                 {
                     IsScrolling = true;
                 }
-
-                DetermineIfCarouselNextPrevButtonsShouldBeHiddenAfterScroll();
             }
             else
             {
                 SelectedItem = GetSelectedItemFromViewport();
+                SelectedItemIndex = GetSelectedIndexFromViewport();
 
                 textBlock.Text = "Selected Item: " + GetSelectedIndexFromViewport() ?? "null";
                 IsScrolling = false;
             }
+
+            DetermineIfCarouselNextPrevButtonsShouldBeHiddenAfterScroll();
         }
 
         // TODO: Is this really required when we have ViewChanged with IsIntermediate = false handled ?
-#pragma warning disable CS0628 // New protected member declared in sealed class
-        protected void OnScrollViewerViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
-#pragma warning restore CS0628 // New protected member declared in sealed class
+        private void OnScrollViewerViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
             if (!IsScrolling)
             {
@@ -293,7 +299,7 @@ namespace Flick
             var args = e.Parameter as NavigateArgs;
 
             List<Photo> subsetOfPhotos = new List<Photo>();
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 4; i++)
             {
                 args.Photos[i].Description = "Item " + i; ;
                 subsetOfPhotos.Add(args.Photos[i]);
@@ -301,11 +307,9 @@ namespace Flick
 
             repeater.ItemsSource = subsetOfPhotos;
             int selectedIndex = args.Photos.IndexOf(args.Selected);
-
-            repeater.Loaded += Repeater_Loaded;
         }
 
-        private void Repeater_Loaded(object sender, RoutedEventArgs e)
+        private void ResetCarousel()
         {
             if (repeater.ItemsSourceView.Count == 0)
             {
@@ -350,7 +354,13 @@ namespace Flick
             }
 
             SelectedItem = GetSelectedItemFromViewport();
+            SelectedItemIndex = GetSelectedIndexFromViewport();
             textBlock.Text = "Selected Item: " + GetSelectedIndexFromViewport() ?? "null";
+        }
+
+        private void Repeater_Loaded(object sender, RoutedEventArgs e)
+        {
+            ResetCarousel();
         }
 
         private void OnElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
@@ -423,8 +433,8 @@ namespace Flick
                 // however, if the "center" item is not perfectly centered (i.e. where the centerpoint falls on the item's size.x/2)
                 // then set centerOfViewportOffsetInScrollViewer equal to the offset where the "centered" item would be perfectly centered.
                 // This makes later calculations much simpler with respect to item animations.
-                centerOfViewportOffsetInScrollViewer -= (centerOfViewportOffsetInScrollViewer + layout.Spacing / 2) % (layout.Spacing + layout.ItemWidth);
-                centerOfViewportOffsetInScrollViewer += layout.Spacing / 2 + layout.ItemWidth / 2;
+                centerOfViewportOffsetInScrollViewer -= (((centerOfViewportOffsetInScrollViewer + layout.Spacing / 2) - layout.Margin.Left) % (layout.Spacing + layout.ItemWidth));
+                centerOfViewportOffsetInScrollViewer += (layout.Spacing / 2 + layout.ItemWidth / 2);
 
                 var tapPositionOffsetInScrollViewer = e.GetPosition(sv).X + sv.HorizontalOffset;
                 var tapPositionDistanceFromSVCenterPoint = Math.Abs(tapPositionOffsetInScrollViewer - centerOfViewportOffsetInScrollViewer);
@@ -516,7 +526,12 @@ namespace Flick
 
         private double CenterPointOfViewportInExtent()
         {
-            return sv.HorizontalOffset + sv.ViewportWidth / 2;
+            return CenterPointOfViewportInExtent(sv.HorizontalOffset, sv.ViewportWidth);
+        }
+
+        private double CenterPointOfViewportInExtent(double scrollViewerHorizontalOffset, double scrollViewerViewportWidth)
+        {
+            return scrollViewerHorizontalOffset + scrollViewerViewportWidth / 2;
         }
 
         private int GetSelectedIndexFromViewport()
@@ -527,6 +542,35 @@ namespace Flick
             return selectedItemIndex;
         }
 
+        private void SetSelectedItemInViewport(int itemIndexInItemsSource)
+        {
+            if ((itemIndexInItemsSource < -1) || (itemIndexInItemsSource >= repeater.ItemsSourceView.Count))
+            {
+                throw new ArgumentOutOfRangeException("itemIndex", itemIndexInItemsSource, "The following must be true: -1 <= itemIndex < " + repeater.ItemsSourceView.Count.ToString());
+            }
+            else if (itemIndexInItemsSource == -1)
+            {
+                SelectedItem = null;
+                SelectedItemIndex = -1;
+                ResetCarousel();
+                return;
+            }
+            else if (repeater.ItemsSourceView.Count == 1)
+            {
+                ResetCarousel();
+            }
+            else if (repeater.ItemsSourceView.Count < layout.MaxNumberOfItemsThatCanFitInViewport)
+            {
+                sv.ChangeView(((layout.FirstSnapPointOffset + (itemIndexInItemsSource * (layout.ItemWidth + layout.Spacing))) - (sv.ViewportWidth / 2)), null, null, true);
+                DetermineIfCarouselNextPrevButtonsShouldBeHiddenAfterScroll();
+            }
+            else
+            {
+                sv.ChangeView((((layout.ItemWidth / 2) + ((layout.ItemWidth + layout.Spacing) * repeater.ItemsSourceView.Count * Math.Floor(layout.RepeatCount / 2.0))) - (sv.ViewportWidth / 2)) + (itemIndexInItemsSource * (layout.ItemWidth + layout.Spacing)), null, null, true);
+                ShowCarouselNextPrevButtons();
+            }
+        }
+
         private object GetSelectedItemFromViewport()
         {
             var selectedIndex = GetSelectedIndexFromViewport();
@@ -535,9 +579,8 @@ namespace Flick
             return selectedItem;
         }
 
-#pragma warning disable CS0628 // New protected member declared in sealed class
-        protected void OnCarouselPrevButtonPointerPressed(object sender, PointerRoutedEventArgs e)
-#pragma warning restore CS0628 // New protected member declared in sealed class
+
+        private void OnCarouselPrevButtonPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (!((UIElement)sender).CapturePointer(e.Pointer))
             {
@@ -581,9 +624,7 @@ namespace Flick
             }
         }
 
-#pragma warning disable CS0628 // New protected member declared in sealed class
-        protected void OnCarouselPrevButtonPointerCanceled(object sender, PointerRoutedEventArgs e)
-#pragma warning restore CS0628 // New protected member declared in sealed class
+        private void OnCarouselPrevButtonPointerCanceled(object sender, PointerRoutedEventArgs e)
         {
             lock (ScrollViewerRelatedTimersWriteLockObject)
             {
@@ -591,9 +632,7 @@ namespace Flick
             }
         }
 
-#pragma warning disable CS0628 // New protected member declared in sealed class
-        protected void OnCarouselPrevButtonPointerReleased(object sender, PointerRoutedEventArgs e)
-#pragma warning restore CS0628 // New protected member declared in sealed class
+        private void OnCarouselPrevButtonPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             lock (ScrollViewerRelatedTimersWriteLockObject)
             {
@@ -601,9 +640,8 @@ namespace Flick
             }
         }
 
-#pragma warning disable CS0628 // New protected member declared in sealed class
-        protected void OnCarouselPrevButtonPointerExited(object sender, PointerRoutedEventArgs e)
-#pragma warning restore CS0628 // New protected member declared in sealed class
+
+        private void OnCarouselPrevButtonPointerExited(object sender, PointerRoutedEventArgs e)
         {
             lock (ScrollViewerRelatedTimersWriteLockObject)
             {
@@ -611,9 +649,8 @@ namespace Flick
             }
         }
 
-#pragma warning disable CS0628 // New protected member declared in sealed class
-        protected void OnCarouselPrevButtonPointerCaptureLost(object sender, PointerRoutedEventArgs e)
-#pragma warning restore CS0628 // New protected member declared in sealed class
+
+        private void OnCarouselPrevButtonPointerCaptureLost(object sender, PointerRoutedEventArgs e)
         {
             lock (ScrollViewerRelatedTimersWriteLockObject)
             {
@@ -621,9 +658,7 @@ namespace Flick
             }
         }
 
-#pragma warning disable CS0628 // New protected member declared in sealed class
-        protected void OnCarouselNextButtonPointerPressed(object sender, PointerRoutedEventArgs e)
-#pragma warning restore CS0628 // New protected member declared in sealed class
+        private void OnCarouselNextButtonPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (!((UIElement)sender).CapturePointer(e.Pointer))
             {
@@ -668,9 +703,7 @@ namespace Flick
             }
         }
 
-#pragma warning disable CS0628 // New protected member declared in sealed class
-        protected void OnCarouselNextButtonPointerCanceled(object sender, PointerRoutedEventArgs e)
-#pragma warning restore CS0628 // New protected member declared in sealed class
+        private void OnCarouselNextButtonPointerCanceled(object sender, PointerRoutedEventArgs e)
         {
             lock (ScrollViewerRelatedTimersWriteLockObject)
             {
@@ -678,9 +711,7 @@ namespace Flick
             }
         }
 
-#pragma warning disable CS0628 // New protected member declared in sealed class
-        protected void OnCarouselNextButtonPointerReleased(object sender, PointerRoutedEventArgs e)
-#pragma warning restore CS0628 // New protected member declared in sealed class
+        private void OnCarouselNextButtonPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             lock (ScrollViewerRelatedTimersWriteLockObject)
             {
@@ -688,9 +719,8 @@ namespace Flick
             }
         }
 
-#pragma warning disable CS0628 // New protected member declared in sealed class
-        protected void OnCarouselNextButtonPointerExited(object sender, PointerRoutedEventArgs e)
-#pragma warning restore CS0628 // New protected member declared in sealed class
+
+        private void OnCarouselNextButtonPointerExited(object sender, PointerRoutedEventArgs e)
         {
             lock (ScrollViewerRelatedTimersWriteLockObject)
             {
@@ -698,9 +728,8 @@ namespace Flick
             }
         }
 
-#pragma warning disable CS0628 // New protected member declared in sealed class
-        protected void OnCarouselNextButtonPointerCaptureLost(object sender, PointerRoutedEventArgs e)
-#pragma warning restore CS0628 // New protected member declared in sealed class
+
+        private void OnCarouselNextButtonPointerCaptureLost(object sender, PointerRoutedEventArgs e)
         {
             lock (ScrollViewerRelatedTimersWriteLockObject)
             {
@@ -745,6 +774,18 @@ namespace Flick
                     PrevNextButtonContinousScrollingSelectionPeriod);
                 }
             }
+        }
+
+        private int SelectedItemIndexPriorToParentContainerSizeChanging { get; set; } = -1;
+
+        private void OnScrollViewerLayoutUpdated(object sender, object e)
+        {
+            SelectedItemIndexPriorToParentContainerSizeChanging = GetSelectedIndexFromViewport();
+        }
+
+        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            SetSelectedItemInViewport(SelectedItemIndexPriorToParentContainerSizeChanging);
         }
     }
 }
