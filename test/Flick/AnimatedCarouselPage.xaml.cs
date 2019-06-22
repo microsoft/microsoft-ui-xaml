@@ -321,6 +321,11 @@ namespace Flick
                 sv.ChangeView(0, null, null, true);
                 HideCarouselNextPrevButtons();
             }
+            else if (repeater.ItemsSourceView.Count == 2)
+            {
+                var Success = sv.ChangeView(layout.FirstSnapPointOffset, null, null, true);
+                DetermineIfCarouselNextPrevButtonsShouldBeHiddenAfterScroll();
+            }
             else if (repeater.ItemsSourceView.Count < layout.MaxNumberOfItemsThatCanFitInViewport)
             {
                 if ((repeater.ItemsSourceView.Count % 2) == 0)
@@ -331,7 +336,7 @@ namespace Flick
                     // E.g. Without the timing/dispatching here, in the 4-item scenario:
                     // Expected result: Item 2/4 is selected
                     // Actual result: Item 3/4 is selected
-                    var period = TimeSpan.FromMilliseconds(125);
+                    var period = TimeSpan.FromMilliseconds(150);
                     Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
                     {
                         await Dispatcher.RunIdleAsync((idleDispatchHandlerArgs) =>
