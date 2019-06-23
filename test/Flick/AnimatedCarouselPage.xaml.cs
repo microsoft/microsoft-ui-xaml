@@ -70,19 +70,6 @@ namespace Flick
 
         public static readonly DependencyProperty RepeatCountProperty = DependencyProperty.Register(
             "RepeatCount", typeof(int), typeof(VirtualizingUniformCarouselStackLayout), new PropertyMetadata(500));
-
-        public void RefreshSnapPoints()
-        {
-            RaiseEvent(HorizontalSnapPointsChanged);
-        }
-
-        private void RaiseEvent(EventHandler<object> handler)
-        {
-            if (handler != null)
-            {
-                handler(this, null);
-            }
-        }
     }
 
     /// <summary>
@@ -826,7 +813,6 @@ namespace Flick
                 return;
             }
 
-            repeater.RefreshSnapPoints();
             SetSelectedItemInViewport(SelectedItemIndexPriorToParentContainerSizeChanging);
 
             var period = TimeSpan.FromMilliseconds(200);
