@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Windows.Graphics.Display;
 using Windows.System.Threading;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -69,6 +70,19 @@ namespace Flick
 
         public static readonly DependencyProperty RepeatCountProperty = DependencyProperty.Register(
             "RepeatCount", typeof(int), typeof(VirtualizingUniformCarouselStackLayout), new PropertyMetadata(500));
+
+        public void RefreshSnapPoints()
+        {
+            RaiseEvent(HorizontalSnapPointsChanged);
+        }
+
+        private void RaiseEvent(EventHandler<object> handler)
+        {
+            if (handler != null)
+            {
+                handler(this, null);
+            }
+        }
     }
 
     /// <summary>
@@ -484,11 +498,11 @@ namespace Flick
             // however, if the "center" item is not perfectly centered (i.e. where the centerpoint falls on the item's size.x/2)
             // then set centerOfViewportOffsetInScrollViewer equal to the offset where the "centered" item would be perfectly centered.
             // This makes later calculations much simpler with respect to item animations.
-            var centerOfViewportOffsetInScrollViewer = sv.HorizontalOffset + sv.ViewportWidth / 2;
-            centerOfViewportOffsetInScrollViewer -= (centerOfViewportOffsetInScrollViewer + layout.Spacing / 2) % (layout.Spacing + layout.ItemWidth);
-            centerOfViewportOffsetInScrollViewer += layout.Spacing / 2 + layout.ItemWidth / 2;
-            var newSelectedItemDistanceFromCenterPoint = layout.ItemWidth / 2 + layout.Spacing + (layout.ItemWidth * ItemScaleRatio);
-            var offsetToScrollTo = sv.HorizontalOffset + newSelectedItemDistanceFromCenterPoint + (numberOfItemsToSkip * (layout.ItemWidth + layout.Spacing));
+            var centerOfViewportOffsetInScrollViewer = CenterPointOfViewportInExtent();
+            centerOfViewportOffsetInScrollViewer -= (((centerOfViewportOffsetInScrollViewer + layout.Spacing / 2) - layout.Margin.Left) % (layout.Spacing + layout.ItemWidth));
+            centerOfViewportOffsetInScrollViewer += (layout.Spacing / 2 + layout.ItemWidth / 2);
+            var newSelectedItemDistanceFromCenterPoint = (layout.ItemWidth + layout.Spacing) * (1 + numberOfItemsToSkip);
+            var offsetToScrollTo = (centerOfViewportOffsetInScrollViewer + newSelectedItemDistanceFromCenterPoint - (sv.ViewportWidth / 2));
             // This odd delay is required in order to ensure that the scrollviewer animates the scroll
             // on every call to ChangeView.
             var period = TimeSpan.FromMilliseconds(10);
@@ -512,11 +526,11 @@ namespace Flick
             // however, if the "center" item is not perfectly centered (i.e. where the centerpoint falls on the item's size.x/2)
             // then set centerOfViewportOffsetInScrollViewer equal to the offset where the "centered" item would be perfectly centered.
             // This makes later calculations much simpler with respect to item animations.
-            var centerOfViewportOffsetInScrollViewer = sv.HorizontalOffset + sv.ViewportWidth / 2;
-            centerOfViewportOffsetInScrollViewer -= (centerOfViewportOffsetInScrollViewer + layout.Spacing / 2) % (layout.Spacing + layout.ItemWidth);
-            centerOfViewportOffsetInScrollViewer += layout.Spacing / 2 + layout.ItemWidth / 2;
-            var newSelectedItemDistanceFromCenterPoint = layout.ItemWidth / 2 + layout.Spacing + (layout.ItemWidth * ItemScaleRatio);
-            var offsetToScrollTo = sv.HorizontalOffset - newSelectedItemDistanceFromCenterPoint - (numberOfItemsToSkip * (layout.ItemWidth + layout.Spacing));
+            var centerOfViewportOffsetInScrollViewer = CenterPointOfViewportInExtent();
+            centerOfViewportOffsetInScrollViewer -= (((centerOfViewportOffsetInScrollViewer + layout.Spacing / 2) - layout.Margin.Left) % (layout.Spacing + layout.ItemWidth));
+            centerOfViewportOffsetInScrollViewer += (layout.Spacing / 2 + layout.ItemWidth / 2);
+            var newSelectedItemDistanceFromCenterPoint = (layout.ItemWidth + layout.Spacing) * (1 + numberOfItemsToSkip);
+            var offsetToScrollTo = (centerOfViewportOffsetInScrollViewer - newSelectedItemDistanceFromCenterPoint - (sv.ViewportWidth / 2));
             // This odd delay is required in order to ensure that the scrollviewer animates the scroll
             // on every call to ChangeView.
             var period = TimeSpan.FromMilliseconds(10);
@@ -788,9 +802,49 @@ namespace Flick
             SelectedItemIndexPriorToParentContainerSizeChanging = GetSelectedIndexFromViewport();
         }
 
+        private ThreadPoolTimer m_updateSnapPointsAfterParentContainerSizeChangeTimer = null;
+        private ThreadPoolTimer UpdateSnapPointsAfterParentContainerSizeChangeTimer
+        {
+            get
+            {
+                return m_updateSnapPointsAfterParentContainerSizeChangeTimer;
+            }
+            set
+            {
+                if (m_updateSnapPointsAfterParentContainerSizeChangeTimer != null)
+                {
+                    m_updateSnapPointsAfterParentContainerSizeChangeTimer.Cancel();
+                    m_updateSnapPointsAfterParentContainerSizeChangeTimer = null;
+                }
+            }
+        }
+
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
+            if (UpdateSnapPointsAfterParentContainerSizeChangeTimer != null)
+            {
+                return;
+            }
+
+            repeater.RefreshSnapPoints();
             SetSelectedItemInViewport(SelectedItemIndexPriorToParentContainerSizeChanging);
+
+            var period = TimeSpan.FromMilliseconds(200);
+            UpdateSnapPointsAfterParentContainerSizeChangeTimer = Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
+            {
+                await Dispatcher.RunIdleAsync((args) =>
+                {
+                    UpdateSnapPointsAfterParentContainerSizeChangeTimer = null;
+                });
+            }, 
+            period,
+            async (source) =>
+            {
+                await Dispatcher.RunIdleAsync((args) =>
+                {
+                    //UpdateSnapPointsAfterParentContainerSizeChangeTimer = null;
+                });
+            });
         }
     }
 }

@@ -12,6 +12,7 @@ namespace Flick
         public double ItemHeight { get; set; }
         public double Spacing { get; set; }
         public Rect RealizationRect { get; set; }
+
         public Rect ViewportRect
         {
             get
