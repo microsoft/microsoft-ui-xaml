@@ -43,20 +43,24 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TabView">
-                    <Grid x:Name="TabViewContainer">
+                    <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <Grid>
+                        <Grid x:Name="TabContainerGrid"
+                            Background="{ThemeResource TabViewBackground}">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto" x:Name="LeftContentColumn"/>
+                                <ColumnDefinition Width="Auto" x:Name="TabColumn"/>
+                                <ColumnDefinition Width="Auto" x:Name="AddButtonColumn"/>
+                                <ColumnDefinition Width="*"/> <!-- Padding -->
+                                <ColumnDefinition Width="Auto" x:Name="RightContentColumn"/>
                             </Grid.ColumnDefinitions>
 
                             <ContentPresenter
+                                x:Name="LeftContentPresenter"
                                 Content="{TemplateBinding LeftCustomContent}"
                                 ContentTemplate="{TemplateBinding LeftCustomContentTemplate}"/>
 
@@ -75,74 +79,23 @@
                                 VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
                                 VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
                                 ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
-                                Background="{ThemeResource TabViewBackground}">
-
-                                <ScrollViewer.Style>
-                                    <Style TargetType="ScrollViewer">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="ScrollViewer">
-                                                    <Border x:Name="Root"
-                                                        Background="{TemplateBinding Background}"
-                                                        BorderBrush="{TemplateBinding BorderBrush}"
-                                                        BorderThickness="{TemplateBinding BorderThickness}">
-
-                                                        <Grid Background="{TemplateBinding Background}">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="Auto" />
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="Auto" />
-                                                            </Grid.ColumnDefinitions>
-
-                                                            <RepeatButton x:Name="ScrollDecreaseButton"
-                                                                VerticalAlignment="Bottom"
-                                                                Width="{ThemeResource TabViewItemScrollButtonWidth}"
-                                                                Height="{ThemeResource TabViewItemScrollButtonHeight}"
-                                                                Padding="{ThemeResource TabViewItemScrollButtonPadding}"
-                                                                Background="Transparent"
-                                                                BorderThickness="1"
-                                                                Delay="50"
-                                                                FontFamily="Segoe MDL2 Assets"
-                                                                Interval="100"
-                                                                Style="{StaticResource RepeatButtonRevealStyle}"
-                                                                Visibility="Collapsed"
-                                                                Content="&#xE76B;"/>
-
-                                                            <ScrollContentPresenter x:Name="ScrollContentPresenter"
-                                                                Grid.Column="1"
-                                                                Padding="{TemplateBinding Padding}"
-                                                                contract4Present:TabFocusNavigation="Once" />
-
-                                                            <RepeatButton x:Name="ScrollIncreaseButton"
-                                                                Grid.Column="2"
-                                                                VerticalAlignment="Bottom"
-                                                                HorizontalAlignment="Center"
-                                                                Width="{ThemeResource TabViewItemScrollButtonWidth}"
-                                                                Height="{ThemeResource TabViewItemScrollButtonHeight}"
-                                                                Padding="{ThemeResource TabViewItemScrollButtonPadding}"
-                                                                Background="Transparent"
-                                                                BorderThickness="1"
-                                                                Delay="50"
-                                                                FontFamily="Segoe MDL2 Assets"
-                                                                Interval="100"
-                                                                Style="{StaticResource RepeatButtonRevealStyle}"
-                                                                Visibility="Collapsed"
-                                                                Content="&#xE76C;"/>
-                                                        </Grid>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
-                                </ScrollViewer.Style>
+                                Style="{StaticResource TabScrollViewerStyle}">
 
                                 <ItemsPresenter x:Name="TabsItemsPresenter"
                                     Padding="{TemplateBinding Padding}" />
 
                             </ScrollViewer>
 
-                            <ContentPresenter
+                            <Button
                                 Grid.Column="2"
+                                x:Name="AddButton"
+                                Content="&#xE710;"
+                                Visibility="{Binding IsAddButtonVisible, RelativeSource={RelativeSource TemplatedParent}}"
+                                Style="{StaticResource TabViewButtonStyle}"/>
+
+                            <ContentPresenter
+                                Grid.Column="4"
+                                x:Name="RightContentPresenter"
                                 Content="{TemplateBinding RightCustomContent}"
                                 ContentTemplate="{TemplateBinding RightCustomContentTemplate}"/>
 
@@ -157,6 +110,74 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style x:Name="TabScrollViewerStyle" TargetType="ScrollViewer">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollViewer">
+                    <Border x:Name="Root"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <RepeatButton x:Name="ScrollDecreaseButton"
+                                VerticalAlignment="Bottom"
+                                Width="{ThemeResource TabViewItemScrollButtonWidth}"
+                                Height="{ThemeResource TabViewItemScrollButtonHeight}"
+                                Padding="{ThemeResource TabViewItemScrollButtonPadding}"
+                                Background="Transparent"
+                                BorderThickness="1"
+                                Delay="50"
+                                FontFamily="Segoe MDL2 Assets"
+                                Interval="100"
+                                Style="{StaticResource RepeatButtonRevealStyle}"
+                                Visibility="Collapsed"
+                                Content="&#xE76B;"/>
+
+                            <ScrollContentPresenter x:Name="ScrollContentPresenter"
+                                Grid.Column="1"
+                                Padding="{TemplateBinding Padding}"
+                                contract4Present:TabFocusNavigation="Once" />
+
+                            <RepeatButton x:Name="ScrollIncreaseButton"
+                                Grid.Column="2"
+                                VerticalAlignment="Bottom"
+                                HorizontalAlignment="Center"
+                                Width="{ThemeResource TabViewItemScrollButtonWidth}"
+                                Height="{ThemeResource TabViewItemScrollButtonHeight}"
+                                Padding="{ThemeResource TabViewItemScrollButtonPadding}"
+                                Background="Transparent"
+                                BorderThickness="1"
+                                Delay="50"
+                                FontFamily="Segoe MDL2 Assets"
+                                Interval="100"
+                                Style="{StaticResource RepeatButtonRevealStyle}"
+                                Visibility="Collapsed"
+                                Content="&#xE76C;"/>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Name="TabViewButtonStyle" TargetType="Button">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+        <Setter Property="Width" Value="24"/>
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <Setter Property="Margin" Value="4,0,4,3"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Background" Value="Transparent"/>
     </Style>
 
     <Style TargetType="local:TabViewItem">

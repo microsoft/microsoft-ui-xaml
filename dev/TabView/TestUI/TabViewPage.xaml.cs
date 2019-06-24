@@ -44,7 +44,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        public void AddTabButton_Click(object sender, RoutedEventArgs e)
+        public void AddButtonClick(object sender, object e)
         {
             if (Tabs != null)
             {
