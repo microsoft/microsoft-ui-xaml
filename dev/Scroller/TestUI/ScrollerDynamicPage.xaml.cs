@@ -1417,6 +1417,20 @@ namespace MUXControlsTestApp
             lstScrollerEvents.Items.Clear();
         }
 
+        private void BtnCopyScrollerEvents_Click(object sender, RoutedEventArgs e)
+        {
+            string logs = string.Empty;
+
+            foreach (object log in lstScrollerEvents.Items)
+            {
+                logs += log.ToString() + "\n";
+            }
+
+            var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
+            dataPackage.SetText(logs);
+            Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
+        }
+
         private void BtnScrollTo_Click(object sender, RoutedEventArgs e)
         {
             Scroll(isRelativeChange: false);

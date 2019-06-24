@@ -40,17 +40,19 @@ public:
     // IUIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
 
+    // IItemsControlOverrides
+    void OnItemsChanged(winrt::IInspectable const& item);
+
+    // Internal
     void OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void CloseTab(winrt::TabViewItem const& item);
-
-    //IItemsControlOverrides
-    void OnItemsChanged(winrt::IInspectable const& item);
 
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
+    void OnAddButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollDecreaseClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollIncreaseClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
@@ -60,12 +62,21 @@ private:
 
     std::optional<int> m_indexToSelectOnSelectionChanged;
 
+    tracker_ref<winrt::ColumnDefinition> m_leftContentColumn{ this };
+    tracker_ref<winrt::ColumnDefinition> m_tabColumn{ this };
+    tracker_ref<winrt::ColumnDefinition> m_addButtonColumn{ this };
+    tracker_ref<winrt::ColumnDefinition> m_rightContentColumn{ this };
+
     tracker_ref<winrt::ContentPresenter> m_tabContentPresenter{ this };
+    tracker_ref<winrt::Grid> m_tabContainerGrid{ this };
     tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ this };
+    tracker_ref<winrt::Button> m_addButton{ this };
     tracker_ref<winrt::RepeatButton> m_scrollDecreaseButton{ this };
     tracker_ref<winrt::RepeatButton> m_scrollIncreaseButton{ this };
 
     winrt::ScrollViewer::Loaded_revoker m_scrollViewerLoadedRevoker{};
+
+    winrt::Button::Click_revoker m_addButtonClickRevoker{};
 
     winrt::RepeatButton::Click_revoker m_scrollDecreaseClickRevoker{};
     winrt::RepeatButton::Click_revoker m_scrollIncreaseClickRevoker{};

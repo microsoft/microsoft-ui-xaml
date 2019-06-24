@@ -74,7 +74,7 @@ jobs:
       buildType: specific
       buildVersionToDownload: specific
       project: $(System.TeamProjectId)
-      pipeline: $(useBuildOutputFromPipeline)
+      pipeline: ${{ parameters.useBuildOutputFromPipeline }}
       buildId: $(useBuildOutputFromBuildId)
       artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactsDir)'

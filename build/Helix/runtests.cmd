@@ -1,6 +1,6 @@
 setlocal ENABLEDELAYEDEXPANSION
 
-robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP
+robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP > NUL
 
 reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
 
@@ -9,10 +9,11 @@ reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t 
 taskkill -f -im dhandler.exe
 
 cd scripts
+powershell -ExecutionPolicy Bypass .\EnsureMachineState.ps1
 powershell -ExecutionPolicy Bypass .\InstallTestAppDependencies.ps1
 cd ..
 
-set testBinaryCandidates=MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx MUXControls.ReleaseTest.dll NugetPackageTestApp.appx NugetPackageTestAppCX.appx
+set testBinaryCandidates=MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx MUXControls.ReleaseTest.dll
 set testBinaries=
 for %%B in (%testBinaryCandidates%) do (
     if exist %%B (
