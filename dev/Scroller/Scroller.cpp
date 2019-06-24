@@ -696,32 +696,39 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
             content.DesiredSize().Height
         };
 
-        bool wasContentArrangeWidthStretched = false;
-        bool wasContentArrangeHeightStretched = false;
         const winrt::FrameworkElement contentAsFE = content.try_as<winrt::FrameworkElement>();
-        winrt::Thickness contentMargin{};
 
-        if (contentAsFE)
+        const winrt::Thickness contentMargin = [contentAsFE]()
         {
-            if (contentAsFE.HorizontalAlignment() == winrt::HorizontalAlignment::Stretch &&
+            return contentAsFE ? contentAsFE.Margin() : winrt::Thickness{0};
+        }();
+
+        const bool wasContentArrangeWidthStretched = [contentAsFE, contentArrangeSize, viewport]()
+        {
+            return contentAsFE &&
+                contentAsFE.HorizontalAlignment() == winrt::HorizontalAlignment::Stretch &&
                 isnan(contentAsFE.Width()) &&
-                contentArrangeSize.Width < viewport.Width)
-            {
-                // Allow the content to stretch up to the larger viewport width.
-                contentArrangeSize.Width = viewport.Width;
-                wasContentArrangeWidthStretched = true;
-            }
+                contentArrangeSize.Width < viewport.Width;
+        }();
 
-            if (contentAsFE.VerticalAlignment() == winrt::VerticalAlignment::Stretch &&
+        const bool wasContentArrangeHeightStretched = [contentAsFE, contentArrangeSize, viewport]()
+        {
+            return contentAsFE &&
+                contentAsFE.VerticalAlignment() == winrt::VerticalAlignment::Stretch &&
                 isnan(contentAsFE.Height()) &&
-                contentArrangeSize.Height < viewport.Height)
-            {
-                // Allow the content to stretch up to the larger viewport height.
-                contentArrangeSize.Height = viewport.Height;
-                wasContentArrangeHeightStretched = true;
-            }
+                contentArrangeSize.Height < viewport.Height;
+        }();
 
-            contentMargin = contentAsFE.Margin();
+        if (wasContentArrangeWidthStretched)
+        {
+            // Allow the content to stretch up to the larger viewport width.
+            contentArrangeSize.Width = viewport.Width;
+        }
+
+        if (wasContentArrangeHeightStretched)
+        {
+            // Allow the content to stretch up to the larger viewport height.
+            contentArrangeSize.Height = viewport.Height;
         }
 
         finalContentRect =
