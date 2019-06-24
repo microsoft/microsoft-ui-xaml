@@ -11,7 +11,7 @@ function AllChangedFilesAreSkippable
     foreach($file in $files)
     {
         Write-Host "Checking '$file'"
-        $ext = (Get-Item $file).Extension
+        $ext = [System.IO.Path]::GetExtension($file)
         $fileIsSkippable = $ext -in $skipExts
         Write-Host "File '$file' is skippable: '$fileIsSkippable'"
 

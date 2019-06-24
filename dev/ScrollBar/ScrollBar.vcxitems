@@ -13,7 +13,7 @@
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ScrollBar_rs1_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -29,6 +29,7 @@
     <Page Include="$(MSBuildThisFileDirectory)ScrollBar_rs4_themeresources.xaml">
       <Version>RS4</Version>
       <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
   </ItemGroup>
 </Project>
