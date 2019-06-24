@@ -147,5 +147,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(testResult, "Pass", "We expect compact test result is Pass"); // "Pass" string matches value used by MUXControlsTestApp.SimpleVerify
             }
         }
+
+        [TestMethod]
+        public void CornerRadiusTest()
+        {
+            if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
+            {
+                Log.Comment("CornerRadius is not surpported on this os version");
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("CornerRadius Tests"))
+            {
+                var textBlock = FindElement.ByName("CornerRadius");
+                Verify.IsNotNull(textBlock, "Verify corner radius page doesn't crash");
+            }
+        }
     }
 }
