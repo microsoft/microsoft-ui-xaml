@@ -418,6 +418,12 @@
                                             <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalLargeDecrease" Storyboard.TargetProperty="Opacity" To="0" />
                                             <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalSmallDecrease" Storyboard.TargetProperty="Opacity" To="0" />
                                             <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalTrackRect" Storyboard.TargetProperty="Opacity" To="0" />
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="CornerRadius">
+                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarContractBeginTime}" Value="0" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="CornerRadius">
+                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarContractBeginTime}" Value="0" />
+                                            </ObjectAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualTransition>
                                 </VisualStateGroup.Transitions>
