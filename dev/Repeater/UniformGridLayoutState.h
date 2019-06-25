@@ -22,7 +22,7 @@ public:
     double EffectiveItemHeight() { return m_effectiveItemHeight; }
 
     // If it's realized then we shouldn't be caching it
-    void EnsureFirstElementOwnership();
+    void EnsureFirstElementOwnership(winrt::VirtualizingLayoutContext const& context);
 
     void EnsureElementSize(
         const winrt::Size availableSize,
