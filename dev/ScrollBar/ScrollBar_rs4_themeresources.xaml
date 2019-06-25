@@ -418,12 +418,12 @@
                                             <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalLargeDecrease" Storyboard.TargetProperty="Opacity" To="0" />
                                             <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalSmallDecrease" Storyboard.TargetProperty="Opacity" To="0" />
                                             <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalTrackRect" Storyboard.TargetProperty="Opacity" To="0" />
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="CornerRadius">
+                                            <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarContractBeginTime}" Value="0" />
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="CornerRadius">
+                                            </contract7Present:ObjectAnimationUsingKeyFrames>
+                                            <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="CornerRadius">
                                                 <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarContractBeginTime}" Value="0" />
-                                            </ObjectAnimationUsingKeyFrames>
+                                            </contract7Present:ObjectAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualTransition>
                                 </VisualStateGroup.Transitions>
@@ -492,10 +492,6 @@
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="CollapsedWithoutAnimation">
-                                    <VisualState.Setters>
-                                        <contract7Present:Setter Target="HorizontalThumb.CornerRadius" Value="{TemplateBinding CornerRadius}" />
-                                        <contract7Present:Setter Target="VerticalThumb.CornerRadius" Value="{TemplateBinding CornerRadius}" />
-                                    </VisualState.Setters>
                                     <!-- The storyboard below cannot be moved to a transition since transitions
                                              will not be run by the framework when animations are disabled in the system -->
                                     <Storyboard>
@@ -515,6 +511,12 @@
                                         <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalLargeDecrease" Storyboard.TargetProperty="Opacity" To="0" />
                                         <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalSmallDecrease" Storyboard.TargetProperty="Opacity" To="0" />
                                         <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalTrackRect" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="CornerRadius">
+                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarContractBeginTime}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius}" />
+                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="CornerRadius">
+                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarContractBeginTime}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius}" />
+                                        </contract7Present:ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
