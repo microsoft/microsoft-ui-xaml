@@ -49,8 +49,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
-        // TODO: This test doesn't pass because it can't find the tab content -- this is an acc bug.
-        //[TestMethod]
+        [TestMethod]
         public void SelectionTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
@@ -70,8 +69,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // TODO: This test doesn't pass because it can't find the tab content -- this is an acc bug.
-        //[TestMethod]
+        [TestMethod]
         public void AddRemoveTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
@@ -214,8 +212,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // TODO: This test doesn't pass because it can't find the tab content -- this is an acc bug.
-        //[TestMethod]
+        [TestMethod]
         public void AddButtonTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))

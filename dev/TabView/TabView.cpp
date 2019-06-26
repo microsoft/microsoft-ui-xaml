@@ -24,10 +24,12 @@ TabView::TabView()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TabView);
 
+    auto items = winrt::make<Vector<winrt::IInspectable>>();
+    SetValue(s_ItemsProperty, items);
+
     SetDefaultStyleKey(this);
 
     Loaded({ this, &TabView::OnLoaded });
-    SelectionChanged({ this, &TabView::OnSelectionChanged });
     SizeChanged({ this, &TabView::OnSizeChanged });
 }
 
@@ -44,13 +46,14 @@ void TabView::OnApplyTemplate()
 
     m_tabContainerGrid.set(GetTemplateChildT<winrt::Grid>(L"TabContainerGrid", controlProtected));
 
-    m_scrollViewer.set([this, controlProtected]() {
-        auto scrollViewer = GetTemplateChildT<winrt::FxScrollViewer>(L"ScrollViewer", controlProtected);
-        if (scrollViewer)
+    m_listView.set([this, controlProtected]() {
+        auto listView = GetTemplateChildT<winrt::ListView>(L"TabListView", controlProtected);
+        if (listView)
         {
-            m_scrollViewerLoadedRevoker = scrollViewer.Loaded(winrt::auto_revoke, { this, &TabView::OnScrollViewerLoaded });
+            m_listViewLoadedRevoker = listView.Loaded(winrt::auto_revoke, { this, &TabView::OnListViewLoaded });
+            m_listViewSelectionChangedRevoker = listView.SelectionChanged(winrt::auto_revoke, { this, &TabView::OnListViewSelectionChanged });
         }
-        return scrollViewer;
+        return listView;
     }());
 
     m_addButton.set([this, controlProtected]() {
@@ -76,6 +79,43 @@ void TabView::OnApplyTemplate()
         }
         return addButton;
     }());
+
+    UpdateItemsSource();
+}
+
+void TabView::UpdateItemsSource()
+{
+    if (auto listView = m_listView.get())
+    {
+        if (ItemsSource())
+        {
+            listView.ItemsSource(ItemsSource());
+        }
+        else
+        {
+            listView.ItemsSource(Items());
+        }
+    }
+}
+
+void TabView::OnItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateItemsSource();
+}
+
+void TabView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateItemsSource();
+}
+
+void TabView::OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateSelectedIndex();
+}
+
+void TabView::OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateSelectedItem();
 }
 
 void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
@@ -96,6 +136,33 @@ winrt::AutomationPeer TabView::OnCreateAutomationPeer()
 void TabView::OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     UpdateTabContent();
+}
+
+void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
+{
+    if (ReadLocalValue(s_SelectedIndexProperty) != winrt::DependencyProperty::UnsetValue())
+    {
+        UpdateSelectedIndex();
+    }
+    if (ReadLocalValue(s_SelectedItemProperty) != winrt::DependencyProperty::UnsetValue())
+    {
+        UpdateSelectedItem();
+    }
+
+    if (auto listView = m_listView.get())
+    {
+        SelectedIndex(listView.SelectedIndex());
+        SelectedItem(listView.SelectedItem());
+
+        m_scrollViewer.set([this, listView]() {
+            auto scrollViewer = SharedHelpers::FindInVisualTreeByName(listView, L"ScrollViewer").as<winrt::FxScrollViewer>();
+            if (scrollViewer)
+            {
+                m_scrollViewerLoadedRevoker = scrollViewer.Loaded(winrt::auto_revoke, { this, &TabView::OnScrollViewerLoaded });
+            }
+            return scrollViewer;
+        }());
+    }
 }
 
 void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
@@ -146,8 +213,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
 
                     if (nextItem && nextItem.IsEnabled() && nextItem.Visibility() == winrt::Visibility::Visible)
                     {
-                        // We need to wait until OnSelectionChanged fires to change the selection, otherwise it will get lost.
-                        m_indexToSelectOnSelectionChanged = std::optional(index);
+                        SelectedItem(Items().GetAt(index));
                         break;
                     }
 
@@ -163,19 +229,19 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
     }
 
     UpdateTabWidths();
-
-    __super::OnItemsChanged(item);
 }
 
-void TabView::OnSelectionChanged(const winrt::IInspectable&, const winrt::SelectionChangedEventArgs&)
+void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
 {
-    if (m_indexToSelectOnSelectionChanged)
+    if (auto listView = m_listView.get())
     {
-        SelectedItem(Items().GetAt(m_indexToSelectOnSelectionChanged.value()));
-        m_indexToSelectOnSelectionChanged = {};
+        SelectedIndex(listView.SelectedIndex());
+        SelectedItem(listView.SelectedItem());
     }
 
     UpdateTabContent();
+
+    m_selectionChangedEventSource(sender, args);
 }
 
 void TabView::UpdateTabContent()
@@ -202,18 +268,21 @@ void TabView::UpdateTabContent()
 
 void TabView::CloseTab(winrt::TabViewItem const& container)
 {
-    if (auto item = ItemFromContainer(container))
+    if (auto listView = m_listView.get())
     {
-        uint32_t index = 0;
-        if (Items().IndexOf(item, index))
+        if (auto item = listView.ItemFromContainer(container))
         {
-            auto args = winrt::make_self<TabViewTabClosingEventArgs>(item);
-
-            m_tabClosingEventSource(*this, *args);
-
-            if (!args->Cancel())
+            uint32_t index = 0;
+            if (Items().IndexOf(item, index))
             {
-                Items().RemoveAt(index);
+                auto args = winrt::make_self<TabViewTabClosingEventArgs>(item);
+
+                m_tabClosingEventSource(*this, *args);
+
+                if (!args->Cancel())
+                {
+                    Items().RemoveAt(index);
+                }
             }
         }
     }
@@ -317,4 +386,45 @@ void TabView::UpdateTabWidths()
             container.Width(tabWidth);
         }
     }
+}
+
+
+void TabView::UpdateSelectedItem()
+{
+    if (auto listView = m_listView.get())
+    {
+        // Setting ListView.SelectedItem will not work here in all cases.
+        // The reason why that doesn't work but this does is unknown.
+        auto container = listView.ContainerFromItem(SelectedItem());
+        if (auto lvi = container.as<winrt::ListViewItem>())
+        {
+            lvi.IsSelected(true);
+        }
+    }
+}
+
+void TabView::UpdateSelectedIndex()
+{
+    if (auto listView = m_listView.get())
+    {
+        listView.SelectedIndex(SelectedIndex());
+    }
+}
+
+winrt::DependencyObject TabView::ContainerFromItem(winrt::IInspectable const& item)
+{
+    if (auto listView = m_listView.get())
+    {
+        return listView.ContainerFromItem(item);
+    }
+    return nullptr;
+}
+
+winrt::DependencyObject TabView::ContainerFromIndex(int index)
+{
+    if (auto listView = m_listView.get())
+    {
+        return listView.ContainerFromIndex(index);
+    }
+    return nullptr;
 }

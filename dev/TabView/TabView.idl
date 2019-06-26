@@ -20,7 +20,7 @@ runtimeclass TabViewTabClosingEventArgs
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.ListView
+unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
 {
     TabView();
 
@@ -30,6 +30,9 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.ListView
 
     [MUX_DEFAULT_VALUE("true")]
     Boolean CanCloseTabs{ get; set; };
+
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean CanDragDropTabs{ get; set; };
 
     Object LeftCustomContent{ get; set; };
     Windows.UI.Xaml.DataTemplate LeftCustomContentTemplate{ get; set; };
@@ -44,13 +47,41 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.ListView
 
     event Windows.Foundation.TypedEventHandler<TabView, Object> AddButtonClick;
 
+    // From ListView
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Object ItemsSource;
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Windows.Foundation.Collections.IVector<Object> Items{ get; };
+
+    Windows.UI.Xaml.DataTemplate ItemTemplate;
+
+    [MUX_DEFAULT_VALUE("-1")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Int32 SelectedIndex;
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Object SelectedItem;
+
+    Windows.UI.Xaml.DependencyObject ContainerFromItem(Object item);
+    Windows.UI.Xaml.DependencyObject ContainerFromIndex(Int32 index);
+
+    event Windows.UI.Xaml.Controls.SelectionChangedEventHandler SelectionChanged;
+
     static Windows.UI.Xaml.DependencyProperty TabWidthModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CanCloseTabsProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty CanDragDropTabsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty LeftCustomContentProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty LeftCustomContentTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty RightCustomContentProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty RightCustomContentTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsAddButtonVisibleProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty ItemsSourceProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ItemsProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ItemTemplateProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SelectedIndexProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SelectedItemProperty{ get; };
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -77,12 +108,24 @@ unsealed runtimeclass TabViewItem : Windows.UI.Xaml.Controls.ListViewItem
 
 }
 
+namespace MU_XCP_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass TabViewListView : Windows.UI.Xaml.Controls.ListView
+{
+    TabViewListView();
+}
+
+}
+
 namespace MU_XAP_NAMESPACE
 {
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass TabViewAutomationPeer : Windows.UI.Xaml.Automation.Peers.ListViewAutomationPeer
+unsealed runtimeclass TabViewAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {
     TabViewAutomationPeer(MU_XC_NAMESPACE.TabView owner);
 }

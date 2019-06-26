@@ -43,9 +43,7 @@
                 x:Name="Tabs"
                 Grid.Column="1"
                 TabWidthMode="Fixed"
-                CanReorderItems="True"
-                CanDragItems="True"
-                AllowDrop="True"
+                SelectedIndex="0"
                 SelectionChanged="TabViewSelectionChanged"
                 TabClosing="TabViewTabClosing"
                 AddButtonClick="AddButtonClick">
@@ -56,7 +54,7 @@
 
                 <controls:TabView.Items>
 
-                    <controls:TabViewItem x:Name="FirstTab" AutomationProperties.Name="FirstTab" Icon="Home" Header="Home" IsSelected="True">
+                    <controls:TabViewItem x:Name="FirstTab" AutomationProperties.Name="FirstTab" Icon="Home" Header="Home">
                         <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8">Home Button</Button>
                             <Button x:Name="FirstTabButton2" AutomationProperties.Name="FirstTabButton2" Margin="8">Another Button</Button>
