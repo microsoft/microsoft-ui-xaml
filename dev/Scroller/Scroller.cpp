@@ -14,6 +14,7 @@
 #include "ScrollerAutomationPeer.h"
 #include "ScrollerTestHooks.h"
 #include "Vector.h"
+#include "RegUtil.h"
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool ScrollerTrace::s_IsDebugOutputEnabled{ false };
@@ -983,8 +984,8 @@ void Scroller::IdleStateEntered(
     UpdateSnapPointsIgnoredValue(&m_sortedConsolidatedVerticalSnapPoints, ScrollerDimension::VerticalScroll);
     UpdateSnapPointsIgnoredValue(&m_sortedConsolidatedZoomSnapPoints, ScrollerDimension::ZoomFactor);
 
-    // Stop Scale animation if needed, to trigger rasterization of Content & avoid fuzzy text rendering for instance.
-    StopZoomFactorExpressionAnimation();
+    // Stop Translation and Scale animations if needed, to trigger rasterization of Content & avoid fuzzy text rendering for instance.
+    StopTranslationAndZoomFactorExpressionAnimations();
 }
 
 // On pre-RS5 releases, updates the SnapPointBase::s_isInertiaFromImpulse boolean parameters of the snap points' composition expressions.
@@ -3243,34 +3244,30 @@ void Scroller::SetupTransformExpressionAnimations(
         m_transformMatrixZoomFactorExpressionAnimation.SetReferenceParameter(L"it", m_interactionTracker);
     }
 
-    StartTransformExpressionAnimations(content, false /*forZoomFactorAnimationInterruption*/);
+    StartTransformExpressionAnimations(content, false /*forAnimationsInterruption*/);
 }
 
 void Scroller::StartTransformExpressionAnimations(
     const winrt::UIElement& content,
-    bool forZoomFactorAnimationInterruption)
+    bool forAnimationsInterruption)
 {
     if (content)
     {
         if (SharedHelpers::IsTranslationFacadeAvailable(content))
         {
             auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+            auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
 
-            if (!forZoomFactorAnimationInterruption)
-            {
-                auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+            m_translationExpressionAnimation.Target(scrollPropertyName);
+            m_zoomFactorExpressionAnimation.Target(zoomFactorPropertyName);
 
-                m_translationExpressionAnimation.Target(scrollPropertyName);
-                m_zoomFactorExpressionAnimation.Target(zoomFactorPropertyName);
-
-                content.StartAnimation(m_translationExpressionAnimation);
-                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
-            }
+            content.StartAnimation(m_translationExpressionAnimation);
+            RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
 
             content.StartAnimation(m_zoomFactorExpressionAnimation);
             RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
         }
-        else if (!forZoomFactorAnimationInterruption) // The zoom factor animation interruption is only effective with facades.
+        else if (!forAnimationsInterruption) // The animations interruption is only effective with facades.
         {
             const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(content);
 
@@ -3312,26 +3309,23 @@ void Scroller::StartTransformExpressionAnimations(
 
 void Scroller::StopTransformExpressionAnimations(
     const winrt::UIElement& content,
-    bool forZoomFactorAnimationInterruption)
+    bool forAnimationsInterruption)
 {
     if (content)
     {
         if (SharedHelpers::IsTranslationFacadeAvailable(content))
         {
-            if (!forZoomFactorAnimationInterruption)
-            {
-                auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+            auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
 
-                content.StopAnimation(m_translationExpressionAnimation);
-                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
-            }
+            content.StopAnimation(m_translationExpressionAnimation);
+            RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
 
             auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
 
             content.StopAnimation(m_zoomFactorExpressionAnimation);
             RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
         }
-        else if (!forZoomFactorAnimationInterruption) // The zoom factor animation interruption is only effective with facades.
+        else if (!forAnimationsInterruption) // The animations interruption is only effective with facades.
         {
             const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(content);
 
@@ -3369,24 +3363,32 @@ void Scroller::StopTransformExpressionAnimations(
     }
 }
 
-// Returns True when Scroller::OnCompositionTargetRendering calls are not needed for restarting the Scale animation.
-bool Scroller::StartZoomFactorExpressionAnimation()
+// Returns True when Scroller::OnCompositionTargetRendering calls are not needed for restarting the Translation and Scale animations.
+bool Scroller::StartTranslationAndZoomFactorExpressionAnimations(bool interruptCountdown)
 {
-    if (m_zoomFactorAnimationRestartTicksCountdown > 0)
+    if (m_translationAndZoomFactorAnimationsRestartTicksCountdown > 0)
     {
         MUX_ASSERT(IsVisualTranslationPropertyAvailable());
 
-        // A Scale animation restart is pending after the Idle State was reached or a zoom factor change operation completed.
-        m_zoomFactorAnimationRestartTicksCountdown--;
+        // A Translation and Scale animations restart is pending after the Idle State was reached or a zoom factor change operation completed.
+        m_translationAndZoomFactorAnimationsRestartTicksCountdown--;
 
-        if (m_zoomFactorAnimationRestartTicksCountdown == 0)
+        if (m_translationAndZoomFactorAnimationsRestartTicksCountdown == 0 || interruptCountdown)
         {
-            // Countdown is over, restart the Scale animation.
+            // Countdown is over or state is no longer Idle, restart the Translation and Scale animations.
             MUX_ASSERT(m_interactionTracker);
 
             SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, m_animationRestartZoomFactor, m_zoomFactor);
 
-            StartTransformExpressionAnimations(Content(), true /*forZoomFactorAnimationInterruption*/);
+            if (m_translationAndZoomFactorAnimationsRestartTicksCountdown > 0)
+            {
+                MUX_ASSERT(interruptCountdown);
+
+                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, m_translationAndZoomFactorAnimationsRestartTicksCountdown);
+                m_translationAndZoomFactorAnimationsRestartTicksCountdown = 0;
+            }
+            
+            StartTransformExpressionAnimations(Content(), true /*forAnimationsInterruption*/);
         }
         else
         {
@@ -3398,11 +3400,11 @@ bool Scroller::StartZoomFactorExpressionAnimation()
     return true;
 }
 
-void Scroller::StopZoomFactorExpressionAnimation()
+void Scroller::StopTranslationAndZoomFactorExpressionAnimations()
 {
     if (m_zoomFactorExpressionAnimation && m_animationRestartZoomFactor != m_zoomFactor)
     {
-        // The zoom factor has changed since the last restart of the Scale animation.
+        // The zoom factor has changed since the last restart of the Translation and Scale animations.
         MUX_ASSERT(IsVisualTranslationPropertyAvailable());
 
         const winrt::UIElement content = Content();
@@ -3410,20 +3412,20 @@ void Scroller::StopZoomFactorExpressionAnimation()
         // The zoom factor animation interruption is only effective with facades.
         if (SharedHelpers::IsTranslationFacadeAvailable(content))
         {
-            if (m_zoomFactorAnimationRestartTicksCountdown == 0)
+            if (m_translationAndZoomFactorAnimationsRestartTicksCountdown == 0)
             {
                 SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, m_animationRestartZoomFactor, m_zoomFactor);
 
-                // Stop Scale animation to trigger rasterization of Content, to avoid fuzzy text rendering for instance.
-                StopTransformExpressionAnimations(content, true /*forZoomFactorAnimationInterruption*/);
+                // Stop Translation and Scale animations to trigger rasterization of Content, to avoid fuzzy text rendering for instance.
+                StopTransformExpressionAnimations(content, true /*forAnimationsInterruption*/);
 
-                // Trigger Scroller::OnCompositionTargetRendering calls in order to re-establish the Scale animation
+                // Trigger Scroller::OnCompositionTargetRendering calls in order to re-establish the Translation and Scale animations
                 // after the Content rasterization was triggered within a few ticks.
                 HookCompositionTargetRendering();
             }
 
             m_animationRestartZoomFactor = m_zoomFactor;
-            m_zoomFactorAnimationRestartTicksCountdown = s_zoomFactorAnimationRestartTicks;
+            m_translationAndZoomFactorAnimationsRestartTicksCountdown = s_translationAndZoomFactorAnimationsRestartTicks;
         }
     }
 }
@@ -4002,7 +4004,7 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    bool unhookCompositionTargetRendering = StartZoomFactorExpressionAnimation();
+    bool unhookCompositionTargetRendering = StartTranslationAndZoomFactorExpressionAnimations();
 
     if (!m_interactionTrackerAsyncOperations.empty() && SharedHelpers::IsFrameworkElementLoaded(*this))
     {
@@ -4046,9 +4048,9 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
                 {
                     // The non-animated view change request did not result in a status change or ValuesChanged notification. Consider it completed.
                     CompleteViewChange(interactionTrackerAsyncOperation, ScrollerViewChangeResult::Completed);
-                    if (m_zoomFactorAnimationRestartTicksCountdown > 0)
+                    if (m_translationAndZoomFactorAnimationsRestartTicksCountdown > 0)
                     {
-                        // Do not unhook the Rendering event when there is a pending restart of the Scale animation. 
+                        // Do not unhook the Rendering event when there is a pending restart of the Translation and Scale animations. 
                         unhookCompositionTargetRendering = false;
                     }
                     m_interactionTrackerAsyncOperations.remove(interactionTrackerAsyncOperation);
@@ -5226,7 +5228,7 @@ void Scroller::UpdateContent(
             if ((m_transformMatrixTranslateXExpressionAnimation && m_transformMatrixTranslateYExpressionAnimation && m_transformMatrixZoomFactorExpressionAnimation && !useTranslationProperty) ||
                 (m_translationExpressionAnimation && m_zoomFactorExpressionAnimation && useTranslationProperty))
             {
-                StopTransformExpressionAnimations(oldContent, false /*forZoomFactorAnimationInterruption*/);
+                StopTransformExpressionAnimations(oldContent, false /*forAnimationsInterruption*/);
             }
             ScrollToOffsets(0.0 /*zoomedHorizontalOffset*/, 0.0 /*zoomedVerticalOffset*/);
         }
@@ -5284,13 +5286,19 @@ void Scroller::UpdateTransformSource(
         (m_translationExpressionAnimation && m_zoomFactorExpressionAnimation && IsVisualTranslationPropertyAvailable()));
     MUX_ASSERT(m_interactionTracker);
 
-    StopTransformExpressionAnimations(oldContent, false /*forZoomFactorAnimationInterruption*/);
-    StartTransformExpressionAnimations(newContent, false /*forZoomFactorAnimationInterruption*/);
+    StopTransformExpressionAnimations(oldContent, false /*forAnimationsInterruption*/);
+    StartTransformExpressionAnimations(newContent, false /*forAnimationsInterruption*/);
 }
 
 void Scroller::UpdateState(
     const winrt::InteractionState& state)
 {
+    if (state != winrt::InteractionState::Idle)
+    {
+        // Restart the interrupted expression animations sooner than planned to visualize the new view change immediately.
+        StartTranslationAndZoomFactorExpressionAnimations(true /*interruptCountdown*/);
+    }
+
     if (state != m_state)
     {
         m_state = state;
@@ -6105,12 +6113,25 @@ void Scroller::ProcessPointerWheelScroll(
         true /*isOperationTypeForOffsetsChange*/,
         InteractionTrackerAsyncOperationTrigger::MouseWheel);
 
+    // When isHorizontalMouseWheel == True, retrieve the reg key value for HKEY_CURRENT_USER\Control Panel\Desktop\WheelScrollChars.
+    // When isHorizontalMouseWheel == False, retrieve WheelScrollLines instead. Those two values can be set in the Control Panel's Mouse Properties / Wheel page.
+    // For improved performance, use the cached value, if present, when the InteractionTracker is in Inertia state, which is the state triggered by a mouse wheel input.
+    int32_t mouseWheelScrollLinesOrChars = RegUtil::GetMouseWheelScrollLinesOrChars(m_state == winrt::InteractionState::Inertia /*useCache*/, isHorizontalMouseWheel);
+
+    if (mouseWheelScrollLinesOrChars == -1)
+    {
+        MUX_ASSERT(!isHorizontalMouseWheel);
+        // The 'One screen at a time' option is selected in the Control Panel. The InteractionTracker's built-in behavior on RS5+ is equivalent to WheelScrollChars == 20.
+        mouseWheelScrollLinesOrChars = 20;
+    }
+
     // Mouse wheel delta amount required per initial velocity unit.
     int32_t mouseWheelDeltaForVelocityUnit = s_mouseWheelDeltaForVelocityUnit;
     com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
 
     if (globalTestHooks)
     {
+        mouseWheelScrollLinesOrChars = isHorizontalMouseWheel ? globalTestHooks->MouseWheelScrollChars() : globalTestHooks->MouseWheelScrollLines();
         mouseWheelDeltaForVelocityUnit = globalTestHooks->MouseWheelDeltaForVelocityUnit();
     }
 
@@ -6118,9 +6139,9 @@ void Scroller::ProcessPointerWheelScroll(
     // Maximum absolute velocity. Any additional velocity has no effect.
     const float c_maxVelocity = 4000.0f;
     // Velocity per unit (which is a mouse wheel delta of 120 by default). That is the velocity required to achieve a change of c_offsetChangePerVelocityUnit pixels.
-    const float c_unitVelocity = 1.572420572916667f * c_displayAdjustment;
+    const float c_unitVelocity = 0.524140190972223f * c_displayAdjustment * mouseWheelScrollLinesOrChars;
     // Effect of unit velocity on offset, to match the built-in RS5 behavior.
-    const float c_offsetChangePerVelocityUnit = 0.15f * c_displayAdjustment;
+    const float c_offsetChangePerVelocityUnit = 0.05f * mouseWheelScrollLinesOrChars * c_displayAdjustment;
 
     std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = nullptr;
     float offsetVelocity = static_cast<float>(mouseWheelDelta) / mouseWheelDeltaForVelocityUnit * c_unitVelocity;
@@ -6858,8 +6879,8 @@ void Scroller::CompleteViewChange(
                 RaiseViewChangeCompleted(true /*isForScroll*/, result, interactionTrackerAsyncOperation->GetViewChangeId());
                 break;
             default:
-                // Stop Scale animation if needed, to trigger rasterization of Content & avoid fuzzy text rendering for instance.
-                StopZoomFactorExpressionAnimation();
+                // Stop Translation and Scale animations if needed, to trigger rasterization of Content & avoid fuzzy text rendering for instance.
+                StopTranslationAndZoomFactorExpressionAnimations();
 
                 RaiseViewChangeCompleted(false /*isForScroll*/, result, interactionTrackerAsyncOperation->GetViewChangeId());
                 break;
@@ -7325,12 +7346,7 @@ void Scroller::UnhookScrollerEvents()
     m_loadedToken.revoke();
     m_unloadedToken.revoke();
     m_bringIntoViewRequested.revoke();
-    
-    if (m_pointerWheelChangedToken)
-    {
-        MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
-        m_pointerWheelChangedToken.revoke();
-    }
+    m_pointerWheelChangedToken.revoke();
 
     if (m_pointerPressedEventHandler)
     {

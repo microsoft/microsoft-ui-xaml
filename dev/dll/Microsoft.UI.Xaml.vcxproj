@@ -122,6 +122,10 @@
     <Import Project="..\Slider\Slider.vcxitems" Label="Shared" />
     <Import Project="..\TimePicker\TimePicker.vcxitems" Label="Shared" />
     <Import Project="..\ToolTip\ToolTip.vcxitems" Label="Shared" />
+    <Import Project="..\FlipView\FlipView.vcxitems" Label="Shared" />
+    <Import Project="..\ComboBox\ComboBox.vcxitems" Label="Shared" />
+    <Import Project="..\Pivot\Pivot.vcxitems" Label="Shared" />
+    <Import Project="..\ScrollBar\ScrollBar.vcxitems" Label="Shared" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -265,6 +269,7 @@
     <ClCompile Include="DoubleUtil.cpp" />
     <ClCompile Include="DownlevelHelper.cpp" />
     <ClCompile Include="FloatUtil.cpp" />
+    <ClCompile Include="RegUtil.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

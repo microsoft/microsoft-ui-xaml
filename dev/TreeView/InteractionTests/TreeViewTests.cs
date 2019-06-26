@@ -2578,6 +2578,44 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void TreeViewRootNodeBindingTest()
+        {
+            // TreeView databinding only works on RS5+
+            if(IsLowerThanRS5())
+            {
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(true);
+
+                ClickButton("ClearNodes");
+                ClickButton("AddRootNode");
+                ClickButton("AddRootNode");
+                ClickButton("GetItemCount");
+                Verify.AreEqual("2", ReadResult());
+
+                ClickButton("LabelItems");
+                var root0 = FindElement.ById("Root0");
+                var root1 = FindElement.ById("Root1");
+
+                Log.Comment("Drag Root1 onto Root0...");
+                InputHelper.DragToTarget(root1, root0);
+
+                ClickButton("GetItemCount");
+                Verify.AreEqual("1", ReadResult());
+
+                var rootTreeItem = new TreeItem(root0);
+                rootTreeItem.Expand();
+                Wait.ForIdle();
+                ClickButton("GetChildrenOrder");
+                Verify.AreEqual("Root0 | Root1", ReadResult());
+            }
+        }
+
         private void ClickButton(string buttonName)
         {
             var button = new Button(FindElement.ByName(buttonName));

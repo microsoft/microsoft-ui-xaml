@@ -119,10 +119,13 @@ void UniformGridLayoutState::SetSize(
     }
 }
 
-void UniformGridLayoutState::EnsureFirstElementOwnership()
+void UniformGridLayoutState::EnsureFirstElementOwnership(winrt::VirtualizingLayoutContext const& context)
 {
-    if (m_flowAlgorithm.GetElementIfRealized(0))
+    if (m_cachedFirstElement != nullptr && m_flowAlgorithm.GetElementIfRealized(0))
     {
+        // We created the element, but then flowlayout algorithm took ownership, so we can clear it and
+        // let flowlayout algorithm do its thing.
+        context.RecycleElement(m_cachedFirstElement);
         m_cachedFirstElement = nullptr;
     }
 }

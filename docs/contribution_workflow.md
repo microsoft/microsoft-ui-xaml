@@ -73,21 +73,19 @@ discussing it first: see the [New Feature or API Process](feature_proposal_proce
 
 Each pull request to `master` must pass the following checks.
 
-Pull requests into a fork will not trigger all of these checks, but you can manually request them 
-individually from the pipeline definition page.
+Pull requests from a fork will not automatically trigger all of these checks. A member of the WinUI 
+team can trigger the Azure Pipeline checks by commenting `/azp run` on the PR. The Azure Pipelines
+bot will then trigger the build.
 
 In order to have your change automatically merge once all checks have passed (including optional 
 checks), apply the [auto merge](https://github.com/Microsoft/microsoft-ui-xaml/labels/auto%20merge) 
 label. It will take effect after an 8 hour delay, [more info here](https://microsoft.sharepoint.com/teams/FabricBot/SitePages/AutoMerge,-Bot-Templates-and.aspx).
 
-#### [WinUI-Public-Tests](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=22)
-
-This pipeline builds your change and runs automated tests. These tests should match what you're 
-able to run with local automated testing using Test Explorer.
-
 #### [WinUI-Public-MUX-PR](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21)
 
-This check creates a Nuget package to match your change.
+This pipeline builds your change and runs automated tests. These tests should match what you're 
+able to run with local automated testing using Test Explorer. It also creates a NuGet package to
+match your change.
 
 #### license/cla
 
@@ -103,20 +101,6 @@ define them here:
 This pipeline extends [WinUI-Public-MUX-PR](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21) 
 to validate more platforms, adding Debug and ARM. It is run after your changes are merged to 
 master.
-
-#### [WinUI_build_OS](https://microsoft.visualstudio.com/WinUI/_build?definitionId=34263)
-
-This check validates that your code can be ported to the core Windows OS to 
-Windows.UI.Xaml.Controls.
-
-One snag you might hit is a failure in `PeformDEPControlsPort.cmd`. This 
-process validates the compatibility of your change with the port to the Windows
-build system and [Windows.UI.Xaml.Controls](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls).
-Unfortunately this process cannot be run locally without authentication to the 
-Windows build, so if you run into a problem with this validation step you may 
-need the help of a Microsoft employee. You may be able to look at similar code 
-and its use of `BUILD_WINDOWS` to figure out what you need to do, but feel free 
-to @ mention Microsoft team members to ask for help.
 
 ## Commit Messages
 

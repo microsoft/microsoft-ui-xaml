@@ -55,5 +55,18 @@ namespace MUXControls.ReleaseTest
                 Verify.IsNotNull(textBlock);
             }
         }
+
+        [TestMethod]
+        public void RepeaterNoCrashTest()
+        {
+            using (var setup = new TestSetupHelper("Repeater Tests"))
+            {
+                var button = new Button(FindElement.ByName("AddItemsButton"));
+                button.Click();
+
+                var item3 = FindElement.ByName("Item3");
+                Verify.IsNotNull(item3);
+            }
+        }
     }
 }

@@ -9,6 +9,7 @@
 CppWinRTActivatableClassWithDPFactory(TabView)
 
 GlobalDependencyProperty TabViewProperties::s_CanCloseTabsProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_IsAddButtonVisibleProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_LeftCustomContentProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_LeftCustomContentTemplateProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_RightCustomContentProperty{ nullptr };
@@ -16,7 +17,8 @@ GlobalDependencyProperty TabViewProperties::s_RightCustomContentTemplateProperty
 GlobalDependencyProperty TabViewProperties::s_TabWidthModeProperty{ nullptr };
 
 TabViewProperties::TabViewProperties()
-    : m_tabClosingEventSource{static_cast<TabView*>(this)}
+    : m_addButtonClickEventSource{static_cast<TabView*>(this)}
+    , m_tabClosingEventSource{static_cast<TabView*>(this)}
 {
     EnsureProperties();
 }
@@ -28,6 +30,17 @@ void TabViewProperties::EnsureProperties()
         s_CanCloseTabsProperty =
             InitializeDependencyProperty(
                 L"CanCloseTabs",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                nullptr);
+    }
+    if (!s_IsAddButtonVisibleProperty)
+    {
+        s_IsAddButtonVisibleProperty =
+            InitializeDependencyProperty(
+                L"IsAddButtonVisible",
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
@@ -94,6 +107,7 @@ void TabViewProperties::EnsureProperties()
 void TabViewProperties::ClearProperties()
 {
     s_CanCloseTabsProperty = nullptr;
+    s_IsAddButtonVisibleProperty = nullptr;
     s_LeftCustomContentProperty = nullptr;
     s_LeftCustomContentTemplateProperty = nullptr;
     s_RightCustomContentProperty = nullptr;
@@ -117,6 +131,16 @@ void TabViewProperties::CanCloseTabs(bool value)
 bool TabViewProperties::CanCloseTabs()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_CanCloseTabsProperty));
+}
+
+void TabViewProperties::IsAddButtonVisible(bool value)
+{
+    static_cast<TabView*>(this)->SetValue(s_IsAddButtonVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool TabViewProperties::IsAddButtonVisible()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_IsAddButtonVisibleProperty));
 }
 
 void TabViewProperties::LeftCustomContent(winrt::IInspectable const& value)
@@ -167,6 +191,16 @@ void TabViewProperties::TabWidthMode(winrt::TabViewWidthMode const& value)
 winrt::TabViewWidthMode TabViewProperties::TabWidthMode()
 {
     return ValueHelper<winrt::TabViewWidthMode>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_TabWidthModeProperty));
+}
+
+winrt::event_token TabViewProperties::AddButtonClick(winrt::TypedEventHandler<winrt::TabView, winrt::IInspectable> const& value)
+{
+    return m_addButtonClickEventSource.add(value);
+}
+
+void TabViewProperties::AddButtonClick(winrt::event_token const& token)
+{
+    m_addButtonClickEventSource.remove(token);
 }
 
 winrt::event_token TabViewProperties::TabClosing(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabClosingEventArgs> const& value)

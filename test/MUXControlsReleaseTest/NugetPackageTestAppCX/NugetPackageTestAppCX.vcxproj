@@ -190,6 +190,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\MUXTestUtilities\MUXTestUtilities.vcxproj">
+      <Project>{e7d6b510-3761-478a-8e22-72558dad924e}</Project>
+    </ProjectReference>
+  </ItemGroup>
    <!-- Include pgort140.dll in the app package -->
   <ItemGroup Condition="'$(Configuration)' == 'Release' and '$(PGOBuildMode)' == 'Instrument'">
 	<None Include="$(VC_PGO_RunTime_Dir)\pgort140.dll">
