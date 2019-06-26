@@ -70,13 +70,18 @@ namespace MUXControlsTestApp
                 {"ButtonInteraction", typeof(ButtonInteractionPage), "Button.png"},
                 {"SliderInteraction", typeof(SliderInteractionPage), "Slider.png"},
 #endif
+
+#if (ANIMATED_VISUAL_PLAYER_INCLUDED)
                 {"AnimatedVisualPlayer", typeof(AnimatedVisualPlayerPage), "Animations.png"},
+#endif
 #endif
                 {"NavigationView", typeof(NavigationViewCaseBundle), "NavigationView.png"},
                 {"ParallaxView", typeof(ParallaxViewPage), "ParallaxView.png"},
                 {"Acrylic", typeof(AcrylicPage), "AcrylicBrush.png"},
                 {"Reveal", typeof(RevealPage), "Reveal.png"},
+#if (REPEATER_INCLUDED)
                 {"ItemsRepeater", typeof(RepeaterTestUIPage), "ListView.png"},
+#endif
                 {"Scroller", typeof(ScrollerPage), "ScrollViewer.png"},
                 {"CornerRadius", typeof(CornerRadiusPage)},
                 {"AutoSuggestBox", typeof(AutoSuggestBoxPage), "AutoSuggestBox.png"},

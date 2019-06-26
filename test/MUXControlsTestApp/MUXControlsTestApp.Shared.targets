@@ -1,6 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\FeatureAreaFilterForInnerLoop.props" />
+
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CommonManaged\CommonManaged.projitems" Label="Shared" />
   <Import Project="$(MSBuildThisFileDirectory)\..\TestAppUtils\TestAppUtils.projitems" Label="Shared" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ColorPicker\TestUI\ColorPicker_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
@@ -33,7 +35,7 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ColorPicker\APITests\ColorPicker_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CommandBarFlyout\APITests\CommandBarFlyout_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\IconSource\APITests\IconSource_APITests.projitems" Label="Shared" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems" Label="Shared" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems" Label="Shared"  Condition="$(LayoutPanelExcluded) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Materials\Acrylic\APITests\AcrylicBrush_ApiTests.projitems" Label="Shared" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Materials\Reveal\APITests\Reveal_APITests.projitems" Label="Shared" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\NavigationView\NavigationView_ApiTests\NavigationView_ApiTests.projitems" Label="Shared" />
@@ -43,14 +45,14 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\APITests\APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadioButtons\TestUI\RadioButtons_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RatingControl\APITests\RatingControl_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Repeater\APITests\Repeater_APITests.projitems" Label="Shared" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Repeater\APITests\Repeater_APITests.projitems" Label="Shared"  Condition="$(RepeaterExcluded) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Scroller\APITests\Scroller_APITests.projitems" Label="Shared" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollViewer\APITests\ScrollViewer_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SplitButton\APITests\SplitButton_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SwipeControl\SwipeControl_APITests\SwipeControl_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TreeView\APITests\TreeView_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true' And $(UseInsiderSDK) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true' And $(UseInsiderSDK) == 'true' And  $(AnimatedVisualPlayerExcluded) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CommonStyles\APITests\CommonStyles_ApiTests.projitems" Label="Shared" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CheckBox\TestUI\CheckBox_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\DatePicker\TestUI\DatePicker_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />

@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildProjectDirectory)\..\..\FeatureAreaFilterForInnerLoop.props" />
   <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.190603.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190603.8\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props')" />
   <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props')" />
@@ -93,13 +94,13 @@
     <Import Project="..\Scroller\Scroller.vcxitems" Label="Shared" />
     <Import Project="..\ScrollViewer\ScrollViewer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\Lights\Lights.vcxitems" Label="Shared" />
-    <Import Project="..\Repeater\Repeater.vcxitems" Label="Shared" />
+    <Import Project="..\Repeater\Repeater.vcxitems" Label="Shared" Condition="$(RepeaterExcluded) != 'true'"/>
     <Import Project="..\SwipeControl\SwipeControl.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\TwoPaneView\TwoPaneView.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\TestHooks\TestHooks.vcxitems" Label="Shared" />
     <Import Project="..\PullToRefresh\PTRTracing\PTRTracing.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\SplitButton\SplitButton.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\LayoutPanel\LayoutPanel.vcxitems" Label="Shared" />
+    <Import Project="..\LayoutPanel\LayoutPanel.vcxitems" Label="Shared" Condition="$(LayoutPanelExcluded) != 'true'"/>
     <Import Project="..\DropDownButton\DropDownButton.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\RadioButtons\RadioButtons.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <!-- IconSource is implemented in Windows.UI.Xaml.dll in the OS repo, so we don't want to include it on that side. -->
@@ -111,8 +112,8 @@
     <Import Project="..\Interactions\SliderInteraction\SliderInteraction.vcxitems" Label="Shared" Condition="$(UseInternalSDK) == 'true'" />
     <Import Project="..\MenuFlyout\MenuFlyout.vcxitems" Label="Shared" />
     <Import Project="..\TeachingTip\TeachingTip.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' and $(UseInsiderSDK) == 'true'" />
+    <Import Project="..\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" /> 
+    <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' and $(UseInsiderSDK) == 'true' and $(AnimatedVisualPlayerExcluded) != 'true'" />
     <Import Project="..\TabView\TabView.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\AutoSuggestBox\AutoSuggestBox.vcxitems" Label="Shared" />
     <Import Project="..\CheckBox\CheckBox.vcxitems" Label="Shared" />

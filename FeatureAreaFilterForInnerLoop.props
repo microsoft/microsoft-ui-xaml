@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup Condition="$(SolutionName) == 'MUXControlsInnerLoop'">
+		<AnimatedVisualPlayerExcluded>false</AnimatedVisualPlayerExcluded>
+		<AutoSuggestBoxExcluded>false</AutoSuggestBoxExcluded>
+		<CalendarDatePickerExcluded>false</CalendarDatePickerExcluded>
+		<CheckBoxExcluded>false</CheckBoxExcluded>
+		<CollectionsExcluded>false</CollectionsExcluded>
+		<ColorPickerExcluded>false</ColorPickerExcluded>
+		<ComboBoxExcluded>false</ComboBoxExcluded>
+		<CommandBarFlyoutExcluded>false</CommandBarFlyoutExcluded>
+		<DatePickerExcluded>false</DatePickerExcluded>
+		<DropDownButtonExcluded>false</DropDownButtonExcluded>
+		<EffectsExcluded>false</EffectsExcluded>
+		<FlipViewExcluded>false</FlipViewExcluded>
+		<IconSourceExcluded>false</IconSourceExcluded>
+		<InteractionsExcluded>false</InteractionsExcluded>
+		
+		<LayoutPanelExcluded>true</LayoutPanelExcluded>
+		<RepeaterExcluded>true</RepeaterExcluded>
+
+		<LightsExcluded>false</LightsExcluded>
+		<MaterialsExcluded>false</MaterialsExcluded>
+		<MenuBarExcluded>false</MenuBarExcluded>
+		<MenuFlyoutExcluded>false</MenuFlyoutExcluded>
+		<NavigationViewExcluded>false</NavigationViewExcluded>
+		<ParallaxViewExcluded>false</ParallaxViewExcluded>
+		<PersonPictureExcluded>false</PersonPictureExcluded>
+		<PivotExcluded>false</PivotExcluded>
+		<PullToRefreshExcluded>false</PullToRefreshExcluded>
+		<RadioButtonsExcluded>false</RadioButtonsExcluded>
+		<RadioMenuFlyoutItemExcluded>false</RadioMenuFlyoutItemExcluded>
+		<RatingControlExcluded>false</RatingControlExcluded>
+		
+		<ResourceHelperExcluded>false</ResourceHelperExcluded>
+		<ScrollBarExcluded>false</ScrollBarExcluded>
+		<ScrollerExcluded>false</ScrollerExcluded>
+		<ScrollViewerExcluded>false</ScrollViewerExcluded>
+		<SliderExcluded>false</SliderExcluded>
+		<SplitButtonExcluded>false</SplitButtonExcluded>
+		<SwipeControlExcluded>false</SwipeControlExcluded>
+		<TabViewExcluded>false</TabViewExcluded>
+		<TeachingTipExcluded>false</TeachingTipExcluded>
+		<TelemetryExcluded>false</TelemetryExcluded>
+		<TimePickerExcluded>false</TimePickerExcluded>
+		<ToolTipExcluded>false</ToolTipExcluded>
+		<TreeViewExcluded>false</TreeViewExcluded>
+		<TwoPaneViewExcluded>false</TwoPaneViewExcluded>
+	</PropertyGroup>
+</Project>

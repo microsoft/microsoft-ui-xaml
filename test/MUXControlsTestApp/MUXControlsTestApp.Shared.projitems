@@ -5,6 +5,8 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\environment.props" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\SdkVersion.props" Condition="$(BuildingWithBuildExe) == 'true'" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props') And $(BuildingWithBuildExe) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\FeatureAreaFilterForInnerLoop.props" />
+
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
@@ -133,7 +135,12 @@
     <NoWarn>$(NoWarn);0105;8305</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="$(BuildLeanMuxForTheStoreApp) == 'true'">
-    <DefineConstants>$(DefineConstants);BUILD_LEAN_MUX_FOR_THE_STORE_APP</DefineConstants>
+    <DefineConstants>$(DefineConstants);BUILD_LEAN_MUX_FOR_THE_STORE_APP</DefineConstants> 
+  </PropertyGroup>
+  <PropertyGroup>
+    <DefineConstants Condition="$(AnimatedVisualPlayerExcluded) != 'true'">$(DefineConstants);ANIMATED_VISUAL_PLAYER_INCLUDED</DefineConstants>
+    <DefineConstants Condition="$(RepeaterExcluded) != 'true'">$(DefineConstants);REPEATER_INCLUDED</DefineConstants>
+    <DefineConstants Condition="$(LayoutPanelExcluded) != 'true'">$(DefineConstants);LAYOUT_PANEL_INCLUDED</DefineConstants>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Page>
