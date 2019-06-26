@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <VC_PGO_RunTime_Dir>$(VCToolsInstallDir)bin\Host$(Platform)\$(Platform)</VC_PGO_RunTime_Dir>
-        <VC_PGO_RunTime_Dir Condition="'$(Platform)'=='arm' or '$(Platform)'=='arm4'">$(VCToolsInstallDir)bin\$(Platform)</VC_PGO_RunTime_Dir>
+        <VC_PGO_RunTime_Dir Condition="'$(Platform)'=='arm' or '$(Platform)'=='arm4' or '$(Platform)'=='ARM' or '$(Platform)'=='ARM64'>$(VCToolsInstallDir)bin\$(Platform)</VC_PGO_RunTime_Dir>
         <!--ProfileGuidedDatabaseFileName>$(MSBuildThisFileDirectory)$(PlatformShortName)\Microsoft.UI.Xaml.pgd</ProfileGuidedDatabaseFileName-->
         <ProfileGuidedDatabaseFileName>$(MSBuildThisFileDirectory)Microsoft.UI.Xaml.pgd</ProfileGuidedDatabaseFileName>
     </PropertyGroup>
