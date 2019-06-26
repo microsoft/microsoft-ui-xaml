@@ -6,8 +6,7 @@ param(
 
 $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 
-$rootPath = & $vswhere -Latest -requires Microsoft.Component.MSBuild -property InstallationPath
-$MSBuildPath="$rootPath\MSBuild\15.0\Bin\MSBuild.exe"
+$MSBuildPath = & $vswhere -Latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
 
 if (-not (Test-Path $MSBuildPath))
 {
