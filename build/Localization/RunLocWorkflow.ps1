@@ -34,7 +34,7 @@ if (-not $BuildNumber) {
 if (-not $CopyBackOnly)
 {
     Write-Host "Restoring nuget packages ..." -ForegroundColor Green
-    \\edge-svcs\nuget\v4\nuget.exe restore Settings\packages.config -packagesdirectory ..\..\packages -configfile nuget.config
+    & "..\..\tools\NugetWrapper.cmd" restore Settings\packages.config -packagesdirectory ..\..\packages -configfile nuget.config
 
     if ($lastexitcode -ne 0) {
 	    Write-Host "##vso[task.logissue type=error;] Nuget package restore failed with exit code $lastexitcode"
