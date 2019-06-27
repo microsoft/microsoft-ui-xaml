@@ -32,7 +32,9 @@
 
   <PropertyGroup>
     <CSLangVersion>7</CSLangVersion>
-    <MSBuildWarningsAsErrors>WMC0151</MSBuildWarningsAsErrors>
+    
+    <!-- Surface as errors the warnings that a XAML file is using a type defined in a later version of XAML than the min version for which we're compiling. -->
+    <MSBuildWarningsAsErrors>WMC0151;XLS1105</MSBuildWarningsAsErrors>
   </PropertyGroup>
   
   <!-- MUXControls Project-specific Properties -->
