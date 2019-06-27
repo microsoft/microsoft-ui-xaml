@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 <!-- This is a template for discussion issues.
-These issues invite members of our community to discuss any topics or ideas related to WinUI.  For example, you might
+Discussion issues can be about any topics or ideas related to WinUI.  For example, you might
 start a Discussion issue to see if others are interested in a cool new idea you've been thinking about that isn't quite
 ready to be filed as a more formal Feature Proposal.
 
