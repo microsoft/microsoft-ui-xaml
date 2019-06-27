@@ -32,6 +32,7 @@
 
   <PropertyGroup>
     <CSLangVersion>7</CSLangVersion>
+    <MSBuildWarningsAsErrors>WMC0151</MSBuildWarningsAsErrors>
   </PropertyGroup>
   
   <!-- MUXControls Project-specific Properties -->
