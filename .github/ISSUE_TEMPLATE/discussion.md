@@ -1,7 +1,7 @@
 ---
 name: Discussion
 about: Start a discussion topic, or brainstorm a new idea, related to WinUI
-title: 'Discussion:'
+title: 'Discussion: [your discussion title]'
 labels: discussion
 assignees: ''
 
