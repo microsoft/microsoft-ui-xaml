@@ -22,9 +22,20 @@ namespace MUXControls.ReleaseTest
             LogOutput("Running pgosweep for test:" + pgcFileName);
             try
             {
-                var process = Process.Start("pgosweep.exe", "microsoft.ui.xaml.dll " + pgcFileName + ".pgc");
-                process.WaitForExit(milliseconds: 10000);
-                LogOutput(process.StandardOutput.ReadToEnd());
+                var startInfo = new ProcessStartInfo() {
+                    FileName = "pgosweep.exe",
+                    Arguments = "microsoft.ui.xaml.dll " + pgcFileName + ".pgc",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true
+                };
+                using (var process = Process.Start(startInfo))
+                {
+                    var output = new StringBuilder();
+                    while (!process.HasExited)
+                    {
+                        LogOutput(process.StandardOutput.ReadToEnd());
+                    }
+                }
             }
             catch (Exception ex)
             {
