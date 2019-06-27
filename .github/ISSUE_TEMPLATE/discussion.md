@@ -20,4 +20,4 @@ things happening in our industry, or stories you'd like to share about how WinUI
 <!-- Add a title for your Discussion issue. Please be short and descriptive, and write body text in this section. -->
 
 ## Related Links
-<!-- Please list any related links or referneces to this discussion issue -->
+<!-- Please list any related links or references to this discussion issue -->
