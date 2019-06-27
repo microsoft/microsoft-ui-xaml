@@ -1,0 +1,14 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[bindable]
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass CornerRadiusFilterConverter : Windows.UI.Xaml.Data.IValueConverter
+{
+    CornerRadiusFilterConverter();
+    Object Convert(Object value, Windows.UI.Xaml.Interop.TypeName targetType, Object parameter, String language);
+    Object ConvertBack(Object value, Windows.UI.Xaml.Interop.TypeName targetType, Object parameter, String language);
+};
+
+}
