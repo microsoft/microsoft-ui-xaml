@@ -9,11 +9,25 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <FlipView Width="200" Height="200">
+    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+        <FlipView Width="200" Height="200"
+                  CornerRadius="2">
             <Grid Background="Red"/>
             <Grid Background="Green"/>
             <Grid Background="Blue"/>
         </FlipView>
-    </Grid>
+        
+        <FlipView Width="200" Height="200"
+                  Margin="0, 20, 0, 0"
+                  CornerRadius="2">
+            <FlipView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </FlipView.ItemsPanel>
+            <Grid Background="Red"/>
+            <Grid Background="Green"/>
+            <Grid Background="Blue"/>
+        </FlipView>
+    </StackPanel>
 </local:TestPage>
