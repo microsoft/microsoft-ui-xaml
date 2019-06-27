@@ -1,6 +1,6 @@
 ---
 name: Feature Proposal
-about: Suggest a new feature or idea
+about: Propose a new feature for WinUI
 title: 'Proposal:'
 labels: feature proposal
 assignees: ''
@@ -10,6 +10,10 @@ assignees: ''
 <!-- This is a template for new feature or API proposals.
 For example you can use this to propose a new API on an existing type, or an idea for a new UI control.
 It's fine if you don't have all the details: you can start with the Summary and Rationale.
+
+If your proposal is more of a vague idea--and you're not sure what specifically you're proposing, file
+a Discussion issue instead.  Once the discussion yields clarity on what should be added to WinUI, a
+Feature Proposal can be filed.
 
 This link describes the WinUI feature/API proposal process:
 https://github.com/Microsoft/microsoft-ui-xaml/blob/master/docs/feature_proposal_process.md
