@@ -13,7 +13,7 @@ start a Discussion issue to see if others are interested in a cool new idea you'
 ready to be filed as a more formal Feature Proposal.
 
 Discussion issues can also just be used to chat about non-feature-related topics, such as how WinUI relates to other
-things happening in our industry, or stories you'd like to share about how WinUI meets (or doesn't) meet your needs.
+things happening in our industry, or stories you'd like to share about how WinUI meets (or doesn't meet) your needs.
 -->
 
 # Discussion: [your title here] 
