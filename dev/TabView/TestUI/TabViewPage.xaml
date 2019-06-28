@@ -24,12 +24,14 @@
                 <CheckBox x:Name="IsAddButtonVisibleCheckBox" AutomationProperties.Name="IsAddButtonVisibleCheckBox" Content="Add button visible" IsChecked="{x:Bind Tabs.IsAddButtonVisible, Mode=TwoWay}"/>
 
                 <Button x:Name="RemoveTabButton" AutomationProperties.Name="RemoveTabButton"  Content="Remove Tab" Margin="0,0,0,8" Click="RemoveTabButton_Click"/>
+                <Button x:Name="SelectItemButton" AutomationProperties.Name="SelectItemButton"  Content="Select Item 1" Margin="0,0,0,8" Click="SelectItemButton_Click"/>
+                <Button x:Name="SelectIndexButton" AutomationProperties.Name="SelectIndexButton"  Content="Select Index 2" Margin="0,0,0,8" Click="SelectIndexButton_Click"/>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <TextBlock VerticalAlignment="Center">Tab Width:</TextBlock>
                     <ComboBox x:Name="TabWidthComboBox" AutomationProperties.Name="TabWidthComboBox" Margin="4,0,0,0" SelectedIndex="1" SelectionChanged="TabWidthComboBox_SelectionChanged">
                         <ComboBoxItem Content="SizeToContent"/>
-                        <ComboBoxItem Content="Fixed"/>
+                        <ComboBoxItem Content="Equal"/>
                     </ComboBox>
                 </StackPanel>
 
@@ -42,7 +44,7 @@
             <controls:TabView
                 x:Name="Tabs"
                 Grid.Column="1"
-                TabWidthMode="Fixed"
+                TabWidthMode="Equal"
                 SelectedIndex="0"
                 SelectionChanged="TabViewSelectionChanged"
                 TabClosing="TabViewTabClosing"

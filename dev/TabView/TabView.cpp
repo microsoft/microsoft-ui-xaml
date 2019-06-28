@@ -334,7 +334,7 @@ void TabView::UpdateTabWidths()
                 tabColumn.MaxWidth(availableWidth);
                 tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
             }
-            else if (TabWidthMode() == winrt::TabViewWidthMode::Fixed)
+            else if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
             {
                 // Tabs should all be the same size, proportional to the amount of space.
                 double minTabWidth = unbox_value<double>(SharedHelpers::FindResource(c_tabViewItemMinWidthName, winrt::Application::Current().Resources(), box_value(c_tabMinimumWidth)));

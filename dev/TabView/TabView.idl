@@ -6,7 +6,7 @@
 enum TabViewWidthMode
 {
     SizeToContent = 0,
-    Fixed = 1,
+    Equal = 1,
 };
 
 [WUXC_VERSION_PREVIEW]
