@@ -7,8 +7,8 @@
       <MicrosoftUIXamlTargetPlatformMinCheckValue>$([System.Version]::Parse('$(TargetPlatformMinVersion)').Build)</MicrosoftUIXamlTargetPlatformMinCheckValue>
     </PropertyGroup>
     <Error 
-        Text="Microsoft.UI.Xaml nuget package requires TargetPlatformMinVersion &gt;= 10.0.14393.0 (current project is $(MicrosoftUIXamlTargetPlatformMinCheckValue))" 
-        Condition="$(MicrosoftUIXamlTargetPlatformMinCheckValue) &lt; 14393" />
+        Text="Microsoft.UI.Xaml nuget package requires TargetPlatformMinVersion &gt;= 10.0.15063.0 (current project is $(MicrosoftUIXamlTargetPlatformMinCheckValue))" 
+        Condition="$(MicrosoftUIXamlTargetPlatformMinCheckValue) &lt; 15063" />
     <PropertyGroup>
       <MicrosoftUIXamlTargetPlatformCheckValue>$([System.Version]::Parse('$(TargetPlatformVersion)').Build)</MicrosoftUIXamlTargetPlatformCheckValue>
     </PropertyGroup>
