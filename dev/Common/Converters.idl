@@ -4,11 +4,10 @@
 [bindable]
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
+[default_interface]
 runtimeclass CornerRadiusFilterConverter : Windows.UI.Xaml.Data.IValueConverter
 {
     CornerRadiusFilterConverter();
-    Object Convert(Object value, Windows.UI.Xaml.Interop.TypeName targetType, Object parameter, String language);
-    Object ConvertBack(Object value, Windows.UI.Xaml.Interop.TypeName targetType, Object parameter, String language);
 };
 
 }
