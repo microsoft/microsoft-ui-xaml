@@ -590,11 +590,6 @@
             </Grid>
             <Grid Grid.Row="39" Style="{StaticResource RightColumn}" Width="200" Height="200">
                 <FlipView CornerRadius="6">
-                    <FlipView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel Orientation="Vertical"/>
-                        </ItemsPanelTemplate>
-                    </FlipView.ItemsPanel>
                     <Grid Background="Red"/>
                     <Grid Background="Green"/>
                     <Grid Background="Blue"/>

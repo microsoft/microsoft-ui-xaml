@@ -5,9 +5,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxcp="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
+
+    <local:TestPage.Resources>
+        <muxcp:CornerRadiusFilterConverter x:Key="CornerRadiusFilterConverter" />
+        <CornerRadius x:Key="testCornerRadius">6,6,6,6</CornerRadius>
+    </local:TestPage.Resources>
+
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel>
             <Grid>
@@ -231,6 +238,39 @@
                         <Button x:Name="AppBarToggleButtonDensityTest" AutomationProperties.Name="AppBarToggleButtonDensityTest" Content="AppBarToggleButtonDensity" Click="AppBarToggleButtonDensityTest_Click" />
                         <Button x:Name="RichEditBoxDensityTest" AutomationProperties.Name="RichEditBoxDensityTest" Content="RichEditBoxDensity" Click="RichEditBoxDensityTest_Click" />
                     </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <TextBlock Text="CornerRadiusFilterConverter:" Margin="0, 20, 0, 0"/>
+            <TextBlock x:Name="CornerRadiusFilterTestResult"/>
+            <StackPanel Orientation="Horizontal">
+                <Grid x:Name="TopRadiusFilterGrid"
+                      Width="100" Height="100"
+                      Background="LightGray"
+                      Margin="20, 0, 0, 0"
+                      CornerRadius="{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter='Top'}">
+                    <Button x:Name="VerifyTop" Content="VerifyTop" HorizontalAlignment="Center" Click="VerifyTop_Click"/>
+                </Grid>
+                <Grid x:Name="RightRadiusFilterGrid"
+                      Width="100" Height="100"
+                      Background="LightGray"
+                      Margin="20, 0, 0, 0"
+                      CornerRadius="{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter='Right'}">
+                    <Button x:Name="VerifyRight" Content="VerifyRight" HorizontalAlignment="Center" Click="VerifyRight_Click"/>
+                </Grid>
+                <Grid x:Name="BottomRadiusFilterGrid"
+                      Width="100" Height="100"
+                      Background="LightGray"
+                      Margin="20, 0, 0, 0"
+                      CornerRadius="{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter='Bottom'}">
+                    <Button x:Name="VerifyBottom" Content="VerifyBottom" HorizontalAlignment="Center" Click="VerifyBottom_Click"/>
+                </Grid>
+                <Grid x:Name="LeftRadiusFilterGrid"
+                      Width="100" Height="100"
+                      Background="LightGray"
+                      Margin="20, 0, 0, 0"
+                      CornerRadius="{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter='Left'}">
+                    <Button x:Name="VerifyLeft" Content="VerifyLeft" HorizontalAlignment="Center" Click="VerifyLeft_Click"/>
                 </Grid>
             </StackPanel>
         </StackPanel>

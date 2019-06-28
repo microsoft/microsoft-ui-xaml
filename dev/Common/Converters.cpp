@@ -20,11 +20,7 @@ winrt::IInspectable CornerRadiusFilterConverter::Convert(
     auto radius = unbox_value<winrt::CornerRadius>(value);
     auto filter = unbox_value<winrt::hstring>(parameter);
 
-    winrt::CornerRadius result;
-    result.TopLeft = radius.TopLeft;
-    result.TopRight = radius.TopRight;
-    result.BottomRight = radius.BottomRight;
-    result.BottomLeft = radius.BottomLeft;
+    winrt::CornerRadius result = radius;
 
     if (filter == L"Top")
     {

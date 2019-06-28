@@ -299,5 +299,38 @@ namespace MUXControlsTestApp
 
             DensityTestResult.Text = simpleVerify.ToString();
         }
+
+        private void VerifyTop_Click(object sender, RoutedEventArgs e)
+        {
+            VerifyCornerRadius(TopRadiusFilterGrid.CornerRadius, new[] { 6, 6, 0, 0 });
+        }
+
+        private void VerifyRight_Click(object sender, RoutedEventArgs e)
+        {
+            VerifyCornerRadius(RightRadiusFilterGrid.CornerRadius, new[] { 0, 6, 6, 0 });
+        }
+
+        private void VerifyBottom_Click(object sender, RoutedEventArgs e)
+        {
+            VerifyCornerRadius(BottomRadiusFilterGrid.CornerRadius, new[] { 0, 0, 6, 6 });
+        }
+
+        private void VerifyLeft_Click(object sender, RoutedEventArgs e)
+        {
+            VerifyCornerRadius(LeftRadiusFilterGrid.CornerRadius, new[] { 6, 0, 0, 6 });
+        }
+
+        private void VerifyCornerRadius(CornerRadius radius, int[] expectedValue)
+        {
+            if (radius.TopLeft == expectedValue[0] && radius.TopRight == expectedValue[1]
+                && radius.BottomRight == expectedValue[2] && radius.BottomLeft == expectedValue[3])
+            {
+                CornerRadiusFilterTestResult.Text = "Passed";
+            }
+            else
+            {
+                CornerRadiusFilterTestResult.Text = $"{radius.TopLeft},{radius.TopRight},{radius.BottomRight},{radius.BottomLeft}";
+            }
+        }
     }
 }

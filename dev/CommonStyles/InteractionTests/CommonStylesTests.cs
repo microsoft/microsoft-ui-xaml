@@ -147,5 +147,40 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(testResult, "Pass", "We expect compact test result is Pass"); // "Pass" string matches value used by MUXControlsTestApp.SimpleVerify
             }
         }
+
+        [TestMethod]
+        public void CornerRadiusFilterConverterTest()
+        {
+            if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
+            {
+                Log.Comment("Corner radius is only available on RS5+");
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("CommonStyles Tests"))
+            {
+                var testResultBlock = new TextBlock(FindElement.ById("CornerRadiusFilterTestResult"));
+
+                var top = new Button(FindElement.ByName("VerifyTop"));
+                top.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("Passed", testResultBlock.GetText());
+
+                var right = new Button(FindElement.ByName("VerifyRight"));
+                right.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("Passed", testResultBlock.GetText());
+
+                var bottom = new Button(FindElement.ByName("VerifyBottom"));
+                bottom.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("Passed", testResultBlock.GetText());
+
+                var left = new Button(FindElement.ByName("VerifyLeft"));
+                left.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("Passed", testResultBlock.GetText());
+            }
+        }
     }
 }
