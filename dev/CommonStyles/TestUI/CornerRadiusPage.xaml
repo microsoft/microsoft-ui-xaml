@@ -12,6 +12,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <ScrollViewer>
+        
         <Grid RowSpacing="10" ColumnSpacing="10">
             <Grid.Resources>
                 <Style x:Key="SideHeader" TargetType="TextBlock">
@@ -95,6 +96,22 @@
             <TextBlock Text="Normal" Grid.Column="1" Style="{StaticResource BaseTextBlockStyle}"/>
             <TextBlock Text="CornerRadius" Grid.Column="2" Style="{StaticResource BaseTextBlockStyle}"/>
 
+            <Slider
+                Header="ControlCornerRadius"
+                Orientation="Horizontal"
+                Grid.Row="2"
+                Grid.Column="2"
+                Maximum="20"
+                Value="{x:Bind ControlCornerRadiusSize, Mode=TwoWay}"/>
+
+            <Slider
+                Header="OverlayCornerRadius"
+                Orientation="Horizontal"
+                Grid.Row="3"
+                Grid.Column="2"
+                Maximum="20"
+                Value="{x:Bind OverlayCornerRadiusSize, Mode=TwoWay}"/>
+
             <TextBlock Grid.Row="5" Text="ListBox" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="5" Style="{StaticResource LeftColumn}">
                 <ListBox>
@@ -104,7 +121,7 @@
                 </ListBox>
             </Grid>
             <Grid Grid.Row="5" Style="{StaticResource RightColumn}">
-                <ListBox CornerRadius="6">
+                <ListBox CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                     <ListBoxItem Content="Item 1"/>
                     <ListBoxItem Content="Item 2"/>
                     <ListBoxItem Content="Item 3"/>
@@ -120,7 +137,7 @@
                 </ComboBox>
             </Grid>
             <Grid Grid.Row="6" Style="{StaticResource RightColumn}">
-                <ComboBox CornerRadius="6">
+                <ComboBox CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                     <ComboBoxItem Content="Item 1"/>
                     <ComboBoxItem Content="Item 2"/>
                     <ComboBoxItem Content="Item 3"/>
@@ -149,7 +166,7 @@
                 </ComboBox>
             </Grid>
             <Grid Grid.Row="7" Style="{StaticResource RightColumn}">
-                <ComboBox IsEditable="True" CornerRadius="6">
+                <ComboBox IsEditable="True" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                     <ComboBoxItem Content="Item 1"/>
                     <ComboBoxItem Content="Item 2"/>
                     <ComboBoxItem Content="Item 3"/>
@@ -174,7 +191,7 @@
                 <AutoSuggestBox ItemsSource="{x:Bind AutoSuggestSource}"/>
             </Grid>
             <Grid Grid.Row="8" Style="{StaticResource RightColumn}">
-                <AutoSuggestBox ItemsSource="{x:Bind AutoSuggestSource}" CornerRadius="6"/>
+                <AutoSuggestBox ItemsSource="{x:Bind AutoSuggestSource}" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="9" Text="DatePicker" Style="{StaticResource SideHeader}"/>
@@ -182,7 +199,7 @@
                 <DatePicker />
             </Grid>
             <Grid Grid.Row="9" Style="{StaticResource RightColumn}">
-                <DatePicker CornerRadius="6"/>
+                <DatePicker CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="10" Text="TimePicker" Style="{StaticResource SideHeader}"/>
@@ -190,7 +207,7 @@
                 <TimePicker/>
             </Grid>
             <Grid Grid.Row="10" Style="{StaticResource RightColumn}">
-                <TimePicker CornerRadius="6"/>
+                <TimePicker CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="11" Text="CommandBar" Style="{StaticResource SideHeader}"/>
@@ -210,7 +227,7 @@
                 </CommandBar>
             </Grid>
             <Grid Grid.Row="11" Style="{StaticResource RightColumn}">
-                <CommandBar CornerRadius="6">
+                <CommandBar CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                     <AppBarButton Icon="AddFriend"/>
                     <AppBarButton Icon="World" Label="World"/>
                     <AppBarToggleButton Icon="Volume" Label="Volume"/>
@@ -246,7 +263,7 @@
                         <Flyout>
                             <Flyout.FlyoutPresenterStyle>
                                 <Style TargetType="FlyoutPresenter">
-                                    <Setter Property="CornerRadius" Value="6"/>
+                                    <Setter Property="CornerRadius" Value="{Binding OverlayCornerRadius, Mode=OneWay}"/>
                                 </Style>
                             </Flyout.FlyoutPresenterStyle>
                             <TextBlock Text="Hello World"/>
@@ -256,7 +273,7 @@
                         <Flyout>
                             <Flyout.FlyoutPresenterStyle>
                                 <Style TargetType="FlyoutPresenter">
-                                    <Setter Property="CornerRadius" Value="6"/>
+                                    <Setter Property="CornerRadius" Value="{Binding OverlayCornerRadius, Mode=OneWay}"/>
                                 </Style>
                             </Flyout.FlyoutPresenterStyle>
                             <TextBlock Text="Hello World" MinHeight="300" MinWidth="300"/>
@@ -304,7 +321,7 @@
                         <MenuFlyout>
                             <MenuFlyout.MenuFlyoutPresenterStyle>
                                 <Style TargetType="MenuFlyoutPresenter">
-                                    <Setter Property="CornerRadius" Value="6"/>
+                                    <Setter Property="CornerRadius" Value="{Binding OverlayCornerRadius, Mode=OneWay}"/>
                                 </Style>
                             </MenuFlyout.MenuFlyoutPresenterStyle>
                             <MenuFlyoutItem Text="Share" >
@@ -323,7 +340,7 @@
                         <MenuFlyout>
                             <MenuFlyout.MenuFlyoutPresenterStyle>
                                 <Style TargetType="MenuFlyoutPresenter">
-                                    <Setter Property="CornerRadius" Value="6"/>
+                                    <Setter Property="CornerRadius" Value="{Binding OverlayCornerRadius, Mode=OneWay}"/>
                                 </Style>
                             </MenuFlyout.MenuFlyoutPresenterStyle>
                             <MenuFlyoutItem Text="Share" >
@@ -356,7 +373,7 @@
                 </ToolTip>
             </Grid>
             <Grid Grid.Row="15" Style="{StaticResource RightColumn}">
-                <ToolTip CornerRadius="6">
+                <ToolTip CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                     <TextBlock Text="Hello world"/>
                 </ToolTip>
             </Grid>
@@ -366,7 +383,7 @@
                 <CalendarView/>
             </Grid>
             <Grid Grid.Row="17" Style="{StaticResource RightColumn}">
-                <CalendarView CornerRadius="6"/>
+                <CalendarView CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="18" Text="CalendarDatePicker" Style="{StaticResource SideHeader}"/>
@@ -374,7 +391,7 @@
                 <CalendarDatePicker/>
             </Grid>
             <Grid Grid.Row="18" Style="{StaticResource RightColumn}">
-                <CalendarDatePicker CornerRadius="6"/>
+                <CalendarDatePicker CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="20" Text="ToggleSwitch" Style="{StaticResource SideHeader}"/>
@@ -382,7 +399,7 @@
                 <ToggleSwitch/>
             </Grid>
             <Grid Grid.Row="20" Style="{StaticResource RightColumn}">
-                <ToggleSwitch CornerRadius="6"/>
+                <ToggleSwitch CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="21" Text="Slider" Style="{StaticResource SideHeader}"/>
@@ -398,7 +415,7 @@
                     <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
                     <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
                 </Grid.Resources>
-                <Slider Orientation="Horizontal" CornerRadius="6"/>
+                <Slider Orientation="Horizontal" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="22" Text="Slider" Style="{StaticResource SideHeader}"/>
@@ -414,7 +431,7 @@
                     <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
                     <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
                 </Grid.Resources>
-                <Slider Orientation="Horizontal" TickFrequency="1" Width="200" TickPlacement="Outside" CornerRadius="6"/>
+                <Slider Orientation="Horizontal" TickFrequency="1" Width="200" TickPlacement="Outside" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="23" Text="" Style="{StaticResource SideHeader}"/>
@@ -430,7 +447,7 @@
                     <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
                     <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
                 </Grid.Resources>
-                <Slider Orientation="Vertical" CornerRadius="6"/>
+                <Slider Orientation="Vertical" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="24" Text="" Style="{StaticResource SideHeader}"/>
@@ -446,7 +463,7 @@
                     <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
                     <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
                 </Grid.Resources>
-                <Slider Orientation="Vertical" TickFrequency="1" Height="100" TickPlacement="Outside" CornerRadius="6"/>
+                <Slider Orientation="Vertical" TickFrequency="1" Height="100" TickPlacement="Outside" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="25" Text="AppBar" Style="{StaticResource SideHeader}"/>
@@ -456,7 +473,7 @@
                 </AppBar>
             </Grid>
             <Grid Grid.Row="25" Style="{StaticResource RightColumn}">
-                <AppBar CornerRadius="6">
+                <AppBar CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                     <AppBarButton Icon="World"/>
                 </AppBar>
             </Grid>
@@ -488,7 +505,7 @@
                 </controls:MenuBar>
             </Grid>
             <Grid Grid.Row="26" Style="{StaticResource RightColumn}">
-                <controls:MenuBar CornerRadius="6">
+                <controls:MenuBar CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                     <controls:MenuBarItem Title="One">
                         <controls:MenuBarItem.Items>
                             <MenuFlyoutItem Text="A"/>
@@ -518,7 +535,7 @@
                 <ProgressBar Minimum="0" Maximum="100" Value="50"/>
             </Grid>
             <Grid Grid.Row="31" Style="{StaticResource RightColumn}" MinWidth="100">
-                <ProgressBar Minimum="0" Maximum="100" Value="50" CornerRadius="6"/>
+                <ProgressBar Minimum="0" Maximum="100" Value="50" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="32" Text="TextBlock" Style="{StaticResource SideHeader}"/>
@@ -546,7 +563,7 @@
                 <CheckBox Content="Hello World"/>
             </Grid>
             <Grid Grid.Row="34" Style="{StaticResource RightColumn}">
-                <CheckBox Content="Hello World" CornerRadius="6"/>
+                <CheckBox Content="Hello World" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="35" Text="Button" Style="{StaticResource SideHeader}"/>
@@ -554,7 +571,7 @@
                 <Button Content="Hello World"/>
             </Grid>
             <Grid Grid.Row="35" Style="{StaticResource RightColumn}">
-                <Button Content="Hello World" CornerRadius="6"/>
+                <Button Content="Hello World" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="36" Text="TextBox" Style="{StaticResource SideHeader}"/>
@@ -562,7 +579,7 @@
                 <TextBox Text="Hello World"/>
             </Grid>
             <Grid Grid.Row="36" Style="{StaticResource RightColumn}">
-                <TextBox Text="Hello World" CornerRadius="6"/>
+                <TextBox Text="Hello World" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="37" Text="PasswordBox" Style="{StaticResource SideHeader}"/>
@@ -570,7 +587,7 @@
                 <PasswordBox Password="Hello World"/>
             </Grid>
             <Grid Grid.Row="37" Style="{StaticResource RightColumn}">
-                <PasswordBox Password="Hello World" CornerRadius="6"/>
+                <PasswordBox Password="Hello World" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="38" Text="RichEditBox" Style="{StaticResource SideHeader}"/>
@@ -578,7 +595,7 @@
                 <RichEditBox/>
             </Grid>
             <Grid Grid.Row="38" Style="{StaticResource RightColumn}">
-                <RichEditBox CornerRadius="6"/>
+                <RichEditBox CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
             <TextBlock Grid.Row="39" Text="FlipView" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="39" Style="{StaticResource LeftColumn}" Width="200" Height="200">
@@ -589,7 +606,7 @@
                 </FlipView>
             </Grid>
             <Grid Grid.Row="39" Style="{StaticResource RightColumn}" Width="200" Height="200">
-                <FlipView CornerRadius="6">
+                <FlipView CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                     <Grid Background="Red"/>
                     <Grid Background="Green"/>
                     <Grid Background="Blue"/>
@@ -606,9 +623,9 @@
             </Grid>
             <Grid Grid.Row="40" Style="{StaticResource RightColumn}">
                 <StackPanel Orientation="Vertical">
-                    <RadioButton Content="Item 1" CornerRadius="6"/>
-                    <RadioButton Content="Item 2" CornerRadius="6"/>
-                    <RadioButton Content="Item 3" CornerRadius="6"/>
+                    <RadioButton Content="Item 1" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    <RadioButton Content="Item 2" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                    <RadioButton Content="Item 3" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
                 </StackPanel>
             </Grid>
 
@@ -617,7 +634,7 @@
                 <ToggleButton Content="Hello World"/>
             </Grid>
             <Grid Grid.Row="41" Style="{StaticResource RightColumn}">
-                <ToggleButton Content="Hello World" CornerRadius="6"/>
+                <ToggleButton Content="Hello World" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="42" Text="ToggleSplitButton" Style="{StaticResource SideHeader}"/>
@@ -633,7 +650,7 @@
                 </controls:ToggleSplitButton>
             </Grid>
             <Grid Grid.Row="42" Style="{StaticResource RightColumn}">
-                <controls:ToggleSplitButton Content="Hello World" CornerRadius="6">
+                <controls:ToggleSplitButton Content="Hello World" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                     <controls:ToggleSplitButton.Flyout>
                         <Flyout>
                             <Flyout.Content>
@@ -649,7 +666,7 @@
                 <RepeatButton Content="Hello World"/>
             </Grid>
             <Grid Grid.Row="43" Style="{StaticResource RightColumn}">
-                <RepeatButton Content="Hello World" CornerRadius="6"/>
+                <RepeatButton Content="Hello World" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="44" Text="HyperlinkButton" Style="{StaticResource SideHeader}"/>
@@ -657,7 +674,7 @@
                 <HyperlinkButton Content="Hello World"/>
             </Grid>
             <Grid Grid.Row="44" Style="{StaticResource RightColumn}">
-                <HyperlinkButton Content="Hello World" CornerRadius="6"/>
+                <HyperlinkButton Content="Hello World" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
 
             <TextBlock Grid.Row="45" Text="DropDownButton" Style="{StaticResource SideHeader}"/>
@@ -673,7 +690,7 @@
                 </controls:DropDownButton>
             </Grid>
             <Grid Grid.Row="45" Style="{StaticResource RightColumn}">
-                <controls:DropDownButton Content="Hello World" CornerRadius="6">
+                <controls:DropDownButton Content="Hello World" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                     <controls:DropDownButton.Flyout>
                         <Flyout>
                             <Flyout.Content>
@@ -696,7 +713,7 @@
                 </controls:SplitButton>
             </Grid>
             <Grid Grid.Row="46" Style="{StaticResource RightColumn}">
-                <controls:SplitButton Content="Hello World" CornerRadius="6">
+                <controls:SplitButton Content="Hello World" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                     <controls:SplitButton.Flyout>
                         <Flyout>
                             <Flyout.Content>
@@ -713,13 +730,13 @@
             <Grid Grid.Row="47" Style="{StaticResource RightColumn}">
                 <Grid.Resources>
                     <Style TargetType="ComboBox">
-                        <Setter Property="CornerRadius" Value="6"/>
+                        <Setter Property="CornerRadius" Value="{Binding ControlCornerRadius, Mode=OneWay}"/>
                     </Style>
                     <Style TargetType="TextBox">
-                        <Setter Property="CornerRadius" Value="6"/>
+                        <Setter Property="CornerRadius" Value="{Binding ControlCornerRadius, Mode=OneWay}"/>
                     </Style>
                     <Style TargetType="primitives:ColorPickerSlider">
-                        <Setter Property="CornerRadius" Value="6"/>
+                        <Setter Property="CornerRadius" Value="{Binding ControlCornerRadius, Mode=OneWay}"/>
                     </Style>
                     <!-- Rounding slider thumb until that becomes the default -->
                     <x:Double x:Key="SliderThumbCornerRadius">10</x:Double>
@@ -728,7 +745,7 @@
                     <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
                     <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
                 </Grid.Resources>
-                <controls:ColorPicker IsAlphaEnabled="True" CornerRadius="6"/>
+                <controls:ColorPicker IsAlphaEnabled="True" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
             </Grid>
             <TextBlock Grid.Row="48" Text="ListView" Style="{StaticResource SideHeader}"/>
             <Grid Grid.Row="48" Style="{StaticResource LeftColumn}">
@@ -740,7 +757,7 @@
                 </ListView>
             </Grid>
             <Grid Grid.Row="48" Style="{StaticResource RightColumn}">
-                <ListView SelectionMode="Multiple" CornerRadius="6">
+                <ListView SelectionMode="Multiple" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                     <ListViewHeaderItem Content="Header 1"/>
                     <ListViewItem Content="Item 1"/>
                     <ListViewItem Content="Item 2"/>
@@ -759,7 +776,7 @@
                 </GridView>
             </Grid>
             <Grid Grid.Row="49" Style="{StaticResource RightColumn}" MaxWidth="400">
-                <GridView SelectionMode="Multiple" CornerRadius="6">
+                <GridView SelectionMode="Multiple" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                     <GridViewHeaderItem Content="Header 1"/>
                     <GridViewItem Content="Item 1.1"/>
                     <GridViewItem Content="Item 1.2"/>
@@ -788,7 +805,7 @@
                 </TreeView>
             </Grid>
             <Grid Grid.Row="50" Style="{StaticResource RightColumn}">
-                <TreeView SelectionMode="Multiple" CornerRadius="6">
+                <TreeView SelectionMode="Multiple" CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                     <TreeView.RootNodes>
                         <TreeViewNode Content="Item 1" IsExpanded="True">
                             <TreeViewNode.Children>
