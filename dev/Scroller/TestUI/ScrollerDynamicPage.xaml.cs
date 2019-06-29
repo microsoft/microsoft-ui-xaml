@@ -1721,7 +1721,7 @@ namespace MUXControlsTestApp
                 {
                     lastZoomFactorChangeId = scroller.ZoomBy(
                         Convert.ToSingle(txtCZFAZF.Text),
-                        ConvertFromStringToVector2(txtCZFACP.Text),
+                        (txtCZFACP.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtCZFACP.Text),
                         options).ZoomFactorChangeId;
                     relativeChangeIds.Add(lastZoomFactorChangeId);
                     AppendAsyncEventMessage("Invoked ZoomBy Id=" + lastZoomFactorChangeId);
@@ -1730,7 +1730,7 @@ namespace MUXControlsTestApp
                 {
                     lastZoomFactorChangeId = scroller.ZoomTo(
                         Convert.ToSingle(txtCZFAZF.Text),
-                        ConvertFromStringToVector2(txtCZFACP.Text),
+                        (txtCZFACP.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtCZFACP.Text),
                         options).ZoomFactorChangeId;
                     AppendAsyncEventMessage("Invoked ZoomTo Id=" + lastZoomFactorChangeId);
                 }
@@ -1855,7 +1855,7 @@ namespace MUXControlsTestApp
 
                 lastZoomFactorChangeWithAdditionalVelocityId = scroller.ZoomFrom(
                     Convert.ToSingle(txtCZFWAVAAV.Text),
-                    ConvertFromStringToVector2(txtCZFWAVACP.Text),
+                    (txtCZFWAVACP.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtCZFWAVACP.Text),
                     (txtCZFWAVAIDR.Text == "null") ? (float?)null : (float?)Convert.ToSingle(txtCZFWAVAIDR.Text)).ZoomFactorChangeId;
                 AppendAsyncEventMessage("Invoked ZoomFrom Id=" + lastZoomFactorChangeWithAdditionalVelocityId);
             }

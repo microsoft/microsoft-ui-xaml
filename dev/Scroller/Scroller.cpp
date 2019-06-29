@@ -4008,6 +4008,8 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
 
     if (!m_interactionTrackerAsyncOperations.empty() && SharedHelpers::IsFrameworkElementLoaded(*this))
     {
+        bool delayProcessingViewChanges = false;
+
         for (auto operationsIter = m_interactionTrackerAsyncOperations.begin(); operationsIter != m_interactionTrackerAsyncOperations.end();)
         {
             auto& interactionTrackerAsyncOperation = *operationsIter;
@@ -4022,10 +4024,42 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
             }
             else if (interactionTrackerAsyncOperation->IsQueued())
             {
-                bool needsProcessing = false;
+                if (!delayProcessingViewChanges && interactionTrackerAsyncOperation->GetTicksCountdown() == 1)
+                {
+                    // Evaluate whether all remaining queued operations need to be delayed until the completion of a prior required operation.
+                    std::shared_ptr<InteractionTrackerAsyncOperation> requiredInteractionTrackerAsyncOperation = interactionTrackerAsyncOperation->GetRequiredOperation();
 
-                interactionTrackerAsyncOperation->TickQueuedOperation(&needsProcessing);
-                if (needsProcessing)
+                    if (requiredInteractionTrackerAsyncOperation)
+                    {
+                        if (!requiredInteractionTrackerAsyncOperation->IsCanceled() && !requiredInteractionTrackerAsyncOperation->IsCompleted())
+                        {
+                            // Prior required operation is not canceled or completed yet. All subsequent operations need to be delayed.
+                            delayProcessingViewChanges = true;
+                        }
+                        else
+                        {
+                            // Previously set required operation is now canceled or completed. Check if it needs to be replaced with an older one.
+                            requiredInteractionTrackerAsyncOperation = GetLastNonAnimatedInteractionTrackerOperation(interactionTrackerAsyncOperation);
+                            interactionTrackerAsyncOperation->SetRequiredOperation(requiredInteractionTrackerAsyncOperation);
+                            if (requiredInteractionTrackerAsyncOperation)
+                            {
+                                // An older operation is now required. All subsequent operations need to be delayed.
+                                delayProcessingViewChanges = true;
+                            }
+                        }
+                    }
+                }
+
+                if (delayProcessingViewChanges)
+                {
+                    if (interactionTrackerAsyncOperation->GetTicksCountdown() > 1)
+                    {
+                        // Ticking the queued operation without processing it.
+                        interactionTrackerAsyncOperation->TickQueuedOperation();
+                    }
+                    unhookCompositionTargetRendering = false;
+                }                    
+                else if (interactionTrackerAsyncOperation->TickQueuedOperation())
                 {
                     // InteractionTracker is ready for the operation's processing.
                     ProcessDequeuedViewChange(interactionTrackerAsyncOperation);
@@ -4041,10 +4075,7 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
             }
             else if (!interactionTrackerAsyncOperation->IsAnimated())
             {
-                bool needsCompletion = false;
-
-                interactionTrackerAsyncOperation->TickNonAnimatedOperation(&needsCompletion);
-                if (needsCompletion)
+                if (interactionTrackerAsyncOperation->TickNonAnimatedOperation())
                 {
                     // The non-animated view change request did not result in a status change or ValuesChanged notification. Consider it completed.
                     CompleteViewChange(interactionTrackerAsyncOperation, ScrollerViewChangeResult::Completed);
@@ -6017,6 +6048,10 @@ void Scroller::ChangeZoomFactorPrivate(
 
     m_interactionTrackerAsyncOperations.push_back(interactionTrackerAsyncOperation);
 
+    // Workaround for InteractionTracker bug 22414894 - calling TryUpdateScale after a non-animated view change during the same tick results in an incorrect position.
+    // That non-animated view change needs to complete before this TryUpdateScale gets invoked.
+    interactionTrackerAsyncOperation->SetRequiredOperation(GetLastNonAnimatedInteractionTrackerOperation(interactionTrackerAsyncOperation));
+
     if (viewChangeId)
     {
         m_latestViewChangeId = GetNextViewChangeId();
@@ -6864,6 +6899,8 @@ void Scroller::CompleteViewChange(
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this,
         interactionTrackerAsyncOperation.get(), TypeLogging::ScrollerViewChangeResultToString(result).c_str());
 
+    interactionTrackerAsyncOperation->SetIsCompleted(true);
+
     bool onHorizontalOffsetChangeCompleted = false;
     bool onVerticalOffsetChangeCompleted = false;
 
@@ -7079,6 +7116,34 @@ int Scroller::GetInteractionTrackerOperationsCount(bool includeAnimatedOperation
     }
 
     return operationsCount;
+}
+
+std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetLastNonAnimatedInteractionTrackerOperation(
+    std::shared_ptr<InteractionTrackerAsyncOperation> priorToInteractionTrackerOperation) const
+{
+    bool priorInteractionTrackerOperationSeen = false;
+
+    for (auto operationsIter = m_interactionTrackerAsyncOperations.end(); operationsIter != m_interactionTrackerAsyncOperations.begin();)
+    {
+        operationsIter--;
+
+        auto& interactionTrackerAsyncOperation = *operationsIter;
+
+        if (!priorInteractionTrackerOperationSeen && priorToInteractionTrackerOperation == interactionTrackerAsyncOperation)
+        {
+            priorInteractionTrackerOperationSeen = true;
+        }
+        else if (priorInteractionTrackerOperationSeen &&
+            !interactionTrackerAsyncOperation->IsAnimated() &&
+            !interactionTrackerAsyncOperation->IsCompleted() &&
+            !interactionTrackerAsyncOperation->IsCanceled())
+        {
+            MUX_ASSERT(interactionTrackerAsyncOperation->IsDelayed() || interactionTrackerAsyncOperation->IsQueued());
+            return interactionTrackerAsyncOperation;
+        }
+    }
+
+    return nullptr;
 }
 
 std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTrackerOperationFromRequestId(int requestId) const
