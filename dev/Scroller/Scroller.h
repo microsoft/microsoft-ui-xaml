@@ -277,6 +277,12 @@ private:
     static winrt::hstring DependencyPropertyToString(const winrt::IDependencyProperty& dependencyProperty);
 #endif
 
+    winrt::Size ArrangeContent(
+        const winrt::UIElement& content,
+        const winrt::Thickness& contentMargin,
+        winrt::Rect& finalContentRect,
+        bool wasContentArrangeWidthStretched,
+        bool wasContentArrangeHeightStretched);
     float ComputeContentLayoutOffsetDelta(ScrollerDimension dimension, float unzoomedDelta) const;
     float ComputeEndOfInertiaZoomFactor() const;
     winrt::float2 ComputeEndOfInertiaPosition();

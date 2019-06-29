@@ -11,9 +11,3 @@ setlocal
 )
 
 call %~dp0\..\build\localization\RunLocWorkflow.cmd Daily-%BUILDDATE%.%BUILDREVISION%
-
-REM Undo any changes that were made since we are just doing handoff and the process will automatically hand back.
-pushd %~dp0\..
-git reset -- *
-git checkout -- *
-git reset --hard
