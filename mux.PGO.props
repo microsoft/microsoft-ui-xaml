@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <!--PlatformShortName Condition="'$(Platform)'=='Win32'">x86</PlatformShortName-->
+        <PlatformShortName Condition="'$(PlatformShortName)'==''">$(Platform)</PlatformShortName>
         <PGOFilesDir>$(VCToolsInstallDir)bin\Host$(PlatformShortName)\$(PlatformShortName)</PGOFilesDir>
         <PGOFilesDir Condition="'$(PlatformShortName)'=='ARM' or '$(PlatformShortName)'=='ARM64'">$(VCToolsInstallDir)bin\$(PlatformShortName)</PGOFilesDir>
         <ProfileGuidedDatabaseFileName>$(MSBuildThisFileDirectory)$(PlatformShortName)\Microsoft.UI.Xaml.pgd</ProfileGuidedDatabaseFileName>
