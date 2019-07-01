@@ -12,6 +12,11 @@
 
 CppWinRTActivatableClassWithBasicFactory(TabViewListView);
 
+TabViewListView::TabViewListView()
+{
+    SetDefaultStyleKey(this);
+}
+
 // IItemsControlOverrides
 
 winrt::DependencyObject TabViewListView::GetContainerForItemOverride()
@@ -22,9 +27,8 @@ winrt::DependencyObject TabViewListView::GetContainerForItemOverride()
 bool TabViewListView::IsItemItsOwnContainerOverride(winrt::IInspectable const& args)
 {
     bool isItemItsOwnContainer = false;
-    if (args)
+    if (auto item = args.try_as<winrt::TabViewItem>())
     {
-        auto item = args.try_as<winrt::TabViewItem>();
         isItemItsOwnContainer = static_cast<bool>(item);
     }
     return isItemItsOwnContainer;

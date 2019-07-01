@@ -42,6 +42,8 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
 
     [MUX_DEFAULT_VALUE("true")]
     Boolean IsAddButtonVisible{ get; set; };
+    Windows.UI.Xaml.Input.ICommand AddButtonCommand{ get; set; };
+    Object AddButtonCommandParameter{ get; set; };
 
     event Windows.Foundation.TypedEventHandler<TabView, TabViewTabClosingEventArgs> TabClosing;
 
@@ -55,6 +57,7 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     Windows.Foundation.Collections.IVector<Object> Items{ get; };
 
     Windows.UI.Xaml.DataTemplate ItemTemplate;
+    Windows.UI.Xaml.Controls.DataTemplateSelector ItemTemplateSelector{ get; set; };
 
     [MUX_DEFAULT_VALUE("-1")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
@@ -76,10 +79,13 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty RightCustomContentProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty RightCustomContentTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsAddButtonVisibleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty AddButtonCommandProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty AddButtonCommandParameterProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty ItemsSourceProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ItemsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ItemTemplateProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ItemTemplateSelectorProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SelectedIndexProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SelectedItemProperty{ get; };
 }

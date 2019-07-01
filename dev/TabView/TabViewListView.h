@@ -8,7 +8,7 @@ class TabViewListView :
     public ReferenceTracker<TabViewListView, winrt::implementation::TabViewListViewT>
 {
 public:
-    TabViewListView() {};
+    TabViewListView();
 
     // IItemsControlOverrides
     winrt::DependencyObject GetContainerForItemOverride();

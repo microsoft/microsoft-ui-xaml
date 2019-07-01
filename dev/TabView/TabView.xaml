@@ -42,12 +42,15 @@
                                 CanReorderItems="{TemplateBinding CanDragDropTabs}"
                                 CanDragItems="{TemplateBinding CanDragDropTabs}"
                                 AllowDrop="{TemplateBinding CanDragDropTabs}"
-                                Style="{StaticResource TabViewListViewStyle}"/>
+                                ItemTemplate="{TemplateBinding ItemTemplate}"
+                                ItemTemplateSelector="{TemplateBinding ItemTemplateSelector}"/>
 
                             <Button
                                 Grid.Column="2"
                                 x:Name="AddButton"
                                 Content="&#xE710;"
+                                Command="{TemplateBinding AddButtonCommand}"
+                                CommandParameter="{TemplateBinding AddButtonCommandParameter}"
                                 Visibility="{Binding IsAddButtonVisible, RelativeSource={RelativeSource TemplatedParent}}"
                                 Style="{StaticResource TabViewButtonStyle}"/>
 
@@ -70,7 +73,7 @@
         </Setter>
     </Style>
 
-    <Style x:Name="TabViewListViewStyle" TargetType="ListView">
+    <Style TargetType="primitives:TabViewListView">
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="Padding" Value="{ThemeResource TabViewHeaderPadding}" />
         <Setter Property="IsTabStop" Value="False" />

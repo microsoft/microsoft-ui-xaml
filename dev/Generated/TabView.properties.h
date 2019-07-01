@@ -9,6 +9,12 @@ class TabViewProperties
 public:
     TabViewProperties();
 
+    void AddButtonCommand(winrt::ICommand const& value);
+    winrt::ICommand AddButtonCommand();
+
+    void AddButtonCommandParameter(winrt::IInspectable const& value);
+    winrt::IInspectable AddButtonCommandParameter();
+
     void CanCloseTabs(bool value);
     bool CanCloseTabs();
 
@@ -26,6 +32,9 @@ public:
 
     void ItemTemplate(winrt::DataTemplate const& value);
     winrt::DataTemplate ItemTemplate();
+
+    void ItemTemplateSelector(winrt::DataTemplateSelector const& value);
+    winrt::DataTemplateSelector ItemTemplateSelector();
 
     void LeftCustomContent(winrt::IInspectable const& value);
     winrt::IInspectable LeftCustomContent();
@@ -48,12 +57,15 @@ public:
     void TabWidthMode(winrt::TabViewWidthMode const& value);
     winrt::TabViewWidthMode TabWidthMode();
 
+    static winrt::DependencyProperty AddButtonCommandProperty() { return s_AddButtonCommandProperty; }
+    static winrt::DependencyProperty AddButtonCommandParameterProperty() { return s_AddButtonCommandParameterProperty; }
     static winrt::DependencyProperty CanCloseTabsProperty() { return s_CanCloseTabsProperty; }
     static winrt::DependencyProperty CanDragDropTabsProperty() { return s_CanDragDropTabsProperty; }
     static winrt::DependencyProperty IsAddButtonVisibleProperty() { return s_IsAddButtonVisibleProperty; }
     static winrt::DependencyProperty ItemsProperty() { return s_ItemsProperty; }
     static winrt::DependencyProperty ItemsSourceProperty() { return s_ItemsSourceProperty; }
     static winrt::DependencyProperty ItemTemplateProperty() { return s_ItemTemplateProperty; }
+    static winrt::DependencyProperty ItemTemplateSelectorProperty() { return s_ItemTemplateSelectorProperty; }
     static winrt::DependencyProperty LeftCustomContentProperty() { return s_LeftCustomContentProperty; }
     static winrt::DependencyProperty LeftCustomContentTemplateProperty() { return s_LeftCustomContentTemplateProperty; }
     static winrt::DependencyProperty RightCustomContentProperty() { return s_RightCustomContentProperty; }
@@ -62,12 +74,15 @@ public:
     static winrt::DependencyProperty SelectedItemProperty() { return s_SelectedItemProperty; }
     static winrt::DependencyProperty TabWidthModeProperty() { return s_TabWidthModeProperty; }
 
+    static GlobalDependencyProperty s_AddButtonCommandProperty;
+    static GlobalDependencyProperty s_AddButtonCommandParameterProperty;
     static GlobalDependencyProperty s_CanCloseTabsProperty;
     static GlobalDependencyProperty s_CanDragDropTabsProperty;
     static GlobalDependencyProperty s_IsAddButtonVisibleProperty;
     static GlobalDependencyProperty s_ItemsProperty;
     static GlobalDependencyProperty s_ItemsSourceProperty;
     static GlobalDependencyProperty s_ItemTemplateProperty;
+    static GlobalDependencyProperty s_ItemTemplateSelectorProperty;
     static GlobalDependencyProperty s_LeftCustomContentProperty;
     static GlobalDependencyProperty s_LeftCustomContentTemplateProperty;
     static GlobalDependencyProperty s_RightCustomContentProperty;

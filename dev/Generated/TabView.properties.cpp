@@ -8,12 +8,15 @@
 
 CppWinRTActivatableClassWithDPFactory(TabView)
 
+GlobalDependencyProperty TabViewProperties::s_AddButtonCommandProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_AddButtonCommandParameterProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_CanCloseTabsProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_CanDragDropTabsProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_IsAddButtonVisibleProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_ItemsProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_ItemsSourceProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_ItemTemplateProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_ItemTemplateSelectorProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_LeftCustomContentProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_LeftCustomContentTemplateProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_RightCustomContentProperty{ nullptr };
@@ -32,6 +35,28 @@ TabViewProperties::TabViewProperties()
 
 void TabViewProperties::EnsureProperties()
 {
+    if (!s_AddButtonCommandProperty)
+    {
+        s_AddButtonCommandProperty =
+            InitializeDependencyProperty(
+                L"AddButtonCommand",
+                winrt::name_of<winrt::ICommand>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::ICommand>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_AddButtonCommandParameterProperty)
+    {
+        s_AddButtonCommandParameterProperty =
+            InitializeDependencyProperty(
+                L"AddButtonCommandParameter",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                nullptr);
+    }
     if (!s_CanCloseTabsProperty)
     {
         s_CanCloseTabsProperty =
@@ -96,6 +121,17 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_ItemTemplateSelectorProperty)
+    {
+        s_ItemTemplateSelectorProperty =
+            InitializeDependencyProperty(
+                L"ItemTemplateSelector",
+                winrt::name_of<winrt::DataTemplateSelector>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::DataTemplateSelector>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_LeftCustomContentProperty)
@@ -179,12 +215,15 @@ void TabViewProperties::EnsureProperties()
 
 void TabViewProperties::ClearProperties()
 {
+    s_AddButtonCommandProperty = nullptr;
+    s_AddButtonCommandParameterProperty = nullptr;
     s_CanCloseTabsProperty = nullptr;
     s_CanDragDropTabsProperty = nullptr;
     s_IsAddButtonVisibleProperty = nullptr;
     s_ItemsProperty = nullptr;
     s_ItemsSourceProperty = nullptr;
     s_ItemTemplateProperty = nullptr;
+    s_ItemTemplateSelectorProperty = nullptr;
     s_LeftCustomContentProperty = nullptr;
     s_LeftCustomContentTemplateProperty = nullptr;
     s_RightCustomContentProperty = nullptr;
@@ -232,6 +271,26 @@ void TabViewProperties::OnTabWidthModePropertyChanged(
 {
     auto owner = sender.as<winrt::TabView>();
     winrt::get_self<TabView>(owner)->OnTabWidthModePropertyChanged(args);
+}
+
+void TabViewProperties::AddButtonCommand(winrt::ICommand const& value)
+{
+    static_cast<TabView*>(this)->SetValue(s_AddButtonCommandProperty, ValueHelper<winrt::ICommand>::BoxValueIfNecessary(value));
+}
+
+winrt::ICommand TabViewProperties::AddButtonCommand()
+{
+    return ValueHelper<winrt::ICommand>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_AddButtonCommandProperty));
+}
+
+void TabViewProperties::AddButtonCommandParameter(winrt::IInspectable const& value)
+{
+    static_cast<TabView*>(this)->SetValue(s_AddButtonCommandParameterProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+}
+
+winrt::IInspectable TabViewProperties::AddButtonCommandParameter()
+{
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_AddButtonCommandParameterProperty));
 }
 
 void TabViewProperties::CanCloseTabs(bool value)
@@ -292,6 +351,16 @@ void TabViewProperties::ItemTemplate(winrt::DataTemplate const& value)
 winrt::DataTemplate TabViewProperties::ItemTemplate()
 {
     return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_ItemTemplateProperty));
+}
+
+void TabViewProperties::ItemTemplateSelector(winrt::DataTemplateSelector const& value)
+{
+    static_cast<TabView*>(this)->SetValue(s_ItemTemplateSelectorProperty, ValueHelper<winrt::DataTemplateSelector>::BoxValueIfNecessary(value));
+}
+
+winrt::DataTemplateSelector TabViewProperties::ItemTemplateSelector()
+{
+    return ValueHelper<winrt::DataTemplateSelector>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_ItemTemplateSelectorProperty));
 }
 
 void TabViewProperties::LeftCustomContent(winrt::IInspectable const& value)
