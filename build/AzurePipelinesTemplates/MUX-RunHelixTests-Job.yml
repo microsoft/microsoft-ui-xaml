@@ -3,9 +3,15 @@ parameters:
   dependsOn: ''
   condition: ''
   testSuite: ''
+  # If a Pipeline runs this template more than once, this parameter should be unique per build flavor to differentiate the
+  # the different test runs:
+  helixType: 'test/devtest' 
   artifactName: 'drop'
   maxParallel: 4
   rerunPassesRequiredToAvoidFailure: 5
+  taefQuery: ''
+  # if 'useBuildOutputFromBuildId' is set, we will default to using a build from this pipeline:
+  useBuildOutputFromPipeline: $(System.DefinitionId)
   matrix: 
     Release_x86:
       buildPlatform: 'x86'
@@ -15,14 +21,14 @@ parameters:
     Release_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'release'
-      helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open'
+      helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open%3bWindows.10.Amd64.Client19H1.Open'
 
 jobs:
 - job: ${{ parameters.name }}
   dependsOn: ${{ parameters.dependsOn }}
   condition: ${{ parameters.condition }}
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
   timeoutInMinutes: 120
   variables:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
@@ -64,7 +70,7 @@ jobs:
       buildType: specific
       buildVersionToDownload: specific
       project: $(System.TeamProjectId)
-      pipeline: $(System.DefinitionId)
+      pipeline: ${{ parameters.useBuildOutputFromPipeline }}
       buildId: $(useBuildOutputFromBuildId)
       artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactsDir)'
@@ -88,6 +94,7 @@ jobs:
       testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.Test.dll'
       outputProjFileName: 'RunTestsInHelix-InteractionTests.proj'
       testSuite: '${{ parameters.testSuite }}'
+      taefQuery: ${{ parameters.taefQuery }}
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
@@ -95,6 +102,7 @@ jobs:
       testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-ApiTests.proj'
       testSuite: '${{ parameters.testSuite }}'
+      taefQuery: ${{ parameters.taefQuery }}
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
@@ -102,6 +110,7 @@ jobs:
       testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\AppxPackages\IXMPTestApp_Test\IXMPTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-IXMPTestAppTests.proj'
       testSuite: '${{ parameters.testSuite }}'
+      taefQuery: ${{ parameters.taefQuery }}
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
@@ -109,6 +118,7 @@ jobs:
       testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll'
       outputProjFileName: 'RunTestsInHelix-NugetTests.proj'
       testSuite: '${{ parameters.testSuite }}'
+      taefQuery: ${{ parameters.taefQuery }}
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish generated .proj files'
@@ -124,7 +134,7 @@ jobs:
       command: custom
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
-      arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
+      arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:HelixType=${{parameters.helixType}} /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
       
   - task: PublishBuildArtifacts@1
     displayName: 'Publish ${{parameters.name}} binlog'

@@ -466,6 +466,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.NineteenH1))
+            {
+                Log.Warning("Test is disabled on 19H1 because the logic to restore focus seems to have regressed. Tracked by microsoft-ui-xaml#774");
+                return;
+            }
+
             using (var setup = new TextCommandBarFlyoutTestSetupHelper())
             {
                 Log.Comment("Give focus to the TextBox.");

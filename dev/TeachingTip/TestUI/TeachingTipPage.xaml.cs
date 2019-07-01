@@ -908,7 +908,7 @@ namespace MUXControlsTestApp
             var selectedItem = ((ComboBoxItem)PageThemeComboBox.SelectedItem);
             if (String.Equals(selectedItem?.Content, "Light"))
             {
-                RequestedTheme = ElementTheme.Default;
+                RequestedTheme = ElementTheme.Light;
             }
             else if (String.Equals(selectedItem?.Content, "Dark"))
             {

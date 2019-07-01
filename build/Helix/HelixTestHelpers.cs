@@ -429,7 +429,65 @@ namespace HelixTestHelpers
             this.helixResultsContainerUri = helixResultsContainerUri;
             this.helixResultsContainerRsas = helixResultsContainerRsas;
         }
-        
+
+        public Dictionary<string, string> GetSubResultsJsonByMethodName(string wttInputPath, string wttSingleRerunInputPath, string wttMultipleRerunInputPath)
+        {
+            Dictionary<string, string> subResultsJsonByMethod = new Dictionary<string, string>();
+            TestPass testPass = TestPass.ParseTestWttFileWithReruns(wttInputPath, wttSingleRerunInputPath, wttMultipleRerunInputPath, cleanupFailuresAreRegressions: true, truncateTestNames: false);
+            
+            foreach (var result in testPass.TestResults)
+            {
+                var methodName = result.Name.Substring(result.Name.LastIndexOf('.') + 1);
+
+                if (!result.Passed)
+                {
+                    // If the test failed but then passed on rerun, then we'll add metadata to report the results of each run.
+                    // Otherwise, we'll mark down the failure information.
+                    if (result.PassedOnRerun)
+                    {
+                        JsonSerializableTestResults serializableResults = new JsonSerializableTestResults();
+                        serializableResults.blobPrefix = helixResultsContainerUri;
+                        serializableResults.blobSuffix = helixResultsContainerRsas;
+
+                        List<string> errorList = new List<string>();
+                        errorList.Add(result.Details);
+
+                        foreach (TestResult rerunResult in result.RerunResults)
+                        {
+                            errorList.Add(rerunResult.Details);
+                        }
+
+                        serializableResults.errors = errorList.Distinct().Where(s => s != null).ToArray();
+
+                        var reason = new XElement("reason");
+                        List<JsonSerializableTestResult> serializableResultList = new List<JsonSerializableTestResult>();
+                        serializableResultList.Add(ConvertToSerializableResult(result, serializableResults.errors));
+
+                        foreach (TestResult rerunResult in result.RerunResults)
+                        {
+                            serializableResultList.Add(ConvertToSerializableResult(rerunResult, serializableResults.errors));
+                        }
+
+                        serializableResults.results = serializableResultList.ToArray();
+
+                        using (MemoryStream stream = new MemoryStream())
+                        {
+                            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(JsonSerializableTestResults));
+                            serializer.WriteObject(stream, serializableResults);
+                            stream.Position = 0;
+
+                            using (StreamReader streamReader = new StreamReader(stream))
+                            {
+                                subResultsJsonByMethod.Add(methodName, streamReader.ReadToEnd());
+                            }
+                        }
+                    }
+                }
+            }
+
+            return subResultsJsonByMethod;
+        }
+
         public void ConvertWttLogToXUnitLog(string wttInputPath, string wttSingleRerunInputPath, string wttMultipleRerunInputPath, string xunitOutputPath)
         {
             TestPass testPass = TestPass.ParseTestWttFileWithReruns(wttInputPath, wttSingleRerunInputPath, wttMultipleRerunInputPath, cleanupFailuresAreRegressions: true, truncateTestNames: false);
@@ -505,38 +563,13 @@ namespace HelixTestHelpers
                     // Otherwise, we'll mark down the failure information.
                     if (result.PassedOnRerun)
                     {
-                        JsonSerializableTestResults serializableResults = new JsonSerializableTestResults();
-                        serializableResults.blobPrefix = helixResultsContainerUri;
-                        serializableResults.blobSuffix = helixResultsContainerRsas;
-                        
-                        List<string> errorList = new List<string>();
-                        errorList.Add(result.Details);
-                        
-                        foreach (TestResult rerunResult in result.RerunResults)
-                        {
-                            errorList.Add(rerunResult.Details);
-                        }
-                        
-                        serializableResults.errors = errorList.Distinct().Where(s => s != null).ToArray();
-                    
+                        // We'll save the subresults to a JSON text file that we'll upload to the helix results container -
+                        // this allows it to be as long as we want, whereas the reason field in Azure DevOps has a 4000 character limit.
+                        string subResultsFileName = methodName + "_subresults.json";
+                        string subResultsFilePath = Path.Combine(Path.GetDirectoryName(wttInputPath), subResultsFileName);
+
                         var reason = new XElement("reason");
-                        List<JsonSerializableTestResult> serializableResultList = new List<JsonSerializableTestResult>();
-                        serializableResultList.Add(ConvertToSerializableResult(result, serializableResults.errors));
-                        
-                        foreach (TestResult rerunResult in result.RerunResults)
-                        {
-                            serializableResultList.Add(ConvertToSerializableResult(rerunResult, serializableResults.errors));
-                        }
-                        
-                        serializableResults.results = serializableResultList.ToArray();
-                        
-                        MemoryStream stream = new MemoryStream();
-                        DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(JsonSerializableTestResults));
-                        serializer.WriteObject(stream, serializableResults);
-                        stream.Position = 0;
-                        StreamReader streamReader = new StreamReader(stream);
-                        
-                        reason.Add(new XCData(streamReader.ReadToEnd()));
+                        reason.Add(new XCData(GetUploadedFileUrl(subResultsFileName, helixResultsContainerUri, helixResultsContainerRsas)));
                         test.Add(reason);
                     }
                     else

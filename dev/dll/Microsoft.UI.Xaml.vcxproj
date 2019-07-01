@@ -114,6 +114,17 @@
     <Import Project="..\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' and $(UseInsiderSDK) == 'true'" />
     <Import Project="..\TabView\TabView.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <Import Project="..\AutoSuggestBox\AutoSuggestBox.vcxitems" Label="Shared" />
+    <Import Project="..\CheckBox\CheckBox.vcxitems" Label="Shared" />
+    <Import Project="..\CalendarDatePicker\CalendarDatePicker.vcxitems" Label="Shared" />
+    <Import Project="..\DatePicker\DatePicker.vcxitems" Label="Shared" />
+    <Import Project="..\Slider\Slider.vcxitems" Label="Shared" />
+    <Import Project="..\TimePicker\TimePicker.vcxitems" Label="Shared" />
+    <Import Project="..\ToolTip\ToolTip.vcxitems" Label="Shared" />
+    <Import Project="..\FlipView\FlipView.vcxitems" Label="Shared" />
+    <Import Project="..\ComboBox\ComboBox.vcxitems" Label="Shared" />
+    <Import Project="..\Pivot\Pivot.vcxitems" Label="Shared" />
+    <Import Project="..\ScrollBar\ScrollBar.vcxitems" Label="Shared" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -257,6 +268,7 @@
     <ClCompile Include="DoubleUtil.cpp" />
     <ClCompile Include="DownlevelHelper.cpp" />
     <ClCompile Include="FloatUtil.cpp" />
+    <ClCompile Include="RegUtil.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -610,7 +622,7 @@
     </ItemGroup>
   </Target>
   <!-- Need to invoke MDMerge again to produce the "public" metadata using MDMerge's -createPublicMetadata and -transformExperimental flags -->
-  <Target Name="MakeSDKMetadata" AfterTargets="CppWinRTMergeProjectWinMDInputs" BeforeTargets="XamlMetadataCodeGenMUX" Inputs="$(OutDir)Microsoft.winmd" Outputs="$(OutDir)sdk\Microsoft.UI.xaml.winmd">
+  <Target Name="MakeSDKMetadata" AfterTargets="CppWinRTMergeProjectWinMDInputs" BeforeTargets="XamlMetadataCodeGenMUX" Inputs="$(OutDir)Unmerged\Microsoft.UI.Xaml.winmd" Outputs="$(OutDir)sdk\Microsoft.UI.xaml.winmd">
     <PropertyGroup>
       <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
       <_MdMergeParameters>-v @(_MdMergeRefsDistinct->'-metadata_dir &quot;%(RelativeDir).&quot;', ' ')</_MdMergeParameters>
@@ -633,6 +645,7 @@
   </Target>
   <Target Name="RunDependencyPropertyCodeGen" AfterTargets="CppWinRTMakeComponentProjection" BeforeTargets="ClCompile" Inputs="$(OutDir)Microsoft.winmd" Outputs="@(DependencyPropertyCodeGenOutputs);$(MSBuildProjectDirectory)\..\Generated\AcrylicBrush.properties.cpp">
     <DependencyPropertyCodeGen WinMDInput="$(OutDir)Microsoft.winmd" References="@(CppWinRTPlatformWinMDReferences)" OutputDirectory="$(MSBuildProjectDirectory)\..\Generated" />
+    <Touch Files="@(DependencyPropertyCodeGenOutputs)" />
   </Target>
   <Target Name="WorkAroundFastUpToDateCheckBug" AfterTargets="_GenerateProjectPriFileCore" Inputs="$(OutDir)$(TargetName).pri" Outputs="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).winmd;$(OutDir)Microsoft.winmd" Condition="Exists('$(OutDir)$(TargetName).dll')">
     <Message Text="Touching '$(OutDir)$(TargetName).dll' because pri file changed to work around DevDiv bug https://devdiv.visualstudio.com/DevDiv/_workitems?id=297204" />

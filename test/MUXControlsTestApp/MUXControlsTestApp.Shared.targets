@@ -52,6 +52,13 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true' And $(UseInsiderSDK) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CommonStyles\APITests\CommonStyles_ApiTests.projitems" Label="Shared" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CheckBox\TestUI\CheckBox_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\DatePicker\TestUI\DatePicker_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarDatePicker\TestUI\CalendarDatePicker_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AutoSuggestBox\TestUI\AutoSuggestBox_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Slider\TestUI\Slider_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TimePicker\TestUI\TimePicker_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ToolTip\TestUI\ToolTip_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
 
   <!-- These depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
        We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
@@ -61,4 +68,8 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\ButtonInteraction\APITests\ButtonInteraction_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true' And $(UseInternalSDK) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\SliderInteraction\APITests\SliderInteraction_APITests.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' And $(BuildingWithBuildExe) != 'true' And $(UseInternalSDK) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TabView\TestUI\TabView_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\FlipView\TestUI\FlipView_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ComboBox\TestUI\ComboBox_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Pivot\TestUI\Pivot_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollBar\TestUI\ScrollBar_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
 </Project>

@@ -19,4 +19,15 @@ jobs:
     inputs:
       filename: '$(Build.SourcesDirectory)\tools\VSTSRunLocWorkflow.cmd'
 
-
+  - powershell: |
+      $changes = & git ls-files -m
+      if ($changes -imatch "\.resw")
+      {
+        Write-Host "##vso[task.complete result=SucceededWithIssues;]"
+        Write-Host "##vso[task.logissue type=warning;]Localization updates needed"
+        foreach ($change in $changes)
+        {
+          Write-Host "##vso[task.logissue type=warning;]$change"
+        }
+      }
+    displayName: checkEditedFiles

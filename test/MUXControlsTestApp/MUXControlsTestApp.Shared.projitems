@@ -196,17 +196,24 @@
   <ItemGroup>
     <Content Include="$(MSBuildThisFileDirectory)Assets\AcrylicBrush.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Animations.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\AutoSuggestBox.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Button.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\CalendarDatePicker.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\CheckBox.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ColorPicker.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ComboBox.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\CommandBarFlyout.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\CompactSizing.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\DatePicker.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\DropdownButton.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\FlipView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ListView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\MenuBar.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\MenuFlyout.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\NavigationView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ParallaxView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\PersonPicture.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Pivot.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\PullToRefresh.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\RadioButton.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\RatingControl.png" />
@@ -252,6 +259,8 @@
     <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\WideTile.scale-125.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\WideTile.scale-150.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\WideTile.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\TimePicker.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ToolTip.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\TreeView.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\AutoSave.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\file.png" />

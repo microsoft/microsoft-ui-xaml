@@ -1,6 +1,6 @@
 setlocal ENABLEDELAYEDEXPANSION
 
-robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP
+robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP > NUL
 
 reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
 
@@ -9,10 +9,11 @@ reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t 
 taskkill -f -im dhandler.exe
 
 cd scripts
+powershell -ExecutionPolicy Bypass .\EnsureMachineState.ps1
 powershell -ExecutionPolicy Bypass .\InstallTestAppDependencies.ps1
 cd ..
 
-set testBinaryCandidates=MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx MUXControls.ReleaseTest.dll NugetPackageTestApp.appx NugetPackageTestAppCX.appx
+set testBinaryCandidates=MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx MUXControls.ReleaseTest.dll
 set testBinaries=
 for %%B in (%testBinaryCandidates%) do (
     if exist %%B (
@@ -77,7 +78,13 @@ FOR %%I in (WexLogFileOutput\*.jpg) DO (
 :SkipReruns
 
 cd scripts
+powershell -ExecutionPolicy Bypass .\OutputSubResultsJsonFiles.ps1 ..\te_original.wtl ..\te_rerun.wtl ..\te_rerun_multiple.wtl %testnameprefix%
 powershell -ExecutionPolicy Bypass .\ConvertWttLogToXUnit.ps1 ..\te_original.wtl ..\te_rerun.wtl ..\te_rerun_multiple.wtl ..\testResults.xml %testnameprefix%
 cd ..
+
+FOR %%I in (*_subresults.json) DO (
+    echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%I%HELIX_RESULTS_CONTAINER_RSAS%"
+    %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%I
+)
 
 type testResults.xml

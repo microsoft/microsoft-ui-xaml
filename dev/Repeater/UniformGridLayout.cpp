@@ -72,7 +72,7 @@ winrt::Size UniformGridLayout::MeasureOverride(
 
     // If after Measure the first item is in the realization rect, then we revoke grid state's ownership,
     // and only use the layout when to clear it when it's done.
-    gridState->EnsureFirstElementOwnership();
+    gridState->EnsureFirstElementOwnership(context);
 
     return { desiredSize.Width, desiredSize.Height };
 }
@@ -267,7 +267,7 @@ void UniformGridLayout::OnPropertyChanged(const winrt::DependencyPropertyChanged
     {
         m_minItemWidth = unbox_value<double>(args.NewValue());
     }
-    else if (property = s_MinItemHeightProperty)
+    else if (property == s_MinItemHeightProperty)
     {
         m_minItemHeight = unbox_value<double>(args.NewValue());
     }

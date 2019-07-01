@@ -25,6 +25,8 @@ foreach ($file in (Get-ChildItem -r:$recursive "$SearchDir\*.pdb"))
 {
     Write-Verbose "Found $file"
 
+    $ErrorActionPreference = "Continue" # Azure Pipelines defaults to "Stop", continue past errors in this script.
+    
     $allFiles = & $srctoolExe -r "$file"
 
     # If the pdb didn't have enough files then skip it (the srctool output has a blank line even when there's no info

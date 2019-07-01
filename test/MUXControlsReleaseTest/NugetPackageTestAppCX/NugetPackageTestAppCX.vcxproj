@@ -10,7 +10,7 @@
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
     <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">$(MuxSdkVersion)</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.14393.0</WindowsTargetPlatformMinVersion>
+    <WindowsTargetPlatformMinVersion>10.0.15063.0</WindowsTargetPlatformMinVersion>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <ConvertedPlatformName>$(Platform)</ConvertedPlatformName>
     <ConvertedPlatformName Condition="'$(Platform)' == 'Win32'">x86</ConvertedPlatformName>
@@ -45,37 +45,37 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -189,6 +189,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\MUXTestUtilities\MUXTestUtilities.vcxproj">
+      <Project>{e7d6b510-3761-478a-8e22-72558dad924e}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
@@ -196,12 +201,12 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\MUXCustomBuildTasks.1.0.38\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MUXCustomBuildTasks.1.0.38\build\native\MUXCustomBuildTasks.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.UI.Xaml.2.1.190218001-prerelease\build\native\Microsoft.UI.Xaml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.UI.Xaml.2.1.190218001-prerelease\build\native\Microsoft.UI.Xaml.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets'))" />
   </Target>
   <Import Project="$(MSBuildProjectDirectory)\..\..\..\CustomInlineTasks.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\MUXCustomBuildTasks.1.0.38\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\packages\MUXCustomBuildTasks.1.0.38\build\native\MUXCustomBuildTasks.targets')" />
-    <Import Project="..\packages\Microsoft.UI.Xaml.2.1.190218001-prerelease\build\native\Microsoft.UI.Xaml.targets" Condition="Exists('..\packages\Microsoft.UI.Xaml.2.1.190218001-prerelease\build\native\Microsoft.UI.Xaml.targets')" />
+    <Import Project="..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets" Condition="Exists('..\packages\Microsoft.UI.Xaml.2.1.190606001\build\native\Microsoft.UI.Xaml.targets')" />
   </ImportGroup>
   <Target Name="AfterBuild">
     <RunPowershellScript Path="$(SolutionDir)\tools\ExtractPackageDependencies_ReleaseTest.ps1" Parameters="-sourceFile $(OutDir)\$(AppxPackageName).build.appxrecipe -platform $(ConvertedPlatformName) -outputFile $(AppxPackageTestDir)\$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)\$(AppxPackageName).dependencies.txt" />

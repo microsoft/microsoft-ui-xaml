@@ -75,10 +75,9 @@ public:
     static constexpr int s_zoomFactorChangeMinMs{ 50 };
     static constexpr int s_zoomFactorChangeMaxMs{ 1000 };
 
-    // Number of ticks ellapsed before restarting the Scale animation to allow
-    // the Content rasterization to be triggered after the Idle State is reached
-    // or a zoom factor change operation completed.
-    static constexpr int s_zoomFactorAnimationRestartTicks = 4;
+    // Number of ticks ellapsed before restarting the Translation and Scale animations to allow the Content
+    // rasterization to be triggered after the Idle State is reached or a zoom factor change operation completed.
+    static constexpr int s_translationAndZoomFactorAnimationsRestartTicks = 4;
 
     // Mouse-wheel-triggered scrolling/zooming constants
     // Mouse wheel delta amount required per initial velocity unit
@@ -278,6 +277,12 @@ private:
     static winrt::hstring DependencyPropertyToString(const winrt::IDependencyProperty& dependencyProperty);
 #endif
 
+    winrt::Size ArrangeContent(
+        const winrt::UIElement& content,
+        const winrt::Thickness& contentMargin,
+        winrt::Rect& finalContentRect,
+        bool wasContentArrangeWidthStretched,
+        bool wasContentArrangeHeightStretched);
     float ComputeContentLayoutOffsetDelta(ScrollerDimension dimension, float unzoomedDelta) const;
     float ComputeEndOfInertiaZoomFactor() const;
     winrt::float2 ComputeEndOfInertiaPosition();
@@ -368,12 +373,12 @@ private:
         const winrt::UIElement& content);
     void StartTransformExpressionAnimations(
         const winrt::UIElement& content,
-        bool forZoomFactorAnimationInterruption);
+        bool forAnimationsInterruption);
     void StopTransformExpressionAnimations(
         const winrt::UIElement& content,
-        bool forZoomFactorAnimationInterruption);
-    bool StartZoomFactorExpressionAnimation();
-    void StopZoomFactorExpressionAnimation();
+        bool forAnimationsInterruption);
+    bool StartTranslationAndZoomFactorExpressionAnimations(bool interruptCountdown = false);
+    void StopTranslationAndZoomFactorExpressionAnimations();
     void StartExpressionAnimationSourcesAnimations();
     void StartScrollControllerExpressionAnimationSourcesAnimations(
         ScrollerDimension dimension);
@@ -753,6 +758,9 @@ private:
         const winrt::UIElement& descendant,
         const winrt::Rect& descendantRect);
 
+    static winrt::AnimationMode GetComputedAnimationMode(
+        winrt::AnimationMode const& animationMode);
+
     static bool IsInteractionTrackerPointerWheelRedirectionEnabled();
     static bool IsVisualTranslationPropertyAvailable();
     static wstring_view GetVisualTargetedPropertyName(ScrollerDimension dimension);
@@ -787,10 +795,9 @@ private:
     uint32_t m_screenWidthInRawPixels{};
     uint32_t m_screenHeightInRawPixels{};
 
-    // Number of ticks remaining before restarting the Scale animation to allow
-    // the Content rasterization to be triggered after the Idle State is reached
-    // or a zoom factor change operation completed.
-    uint8_t m_zoomFactorAnimationRestartTicksCountdown{};
+    // Number of ticks remaining before restarting the Translation and Scale animations to allow the Content
+    // rasterization to be triggered after the Idle State is reached or a zoom factor change operation completed.
+    uint8_t m_translationAndZoomFactorAnimationsRestartTicksCountdown{};
 
     // For perf reasons, the value of ContentOrientation is cached.
     winrt::ContentOrientation m_contentOrientation{ s_defaultContentOrientation };

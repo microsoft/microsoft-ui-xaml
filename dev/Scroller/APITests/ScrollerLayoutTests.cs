@@ -21,12 +21,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -78,7 +76,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 c_defaultUIScrollerContentHeight + 2 * c_Margin - c_defaultUIScrollerHeight + 10.0,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
-                true /*hookViewChanged*/,
+                hookViewChanged: true,
+                isAnimationsEnabledOverride: null,
                 c_defaultUIScrollerContentWidth + 2 * c_Margin - c_defaultUIScrollerWidth,
                 c_defaultUIScrollerContentHeight + 2 * c_Margin - c_defaultUIScrollerHeight);
 
@@ -97,7 +96,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 c_defaultUIScrollerContentHeight - 2 * c_Margin - c_defaultUIScrollerHeight + 10.0,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
-                false /*hookViewChanged*/,
+                hookViewChanged: false,
+                isAnimationsEnabledOverride: null,
                 c_defaultUIScrollerContentWidth - 2 * c_Margin - c_defaultUIScrollerWidth,
                 c_defaultUIScrollerContentHeight - 2 * c_Margin - c_defaultUIScrollerHeight);
         }
@@ -147,7 +147,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight + 10.0,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
-                true /*hookViewChanged*/,
+                hookViewChanged: true,
+                isAnimationsEnabledOverride: null,
                 c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth,
                 c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight);
         }
@@ -156,12 +157,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Sets Scroller.Content.HorizontalAlignment/VerticalAlignment and verifies content positioning.")]
         public void BasicAlignment()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277312: MUX Scroller tests fail on RS5_Release
-                return;
-            }
-
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
             {
                 // Skipping this test on pre-RS2 since it uses Visual's Translation property.
@@ -439,12 +434,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Sets Scroller.Content.HorizontalAlignment/VerticalAlignment and Scroller.Content.Margin and verifies content positioning.")]
         public void BasicMarginAndAlignment()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277312: MUX Scroller tests fail on RS5_Release
-                return;
-            }
-
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
             {
                 // Skipping this test on pre-RS2 since it uses Visual's Translation property.
@@ -533,6 +522,103 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Sets Scroller.Content to an unsized and stretched Image, verifies resulting Scroller extents.")]
+        public void StretchedImage()
+        {
+            Scroller scroller = null;
+            Image imageScrollerContent = null;
+            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            const double margin = 10.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                Uri uri = new Uri("ms-appx:/Assets/ingredient8.png");
+                Verify.IsNotNull(uri);
+                imageScrollerContent = new Image();
+                imageScrollerContent.Source = new BitmapImage(uri);
+                imageScrollerContent.Margin = new Thickness(margin);
+
+                scroller = new Scroller();
+                scroller.Content = imageScrollerContent;
+
+                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent);
+            });
+
+            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(scroller.ContentOrientation, ContentOrientation.None);
+                // Image is unconstrained and stretches to largest square contained in the 300 x 200 viewport: 200 x 200.
+                ValidateStretchedImageSize(
+                    scroller,
+                    imageScrollerContent,
+                    desiredSize: 80.0 + 2.0 * margin /*natural size + margins*/,
+                    actualSize: c_defaultUIScrollerHeight - 2.0 * margin,
+                    extentSize: c_defaultUIScrollerHeight);
+
+                Log.Comment("Changing Scroller.ContentOrientation to Vertical.");
+                scroller.ContentOrientation = ContentOrientation.Vertical;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(scroller.ContentOrientation, ContentOrientation.Vertical);
+                // Image is constrained horizontally to 300 and stretches to the 300 x 300 square.
+                ValidateStretchedImageSize(
+                    scroller,
+                    imageScrollerContent,
+                    desiredSize: c_defaultUIScrollerWidth,
+                    actualSize: c_defaultUIScrollerWidth - 2.0 * margin,
+                    extentSize: c_defaultUIScrollerWidth);
+
+                Log.Comment("Changing Scroller.ContentOrientation to Horizontal.");
+                scroller.ContentOrientation = ContentOrientation.Horizontal;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(scroller.ContentOrientation, ContentOrientation.Horizontal);
+                // Image is constrained vertically to 200 and stretches to the 200 x 200 square.
+                ValidateStretchedImageSize(
+                    scroller,
+                    imageScrollerContent,
+                    desiredSize: c_defaultUIScrollerHeight,
+                    actualSize: c_defaultUIScrollerHeight - 2.0 * margin,
+                    extentSize: c_defaultUIScrollerHeight);
+            });
+        }
+
+        private void ValidateStretchedImageSize(
+            Scroller scroller,
+            Image imageScrollerContent,
+            double desiredSize,
+            double actualSize,
+            double extentSize)
+        {
+            Log.Comment($"Sizes with Scroller.ContentOrientation={scroller.ContentOrientation}");
+            Log.Comment($"Image DesiredSize=({imageScrollerContent.DesiredSize.Width} x {imageScrollerContent.DesiredSize.Height})");
+            Log.Comment($"Image RenderSize=({imageScrollerContent.RenderSize.Width} x {imageScrollerContent.RenderSize.Height})");
+            Log.Comment($"Image ActualSize=({imageScrollerContent.ActualWidth} x {imageScrollerContent.ActualHeight})");
+            Log.Comment($"Scroller ExtentSize=({scroller.ExtentWidth} x {scroller.ExtentHeight})");
+
+            Verify.AreEqual(imageScrollerContent.DesiredSize.Width, desiredSize);
+            Verify.AreEqual(imageScrollerContent.DesiredSize.Height, desiredSize);
+            Verify.AreEqual(imageScrollerContent.RenderSize.Width, actualSize);
+            Verify.AreEqual(imageScrollerContent.RenderSize.Height, actualSize);
+            Verify.AreEqual(imageScrollerContent.ActualWidth, actualSize);
+            Verify.AreEqual(imageScrollerContent.ActualHeight, actualSize);
+            Verify.AreEqual(scroller.ExtentWidth, extentSize);
+            Verify.AreEqual(scroller.ExtentHeight, extentSize);
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Sets Scroller.Content to Image with unnatural size and verifies InteractionTracker.MaxPosition.")]
         public void ImageWithUnnaturalSize()
         {
@@ -572,7 +658,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 c_UnnaturalImageHeight - c_defaultUIScrollerHeight + 10.0,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
-                true /*hookViewChanged*/,
+                hookViewChanged: true,
+                isAnimationsEnabledOverride: null,
                 c_UnnaturalImageWidth - c_defaultUIScrollerWidth,
                 c_UnnaturalImageHeight - c_defaultUIScrollerHeight);
         }
@@ -582,12 +669,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             "Sets Scroller.ContentOrientation to Vertical and verifies Image positioning for various alignments and zoom factors.")]
         public void ImageWithConstrainedWidth()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277312: MUX Scroller tests fail on RS5_Release
-                return;
-            }
-
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
             {
                 // Skipping this test on pre-RS2 since it uses Visual's Translation property.
@@ -668,7 +749,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: c_smallZoomFactor);
 
             // Jump to absolute large zoomFactor to make the content larger than the viewport.
-            ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+            ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
 
             ValidateContentWithConstrainedWidth(
                 compositor,
@@ -712,12 +793,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             "Sets Scroller.IsChildAvailableHeightConstrained to True and verifies Image positioning for various alignments and zoom factors.")]
         public void ImageWithConstrainedHeight()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG Bug 19277312: MUX Scroller tests fail on RS5_Release
-                return;
-            }
-
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
             {
                 // Skipping this test on pre-RS2 since it uses Visual's Translation property.
@@ -796,7 +871,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: c_smallZoomFactor);
 
             // Jump to absolute large zoomFactor to make the content larger than the viewport.
-            ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+            ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
 
             ValidateContentWithConstrainedHeight(
                 compositor,
@@ -955,8 +1030,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 delta -= nearMargin + farMargin;
             }
 
-            if (alignment == BiDirectionalAlignment.Center ||
-                alignment == BiDirectionalAlignment.Stretch)
+            if (alignment == BiDirectionalAlignment.Center)
             {
                 delta /= 2.0f;
             }

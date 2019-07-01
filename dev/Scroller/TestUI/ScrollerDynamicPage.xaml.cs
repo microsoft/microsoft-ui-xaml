@@ -17,7 +17,6 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using MUXControlsTestApp.Utilities;
 
-#if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
@@ -43,7 +42,6 @@ using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -91,6 +89,7 @@ namespace MUXControlsTestApp
         private Object asyncEventReportingLock = new Object();
         private List<string> lstAsyncEventMessage = new List<string>();
         private List<QueuedOperation> lstQueuedOperations = new List<QueuedOperation>();
+        private Viewbox viewbox;
         private TilePanel tilePanel;
         private Image largeImg;
         private Rectangle rectangle;
@@ -148,6 +147,7 @@ namespace MUXControlsTestApp
 
         private void CreateChildren()
         {
+            viewbox = new Viewbox();
             tilePanel = new TilePanel();
             tilePanel.TileCount = 100;
             tilePanel.Background = new SolidColorBrush(Colors.Orange);
@@ -164,31 +164,48 @@ namespace MUXControlsTestApp
             lgb.GradientStops.Add(gs);
             rectangle = new Rectangle() { Fill = lgb };
             button = new Button() { Content = "Button" };
-            Rectangle borderChild = new Rectangle() { Fill = lgb };
-            border = new Border() {
-                BorderBrush = chartreuseBrush, BorderThickness = new Thickness(5), Child = borderChild };
+            Rectangle viewboxChild = new Rectangle() {
+                Fill = lgb,
+                Width = 600,
+                Height = 500
+            };
+            viewbox.Child = viewboxChild;
+            Rectangle borderChild = new Rectangle()
+            {
+                Fill = lgb
+            };
+            border = new Border()
+            {
+                BorderBrush = chartreuseBrush, BorderThickness = new Thickness(5), Child = borderChild
+            };
             StackPanel populatedBorderChild = new StackPanel();
             populatedBorderChild.Margin = new Thickness(30);
             for (int i = 0; i < 16; i++)
             {
-                TextBlock textBlock = new TextBlock() {
+                TextBlock textBlock = new TextBlock()
+                {
                     Text = "TB#" + populatedBorderChild.Children.Count,
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center };
+                    VerticalAlignment = VerticalAlignment.Center
+                };
 
-                Border borderInSP = new Border() {
+                Border borderInSP = new Border()
+                {
                     BorderThickness = border.Margin = new Thickness(3),
                     BorderBrush = chartreuseBrush,
                     Background = blanchedAlmondBrush,
                     Width = 170,
                     Height = 120,
-                    Child = textBlock };
+                    Child = textBlock
+                };
 
                 populatedBorderChild.Children.Add(borderInSP);
             }
-            populatedBorder = new Border() {
+            populatedBorder = new Border()
+            {
                 BorderBrush = chartreuseBrush, BorderThickness = new Thickness(3), Margin = new Thickness(15),
-                Background = new SolidColorBrush(Colors.Beige), Child = populatedBorderChild };
+                Background = new SolidColorBrush(Colors.Beige), Child = populatedBorderChild
+            };
             verticalStackPanel = new StackPanel();
             for (int index = 0; index < 10; index++)
             {
@@ -723,6 +740,9 @@ namespace MUXControlsTestApp
                     case 8:
                         newContent = tilePanel;
                         break;
+                    case 9:
+                        newContent = viewbox;
+                        break;
                 }
 
                 if (chkPreserveProperties.IsChecked == true && currentContent != null && newContent != null)
@@ -803,6 +823,10 @@ namespace MUXControlsTestApp
             else if (scroller.Content is TilePanel)
             {
                 cmbContent.SelectedIndex = 8;
+            }
+            else if (scroller.Content is Viewbox)
+            {
+                cmbContent.SelectedIndex = 9;
             }
         }
 
@@ -1391,6 +1415,20 @@ namespace MUXControlsTestApp
         private void BtnClearScrollerEvents_Click(object sender, RoutedEventArgs e)
         {
             lstScrollerEvents.Items.Clear();
+        }
+
+        private void BtnCopyScrollerEvents_Click(object sender, RoutedEventArgs e)
+        {
+            string logs = string.Empty;
+
+            foreach (object log in lstScrollerEvents.Items)
+            {
+                logs += log.ToString() + "\n";
+            }
+
+            var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
+            dataPackage.SetText(logs);
+            Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
         }
 
         private void BtnScrollTo_Click(object sender, RoutedEventArgs e)
