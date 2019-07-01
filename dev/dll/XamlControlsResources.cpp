@@ -97,8 +97,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
     {
         winrt::Uri uri{
             []() -> PCWSTR {
-            // Our RS2 styles depend on XamlCompositionBrushBase so use that as the condition here.
-            bool isRS2OrHigher = SharedHelpers::IsXamlCompositionBrushBaseAvailable();
+            
             // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
             bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
             bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
@@ -124,14 +123,9 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
                 {
                     return L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs3_generic.xaml";
                 }
-                else if (isRS2OrHigher)
-                {
-                    return L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_generic.xaml";
-                }
                 else
                 {
-                    MUX_FAIL_FAST();
-                    return L"";
+                    return L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_generic.xaml";
                 }
             }
             else
@@ -152,14 +146,9 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
                 {
                     return L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs3_generic.xaml";
                 }
-                else if (isRS2OrHigher)
-                {
-                    return L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_generic.xaml";
-                }
                 else
                 {
-                    MUX_FAIL_FAST();
-                    return L"";
+                    return L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs2_generic.xaml";
                 }
             }
         }()
