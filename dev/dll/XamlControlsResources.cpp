@@ -38,8 +38,6 @@ void XamlControlsResources::UpdateSource()
     // is the best we can do without conditional markup.
     winrt::Uri uri{
         [useCompactResources]() -> hstring {
-            // Our RS2 styles depend on XamlCompositionBrushBase so use that as the condition here.
-            bool isRS2OrHigher = SharedHelpers::IsXamlCompositionBrushBaseAvailable();
             // RS3 styles should be used on builds where ListViewItemPresenter's VSM integration works.
             bool isRS3OrHigher = SharedHelpers::DoesListViewItemPresenterVSMWork();
             bool isRS4OrHigher = SharedHelpers::IsRS4OrHigher();
@@ -75,13 +73,9 @@ void XamlControlsResources::UpdateSource()
             {
                 releasePrefix = L"rs3_";
             }
-            else if (isRS2OrHigher)
-            {
-                releasePrefix = L"rs2_";
-            }
             else
             {
-                releasePrefix = L"rs1_";
+                releasePrefix = L"rs2_";
             }
 
             return packagePrefix + releasePrefix + compactPrefix + postfix;
@@ -97,36 +91,8 @@ void XamlControlsResources::UpdateSource()
 
 void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, std::wstring_view const& className) 
 {
-    if (SharedHelpers::IsRS2OrHigher() || SharedHelpers::IsInDesignMode())
-    {
-        // On RS2 we set the DefaultStyleResourceUri so we don't need the complex DefaultStyleKey
-        // logic to hint XAML about the different generic.xaml location. We are telling them directly, so
-        // just have the DefaultStyleKey be the class name.
+    controlProtected.DefaultStyleKey(box_value(className));
 
-        controlProtected.DefaultStyleKey(box_value(className));
-    }
-    else
-    {
-        // On RS1 and earlier where we don't have DefaultStyleResourceUri we need to tell XAML where to look
-        // to load generic.xaml. By default it takes the DefaultStyleKey string (like Microsoft.UI.Xaml.Controls.Blah) 
-        // and does ms-appx:///Microsoft.UI.Xaml.Controls/Themes/generic.xaml. This doesn't work for us
-        // because the PRI resource root is actually Microsoft.UI.Xaml. Luckily XAML has special logic if
-        // the DefaultStyleKey is an IReference<TypeName>. In this case, XAML will look up generic.xaml in a path 
-        // constructed from the Assembly Name, and then we can have that be what we want (Microsoft.UI.Xaml).
-        // Also cache the style key that we make in a static because we don't want to build these two objects
-        // (hstring and IReference) every time we instance a control.
-
-        WCHAR szFullTypeName[256];
-        // Use the full type name discovered from what C# produces with typeof(X).FullName for Microsoft.UI.Xaml types.
-        StringCchPrintfW(szFullTypeName, _countof(szFullTypeName),
-            L"%s, " MUXCONTROLSROOT_NAMESPACE_STR ", Version = 255.255.255.255, Culture = neutral, PublicKeyToken = null, ContentType = WindowsRuntime",
-            className.data());
-
-        winrt::TypeName assemblyTypeName{ winrt::hstring(szFullTypeName), winrt::TypeKind::Metadata };
-        controlProtected.DefaultStyleKey(box_value(assemblyTypeName));
-    }
-
-#ifndef BUILD_WINDOWS
     if (auto control5 = controlProtected.try_as<winrt::IControl5>())
     {
         winrt::Uri uri{
@@ -164,7 +130,8 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
                 }
                 else
                 {
-                    return L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs1_generic.xaml";
+                    MUX_FAIL_FAST();
+                    return L"";
                 }
             }
             else
@@ -191,7 +158,8 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
                 }
                 else
                 {
-                    return L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs1_generic.xaml";
+                    MUX_FAIL_FAST();
+                    return L"";
                 }
             }
         }()
@@ -199,7 +167,6 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
         // Choose a default resource URI based on whether we're running in a framework package scenario or not.
         control5.DefaultStyleResourceUri(uri);
     }
-#endif
 }
 
 // Normally global reveal lights are attached automtically via the first call to
