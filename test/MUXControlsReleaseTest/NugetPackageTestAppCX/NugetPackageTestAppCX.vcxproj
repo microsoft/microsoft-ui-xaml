@@ -2,7 +2,6 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\..\MUXControlsReleaseTest.props" Condition="Exists('$(MSBuildProjectDirectory)\..\MUXControlsReleaseTest.props') And $(BuildingWithBuildExe) != 'true'" />
-  <Import Project="$(MSBuildProjectDirectory)\..\..\..\mux.PGO.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2f339b02-2b8c-4ed8-9c20-93e24a183a2b}</ProjectGuid>
     <RootNamespace>NugetPackageTestAppCX</RootNamespace>
@@ -17,6 +16,7 @@
     <ConvertedPlatformName Condition="'$(Platform)' == 'Win32'">x86</ConvertedPlatformName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\..\mux.PGO.props" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|ARM">
       <Configuration>Debug</Configuration>
