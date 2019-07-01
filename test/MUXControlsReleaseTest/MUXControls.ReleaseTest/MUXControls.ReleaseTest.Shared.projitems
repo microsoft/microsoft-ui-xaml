@@ -115,14 +115,6 @@
   <PropertyGroup>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
-  <ItemGroup Condition="'$(Configuration)' == 'Release' and '$(PGOBuildMode)' == 'Instrument'">
-    <Content Include="$(VC_PGO_RunTime_Dir)\pgosweep.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="$(VC_PGO_RunTime_Dir)\vcruntime140.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)PGOManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\NugetTestsCX.cs" />

@@ -2,13 +2,11 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <VC_PGO_RunTime_Dir>$(VCToolsInstallDir)bin\Host$(Platform)\$(Platform)</VC_PGO_RunTime_Dir>
-        <VC_PGO_RunTime_Dir Condition="$(Platform)=='AnyCPU'">$(VCToolsInstallDir)bin\Hostx86\x86</VC_PGO_RunTime_Dir>
-        <!--ProfileGuidedDatabaseFileName>$(MSBuildThisFileDirectory)$(PlatformShortName)\Microsoft.UI.Xaml.pgd</ProfileGuidedDatabaseFileName-->
-        <ProfileGuidedDatabaseFileName>$(MSBuildThisFileDirectory)Microsoft.UI.Xaml.pgd</ProfileGuidedDatabaseFileName>
+        <VC_PGO_RunTime_Dir Condition="'$(Platform)'=='ARM' or '$(Platform)'=='ARM64'">$(VCToolsInstallDir)bin\$(PlatformShortName)</VC_PGO_RunTime_Dir>
+        <ProfileGuidedDatabaseFileName>$(MSBuildThisFileDirectory)$(PlatformShortName)\Microsoft.UI.Xaml.pgd</ProfileGuidedDatabaseFileName>
     </PropertyGroup>
     <PropertyGroup>    
-	    <!-- ignore instrumentation on arm for now -->
-        <PGOBuildMode Condition="'$(PGOBuildMode)'=='' and '$(Platform)'!='arm' and '$(Platform)'!='arm64'">Instrument</PGOBuildMode>
+        <PGOBuildMode Condition="'$(PGOBuildMode)'==''">Instrument</PGOBuildMode>
         <!--PGOBuildMode Condition="'$(PGOBuildMode)'==''">Optimize</PGOBuildMode-->
     </PropertyGroup>
 </Project>

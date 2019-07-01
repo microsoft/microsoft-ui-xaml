@@ -7,9 +7,6 @@ jobs:
   strategy:
     maxParallel: 10
     matrix:
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
       Release_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
@@ -32,13 +29,6 @@ jobs:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
   
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
-
-- template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
-  parameters:
-    name: 'RunTestsInHelix'
-    dependsOn: Build
-    condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
-    testSuite: 'DevTestSuite'
 
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
@@ -69,7 +59,6 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
     dependsOn:
-    - RunTestsInHelix
     - RunNugetPkgTestsInHelix
     - RunFrameworkPkgTestsInHelix
     rerunPassesRequiredToAvoidFailure: 5

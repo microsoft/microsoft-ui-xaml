@@ -195,16 +195,27 @@
       <Project>{e7d6b510-3761-478a-8e22-72558dad924e}</Project>
     </ProjectReference>
   </ItemGroup>
-   <!-- Include pgort140.dll in the app package -->
+  <!-- Include pgort140.dll in the app package -->
   <ItemGroup Condition="'$(Configuration)' == 'Release' and '$(PGOBuildMode)' == 'Instrument'">
-	<None Include="$(VC_PGO_RunTime_Dir)\pgort140.dll">
-	  <Link>%(Filename)%(Extension)</Link>
-	  <DeploymentContent>true</DeploymentContent>
-	  <Visible>false</Visible>
-	  <InProject>false</InProject>
-	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	</None>
+    <None Include="$(VC_PGO_RunTime_Dir)\pgort140.dll">
+      <Link>%(Filename)%(Extension)</Link>
+      <DeploymentContent>true</DeploymentContent>
+      <Visible>false</Visible>
+      <InProject>false</InProject>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+	  <None Include="$(VC_PGO_RunTime_Dir)\pgosweep.exe">
+      <Visible>false</Visible>
+      <InProject>false</InProject>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+	  <None Include="$(VC_PGO_RunTime_Dir)\vcruntime140.dll">
+      <Visible>false</Visible>
+      <InProject>false</InProject>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
+  
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
