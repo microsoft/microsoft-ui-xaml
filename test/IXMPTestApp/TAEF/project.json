@@ -6,7 +6,7 @@
     "TAEF.Redist.Wlk": "10.31.180822002"
   },
   "frameworks": {
-    "uap10.0.14393": {}
+    "uap10.0.15063": {}
   },
   "runtimes": {
     "win10-x86": {},
