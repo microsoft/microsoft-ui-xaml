@@ -13,8 +13,10 @@
   </metadata>
   <files>
     <file target="build\x86\microsoft.ui.xaml.pgd" src="x86\microsoft.ui.xaml.pgd"/>
-	<file target="build\x64\microsoft.ui.xaml.pgd" src="x64\microsoft.ui.xaml.pgd"/>
-	<file target="build\arm\microsoft.ui.xaml.pgd" src="arm\microsoft.ui.xaml.pgd"/>
-	<file target="build\arm64\microsoft.ui.xaml.pgd" src="arm64\microsoft.ui.xaml.pgd"/>
+	  <file target="build\x64\microsoft.ui.xaml.pgd" src="x64\microsoft.ui.xaml.pgd"/>
+ 
+    <!-- we currently do not have test runs on arm/arm64 
+    <file target="build\arm\microsoft.ui.xaml.pgd" src="arm\microsoft.ui.xaml.pgd"/>
+    <file target="build\arm64\microsoft.ui.xaml.pgd" src="arm64\microsoft.ui.xaml.pgd"/-->
   </files>
 </package>

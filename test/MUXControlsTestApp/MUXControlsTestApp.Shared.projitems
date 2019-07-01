@@ -287,7 +287,7 @@
     <Content Include="$(MSBuildThisFileDirectory)\..\..\dev\dll\DensityStyles\Compact.xaml" />
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)' == 'Release' and '$(PGOBuildMode)' == 'Instrument'">
-    <Content Include="$(VC_PGO_RunTime_Dir)\pgort140.dll">
+    <Content Include="$(PGOFilesDir)\pgort140.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

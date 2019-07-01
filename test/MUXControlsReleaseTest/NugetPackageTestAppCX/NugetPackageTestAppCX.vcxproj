@@ -197,19 +197,19 @@
   </ItemGroup>
   <!-- Include pgort140.dll in the app package -->
   <ItemGroup Condition="'$(Configuration)' == 'Release' and '$(PGOBuildMode)' == 'Instrument'">
-    <None Include="$(VC_PGO_RunTime_Dir)\pgort140.dll">
+    <None Include="$(PGOFilesDir)\pgort140.dll">
       <Link>%(Filename)%(Extension)</Link>
       <DeploymentContent>true</DeploymentContent>
       <Visible>false</Visible>
       <InProject>false</InProject>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-	  <None Include="$(VC_PGO_RunTime_Dir)\pgosweep.exe">
+	  <None Include="$(PGOFilesDir)\pgosweep.exe">
       <Visible>false</Visible>
       <InProject>false</InProject>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-	  <None Include="$(VC_PGO_RunTime_Dir)\vcruntime140.dll">
+	  <None Include="$(PGOFilesDir)\vcruntime140.dll" Condition="Exists('$(PGOFilesDir)\vcruntime140.dll')">
       <Visible>false</Visible>
       <InProject>false</InProject>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
