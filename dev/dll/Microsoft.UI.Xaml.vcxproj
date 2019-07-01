@@ -31,7 +31,6 @@
     <!-- XBF is no longer embedded to improve F5 times but we need it embedded for the Nuget package PRI file, turn it on for release builds -->
     <DisableEmbeddedXbf Condition="'$(Configuration)'=='Release'">false</DisableEmbeddedXbf>
     <AppxBundlePlatforms>x86|x64|arm|arm64</AppxBundlePlatforms>
-
     <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
     <CppWinRTAddXamlMetaDataProviderIdl>false</CppWinRTAddXamlMetaDataProviderIdl>
   </PropertyGroup>
@@ -125,6 +124,7 @@
     <Import Project="..\ComboBox\ComboBox.vcxitems" Label="Shared" />
     <Import Project="..\Pivot\Pivot.vcxitems" Label="Shared" />
     <Import Project="..\ScrollBar\ScrollBar.vcxitems" Label="Shared" />
+    <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -513,7 +513,7 @@
     <CreateProperty Value="True">
       <Output TaskParameter="ValueSetByTask" PropertyName="CompactThemeResourceFileNeedsCompilation" />
     </CreateProperty>
-  </Target>  
+  </Target>
   <Target Name="RemovePageRequiringCustomCompilation" AfterTargets="BeforeBuildGenerateSources" BeforeTargets="MarkupCompilePass2" Condition="'@(PageRequiringCustomCompilation)' != ''">
     <Message Text="RemovePageRequiringCustomCompilation" />
     <ItemGroup>
@@ -604,14 +604,14 @@
   <!-- Merge all idl files into one -->
   <Target Name="MergeIDLFiles" Inputs="@(Midl)" Outputs="$(ProjectMergedIdl)" BeforeTargets="CppWinRTSetMidlReferences;Midl">
     <PropertyGroup>
-      <MidlLines>@(Midl->'#include &lt;%(FullPath)&gt;', '
+      <MidlLines>@(Midl-&gt;'#include &lt;%(FullPath)&gt;', '
 ')</MidlLines>
     </PropertyGroup>
     <WriteLinesToFile File="$(ProjectMergedIdl)" Lines="$(MidlLines)" WriteOnlyWhenDifferent="true" Overwrite="true" />
     <ItemGroup>
       <OriginalMidl Include="@(Midl)" />
       <Midl Remove="@(OriginalMidl)" />
-      <Midl Include="$(ProjectMergedIdl)"/>
+      <Midl Include="$(ProjectMergedIdl)" />
     </ItemGroup>
   </Target>
   <Target Name="CreateReferenceWinmds" BeforeTargets="XamlMetadataCodeGenMUX">
@@ -625,13 +625,12 @@
   <Target Name="MakeSDKMetadata" AfterTargets="CppWinRTMergeProjectWinMDInputs" BeforeTargets="XamlMetadataCodeGenMUX" Inputs="$(OutDir)Unmerged\Microsoft.UI.Xaml.winmd" Outputs="$(OutDir)sdk\Microsoft.UI.xaml.winmd">
     <PropertyGroup>
       <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
-      <_MdMergeParameters>-v @(_MdMergeRefsDistinct->'-metadata_dir &quot;%(RelativeDir).&quot;', ' ')</_MdMergeParameters>
-      <_MdMergeParameters>$(_MdMergeParameters) -o &quot;$(OutDir)\sdk&quot; -i &quot;$(CppWinRTUnmergedDir)&quot; -partial -n:3 -createPublicMetadata -transformExperimental:transform</_MdMergeParameters>
+      <_MdMergeParameters>-v @(_MdMergeRefsDistinct-&gt;'-metadata_dir "%(RelativeDir)."', ' ')</_MdMergeParameters>
+      <_MdMergeParameters>$(_MdMergeParameters) -o "$(OutDir)\sdk" -i "$(CppWinRTUnmergedDir)" -partial -n:3 -createPublicMetadata -transformExperimental:transform</_MdMergeParameters>
     </PropertyGroup>
-    <Exec Command="$(MdMergeExe) $(_MdMergeParameters)" />    
+    <Exec Command="$(MdMergeExe) $(_MdMergeParameters)" />
   </Target>
-  <Target Name="XamlMetadataCodeGenMUX" AfterTargets="CppWinRTMakeComponentProjection" BeforeTargets="ClCompile" 
-  Inputs="$(OutDir)sdk\Microsoft.UI.Xaml.winmd;XamlMetadataProviderGenerated.tt;CommonHelpers.tt;WinRtType.tt" Outputs="$(OutDir)XamlMetadataProviderGenerated.cpp">
+  <Target Name="XamlMetadataCodeGenMUX" AfterTargets="CppWinRTMakeComponentProjection" BeforeTargets="ClCompile" Inputs="$(OutDir)sdk\Microsoft.UI.Xaml.winmd;XamlMetadataProviderGenerated.tt;CommonHelpers.tt;WinRtType.tt" Outputs="$(OutDir)XamlMetadataProviderGenerated.cpp">
     <!-- Run XamlMetadataProviderGenerated.tt t4 template to generate XamlMetadataProviderGenerated.cpp from the winmd file -->
     <CallTarget Targets="TransformAll" />
     <ItemGroup>

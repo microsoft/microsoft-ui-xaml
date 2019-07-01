@@ -59,7 +59,6 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Slider\TestUI\Slider_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TimePicker\TestUI\TimePicker_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ToolTip\TestUI\ToolTip_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-
   <!-- These depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
        We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
        to non-public types.  So for now we'll just exclude these from the OS repo. -->
@@ -72,4 +71,5 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ComboBox\TestUI\ComboBox_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Pivot\TestUI\Pivot_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollBar\TestUI\ScrollBar_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\NumberBox\TestUI\NumberBox_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
 </Project>
