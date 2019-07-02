@@ -608,6 +608,16 @@ winrt::ZoomInfo Scroller::ZoomFrom(float zoomFactorVelocity, winrt::IReference<w
 
 winrt::Size Scroller::MeasureOverride(winrt::Size const& availableSize)
 {
+    int32_t i = 32;
+    wchar_t const* str = L"example string";
+    float toto = 123.4f;
+
+    DEBUG_PRINT(METH_NAME, L"availableSize.Width", availableSize.Width, i, availableSize);
+
+    DEBUG_PRINT3ARGS(METH_NAME, availableSize, i, L"-test string-");
+    DEBUG_PRINT4ARGS(METH_NAME, availableSize, i, L"-test string-", str);
+    DEBUG_PRINT5ARGS(METH_NAME, availableSize, i, L"-test string-", str, toto);
+
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"availableSize:", availableSize.Width, availableSize.Height);
 
     m_availableSize = availableSize;
