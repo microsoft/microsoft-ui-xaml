@@ -10,14 +10,15 @@
 NumberBox::NumberBox()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
-
+  
     SetDefaultStyleKey(this);
 }
+
 
 void NumberBox::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
-
+    
     // TODO: Implement
 }
 
