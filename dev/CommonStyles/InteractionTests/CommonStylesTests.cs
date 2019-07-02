@@ -151,12 +151,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void CornerRadiusTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                Log.Comment("CornerRadius is not surpported on this os version");
-                return;
-            }
-
             using (var setup = new TestSetupHelper("CornerRadius Tests"))
             {
                 var textBlock = FindElement.ByName("CornerRadius");
