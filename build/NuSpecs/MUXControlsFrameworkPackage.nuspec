@@ -32,7 +32,6 @@
     <file target="build\Common.targets" src="MUXControls-Nuget-Common.targets"/>
     <file target="build\$ID$.props" src="MUXControls-Nuget-FrameworkPackage.props"/>
     <file target="build\native\$ID$.targets" src="MUXControls-Nuget-FrameworkPackage.targets"/>
-    <file target="build\rs1_themes\generic.xaml" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\rs1_themes_generic.xaml"/>
     <file target="build\DensityStyles\Compact.xaml" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\Compact.xaml"/>
   </files>
 </package>

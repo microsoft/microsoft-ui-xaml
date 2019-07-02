@@ -223,6 +223,7 @@
                     <ComboBoxItem>PopulatedBorder</ComboBoxItem>
                     <ComboBoxItem>VerticalStackPanel</ComboBoxItem>
                     <ComboBoxItem>TilePanel</ComboBoxItem>
+                    <ComboBoxItem>Viewbox</ComboBoxItem>
                 </ComboBox>
 
                 <TextBlock Text="ManipulationMode:" Grid.Row="14" Grid.Column="0" VerticalAlignment="Center"/>
@@ -661,6 +662,7 @@
 
             <StackPanel Orientation="Horizontal" Grid.Row="1">
                 <Button x:Name="btnClearScrollerEvents" Content="Clear" Click="BtnClearScrollerEvents_Click" Margin="1"/>
+                <Button x:Name="btnCopyScrollerEvents" Content="Copy into Clipboard" Click="BtnCopyScrollerEvents_Click" Margin="1"/>
                 <CheckBox x:Name="chkLogScrollerMessages" Content="Log Scroller Messages?" Margin="1" Checked="ChkLogScrollerMessages_Checked" Unchecked="ChkLogScrollerMessages_Unchecked"/>
                 <CheckBox x:Name="chkLogScrollerEvents" Content="Log Scroller Events?" Margin="1" Checked="ChkLogScrollerEvents_Checked" Unchecked="ChkLogScrollerEvents_Unchecked"/>
             </StackPanel>

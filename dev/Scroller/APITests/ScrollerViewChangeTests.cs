@@ -1518,7 +1518,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
                     ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
-                    VerifyExpressionAnimationStatusChangesForZoomFactorSuspension(expressionAnimationStatusChanges);
+                    VerifyExpressionAnimationStatusChangesForTranslationAndZoomFactorSuspension(expressionAnimationStatusChanges);
                 });
             }
         }
@@ -1594,7 +1594,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
                     ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
-                    VerifyExpressionAnimationStatusChangesForZoomFactorSuspension(expressionAnimationStatusChanges);                    
+                    VerifyExpressionAnimationStatusChangesForTranslationAndZoomFactorSuspension(expressionAnimationStatusChanges);                    
                 });
             }
         }
@@ -1662,7 +1662,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollerTestHooksHelper.GetExpressionAnimationStatusChanges(scroller);
                     ScrollerTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
-                    VerifyExpressionAnimationStatusChangesForZoomFactorSuspension(expressionAnimationStatusChanges);
+                    VerifyExpressionAnimationStatusChangesForTranslationAndZoomFactorSuspension(expressionAnimationStatusChanges);
                 });
             }
         }
@@ -1936,17 +1936,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        private void VerifyExpressionAnimationStatusChangesForZoomFactorSuspension(List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges)
+        private void VerifyExpressionAnimationStatusChangesForTranslationAndZoomFactorSuspension(List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges)
         {
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
-                // Facades are enabled. The zoom factor animation is expected to be interrupted momentarily.
+                // Facades are enabled. The translation and zoom factor animations are expected to be interrupted momentarily.
                 Verify.IsNotNull(expressionAnimationStatusChanges);
-                Verify.AreEqual(expressionAnimationStatusChanges.Count, 2);
+                Verify.AreEqual(expressionAnimationStatusChanges.Count, 4);
+
                 Verify.IsFalse(expressionAnimationStatusChanges[0].IsExpressionAnimationStarted);
-                Verify.AreEqual(expressionAnimationStatusChanges[0].PropertyName, "Scale");
-                Verify.IsTrue(expressionAnimationStatusChanges[1].IsExpressionAnimationStarted);
+                Verify.IsFalse(expressionAnimationStatusChanges[1].IsExpressionAnimationStarted);
+                Verify.IsTrue(expressionAnimationStatusChanges[2].IsExpressionAnimationStarted);
+                Verify.IsTrue(expressionAnimationStatusChanges[3].IsExpressionAnimationStarted);
+
+                Verify.AreEqual(expressionAnimationStatusChanges[0].PropertyName, "Translation");
                 Verify.AreEqual(expressionAnimationStatusChanges[1].PropertyName, "Scale");
+                Verify.AreEqual(expressionAnimationStatusChanges[2].PropertyName, "Translation");
+                Verify.AreEqual(expressionAnimationStatusChanges[3].PropertyName, "Scale");
             }
             else
             {

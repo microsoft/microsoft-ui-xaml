@@ -24,7 +24,7 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">$(MuxSdkVersion)</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
+    <TargetPlatformMinVersion>10.0.15063.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -201,16 +201,19 @@
     <Content Include="$(MSBuildThisFileDirectory)Assets\CalendarDatePicker.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\CheckBox.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ColorPicker.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ComboBox.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\CommandBarFlyout.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\CompactSizing.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\DatePicker.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\DropdownButton.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\FlipView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ListView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\MenuBar.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\MenuFlyout.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\NavigationView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ParallaxView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\PersonPicture.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Pivot.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\PullToRefresh.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\RadioButton.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\RatingControl.png" />

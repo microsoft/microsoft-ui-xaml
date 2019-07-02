@@ -31,7 +31,7 @@ void TabViewItem::OnApplyTemplate()
         return closeButton;
     }());
 
-    if (auto tabView = winrt::ItemsControl::ItemsControlFromItemContainer(*this).as<winrt::TabView>())
+    if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
     {
         m_CanCloseTabsChangedRevoker = RegisterPropertyChanged(tabView, winrt::TabView::CanCloseTabsProperty(), { this, &TabViewItem::OnCloseButtonPropertyChanged });
     }
