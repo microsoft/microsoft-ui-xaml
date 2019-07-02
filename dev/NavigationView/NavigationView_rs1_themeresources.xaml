@@ -592,7 +592,6 @@
                             </Grid.ColumnDefinitions>
 
                             <Viewbox x:Name="IconBox"
-                                Width="16"
                                 Height="16"
                                 Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
                                 <ContentPresenter 
@@ -689,7 +688,6 @@
 
                             <Viewbox 
                                 x:Name="IconBox"                                
-                                Width="16"
                                 Height="16"
                                 Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
                                 <ContentPresenter 
