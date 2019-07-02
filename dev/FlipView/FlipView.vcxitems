@@ -17,6 +17,7 @@
     <Page Include="$(MSBuildThisFileDirectory)FlipView_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)FlipViewItem_themeresources.xaml">
       <Version>RS1</Version>
