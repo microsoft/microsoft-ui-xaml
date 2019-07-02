@@ -13,6 +13,9 @@
     <license type="file">license.txt</license>
     <projectUrl>https://github.com/microsoft/microsoft-ui-xaml</projectUrl>
     <iconUrl>https://aka.ms/winui_icon</iconUrl>
+    <dependencies>
+      <dependency id="Microsoft.VCRTForwarders.140" version="1.0.0-rc"/>
+    </dependencies>
   </metadata>
   <files>
     <file src="readme.txt"/>
@@ -35,7 +38,4 @@
     <file target="build\rs1_themes\generic.xaml" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\rs1_themes_generic.xaml"/>
     <file target="build\DensityStyles\Compact.xaml" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\Compact.xaml"/>
   </files>
-  <dependencies>
-    <dependency id="Microsoft.VCRTForwarders.140" version="1.0.0-rc"/>
-  </dependencies>
 </package>
