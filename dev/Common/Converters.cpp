@@ -42,6 +42,10 @@ winrt::IInspectable CornerRadiusFilterConverter::Convert(
         result.TopRight = 0;
         result.BottomRight = 0;
     }
+    else
+    {
+        winrt::throw_hresult(OSS_BAD_ARG);
+    }
 
     return box_value(result);
 }
