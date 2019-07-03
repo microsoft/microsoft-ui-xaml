@@ -101,7 +101,7 @@ void TeachingTip::OnApplyTemplate()
     }();
 
     UpdateButtonsState();
-
+    OnIsLightDismissEnabledChanged();
     OnIconSourceChanged();
 
     EstablishShadows();
