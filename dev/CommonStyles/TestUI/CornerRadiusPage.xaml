@@ -10,6 +10,7 @@
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:muxContract7Present="using:Microsoft.UI.Xaml.Controls?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
@@ -38,10 +39,13 @@
             Value="{x:Bind OverlayCornerRadiusSize, Mode=TwoWay}"
             Margin="10,0"/>
 
-        <controls:ScrollViewer Grid.Row="1" Grid.ColumnSpan="2"
-                      muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+        <controls:ScrollViewer
+            Grid.Row="1" Grid.ColumnSpan="2"
+            muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
 
-            <Grid RowSpacing="10" ColumnSpacing="10">
+            <Grid
+                contract5Present:RowSpacing="10"
+                contract5Present:ColumnSpacing="10">
                 <Grid.Resources>
                     <Style x:Key="SideHeader" TargetType="TextBlock">
                         <Setter Property="HorizontalAlignment" Value="Right"/>
