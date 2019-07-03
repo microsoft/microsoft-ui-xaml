@@ -1,15 +1,13 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System;
-using System.Linq;
-
 using Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Text;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -20,19 +18,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
-using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -2972,6 +2961,51 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void CloseToolTipTest()
+        {
+            if (PlatformConfiguration.IsDevice(DeviceType.Phone))
+            {
+                Log.Warning("Test is disabled on mobile due to lack of tooltips.");
+                return;
+            }
+
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+
+                Log.Comment("Set PaneDisplayMode to LeftMinimal");
+                panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
+                Wait.ForIdle();
+
+                var isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
+
+                Log.Comment("Open the pane");
+                isPaneOpenCheckBox.Check();
+                Wait.ForIdle();
+
+                Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+
+                Button closeButton = new Button(FindElement.ById("NavigationViewCloseButton"));
+                Verify.IsNotNull(closeButton);
+
+                using (var waiter = new ToolTipOpenedWaiter())
+                {
+                    Log.Comment("Moving pointer around, over close button");
+                    closeButton.MovePointer();
+                    Wait.ForIdle();
+                    closeButton.MovePointer(offsetX: 1, offsetY: 1);
+                    Wait.ForIdle();
+                    closeButton.MovePointer(offsetX: -1, offsetY: -1);
+                    Wait.ForIdle();
+
+                    Log.Comment("Waiting for tooltip to open");
+                    waiter.Wait(TimeSpan.FromSeconds(5));
+                }
+            }
+        }
+
         private void WaitAndAssertPaneStatus(PaneOpenStatus status)
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
@@ -3470,6 +3504,64 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(invokeResult.Value.Contains("Expanded"));
                 Log.Comment("Verify Pane is opened automatically in PaneDisplayMode is changed from Minimal to Left");
                 Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        [TestProperty("Description", "Verifies the back button is visible when the pane is closed and the close button is visible when the pane is open, in LeftMinimal display mode")]
+        public void VerifyBackAndCloseButtonsVisibility()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                var isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
+
+                Log.Comment("Set PaneDisplayMode to LeftMinimal");
+                panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
+                Wait.ForIdle();
+
+                Log.Comment("Verify Pane is closed automatically when PaneDisplayMode becomes LeftMinimal");
+                Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+
+                Log.Comment("Verify toggle-pane button is visible when pane is closed");
+                VerifyElement.Found("TogglePaneButton", FindBy.Id);
+
+                Log.Comment("Verify back button is visible when pane is closed");
+                VerifyElement.Found("NavigationViewBackButton", FindBy.Id);
+
+                Log.Comment("Verify close button is not visible when pane is closed");
+                VerifyElement.NotFound("NavigationViewCloseButton", FindBy.Id);
+
+                Log.Comment("Open the pane");
+                isPaneOpenCheckBox.Check();
+                Wait.ForIdle();
+
+                Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+
+                Log.Comment("Verify toggle-pane button is visible when pane is open");
+                VerifyElement.Found("TogglePaneButton", FindBy.Id);
+
+                Log.Comment("Verify back button is not visible when pane is open");
+                VerifyElement.NotFound("NavigationViewBackButton", FindBy.Id);
+
+                Log.Comment("Verify close button is visible when pane is open");
+                VerifyElement.Found("NavigationViewCloseButton", FindBy.Id);
+
+                Button closeButton = new Button(FindElement.ById("NavigationViewCloseButton"));
+                Verify.IsNotNull(closeButton);
+                Verify.IsTrue(closeButton.IsEnabled, "Close button is expected to be enabled");
+
+                CheckBox backButtonVisibilityCheckbox = new CheckBox(FindElement.ByName("BackButtonVisibilityCheckbox"));
+
+                backButtonVisibilityCheckbox.Uncheck();
+                Wait.ForIdle();
+
+                Log.Comment("Verify back button is not visible when pane is open");
+                VerifyElement.NotFound("NavigationViewBackButton", FindBy.Id);
+
+                Log.Comment("Verify close button is no longer visible when pane is open");
+                VerifyElement.NotFound("NavigationViewCloseButton", FindBy.Id);
             }
         }
 
