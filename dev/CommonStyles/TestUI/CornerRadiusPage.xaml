@@ -171,14 +171,14 @@
 
                 <TextBlock Grid.Row="7" Text="ComboBox (IsEditable)" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="7" Style="{StaticResource LeftColumn}">
-                    <ComboBox IsEditable="True">
+                    <ComboBox contract7Present:IsEditable="True">
                         <ComboBoxItem Content="Item 1"/>
                         <ComboBoxItem Content="Item 2"/>
                         <ComboBoxItem Content="Item 3"/>
                     </ComboBox>
                 </Grid>
                 <Grid Grid.Row="7" Style="{StaticResource RightColumn}">
-                    <ComboBox IsEditable="True" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
+                    <ComboBox contract7Present:IsEditable="True" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
                         <ComboBoxItem Content="Item 1"/>
                         <ComboBoxItem Content="Item 2"/>
                         <ComboBoxItem Content="Item 3"/>
