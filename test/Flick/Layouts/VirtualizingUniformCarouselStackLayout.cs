@@ -61,7 +61,7 @@ namespace Flick
             {
                 if (value <= 0 || value > 1)
                 {
-                    throw new ArgumentException(String.Format("{0} must be a number x where 0 < x <= 1", "ItemScaleRatio"));
+                    throw new ArgumentException(String.Format("{0} must be a number, x, where 0 < x <= 1", "ItemScaleRatio"));
                 }
 
                 SetValue(ItemScaleRatioProperty, value);
@@ -71,16 +71,9 @@ namespace Flick
         public static readonly DependencyProperty ItemScaleRatioProperty = DependencyProperty.Register(
             "ItemScaleRatio", typeof(Double), typeof(VirtualizingUniformCarouselStackLayout), new PropertyMetadata(1.0));
 
-        public Thickness Margin
-        {
-            get { return (Thickness)GetValue(MarginProperty); }
-            set { SetValue(MarginProperty, value); }
-        }
+        public Thickness Margin { get; private set; } = new Thickness(0);
 
-        public static readonly DependencyProperty MarginProperty = DependencyProperty.Register(
-            "Margin", typeof(Thickness), typeof(VirtualizingUniformCarouselStackLayout), new PropertyMetadata(new Thickness(0)));
-
-        public int MaxNumberOfItemsThatCanFitInViewport { get; set; } = 0;
+        public int MaxNumberOfItemsThatCanFitInViewport { get; private set; } = 0;
 
         public float FirstSnapPointOffset { get; private set; } = 0.0f;
 
@@ -345,8 +338,7 @@ namespace Flick
 
         private int LastRealizedIndexInRect(Rect realizationRect, int itemCount)
         {
-            int index = (int)(realizationRect.Right / (ItemWidth + Spacing));
-            return index;
+            return (int)(realizationRect.Right / (ItemWidth + Spacing));
         }
 
         #endregion Private Methods

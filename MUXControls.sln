@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28729.10
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.572
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dev", "dev", "{67599AD5-51EC-44CB-85CE-B60CD8CBA270}"
 EndProject
@@ -578,6 +578,8 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CommonStyles_APITests", "dev\CommonStyles\APITests\CommonStyles_APITests.shproj", "{BA914F48-E924-4FD2-AEE1-264F67DB6C9F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flick", "test\Flick\Flick.csproj", "{13B0990A-EEFD-4879-B4BF-31E81474F0F8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FlickCpp", "FlickCpp\FlickCpp.vcxproj", "{8503990A-F5C6-40AE-9238-31C1362DB2D7}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -1275,6 +1277,42 @@ Global
 		{13B0990A-EEFD-4879-B4BF-31E81474F0F8}.Release|x86.ActiveCfg = Release|x86
 		{13B0990A-EEFD-4879-B4BF-31E81474F0F8}.Release|x86.Build.0 = Release|x86
 		{13B0990A-EEFD-4879-B4BF-31E81474F0F8}.Release|x86.Deploy.0 = Release|x86
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug_test|ARM.ActiveCfg = Debug|ARM
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug_test|ARM.Build.0 = Debug|ARM
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug_test|ARM.Deploy.0 = Debug|ARM
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug_test|arm64.ActiveCfg = Debug|ARM64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug_test|arm64.Build.0 = Debug|ARM64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug_test|arm64.Deploy.0 = Debug|ARM64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug_test|x64.ActiveCfg = Debug|x64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug_test|x64.Build.0 = Debug|x64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug_test|x64.Deploy.0 = Debug|x64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug_test|x86.ActiveCfg = Debug|Win32
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug_test|x86.Build.0 = Debug|Win32
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug_test|x86.Deploy.0 = Debug|Win32
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug|ARM.ActiveCfg = Debug|ARM
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug|ARM.Build.0 = Debug|ARM
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug|ARM.Deploy.0 = Debug|ARM
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug|arm64.ActiveCfg = Debug|ARM64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug|arm64.Build.0 = Debug|ARM64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug|arm64.Deploy.0 = Debug|ARM64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug|x64.ActiveCfg = Debug|x64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug|x64.Build.0 = Debug|x64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug|x64.Deploy.0 = Debug|x64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug|x86.ActiveCfg = Debug|Win32
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug|x86.Build.0 = Debug|Win32
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Debug|x86.Deploy.0 = Debug|Win32
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Release|ARM.ActiveCfg = Release|ARM
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Release|ARM.Build.0 = Release|ARM
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Release|ARM.Deploy.0 = Release|ARM
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Release|arm64.ActiveCfg = Release|ARM64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Release|arm64.Build.0 = Release|ARM64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Release|arm64.Deploy.0 = Release|ARM64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Release|x64.ActiveCfg = Release|x64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Release|x64.Build.0 = Release|x64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Release|x64.Deploy.0 = Release|x64
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Release|x86.ActiveCfg = Release|Win32
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Release|x86.Build.0 = Release|Win32
+		{8503990A-F5C6-40AE-9238-31C1362DB2D7}.Release|x86.Deploy.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

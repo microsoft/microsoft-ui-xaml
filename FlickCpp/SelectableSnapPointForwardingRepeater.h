@@ -1,0 +1,51 @@
+﻿#pragma once
+
+#include "sal.h"
+
+namespace FlickCpp
+{
+    [Windows::Foundation::Metadata::WebHostHidden]
+    public ref class SelectableSnapPointForwardingRepeater sealed
+        : public Microsoft::UI::Xaml::Controls::ItemsRepeater
+        , Windows::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo
+    {
+    public:
+
+        SelectableSnapPointForwardingRepeater();
+        virtual ~SelectableSnapPointForwardingRepeater();
+
+        // IScrollSnapPointsInfo
+        virtual property bool AreHorizontalSnapPointsRegular { bool get() { return true; } }
+        virtual property bool AreVerticalSnapPointsRegular { bool get() { return true; } }
+
+        virtual event Windows::Foundation::EventHandler<Platform::Object^>^ HorizontalSnapPointsChanged;
+        virtual event Windows::Foundation::EventHandler<Platform::Object^>^ VerticalSnapPointsChanged;
+
+        virtual Windows::Foundation::Collections::IVectorView<float>^ GetIrregularSnapPoints(Windows::UI::Xaml::Controls::Orientation orientation, Windows::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment);
+        virtual float GetRegularSnapPoints(Windows::UI::Xaml::Controls::Orientation orientation, Windows::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ float *offset);
+
+        // SelectableSnapPointForwardingRepeater
+        property int RepeatCount
+        {
+            int get() { return static_cast<int>(Windows::UI::Xaml::DependencyObject::GetValue(RepeatCountProperty)); }
+            void set(int value)
+            {
+                if (value < 0)
+                {
+                    throw ref new Platform::InvalidArgumentException("RepeatCount must be a non-negative integer");
+                }
+
+                Windows::UI::Xaml::DependencyObject::SetValue(RepeatCountProperty, value);
+            }
+        }
+
+        static property Windows::UI::Xaml::DependencyProperty^ RepeatCountProperty
+        {
+            Windows::UI::Xaml::DependencyProperty^ get() { return s_repeatCountProperty; }
+        }
+    private:
+        static void RegisterDependencyProperties();
+
+        static Windows::UI::Xaml::DependencyProperty^ s_repeatCountProperty;
+    };
+}
