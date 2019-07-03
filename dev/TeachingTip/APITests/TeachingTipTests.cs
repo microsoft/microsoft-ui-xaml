@@ -25,6 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using TeachingTip = Microsoft.UI.Xaml.Controls.TeachingTip;
 using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
+using Microsoft.UI.Private.Controls;
 #endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
@@ -32,16 +33,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class TeachingTipTests
     {
-        //[TestMethod] TODO: Re-enable once issue #643 is fixed.
+        [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // TeachingTip doesn't appear to show up correctly in OneCore.
         public void TeachingTipBackgroundTest()
         {
+            TeachingTip teachingTip = null, teachingTipLightDismiss = null;
+            SolidColorBrush blueBrush = null;
+            Brush lightDismissBackgroundBrush = null;
             var loadedEvent = new AutoResetEvent(false);
             RunOnUIThread.Execute(() =>
             {
-                TeachingTip teachingTip = new TeachingTip();
+                Grid root = new Grid();
+                teachingTip = new TeachingTip();
                 teachingTip.Loaded += (object sender, RoutedEventArgs args) => { loadedEvent.Set(); };
-                MUXControlsTestApp.App.TestContentRoot = teachingTip;
+
+                teachingTipLightDismiss = new TeachingTip();
+                teachingTipLightDismiss.IsLightDismissEnabled = true;
+
+                // Set LightDismiss background before show... it shouldn't take effect in the tree
+                blueBrush = new SolidColorBrush(Colors.Blue);
+                teachingTipLightDismiss.Background = blueBrush;
+
+                root.Resources.Add("TeachingTip", teachingTip);
+                root.Resources.Add("TeachingTipLightDismiss", teachingTipLightDismiss);
+
+                lightDismissBackgroundBrush = MUXControlsTestApp.App.Current.Resources["TeachingTipTransientBackground"] as Brush;
+                Verify.IsNotNull(lightDismissBackgroundBrush, "lightDismissBackgroundBrush");
+
+                teachingTip.IsOpen = true;
+                teachingTipLightDismiss.IsOpen = true;
+
+                MUXControlsTestApp.App.TestContentRoot = root;
             });
 
             IdleSynchronizer.Wait();
@@ -49,19 +71,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                TeachingTip teachingTip = (TeachingTip)MUXControlsTestApp.App.TestContentRoot;
                 var redBrush = new SolidColorBrush(Colors.Red);
                 teachingTip.SetValue(TeachingTip.BackgroundProperty, redBrush);
                 Verify.AreSame(redBrush, teachingTip.GetValue(TeachingTip.BackgroundProperty) as Brush);
                 Verify.AreSame(redBrush, teachingTip.Background);
 
-                var blueBrush = new SolidColorBrush(Colors.Blue);
                 teachingTip.Background = blueBrush;
                 Verify.AreSame(blueBrush, teachingTip.Background);
 
-                var child = VisualTreeHelper.GetChild(teachingTip, 0);
-                var grandChild = VisualTreeHelper.GetChild(child, 1);
-                Verify.AreSame(blueBrush, ((Grid)grandChild).Background);
+                {
+                    var popup = TeachingTipTestHooks.GetPopup(teachingTip);
+                    var child = popup.Child;
+                    var grandChild = VisualTreeHelper.GetChild(child, 0);
+                    Verify.AreSame(blueBrush, ((Grid)grandChild).Background, "Checking TeachingTip.Background TemplateBinding works");
+                }
+
+                {
+                    var popup = TeachingTipTestHooks.GetPopup(teachingTipLightDismiss);
+                    var child = popup.Child;
+                    var grandChild = VisualTreeHelper.GetChild(child, 0);
+                    var actualBrush = ((Grid)grandChild).Background;
+                    Verify.AreSame(lightDismissBackgroundBrush, actualBrush, "Checking LightDismiss TeachingTip Background is using resource for first invocation");
+                }
 
                 teachingTip.IsLightDismissEnabled = true;
             });
@@ -70,15 +101,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                TeachingTip teachingTip = (TeachingTip)MUXControlsTestApp.App.TestContentRoot;
-                var blueBrush = new SolidColorBrush(Colors.Blue);
                 Verify.AreEqual(blueBrush.Color, ((SolidColorBrush)teachingTip.Background).Color);
-                var child = VisualTreeHelper.GetChild(teachingTip, 0);
-                var grandChild = VisualTreeHelper.GetChild(child, 1);
+
+                var popup = TeachingTipTestHooks.GetPopup(teachingTip);
+                var child = popup.Child as Grid;
+                var grandChild = VisualTreeHelper.GetChild(child, 0);
                 var grandChildBackgroundBrush = ((Grid)grandChild).Background;
                 //If we can no longer cast the background brush to a solid color brush then changing the
                 //IsLightDismissEnabled has changed the background as we expected it to.
-                if(grandChildBackgroundBrush is SolidColorBrush)
+                if (grandChildBackgroundBrush is SolidColorBrush)
                 {
                     Verify.AreNotEqual(blueBrush.Color, ((SolidColorBrush)grandChildBackgroundBrush).Color);
                 }
