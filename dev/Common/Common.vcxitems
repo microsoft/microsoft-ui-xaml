@@ -15,11 +15,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)ColorConversion.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Converters.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)LifetimeHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)AutoHandle.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ColorConversion.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Converters.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)LifetimeHandler.h" />
   </ItemGroup>
   <ItemGroup>
@@ -28,5 +30,8 @@
       <Type>ThemeResources</Type>
       <Priority>1</Priority>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)Converters.idl" />
   </ItemGroup>
 </Project>

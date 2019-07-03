@@ -17,6 +17,7 @@ using PlatformConfiguration = Common.PlatformConfiguration;
 using OSVersion = Common.OSVersion;
 using System.Collections.Generic;
 using XamlControlsResources = Microsoft.UI.Xaml.Controls.XamlControlsResources;
+using Windows.UI.Xaml.Markup;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -52,6 +53,58 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             MUXControlsTestApp.Utilities.IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        public void CornerRadiusFilterConverterTest()
+        {
+            if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
+            {
+                Log.Comment("Corner radius is only available on RS5+");
+                return;
+            }
+
+            RunOnUIThread.Execute(() => {
+                var root = (StackPanel)XamlReader.Load(
+                    @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
+                             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                             xmlns:primitives='using:Microsoft.UI.Xaml.Controls.Primitives'> 
+                            <StackPanel.Resources>
+                                <primitives:CornerRadiusFilterConverter x:Key='CornerRadiusFilterConverter' />
+                                <CornerRadius x:Key='testCornerRadius'>6,6,6,6</CornerRadius>
+                            </StackPanel.Resources>
+                            <Grid x:Name='TopRadiusGrid'
+                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Top}'>
+                            </Grid>
+                            <Grid x:Name='RightRadiusGrid'
+                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Right}'>
+                            </Grid>
+                            <Grid x:Name='BottomRadiusGrid'
+                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Bottom}'>
+                            </Grid>
+                            <Grid x:Name='LeftRadiusGrid'
+                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Left}'>
+                            </Grid>
+                       </StackPanel>");
+
+                var topRadiusGrid = (Grid)root.FindName("TopRadiusGrid");
+                var rightRadiusGrid = (Grid)root.FindName("RightRadiusGrid");
+                var bottomRadiusGrid = (Grid)root.FindName("BottomRadiusGrid");
+                var leftRadiusGrid = (Grid)root.FindName("LeftRadiusGrid");
+
+                VerifyCornerRadius(topRadiusGrid.CornerRadius, new[] { 6, 6, 0, 0 });
+                VerifyCornerRadius(rightRadiusGrid.CornerRadius, new[] { 0, 6, 6, 0 });
+                VerifyCornerRadius(bottomRadiusGrid.CornerRadius, new[] { 0, 0, 6, 6 });
+                VerifyCornerRadius(leftRadiusGrid.CornerRadius, new[] { 6, 0, 0, 6 });
+            });
+        }
+
+        private void VerifyCornerRadius(CornerRadius radius, int[] expectedValue)
+        {
+            Verify.AreEqual(expectedValue[0], radius.TopLeft, "Verify CornerRadius.TopLeft");
+            Verify.AreEqual(expectedValue[1], radius.TopRight, "Verify CornerRadius.TopRight");
+            Verify.AreEqual(expectedValue[2], radius.BottomRight, "Verify CornerRadius.BottomRight");
+            Verify.AreEqual(expectedValue[3], radius.BottomLeft, "Verify CornerRadius.BottomLeft");
         }
     }
 

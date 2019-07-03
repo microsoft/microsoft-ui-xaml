@@ -6,7 +6,8 @@
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:contract4Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,4)"
     xmlns:contract4NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,4)"
-    xmlns:media="using:Microsoft.UI.Xaml.Media">
+    xmlns:media="using:Microsoft.UI.Xaml.Media"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
@@ -574,7 +575,9 @@
                                 Width="2"
                                 Height="24"
                                 Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
-                                Opacity="0.0"/>
+                                Opacity="0.0"
+                                contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"/>
                         </Grid>
 
                         <Border
@@ -673,7 +676,9 @@
                                 Width="2"
                                 Height="24"
                                 Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
-                                Opacity="0.0"/>
+                                Opacity="0.0"
+                                contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"/>
                         </Grid>
 
                         <Grid 
@@ -934,7 +939,9 @@
                                 x:Name="SelectionIndicator"
                                 Height="2"
                                 Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
-                                Opacity="0" />
+                                Opacity="0"
+                                contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"/>
                         </Grid>
                     </Grid>
                 </ControlTemplate>
@@ -1031,7 +1038,9 @@
                                 x:Name="SelectionIndicator"
                                 Height="2"
                                 Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
-                                Opacity="0" />
+                                Opacity="0"
+                                contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"/>
                         </Grid>
                     </Grid>
                 </ControlTemplate>
