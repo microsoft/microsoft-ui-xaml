@@ -3,11 +3,10 @@
     <PropertyGroup>
         <PlatformShortName Condition="'$(PlatformShortName)'==''">$(Platform)</PlatformShortName>
         <PGOFilesDir>$(VCToolsInstallDir)bin\Host$(PlatformShortName)\$(PlatformShortName)</PGOFilesDir>
-        <PGOFilesDir Condition="'$(PlatformShortName)'=='ARM' or '$(PlatformShortName)'=='ARM64'">$(VCToolsInstallDir)bin\$(PlatformShortName)</PGOFilesDir>
-        <ProfileGuidedDatabaseFileName>$(MSBuildThisFileDirectory)$(PlatformShortName)\Microsoft.UI.Xaml.pgd</ProfileGuidedDatabaseFileName>
+        <PGOFilesDir Condition="'$(PlatformShortName)'=='ARM' or '$(PlatformShortName)'=='ARM64'">$(VCToolsInstallDir)bin\$(PlatformShortName)</PGOFilesDir>       
     </PropertyGroup>
     <PropertyGroup>    
-        <!--PGOBuildMode Condition="'$(PGOBuildMode)'==''">Instrument</PGOBuildMode-->
-        <!--PGOBuildMode Condition="'$(PGOBuildMode)'==''">Optimize</PGOBuildMode-->
+        <PGOBuildMode Condition="'$(PGOBuildMode)'==''">Optimize</PGOBuildMode>
+        <!--PGOBuildMode Condition="'$(PGOBuildMode)'==''">Instrument</PGOBuildMode-->        
     </PropertyGroup>
 </Project>
