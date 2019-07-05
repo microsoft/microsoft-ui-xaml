@@ -8,7 +8,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NumberBox">
-                    <TextBox x:Name="inputbox"/>
+                    <TextBox x:Name="InputBox"/>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

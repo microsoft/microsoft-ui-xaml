@@ -9,17 +9,22 @@ class NumberBoxProperties
 public:
     NumberBoxProperties();
 
-    void Placeholder(winrt::IInspectable const& value);
-    winrt::IInspectable Placeholder();
+    void Value(double value);
+    double Value();
 
-    static winrt::DependencyProperty PlaceholderProperty() { return s_PlaceholderProperty; }
+    static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
 
-    static GlobalDependencyProperty s_PlaceholderProperty;
+    static GlobalDependencyProperty s_ValueProperty;
+
+    winrt::event_token ValueChanged(winrt::TypedEventHandler<winrt::NumberBox, winrt::IInspectable> const& value);
+    void ValueChanged(winrt::event_token const& token);
+
+    event_source<winrt::TypedEventHandler<winrt::NumberBox, winrt::IInspectable>> m_valueChangedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnPlaceholderPropertyChanged(
+    static void OnValuePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

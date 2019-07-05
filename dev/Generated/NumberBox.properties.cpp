@@ -8,34 +8,35 @@
 
 CppWinRTActivatableClassWithDPFactory(NumberBox)
 
-GlobalDependencyProperty NumberBoxProperties::s_PlaceholderProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_ValueProperty{ nullptr };
 
 NumberBoxProperties::NumberBoxProperties()
+    : m_valueChangedEventSource{static_cast<NumberBox*>(this)}
 {
     EnsureProperties();
 }
 
 void NumberBoxProperties::EnsureProperties()
 {
-    if (!s_PlaceholderProperty)
+    if (!s_ValueProperty)
     {
-        s_PlaceholderProperty =
+        s_ValueProperty =
             InitializeDependencyProperty(
-                L"Placeholder",
-                winrt::name_of<winrt::IInspectable>(),
+                L"Value",
+                winrt::name_of<double>(),
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPlaceholderPropertyChanged));
+                ValueHelper<double>::BoxValueIfNecessary(0),
+                winrt::PropertyChangedCallback(&OnValuePropertyChanged));
     }
 }
 
 void NumberBoxProperties::ClearProperties()
 {
-    s_PlaceholderProperty = nullptr;
+    s_ValueProperty = nullptr;
 }
 
-void NumberBoxProperties::OnPlaceholderPropertyChanged(
+void NumberBoxProperties::OnValuePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -43,12 +44,22 @@ void NumberBoxProperties::OnPlaceholderPropertyChanged(
     winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
 }
 
-void NumberBoxProperties::Placeholder(winrt::IInspectable const& value)
+void NumberBoxProperties::Value(double value)
 {
-    static_cast<NumberBox*>(this)->SetValue(s_PlaceholderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    static_cast<NumberBox*>(this)->SetValue(s_ValueProperty, ValueHelper<double>::BoxValueIfNecessary(value));
 }
 
-winrt::IInspectable NumberBoxProperties::Placeholder()
+double NumberBoxProperties::Value()
 {
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_PlaceholderProperty));
+    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_ValueProperty));
+}
+
+winrt::event_token NumberBoxProperties::ValueChanged(winrt::TypedEventHandler<winrt::NumberBox, winrt::IInspectable> const& value)
+{
+    return m_valueChangedEventSource.add(value);
+}
+
+void NumberBoxProperties::ValueChanged(winrt::event_token const& token)
+{
+    m_valueChangedEventSource.remove(token);
 }

@@ -9,6 +9,7 @@
 #include "NumberBox.g.h"
 #include "NumberBox.properties.h"
 
+#define DEFAULTVALUE 0.0
 
 enum NumberBoxSpinButtonPlacementMode
 {
@@ -55,4 +56,16 @@ public:
     void OnApplyTemplate();
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
+
+
+
+private:
+
+    void OnTextBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void UpdateTextToValue();
+
+    winrt::TextBox m_TextBox{ nullptr };
+
 };

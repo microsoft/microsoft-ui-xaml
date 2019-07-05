@@ -51,12 +51,16 @@ enum NumberBoxNumberRounder
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
-unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.TextBox
+unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
 {
     NumberBox();
+    
+    [MUX_DEFAULT_VALUE("0")]
+    Double Value{ get; set; };
+    event Windows.Foundation.TypedEventHandler<NumberBox, Object> ValueChanged;
 
-    Object Placeholder{ get; set; };
-    static Windows.UI.Xaml.DependencyProperty PlaceholderProperty{ get; };
+    //Object Placeholder{ get; set; };
+    static Windows.UI.Xaml.DependencyProperty ValueProperty{ get; };
 }
 
 }

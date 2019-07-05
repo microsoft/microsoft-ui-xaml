@@ -12,8 +12,8 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <StackPanel Orientation="Vertical">
-            <controls:NumberBox/>
-            <TextBox/>
+            <controls:NumberBox x:Name="numbox" Value="5"/>
+            <TextBlock Text="{x:Bind numbox.Value, Mode=OneWay}"/>
         </StackPanel>
     </Grid>
 </local:TestPage>
