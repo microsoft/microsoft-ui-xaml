@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Composition;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
@@ -2008,7 +2008,94 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnClearSnapPoints_Click(object sender, RoutedEventArgs e)
+        private void BtnChangeView_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                double? horizontalOffset = string.IsNullOrWhiteSpace(txtCOAHO.Text) ? (double?)null : Convert.ToDouble(txtCOAHO.Text);
+                double? verticalOffset = string.IsNullOrWhiteSpace(txtCOAVO.Text) ? (double?)null : Convert.ToDouble(txtCOAVO.Text);
+                float? zoomFactor = string.IsNullOrWhiteSpace(txtCZFAZF.Text) ? (float?)null : Convert.ToSingle(txtCZFAZF.Text);
+                bool disableAnimation = true;
+
+                if (horizontalOffset == null && verticalOffset == null && zoomFactor == null)
+                {
+                    return;
+                }
+
+                ComboBox cmbAnimationMode = (zoomFactor == null || zoomFactor == scroller.ZoomFactor) ? 
+                    cmbScrollAnimationMode : cmbZoomAnimationMode;
+
+                switch (cmbAnimationMode.SelectedIndex)
+                {
+                    case 0: // Disabled
+                        break;
+                    case 1: // Enabled
+                        disableAnimation = false;
+                        break;
+                    default: // Auto
+                        disableAnimation = !new UISettings().AnimationsEnabled;
+                        break;
+                }
+
+                ChangeView(scroller, horizontalOffset, verticalOffset, zoomFactor, disableAnimation);
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                lstScrollerEvents.Items.Add(ex.ToString());
+            }
+        }
+
+        private bool ChangeView(Scroller scroller, double? horizontalOffset, double? verticalOffset, float? zoomFactor, bool disableAnimation)
+        {
+            AppendAsyncEventMessage($"ChangeView(horizontalOffset:{horizontalOffset}, verticalOffset:{verticalOffset}, zoomFactor:{zoomFactor}, disableAnimation:{disableAnimation}) from horizontalOffset:{scroller.HorizontalOffset}, verticalOffset:{scroller.VerticalOffset}, zoomFactor:{scroller.ZoomFactor}");
+
+            double targetHorizontalOffset = horizontalOffset == null ? scroller.HorizontalOffset : (double)horizontalOffset;
+            double targetVerticalOffset = verticalOffset == null ? scroller.VerticalOffset : (double)verticalOffset;
+            float targetZoomFactor = zoomFactor == null ? scroller.ZoomFactor : (float)Math.Max(Math.Min((double)zoomFactor, scroller.MaxZoomFactor), scroller.MinZoomFactor);
+            float deltaZoomFactor = targetZoomFactor - scroller.ZoomFactor;
+
+            if (disableAnimation)
+            {
+                targetHorizontalOffset = Math.Max(Math.Min(targetHorizontalOffset, scroller.ExtentWidth * targetZoomFactor - scroller.ViewportWidth), 0.0);
+                targetVerticalOffset = Math.Max(Math.Min(targetVerticalOffset, scroller.ExtentHeight * targetZoomFactor - scroller.ViewportHeight), 0.0);
+            }
+
+            if (deltaZoomFactor == 0.0f)
+            {
+                if (targetHorizontalOffset == scroller.HorizontalOffset && targetVerticalOffset == scroller.VerticalOffset)
+                {
+                    AppendAsyncEventMessage("ChangeView no-op");
+                    return false;
+                }
+
+                lastOffsetsChangeId = scroller.ScrollTo(
+                    targetHorizontalOffset,
+                    targetVerticalOffset,
+                    new ScrollOptions(
+                        disableAnimation ? AnimationMode.Disabled : AnimationMode.Enabled,
+                        disableAnimation ? SnapPointsMode.Ignore : SnapPointsMode.Default)).OffsetsChangeId;
+                AppendAsyncEventMessage($"ChangeView invoked ScrollTo(horizontalOffset:{targetHorizontalOffset}, verticalOffset:{targetVerticalOffset}) Id={lastOffsetsChangeId}");
+            }
+            else
+            {
+                Vector2 centerPoint = new Vector2(
+                    (float)(targetHorizontalOffset * scroller.ZoomFactor - scroller.HorizontalOffset * targetZoomFactor) / deltaZoomFactor,
+                    (float)(targetVerticalOffset * scroller.ZoomFactor - scroller.VerticalOffset * targetZoomFactor) / deltaZoomFactor);
+
+                lastZoomFactorChangeId = scroller.ZoomTo(
+                    targetZoomFactor,
+                    centerPoint,
+                    new ZoomOptions(
+                        disableAnimation ? AnimationMode.Disabled : AnimationMode.Enabled,
+                        disableAnimation ? SnapPointsMode.Ignore : SnapPointsMode.Default)).ZoomFactorChangeId;
+                AppendAsyncEventMessage($"ChangeView invoked ZoomBy(zoomFactor:{targetZoomFactor}, centerPoint:{centerPoint}) targetting horizontalOffset:{targetHorizontalOffset}, verticalOffset:{targetVerticalOffset} Id={lastZoomFactorChangeId}");
+            }
+
+            return true;
+        }
+
+    private void BtnClearSnapPoints_Click(object sender, RoutedEventArgs e)
         {
             try
             {
