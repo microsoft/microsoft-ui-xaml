@@ -596,6 +596,7 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
     if (previousMode == winrt::NavigationViewDisplayMode::Expanded
         && displayMode == winrt::NavigationViewDisplayMode::Compact)
     {
+        m_initialListSizeStateSet = false;
         ClosePane();
     }
 }
