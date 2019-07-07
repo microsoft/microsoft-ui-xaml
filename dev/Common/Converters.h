@@ -10,6 +10,10 @@ class CornerRadiusFilterConverter :
 public:
     CornerRadiusFilterConverter();
 
+    winrt::CornerRadius Convert(
+        winrt::CornerRadius const& radius,
+        winrt::hstring const& filter);
+
     winrt::IInspectable Convert(
         winrt::IInspectable const& value,
         winrt::TypeName const& targetType,

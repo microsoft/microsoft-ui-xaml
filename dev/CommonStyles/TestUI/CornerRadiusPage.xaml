@@ -157,19 +157,6 @@
                         <ComboBoxItem Content="Item 1"/>
                         <ComboBoxItem Content="Item 2"/>
                         <ComboBoxItem Content="Item 3"/>
-                        <ComboBoxItem Content="Item 4"/>
-                        <ComboBoxItem Content="Item 5"/>
-                        <ComboBoxItem Content="Item 6"/>
-                        <ComboBoxItem Content="Item 7"/>
-                        <ComboBoxItem Content="Item 8"/>
-                        <ComboBoxItem Content="Item 9"/>
-                        <ComboBoxItem Content="Item 10"/>
-                        <ComboBoxItem Content="Item 11"/>
-                        <ComboBoxItem Content="Item 12"/>
-                        <ComboBoxItem Content="Item 13"/>
-                        <ComboBoxItem Content="Item 14"/>
-                        <ComboBoxItem Content="Item 15"/>
-                        <ComboBoxItem Content="Item 16"/>
                     </ComboBox>
                 </Grid>
 
@@ -186,19 +173,6 @@
                         <ComboBoxItem Content="Item 1"/>
                         <ComboBoxItem Content="Item 2"/>
                         <ComboBoxItem Content="Item 3"/>
-                        <ComboBoxItem Content="Item 4"/>
-                        <ComboBoxItem Content="Item 5"/>
-                        <ComboBoxItem Content="Item 6"/>
-                        <ComboBoxItem Content="Item 7"/>
-                        <ComboBoxItem Content="Item 8"/>
-                        <ComboBoxItem Content="Item 9"/>
-                        <ComboBoxItem Content="Item 10"/>
-                        <ComboBoxItem Content="Item 11"/>
-                        <ComboBoxItem Content="Item 12"/>
-                        <ComboBoxItem Content="Item 13"/>
-                        <ComboBoxItem Content="Item 14"/>
-                        <ComboBoxItem Content="Item 15"/>
-                        <ComboBoxItem Content="Item 16"/>
                     </ComboBox>
                 </Grid>
 

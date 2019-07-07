@@ -11,15 +11,10 @@ CornerRadiusFilterConverter::CornerRadiusFilterConverter()
 {
 }
 
-winrt::IInspectable CornerRadiusFilterConverter::Convert(
-    winrt::IInspectable const& value,
-    winrt::TypeName const& targetType,
-    winrt::IInspectable const& parameter,
-    winrt::hstring const& language)
+winrt::CornerRadius CornerRadiusFilterConverter::Convert(
+    winrt::CornerRadius const& radius,
+    winrt::hstring const& filter)
 {
-    auto radius = unbox_value<winrt::CornerRadius>(value);
-    auto filter = unbox_value<winrt::hstring>(parameter);
-
     winrt::CornerRadius result = radius;
 
     if (filter == L"Top")
@@ -47,6 +42,18 @@ winrt::IInspectable CornerRadiusFilterConverter::Convert(
         winrt::throw_hresult(OSS_BAD_ARG);
     }
 
+    return result;
+}
+
+winrt::IInspectable CornerRadiusFilterConverter::Convert(
+    winrt::IInspectable const& value,
+    winrt::TypeName const& targetType,
+    winrt::IInspectable const& parameter,
+    winrt::hstring const& language)
+{
+    auto radius = unbox_value<winrt::CornerRadius>(value);
+    auto filter = unbox_value<winrt::hstring>(parameter);
+    auto result = Convert(radius, filter);
     return box_value(result);
 }
 

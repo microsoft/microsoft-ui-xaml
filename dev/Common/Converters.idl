@@ -8,6 +8,8 @@
 runtimeclass CornerRadiusFilterConverter : Windows.UI.Xaml.Data.IValueConverter
 {
     CornerRadiusFilterConverter();
+
+    Windows.UI.Xaml.CornerRadius Convert(Windows.UI.Xaml.CornerRadius radius, String filter);
 };
 
 }

@@ -20,4 +20,14 @@
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ComboBoxAttachedProperties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ComboBoxAttachedProperties.properties.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ComboBoxAttachedProperties.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)ComboBoxAttachedProperties.idl" />
+  </ItemGroup>
 </Project>

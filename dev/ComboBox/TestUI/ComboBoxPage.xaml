@@ -9,11 +9,19 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <ComboBox>
+    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+        <TextBlock Text="ComboBox:"/>
+        <ComboBox SelectedIndex="0">
             <ComboBoxItem Content="Item 1"/>
             <ComboBoxItem Content="Item 2"/>
             <ComboBoxItem Content="Item 3"/>
         </ComboBox>
-    </Grid>
+
+        <TextBlock Text="ComboBox IsEditable==true:" Margin="0,20,0,0"/>
+        <ComboBox SelectedIndex="0" IsEditable="True">
+            <ComboBoxItem Content="Item 1"/>
+            <ComboBoxItem Content="Item 2"/>
+            <ComboBoxItem Content="Item 3"/>
+        </ComboBox>
+    </StackPanel>
 </local:TestPage>
