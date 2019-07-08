@@ -30,7 +30,6 @@ void NumberBox::OnApplyTemplate()
         UpdateTextToValue();
     }
 
-
     // Register LostFocus Event
     if ( m_TextBox ) {
         m_TextBox.LostFocus({ this, &NumberBox::OnTextBoxLostFocus });
@@ -72,9 +71,10 @@ void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::Rou
         SetErrorState(false);
         ProcessInput( parsedNum.Value() );
     }
-
-
-
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, L"Invalid", false);
+    }
 
 }
 
