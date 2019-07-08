@@ -205,6 +205,7 @@
     <Content Include="$(MSBuildThisFileDirectory)Assets\CommandBarFlyout.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\CompactSizing.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\DatePicker.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\DefaultIcon.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\DropdownButton.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\FlipView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ListView.png" />
