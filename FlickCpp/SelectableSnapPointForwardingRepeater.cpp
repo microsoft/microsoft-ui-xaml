@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "SelectableSnapPointForwardingRepeater.h"
+#include "VirtualizingAnimatedUniformCarouselStackLayout.h"
 
 using namespace FlickCpp;
 using namespace Platform;
@@ -9,6 +10,8 @@ using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Controls::Primitives;
 
 /*static*/ DependencyProperty^ SelectableSnapPointForwardingRepeater::s_repeatCountProperty = nullptr;
+/*static*/ DependencyProperty^ SelectableSnapPointForwardingRepeater::s_selectedItemProperty = nullptr;
+/*static*/ constexpr int SelectableSnapPointForwardingRepeater::s_selectedIndexValueWhenNoItemIsSelected = -1;
 
 /*static*/ void SelectableSnapPointForwardingRepeater::RegisterDependencyProperties()
 {
@@ -21,6 +24,16 @@ using namespace Windows::UI::Xaml::Controls::Primitives;
                 SelectableSnapPointForwardingRepeater::typeid,
                 ref new PropertyMetadata(500));
     }
+
+    if (s_selectedItemProperty == nullptr)
+    {
+        s_selectedItemProperty =
+            DependencyProperty::Register(
+                "SelectedItem",
+                Object::typeid,
+                SelectableSnapPointForwardingRepeater::typeid,
+                ref new PropertyMetadata(nullptr));
+    }
 }
 
 SelectableSnapPointForwardingRepeater::SelectableSnapPointForwardingRepeater()
@@ -30,6 +43,7 @@ SelectableSnapPointForwardingRepeater::SelectableSnapPointForwardingRepeater()
 
 SelectableSnapPointForwardingRepeater::~SelectableSnapPointForwardingRepeater()
 {
+
 }
 
 IVectorView<float>^ SelectableSnapPointForwardingRepeater::GetIrregularSnapPoints(Orientation /* orientation */, SnapPointsAlignment /* alignment */)
@@ -41,15 +55,21 @@ float SelectableSnapPointForwardingRepeater::GetRegularSnapPoints(Orientation or
 {
     if (alignment == SnapPointsAlignment::Center && orientation == Orientation::Horizontal)
     {
-        /*VirtualizingUniformCarouselStackLayout^ layout = dynamic_cast<VirtualizingUniformCarouselStackLayout^>(Layout);
+        VirtualizingAnimatedUniformCarouselStackLayout^ layout = dynamic_cast<VirtualizingAnimatedUniformCarouselStackLayout^>(Layout);
 
         if (layout != nullptr)
         {
             *offset = layout->FirstSnapPointOffset;
             return static_cast<float>(layout->ItemWidth + layout->Spacing);
-        }*/
+        }
     }
 
     *offset = 0.0f;
     return 0.0f;
+}
+
+void SelectableSnapPointForwardingRepeater::SetSelectedItemToNone()
+{
+    SelectedIndex = SelectedIndexValueWhenNoItemIsSelected;
+    SelectedItem = nullptr;
 }

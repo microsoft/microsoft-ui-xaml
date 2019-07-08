@@ -78,9 +78,7 @@
             </Grid.ColumnDefinitions>
             <Button x:Name="carouselPrevButton"
                     Grid.Column="0"
-                    Style="{StaticResource CarouselNextPrevButtonStyle}"
-                    Visibility="{Binding CarouselPrevButtonVisibility}"
-                    Height="{Binding ElementName=layout, Path=ItemHeight}">
+                    Style="{StaticResource CarouselNextPrevButtonStyle}">
                 <FontIcon Style="{StaticResource CarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76B;"/><!--ChevronLeft-->
             </Button>
             <ScrollViewer x:Name="sv"
@@ -95,16 +93,14 @@
                       Tapped="OnScrollViewerTapped"
                       VerticalScrollMode="Disabled"
                       HorizontalScrollMode="Auto"
-                      LayoutUpdated="OnScrollViewerLayoutUpdated"
-                      Height="{Binding Parent.ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
-                      Width="{Binding Parent.ActualWidth, Mode=OneWay, RelativeSource={RelativeSource Self}}">
+                      LayoutUpdated="OnScrollViewerLayoutUpdated">
                 <local:SnappPointForwardingRepeater
                     x:Name="repeater"
                     HorizontalCacheLength="0.5"
                     VerticalCacheLength="0"
                     RepeatCount="500"
                     ElementPrepared="OnElementPrepared">
-                    <mux:ItemsRepeater.Layout>
+                    <local:SnappPointForwardingRepeater.Layout>
                         <local:VirtualizingUniformCarouselStackLayout
                             x:Name="layout"
                             ItemWidth="450"
@@ -113,26 +109,22 @@
                             Spacing="50"
                             HorizontalCacheLength="{Binding ElementName=repeater, Path=HorizontalCacheLength}"
                             RepeatCount="{Binding ElementName=repeater, Path=RepeatCount}"/>
-                    </mux:ItemsRepeater.Layout>
-                    <mux:ItemsRepeater.ItemTemplate>
+                    </local:SnappPointForwardingRepeater.Layout>
+                    <local:SnappPointForwardingRepeater.ItemTemplate>
                         <DataTemplate>
-                            <!--<Border>-->
                             <UserControl IsTabStop="True" UseSystemFocusVisuals="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
                                 <StackPanel>
                                     <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Height="375"  />
                                     <TextBlock Text="{Binding Description}"  HorizontalAlignment="Center" FontSize="32" Foreground="Gray"/>
                                 </StackPanel>
                             </UserControl>
-                            <!--</Border>-->
                         </DataTemplate>
-                    </mux:ItemsRepeater.ItemTemplate>
+                    </local:SnappPointForwardingRepeater.ItemTemplate>
                 </local:SnappPointForwardingRepeater>
             </ScrollViewer>
             <Button x:Name="carouselNextButton"
                     Grid.Column="2"
-                    Style="{StaticResource CarouselNextPrevButtonStyle}"
-                    Visibility="{Binding CarouselNextButtonVisibility}"
-                    Height="{Binding ElementName=layout, Path=ItemHeight}">
+                    Style="{StaticResource CarouselNextPrevButtonStyle}">
                 <FontIcon Style="{StaticResource CarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76C;"/><!--ChevronRight-->
             </Button>
         </Grid>

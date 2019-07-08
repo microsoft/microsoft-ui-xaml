@@ -57,9 +57,9 @@ using namespace Windows::UI::Xaml;
 /*static*/ int VirtualizingAnimatedUniformCarouselStackLayout::AbsoluteValue(int num)
 {
     int mask = num >> (sizeof(int) * 8 - 1);
-    num ^= mask;
-    num += mask & 1;
-    return num;
+    int abs = num ^ mask;
+    abs += mask & 1;
+    return abs;
 }
 
 VirtualizingAnimatedUniformCarouselStackLayout::VirtualizingAnimatedUniformCarouselStackLayout()
@@ -106,7 +106,7 @@ Size VirtualizingAnimatedUniformCarouselStackLayout::MeasureOverride(Virtualizin
 
     if (realizationRect.Width == 0 || itemCount == 0)
     {
-        return Size(0.0, ItemHeight);
+        return Size(0.0f, static_cast<float>(ItemHeight));
     }
     else if (itemCount == 1)
     {
@@ -121,7 +121,7 @@ Size VirtualizingAnimatedUniformCarouselStackLayout::MeasureOverride(Virtualizin
             Margin = Thickness(marginLeftRight, marginTopBottom, marginLeftRight, marginTopBottom);
         }
 
-        return Size(Margin.Left + ItemWidth + Margin.Right, ItemHeight);
+        return Size(static_cast<float>(Margin.Left + ItemWidth + Margin.Right), static_cast<float>(ItemHeight));
     }
     else if (itemCount < maxNumberOfItemsThatCanFitInViewport)
     {
@@ -150,10 +150,10 @@ Size VirtualizingAnimatedUniformCarouselStackLayout::MeasureOverride(Virtualizin
         for (int i = 0; i < itemCount; ++i)
         {
             UIElement^ element = context->GetOrCreateElementAt(i);
-            element->Measure(Size(ItemWidth, ItemHeight));
+            element->Measure(Size(static_cast<float>(ItemWidth), static_cast<float>(ItemHeight)));
         }
 
-        return Size(Margin.Left + ((ItemWidth + Spacing) * itemCount) - Spacing + Margin.Right, ItemHeight);
+        return Size(static_cast<float>(Margin.Left + ((ItemWidth + Spacing) * itemCount) - Spacing + Margin.Right), static_cast<float>(ItemHeight));
     }
     else
     {
@@ -176,10 +176,10 @@ Size VirtualizingAnimatedUniformCarouselStackLayout::MeasureOverride(Virtualizin
         {
             int realIndex = AbsoluteValue(currentIndex % itemCount);
             UIElement^ element = context->GetOrCreateElementAt(realIndex);
-            element->Measure(Size(ItemWidth, ItemHeight));
+            element->Measure(Size(static_cast<float>(ItemWidth), static_cast<float>(ItemHeight)));
         }
 
-        return Size(((ItemWidth + Spacing) * itemCount * RepeatCount) - Spacing, ItemHeight);
+        return Size(static_cast<float>(((ItemWidth + Spacing) * itemCount * RepeatCount) - Spacing), static_cast<float>(ItemHeight));
     }
 }
 
@@ -221,7 +221,7 @@ Size VirtualizingAnimatedUniformCarouselStackLayout::ArrangeOverride(Virtualizin
 
         int realIndex = 0;
         UIElement^ element = context->GetOrCreateElementAt(realIndex);
-        Rect arrangeRect = Rect(Margin.Left, 0.0, ItemWidth, ItemHeight);
+        Rect arrangeRect = Rect(static_cast<float>(Margin.Left), 0.0f, static_cast<float>(ItemWidth), static_cast<float>(ItemHeight));
 
         float firstSnapPointOffset = static_cast<float>(arrangeRect.X + (ItemWidth / 2.0));
 
@@ -298,7 +298,7 @@ Size VirtualizingAnimatedUniformCarouselStackLayout::ArrangeOverride(Virtualizin
                 }
             }
 
-            Rect arrangeRect = Rect(arrangeRectX, 0.0, ItemWidth, ItemHeight);
+            Rect arrangeRect = Rect(static_cast<float>(arrangeRectX), 0.0f, static_cast<float>(ItemWidth), static_cast<float>(ItemHeight));
             element->Arrange(arrangeRect);
         }
     }
@@ -312,7 +312,7 @@ Size VirtualizingAnimatedUniformCarouselStackLayout::ArrangeOverride(Virtualizin
         {
             int realIndex = AbsoluteValue(currentIndex % itemCount);
             UIElement^ element = context->GetOrCreateElementAt(realIndex);
-            Rect arrangeRect = Rect(currentIndex * (ItemWidth + Spacing), 0.0, ItemWidth, ItemHeight);
+            Rect arrangeRect = Rect(static_cast<float>(currentIndex * (ItemWidth + Spacing)), 0.0f, static_cast<float>(ItemWidth), static_cast<float>(ItemHeight));
             element->Arrange(arrangeRect);
         }
 

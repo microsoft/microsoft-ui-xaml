@@ -4,6 +4,7 @@
 
 namespace FlickCpp
 {
+    [Windows::UI::Xaml::Data::Bindable]
     [Windows::Foundation::Metadata::WebHostHidden]
     public ref class VirtualizingAnimatedUniformCarouselStackLayout sealed
         : public Microsoft::UI::Xaml::Controls::VirtualizingLayout
@@ -21,10 +22,10 @@ namespace FlickCpp
         {
             Windows::Foundation::Rect get()
             {
-                double viewportWidth = RealizationRect.Width / (1 + HorizontalCacheLength);
-                double viewportHeight = RealizationRect.Height;
-                double viewportXCoordinate = RealizationRect.X + (RealizationRect.Width - viewportWidth) / 2;
-                double viewportYCoordinate = RealizationRect.Y;
+                float viewportWidth = static_cast<float>(RealizationRect.Width / (1 + HorizontalCacheLength));
+                float viewportHeight = RealizationRect.Height;
+                float viewportXCoordinate = (RealizationRect.X + (RealizationRect.Width - viewportWidth) / 2.0f);
+                float viewportYCoordinate = RealizationRect.Y;
                 return Windows::Foundation::Rect(viewportXCoordinate, viewportYCoordinate, viewportWidth, viewportHeight);
             }
         }

@@ -70,6 +70,20 @@ namespace Flick
 
         public static readonly DependencyProperty RepeatCountProperty = DependencyProperty.Register(
             "RepeatCount", typeof(int), typeof(VirtualizingUniformCarouselStackLayout), new PropertyMetadata(500));
+
+        public object SelectedItem
+        {
+            get { return (object)GetValue(SelectedItemProperty); }
+            set
+            {
+                SetValue(SelectedItemProperty, value);
+            }
+        }
+
+        public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register(
+            "SelectedItem", typeof(object), typeof(VirtualizingUniformCarouselStackLayout), new PropertyMetadata(null));
+
+        public int SelectedIndex { get; set; } = -1;
     }
 
     /// <summary>
@@ -107,19 +121,7 @@ namespace Flick
             carouselNextButton.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler(OnCarouselNextButtonPointerCaptureLost), true);
         }
 
-        public object SelectedItem { get; set; } = null;
-
-        public int SelectedItemIndex { get; set; } = -1;
-
-        private bool IsScrolling { get; set; }
-
-        public double ItemScaleRatio
-        {
-            get
-            {
-                return layout.ItemScaleRatio;
-            }
-        }
+        //private bool IsScrolling { get; set; }
 
         private ThreadPoolTimer m_prevButtonContinuousScrollingPeriodicTimer = null;
 
@@ -223,8 +225,6 @@ namespace Flick
             }
         }
 
-        private double ScrollViewerOffsetProportionPriorToContainerSizeChanging { get; set; } = 1.0;
-
         private object ScrollViewerRelatedTimersWriteLockObject { get; } = new object();
 
         private static int ContinousScrollingItemSkipCount { get; } = 2;
@@ -266,18 +266,18 @@ namespace Flick
         {
             if (e.IsIntermediate)
             {
-                if (!IsScrolling)
-                {
-                    IsScrolling = true;
-                }
+                //if (!IsScrolling)
+                //{
+                //    IsScrolling = true;
+                //}
             }
             else
             {
-                SelectedItem = GetSelectedItemFromViewport();
-                SelectedItemIndex = GetSelectedIndexFromViewport();
+                repeater.SelectedItem = GetSelectedItemFromViewport();
+                repeater.SelectedIndex = GetSelectedIndexFromViewport();
 
                 textBlock.Text = "Selected Item: " + GetSelectedIndexFromViewport() ?? "null";
-                IsScrolling = false;
+                //IsScrolling = false;
             }
 
             DetermineIfCarouselNextPrevButtonsShouldBeHiddenAfterScroll();
@@ -286,10 +286,10 @@ namespace Flick
         // TODO: Is this really required when we have ViewChanged with IsIntermediate = false handled ?
         private void OnScrollViewerViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
-            if (!IsScrolling)
-            {
-                IsScrolling = true;
-            }
+            //if (!IsScrolling)
+            //{
+            //    IsScrolling = true;
+            //}
 
             DetermineIfCarouselNextPrevButtonsShouldBeHiddenAfterScroll();
         }
@@ -359,8 +359,8 @@ namespace Flick
                 ShowCarouselNextPrevButtons();
             }
 
-            SelectedItem = GetSelectedItemFromViewport();
-            SelectedItemIndex = GetSelectedIndexFromViewport();
+            repeater.SelectedItem = GetSelectedItemFromViewport();
+            repeater.SelectedIndex = GetSelectedIndexFromViewport();
             textBlock.Text = "Selected Item: " + GetSelectedIndexFromViewport() ?? "null";
         }
 
@@ -392,9 +392,7 @@ namespace Flick
             scaleExpression.SetReferenceParameter("svVisual", svVisual);
             scaleExpression.SetReferenceParameter("scrollProperties", scrollProperties);
             scaleExpression.SetReferenceParameter("item", item);
-            /* TODO: Expose ItemScaleRatio (scaleRatioXY) as a DependencyProperty in the custom Carousel
-             * control so the user can set it to any value */
-            scaleExpression.SetScalarParameter("scaleRatioXY", (float)ItemScaleRatio);
+            scaleExpression.SetScalarParameter("scaleRatioXY", (float)layout.ItemScaleRatio);
             scaleExpression.SetScalarParameter("spacing", (float)layout.Spacing);
             var scalarScaleExpressionString = "clamp((scaleRatioXY * (1 + (1 - (abs((item.Offset.X + (item.Size.X/2)) - ((svVisual.Size.X/2) - scrollProperties.Translation.X)) / (item.Size.X + spacing))))), scaleRatioXY, 1)";
             var scaleExpressionString = string.Format("Vector3({0}, {0}, 0)", scalarScaleExpressionString);
@@ -453,7 +451,7 @@ namespace Flick
                 else
                 {
                     tapPositionDistanceFromSVCenterPoint -= layout.ItemWidth / 2 + layout.Spacing / 2;
-                    var tappedItemIndexDifferenceFromCenter = (int)Math.Floor(tapPositionDistanceFromSVCenterPoint / (layout.ItemWidth * ItemScaleRatio + layout.Spacing)) + 1;
+                    var tappedItemIndexDifferenceFromCenter = (int)Math.Floor(tapPositionDistanceFromSVCenterPoint / (layout.ItemWidth * layout.ItemScaleRatio + layout.Spacing)) + 1;
                     offsetToScrollTo = sv.HorizontalOffset + (((tapPositionOffsetInScrollViewer < centerOfViewportOffsetInScrollViewer) ? -1 : 1) * (tappedItemIndexDifferenceFromCenter * (layout.ItemWidth + layout.Spacing)));
                 }
 
@@ -532,12 +530,7 @@ namespace Flick
 
         private double CenterPointOfViewportInExtent()
         {
-            return CenterPointOfViewportInExtent(sv.HorizontalOffset, sv.ViewportWidth);
-        }
-
-        private double CenterPointOfViewportInExtent(double scrollViewerHorizontalOffset, double scrollViewerViewportWidth)
-        {
-            return scrollViewerHorizontalOffset + scrollViewerViewportWidth / 2;
+            return sv.HorizontalOffset + sv.ViewportWidth / 2;
         }
 
         private int GetSelectedIndexFromViewport()
@@ -556,8 +549,8 @@ namespace Flick
             }
             else if (itemIndexInItemsSource == -1)
             {
-                SelectedItem = null;
-                SelectedItemIndex = -1;
+                repeater.SelectedItem = null;
+                repeater.SelectedIndex = -1;
                 ResetCarousel();
                 return;
             }

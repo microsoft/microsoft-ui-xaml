@@ -4,6 +4,7 @@
 
 namespace FlickCpp
 {
+    [Windows::UI::Xaml::Data::Bindable]
     [Windows::Foundation::Metadata::WebHostHidden]
     public ref class SelectableSnapPointForwardingRepeater sealed
         : public Microsoft::UI::Xaml::Controls::ItemsRepeater
@@ -39,13 +40,41 @@ namespace FlickCpp
             }
         }
 
+        property Platform::Object^ SelectedItem
+        {
+            Platform::Object^ get() { return static_cast<Platform::Object^>(Windows::UI::Xaml::DependencyObject::GetValue(SelectedItemProperty)); }
+            void set(Platform::Object^ value) { Windows::UI::Xaml::DependencyObject::SetValue(SelectedItemProperty, value); }
+        }
+
+        property int SelectedIndex
+        {
+            int get() { return m_selectedIndex; }
+            void set(int value) { m_selectedIndex = value; }
+        }
+
+        void SetSelectedItemToNone();
+
         static property Windows::UI::Xaml::DependencyProperty^ RepeatCountProperty
         {
             Windows::UI::Xaml::DependencyProperty^ get() { return s_repeatCountProperty; }
+        }
+
+        static property Windows::UI::Xaml::DependencyProperty^ SelectedItemProperty
+        {
+            Windows::UI::Xaml::DependencyProperty^ get() { return s_selectedItemProperty; }
+        }
+
+        static property int SelectedIndexValueWhenNoItemIsSelected
+        {
+            int get() { return s_selectedIndexValueWhenNoItemIsSelected; }
         }
     private:
         static void RegisterDependencyProperties();
 
         static Windows::UI::Xaml::DependencyProperty^ s_repeatCountProperty;
+        static Windows::UI::Xaml::DependencyProperty^ s_selectedItemProperty;
+        static const int s_selectedIndexValueWhenNoItemIsSelected;
+
+        int m_selectedIndex = FlickCpp::SelectableSnapPointForwardingRepeater::SelectedIndexValueWhenNoItemIsSelected;
     };
 }
