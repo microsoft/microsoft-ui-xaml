@@ -8,6 +8,7 @@
 
 #include "NumberBox.g.h"
 #include "NumberBox.properties.h"
+#include "Windows.Globalization.NumberFormatting.h"
 
 #define DEFAULTVALUE 0.0
 
@@ -65,7 +66,9 @@ private:
     void OnTextBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void UpdateTextToValue();
-
+    void SetErrorState(bool state);
+    void ProcessInput(double val);
+    winrt::DecimalFormatter Formatter;
     winrt::TextBox m_TextBox{ nullptr };
 
 };

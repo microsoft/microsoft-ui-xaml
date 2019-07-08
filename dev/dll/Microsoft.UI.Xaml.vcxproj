@@ -100,7 +100,7 @@
     <Import Project="..\SplitButton\SplitButton.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\LayoutPanel\LayoutPanel.vcxitems" Label="Shared" />
     <Import Project="..\DropDownButton\DropDownButton.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\RadioButtons\RadioButtons.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <Import Project="..\RadioButtons\RadioButtons.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" /> 
     <!-- IconSource is implemented in Windows.UI.Xaml.dll in the OS repo, so we don't want to include it on that side. -->
     <Import Project="..\IconSource\IconSource.vcxitems" Label="Shared" />
     <!-- These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
