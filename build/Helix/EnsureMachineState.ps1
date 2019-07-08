@@ -2,11 +2,6 @@
 Write-Host "All processes running:"
 Get-Process
 
-
-# Minimize all windows:
-$shell = New-Object -ComObject "Shell.Application"
-$shell.minimizeall()
-
 # Kill any instances of Windows Security Alert:
 $windowTitleToMatch = "*Windows Security Alert*"
 $procs = Get-Process | Where {$_.MainWindowTitle -like "*Windows Security Alert*"}
