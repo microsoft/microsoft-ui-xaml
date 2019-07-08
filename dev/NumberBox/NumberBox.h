@@ -12,37 +12,6 @@
 
 #define DEFAULTVALUE 0.0
 
-enum NumberBoxSpinButtonPlacementMode
-{
-    Hidden,
-    Inline
-};
-
-enum NumberBoxBasicValidationMode
-{
-    InvalidInputOverwritten,
-    IconMessage,
-    TextBlockMessage,
-    Disabled
-};
-
-// Temporarily renamed "None" to Disabled because of previous definition issue
-enum NumberBoxMinMaxMode
-{
-    BoundsDisabled,
-    MinEnabled,
-    MaxEnabled,
-    MinAndMaxEnabled,
-    WrapEnabled
-};
-
-enum NumberBoxNumberRounder
-{
-    RounderDisabled,
-    IncrementNumberRounder,
-    SignificantDigitsNumberRounder
-};
-
 
 class NumberBox :
     public ReferenceTracker<NumberBox, winrt::implementation::NumberBoxT>,
@@ -68,7 +37,11 @@ private:
     void UpdateTextToValue();
     void SetErrorState(bool state);
     void ProcessInput(double val);
+    void SetSpinButtonVisualState();
     winrt::DecimalFormatter Formatter;
     winrt::TextBox m_TextBox{ nullptr };
+    winrt::Button m_SpinDown{ nullptr };
+    winrt::Button m_SpinUp{ nullptr };
+
 
 };

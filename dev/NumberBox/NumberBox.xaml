@@ -8,7 +8,36 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NumberBox">
-                    <TextBox x:Name="InputBox"/>
+                    <StackPanel Orientation="Horizontal" Name="panel">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="SpinButtonStates">
+                                <VisualState x:Name="SpinButtonsVisible">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DownSpinButton" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Visibility>Visible</Visibility>
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="UpSpinButton" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Visibility>Visible</Visibility>
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="SpinButtonsCollapsed" />
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <TextBox x:Name="InputBox"/>
+                        <Button x:Name="DownSpinButton" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw"  BorderThickness="0 2 2 2"  FontSize="{TemplateBinding FontSize}" IsTabStop="False" MinWidth="34" Margin="{ThemeResource HelperButtonThemePadding}"  VerticalAlignment="Stretch" Background="{ThemeResource TextControlBackground}" BorderBrush="{ThemeResource TextControlBorderBrush}" FontFamily="{ThemeResource SymbolThemeFontFamily}" Content="&#xE70D;" />
+                        <Button x:Name="UpSpinButton" Visibility="Collapsed"  BorderThickness="0 2 2 2"  FontSize="{TemplateBinding FontSize}" IsTabStop="False" MinWidth="34" Margin="{ThemeResource HelperButtonThemePadding}"  VerticalAlignment="Stretch" Background="{ThemeResource TextControlBackground}" BorderBrush="{ThemeResource TextControlBorderBrush}" FontFamily="{ThemeResource SymbolThemeFontFamily}" Content="&#xE70E;" />
+                    </StackPanel>
+
+                    
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

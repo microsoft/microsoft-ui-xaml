@@ -57,10 +57,25 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     
     [MUX_DEFAULT_VALUE("0")]
     Double Value{ get; set; };
+    NumberBoxBasicValidationMode BasicValidationMode;
+
+    [MUX_DEFAULT_VALUE("winrt::NumberBoxSpinButtonPlacementMode::Hidden")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    NumberBoxSpinButtonPlacementMode SpinButtonPlacementMode{ get; set; };
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean HyperScrollEnabled;
+    [MUX_DEFAULT_VALUE("1")]
+    Double StepFrequency;
+
+
     event Windows.Foundation.TypedEventHandler<NumberBox, Object> ValueChanged;
 
     //Object Placeholder{ get; set; };
     static Windows.UI.Xaml.DependencyProperty ValueProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty BasicValidationModeProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SpinButtonPlacementModeProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HyperScrollEnabledProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty StepFrequencyProperty{ get; };
 }
 
 }

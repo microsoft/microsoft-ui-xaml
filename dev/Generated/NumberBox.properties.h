@@ -9,11 +9,31 @@ class NumberBoxProperties
 public:
     NumberBoxProperties();
 
+    void BasicValidationMode(winrt::NumberBoxBasicValidationMode const& value);
+    winrt::NumberBoxBasicValidationMode BasicValidationMode();
+
+    void HyperScrollEnabled(bool value);
+    bool HyperScrollEnabled();
+
+    void SpinButtonPlacementMode(winrt::NumberBoxSpinButtonPlacementMode const& value);
+    winrt::NumberBoxSpinButtonPlacementMode SpinButtonPlacementMode();
+
+    void StepFrequency(double value);
+    double StepFrequency();
+
     void Value(double value);
     double Value();
 
+    static winrt::DependencyProperty BasicValidationModeProperty() { return s_BasicValidationModeProperty; }
+    static winrt::DependencyProperty HyperScrollEnabledProperty() { return s_HyperScrollEnabledProperty; }
+    static winrt::DependencyProperty SpinButtonPlacementModeProperty() { return s_SpinButtonPlacementModeProperty; }
+    static winrt::DependencyProperty StepFrequencyProperty() { return s_StepFrequencyProperty; }
     static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
 
+    static GlobalDependencyProperty s_BasicValidationModeProperty;
+    static GlobalDependencyProperty s_HyperScrollEnabledProperty;
+    static GlobalDependencyProperty s_SpinButtonPlacementModeProperty;
+    static GlobalDependencyProperty s_StepFrequencyProperty;
     static GlobalDependencyProperty s_ValueProperty;
 
     winrt::event_token ValueChanged(winrt::TypedEventHandler<winrt::NumberBox, winrt::IInspectable> const& value);
@@ -23,6 +43,22 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnBasicValidationModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnHyperScrollEnabledPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnSpinButtonPlacementModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnStepFrequencyPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnValuePropertyChanged(
         winrt::DependencyObject const& sender,

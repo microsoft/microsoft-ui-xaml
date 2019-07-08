@@ -20,6 +20,9 @@ void NumberBox::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected = *this;
     m_TextBox = GetTemplateChildT<winrt::TextBox>(L"InputBox", controlProtected);
+    m_SpinDown = GetTemplateChildT<winrt::Button>(L"DownSpinButton", controlProtected);
+    m_SpinUp = GetTemplateChildT<winrt::Button>(L"UpSpinButton", controlProtected);
+    SetSpinButtonVisualState();
     Formatter = winrt::DecimalFormatter();
 
     // Set Text to reflect preset Value
@@ -32,12 +35,17 @@ void NumberBox::OnApplyTemplate()
     if ( m_TextBox ) {
         m_TextBox.LostFocus({ this, &NumberBox::OnTextBoxLostFocus });
     }
-    fprintf(stderr, "Template Applied");
 }
 
 void  NumberBox::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
+    
+    // Update visual state for spin buttons if placement mode changed
+    if (property == s_SpinButtonPlacementModeProperty)
+    {
+        SetSpinButtonVisualState();
+    }
     
     
     // TODO: Implement
@@ -86,6 +94,19 @@ void NumberBox::ProcessInput(double val)
 {
     Value(val);
     UpdateTextToValue();
+}
+
+void NumberBox::SetSpinButtonVisualState()
+{
+
+    if ( SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline )
+    {
+        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
+    }
+    else if ( SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Hidden )
+    {
+        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsCollapsed", false);
+    }
 }
 
 

@@ -8,6 +8,10 @@
 
 CppWinRTActivatableClassWithDPFactory(NumberBox)
 
+GlobalDependencyProperty NumberBoxProperties::s_BasicValidationModeProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_HyperScrollEnabledProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_SpinButtonPlacementModeProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_StepFrequencyProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_ValueProperty{ nullptr };
 
 NumberBoxProperties::NumberBoxProperties()
@@ -18,6 +22,50 @@ NumberBoxProperties::NumberBoxProperties()
 
 void NumberBoxProperties::EnsureProperties()
 {
+    if (!s_BasicValidationModeProperty)
+    {
+        s_BasicValidationModeProperty =
+            InitializeDependencyProperty(
+                L"BasicValidationMode",
+                winrt::name_of<winrt::NumberBoxBasicValidationMode>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::NumberBoxBasicValidationMode>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnBasicValidationModePropertyChanged));
+    }
+    if (!s_HyperScrollEnabledProperty)
+    {
+        s_HyperScrollEnabledProperty =
+            InitializeDependencyProperty(
+                L"HyperScrollEnabled",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                winrt::PropertyChangedCallback(&OnHyperScrollEnabledPropertyChanged));
+    }
+    if (!s_SpinButtonPlacementModeProperty)
+    {
+        s_SpinButtonPlacementModeProperty =
+            InitializeDependencyProperty(
+                L"SpinButtonPlacementMode",
+                winrt::name_of<winrt::NumberBoxSpinButtonPlacementMode>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::NumberBoxSpinButtonPlacementMode>::BoxValueIfNecessary(winrt::NumberBoxSpinButtonPlacementMode::Hidden),
+                winrt::PropertyChangedCallback(&OnSpinButtonPlacementModePropertyChanged));
+    }
+    if (!s_StepFrequencyProperty)
+    {
+        s_StepFrequencyProperty =
+            InitializeDependencyProperty(
+                L"StepFrequency",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxValueIfNecessary(1),
+                winrt::PropertyChangedCallback(&OnStepFrequencyPropertyChanged));
+    }
     if (!s_ValueProperty)
     {
         s_ValueProperty =
@@ -33,7 +81,43 @@ void NumberBoxProperties::EnsureProperties()
 
 void NumberBoxProperties::ClearProperties()
 {
+    s_BasicValidationModeProperty = nullptr;
+    s_HyperScrollEnabledProperty = nullptr;
+    s_SpinButtonPlacementModeProperty = nullptr;
+    s_StepFrequencyProperty = nullptr;
     s_ValueProperty = nullptr;
+}
+
+void NumberBoxProperties::OnBasicValidationModePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnHyperScrollEnabledPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnSpinButtonPlacementModePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnStepFrequencyPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnValuePropertyChanged(
@@ -42,6 +126,46 @@ void NumberBoxProperties::OnValuePropertyChanged(
 {
     auto owner = sender.as<winrt::NumberBox>();
     winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::BasicValidationMode(winrt::NumberBoxBasicValidationMode const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_BasicValidationModeProperty, ValueHelper<winrt::NumberBoxBasicValidationMode>::BoxValueIfNecessary(value));
+}
+
+winrt::NumberBoxBasicValidationMode NumberBoxProperties::BasicValidationMode()
+{
+    return ValueHelper<winrt::NumberBoxBasicValidationMode>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_BasicValidationModeProperty));
+}
+
+void NumberBoxProperties::HyperScrollEnabled(bool value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_HyperScrollEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool NumberBoxProperties::HyperScrollEnabled()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HyperScrollEnabledProperty));
+}
+
+void NumberBoxProperties::SpinButtonPlacementMode(winrt::NumberBoxSpinButtonPlacementMode const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_SpinButtonPlacementModeProperty, ValueHelper<winrt::NumberBoxSpinButtonPlacementMode>::BoxValueIfNecessary(value));
+}
+
+winrt::NumberBoxSpinButtonPlacementMode NumberBoxProperties::SpinButtonPlacementMode()
+{
+    return ValueHelper<winrt::NumberBoxSpinButtonPlacementMode>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_SpinButtonPlacementModeProperty));
+}
+
+void NumberBoxProperties::StepFrequency(double value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_StepFrequencyProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double NumberBoxProperties::StepFrequency()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_StepFrequencyProperty));
 }
 
 void NumberBoxProperties::Value(double value)
