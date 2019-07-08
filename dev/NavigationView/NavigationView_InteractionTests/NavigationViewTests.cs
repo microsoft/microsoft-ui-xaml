@@ -1,15 +1,13 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System;
-using System.Linq;
-
 using Common;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Text;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -20,19 +18,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
-using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -1494,28 +1483,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Store Test" }))
             {
                 var moveContentUnderTitleBarButton = new Button(FindElement.ById("MoveContentUnderTopnavTitleBar"));
+                var flipIsTitleBarAutoPaddingEnabledButton = new Button(FindElement.ById("FlipIsTitleBarAutoPaddingEnabledButton"));
                 var getTopPaddingHeightButton = new Button(FindElement.ById("GetTopPaddingHeightButton"));
                 var fullScreenButton = new Button(FindElement.ById("FullScreenInvokerButton"));
+                var navViewIsTitleBarAutoPaddingEnabledId = "NavViewIsTitleBarAutoPaddingEnabled";
                 var topPaddingRenderedValueId = "TopPaddingRenderedValue";
+                UIObject navViewIsTitleBarAutoPaddingEnabled = null;
                 UIObject topNavTopPadding = null;
 
-                // Checking top padding is added for regular Desktop                
+                // Checking top padding is added for regular Desktop
+                Log.Comment("Setting TitleBar.ExtendViewIntoTitleBar to True");
                 moveContentUnderTitleBarButton.Click();
                 Wait.ForIdle();
+
+                Log.Comment("Accessing TopPadding Height");
                 getTopPaddingHeightButton.Click();
                 Wait.ForIdle();
+
+                navViewIsTitleBarAutoPaddingEnabled = TryFindElement.ById(navViewIsTitleBarAutoPaddingEnabledId);
+                Verify.IsNotNull(navViewIsTitleBarAutoPaddingEnabled);
+                Log.Comment($"NavView.IsTitleBarAutoPaddingEnabled: {navViewIsTitleBarAutoPaddingEnabled.GetText()}");
+                Verify.AreEqual("True", navViewIsTitleBarAutoPaddingEnabled.GetText());
+
                 topNavTopPadding = TryFindElement.ById(topPaddingRenderedValueId);
+                Verify.IsNotNull(topNavTopPadding);
+                Log.Comment($"TopPadding Height: {topNavTopPadding.GetText()}");
 
                 if (PlatformConfiguration.IsDevice(DeviceType.Phone))
                 {
                     // For phone we only check once to make sure the padding is 0
-                    Verify.AreEqual(0, Int32.Parse(topNavTopPadding.GetText()));
+                    Verify.AreEqual("0", topNavTopPadding.GetText());
                     return;
                 }
 
                 if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
                 {
-                    Verify.AreEqual(32, Int32.Parse(topNavTopPadding.GetText()));
+                    Verify.AreEqual("32", topNavTopPadding.GetText());
                 }
                 else
                 {
@@ -1528,24 +1531,49 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     }
                     else
                     {
-                        Verify.AreEqual(0, Int32.Parse(topNavTopPadding.GetText()));
+                        Verify.AreEqual("0", topNavTopPadding.GetText());
                     }
                 }
 
+                Log.Comment("Setting IsTitleBarAutoPaddingEnabled to False");
+                flipIsTitleBarAutoPaddingEnabledButton.Click();
+                Wait.ForIdle();
+
+                Log.Comment($"NavView.IsTitleBarAutoPaddingEnabled: {navViewIsTitleBarAutoPaddingEnabled.GetText()}");
+                Verify.AreEqual("False", navViewIsTitleBarAutoPaddingEnabled.GetText());
+
+                Log.Comment("Accessing TopPadding Height");
+                getTopPaddingHeightButton.Click();
+                Wait.ForIdle();
+                Log.Comment($"TopPadding Height: {topNavTopPadding.GetText()}");
+                Verify.AreEqual("0", topNavTopPadding.GetText());
+
+                Log.Comment("Setting IsTitleBarAutoPaddingEnabled to True");
+                flipIsTitleBarAutoPaddingEnabledButton.Click();
+                Wait.ForIdle();
+
+                Log.Comment($"NavView.IsTitleBarAutoPaddingEnabled: {navViewIsTitleBarAutoPaddingEnabled.GetText()}");
+                Verify.AreEqual("True", navViewIsTitleBarAutoPaddingEnabled.GetText());
+
                 // Checking top padding is NOT added for fullscreen Desktop
+                Log.Comment("Setting TitleBar.ExtendViewIntoTitleBar to False");
                 moveContentUnderTitleBarButton.Click();
                 Wait.ForIdle();
                 fullScreenButton.Click();
                 Wait.ForIdle();
+
+                Log.Comment("Setting TitleBar.ExtendViewIntoTitleBar to True");
                 moveContentUnderTitleBarButton.Click();
                 Wait.ForIdle();
+
+                Log.Comment("Accessing TopPadding Height");
                 getTopPaddingHeightButton.Click();
                 Wait.ForIdle();
-
-                topNavTopPadding = TryFindElement.ById(topPaddingRenderedValueId);
-                Verify.AreEqual(0, Int32.Parse(topNavTopPadding.GetText()));
+                Log.Comment($"TopPadding Height: {topNavTopPadding.GetText()}");
+                Verify.AreEqual("0", topNavTopPadding.GetText());
 
                 // Reverting changes to leave app in original state
+                Log.Comment("Setting TitleBar.ExtendViewIntoTitleBar to False");
                 moveContentUnderTitleBarButton.Click();
                 Wait.ForIdle();
                 fullScreenButton.Click();

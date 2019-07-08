@@ -145,22 +145,6 @@ void NavigationView::OnApplyTemplate()
 
     winrt::IControlProtected controlProtected = *this;
 
-    // Register for changes in title bar layout
-    winrt::CoreApplicationViewTitleBar coreTitleBar = winrt::CoreApplication::GetCurrentView().TitleBar();
-    if (coreTitleBar)
-    {
-        m_coreTitleBar.set(coreTitleBar);
-        m_titleBarMetricsChangedRevoker = coreTitleBar.LayoutMetricsChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarMetricsChanged });
-        m_titleBarIsVisibleChangedRevoker = coreTitleBar.IsVisibleChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarIsVisibleChanged });
-        m_headerContent.set(GetTemplateChildT<winrt::FrameworkElement>(c_headerContent, controlProtected));
-
-        if (ShouldPreserveNavigationViewRS4Behavior())
-        {
-            m_togglePaneTopPadding.set(GetTemplateChildT<winrt::FrameworkElement>(c_togglePaneTopPadding, controlProtected));
-            m_contentPaneTopPadding.set(GetTemplateChildT<winrt::FrameworkElement>(c_contentPaneTopPadding, controlProtected));
-        }
-    }
-
     // Set up the pane toggle button click handler
     if (auto paneToggleButton = GetTemplateChildT<winrt::Button>(c_togglePaneButtonName, controlProtected))
     {
@@ -329,6 +313,22 @@ void NavigationView::OnApplyTemplate()
         
         winrt::hstring navigationName = ResourceAccessor::GetLocalizedStringResource(SR_NavigationBackButtonName);
         winrt::AutomationProperties::SetName(backButton, navigationName);
+    }
+
+    // Register for changes in title bar layout
+    winrt::CoreApplicationViewTitleBar coreTitleBar = winrt::CoreApplication::GetCurrentView().TitleBar();
+    if (coreTitleBar)
+    {
+        m_coreTitleBar.set(coreTitleBar);
+        m_titleBarMetricsChangedRevoker = coreTitleBar.LayoutMetricsChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarMetricsChanged });
+        m_titleBarIsVisibleChangedRevoker = coreTitleBar.IsVisibleChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarIsVisibleChanged });
+        m_headerContent.set(GetTemplateChildT<winrt::FrameworkElement>(c_headerContent, controlProtected));
+
+        if (ShouldPreserveNavigationViewRS4Behavior())
+        {
+            m_togglePaneTopPadding.set(GetTemplateChildT<winrt::FrameworkElement>(c_togglePaneTopPadding, controlProtected));
+            m_contentPaneTopPadding.set(GetTemplateChildT<winrt::FrameworkElement>(c_contentPaneTopPadding, controlProtected));
+        }
     }
 
     if (auto backButtonToolTip = GetTemplateChildT<winrt::ToolTip>(c_navViewBackButtonToolTip, controlProtected))
@@ -2688,8 +2688,11 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         // Need to update receiver margins when CompactPaneLength changes
         UpdatePaneShadow();
     }
+    else if (property == s_IsTitleBarAutoPaddingEnabledProperty)
+    {
+        UpdateTitleBarPadding();
+    }
 }
-
 
 void NavigationView::OnListViewLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
@@ -3254,50 +3257,54 @@ void NavigationView::UpdateTitleBarPadding()
     }
 
     double topPadding = 0;
+
     if (auto coreTitleBar = m_coreTitleBar.get())
     {
         bool needsTopPadding = false;
-        if (ShouldPreserveNavigationViewRS3Behavior())
+
+        // Do not set a top padding when the IsTitleBarAutoPaddingEnabled property is set to False.
+        if (IsTitleBarAutoPaddingEnabled())
         {
-            needsTopPadding = true;
-        }
-        else if (ShouldPreserveNavigationViewRS4Behavior())
-        {
-            // For RS4 apps maintain the behavior that we shipped for RS4.
-            // We keep this behavior for app compact purposes.
-            needsTopPadding = !coreTitleBar.ExtendViewIntoTitleBar();
-        }
-        else
-        {
-            needsTopPadding = NeedTopPaddingForRS5OrHigher(coreTitleBar);
+            if (ShouldPreserveNavigationViewRS3Behavior())
+            {
+                needsTopPadding = true;
+            }
+            else if (ShouldPreserveNavigationViewRS4Behavior())
+            {
+                // For RS4 apps maintain the behavior that we shipped for RS4.
+                // We keep this behavior for app compact purposes.
+                needsTopPadding = !coreTitleBar.ExtendViewIntoTitleBar();
+            }
+            else
+            {
+                needsTopPadding = NeedTopPaddingForRS5OrHigher(coreTitleBar);
+            }
         }
 
         if (needsTopPadding)
         {
-            topPadding = coreTitleBar.Height();
-
             // Only add extra padding if the NavView is the "root" of the app,
             // but not if the app is expanding into the titlebar
             winrt::UIElement root = winrt::Window::Current().Content();
             winrt::GeneralTransform gt = TransformToVisual(root);
-            winrt::Point pos = gt.TransformPoint(winrt::Point(0.0f, 0.0f));
-            if (pos.Y != 0.0f)
+            winrt::Point pos = gt.TransformPoint(winrt::Point());
+
+            if (pos.Y == 0.0f)
             {
-                topPadding = 0.0;
+                topPadding = coreTitleBar.Height();
+            }
+        }
+
+        if (ShouldPreserveNavigationViewRS4Behavior())
+        {
+            if (auto fe = m_togglePaneTopPadding.get())
+            {
+                fe.Height(topPadding);
             }
 
-            auto backButtonVisibility = IsBackButtonVisible();
-            if (ShouldPreserveNavigationViewRS4Behavior())
+            if (auto fe = m_contentPaneTopPadding.get())
             {
-                if (auto fe = m_togglePaneTopPadding.get())
-                {
-                    fe.Height(topPadding);
-                }
-
-                if (auto fe = m_contentPaneTopPadding.get())
-                {
-                    fe.Height(topPadding);
-                }
+                fe.Height(topPadding);
             }
         }
 

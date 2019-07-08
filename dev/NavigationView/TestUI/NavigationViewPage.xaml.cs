@@ -328,6 +328,16 @@ namespace MUXControlsTestApp
             TVItem.IsEnabled = false;
         }
 
+        private void IsTitleBarAutoPaddingEnabledCheckbox_Checked(object sender, RoutedEventArgs e)
+        {
+            NavView.IsTitleBarAutoPaddingEnabled = true;
+        }
+
+        private void IsTitleBarAutoPaddingEnabledCheckbox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            NavView.IsTitleBarAutoPaddingEnabled = false;
+        }
+
         private void TitleBarCheckbox_Checked(object sender, RoutedEventArgs e)
         {
             CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;
