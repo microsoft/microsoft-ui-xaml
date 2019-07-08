@@ -1456,8 +1456,8 @@ namespace MUXControlsTestApp
                 if (isRelativeChange)
                 {
                     lastOffsetsChangeId = scroller.ScrollBy(
-                        Convert.ToDouble(txtCOAHO.Text),
-                        Convert.ToDouble(txtCOAVO.Text),
+                        Convert.ToDouble(txtScrollHorizontalOffset.Text),
+                        Convert.ToDouble(txtScrollVerticalOffset.Text),
                         options).OffsetsChangeId;
                     relativeChangeIds.Add(lastOffsetsChangeId);
                     AppendAsyncEventMessage("Invoked ScrollBy Id=" + lastOffsetsChangeId);
@@ -1465,8 +1465,8 @@ namespace MUXControlsTestApp
                 else
                 {
                     lastOffsetsChangeId = scroller.ScrollTo(
-                        Convert.ToDouble(txtCOAHO.Text),
-                        Convert.ToDouble(txtCOAVO.Text),
+                        Convert.ToDouble(txtScrollHorizontalOffset.Text),
+                        Convert.ToDouble(txtScrollVerticalOffset.Text),
                         options).OffsetsChangeId;
                     AppendAsyncEventMessage("Invoked ScrollTo Id=" + lastOffsetsChangeId);
                 }
@@ -1514,14 +1514,14 @@ namespace MUXControlsTestApp
                     {
                         bool isRelativeChange = relativeChangeIds.Contains(args.ScrollInfo.OffsetsChangeId);
 
-                        double targetHorizontalOffset = Convert.ToDouble(txtCOAHO.Text);
+                        double targetHorizontalOffset = Convert.ToDouble(txtScrollHorizontalOffset.Text);
                         if (isRelativeChange)
                         {
                             targetHorizontalOffset += scroller.HorizontalOffset;
                         }
                         float targetHorizontalPosition = ComputeHorizontalPositionFromOffset(targetHorizontalOffset);
 
-                        double targetVerticalOffset = Convert.ToDouble(txtCOAVO.Text);
+                        double targetVerticalOffset = Convert.ToDouble(txtScrollVerticalOffset.Text);
                         if (isRelativeChange)
                         {
                             targetVerticalOffset += scroller.VerticalOffset;
@@ -1600,9 +1600,9 @@ namespace MUXControlsTestApp
             {
                 Vector2? inertiaDecayRate = null;
 
-                if (txtCOWAVAHIDR.Text != "null" && txtCOWAVAVIDR.Text != "null")
+                if (txtScrollHorizontalInertiaDecayRate.Text != "null" && txtScrollVerticalInertiaDecayRate.Text != "null")
                 {
-                    inertiaDecayRate = new Vector2(Convert.ToSingle(txtCOWAVAHIDR.Text), Convert.ToSingle(txtCOWAVAVIDR.Text));
+                    inertiaDecayRate = new Vector2(Convert.ToSingle(txtScrollHorizontalInertiaDecayRate.Text), Convert.ToSingle(txtScrollVerticalInertiaDecayRate.Text));
                 }
 
                 txtStockOffsetsChangeDuration.Text = string.Empty;
@@ -1610,7 +1610,7 @@ namespace MUXControlsTestApp
                 ExecuteQueuedOperations();
 
                 lastOffsetsChangeWithAdditionalVelocityId = scroller.ScrollFrom(
-                    new Vector2(Convert.ToSingle(txtCOWAVAHV.Text), Convert.ToSingle(txtCOWAVAVV.Text)),
+                    new Vector2(Convert.ToSingle(txtScrollHorizontalVelocity.Text), Convert.ToSingle(txtScrollVerticalVelocity.Text)),
                     inertiaDecayRate).OffsetsChangeId;
                 AppendAsyncEventMessage("Invoked ScrollFrom Id=" + lastOffsetsChangeWithAdditionalVelocityId);
             }
@@ -1746,8 +1746,8 @@ namespace MUXControlsTestApp
                 if (isRelativeChange)
                 {
                     lastZoomFactorChangeId = scroller.ZoomBy(
-                        Convert.ToSingle(txtCZFAZF.Text),
-                        ConvertFromStringToVector2(txtCZFACP.Text),
+                        Convert.ToSingle(txtZoomZoomFactor.Text),
+                        ConvertFromStringToVector2(txtZoomCenterPoint.Text),
                         options).ZoomFactorChangeId;
                     relativeChangeIds.Add(lastZoomFactorChangeId);
                     AppendAsyncEventMessage("Invoked ZoomBy Id=" + lastZoomFactorChangeId);
@@ -1755,8 +1755,8 @@ namespace MUXControlsTestApp
                 else
                 {
                     lastZoomFactorChangeId = scroller.ZoomTo(
-                        Convert.ToSingle(txtCZFAZF.Text),
-                        ConvertFromStringToVector2(txtCZFACP.Text),
+                        Convert.ToSingle(txtZoomZoomFactor.Text),
+                        ConvertFromStringToVector2(txtZoomCenterPoint.Text),
                         options).ZoomFactorChangeId;
                     AppendAsyncEventMessage("Invoked ZoomTo Id=" + lastZoomFactorChangeId);
                 }
@@ -1802,7 +1802,7 @@ namespace MUXControlsTestApp
 
                     if (cmbOverriddenZoomFactorChangeAnimation.SelectedIndex != 0)
                     {
-                        float targetZoomFactor = Convert.ToSingle(txtCZFAZF.Text);
+                        float targetZoomFactor = Convert.ToSingle(txtZoomZoomFactor.Text);
                         if (relativeChangeIds.Contains(args.ZoomInfo.ZoomFactorChangeId))
                         {
                             targetZoomFactor += scroller.ZoomFactor;
@@ -1880,9 +1880,9 @@ namespace MUXControlsTestApp
                 ExecuteQueuedOperations();
 
                 lastZoomFactorChangeWithAdditionalVelocityId = scroller.ZoomFrom(
-                    Convert.ToSingle(txtCZFWAVAAV.Text),
-                    ConvertFromStringToVector2(txtCZFWAVACP.Text),
-                    (txtCZFWAVAIDR.Text == "null") ? (float?)null : (float?)Convert.ToSingle(txtCZFWAVAIDR.Text)).ZoomFactorChangeId;
+                    Convert.ToSingle(txtZoomFromVelocity.Text),
+                    ConvertFromStringToVector2(txtZoomFromCenterPoint.Text),
+                    (txtZoomFromInertiaDecayRate.Text == "null") ? (float?)null : (float?)Convert.ToSingle(txtZoomFromInertiaDecayRate.Text)).ZoomFactorChangeId;
                 AppendAsyncEventMessage("Invoked ZoomFrom Id=" + lastZoomFactorChangeWithAdditionalVelocityId);
             }
             catch (Exception ex)
@@ -2012,9 +2012,9 @@ namespace MUXControlsTestApp
         {
             try
             {
-                double? horizontalOffset = string.IsNullOrWhiteSpace(txtCOAHO.Text) ? (double?)null : Convert.ToDouble(txtCOAHO.Text);
-                double? verticalOffset = string.IsNullOrWhiteSpace(txtCOAVO.Text) ? (double?)null : Convert.ToDouble(txtCOAVO.Text);
-                float? zoomFactor = string.IsNullOrWhiteSpace(txtCZFAZF.Text) ? (float?)null : Convert.ToSingle(txtCZFAZF.Text);
+                double? horizontalOffset = string.IsNullOrWhiteSpace(txtScrollHorizontalOffset.Text) ? (double?)null : Convert.ToDouble(txtScrollHorizontalOffset.Text);
+                double? verticalOffset = string.IsNullOrWhiteSpace(txtScrollVerticalOffset.Text) ? (double?)null : Convert.ToDouble(txtScrollVerticalOffset.Text);
+                float? zoomFactor = string.IsNullOrWhiteSpace(txtZoomZoomFactor.Text) ? (float?)null : Convert.ToSingle(txtZoomZoomFactor.Text);
                 bool disableAnimation = true;
 
                 if (horizontalOffset == null && verticalOffset == null && zoomFactor == null)
@@ -2025,11 +2025,11 @@ namespace MUXControlsTestApp
                 ComboBox cmbAnimationMode = (zoomFactor == null || zoomFactor == scroller.ZoomFactor) ? 
                     cmbScrollAnimationMode : cmbZoomAnimationMode;
 
-                switch (cmbAnimationMode.SelectedIndex)
+                switch (((ContentControl)cmbAnimationMode.SelectedItem).Content)
                 {
-                    case 0: // Disabled
+                    case "Disabled":
                         break;
-                    case 1: // Enabled
+                    case "Enabled":
                         disableAnimation = false;
                         break;
                     default: // Auto
@@ -2060,6 +2060,7 @@ namespace MUXControlsTestApp
                 targetHorizontalOffset = Math.Max(Math.Min(targetHorizontalOffset, scroller.ExtentWidth * targetZoomFactor - scroller.ViewportWidth), 0.0);
                 targetVerticalOffset = Math.Max(Math.Min(targetVerticalOffset, scroller.ExtentHeight * targetZoomFactor - scroller.ViewportHeight), 0.0);
             }
+            // During an animation, out-of-bounds offsets may become valid as the extents are dynamically updated, so no clamping is performed for animated view changes.
 
             if (deltaZoomFactor == 0.0f)
             {

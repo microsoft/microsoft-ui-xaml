@@ -515,9 +515,9 @@
 
                     <TextBlock Text="ScrollTo/By Options" Margin="2" Grid.ColumnSpan="2"/>
                     <TextBlock Text="Horizontal Offset:" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCOAHO" Text="0" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtScrollHorizontalOffset" Text="0" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center"/>
                     <TextBlock Text="Vertical Offset:" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCOAVO" Text="0" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtScrollVerticalOffset" Text="0" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center"/>
                     <TextBlock Text="AnimationMode:" Grid.Column="0" Grid.Row="3" VerticalAlignment="Center"/>
                     <ComboBox x:Name="cmbScrollAnimationMode" Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" SelectedIndex="2">
                         <ComboBoxItem>Disabled</ComboBoxItem>
@@ -548,13 +548,13 @@
 
                     <TextBlock Text="ScrollFrom Options" Grid.Row="8" Margin="2" Grid.ColumnSpan="2"/>
                     <TextBlock Text="Horizontal Velocity:" Grid.Column="0" Grid.Row="9" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCOWAVAHV" Text="0" Grid.Column="1" Grid.Row="9" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtScrollHorizontalVelocity" Text="0" Grid.Column="1" Grid.Row="9" VerticalAlignment="Center"/>
                     <TextBlock Text="Vertical Velocity:" Grid.Column="0" Grid.Row="10" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCOWAVAVV" Text="0" Grid.Column="1" Grid.Row="10" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtScrollVerticalVelocity" Text="0" Grid.Column="1" Grid.Row="10" VerticalAlignment="Center"/>
                     <TextBlock Text="Horiz. InertiaDecayRate:" Grid.Column="0" Grid.Row="11" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCOWAVAHIDR" Text="null" Grid.Column="1" Grid.Row="11" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtScrollHorizontalInertiaDecayRate" Text="null" Grid.Column="1" Grid.Row="11" VerticalAlignment="Center"/>
                     <TextBlock Text="Verti. InertiaDecayRate:" Grid.Column="0" Grid.Row="12" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCOWAVAVIDR" Text="null" Grid.Column="1" Grid.Row="12" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtScrollVerticalInertiaDecayRate" Text="null" Grid.Column="1" Grid.Row="12" VerticalAlignment="Center"/>
                     <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="13">
                         <Button x:Name="btnScrollFrom" Content="ScrollFrom" Margin="2" Click="BtnScrollFrom_Click"/>
                         <Button x:Name="btnCancelScrollFrom" Content="Cancel" Margin="2" Click="BtnCancelScrollFrom_Click"/>
@@ -562,9 +562,9 @@
 
                     <TextBlock Text="ZoomTo/By Options" Margin="2,4,2,2" Grid.Row="14" Grid.ColumnSpan="2"/>
                     <TextBlock Text="ZoomFactor:" Grid.Column="0" Grid.Row="15" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCZFAZF" Text="1" Grid.Column="1" Grid.Row="15" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtZoomZoomFactor" Text="1" Grid.Column="1" Grid.Row="15" VerticalAlignment="Center"/>
                     <TextBlock Text="CenterPoint:" Grid.Column="0" Grid.Row="16" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCZFACP" Text="0, 0"  Grid.Column="1" Grid.Row="16" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtZoomCenterPoint" Text="0, 0"  Grid.Column="1" Grid.Row="16" VerticalAlignment="Center"/>
                     <TextBlock Text="AnimationMode:" Grid.Column="0" Grid.Row="17" VerticalAlignment="Center"/>
                     <ComboBox x:Name="cmbZoomAnimationMode" Grid.Column="1" Grid.Row="17" VerticalAlignment="Center" SelectedIndex="2">
                         <ComboBoxItem>Disabled</ComboBoxItem>
@@ -595,11 +595,11 @@
 
                     <TextBlock Text="ZoomFrom Options" Margin="2,4,2,2" Grid.Row="22" Grid.ColumnSpan="2"/>
                     <TextBlock Text="ZoomFactor Velocity:" Grid.Column="0" Grid.Row="23" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCZFWAVAAV" Text="1" Grid.Column="1" Grid.Row="23" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtZoomFromVelocity" Text="1" Grid.Column="1" Grid.Row="23" VerticalAlignment="Center"/>
                     <TextBlock Text="InertiaDecayRate:" Grid.Column="0" Grid.Row="24" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCZFWAVAIDR" Text="null" Grid.Column="1" Grid.Row="24" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtZoomFromInertiaDecayRate" Text="null" Grid.Column="1" Grid.Row="24" VerticalAlignment="Center"/>
                     <TextBlock Text="CenterPoint:" Grid.Column="0" Grid.Row="25" VerticalAlignment="Center"/>
-                    <TextBox x:Name="txtCZFWAVACP" Text="0, 0"  Grid.Column="1" Grid.Row="25" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtZoomFromCenterPoint" Text="0, 0"  Grid.Column="1" Grid.Row="25" VerticalAlignment="Center"/>
                     <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="26">
                         <Button x:Name="btnZoomFrom" Content="ZoomFrom" Margin="2" Click="BtnZoomFrom_Click"/>
                         <Button x:Name="btnCancelZoomFrom" Content="Cancel" Margin="2" Click="BtnCancelZoomFrom_Click"/>
