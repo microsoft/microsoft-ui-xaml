@@ -42,7 +42,7 @@ private:
     void OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args);
     void OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
     void StepValue(bool sign);
-    bool IsOutOfBounds(double val);
+    bool IsInBounds(double val);
     winrt::DecimalFormatter Formatter;
     winrt::TextBox m_TextBox{ nullptr };
     winrt::Button m_SpinDown{ nullptr };

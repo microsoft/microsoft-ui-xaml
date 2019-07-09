@@ -64,6 +64,35 @@ namespace MUXControlsTestApp
 
         }
 
+        private void Bounds_Changed(object sender, RoutedEventArgs e)
+        {
+            box = FindVisualChildByName(this, "numBox") as NumberBox;
+            ComboBox boundmode = (ComboBox)sender;
+            if (box == null)
+            {
+                return;
+            }
+            if ((string)boundmode.SelectedValue == "NoBounds")
+            {
+                box.MinMaxMode = NumberBoxMinMaxMode.NoBounds;
+            }
+            else if ((string)boundmode.SelectedValue == "MinEnabled")
+            {
+                box.MinMaxMode = NumberBoxMinMaxMode.MinEnabled;
+            }
+            else if ((string)boundmode.SelectedValue == "MaxEnabled")
+            {
+                box.MinMaxMode = NumberBoxMinMaxMode.MaxEnabled;
+            }
+            else if ((string)boundmode.SelectedValue == "MinAndMaxEnabled")
+            {
+                box.MinMaxMode = NumberBoxMinMaxMode.MinAndMaxEnabled;
+            }
+            else if ((string)boundmode.SelectedValue == "WrapEnabled")
+            {
+                box.MinMaxMode = NumberBoxMinMaxMode.WrapEnabled;
+            }
+        }
 
     }
 }

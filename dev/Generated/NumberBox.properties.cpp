@@ -10,6 +10,9 @@ CppWinRTActivatableClassWithDPFactory(NumberBox)
 
 GlobalDependencyProperty NumberBoxProperties::s_BasicValidationModeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_HyperScrollEnabledProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_MaxValueProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_MinMaxModeProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_MinValueProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SpinButtonPlacementModeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_StepFrequencyProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_ValueProperty{ nullptr };
@@ -43,6 +46,39 @@ void NumberBoxProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 winrt::PropertyChangedCallback(&OnHyperScrollEnabledPropertyChanged));
+    }
+    if (!s_MaxValueProperty)
+    {
+        s_MaxValueProperty =
+            InitializeDependencyProperty(
+                L"MaxValue",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxValueIfNecessary(0),
+                winrt::PropertyChangedCallback(&OnMaxValuePropertyChanged));
+    }
+    if (!s_MinMaxModeProperty)
+    {
+        s_MinMaxModeProperty =
+            InitializeDependencyProperty(
+                L"MinMaxMode",
+                winrt::name_of<winrt::NumberBoxMinMaxMode>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::NumberBoxMinMaxMode>::BoxValueIfNecessary(winrt::NumberBoxMinMaxMode::NoBounds),
+                winrt::PropertyChangedCallback(&OnMinMaxModePropertyChanged));
+    }
+    if (!s_MinValueProperty)
+    {
+        s_MinValueProperty =
+            InitializeDependencyProperty(
+                L"MinValue",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxValueIfNecessary(0),
+                winrt::PropertyChangedCallback(&OnMinValuePropertyChanged));
     }
     if (!s_SpinButtonPlacementModeProperty)
     {
@@ -83,6 +119,9 @@ void NumberBoxProperties::ClearProperties()
 {
     s_BasicValidationModeProperty = nullptr;
     s_HyperScrollEnabledProperty = nullptr;
+    s_MaxValueProperty = nullptr;
+    s_MinMaxModeProperty = nullptr;
+    s_MinValueProperty = nullptr;
     s_SpinButtonPlacementModeProperty = nullptr;
     s_StepFrequencyProperty = nullptr;
     s_ValueProperty = nullptr;
@@ -97,6 +136,30 @@ void NumberBoxProperties::OnBasicValidationModePropertyChanged(
 }
 
 void NumberBoxProperties::OnHyperScrollEnabledPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnMaxValuePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnMinMaxModePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnMinValuePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -146,6 +209,36 @@ void NumberBoxProperties::HyperScrollEnabled(bool value)
 bool NumberBoxProperties::HyperScrollEnabled()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HyperScrollEnabledProperty));
+}
+
+void NumberBoxProperties::MaxValue(double value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_MaxValueProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double NumberBoxProperties::MaxValue()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_MaxValueProperty));
+}
+
+void NumberBoxProperties::MinMaxMode(winrt::NumberBoxMinMaxMode const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_MinMaxModeProperty, ValueHelper<winrt::NumberBoxMinMaxMode>::BoxValueIfNecessary(value));
+}
+
+winrt::NumberBoxMinMaxMode NumberBoxProperties::MinMaxMode()
+{
+    return ValueHelper<winrt::NumberBoxMinMaxMode>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_MinMaxModeProperty));
+}
+
+void NumberBoxProperties::MinValue(double value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_MinValueProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double NumberBoxProperties::MinValue()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_MinValueProperty));
 }
 
 void NumberBoxProperties::SpinButtonPlacementMode(winrt::NumberBoxSpinButtonPlacementMode const& value)

@@ -22,12 +22,11 @@ enum NumberBoxBasicValidationMode
     Disabled
 };
 
-// Temporarily renamed "None" to Disabled because of previous definition issue
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 enum NumberBoxMinMaxMode
 {
-    BoundsDisabled,
+    NoBounds,
     MinEnabled,
     MaxEnabled,
     MinAndMaxEnabled,
@@ -67,6 +66,14 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("1")]
     Double StepFrequency;
 
+    [MUX_DEFAULT_VALUE("winrt::NumberBoxMinMaxMode::NoBounds")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    NumberBoxMinMaxMode MinMaxMode{ get; set; };
+    [MUX_DEFAULT_VALUE("0")]
+    Double MinValue;
+    [MUX_DEFAULT_VALUE("0")]
+    Double MaxValue;
+
 
     event Windows.Foundation.TypedEventHandler<NumberBox, Object> ValueChanged;
 
@@ -74,8 +81,12 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty ValueProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty BasicValidationModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SpinButtonPlacementModeProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty MinMaxModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty HyperScrollEnabledProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty StepFrequencyProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty MinValueProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty MaxValueProperty{ get; };
+
 }
 
 }

@@ -56,12 +56,10 @@ void  NumberBox::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     {
         SetSpinButtonVisualState();
     }
-    
-    
-    // TODO: Implement
+        
 }
 
-
+// Trigger any validation, rounding, and processing done onLostFocus
 void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     ValidateInput();
@@ -71,7 +69,7 @@ void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::Rou
 void NumberBox::ValidateInput()
 {
     string InputAsString = winrt::to_string(m_TextBox.Text());
-    // Handles Empty TextBox Case, current behavior is to set Value to default
+    // Handles Empty TextBox Case, current behavior is to set Value to default (0)
     if (InputAsString == "")
     {
         this->Value(0);
@@ -80,7 +78,7 @@ void NumberBox::ValidateInput()
 
     winrt::IReference<double> parsedNum = Formatter.ParseDouble(m_TextBox.Text());
 
-    if (parsedNum)
+    if (parsedNum && IsInBounds(parsedNum.Value()) )
     {
         SetErrorState(false);
         Value(parsedNum.Value());
@@ -92,6 +90,7 @@ void NumberBox::ValidateInput()
     }
 }
 
+// SpinClicks call to decrement or increment, 
 void NumberBox::OnSpinDownClick(winrt::IInspectable const&  sender, winrt::RoutedEventArgs const& args)
 {
     StepValue(false);
@@ -131,23 +130,42 @@ void NumberBox::OnScroll(winrt::IInspectable const& sender, winrt::PointerRouted
 }
 
 
-
+// Increments or decrements value by StepFrequency, wrapping if necessary
 void NumberBox::StepValue(bool sign)
 {
+    // Validating input before and after
     ValidateInput();
+    double newVal = Value();
 
     if ( sign )
     {
-        Value( Value() + StepFrequency() );
+        newVal = newVal + StepFrequency();
     }
     else
     {
-        Value(Value() - StepFrequency() );
+        newVal =  newVal - StepFrequency();
     }
 
-    // TODO: MinMaxMode Wrapping
+    // MinMaxMode Wrapping
+    if ( MinMaxMode() == winrt::NumberBoxMinMaxMode::WrapEnabled && !IsInBounds(newVal) )
+    {
+        while ( newVal > MaxValue() )
+        {
+            newVal = MinValue() + (newVal - MaxValue()) - 1;
+        }
+        while ( newVal < MinValue() )
+        {
+            newVal = MaxValue() - abs(newVal - MinValue()) + 1;
+        }
+        Value(newVal);
+        UpdateTextToValue();
+        return;
+    }
 
+    // Update Text and Revalidate new value
+    Value(newVal);
     UpdateTextToValue();
+    ValidateInput();
 
 }
 
@@ -165,6 +183,8 @@ void NumberBox::UpdateTextToValue()
     m_TextBox.Text( winrt::to_hstring( NumberBoxProperties::Value() ));
 }
 
+// Handlder for swapping visual states of textbox
+// TODO: Implement final visual states in spec
 void NumberBox::SetErrorState(bool state)
 {
     if (state)
@@ -178,7 +198,8 @@ void NumberBox::SetErrorState(bool state)
 
 }
 
-
+// Enables or Disables Spin Buttons
+// TODO: Styling for buttons
 void NumberBox::SetSpinButtonVisualState()
 {
 
@@ -192,10 +213,37 @@ void NumberBox::SetSpinButtonVisualState()
     }
 }
 
-bool IsOutOfBounds(double val)
+// checks if val is in Min/Max bounds based on user's MinMax mode setting
+bool NumberBox::IsInBounds(double val)
 {
+    double min = MinValue();
+    double max = MaxValue();
+    
+    switch (  MinMaxMode() )
+    {
+        case winrt::NumberBoxMinMaxMode::NoBounds:
+            return true;
+        case winrt::NumberBoxMinMaxMode::WrapEnabled:
+        case winrt::NumberBoxMinMaxMode::MinAndMaxEnabled:
+            if (val < min || val > max)
+            {
+                return false;
+            }
+            break;
+        case winrt::NumberBoxMinMaxMode::MinEnabled:
+            if (val < min)
+            {
+                return false;
+            }
+            break;
+        case winrt::NumberBoxMinMaxMode::MaxEnabled:
+            if (val > max)
+            {
+                return false;
+            }
+            break;
+    }
     return true;
-    // TODO: Bounds using MinMax Modes
 }
 
 

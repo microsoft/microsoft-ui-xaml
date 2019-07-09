@@ -15,6 +15,15 @@ public:
     void HyperScrollEnabled(bool value);
     bool HyperScrollEnabled();
 
+    void MaxValue(double value);
+    double MaxValue();
+
+    void MinMaxMode(winrt::NumberBoxMinMaxMode const& value);
+    winrt::NumberBoxMinMaxMode MinMaxMode();
+
+    void MinValue(double value);
+    double MinValue();
+
     void SpinButtonPlacementMode(winrt::NumberBoxSpinButtonPlacementMode const& value);
     winrt::NumberBoxSpinButtonPlacementMode SpinButtonPlacementMode();
 
@@ -26,12 +35,18 @@ public:
 
     static winrt::DependencyProperty BasicValidationModeProperty() { return s_BasicValidationModeProperty; }
     static winrt::DependencyProperty HyperScrollEnabledProperty() { return s_HyperScrollEnabledProperty; }
+    static winrt::DependencyProperty MaxValueProperty() { return s_MaxValueProperty; }
+    static winrt::DependencyProperty MinMaxModeProperty() { return s_MinMaxModeProperty; }
+    static winrt::DependencyProperty MinValueProperty() { return s_MinValueProperty; }
     static winrt::DependencyProperty SpinButtonPlacementModeProperty() { return s_SpinButtonPlacementModeProperty; }
     static winrt::DependencyProperty StepFrequencyProperty() { return s_StepFrequencyProperty; }
     static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
 
     static GlobalDependencyProperty s_BasicValidationModeProperty;
     static GlobalDependencyProperty s_HyperScrollEnabledProperty;
+    static GlobalDependencyProperty s_MaxValueProperty;
+    static GlobalDependencyProperty s_MinMaxModeProperty;
+    static GlobalDependencyProperty s_MinValueProperty;
     static GlobalDependencyProperty s_SpinButtonPlacementModeProperty;
     static GlobalDependencyProperty s_StepFrequencyProperty;
     static GlobalDependencyProperty s_ValueProperty;
@@ -49,6 +64,18 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnHyperScrollEnabledPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMaxValuePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMinMaxModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMinValuePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

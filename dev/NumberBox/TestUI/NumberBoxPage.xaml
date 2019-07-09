@@ -31,24 +31,39 @@
             
             <CheckBox x:Name="hyperscroll"
                 IsChecked="False"
-                      Content="HyperScroll Enabled"
+                Content="HyperScroll Enabled"
                 RelativePanel.Below="Spinmode"
-                      Checked="Hyperscroll_Checked"
-                     Unchecked="Hyperscroll_Checked"/>
+                Checked="Hyperscroll_Checked"
+                Unchecked="Hyperscroll_Checked"/>
+
+            <ComboBox x:Name="boundbox"
+                RelativePanel.Below="hyperscroll"
+                Header="MinMaxMode"
+                      SelectedValue="NoBounds"
+                      SelectionChanged="Bounds_Changed">
+                <x:String>NoBounds</x:String>
+                <x:String>MinEnabled</x:String>
+                <x:String>MaxEnabled</x:String>
+                <x:String>MinAndMaxEnabled</x:String>
+                <x:String>WrapEnabled</x:String>
+            </ComboBox>
+
+
 
 
 
             
-            <TextBox x:Name="IsPlayingTextBoxBeingPlaying"
-                IsEnabled="False"
-                Text="None"
-                RelativePanel.Below="hyperscroll"/>
-            <Button x:Name="ToZeroKeyframeAnimationPlayButton"
-                RelativePanel.Below="IsPlayingTextBoxBeingPlaying"/>
+            <controls:NumberBox x:Name="min"
+               
+                RelativePanel.Below="boundbox"/>
+
+
+
+            
             <TextBox x:Name="ToZeroKeyframeAnimationProgressTextBox"
                 IsEnabled="False"
                 Text="None"
-                RelativePanel.Below="ToZeroKeyframeAnimationPlayButton"/>
+                RelativePanel.Below="min"/>
             <Button x:Name="FromOneKeyframeAnimationPlayButton"
                 RelativePanel.Below="ToZeroKeyframeAnimationProgressTextBox"/>
             <TextBox x:Name="FromOneKeyframeAnimationProgressTextBox"
@@ -67,7 +82,8 @@
             <controls:NumberBox
                 x:Name="numBox"
                 Margin="0,50,0,0"
-                RelativePanel.AlignHorizontalCenterWithPanel="True" />
+                RelativePanel.AlignHorizontalCenterWithPanel="True"
+                MinValue="{x:Bind min.Value, Mode=OneWay}" />
 
         </RelativePanel>
 
