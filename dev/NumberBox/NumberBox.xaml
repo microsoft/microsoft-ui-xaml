@@ -14,7 +14,7 @@
                             <VisualStateGroup x:Name="ValidationStates" >
                                 <VisualState x:Name="Invalid">
                                     <VisualState.Setters>
-                                        <Setter Target="InputBox.BorderBrush" Value="{ThemeResource NumberBoxInvalidStateBorderBrush}" />
+                                        <Setter Target="InputBox.BorderBrush" Value="#C50500" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Valid" />

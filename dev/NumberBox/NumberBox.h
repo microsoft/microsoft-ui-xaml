@@ -32,8 +32,8 @@ public:
 
 private:
 
-    void OnTextBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void ValidateInput();
     void UpdateTextToValue();
     void SetErrorState(bool state);
     void SetSpinButtonVisualState();

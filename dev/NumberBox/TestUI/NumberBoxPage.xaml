@@ -11,9 +11,75 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <StackPanel Orientation="Vertical">
-            <controls:NumberBox x:Name="numbox" Value="5"  />
-            <TextBlock Text="{x:Bind numbox.Value, Mode=OneWay}"/>
-        </StackPanel>
+
+        <RelativePanel x:Name="ParentPanel">
+
+
+            <ComboBox x:Name="validationmode" Header="Validation Mode (WIP)" IsEnabled="False">
+                <x:String> </x:String>
+            </ComboBox>
+
+
+            <ComboBox x:Name="Spinmode"
+                SelectedValue="Hidden"
+                      SelectionChanged="SpinMode_Changed"
+                Header="SpinButtonMode"
+                RelativePanel.Below="validationmode">
+                <x:String>Hidden</x:String>
+                <x:String>Inline</x:String>
+            </ComboBox>
+            
+            <CheckBox x:Name="hyperscroll"
+                IsChecked="False"
+                      Content="HyperScroll Enabled"
+                RelativePanel.Below="Spinmode"
+                      Checked="Hyperscroll_Checked"
+                     Unchecked="Hyperscroll_Checked"/>
+
+
+
+            
+            <TextBox x:Name="IsPlayingTextBoxBeingPlaying"
+                IsEnabled="False"
+                Text="None"
+                RelativePanel.Below="hyperscroll"/>
+            <Button x:Name="ToZeroKeyframeAnimationPlayButton"
+                RelativePanel.Below="IsPlayingTextBoxBeingPlaying"/>
+            <TextBox x:Name="ToZeroKeyframeAnimationProgressTextBox"
+                IsEnabled="False"
+                Text="None"
+                RelativePanel.Below="ToZeroKeyframeAnimationPlayButton"/>
+            <Button x:Name="FromOneKeyframeAnimationPlayButton"
+                RelativePanel.Below="ToZeroKeyframeAnimationProgressTextBox"/>
+            <TextBox x:Name="FromOneKeyframeAnimationProgressTextBox"
+                IsEnabled="False"
+                Text="None"
+                RelativePanel.Below="FromOneKeyframeAnimationPlayButton"/>
+            <Button x:Name="ReverseNegativePlaybackRateAnimationPlayButton"
+                RelativePanel.Below="FromOneKeyframeAnimationProgressTextBox"/>
+            <TextBox x:Name="ReverseNegativePlaybackRateAnimationTextBox"
+                IsEnabled="False"
+                Text="None"
+                RelativePanel.Below="ReverseNegativePlaybackRateAnimationPlayButton"/>
+            <Button x:Name="ReversePositivePlaybackRateAnimationPlayButton"
+                RelativePanel.Below="ReverseNegativePlaybackRateAnimationTextBox"/>
+
+            <controls:NumberBox
+                x:Name="numBox"
+                Margin="0,50,0,0"
+                RelativePanel.AlignHorizontalCenterWithPanel="True" />
+
+        </RelativePanel>
+
+
+
+
+
+
+
+
+
+
+
     </Grid>
 </local:TestPage>

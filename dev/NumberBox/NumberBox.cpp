@@ -61,17 +61,20 @@ void  NumberBox::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     // TODO: Implement
 }
 
-void NumberBox::OnTextBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
-{
-}
 
 void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
+    ValidateInput();
+}
+
+// Performs all validation steps on input given in textbox. Runs on LoseFocus and stepping.
+void NumberBox::ValidateInput()
+{
     string InputAsString = winrt::to_string(m_TextBox.Text());
     // Handles Empty TextBox Case, current behavior is to set Value to default
-    if ( InputAsString == "" )
+    if (InputAsString == "")
     {
-        this -> Value(0);
+        this->Value(0);
         return;
     }
 
@@ -80,16 +83,14 @@ void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::Rou
     if (parsedNum)
     {
         SetErrorState(false);
-        Value( parsedNum.Value() );
+        Value(parsedNum.Value());
         UpdateTextToValue();
     }
     else
     {
-        winrt::VisualStateManager::GoToState(*this, L"Invalid", false);
+        SetErrorState(true);
     }
-
 }
-
 
 void NumberBox::OnSpinDownClick(winrt::IInspectable const&  sender, winrt::RoutedEventArgs const& args)
 {
@@ -133,7 +134,7 @@ void NumberBox::OnScroll(winrt::IInspectable const& sender, winrt::PointerRouted
 
 void NumberBox::StepValue(bool sign)
 {
-    // TODO: ValidateInput before stepping - refactor LostFocus
+    ValidateInput();
 
     if ( sign )
     {
@@ -166,6 +167,14 @@ void NumberBox::UpdateTextToValue()
 
 void NumberBox::SetErrorState(bool state)
 {
+    if (state)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"Invalid", false);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, L"Valid", false);
+    }
 
 }
 
