@@ -36,8 +36,13 @@ private:
     void OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void UpdateTextToValue();
     void SetErrorState(bool state);
-    void ProcessInput(double val);
     void SetSpinButtonVisualState();
+    void OnSpinDownClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args);
+    void OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
+    void StepValue(bool sign);
+    bool IsOutOfBounds(double val);
     winrt::DecimalFormatter Formatter;
     winrt::TextBox m_TextBox{ nullptr };
     winrt::Button m_SpinDown{ nullptr };
