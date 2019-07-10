@@ -37,8 +37,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             var comboBox = SetupComboBox();
-            Verify.IsNotNull(comboBox);
-
             RunOnUIThread.Execute(() =>
             {
                 comboBox.CornerRadius = new CornerRadius(2);
@@ -67,8 +65,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             var comboBox = SetupComboBox();
-            Verify.IsNotNull(comboBox);
-
             RunOnUIThread.Execute(() =>
             {
                 comboBox.CornerRadius = new CornerRadius(2);
@@ -97,8 +93,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 comboBox.Items.Add("Item 1");
                 comboBox.Items.Add("Item 2");
                 comboBox.Items.Add("Item 3");
+                comboBox.Items.Add("Item 4");
+                comboBox.Items.Add("Item 5");
+                comboBox.Items.Add("Item 6");
             });
             TestUtilities.SetAsVisualTreeRoot(comboBox);
+            Verify.IsNotNull(comboBox);
             return comboBox;
         }
 

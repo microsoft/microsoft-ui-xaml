@@ -5,25 +5,43 @@
 #include <common.h>
 #include "ComboBoxAttachedProperties.h"
 #include "ComboBoxAttachedProperties.properties.h"
+#include "DispatcherHelper.h"
+#include "Converters.h"
+#include "HashMap.h"
 
 static constexpr auto c_popupName = L"Popup"sv;
 static constexpr auto c_popupBorderName = L"PopupBorder"sv;
 static constexpr auto c_editableTextName = L"EditableText"sv;
 
-// Normal ComboBox and editable ComboBox have differnt CornerRadius behaviors.
+using CornerRadiusFilterType = CornerRadiusFilterConverter::FilterType;
+
+// Normal ComboBox and editable ComboBox have different CornerRadius behaviors.
 // Xaml is not lifted yet when we implementing this feature so we don't have access to ComboBox code.
 // Creating this attached property to help us plug in some extra logic without touching the actual ComboBox code.
 void ComboBoxAttachedProperties::OnApplyDynamicCornerRadiusPropertyChanged(
     const winrt::DependencyObject& sender,
     const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    bool shouldMonitorDropDownState = unbox_value<bool>(args.NewValue());
-    if (shouldMonitorDropDownState)
+    static std::map<winrt::ComboBox*, std::vector<winrt::event_token>> comboBoxEventTokenMap;
+    if (auto comboBox = sender.try_as<winrt::ComboBox>())
     {
-        if (auto comboBox = sender.try_as<winrt::ComboBox>())
+        if (comboBoxEventTokenMap.find(&comboBox) != comboBoxEventTokenMap.end())
         {
-            comboBox.DropDownOpened(&ComboBoxAttachedProperties::OnDropDownOpened);
-            comboBox.DropDownClosed(&ComboBoxAttachedProperties::OnDropDownClosed);
+            auto eventTokens = comboBoxEventTokenMap[&comboBox];
+            comboBox.DropDownOpened(eventTokens[0]);
+            comboBox.DropDownClosed(eventTokens[1]);
+        }
+
+        bool shouldMonitorDropDownState = unbox_value<bool>(args.NewValue());
+        if (shouldMonitorDropDownState)
+        {
+            auto dropDownOpenToken = comboBox.DropDownOpened(ComboBoxAttachedProperties::OnDropDownOpened);
+            auto dropDownClosedToken = comboBox.DropDownClosed(ComboBoxAttachedProperties::OnDropDownClosed);
+
+            std::vector<winrt::event_token> tokenVector;
+            tokenVector.push_back(dropDownOpenToken);
+            tokenVector.push_back(dropDownClosedToken);
+            comboBoxEventTokenMap[&comboBox] = tokenVector;
         }
     }
 }
@@ -35,13 +53,11 @@ void ComboBoxAttachedProperties::OnDropDownOpened(const winrt::IInspectable& sen
         // We get dropDown open direction (above/below ComboBox TextBlock) by checking popup.VerticalOffset.
         // Sometimes VerticalOffset value is incorrect because popup is not fully opened when this function gets called.
         // Use dispatcher to make sure we get correct VerticalOffset.
-        auto dispatcher = winrt::Window::Current().Dispatcher();
-        dispatcher.RunAsync(
-            winrt::CoreDispatcherPriority::Normal,
-            winrt::DispatchedHandler([comboBox]()
-                {
-                    UpdateCornerRadius(comboBox, /*IsDropDownOpen=*/true);
-                }));
+        DispatcherHelper dispatcherHelper;
+        dispatcherHelper.RunAsync([comboBox]()
+            {
+                UpdateCornerRadius(comboBox, /*IsDropDownOpen=*/true);
+            });
     }
 }
 
@@ -63,13 +79,13 @@ void ComboBoxAttachedProperties::UpdateCornerRadius(const winrt::ComboBox& combo
         if (isDropDownOpen)
         {
             bool isOpenDown = IsPopupOpenDown(comboBox);
-            winrt::CornerRadiusFilterConverter cornerRadiusConverter;
+            auto cornerRadiusConverter = winrt::make_self<CornerRadiusFilterConverter>();
 
-            auto popupRadiusFilterDirection = isOpenDown ? L"Bottom" : L"Top";
-            popupRadius = cornerRadiusConverter.Convert(popupRadius, popupRadiusFilterDirection);
+            auto popupRadiusFilter = isOpenDown ? CornerRadiusFilterType::Bottom : CornerRadiusFilterType::Top;
+            popupRadius = cornerRadiusConverter->Convert(popupRadius, popupRadiusFilter);
 
-            auto textBoxRadiusFilterDirection = isOpenDown ? L"Top" : L"Bottom";
-            textBoxRadius = cornerRadiusConverter.Convert(textBoxRadius, textBoxRadiusFilterDirection);
+            auto textBoxRadiusFilter = isOpenDown ? CornerRadiusFilterType::Top : CornerRadiusFilterType::Bottom;
+            textBoxRadius = cornerRadiusConverter->Convert(textBoxRadius, textBoxRadiusFilter);
         }
 
         if (auto popupBorder = GetTemplateChildT<winrt::Border>(c_popupBorderName, comboBox))
@@ -90,5 +106,5 @@ bool ComboBoxAttachedProperties::IsPopupOpenDown(const winrt::ComboBox& comboBox
     {
         verticalOffset = popup.VerticalOffset();
     }
-    return verticalOffset > 0;
+    return verticalOffset >= 0;
 }

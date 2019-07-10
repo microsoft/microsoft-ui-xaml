@@ -8,11 +8,19 @@ class CornerRadiusFilterConverter :
     public winrt::implementation::CornerRadiusFilterConverterT<CornerRadiusFilterConverter>
 {
 public:
+    enum class FilterType
+    {
+        Top,
+        Right,
+        Left,
+        Bottom
+    };
+
     CornerRadiusFilterConverter();
 
     winrt::CornerRadius Convert(
         winrt::CornerRadius const& radius,
-        winrt::hstring const& filter);
+        FilterType const& filter);
 
     winrt::IInspectable Convert(
         winrt::IInspectable const& value,
