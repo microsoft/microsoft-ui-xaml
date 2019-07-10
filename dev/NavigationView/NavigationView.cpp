@@ -162,36 +162,6 @@ void NavigationView::OnApplyTemplate()
         }
     }
 
-    if (auto leftNavPaneHeaderContentBorder = GetTemplateChildT<winrt::ContentControl>(c_leftNavPaneHeaderContentBorder, controlProtected))
-    {
-        m_leftNavPaneHeaderContentBorder.set(leftNavPaneHeaderContentBorder);
-    }
-
-    if (auto leftNavPaneCustomContentBorder = GetTemplateChildT<winrt::ContentControl>(c_leftNavPaneCustomContentBorder, controlProtected))
-    {
-        m_leftNavPaneCustomContentBorder.set(leftNavPaneCustomContentBorder);
-    }
-
-    if (auto leftNavFooterContentBorder = GetTemplateChildT<winrt::ContentControl>(c_leftNavFooterContentBorder, controlProtected))
-    {
-        m_leftNavFooterContentBorder.set(leftNavFooterContentBorder);
-    }
-
-    if (auto paneHeaderOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneHeaderOnTopPane, controlProtected))
-    {
-        m_paneHeaderOnTopPane.set(paneHeaderOnTopPane);
-    }
-
-    if (auto paneCustomContentOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneCustomContentOnTopPane, controlProtected))
-    {
-        m_paneCustomContentOnTopPane.set(paneCustomContentOnTopPane);
-    }
-
-    if (auto paneFooterOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneFooterOnTopPane, controlProtected))
-    {
-        m_paneFooterOnTopPane.set(paneFooterOnTopPane);
-    }
-
     if (auto textBlock = GetTemplateChildT<winrt::TextBlock>(c_paneTitleTextBlock, controlProtected))
     {
         m_paneTitleTextBlock.set(textBlock);
@@ -278,16 +248,6 @@ void NavigationView::OnApplyTemplate()
     if (auto topNavContentOverlayAreaGrid = GetTemplateChildT<winrt::Border>(c_topNavContentOverlayAreaGrid, controlProtected))
     {
         m_topNavContentOverlayAreaGrid.set(topNavContentOverlayAreaGrid);
-    }
-
-    if (auto leftNavSearchContentControl = GetTemplateChildT<winrt::ContentControl>(c_leftNavPaneAutoSuggestBoxPresenter, controlProtected))
-    {
-        m_leftNavPaneAutoSuggestBoxPresenter.set(leftNavSearchContentControl);
-    }
-
-    if (auto topNavSearchContentControl = GetTemplateChildT<winrt::ContentControl>(c_topNavPaneAutoSuggestBoxPresenter, controlProtected))
-    {
-        m_topNavPaneAutoSuggestBoxPresenter.set(topNavSearchContentControl);
     }
 
     // Get pointer to the pane content area, for use in the selection indicator animation
@@ -2821,9 +2781,17 @@ void NavigationView::UpdatePaneDisplayMode()
     {
         UpdateAdaptiveLayout(ActualWidth(), true /*forceSetDisplayMode*/);
 
-        SwapPaneHeaderContent(m_leftNavPaneHeaderContentBorder, m_paneHeaderOnTopPane, L"PaneHeader");
-        SwapPaneHeaderContent(m_leftNavPaneCustomContentBorder, m_paneCustomContentOnTopPane, L"PaneCustomContent");
-        SwapPaneHeaderContent(m_leftNavFooterContentBorder, m_paneFooterOnTopPane, L"PaneFooter");
+        winrt::IControlProtected controlProtected = *this;
+        auto leftNavPaneHeaderContentBorder = GetTemplateChildT<winrt::ContentControl>(c_leftNavPaneHeaderContentBorder, controlProtected);
+        auto leftNavPaneCustomContentBorder = GetTemplateChildT<winrt::ContentControl>(c_leftNavPaneCustomContentBorder, controlProtected);
+        auto leftNavFooterContentBorder = GetTemplateChildT<winrt::ContentControl>(c_leftNavFooterContentBorder, controlProtected);
+        auto paneHeaderOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneHeaderOnTopPane, controlProtected);
+        auto paneCustomContentOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneCustomContentOnTopPane, controlProtected);
+        auto paneFooterOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneFooterOnTopPane, controlProtected);
+
+        SwapContentBinding(leftNavPaneHeaderContentBorder, paneHeaderOnTopPane, L"PaneHeader");
+        SwapContentBinding(leftNavPaneCustomContentBorder, paneCustomContentOnTopPane, L"PaneCustomContent");
+        SwapContentBinding(leftNavFooterContentBorder, paneFooterOnTopPane, L"PaneFooter");
 
         CreateAndHookEventsToSettings(c_settingsName);
 
@@ -2841,9 +2809,17 @@ void NavigationView::UpdatePaneDisplayMode()
         ClosePane();
         SetDisplayMode(winrt::NavigationViewDisplayMode::Minimal, true);
 
-        SwapPaneHeaderContent(m_paneHeaderOnTopPane, m_leftNavPaneHeaderContentBorder, L"PaneHeader");
-        SwapPaneHeaderContent(m_paneCustomContentOnTopPane, m_leftNavPaneCustomContentBorder, L"PaneCustomContent");
-        SwapPaneHeaderContent(m_paneFooterOnTopPane, m_leftNavFooterContentBorder, L"PaneFooter");
+        winrt::IControlProtected controlProtected = *this;
+        auto leftNavPaneHeaderContentBorder = GetTemplateChildT<winrt::ContentControl>(c_leftNavPaneHeaderContentBorder, controlProtected);
+        auto leftNavPaneCustomContentBorder = GetTemplateChildT<winrt::ContentControl>(c_leftNavPaneCustomContentBorder, controlProtected);
+        auto leftNavFooterContentBorder = GetTemplateChildT<winrt::ContentControl>(c_leftNavFooterContentBorder, controlProtected);
+        auto paneHeaderOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneHeaderOnTopPane, controlProtected);
+        auto paneCustomContentOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneCustomContentOnTopPane, controlProtected);
+        auto paneFooterOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneFooterOnTopPane, controlProtected);
+
+        SwapContentBinding(paneHeaderOnTopPane, leftNavPaneHeaderContentBorder, L"PaneHeader");
+        SwapContentBinding(paneCustomContentOnTopPane, leftNavPaneCustomContentBorder, L"PaneCustomContent");
+        SwapContentBinding(paneFooterOnTopPane, leftNavFooterContentBorder, L"PaneFooter");
 
         CreateAndHookEventsToSettings(c_settingsNameTopNav);
 
@@ -2915,11 +2891,16 @@ void NavigationView::UpdatePaneVisibility()
     }
 }
 
-void NavigationView::SwapPaneHeaderContent(tracker_ref<winrt::ContentControl> newParentTrackRef, tracker_ref<winrt::ContentControl> oldParentTrackRef, winrt::hstring const& propertyPathName)
+// Be careful with this function, it may cause memory leak if it's not used correctly.
+// SetBinding creates a intermediary object – the BindingExpression – that keeps only a weak ref on the target (the control).
+// But BindingExpression.Source is a strong reference to NavigationView.
+// If NavigationView holds a tracker_ref to the content control,
+// It introduced the cycle: ContentControl -> BindingExpression -> NavigationView -> ContentControl
+void NavigationView::SwapContentBinding(winrt::ContentControl const& newParent, winrt::ContentControl const& oldParent, winrt::hstring const& propertyPathName)
 {
-    if (auto newParent = newParentTrackRef.get())
+    if (newParent)
     {
-        if (auto oldParent = oldParentTrackRef.get())
+        if (oldParent)
         {
             oldParent.ClearValue(winrt::ContentControl::ContentProperty());
         }
@@ -2934,31 +2915,17 @@ void NavigationView::SwapPaneHeaderContent(tracker_ref<winrt::ContentControl> ne
 
 void NavigationView::UpdateContentBindingsForPaneDisplayMode()
 {
-    winrt::UIElement autoSuggestBoxContentControl = nullptr;
-    winrt::UIElement notControl = nullptr;
+    winrt::IControlProtected controlProtected = *this;
+    auto leftNavAutoSuggestBox = GetTemplateChildT<winrt::ContentControl>(c_leftNavPaneAutoSuggestBoxPresenter, controlProtected);
+    auto topNavAutoSuggestBox = GetTemplateChildT<winrt::ContentControl>(c_topNavPaneAutoSuggestBoxPresenter, controlProtected);
+ 
     if (!IsTopNavigationView())
     {
-        autoSuggestBoxContentControl = m_leftNavPaneAutoSuggestBoxPresenter.get();
-        notControl = m_topNavPaneAutoSuggestBoxPresenter.get();
+        SwapContentBinding(leftNavAutoSuggestBox, topNavAutoSuggestBox, L"AutoSuggestBox");
     } 
     else
     {
-        autoSuggestBoxContentControl = m_topNavPaneAutoSuggestBoxPresenter.get();
-        notControl = m_leftNavPaneAutoSuggestBoxPresenter.get();
-    }
-
-    if (autoSuggestBoxContentControl)
-    {
-        if (notControl)
-        {
-            notControl.ClearValue(winrt::ContentControl::ContentProperty());
-        }
-
-        auto binding = winrt::Binding();
-        auto propertyPath = winrt::PropertyPath(L"AutoSuggestBox");
-        binding.Path(propertyPath);
-        binding.Source(*this);
-        winrt::BindingOperations::SetBinding(autoSuggestBoxContentControl, winrt::ContentControl::ContentProperty(), binding);
+        SwapContentBinding(topNavAutoSuggestBox, leftNavAutoSuggestBox, L"AutoSuggestBox");
     }
 }
 
