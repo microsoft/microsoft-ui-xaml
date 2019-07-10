@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildProjectDirectory)\..\..\FeatureAreaFilterForInnerLoop.props" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\FeatureAreas.props" />
   <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.190603.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190603.8\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props')" />
   <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props')" />
@@ -71,62 +71,65 @@
   <ItemGroup>
     <Midl Include="..\..\idl\Microsoft.UI.Xaml.idl" />
   </ItemGroup>
+
   <ImportGroup Label="Shared">
-    <Import Project="..\RatingControl\RatingControl.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\NavigationView\NavigationView.vcxitems" Label="Shared" />
-    <Import Project="..\ColorPicker\ColorPicker.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\Collections\Collections.vcxitems" Label="Shared" />
-    <Import Project="..\CommandBarFlyout\CommandBarFlyout.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\Effects\Microsoft.UI.Composition.Effects.vcxitems" Label="Shared" />
-    <Import Project="..\PersonPicture\PersonPicture.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" />
-    <Import Project="..\PullToRefresh\RefreshContainer\RefreshContainer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\PullToRefresh\RefreshVisualizer\RefreshVisualizer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\ScrollViewerIRefreshInfoProviderAdapter.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\MenuBar\MenuBar.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\Common\Common.vcxitems" Label="Shared" />
-    <Import Project="..\CommonStyles\CommonStyles.vcxitems" Label="Shared" />
-    <Import Project="..\Materials\Acrylic\AcrylicBrush.vcxitems" Label="Shared" />
-    <Import Project="..\Materials\Reveal\RevealBrush.vcxitems" Label="Shared" />
-    <Import Project="..\TreeView\TreeView.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared" />
-    <Import Project="..\ParallaxView\ParallaxView.vcxitems" Label="Shared" />
-    <Import Project="..\Scroller\Scroller.vcxitems" Label="Shared" />
-    <Import Project="..\ScrollViewer\ScrollViewer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\Lights\Lights.vcxitems" Label="Shared" />
-    <Import Project="..\Repeater\Repeater.vcxitems" Label="Shared" Condition="$(RepeaterExcluded) != 'true'"/>
-    <Import Project="..\SwipeControl\SwipeControl.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\TwoPaneView\TwoPaneView.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\TestHooks\TestHooks.vcxitems" Label="Shared" />
-    <Import Project="..\PullToRefresh\PTRTracing\PTRTracing.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\SplitButton\SplitButton.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\LayoutPanel\LayoutPanel.vcxitems" Label="Shared" Condition="$(LayoutPanelExcluded) != 'true'"/>
-    <Import Project="..\DropDownButton\DropDownButton.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\RadioButtons\RadioButtons.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <Import Project="..\Common\Common.vcxitems" Label="Shared" />
+
+    <Import Project="..\CommonStyles\CommonStyles.vcxitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true'" />
+    <Import Project="..\RatingControl\RatingControl.vcxitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true'" />
+    <Import Project="..\NavigationView\NavigationView.vcxitems" Label="Shared"  Condition="$(FeatureNavigationViewEnabled) == 'true'" />
+    <Import Project="..\ColorPicker\ColorPicker.vcxitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true'" />
+    <Import Project="..\Collections\Collections.vcxitems" Label="Shared" Condition="$(FeatureCollectionsEnabled) == 'true'" />
+    <Import Project="..\CommandBarFlyout\CommandBarFlyout.vcxitems" Label="Shared" Condition="$(FeatureCommandBarFlyoutEnabled) == 'true'" />
+    <Import Project="..\Effects\Microsoft.UI.Composition.Effects.vcxitems" Label="Shared" Condition="$(FeatureEffectsEnabled) == 'true'" />
+    <Import Project="..\PersonPicture\PersonPicture.vcxitems" Label="Shared" Condition="$(FeaturePersonPictureEnabled) == 'true'" />
+    <Import Project="..\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" Condition="$(FeatureResourceHelperEnabled) == 'true'" />
+    <Import Project="..\PullToRefresh\RefreshContainer\RefreshContainer.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
+    <Import Project="..\PullToRefresh\RefreshVisualizer\RefreshVisualizer.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
+    <Import Project="..\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\ScrollViewerIRefreshInfoProviderAdapter.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
+    <Import Project="..\MenuBar\MenuBar.vcxitems" Label="Shared" Condition="$(FeatureMenuBarEnabled) == 'true'" />
+    <Import Project="..\Materials\Acrylic\AcrylicBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
+    <Import Project="..\Materials\Reveal\RevealBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
+    <Import Project="..\TreeView\TreeView.vcxitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true'" />
+    <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared"  />
+    <Import Project="..\ParallaxView\ParallaxView.vcxitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true'" />
+    <Import Project="..\Scroller\Scroller.vcxitems" Label="Shared" Condition="$(FeatureScrollerEnabled) == 'true'" />
+    <Import Project="..\ScrollViewer\ScrollViewer.vcxitems" Label="Shared" Condition="$(FeatureScrollViewerEnabled) == 'true'" />
+    <Import Project="..\Lights\Lights.vcxitems" Label="Shared" Condition="$(FeatureLightsEnabled) == 'true'" />
+    <Import Project="..\Repeater\Repeater.vcxitems" Label="Shared" Condition="$(FeatureRepeaterEnabled) == 'true'" />
+    <Import Project="..\SwipeControl\SwipeControl.vcxitems" Label="Shared" Condition="$(FeatureSwipeControlEnabled) == 'true'" />
+    <Import Project="..\TwoPaneView\TwoPaneView.vcxitems" Label="Shared" Condition="$(FeatureTwoPaneViewEnabled) == 'true'" />
+    <Import Project="..\PullToRefresh\PTRTracing\PTRTracing.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
+    <Import Project="..\SplitButton\SplitButton.vcxitems" Label="Shared" Condition="$(FeatureSplitButtonEnabled) == 'true'" />
+    <Import Project="..\LayoutPanel\LayoutPanel.vcxitems" Label="Shared" Condition="$(FeatureLayoutPanelEnabled) == 'true'" />
+    <Import Project="..\DropDownButton\DropDownButton.vcxitems" Label="Shared" Condition="$(FeatureDropDownButtonEnabled) == 'true'" />
+    <Import Project="..\RadioButtons\RadioButtons.vcxitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true'" />
     <!-- IconSource is implemented in Windows.UI.Xaml.dll in the OS repo, so we don't want to include it on that side. -->
-    <Import Project="..\IconSource\IconSource.vcxitems" Label="Shared" />
+    <Import Project="..\IconSource\IconSource.vcxitems" Label="Shared" Condition="$(FeatureIconSourceEnabled) == 'true'" />
     <!-- These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
          We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
          to non-public types.  So for now we'll just exclude these from the OS repo. -->
-    <Import Project="..\Interactions\ButtonInteraction\ButtonInteraction.vcxitems" Label="Shared" Condition="$(UseInternalSDK) == 'true'" />
-    <Import Project="..\Interactions\SliderInteraction\SliderInteraction.vcxitems" Label="Shared" Condition="$(UseInternalSDK) == 'true'" />
-    <Import Project="..\MenuFlyout\MenuFlyout.vcxitems" Label="Shared" />
-    <Import Project="..\TeachingTip\TeachingTip.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" /> 
-    <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' and $(UseInsiderSDK) == 'true' and $(AnimatedVisualPlayerExcluded) != 'true'" />
-    <Import Project="..\TabView\TabView.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\AutoSuggestBox\AutoSuggestBox.vcxitems" Label="Shared" />
-    <Import Project="..\CheckBox\CheckBox.vcxitems" Label="Shared" />
-    <Import Project="..\CalendarDatePicker\CalendarDatePicker.vcxitems" Label="Shared" />
-    <Import Project="..\DatePicker\DatePicker.vcxitems" Label="Shared" />
-    <Import Project="..\Slider\Slider.vcxitems" Label="Shared" />
-    <Import Project="..\TimePicker\TimePicker.vcxitems" Label="Shared" />
-    <Import Project="..\ToolTip\ToolTip.vcxitems" Label="Shared" />
-    <Import Project="..\FlipView\FlipView.vcxitems" Label="Shared" />
-    <Import Project="..\ComboBox\ComboBox.vcxitems" Label="Shared" />
-    <Import Project="..\Pivot\Pivot.vcxitems" Label="Shared" />
-    <Import Project="..\ScrollBar\ScrollBar.vcxitems" Label="Shared" />
+    <Import Project="..\Interactions\ButtonInteraction\ButtonInteraction.vcxitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true'" />
+    <Import Project="..\Interactions\SliderInteraction\SliderInteraction.vcxitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true'" />
+    <Import Project="..\MenuFlyout\MenuFlyout.vcxitems" Label="Shared" Condition="$(FeatureMenuFlyoutEnabled) == 'true'" />
+    <Import Project="..\TeachingTip\TeachingTip.vcxitems" Label="Shared" Condition="$(FeatureTeachingTipEnabled) == 'true'" />
+    <Import Project="..\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" Condition="$(FeatureRadioMenuFlyoutItemEnabled) == 'true'" />
+    <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(FeatureAnimatedVisualPlayerEnabled) == 'true'" />
+    <Import Project="..\TabView\TabView.vcxitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
+    <Import Project="..\AutoSuggestBox\AutoSuggestBox.vcxitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true'" />
+    <Import Project="..\CheckBox\CheckBox.vcxitems" Label="Shared" Condition="$(FeatureCheckBoxEnabled) == 'true'" />
+    <Import Project="..\CalendarDatePicker\CalendarDatePicker.vcxitems" Label="Shared" Condition="$(FeatureCalendarDatePickerEnabled) == 'true'" />
+    <Import Project="..\DatePicker\DatePicker.vcxitems" Label="Shared" Condition="$(FeatureCalendarDatePickerEnabled) == 'true'" />
+    <Import Project="..\Slider\Slider.vcxitems" Label="Shared" Condition="$(FeatureSliderEnabled) == 'true'" />
+    <Import Project="..\TimePicker\TimePicker.vcxitems" Label="Shared" Condition="$(FeatureTimePickerEnabled) == 'true'" />
+    <Import Project="..\ToolTip\ToolTip.vcxitems" Label="Shared" Condition="$(FeatureToolTipEnabled) == 'true'" />
+    <Import Project="..\FlipView\FlipView.vcxitems" Label="Shared" Condition="$(FeatureFlipViewEnabled) == 'true'" />
+    <Import Project="..\ComboBox\ComboBox.vcxitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
+    <Import Project="..\Pivot\Pivot.vcxitems" Label="Shared" Condition="$(FeaturePivotEnabled) == 'true'" />
+    <Import Project="..\ScrollBar\ScrollBar.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true'" />
   </ImportGroup>
+
   <ItemGroup>
     <SharedPage Include="@(Page)" />
   </ItemGroup>

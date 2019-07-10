@@ -5,7 +5,7 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\environment.props" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\SdkVersion.props" Condition="$(BuildingWithBuildExe) == 'true'" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props') And $(BuildingWithBuildExe) != 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\FeatureAreaFilterForInnerLoop.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\FeatureAreas.props" />
 
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -164,9 +164,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)VisualTreeTestHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    
+    <!-- Need to make this more modular. It is kind of mixing different features together in one page -->
+    <!--Compile Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
       <DependentUpon>LeakTestPage.xaml</DependentUpon>
-    </Compile>
+    </Compile-->
+
     <Compile Include="$(MSBuildThisFileDirectory)\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
