@@ -10,6 +10,7 @@
   <Import Project="$(MSBuildProjectDirectory)\..\..\ProjectConfigurations.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\version.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\mux.PGO.props" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\Build\PGO\mux.PGO.Instrument.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</ProjectGuid>
     <Keyword>DynamicLibrary</Keyword>
@@ -435,7 +436,7 @@
     <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets')" />
     <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" />
     <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.190603.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190603.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="..\..\packages\MUXPGODatabase.0.0.1\build\MUXPGO.targets" Condition="Exists('..\..\packages\MUXPGODatabase.0.0.1\build\MUXPGO.targets')" />
+    <Import Project="..\..\packages\MUXPGODatabase.0.0.1\build\MUXPGODatabase.targets" Condition="Exists('..\..\packages\MUXPGODatabase.0.0.1\build\MUXPGODatabase.targets')" />
   </ImportGroup>
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
@@ -696,6 +697,5 @@
   <PropertyGroup>
     <!-- Tell CreateLCGFile to use the LCE file from RC.EXE -->
     <LCEFile>$(_LceFile)</LCEFile>
-  </PropertyGroup>
-  <Import Project="$(MSBuildProjectDirectory)\..\..\Build\PGO\Microsoft.UI.Xaml.PGO.targets" />
+  </PropertyGroup>  
 </Project>

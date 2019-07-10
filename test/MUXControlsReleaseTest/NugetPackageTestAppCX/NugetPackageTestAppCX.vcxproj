@@ -209,7 +209,7 @@
       <InProject>false</InProject>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-	  <None Include="$(PGOFilesDir)\vcruntime140.dll" Condition="Exists('$(PGOFilesDir)\vcruntime140.dll')">
+    <None Include="$(PGOFilesDir)\vcruntime140.dll" Condition="Exists('$(PGOFilesDir)\vcruntime140.dll')">
       <Visible>false</Visible>
       <InProject>false</InProject>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

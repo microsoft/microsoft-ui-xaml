@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Common;
+using System;
 using System.Diagnostics;
+using System.Text;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -19,7 +19,7 @@ namespace MUXControls.ReleaseTest
         public static void PGOSweepIfInstrumented(string pgcFileName, string instumentedAssemblyName = "Microsoft.ui.xaml.dll")
         {
 #if PGO_INSTRUMENT            
-            LogOutput("Running pgosweep for test:" + pgcFileName);
+            Log.Comment("Running pgosweep for test:" + pgcFileName);
             try
             {
                 var startInfo = new ProcessStartInfo() {
@@ -33,24 +33,15 @@ namespace MUXControls.ReleaseTest
                     var output = new StringBuilder();
                     while (!process.HasExited)
                     {
-                        LogOutput(process.StandardOutput.ReadToEnd());
+                        Log.Comment(process.StandardOutput.ReadToEnd());
                     }
                 }
             }
             catch (Exception ex)
             {
-                LogOutput("Failed trying to pgosweep. " + ex.ToString());
+                Log.Comment("Failed trying to pgosweep. " + ex.ToString());
                 throw;
             }
-#endif
-        }
-
-        public static void LogOutput(string message)
-        {
-#if USING_TAEF
-            Log.Comment(message);
-#else
-            Console.WriteLine(message);
 #endif
         }
     }
