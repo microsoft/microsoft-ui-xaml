@@ -8,6 +8,9 @@ WinUI is the easiest way to build great [Fluent Design](https://docs.microsoft.c
 
 WinUI can be used in any Windows 10 UWP XAML app, or in a Xamarin.Forms app running on Windows 10 using [native view embedding](https://docs.microsoft.com/xamarin/xamarin-forms/platform/native-views).
 
+## :pizza: Achievement unlocked -- Issue #1000! :pizza:
+We recently saw our 1000th issue filed!  ([**#1000**](https://github.com/microsoft/microsoft-ui-xaml/issues/1000) by [@eugenegff](https://github.com/eugenegff))  This is a wonderful milestone for WinUI.  To celebrate, on July 26th we’ll randomly draw 10 people from the community that follow/contribute to our repo.  These 10 people will receive a small special thank you gift.  **Make sure you’re [watching](https://github.com/microsoft/microsoft-ui-xaml/watchers) our repo to be included in the draw on the 26th!**
+
 ## WinUI 3.0 Announcement
 
 At the Microsoft Build conference in May 2019 we [shared our plans for WinUI 3.0](https://mybuild.techcommunity.microsoft.com/sessions/77008), which will greatly expand the scope of WinUI to include the full native Windows UI platform. 
