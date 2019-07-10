@@ -101,12 +101,9 @@ void TreeViewList::OnContainerContentChanging(const winrt::IInspectable& /*sende
         auto targetItem = args.ItemContainer().as<winrt::TreeViewItem>();
         auto targetNode = NodeFromContainer(targetItem);
         winrt::get_self<TreeViewItem>(targetItem)->UpdateIndentation(targetNode.Depth());
-
-        if (m_isMultiselectEnabled)
-        {
-            auto node = winrt::get_self<TreeViewNode>(targetNode);
-            winrt::get_self<TreeViewItem>(targetItem)->UpdateSelection(node->SelectionState());
-        }
+        auto node = winrt::get_self<TreeViewNode>(targetNode);
+        auto state = node->SelectionState();
+        winrt::get_self<TreeViewItem>(targetItem)->UpdateSelection(node->SelectionState());
     }
 }
 
@@ -303,29 +300,36 @@ void TreeViewList::OnDragLeave(winrt::DragEventArgs const& args)
 // IItemsControlOverrides
 void TreeViewList::PrepareContainerForItemOverride(winrt::DependencyObject const& element, winrt::IInspectable const& item)
 {
-    winrt::TreeViewNode itemNode = NodeFromContainer(element);
+    auto itemNode = winrt::get_self<TreeViewNode>(NodeFromContainer(element));
     winrt::TreeViewItem itemContainer = element.as<winrt::TreeViewItem>();
+    auto selectionState = itemNode->SelectionState();
 
     //Set the expanded property to match that of the Node, and enable Drop by default
     itemContainer.AllowDrop(true);
 
     if (IsContentMode())
     {
-        bool hasChildren = itemContainer.HasUnrealizedChildren() || itemNode.HasChildren();
+        bool hasChildren = itemContainer.HasUnrealizedChildren() || itemNode->HasChildren();
         itemContainer.GlyphOpacity(hasChildren ? 1.0 : 0.0);
     }
     else
     {
-        itemContainer.IsExpanded(itemNode.IsExpanded());
-        itemContainer.GlyphOpacity(itemNode.HasChildren() ? 1.0 : 0.0);
+        itemContainer.IsExpanded(itemNode->IsExpanded());
+        itemContainer.GlyphOpacity(itemNode->HasChildren() ? 1.0 : 0.0);
     }
 
     //Set startup TemplateSettings properties
     auto templateSettings = winrt::get_self<TreeViewItemTemplateSettings>(itemContainer.TreeViewItemTemplateSettings());
-    templateSettings->ExpandedGlyphVisibility(itemNode.IsExpanded() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
-    templateSettings->CollapsedGlyphVisibility(!itemNode.IsExpanded() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+    templateSettings->ExpandedGlyphVisibility(itemNode->IsExpanded() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+    templateSettings->CollapsedGlyphVisibility(!itemNode->IsExpanded() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
 
     __super::PrepareContainerForItemOverride(element, item);
+
+    if (selectionState != itemNode->SelectionState())
+    {
+        //winrt::get_self<TreeViewItem>(itemContainer)->UpdateSelection(selectionState);
+        ListViewModel()->UpdateSelection(*itemNode, selectionState);
+    }
 }
 
 winrt::DependencyObject TreeViewList::GetContainerForItemOverride()

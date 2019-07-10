@@ -111,7 +111,6 @@
                                     ItemsSource="{x:Bind Children}"
                                     Content="{x:Bind Content}"
                                     IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
-                                    IsSelected="{x:Bind IsSelected, Mode=TwoWay}"
                                     HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"/>
                             </DataTemplate>
                         </muxcontrols:TreeView.ItemTemplate>

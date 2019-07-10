@@ -58,23 +58,21 @@ winrt::DependencyObject TreeView::ContainerFromNode(winrt::TreeViewNode const& n
 
 void TreeView::SelectedNode(winrt::TreeViewNode const& node)
 {
-    if (auto listControl = ListControl())
+    auto selectedNodes = SelectedNodes();
+    if (selectedNodes.Size() > 0)
     {
-        listControl->SelectedItem(listControl->IsContentMode() ? node.Content() : node);
+        selectedNodes.Clear();
+    }
+    if (node)
+    {
+        selectedNodes.Append(node);
     }
 }
 
 winrt::TreeViewNode TreeView::SelectedNode()
 {
-    if (auto listControl = ListControl())
-    {
-        if (auto selectedItem = listControl->SelectedItem())
-        {
-            return listControl->NodeFromItem(selectedItem);
-        }
-    }
-
-    return nullptr;
+    auto nodes = SelectedNodes();
+    return nodes.Size() > 0 ? nodes.GetAt(0) : nullptr;
 }
 
 
@@ -94,16 +92,21 @@ winrt::IVector<winrt::TreeViewNode> TreeView::SelectedNodes()
 
 void TreeView::SelectedItem(winrt::IInspectable const& item)
 {
-    if (auto listControl = ListControl())
+    auto selectedItems = SelectedItems();
+    if (selectedItems.Size() > 0)
     {
-        auto node = listControl->NodeFromItem(item);
-        listControl->SelectedItem(node);
+        selectedItems.Clear();
+    }
+    if (item)
+    {
+        selectedItems.Append(item);
     }
 }
 
 winrt::IInspectable TreeView::SelectedItem()
 {
-    return ListControl() ? ListControl()->SelectedItem() : nullptr;
+    auto items = SelectedItems();
+    return items.Size() > 0 ? items.GetAt(0) : nullptr;
 }
 
 winrt::IVector<winrt::IInspectable> TreeView::SelectedItems()
