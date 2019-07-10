@@ -242,7 +242,7 @@ private:
     bool AttemptClosePaneLightly();
     void ClosePaneLightly();
     void SetPaneToggleButtonAutomationName();
-    void SwapPaneHeaderContent(winrt::ContentControl const& newParent, winrt::ContentControl const& oldParent, winrt::hstring const& propertyPathName);
+    void SwapPaneHeaderContent(tracker_ref<winrt::ContentControl> newParent, tracker_ref<winrt::ContentControl> oldParent, winrt::hstring const& propertyPathName);
     void UpdateSettingsItemToolTip();
 
     void OnSplitViewClosedCompactChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
@@ -292,7 +292,18 @@ private:
     tracker_ref<winrt::FrameworkElement> m_headerContent{ this };
 
     tracker_ref<winrt::CoreApplicationViewTitleBar> m_coreTitleBar{ this };
-   
+
+    tracker_ref<winrt::ContentControl> m_leftNavPaneAutoSuggestBoxPresenter{ this };
+    tracker_ref<winrt::ContentControl> m_topNavPaneAutoSuggestBoxPresenter{ this };
+
+    tracker_ref<winrt::ContentControl> m_leftNavPaneHeaderContentBorder{ this };
+    tracker_ref<winrt::ContentControl> m_leftNavPaneCustomContentBorder{ this };
+    tracker_ref<winrt::ContentControl> m_leftNavFooterContentBorder{ this };
+
+    tracker_ref<winrt::ContentControl> m_paneHeaderOnTopPane{ this };
+    tracker_ref<winrt::ContentControl> m_paneCustomContentOnTopPane{ this };
+    tracker_ref<winrt::ContentControl> m_paneFooterOnTopPane{ this };
+    
     int m_indexOfLastSelectedItemInTopNav{ 0 };
     tracker_ref<winrt::IInspectable> m_lastSelectedItemPendingAnimationInTopNav{ this };
     std::vector<int> m_itemsRemovedFromMenuFlyout{};
