@@ -584,11 +584,11 @@ void SharedHelpers::SetBinding(
     winrt::BindingOperations::SetBinding(target, targetProperty, binding);
 }
 
-// Be caution: this function may introduce memory leak if source holds strong reference to target
-// There’s an intermediary object – the BindingExpression in BindingOperations::SetBinding
+// Be caution: this function may introduce memory leak if Source holds strong reference to target too
+// There’s an intermediary object – the BindingExpression when BindingOperations::SetBinding
 // For example, if source is NavigationView and target is content control,
 // and there is strong reference: NavigationView -> ContentControl
-// BindingExpression.Source is a strong reference to NavigationView
+// BindingExpression.Source also make a strong reference to NavigationView
 // and it introduces the cycle: ContentControl -> BindingExpression -> NavigationView -> ContentControl
 // Prefer to use RelativeSource version of SetBinding if possible.
 void SharedHelpers::SetBinding(
