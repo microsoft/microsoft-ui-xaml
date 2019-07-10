@@ -79,6 +79,7 @@
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="TabNavigation" Value="Local" />
         <Setter Property="IsSwipeEnabled" Value="False" />
+        <Setter Property="SingleSelectionFollowsFocus" Value="False"/>
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
         <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Enabled" />
@@ -199,6 +200,7 @@
 
     <Style TargetType="local:TabViewItem">
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="UseSystemFocusVisuals" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TabViewItem">
@@ -423,7 +425,8 @@
                                 FontSize="10"
                                 Padding="0"
                                 Margin="8,0,0,0"
-                                Content="&#xE711;">
+                                Content="&#xE711;"
+                                IsTabStop="False">
                                 <Button.Resources>
                                     <ResourceDictionary>
                                         <Thickness x:Key="ButtonBorderThemeThickness">0</Thickness>

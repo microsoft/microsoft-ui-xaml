@@ -244,6 +244,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void KeyboardTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Log.Comment("Set focus inside the TabView");
+                UIObject tabContent = FindElement.ByName("FirstTabContent");
+                tabContent.SetFocus();
+
+                Log.Comment("Verify that pressing ctrl-f4 closes the tab");
+                KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
+                TextInput.SendText("{F4}");
+                KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
+                Wait.ForIdle();
+
+                ElementCache.Refresh();
+                UIObject firstTab = TryFindElement.ByName("FirstTab");
+                Verify.IsNull(firstTab);
+            }
+        }
+
         Button FindCloseButton(UIObject tabItem)
         {
             foreach (UIObject elem in tabItem.Children)

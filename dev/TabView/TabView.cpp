@@ -31,6 +31,7 @@ TabView::TabView()
 
     Loaded({ this, &TabView::OnLoaded });
     SizeChanged({ this, &TabView::OnSizeChanged });
+    KeyUp({ this, &TabView::OnTabViewKeyUp });
 }
 
 void TabView::OnApplyTemplate()
@@ -427,4 +428,21 @@ winrt::DependencyObject TabView::ContainerFromIndex(int index)
         return listView.ContainerFromIndex(index);
     }
     return nullptr;
+}
+
+void TabView::OnTabViewKeyUp(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
+{
+    winrt::VirtualKey key = args.Key();
+
+    if (key == winrt::VirtualKey::F4 && IsEnabled() && SelectedItem())
+    {
+        winrt::CoreVirtualKeyStates ctrlState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Control);
+
+        if ((ctrlState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down)
+        {
+            // Close the tab on ctrl + F4
+            CloseTab(SelectedItem().as<winrt::TabViewItem>());
+            args.Handled(true);
+        }
+    }
 }

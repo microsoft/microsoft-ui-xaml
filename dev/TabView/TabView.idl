@@ -136,5 +136,12 @@ unsealed runtimeclass TabViewAutomationPeer : Windows.UI.Xaml.Automation.Peers.F
     TabViewAutomationPeer(MU_XC_NAMESPACE.TabView owner);
 }
 
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass TabViewItemAutomationPeer : Windows.UI.Xaml.Automation.Peers.ListViewItemAutomationPeer
+{
+    TabViewItemAutomationPeer(MU_XC_NAMESPACE.TabViewItem owner);
+}
+
 }
 
