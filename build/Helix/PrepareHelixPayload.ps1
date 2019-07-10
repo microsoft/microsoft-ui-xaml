@@ -56,11 +56,12 @@ Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\
 Copy-If-Exists "$repoDirectory\Artifacts\$ArtifactName\$Configuration\$Platform\AppxPackages\NugetPackageTestAppCX_Test\Dependencies\$Platform\*" $payloadDir
 
 # Copy files from the repo
-New-Item -ItemType Directory -Force -Path "$payloadDir\scripts"
-Copy-Item "build\helix\ConvertWttLogToXUnit.ps1" "$payloadDir\scripts"
-Copy-Item "build\helix\OutputFailedTestQuery.ps1" "$payloadDir\scripts"
-Copy-Item "build\helix\OutputSubResultsJsonFiles.ps1" "$payloadDir\scripts"
-Copy-Item "build\helix\HelixTestHelpers.cs" "$payloadDir\scripts"
+New-Item -ItemType Directory -Force -Path "$payloadDir"
+Copy-Item "build\helix\ConvertWttLogToXUnit.ps1" "$payloadDir"
+Copy-Item "build\helix\OutputFailedTestQuery.ps1" "$payloadDir"
+Copy-Item "build\helix\OutputSubResultsJsonFiles.ps1" "$payloadDir"
+Copy-Item "build\helix\HelixTestHelpers.cs" "$payloadDir"
 Copy-Item "build\helix\runtests.cmd" $payloadDir
-Copy-Item "build\helix\InstallTestAppDependencies.ps1" "$payloadDir\scripts"
-Copy-Item "build\Helix\EnsureMachineState.ps1" "$payloadDir\scripts"
+Copy-Item "build\helix\InstallTestAppDependencies.ps1" "$payloadDir"
+Copy-Item "build\Helix\EnsureMachineState.ps1" "$payloadDir"
+Copy-Item "version.props" "$payloadDir"
