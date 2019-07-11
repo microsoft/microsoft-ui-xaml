@@ -755,9 +755,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             WaitForEvent("Waiting for first view change completion", scrollerViewChangeOperationEvents[0]);
 
-            RunOnUIThread.Execute(() =>
+            if (waitForFirstCompletion)
             {
-                if (waitForFirstCompletion)
+                RunOnUIThread.Execute(() =>
                 {
                     operations[1] = StartScrollTo(
                         scroller,
@@ -766,8 +766,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         AnimationMode.Disabled,
                         SnapPointsMode.Ignore,
                         scrollerViewChangeOperationEvents[1]);
-                }
-            });
+                });
+            }
 
             WaitForEvent("Waiting for second view change completion", scrollerViewChangeOperationEvents[1]);
 
